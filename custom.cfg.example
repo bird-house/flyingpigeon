@@ -1,0 +1,8 @@
+[buildout]
+
+extends = buildout.cfg
+
+[settings]
+hostname = localhost
+http-port = 8093
+
