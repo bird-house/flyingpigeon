@@ -1,6 +1,5 @@
 
 __all__ = [
-           "download",
            "ensembles",
          #  "spec2relhum",
            "indice_worker",
