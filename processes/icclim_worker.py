@@ -132,7 +132,8 @@ class IndicesProcess(malleefowl.process.WorkerProcess):
             
     def execute(self):
         
-        from malleefowl import cscenv, utils
+        import csc
+	from malleefowl import utils
         import os
 
         token = self.token.getValue()
@@ -144,7 +145,7 @@ class IndicesProcess(malleefowl.process.WorkerProcess):
         self.show_status('starting calcualtion of icclim indices', 5)        
         
         
-        result = cscenv.indices(outdir, self.get_nc_files(), self.TG.getValue(), self.TN.getValue(), self.TX.getValue(), self.SU.getValue(), self.DTR.getValue(), self.ETR.getValue(), self.HI.getValue())
+        result = csc.tools.indices(outdir, self.get_nc_files(), self.TG.getValue(), self.TN.getValue(), self.TX.getValue(), self.SU.getValue(), self.DTR.getValue(), self.ETR.getValue(), self.HI.getValue())
 
         outfile = self.mktempfile(suffix='.txt')
         with open(outfile, 'w') as fp:
