@@ -9,6 +9,7 @@ CHANGES = open(os.path.join(here, 'CHANGES.rst')).read()
 requires = [
     'malleefowl',
     'cdo',
+    'bokeh',
     'nose',
     ]
 
@@ -23,14 +24,14 @@ classifiers=[
         'Topic :: Scientific/Engineering :: Atmospheric Science',
         ]
 
-setup(name='malleefowl-csc',
+setup(name='csc',
       version='0.1',
       description='CSC processes for PyWPS',
       long_description=README + '\n\n' + CHANGES,
       classifiers=classifiers,
-      author='Carsten Ehbrecht',
-      author_email='ehbrecht@dkrz.de',
-      url='http://www.dkrz.de',
+      author='Nils Hempelmann',
+      author_email='info@nilshempelmann.de',
+      url='http://www.climate-service-center.de/',
       license = "http://www.gnu.org/licenses/gpl.html",
       keywords='wps PyWPS Python Malleefowl CSC',
       packages=find_packages(),
