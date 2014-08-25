@@ -1,11 +1,7 @@
-"""
-Processes for visualisation 
-Author: Nils Hempelmann (nils.hempelmann@hzg.de)
-"""
 from datetime import datetime, date
 import tempfile
 import subprocess
-from malleefowl import tokenmgr, utils
+from malleefowl import utils
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
@@ -16,17 +12,14 @@ import numpy as np
 
 from bokeh.plotting import *
 
-
-#from malleefowl.process import WorkerProcess
-import malleefowl.process
-class VisualisationProcess(malleefowl.process.WorkerProcess):
-    """This process calculates the evapotranspiration following the Pennan Monteith equation"""
+from malleefowl.process import WPSProcess
+class VisualisationProcess(WPSProcess):
 
     def __init__(self):
         # definition of this process
-        malleefowl.process.WorkerProcess.__init__(self, 
-            identifier = "de.csc.visualisation",
-            title="Visualisation of data",
+        WPSProcess.__init__(self, 
+            identifier = "visualisation",
+            title="Visualisation of netcdf files",
             version = "0.1",
             metadata= [
                        {"title": "Climate Service Center", "href": "http://www.climate-service-center.de/"}
@@ -37,9 +30,16 @@ class VisualisationProcess(malleefowl.process.WorkerProcess):
                   #'esgquery': 'variable:tas AND variable:evspsbl AND variable:hurs AND variable:pr' # institute:MPI-M AND time_frequency:day 
                   #},
             )
-            
-        # Literal Input Data
-        # ------------------
+
+        self.netcdf_file = self.addComplexInput(
+            identifier="netcdf_file",
+            title="NetCDF File",
+            abstract="NetCDF File",
+            minOccurs=1,
+            maxOccurs=100,
+            maxmegabites=5000,
+            formats=[{"mimeType":"application/x-netcdf"}],
+            )
 
         self.variableIn = self.addLiteralInput(
              identifier="variable",
@@ -65,7 +65,7 @@ class VisualisationProcess(malleefowl.process.WorkerProcess):
        
         cdo = cdo.Cdo()
 
-        ncfiles = self.get_nc_files()
+        ncfiles = self.getInputValues(identifier='netcdf_file')
         var = self.variableIn.getValue()
 
         self.show_status('ncfiles and var : %s , %s ' % (ncfiles, var), 7)
