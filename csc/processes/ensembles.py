@@ -1,24 +1,30 @@
-"""
-Processes with cdo commands
+from malleefowl.process import WPSProcess
 
-Author: Nils Hempelmann (nils.hempelmann@hzg.de)
-"""
+from malleefowl import wpslogging as logging
+logger = logging.getLogger(__name__)
 
-#from malleefowl.process import WorkerProcess
-import malleefowl.process
+class ensembles(WPSProcess):
 
-class ensembles(malleefowl.process.WorkerProcess):
-    """This process calls cdo with operation on netcdf file"""
     def __init__(self):
-        malleefowl.process.WorkerProcess.__init__(
+        WPSProcess.__init__(
             self,
-            identifier = "de.csc.esgf.ensembles",
+            identifier = "ensembles",
             title = "Ensembles Operations",
             version = "0.1",
             metadata=[
                 {"title":"CDO ens","href":"https://code.zmaw.de/projects/cdo"},
                 ],
             abstract="calling cdo operation to calculate ensembles operations",
+            )
+
+        self.netcdf_file = self.addComplexInput(
+            identifier="netcdf_file",
+            title="NetCDF File",
+            abstract="NetCDF File",
+            minOccurs=1,
+            maxOccurs=100,
+            maxmegabites=5000,
+            formats=[{"mimeType":"application/x-netcdf"}],
             )
 
         # operators
@@ -33,11 +39,6 @@ class ensembles(malleefowl.process.WorkerProcess):
             allowedValues=['ensmin', 'ensmax', 'enssum', 'ensmean', 'ensavg', 'ensvar', 'ensstd', 'enspctl']
             )
 
-        # netcdf input
-        # -------------
-
-        # defined in WorkflowProcess ...
-
         # complex output
         # -------------
 
@@ -51,9 +52,9 @@ class ensembles(malleefowl.process.WorkerProcess):
             )
 
     def execute(self):
-        self.status.set(msg="starting cdo operator", percentDone=10, propagate=True)
+        self.show_status("starting cdo operator", 0)
 
-        nc_files = self.get_nc_files()
+        nc_files = self.getInputValues(identifier='netcdf_file')
         operator = self.operator_in.getValue()
 
         out_filename = self.mktempfile(suffix='.nc')
@@ -63,6 +64,7 @@ class ensembles(malleefowl.process.WorkerProcess):
             cmd.append(out_filename)
             self.cmd(cmd=cmd, stdout=True)
         except:
-            self.message(msg='cdo failed', force=True)
-        self.status.set(msg="ensembles calculation done", percentDone=90, propagate=True)
+            logger.exception('cdo failed')
+            raise
+        self.show_status("ensembles calculation done", 100)
         self.output.setValue( out_filename )

@@ -1,49 +1,42 @@
-"""
-Processes for Anopheles Gambiae population dynamics 
-Author: Nils Hempelmann (nils.hempelmann@hzg)
-"""
+
 from datetime import datetime, date
 import tempfile
 import subprocess
 
-#from malleefowl.process import WorkerProcess
-import malleefowl.process 
-from malleefowl import tokenmgr, utils
+from malleefowl.process import WPSProcess
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
-class AnophelesProcess(malleefowl.process.WorkerProcess):
-    """This process calculates the evapotranspiration following the Pennan Monteith equation"""
+class AnophelesProcess(WPSProcess):
+    """
+    Process for Anopheles Gambiae population dynamics 
+    """
 
     def __init__(self):
         # definition of this process
-        malleefowl.process.WorkerProcess.__init__(self, 
-            identifier = "de.csc.vbd",
+        WPSProcess.__init__(self, 
+            identifier = "vbd",
             title="Vector born diseases",
             version = "0.1",
             metadata= [
                        {"title": "Climate Service Center", "href": "http://www.climate-service-center.de/"}
                       ],
             abstract="Collection of models to calculate variables related to vector born diseases",
-            extra_metadata={
-                  'esgfilter': 'variable:tas, variable:pr, variable:huss, variable:ps,variable:evspsblpot, domain:AFR-44, domain:AFR-44i',  
-                  'esgquery': ' time_frequency:day' 
-                  },
+            ## extra_metadata={
+            ##       'esgfilter': 'variable:tas, variable:pr, variable:huss, variable:ps,variable:evspsblpot, domain:AFR-44, domain:AFR-44i',  
+            ##       'esgquery': ' time_frequency:day' 
+            ##       },
             )
             
-        # Literal Input Data
-        # ------------------
-        
-                           
-        self.token = self.addLiteralInput(
-            identifier = "token",
-            title = "Token",
-            abstract = "Your unique token to recieve data",
-            minOccurs = 1,
-            maxOccurs = 1,
-            type = type('')
+        self.netcdf_file = self.addComplexInput(
+            identifier="netcdf_file",
+            title="NetCDF File",
+            abstract="NetCDF File",
+            minOccurs=1,
+            maxOccurs=100,
+            maxmegabites=5000,
+            formats=[{"mimeType":"application/x-netcdf"}],
             )
-
         
         self.tommymodel = self.addLiteralInput(
             identifier="tommymodel",
@@ -96,17 +89,12 @@ class AnophelesProcess(malleefowl.process.WorkerProcess):
         from ocgis.util.shp_cabinet import ShpCabinetIterator
         import ocgis
 
-        self.show_status('starting anopholes ...', 5)
-   
-        token = self.token.getValue()
-        userid = tokenmgr.get_userid(tokenmgr.sys_token(), token)
-        outdir = os.path.join(self.files_path, userid)
-        utils.mkdir(outdir)
+        self.show_status('starting anopholes ...', 0)
 
-        self.show_status('got token and outdir : %s ...'% (outdir),  10)
-   
+        nc_files = self.getInputValues(identifier='netcdf_file')
+        
         ocgis.env.DIR_SHPCABINET = path.join(path.dirname(__file__),'shapefiles')
-        ocgis.env.DIR_OUTPUT = outdir
+        ocgis.env.DIR_OUTPUT = os.curdir
         ocgis.env.OVERWRITE = True  
         sc = ocgis.ShpCabinet()
         geoms = 'continent'
@@ -116,7 +104,6 @@ class AnophelesProcess(malleefowl.process.WorkerProcess):
         
 
         # guess var names of files
-        nc_files = self.get_nc_files()
         for nc_file in nc_files: 
             ds = Dataset(nc_file)
             if "tas" in ds.variables.keys():

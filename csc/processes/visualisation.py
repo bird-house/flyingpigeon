@@ -1,13 +1,11 @@
 from datetime import datetime, date
 import tempfile
 import subprocess
-from malleefowl import utils
+
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
-
 from netCDF4 import Dataset
-from os import curdir, path
 import numpy as np
 
 from bokeh.plotting import *

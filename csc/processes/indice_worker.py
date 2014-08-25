@@ -1,6 +1,6 @@
 from malleefowl.process import WPSProcess
 import subprocess
-from malleefowl import utils
+
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
