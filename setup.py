@@ -10,6 +10,8 @@ requires = [
     'malleefowl',
     'cdo',
     'bokeh',
+    'ocgis',
+    'matplotlib',
     'nose',
     ]
 
@@ -26,7 +28,7 @@ classifiers=[
 
 setup(name='csc',
       version='0.1',
-      description='CSC processes for PyWPS',
+      description='Pidgeon processes for PyWPS',
       long_description=README + '\n\n' + CHANGES,
       classifiers=classifiers,
       author='Nils Hempelmann',
