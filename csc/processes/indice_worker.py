@@ -1,47 +1,42 @@
-#from malleefowl.process import WorkerProcess
-import malleefowl.process 
+from malleefowl.process import WPSProcess
 import subprocess
-from malleefowl import tokenmgr, utils
+from malleefowl import utils
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
 
-class IndicesProcess(malleefowl.process.WorkerProcess):
+class IndicesProcess(WPSProcess):
     """This process calculates the relative humidity"""
 
     def __init__(self):
         # definition of this process
-        malleefowl.process.WorkerProcess.__init__(self, 
-            identifier = "de.csc.indice",
+        WPSProcess.__init__(self, 
+            identifier = "indice",
             title="Climate indices",
             version = "0.1",
-            #storeSupported = "true",   # async
-            #statusSupported = "true",  # retrieve status, needs to be true for async 
-            ## TODO: what can i do with this?
             metadata=[],
             abstract="Just testing a python script to test icclim",
+            # TODO: filter are configured in phoenix
             #extra_metadata={
                   #'esgfilter': 'variable:tas, variable:evspsblpot, variable:huss, variable:ps, variable:pr, variable:sftlf, time_frequency:day', 
                   #'esgquery': 'data_node:esg-dn1.nsc.liu.se' 
                   #},
-            extra_metadata={
-                  'esgfilter': 'variable:tasmax, variable:tasmin, variable:tas, variable:pr, project:CMIP5, project:CORDEX',  
-                  'esgquery': ' time_frequency:day' 
-                  },
+            ## extra_metadata={
+            ##       'esgfilter': 'variable:tasmax, variable:tasmin, variable:tas, variable:pr, project:CMIP5, project:CORDEX',  
+            ##       'esgquery': ' time_frequency:day' 
+            ##       },
             )
 
-        # Literal Input Data
-        # ------------------
-                   
-        self.token = self.addLiteralInput(
-            identifier = "token",
-            title = "Token",
-            abstract = "Your unique token to recieve data",
-            minOccurs = 1,
-            maxOccurs = 1,
-            type = type('')
+        self.netcdf_file = self.addComplexInput(
+            identifier="netcdf_file",
+            title="NetCDF File",
+            abstract="NetCDF File",
+            minOccurs=1,
+            maxOccurs=100,
+            maxmegabites=5000,
+            formats=[{"mimeType":"application/x-netcdf"}],
             )
-    
+
         self.TG = self.addLiteralInput(
             identifier="TG",
             title="TG",
@@ -144,19 +139,22 @@ class IndicesProcess(malleefowl.process.WorkerProcess):
             asReference=True,
             )
     def execute(self):
-        
         import csc
         import os
-
-        token = self.token.getValue()
-        userid = tokenmgr.get_userid(tokenmgr.sys_token(), token)
-        outdir = os.path.join(self.files_path, userid)
-        utils.mkdir(outdir)
-       #result = publish.to_local_store(files=self.get_nc_files(),basename=self.basename.getValue(),userid=userid)
         
-        self.show_status('starting calcualtion of icclim indices', 5)        
-                
-        result = csc.tools.indices(outdir, self.get_nc_files(), self.TG.getValue(), self.TX.getValue(), self.TN.getValue(), self.RR.getValue(), self.TG_5to9.getValue(), self.TG_6to8.getValue(), self.RR_5to9.getValue(), self.RR_6to8.getValue(), self.SU.getValue())
+        self.show_status('starting calcualtion of icclim indices', 0)
+
+        ncfiles = self.getInputValues(identifier='netcdf_file')
+        result = csc.tools.indices(os.curdir, ncfiles,
+                                   self.TG.getValue(),
+                                   self.TX.getValue(),
+                                   self.TN.getValue(),
+                                   self.RR.getValue(),
+                                   self.TG_5to9.getValue(),
+                                   self.TG_6to8.getValue(),
+                                   self.RR_5to9.getValue(),
+                                   self.RR_6to8.getValue(),
+                                   self.SU.getValue())
 
         outfile = self.mktempfile(suffix='.txt')
         
