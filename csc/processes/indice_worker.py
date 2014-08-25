@@ -139,22 +139,24 @@ class IndicesProcess(WPSProcess):
             asReference=True,
             )
     def execute(self):
-        import csc
         import os
         
         self.show_status('starting calcualtion of icclim indices', 0)
 
         ncfiles = self.getInputValues(identifier='netcdf_file')
-        result = csc.tools.indices(os.curdir, ncfiles,
-                                   self.TG.getValue(),
-                                   self.TX.getValue(),
-                                   self.TN.getValue(),
-                                   self.RR.getValue(),
-                                   self.TG_5to9.getValue(),
-                                   self.TG_6to8.getValue(),
-                                   self.RR_5to9.getValue(),
-                                   self.RR_6to8.getValue(),
-                                   self.SU.getValue())
+
+        from csc import tools
+        result = tools.indices(
+            os.curdir, ncfiles,
+            self.TG.getValue(),
+            self.TX.getValue(),
+            self.TN.getValue(),
+            self.RR.getValue(),
+            self.TG_5to9.getValue(),
+            self.TG_6to8.getValue(),
+            self.RR_5to9.getValue(),
+            self.RR_6to8.getValue(),
+            self.SU.getValue())
 
         outfile = self.mktempfile(suffix='.txt')
         
