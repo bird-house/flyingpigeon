@@ -14,7 +14,7 @@ Installation
 
 Check out code from the flyingpigeon git repo (will be available on github). Then do the following::
 
-   $ cd flyingpigeon
+   $ cd pigeon
    $ ./requirements.sh
    $ ./install.sh
 
