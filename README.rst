@@ -12,7 +12,7 @@ Pidgeon is a Python package with a collection of algorithms for the climate comm
 Installation
 ------------
 
-Check out code from the flyingpigeon git repo (will be available on github). Then do the following::
+Check out code from the pigeon git repo (will be available on github). Then do the following::
 
    $ cd pigeon
    $ ./requirements.sh
