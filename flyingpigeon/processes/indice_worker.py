@@ -15,7 +15,7 @@ class IndicesProcess(WPSProcess):
             title="Climate indices",
             version = "0.1",
             metadata=[],
-            abstract="Just testing a python script to test icclim",
+            abstract="Calculation of climate indices",
             # TODO: filter are configured in phoenix
             #extra_metadata={
                   #'esgfilter': 'variable:tas, variable:evspsblpot, variable:huss, variable:ps, variable:pr, variable:sftlf, time_frequency:day', 

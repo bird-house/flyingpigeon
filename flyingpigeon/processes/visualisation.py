@@ -187,16 +187,7 @@ class VisualisationProcess(WPSProcess):
         self.show_status('visualisation done', 99)
         self.output.setValue( 'output.html' )
 
-        
-            
-            
-            
-            
-
-            
-            
-            
-    
+ 
         
         #count = 0
         #ma = []
