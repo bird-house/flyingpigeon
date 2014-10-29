@@ -102,36 +102,39 @@ class extractpointsProcess(WPSProcess):
       self.show_status('ncfiles and coords : %s , %s ' % (ncfiles, coords), 7)
       
       for nc in ncfiles:
-	csvout_file = tempfile.mktemp(suffix='.csv')
-	csvfiles.append( csvout_file )
-	
-	self.show_status('processing files: %s, CSVfile : %s '  % (nc, csvout_file) , 15)
-	coordsFrame = DataFrame()
-	coordsFrame.index.name = 'date'
-	
-	for p in coords :
-	  self.show_status('processing point : %s'  % (p) , 20)
-	  p = p.split(',')
-	  self.show_status('splited x and y coord : %s'  % (p) , 20)
-	  point = Point(float(p[0]), float(p[1]))
+	try: 
+	  csvout_file = tempfile.mktemp(suffix='.csv')
+	  csvfiles.append( csvout_file )
 	  
-	  rd = ocgis.RequestDataset(uri=nc)
-	  ops = ocgis.OcgOperations(dataset=rd, geom=point, select_nearest=True, output_format='numpy')
-	  ret = ops.execute()
+	  self.show_status('processing files: %s, CSVfile : %s '  % (nc, csvout_file) , 15)
+	  coordsFrame = DataFrame()
+	  coordsFrame.index.name = 'date'
 	  
-	  field_dict = ret[1]
-	  field  = field_dict[rd.variable]
-	  var = field.variables[rd.variable]
-	  var_value = np.squeeze(var.value.data)
+	  for p in coords :
+	    self.show_status('processing point : %s'  % (p) , 20)
+	    p = p.split(',')
+	    self.show_status('splited x and y coord : %s'  % (p) , 20)
+	    point = Point(float(p[0]), float(p[1]))
+	    
+	    rd = ocgis.RequestDataset(uri=nc)
+	    ops = ocgis.OcgOperations(dataset=rd, geom=point, select_nearest=True, output_format='numpy')
+	    ret = ops.execute()
+	    
+	    field_dict = ret[1]
+	    field  = field_dict[rd.variable]
+	    var = field.variables[rd.variable]
+	    var_value = np.squeeze(var.value.data)
+	    
+	    col_name = 'Point_%s_%s' % (point.x , point.y)
+	    
+	    pointFrame = DataFrame(columns = [col_name] , index = field.temporal.value_datetime )
+	    pointFrame[col_name] = var_value
+	    pointFrame.index.name = 'date'
+	    coordsFrame = pd.concat([coordsFrame,pointFrame], axis=1, ignore_index=False) #coordsFrame.append(pointFrame)
+	  coordsFrame.to_csv(csvout_file)
+	except:
+	  self.show_status('failed for file : %s '  % (nc) , 15)
 	  
-	  col_name = 'Point_%s_%s' % (point.x , point.y)
-	  
-	  pointFrame = DataFrame(columns = [col_name] , index = field.temporal.value_datetime )
-	  pointFrame[col_name] = var_value
-	  pointFrame.index.name = 'date'
-	  coordsFrame = pd.concat([coordsFrame,pointFrame], axis=1, ignore_index=False) #coordsFrame.append(pointFrame)
-	coordsFrame.to_csv(csvout_file)
-
       tar = tarfile.open(tarout_file, "w")
       for name in csvfiles:
 	tar.add(name, arcname = name.replace(self.working_dir, ""))
