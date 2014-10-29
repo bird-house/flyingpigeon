@@ -59,7 +59,39 @@ def test_visualisation():
 
     nose.tools.ok_('html' in result, result)
     
+def test_icclim():
+    result = wpsclient.execute(
+        service = base.SERVICE,
+        identifier = "de.csc.icclim.worker",
+        inputs = [('file_identifier', 'http://localhost:8090/thredds/fileServer/test/nils.hempelmann@hzg.de/tasmax_day_MPI-ESM-LR_historical_r1i1p1_20040101-20051231.nc'),
+        ('SU','True'),
+        ('token', TEST_TOKEN)], #http://localhost:8090/thredds/fileServer/test/nils.hempelmann_hzg.de/tasmax_EUR11_test-pywpsInputbtel_q.nc
+        outputs = [('output', True)],
+        verbose=False
+        )
 
+    nose.tools.ok_('txt' in result[0]['reference'], result)
+    content = urllib.urlopen(result[0]['reference']).read()
+    nose.tools.ok_(not ('failed' in content), content)
+
+def test_extractpoints():
+    result = wpsclient.execute(
+        service = base.SERVICE,
+        identifier = "extractpoints",
+        inputs = [('file_identifier', 'http://localhost:8090/thredds/fileServer/test/nils.hempelmann@hzg.de/tasmax_day_MPI-ESM-LR_historical_r1i1p1_20040101-20051231.nc'),
+        ('SU','True'),
+        ('token', TEST_TOKEN)], #http://localhost:8090/thredds/fileServer/test/nils.hempelmann_hzg.de/tasmax_EUR11_test-pywpsInputbtel_q.nc
+        outputs = [('output', True)],
+        verbose=False
+        )
+
+    nose.tools.ok_('txt' in result[0]['reference'], result)
+    content = urllib.urlopen(result[0]['reference']).read()
+    nose.tools.ok_(not ('failed' in content), content)
+    
+    
+    
+    
 #def test_indices():
     
     #result = wpsclient.execute(

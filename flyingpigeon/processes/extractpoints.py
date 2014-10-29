@@ -1,10 +1,8 @@
 from malleefowl import wpslogging as logging
 from malleefowl.process import WPSProcess
 
-
 # initialise
 logger = logging.getLogger(__name__)
-
 
 class extractpointsProcess(WPSProcess):
 
@@ -41,7 +39,7 @@ class extractpointsProcess(WPSProcess):
              default="2.356138, 48.846450",
              type=type(''),
              minOccurs=0,
-             maxOccurs=10,
+             maxOccurs=100,
              )
        
         #self.logout = self.addComplexOutput(
@@ -52,11 +50,11 @@ class extractpointsProcess(WPSProcess):
             #asReference=True,
             #)
 	
-	self.csvout = self.addComplexOutput(
-            identifier="csvout",
-            title="CSVfile",
-            abstract="CSV file containing the value tables",
-            formats=[{"mimeType":"text/csv"}],
+	self.tarout = self.addComplexOutput(
+            identifier="tarout",
+            title="Tarfile",
+            abstract="tar archive containing the value tables",
+            formats=[{"mimeType":"application/x-tar"}],
             asReference=True,
             )
 	
@@ -71,18 +69,20 @@ class extractpointsProcess(WPSProcess):
     def execute(self):
       import ocgis
       from shapely.geometry import Point
+      
       import tempfile
+      import tarfile
       import subprocess
+      
       from bokeh.plotting import *
       import pandas as pd 
-      import numpy as np
       from pandas import DataFrame, read_csv
-     
+      import numpy as np
+      
       # define logfile 
       # logout_file = self.mktempfile(suffix='.txt')
       
-      csvout_file = '/homel/nhempel/test.csv' # tempfile.mkdtemp(suffix='.csv')
-      plotout_file = tempfile.mkdtemp(suffix='.html')
+      plotout_file = tempfile.mktemp(suffix='.html')
       # definfe bokeh output plot 
       output_file(plotout_file)
       save()
@@ -96,17 +96,23 @@ class extractpointsProcess(WPSProcess):
       ncfiles = self.getInputValues(identifier='netcdf_file')
       coords = self.coords.getValue()
       
+      tarout_file = tempfile.mktemp(suffix='.tar')
+      csvfiles = []
+      
       self.show_status('ncfiles and coords : %s , %s ' % (ncfiles, coords), 7)
       
       for nc in ncfiles:
-	self.show_status('processing files: %s '  % (nc) , 15)
+	csvout_file = tempfile.mktemp(suffix='.csv')
+	csvfiles.append( csvout_file )
+	
+	self.show_status('processing files: %s, CSVfile : %s '  % (nc, csvout_file) , 15)
 	coordsFrame = DataFrame()
 	coordsFrame.index.name = 'date'
 	
 	for p in coords :
 	  self.show_status('processing point : %s'  % (p) , 20)
 	  p = p.split(',')
-	  self.show_status('split x and y coord : %s'  % (p) , 20)
+	  self.show_status('splited x and y coord : %s'  % (p) , 20)
 	  point = Point(float(p[0]), float(p[1]))
 	  
 	  rd = ocgis.RequestDataset(uri=nc)
@@ -118,17 +124,21 @@ class extractpointsProcess(WPSProcess):
 	  var = field.variables[rd.variable]
 	  var_value = np.squeeze(var.value.data)
 	  
-	  col_name = '%s_%s' % (point.x , point.y)
+	  col_name = 'Point_%s_%s' % (point.x , point.y)
 	  
 	  pointFrame = DataFrame(columns = [col_name] , index = field.temporal.value_datetime )
 	  pointFrame[col_name] = var_value
 	  pointFrame.index.name = 'date'
-	  coordsFrame = coordsFrame.append(pointFrame)
-	 
+	  coordsFrame = pd.concat([coordsFrame,pointFrame], axis=1, ignore_index=False) #coordsFrame.append(pointFrame)
 	coordsFrame.to_csv(csvout_file)
 
-#      self.logout.setValue( logout_file )
-      self.csvout.setValue( csvout_file )
+      tar = tarfile.open(tarout_file, "w")
+      for name in csvfiles:
+	tar.add(name, arcname = name.replace(self.working_dir, ""))
+      tar.close()
+    
+      #self.logout.setValue( logout_file )
+      self.tarout.setValue( tarout_file )
 
       
       #save()
