@@ -72,6 +72,7 @@ class extractpointsProcess(WPSProcess):
       
       import tempfile
       import tarfile
+      import os 
       import subprocess
       
       from bokeh.plotting import *
@@ -104,7 +105,7 @@ class extractpointsProcess(WPSProcess):
       for nc in ncfiles:
 	try: 
 	  csvout_file = tempfile.mktemp(suffix='.csv')
-	  csvfiles.append( csvout_file )
+	  
 	  
 	  self.show_status('processing files: %s, CSVfile : %s '  % (nc, csvout_file) , 15)
 	  coordsFrame = DataFrame()
@@ -132,9 +133,11 @@ class extractpointsProcess(WPSProcess):
 	    pointFrame.index.name = 'date'
 	    coordsFrame = pd.concat([coordsFrame,pointFrame], axis=1, ignore_index=False) #coordsFrame.append(pointFrame)
 	  coordsFrame.to_csv(csvout_file)
-	except:
-	  self.show_status('failed for file : %s '  % (nc) , 15)
-	  
+	  if os.path.isfile(csvout_file):
+	    csvfiles.append( csvout_file )
+	except Exception as e: 
+	  self.show_status('failed for file : %s  \n %s '  % (nc, e ) , 15)
+          
       tar = tarfile.open(tarout_file, "w")
       for name in csvfiles:
 	tar.add(name, arcname = name.replace(self.working_dir, ""))
