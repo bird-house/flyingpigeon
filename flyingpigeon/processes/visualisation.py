@@ -20,13 +20,13 @@ class VisualisationProcess(WPSProcess):
             title="Visualisation of netcdf files",
             version = "0.1",
             metadata= [
-                       {"title": "Climate Service Center", "href": "http://www.climate-service-center.de/"}
-                      ],
+                    {"title": "Climate Service Center", "href": "http://www.climate-service-center.de/"}
+                    ],
             abstract="Just testing a nice script to visualise some variables",
             #extra_metadata={
-                  #'esgfilter': 'variable:tas,variable:evspsbl,variable:hurs,variable:pr',  #institute:MPI-M, ,time_frequency:day
-                  #'esgquery': 'variable:tas AND variable:evspsbl AND variable:hurs AND variable:pr' # institute:MPI-M AND time_frequency:day 
-                  #},
+                #'esgfilter': 'variable:tas,variable:evspsbl,variable:hurs,variable:pr',  #institute:MPI-M, ,time_frequency:day
+                #'esgquery': 'variable:tas AND variable:evspsbl AND variable:hurs AND variable:pr' # institute:MPI-M AND time_frequency:day 
+                #},
             )
 
         self.netcdf_file = self.addComplexInput(
@@ -40,15 +40,15 @@ class VisualisationProcess(WPSProcess):
             )
 
         self.variableIn = self.addLiteralInput(
-             identifier="variable",
-             title="Variable",
-             abstract="Variable to be expected in the input files",
-             default="tas",
-             type=type(''),
-             minOccurs=0,
-             maxOccurs=1,
-             )
-       
+            identifier="variable",
+            title="Variable",
+            abstract="Variable to be expected in the input files",
+            default="tas",
+            type=type(''),
+            minOccurs=0,
+            maxOccurs=1,
+            )
+    
         self.output = self.addComplexOutput(
             identifier="output",
             title="visualisation",
@@ -60,7 +60,7 @@ class VisualisationProcess(WPSProcess):
     def execute(self):
         
         import cdo 
-       
+    
         cdo = cdo.Cdo()
 
         ncfiles = self.getInputValues(identifier='netcdf_file')
@@ -76,7 +76,7 @@ class VisualisationProcess(WPSProcess):
         
         hold()
         figure(x_axis_type = "datetime", tools="pan,wheel_zoom,box_zoom,reset,previewsave")
-      
+    
         for nc in ncfiles:
             
             self.show_status('looping files : %s ' % (nc), 10)
@@ -93,7 +93,7 @@ class VisualisationProcess(WPSProcess):
             # plot into current figure
             line( dt,ts ) # , legend= nc 
             save()
-           
+        
         self.show_status('timesseries lineplot done.' , 50)
         
         legend().orientation = "bottom_left"
@@ -120,7 +120,7 @@ class VisualisationProcess(WPSProcess):
             # get timestapms
             rawDate = cdo.showdate(input= nc) # ds.variables['time'][:]
             strDate = rawDate[0].split('  ')
-           
+        
             self.show_status('len strDate : %s ' % (len(strDate)), 55)
             
             
@@ -179,7 +179,7 @@ class VisualisationProcess(WPSProcess):
         y = np.append(ma_min, ma_max[::-1])
 
         patch(x,y, color='grey', alpha=0.8, line_color=None)
-  
+
         curplot().title = "Mean and Uncertainty of  %s " % var  
         save()
         hold('off')
@@ -187,7 +187,7 @@ class VisualisationProcess(WPSProcess):
         self.show_status('visualisation done', 99)
         self.output.setValue( 'output.html' )
 
- 
+
         
         #count = 0
         #ma = []

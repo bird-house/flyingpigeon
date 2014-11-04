@@ -19,8 +19,8 @@ class AnophelesProcess(WPSProcess):
             title="Vector born diseases",
             version = "0.1",
             metadata= [
-                       {"title": "Climate Service Center", "href": "http://www.climate-service-center.de/"}
-                      ],
+                    {"title": "Climate Service Center", "href": "http://www.climate-service-center.de/"}
+                    ],
             abstract="Collection of models to calculate variables related to vector born diseases",
             ## extra_metadata={
             ##       'esgfilter': 'variable:tas, variable:pr, variable:huss, variable:ps,variable:evspsblpot, domain:AFR-44, domain:AFR-44i',  

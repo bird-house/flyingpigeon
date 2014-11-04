@@ -18,9 +18,9 @@ class IndicesProcess(WPSProcess):
             abstract="Calculation of climate indices",
             # TODO: filter are configured in phoenix
             #extra_metadata={
-                  #'esgfilter': 'variable:tas, variable:evspsblpot, variable:huss, variable:ps, variable:pr, variable:sftlf, time_frequency:day', 
-                  #'esgquery': 'data_node:esg-dn1.nsc.liu.se' 
-                  #},
+                #'esgfilter': 'variable:tas, variable:evspsblpot, variable:huss, variable:ps, variable:pr, variable:sftlf, time_frequency:day', 
+                #'esgquery': 'data_node:esg-dn1.nsc.liu.se' 
+                #},
             ## extra_metadata={
             ##       'esgfilter': 'variable:tasmax, variable:tasmin, variable:tas, variable:pr, project:CMIP5, project:CORDEX',  
             ##       'esgquery': ' time_frequency:day' 
@@ -161,8 +161,8 @@ class IndicesProcess(WPSProcess):
         outfile = self.mktempfile(suffix='.txt')
         
         with open(outfile, 'w') as fp:
-             fp.write(result)
-             
+            fp.write(result)
+            
         self.output.setValue( outfile )
         
         self.show_status("processing done", 100)
