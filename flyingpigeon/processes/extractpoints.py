@@ -97,15 +97,15 @@ class extractpointsProcess(WPSProcess):
         ncfiles = self.getInputValues(identifier='netcdf_file')
         coords = self.coords.getValue()
         
-        tarout_file = tempfile.mktemp(suffix='.tar')
+        (fp_tar, tarout_file) = tempfile.mkstemp(dir=".", suffix='.tar')
         csvfiles = []
         
         self.show_status('ncfiles and coords : %s , %s ' % (ncfiles, coords), 7)
       
         for nc in ncfiles:
             try: 
-                csvout_file = tempfile.mktemp(suffix='.csv')
-                
+                (fp_csv, csvout_file) = tempfile.mkstemp(dir=".", suffix=".csv") 
+                # csvout_file = tempfile.mktemp(suffix='.csv')
                 
                 self.show_status('processing files: %s, CSVfile : %s '  % (nc, csvout_file) , 15)
                 coordsFrame = DataFrame()
