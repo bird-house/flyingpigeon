@@ -1,8 +1,8 @@
 # installer
-Makefile
+#Makefile
 
 # Docker
-Dockerfile
+#Dockerfile
 
 # custom configs
 custom.cfg
