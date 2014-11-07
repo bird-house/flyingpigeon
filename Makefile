@@ -139,7 +139,7 @@ install: bootstrap conda_pkgs
 
 .PHONY: build
 build: install
-	@echo "Please use 'make install' instead of 'make build'"
+	@echo "\nPlease use 'make install' instead of 'make build'"
 
 .PHONY: clean
 clean:

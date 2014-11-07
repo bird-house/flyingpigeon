@@ -6,8 +6,8 @@ usage() {
 
     Options:
         -h   - Print this help message.
-        -i   - Install required system packages for Birdhouse build. You *need* 'sudo' priviliges!"
-        -u   - Update Makefile for Birdhouse build. Python needs to be installed."
+        -i   - Installs required system packages for Birdhouse build. You *need* 'sudo' priviliges!"
+        -u   - Updates Makefile for Birdhouse build. Python needs to be installed."
         -b   - Both system packages will be installed (-i) and Makefile will be updated (-u). Default."
 EOT
     exit 1
