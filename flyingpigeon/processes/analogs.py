@@ -121,13 +121,21 @@ class analogs(WPSProcess):
     # import wget
     from subprocess import call
 
-
-    url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.1948.nc'
-    call(['wget', url]) # ["ls", "-l"])nc = wget.download(url)
+    refSt = self.getInputValues(identifier='refSt')
+    refEn = self.getInputValues(identifier='refEn')
+    dateSt = self.getInputValues(identifier='dateSt')
+    dateEn = self.getInputValues(identifier='dateEn')
+    tar = tarfile.open(tarout_file, "w")
+    
+    start = min(refSt, refEn, dateSt, dateEn )
+    end = max(refSt, refEn, dateSt, dateEn )
+    
+    for y in range(start.year , end.year +1 , 1): 
+      url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.%s.nc' % (y)
+      call(['wget', url]) # ["ls", "-l"])nc = wget.download(url)
+      tar.add(('slp.%s.nc' % (y)))
 
     (fp_tar, tarout_file) = tempfile.mkstemp(dir=".", suffix='.tar')
     
-    tar = tarfile.open(tarout_file, "w")
-    tar.add('slp.1948.nc')
     tar.close()
     self.tarout.setValue( tarout_file )
