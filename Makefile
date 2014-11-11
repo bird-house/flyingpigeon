@@ -33,7 +33,8 @@ DOCKER_CONTAINER := $(APP_NAME)
 
 .PHONY: all
 all: sysinstall clean install
-	@echo "\nCall 'make help' for a description of all make targets."
+	@echo "\nRun 'make help' for a description of all make targets."
+	@echo "Read also the README.rst on GitHub: https://github.com/bird-house/birdhousebuilder.bootstrap"
 
 .PHONY: help
 help:
@@ -170,19 +171,16 @@ selfupdate: bootstrap.sh
 start:
 	@echo "Starting supervisor service ..."
 	$(ANACONDA_HOME)/etc/init.d/supervisord start
-	$(ANACONDA_HOME)/etc/init.d/nginx start
 
 .PHONY: stop
 stop:
 	@echo "Stopping supervisor service ..."
 	$(ANACONDA_HOME)/etc/init.d/supervisord stop
-	$(ANACONDA_HOME)/etc/init.d/nginx stop
 
 .PHONY: restart
 restart:
 	@echo "Restarting supervisor service ..."
 	$(ANACONDA_HOME)/etc/init.d/supervisord restart
-	$(ANACONDA_HOME)/etc/init.d/nginx restart
 
 .PHONY: status
 status:
