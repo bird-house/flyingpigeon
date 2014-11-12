@@ -10,6 +10,9 @@ Changes
 0.1.0 (2014-09-04)
 ==================
 
-Initial Paris Release
+Paris Release
+
+* moved code to github.
+* Initial Release.
 
 
