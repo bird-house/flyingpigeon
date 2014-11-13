@@ -4,5 +4,5 @@ __all__ = [
         "analogs",
         "ensembles",
         "icclim",
-        "vbd_worker",
+        "vbd",
         ]
