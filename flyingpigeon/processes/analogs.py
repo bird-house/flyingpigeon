@@ -151,7 +151,7 @@ class analogs(WPSProcess):
     # ocgis specifications:
     #try: 
 #     if (self.getInputValues(identifier='region') == 'NOA'):
-    geom = [-80, 22.5, 50, 70.0 ] # [min x, min y, max x, max y].
+    geom = [280, 22.5, 50, 70.0 ] # [min x, min y, max x, max y].
     ocgis.env.DIR_OUTPUT = self.working_dir
     rds = RequestDataset(uris, 'slp')
     ops = ocgis.OcgOperations(dataset=rds, geom=geom, prefix=fname,  output_format='nc', allow_empty=True, add_auxiliary_files=False)
