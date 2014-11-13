@@ -1,3 +1,6 @@
+VERSION := 0.1.1
+RELEASE := master
+
 # Application
 APP_ROOT := $(CURDIR)
 APP_NAME := $(shell basename $(APP_ROOT))
@@ -42,6 +45,7 @@ help:
 	@echo "targets:\n"
 	@echo "\t all         \t- Does a complete installation. Shortcut for 'make sysinstall clean install.' (Default)"
 	@echo "\t help        \t- Prints this help message."
+	@echo "\t version     \t- Prints version number of this Makefile."
 	@echo "\t info        \t- Prints information about your system."
 	@echo "\t install     \t- Installs your application by running 'bin/buildout -c custom.cfg'."
 	@echo "\t clean       \t- Deletes all files that are created by running buildout."
@@ -56,6 +60,10 @@ help:
 	@echo "\nDocker targets:\n"
 	@echo "\t Dockerfile  \t- Generates a Dockerfile for this application."
 	@echo "\t dockerbuild \t- Build a docker image for this application."
+
+.PHONY: version
+version:
+	@echo "Version: $(VERSION)"
 
 .PHONY: info
 info:
@@ -79,16 +87,16 @@ backup:
 
 .gitignore:
 	@echo "Setup default .gitignore ..."
-	@wget -q --no-check-certificate -O .gitignore "https://raw.githubusercontent.com/bird-house/birdhousebuilder.bootstrap/master/dot_gitignore"
+	@wget -q --no-check-certificate -O .gitignore "https://raw.githubusercontent.com/bird-house/birdhousebuilder.bootstrap/$(RELEASE)/dot_gitignore"
 
 bootstrap.sh:
 	@echo "Update bootstrap.sh ..."
-	@wget -q --no-check-certificate -O bootstrap.sh "https://raw.githubusercontent.com/bird-house/birdhousebuilder.bootstrap/master/bootstrap.sh"
+	@wget -q --no-check-certificate -O bootstrap.sh "https://raw.githubusercontent.com/bird-house/birdhousebuilder.bootstrap/$(RELEASE)/bootstrap.sh"
 	@chmod 755 bootstrap.sh
 
 requirements.sh:
 	@echo "Setup default requirements.sh ..."
-	@wget -q --no-check-certificate -O requirements.sh "https://raw.githubusercontent.com/bird-house/birdhousebuilder.bootstrap/master/requirements.sh"
+	@wget -q --no-check-certificate -O requirements.sh "https://raw.githubusercontent.com/bird-house/birdhousebuilder.bootstrap/$(RELEASE)/requirements.sh"
 	@chmod 755 requirements.sh
 
 custom.cfg:
@@ -105,7 +113,7 @@ init: .gitignore custom.cfg downloads
 
 bootstrap.py:
 	@echo "Update buildout bootstrap.py ..."
-	@test -f boostrap.py || wget -O bootstrap.py http://downloads.buildout.org/1/bootstrap.py
+	@test -f boostrap.py || wget -O bootstrap.py http://downloads.buildout.org/2/bootstrap.py
 
 ## Anaconda targets
 
@@ -125,7 +133,7 @@ conda_pkgs: anaconda
 .PHONY: bootstrap
 bootstrap: init anaconda bootstrap.py
 	@echo "Bootstrap buildout ..."
-	@test -f bin/buildout || $(ANACONDA_HOME)/bin/python bootstrap.py -c custom.cfg
+	@test -f bin/buildout || $(ANACONDA_HOME)/bin/python bootstrap.py -c custom.cfg --allow-site-packages
 
 .PHONY: sysinstall
 sysinstall: bootstrap.sh requirements.sh
@@ -163,7 +171,7 @@ buildclean:
 
 .PHONY: selfupdate
 selfupdate: bootstrap.sh
-	@bash bootstrap.sh -u
+	@wget -q --no-check-certificate -O Makefile "https://raw.githubusercontent.com/bird-house/birdhousebuilder.bootstrap/$(RELEASE)/Makefile"
 
 ## Supervisor targets
 
@@ -213,4 +221,3 @@ dockerbuild: Dockerfile .dockerignore
 dockerrun: dockerbuild
 	@echo "Run docker image ..."
 	docker run -i -t -p 9001:9001 --name=$(DOCKER_CONTAINER) $(DOCKER_IMAGE) /bin/bash
-
