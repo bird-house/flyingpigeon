@@ -118,24 +118,48 @@ class analogs(WPSProcess):
 
     import tempfile
     import tarfile
-    # import wget
+    import ocgis 
+    from ocgis import RequestDataset 
     from subprocess import call
 
     refSt = self.getInputValues(identifier='refSt')
     refEn = self.getInputValues(identifier='refEn')
     dateSt = self.getInputValues(identifier='dateSt')
     dateEn = self.getInputValues(identifier='dateEn')
-    tar = tarfile.open(tarout_file, "w")
+    
+    refSt = datetime.strptime(refSt[0],'%Y-%m-%d')
+    refEn = datetime.strptime(refEn[0],'%Y-%m-%d')
+    dateSt = datetime.strptime(dateSt[0],'%Y-%m-%d')
+    dateEn = datetime.strptime(dateEn[0],'%Y-%m-%d')
+    
+    # self.show_status( dateEn  , 15)
     
     start = min(refSt, refEn, dateSt, dateEn )
     end = max(refSt, refEn, dateSt, dateEn )
-    
-    for y in range(start.year , end.year +1 , 1): 
-      url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.%s.nc' % (y)
-      call(['wget', url]) # ["ls", "-l"])nc = wget.download(url)
-      tar.add(('slp.%s.nc' % (y)))
-
+    uris = []
     (fp_tar, tarout_file) = tempfile.mkstemp(dir=".", suffix='.tar')
-    
+    tar = tarfile.open(tarout_file, "w")
+
+    for y in range(start.year , end.year +1 , 1): 
+      url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.%i.nc' % (y)
+      call(['wget', url]) # ["ls", "-l"])nc = wget.download(url)
+      uris.append(('slp.%i.nc' % (y)))
+    uris.sort() # for time sorting
+    fname = str('slp_NOA_NCEP_%i_%i' % (start.year , end.year))
+    self.show_status('download done for : %s '  % (fname) , 15)
+
+    # ocgis specifications:
+    #try: 
+#     if (self.getInputValues(identifier='region') == 'NOA'):
+    geom = [-80, 22.5, 50, 70.0 ] # [min x, min y, max x, max y].
+    ocgis.env.DIR_OUTPUT = self.working_dir
+    rds = RequestDataset(uris, 'slp')
+    ops = ocgis.OcgOperations(dataset=rds, geom=geom, prefix=fname,  output_format='nc', allow_empty=True, add_auxiliary_files=False)
+    ret = ops.execute()
+    fpath = '%s' % (ret)
+    tar.add(fpath , arcname = fpath.replace(self.working_dir, ""))
+    self.show_status('ocgis succeded for file : %s '  % (ret) , 15)
+    #except Exception as e: 
+      #self.show_status('failed for file : %s '  % ( e ) , 15)
     tar.close()
-    self.tarout.setValue( tarout_file )
+    self.tarout.setValue( tarout_file  )
