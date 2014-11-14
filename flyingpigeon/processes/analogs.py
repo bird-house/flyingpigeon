@@ -159,6 +159,11 @@ class analogs(WPSProcess):
     fpath = '%s' % (ret)
     tar.add(fpath , arcname = fpath.replace(self.working_dir, ""))
     self.show_status('ocgis succeded for file : %s '  % (ret) , 15)
+    
+    
+    ## run R file 
+    Rskript = os.path.abspath(os.path.curdir)+'./analogs.r'
+    call(["R --no-save --args %s %s %s %s %s < %s" %  (ret, refSt, refEn , dateSt, dateEn, Rskript) ])
     #except Exception as e: 
       #self.show_status('failed for file : %s '  % ( e ) , 15)
     tar.close()
