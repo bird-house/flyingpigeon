@@ -15,7 +15,7 @@ from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
 
-def indices( outdir, ncfile, TG, TX, TN, RR, TG_5to9, TG_6to8, RR_5to9, RR_6to8, SU ): # 
+def indices( outdir, ncfile, TG, TX, TN, RR, SU ): # 
 
     outlog = "Starting the indice calculation at: \n"
     

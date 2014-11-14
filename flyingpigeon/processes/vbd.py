@@ -48,15 +48,15 @@ class AnophelesProcess(WPSProcess):
             maxOccurs=1,
             )
         
-        #self.kamilmodel = self.addLiteralInput(
-            #identifier="kamilmodel",
-            #title="Kamil Model",
-            #abstract="nothing is implemented here so far ... ",
-            #default=False,
-            #type=type(False),
-            #minOccurs=0,
-            #maxOccurs=1,
-            #)
+        self.kamilmodel = self.addLiteralInput(
+            identifier="kamilmodel",
+            title="Kamil Model",
+            abstract="nothing is implemented here so far ... ",
+            default=False,
+            type=type(False),
+            minOccurs=0,
+            maxOccurs=1,
+            )
         
         
         #self.land_sea_mask = self.addComplexInput(

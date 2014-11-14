@@ -3,6 +3,6 @@ __all__ = [
         "extractpoints",
         "analogs",
         "ensembles",
-        "indice_worker",
-        "vbd_worker",
+        "icclim",
+        "vbd",
         ]

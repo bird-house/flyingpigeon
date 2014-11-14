@@ -27,6 +27,8 @@ class IndicesProcess(WPSProcess):
             ##       },
             )
 
+
+
         self.netcdf_file = self.addComplexInput(
             identifier="netcdf_file",
             title="NetCDF File",
@@ -77,46 +79,6 @@ class IndicesProcess(WPSProcess):
             maxOccurs=0,
             )
 
-        self.TG_5to9 = self.addLiteralInput(
-            identifier="TG_5to9",
-            title="TG_5to9",
-            abstract="mean temperature (K) form Mai to September",
-            default=False,
-            type=type(False),
-            minOccurs=0,
-            maxOccurs=0,
-            )
-
-        self.TG_6to8 = self.addLiteralInput(
-            identifier="TG_6to8",
-            title="TG_6to8",
-            abstract="mean temperature (K) form Juni to August",
-            default=False,
-            type=type(False),
-            minOccurs=0,
-            maxOccurs=0,
-            )
-            
-        self.RR_5to9 = self.addLiteralInput(
-            identifier="RR_5to9",
-            title="RR_5to9",
-            abstract="precipitation sum (mm) form Mai to September",
-            default=False,
-            type=type(False),
-            minOccurs=0,
-            maxOccurs=0,
-            )
-            
-        self.RR_6to8 = self.addLiteralInput(
-            identifier="RR_6to8",
-            title="RR_6to8",
-            abstract="precipitation sum (mm) form Juni to August",
-            default=False,
-            type=type(False),
-            minOccurs=0,
-            maxOccurs=0,
-            )
-            
             
         self.SU = self.addLiteralInput(
             identifier="SU",
@@ -127,6 +89,8 @@ class IndicesProcess(WPSProcess):
             minOccurs=0,
             maxOccurs=0,
             )
+
+        # TXx, TXn, TNx, TNn, TR, CSU, GD4, FD, CFD, ID, HD17, CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day, SD, SD1, SD5cm, SD50cm
 
         # complex output
         # -------------
@@ -152,10 +116,6 @@ class IndicesProcess(WPSProcess):
             self.TX.getValue(),
             self.TN.getValue(),
             self.RR.getValue(),
-            self.TG_5to9.getValue(),
-            self.TG_6to8.getValue(),
-            self.RR_5to9.getValue(),
-            self.RR_6to8.getValue(),
             self.SU.getValue())
 
         outfile = self.mktempfile(suffix='.txt')
