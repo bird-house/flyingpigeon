@@ -120,6 +120,7 @@ class analogs(WPSProcess):
     import ocgis 
     from ocgis import RequestDataset 
     from subprocess import call
+    import os
 
     refSt = self.getInputValues(identifier='refSt')
     refEn = self.getInputValues(identifier='refEn')
@@ -157,8 +158,7 @@ class analogs(WPSProcess):
     ret = ops.execute()
     fpath = '%s' % (ret)
     tar.add(fpath , arcname = fpath.replace(self.working_dir, ""))
-    self.show_status('ocgis succeded for file : %s '  % (ret) , 15)
-    
+    self.show_status('ocgis subset succeded for file : %s '  % (ret) , 15)
     
     ## run R file 
     Rskript = os.path.abspath(os.path.curdir)+'./analogs.r'
