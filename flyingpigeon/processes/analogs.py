@@ -63,7 +63,6 @@ class analogs(WPSProcess):
       #default="0,-90,180,90",
       #type=type(''),
       #)
-
          
     self.dateSt = self.addLiteralInput(
       identifier="dateSt",
