@@ -22,11 +22,11 @@ args <- commandArgs(trailingOnly = TRUE)
 
 print(args)
 
-ret    <- args[1]
-dateSt <- args[2]
-dateEn <- args[3]
-refSt  <- as.integer(args[4])
-refEn  <- as.integer(args[5])
+fname  <- args[0]
+dateSt <- args[1]
+dateEn <- args[2]
+refSt  <- as.integer(args[3])
+refEn  <- as.integer(args[4])
 ppath <- file.path('.analogs.R')
 
 print (ppath)
@@ -46,10 +46,10 @@ source(paste(Rsource,"analogfun.R",sep="")) #Analogue functions
 
 ## INITIALISATIONS des parametres d'analyse
 ## Lecture des arguments d'entree
-args=(commandArgs(TRUE))
-print(args)
+#args=(commandArgs(TRUE))
+#print(args)
 suffana=""
-if(length(args)>0){
+if(length(args)>10){
   region=args[1]
   nfen=as.integer(args[2])
   if(length(args)>2){
@@ -92,9 +92,10 @@ print(paste("Calculating analogues:",year.start,"-",yr.now,
 
 ## FIN DES PARAMETRES CHANGEABLES
 ## Nom du fichier d'entree
-fname = paste(dirname,prefname,".",year.start,"-",year.end,"_",region,
-  ".nc",sep="")
+#fname = paste(dirname,prefname,".",year.start,"-",year.end,"_",region,
+#  ".nc",sep="")
 print(paste("Processing",fname))
+
 nc = open.ncdf(fname)
 varnc=nc$var[[varname]]
 varsize=varnc$varsize
