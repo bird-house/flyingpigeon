@@ -9,8 +9,27 @@
 ## Se lance en BATCH par:
 ## qsub -q mediump -l nodes=1:ppn=12 /home/users/yiou/RStat/A2C2/analogs_slp-genericpar.sh
 
+
 library(ncdf) # Pour lire les fichiers netcdf d'entree
 library(parallel) # Pour la parallelisation
+
+#clean the working dir:
+rm(list = ls(all = TRUE))
+
+# get the arguments
+# python call: cmd = 'R --vanilla --args %s %s %s %s %s <  %s' %  (ret, refSt, refEn , dateSt, dateEn, Rskript)
+args <- commandArgs(trailingOnly = TRUE)
+
+print(args)
+
+ret    <- args[1]
+dateSt <- args[2]
+dateEn <- args[3]
+refSt  <- as.integer(args[4])
+refEn  <- as.integer(args[5])
+ppath <- file.path('.analogs.R')
+
+print (ppath)
 
 SI=Sys.info()
 
@@ -119,8 +138,8 @@ if(seacycnorm){
 ndat=nrow(dat.mcyc$anom)
 ngri=ncol(dat.m)
 
-yst = 1955
-yen = 1985
+yst = refSt
+yen = refEn
 
 ##---------------------------------------------------------------------------
 ## Wrapper pour parallelisation
