@@ -8,5 +8,5 @@ elif [ -f /etc/redhat-release ] ; then
     sudo yum -y install gcc-c++ gcc-gfortran
 elif [ `uname -s` = "Darwin" ] ; then
     echo "Installing MacOSX/Homebrew packages ..."
-    #brew install wget
+    brew install gcc R
 fi
