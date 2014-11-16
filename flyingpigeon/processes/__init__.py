@@ -5,4 +5,5 @@ __all__ = [
         "ensembles",
         "icclim",
         "vbd",
+        "gam"
         ]

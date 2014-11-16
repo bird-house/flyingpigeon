@@ -171,15 +171,11 @@ class extractpointsProcess(WPSProcess):
                     ret = ops.execute()
                     
                     self.show_status('file : %s successfully ocgis procesed for %s  variable'  % (csv_temp, rd.variable) , 15)
-                    var_name = str(rd.variable)
- 
+                    
                     field_dict = ret[1]
-                    
-                    field  = field_dict[var_name]
+                    field  = field_dict[rd.variable]
                     self.show_status('values in ocgis array', 15)
-                    
-                    var = field.variables[0]
-                    
+                    var = field.variables[rd.variable]
                     
                     var_value = np.squeeze(var.value.data)
                     self.show_status('values in numpy array', 15)

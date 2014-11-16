@@ -7,7 +7,7 @@ from malleefowl.process import WPSProcess
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
-class AnophelesProcess(WPSProcess):
+class vbd(WPSProcess):
     """
     Process for Anopheles Gambiae population dynamics 
     """
@@ -58,18 +58,6 @@ class AnophelesProcess(WPSProcess):
             maxOccurs=1,
             )
         
-        
-        #self.land_sea_mask = self.addComplexInput(
-            #identifier="land_sea_mask",
-            #title="land sea mask",
-            #abstract="Load land Sea mask from other",
-            #metadata=[],
-            #minOccurs=1,
-            #maxOccurs=1,
-            #formats=[{"mimeType":"application/x-netcdf"}],
-            #maxmegabites=100
-            #)
-
         self.output = self.addComplexOutput(
             identifier="output",
             title="anopheles",
@@ -117,9 +105,9 @@ class AnophelesProcess(WPSProcess):
             elif "evspsblpot" in ds.variables.keys():
                 file_evspsblpot = nc_file                          # Dataset(nc_file , 'r')   
             else:
-                raise Exception("input netcdf file has not variable tas|hurs|pr|evspsbl")
+                raise self.show_status('input netcdf file  %s has not variable tas|hurs|pr|evspsblpot:  \n %s '  % (nc, e ) , 15)
 
-        logger.debug('get files of var names ... done')
+        self.show_status('sort files to appropriate variable names done' , 15)
         
         #file_land_sea_mask = self.land_sea_mask.getValue()
         #logger.debug('get landseamask ... done')
@@ -129,16 +117,15 @@ class AnophelesProcess(WPSProcess):
         
         file_n4 = None
         
-        try : 
-            file_n4 = ocgis.OcgOperations(dataset=rd,  geom=geoms, prefix=str('n4_'), output_format='nc',select_ugid=select_ugid).execute()
+        try :
+            (fp_tar, file_n4) = tempfile.mkstemp(dir=".", suffix='.nc')
+            prefix=os.path.splitext(os.path.basename(file_n4))[0]
+            ops = ocgis.OcgOperations(dataset=rd,  geom=geoms, prefix=prefix, output_format='nc',select_ugid=select_ugid)
+            file_n4 = ops.execute()
             self.show_status('created N4 outfile : %s ...'% (file_n4),  15)
         except Exception as e: 
-            logger.exception("Something awful happened! Africa polygon subset failed")
-            
-
-        #file_n4 = path.join(path.abspath(curdir), "n4.nc")       
-        #cdo.setname('n4', input=file_pr, output=file_n4)
-        
+            self.show_status('"Something awful happened! Africa polygon subset failed for %s' % (file_n4, e),  15)
+            logger.exception("Something awful happened! Africa polygon subset failed for %s" % (file_n4), e )
         
         nc_tas = Dataset(file_tas,'r')
         nc_pr = Dataset(file_pr,'r')
