@@ -151,8 +151,9 @@ class vbd(WPSProcess):
         
         logger.debug('read in all variables ... done')
         
-        var_n4 = nc_n4.variables["n4"]
+        var_n4 = nc_n4.variables["pr"]
         n4 = np.zeros(pr.shape, dtype='f')
+        logger.debug('opended n4 file ... done')
         
         # define some constatnts:
         Increase_Ta = 0
@@ -179,133 +180,139 @@ class vbd(WPSProcess):
         #else:
         b = 0.88
 
-        logger.debug('start main loop ...')
+        logger.debug('configuration  ... done; start main loop, now!')
 
         for x in range(0,tas.shape[1],1): #tas.shape[1]
             for y in range(0,tas.shape[2],1): #tas.shape[2]
-                try:
-                    logger.debug('working on x=%s, y=%s' % (x, y))
-                    if (var_n4[0,x,y] >= 0):
+                #if (var_n4[0,x,y] >= 0):
+                    #try:
                         ## get the appropriate values 
                         #RH = hurs[:,x,y] * 100
-                        Ta = tas[:,x,y] -273.15
-                        Rt = pr[:,x,y] * 86400.     
-                        Et = np.fabs(evspsblpot[:,x,y] * 86400.) # some times evspsblpot ist stored as negaitve value  
-                        
-                        # calculation of rel. humidity 
-                        e_ = ((ps[:,x,y] * huss[:,x,y])/62.2)
-                        es = 6.1078*10.**(7.5*(tas[:,x,y]-273.16)/(237.3+(tas[:,x,y]-273.16)))
-                        RH = (e_ / es) * 100.
-                        
-                        #calulation of water temperature
-                        Tw = Ta + deltaT
-                        
-                        ## Check for Values out of range
-                        Rt[Rt + Increase_Rt < 0] = 0 
-                        Et[Rt + Increase_Rt < 0] = 0
-                        RH[RH + Increase_RH < 0] = 0
-                        RH[RH + Increase_RH > 100] = 100
-                        
-                        # create appropriate variabels 
-                        D = np.zeros(Ta.size)
-                        Vt = np.zeros(Ta.size)
-                        p4 = np.zeros(Ta.size)
-                        ft = np.zeros(Ta.size)
-                        Gc_Ta = np.zeros(Ta.size)
-                        F4 = np.zeros(Ta.size)
-                        N23 = np.zeros(Ta.size)
-                        p_DD = np.zeros(Ta.size)
-                        p_Tw = np.zeros([Ta.size,3])
-                        p_Rt = np.zeros([Ta.size,3])
-                        p_D = np.zeros([Ta.size,3])
-                        G = np.zeros([Ta.size,3])
-                        P = np.zeros([Ta.size,4])
-                        p = np.zeros([Ta.size,4])
-                        d = np.zeros([Ta.size,4]) 
-                        N = np.zeros([Ta.size,4])
+                Ta = tas[:,x,y] -273.15
+                Rt = pr[:,x,y] * 86400.     
+                Et = np.fabs(evspsblpot[:,x,y] * 86400.) # in case evspsblpot ist stored as negaitve value  
+                # calculation of rel. humidity 
+                e_ = ((ps[:,x,y] * huss[:,x,y])/62.2)
+                es = 6.1078*10.**(7.5*(tas[:,x,y]-273.16)/(237.3+(tas[:,x,y]-273.16)))
+                RH = (e_ / es) * 100.
 
-                        # initialize the model
-                        Vt[0] = 1000.
-                        N[0,0] = N[0,1] = N[0,2] = N[0,3] = 100.
+                #calulation of water temperature
+                Tw = Ta + deltaT
+                
+                ## Check for Values out of range
+                Rt[Rt + Increase_Rt < 0] = 0 
+                Et[Rt + Increase_Rt < 0] = 0
+                RH[RH + Increase_RH < 0] = 0
+                RH[RH + Increase_RH > 100] = 100
+                
+                # create appropriate variabels 
+                D = np.zeros(Ta.size)
+                Vt = np.zeros(Ta.size)
+                p4 = np.zeros(Ta.size)
+                ft = np.zeros(Ta.size)
+                Gc_Ta = np.zeros(Ta.size)
+                F4 = np.zeros(Ta.size)
+                N23 = np.zeros(Ta.size)
+                p_DD = np.zeros(Ta.size)
+                p_Tw = np.zeros([Ta.size,3])
+                p_Rt = np.zeros([Ta.size,3])
+                p_D = np.zeros([Ta.size,3])
+                G = np.zeros([Ta.size,3])
+                P = np.zeros([Ta.size,4])
+                p = np.zeros([Ta.size,4])
+                d = np.zeros([Ta.size,4]) 
+                N = np.zeros([Ta.size,4])
 
-                        # pdb.set_trace()
+                ## initialize the model
+                Vt[0] = 1000.
+                N[0,0] = N[0,1] = N[0,2] = N[0,3] = 100.
 
-                        for t in range(0, (Ta.size -1) ,1):
-                            #print x, y, t
-                            if (Vt[t] == 0) & (Rt[t] == 0):
-                                Vt[t+1] = 0
-                            else:
-                                Vt[t+1] = (Vt[t] + AT*Rt[t]/1000.)*(1 - 3.*Et[t]/h0* (Vt[0]/(Vt[t]+AT*Rt[t]/1000))**(1./3.))
-                            if((Vt[t] == 0) & (Rt[t] == 0)):
-                                Vt[t+1] = 0
-                            else:
-                                Vt[t+1] = (Vt[t] + AT*Rt[t]/1000.)*(1 - 3.*Et[t]/h0*(Vt[0]/(Vt[t]+AT*Rt[t]/1000))**(1./3.))
-                            
-                            if(Vt[t+1] <= 0):
-                                Vt[t+1] = 0
-                            if (Vt[t+1] == 0):
-                                D[t+1] = D[t] + 1
-                            else:
-                                D[t+1] = 0
-                                
-                        beta2 = 4*10**(-6)*RH**2 - 1.09*10**(-3)*RH - 0.0255
-                        beta1 = -2.32 * 10.**(-4.)* RH**2. + 0.0515*RH + 1.06
-                        beta0 = 1.13*10**(-3)*RH**2 - 0.158*RH - 6.61
+                # pdb.set_trace()
 
-                        p4 = np.exp(-1/(beta2*Ta**2. + beta1*Ta + beta0))
-
-                        d[:,0] = np.where(Vt != 0, 1.011 + 20.212*(1 + (Tw/12.096)**4.839)**(-1), 1.011 + 20.212*(1 + (Ta/12.096)**4.839)**(-1))
-                        d[:,1] = np.where(Vt != 0, 8.130 + 13.794*(1 + (Tw/20.742)**8.946)**(-1) - d[:,0], 8.130 + 13.794*(1 + (Ta/20.742)**8.946)**(-1) - d[:,0])
-                        d[:,2] = np.where(Vt != 0, 8.560 + 20.654*(1 + (Tw/19.759)**6.827)**(-1) - d[:,1] - d[:,0] , 8.560 + 20.654*(1 + (Ta/19.759)**6.827)**(-1) - d[:,1] - d[:,0])
-                        d[:,3] = -1/np.log(p4)
-
-                        p_Tw[:,0] = np.where(Vt != 0,np.where((Ta >= 14) & (Ta <= 40),np.exp(-1/d[:,0]),0),np.where((Ta >= 25) & (Ta <= 35),np.exp(-1./d[:,0]),0))
-                        p_Tw[:,1] = np.where(Vt != 0,np.where((Tw >= 18) & (Tw <= 32),np.exp(-1/d[:,1]),0),np.where((Tw >= 18) & (Tw <= 32),np.exp(-1/d[:,1]),0))
-                        p_Tw[:,2] = np.where(Vt != 0,np.where((Tw >= 18) & (Tw <= 32),np.exp(-1/d[:,2]),0),np.where((Tw >= 18) & (Tw <= 32),np.exp(-1/d[:,2]),0))
-
-                        p_Rt[:,0] = np.exp(-0.0242*Rt)
-                        p_Rt[:,1] = np.exp(-0.0127*Rt)
-                        p_Rt[:,2] = np.exp(-0.00618*Rt)
-
-                        p_D[:,0] = 2*np.exp(-0.405*D)/(1 + np.exp(-0.405*D))
-                        p_D[:,1] = 2*np.exp(-0.855*D)/(1 + np.exp(-0.855*D))
-                        p_D[:,2] = 2*np.exp(-0.602*D)/(1 + np.exp(-0.602*D))
-
-                        for t in range(0,Rt.size -1,1): #tas.shape[0]
-                            if(Vt[t] != 0):
-                                p_DD[t] = (b*m/(1000*(N[t,1]+N[t,2])/Vt[t])) * (1 - (lamb**lamb/(lamb +(1000*(N[t,1]+N[t,2])/Vt[t])/m)**lamb))        
-                            else:
-                                p_DD[t] = 1
-                            
-                            p[t,0]= p_Tw[t,0]*p_Rt[t,0]*p_D[t,0]
-                            p[t,1]= p_Tw[t,1]*p_Rt[t,1]*p_D[t,1]*p_DD[t]
-                            p[t,2]= p_Tw[t,2]*p_Rt[t,2]*p_D[t,2]*p_DD[t] 
-                            p[t,3]= p4[t]
-                            for j in range(0,4,1):
-                                P[t,j] = (p[t,j] - p[t,j]**(d[t,j]))/(1. - p[t,j]**d[t,j])
-                            for j in range(0,3,1):
-                                G[t,j] = (1. - p[t,j])/(1. - p[t,j]**d[t,j])*p[t,j]**d[t,j]
-
-                            ft[t] = 0.518*np.exp(-6.*(N[t,1]/Vt[t] - 0.317)**2.) + 0.192
-                            Gc_Ta[t] = 1. + De/(Ta[t] - Te)
-                            F4[t] = ft[t]*Nep/Gc_Ta[t]
-                            
-                            N[t+1,0] = (P[t,0] * N[t,0] + (alpha1 * F4[t]) * N[t,3])
-                            N[t+1,1] = (P[t,1] * N[t,1] + G[t,0] * N[t,0])
-                            N[t+1,2] = (P[t,2] * N[t,2] + G[t,1] * N[t,1])
-                            N[t+1,3] = (P[t,3] * N[t,3] + G[t,2] * N[t,2])
-
-                        N[np.isnan(N)] = 0
-                        n4[:,x,y] =  N[:,3] #p4[t] # p_D[t,2] #N[t,3]
+                for t in range(0, (Ta.size -1) ,1):
+                    #print x, y, t
+                    if (Vt[t] == 0) & (Rt[t] == 0):
+                        Vt[t+1] = 0
                     else:
-                        n4[:,x,y] =  float('NaN')
+                        Vt[t+1] = (Vt[t] + AT*Rt[t]/1000.)*(1 - 3.*Et[t]/h0* (Vt[0]/(Vt[t]+AT*Rt[t]/1000))**(1./3.))
+                    if((Vt[t] == 0) & (Rt[t] == 0)):
+                        Vt[t+1] = 0
+                    else:
+                        Vt[t+1] = (Vt[t] + AT*Rt[t]/1000.)*(1 - 3.*Et[t]/h0*(Vt[0]/(Vt[t]+AT*Rt[t]/1000))**(1./3.))
+                    
+                    if(Vt[t+1] <= 0):
+                        Vt[t+1] = 0
+                    if (Vt[t+1] == 0):
+                        D[t+1] = D[t] + 1
+                    else:
+                        D[t+1] = 0
                         
-                except Exception as e:
-                    logger.warn('Gridbox not calculated. Error=%s' %(e.message))
+                beta2 = 4*10**(-6)*RH**2 - 1.09*10**(-3)*RH - 0.0255
+                beta1 = -2.32 * 10.**(-4.)* RH**2. + 0.0515*RH + 1.06
+                beta0 = 1.13*10**(-3)*RH**2 - 0.158*RH - 6.61
 
-        # write values into file
-        var_n4.assignValue(n4)
+                p4 = np.exp(-1/(beta2*Ta**2. + beta1*Ta + beta0))
+
+                d[:,0] = np.where(Vt != 0, 1.011 + 20.212*(1 + (Tw/12.096)**4.839)**(-1), 1.011 + 20.212*(1 + (Ta/12.096)**4.839)**(-1))
+                d[:,1] = np.where(Vt != 0, 8.130 + 13.794*(1 + (Tw/20.742)**8.946)**(-1) - d[:,0], 8.130 + 13.794*(1 + (Ta/20.742)**8.946)**(-1) - d[:,0])
+                d[:,2] = np.where(Vt != 0, 8.560 + 20.654*(1 + (Tw/19.759)**6.827)**(-1) - d[:,1] - d[:,0] , 8.560 + 20.654*(1 + (Ta/19.759)**6.827)**(-1) - d[:,1] - d[:,0])
+                d[:,3] = -1/np.log(p4)
+
+                p_Tw[:,0] = np.where(Vt != 0,np.where((Ta >= 14) & (Ta <= 40),np.exp(-1/d[:,0]),0),np.where((Ta >= 25) & (Ta <= 35),np.exp(-1./d[:,0]),0))
+                p_Tw[:,1] = np.where(Vt != 0,np.where((Tw >= 18) & (Tw <= 32),np.exp(-1/d[:,1]),0),np.where((Tw >= 18) & (Tw <= 32),np.exp(-1/d[:,1]),0))
+                p_Tw[:,2] = np.where(Vt != 0,np.where((Tw >= 18) & (Tw <= 32),np.exp(-1/d[:,2]),0),np.where((Tw >= 18) & (Tw <= 32),np.exp(-1/d[:,2]),0))
+
+                p_Rt[:,0] = np.exp(-0.0242*Rt)
+                p_Rt[:,1] = np.exp(-0.0127*Rt)
+                p_Rt[:,2] = np.exp(-0.00618*Rt)
+
+                p_D[:,0] = 2*np.exp(-0.405*D)/(1 + np.exp(-0.405*D))
+                p_D[:,1] = 2*np.exp(-0.855*D)/(1 + np.exp(-0.855*D))
+                p_D[:,2] = 2*np.exp(-0.602*D)/(1 + np.exp(-0.602*D))
+
+                for t in range(0,Rt.size -1,1): #tas.shape[0]
+                    if(Vt[t] != 0):
+                        p_DD[t] = (b*m/(1000*(N[t,1]+N[t,2])/Vt[t])) * (1 - (lamb**lamb/(lamb +(1000*(N[t,1]+N[t,2])/Vt[t])/m)**lamb))        
+                    else:
+                        p_DD[t] = 1
+                    
+                    p[t,0]= p_Tw[t,0]*p_Rt[t,0]*p_D[t,0]
+                    p[t,1]= p_Tw[t,1]*p_Rt[t,1]*p_D[t,1]*p_DD[t]
+                    p[t,2]= p_Tw[t,2]*p_Rt[t,2]*p_D[t,2]*p_DD[t] 
+                    p[t,3]= p4[t]
+                    for j in range(0,4,1):
+                        P[t,j] = (p[t,j] - p[t,j]**(d[t,j]))/(1. - p[t,j]**d[t,j])
+                    for j in range(0,3,1):
+                        G[t,j] = (1. - p[t,j])/(1. - p[t,j]**d[t,j])*p[t,j]**d[t,j]
+
+                    ft[t] = 0.518*np.exp(-6.*(N[t,1]/Vt[t] - 0.317)**2.) + 0.192
+                    Gc_Ta[t] = 1. + De/(Ta[t] - Te)
+                    F4[t] = ft[t]*Nep/Gc_Ta[t]
+                    
+                    N[t+1,0] = (P[t,0] * N[t,0] + (alpha1 * F4[t]) * N[t,3])
+                    N[t+1,1] = (P[t,1] * N[t,1] + G[t,0] * N[t,0])
+                    N[t+1,2] = (P[t,2] * N[t,2] + G[t,1] * N[t,1])
+                    N[t+1,3] = (P[t,3] * N[t,3] + G[t,2] * N[t,2])
+
+                N[np.isnan(N)] = 0
+                n4[:,x,y] =  N[:,3] #p4[t] # p_D[t,2] #N[t,3]
+
+                
+            process = (((x+1) * tas.shape[2] + y ) / ((tas.shape[1] * tas.shape[2]) / 100 ))
+            logger.debug('Calculation process: %d  % \r ' % (process))                
+                    #except Exception as e:
+                        #logger.warn('Gridbox not calculated. Error= %s ' % (e))
+                #else:
+            #        n4[:,x,y] =  float('NaN')
+        
+        # var_n4.assignValue(np.zeros(var_n4.shape))
 
         self.show_status("anopheles done", 90)
         self.output.setValue( file_n4 )
         
+  
+
+                     
+
+      
+                
