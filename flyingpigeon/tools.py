@@ -15,7 +15,7 @@ from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
 
-def indices( outdir, ncfile, TG, TX, TN, RR, SU ): # 
+def indices( indices_dic  ): # 
 
     outlog = "Starting the indice calculation at: \n"
     
@@ -65,17 +65,13 @@ def indices( outdir, ncfile, TG, TX, TN, RR, SU ): #
             
             #self.show_status('filename created ...:'+ filename , 15)
             logger.debug('filename created ...:'+ filename)
-
             outlog = outlog + "Create filename:  " + filename + " \n"
         except Exception as e: 
             msg = 'Could not define file name for file : %s ' % ( filename )
             logger.error(msg)
             outlog = outlog + msg + '\n'
-
-            
             
         try :
-            
             if TG == True :
                 if "tas" in ds.variables.keys():
                     TG_file = None
