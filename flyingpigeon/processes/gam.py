@@ -124,61 +124,61 @@ class gam(WPSProcess):
       from datetime import datetime, date
 
 
-        from netCDF4 import Dataset
-        # from os import os.curdir, os.path, system
-        import os 
-        import numpy as np
-        from cdo import *
-        import datetime
-        import string
-        
-        cdo = Cdo()
-        
-        # get the appropriate files
-        nc_files = self.get_nc_files()
+      from netCDF4 import Dataset
+      # from os import os.curdir, os.path, system
+      import os 
+      import numpy as np
+      from cdo import *
+      import datetime
+      import string
+      
+      cdo = Cdo()
+      
+      # get the appropriate files
+      nc_files = self.get_nc_files()
 
-        #for nc_file in nc_files: 
-            #ds = Dataset(nc_file)
-            #if "tas" in ds.variables.keys():
-                #tasFilePath = nc_file
-            #elif "pr" in ds.variables.keys():
-                #prFilePath = nc_file
-            #else:
-                #raise Exception("input netcdf file has not variable tas|pr")
+      #for nc_file in nc_files: 
+          #ds = Dataset(nc_file)
+          #if "tas" in ds.variables.keys():
+              #tasFilePath = nc_file
+          #elif "pr" in ds.variables.keys():
+              #prFilePath = nc_file
+          #else:
+              #raise Exception("input netcdf file has not variable tas|pr")
 
-        # call to icclim
-       
-        from flyingpigeon import tools
-       
-        indices_dic = { ('outdir':os.curdir() , ('nc_files': nc_files ), ('TG':self.TG.getValue()) ,('TX': self.TX.getValue()),
-            ('TN':self.TN.getValue()),('RR': self.RR.getValue()),('SU':self.SU.getValue()) }
-       
-        indices_out, indices_log = tools.indices( indices_dic )
-        
-        # calculation of indice avg for reverence period 
-        
-        time_frame= 
-        cal = 
-        cal_group = 
-        # ocgis execute : 
-        indices_ref = []
-        indices_names = []
-        
-        indices_ref.append(ocgis_output)
+      # call to icclim
+      
+      from flyingpigeon import tools
+      
+      indices_dic = { ('outdir':os.curdir() , ('nc_files': nc_files ), ('TG':self.TG.getValue()) ,('TX': self.TX.getValue()),
+          ('TN':self.TN.getValue()),('RR': self.RR.getValue()),('SU':self.SU.getValue()) }
+      
+      indices_out, indices_log = tools.indices( indices_dic )
+      
+      # calculation of indice avg for reverence period 
+      
+      time_frame= 
+      cal = 
+      cal_group = 
+      # ocgis execute : 
+      indices_ref = []
+      indices_names = []
+      
+      indices_ref.append(ocgis_output)
 
-        # train historical run 
-        
-        (fp_rwork, rwork) = tempfile.mkstemp(dir=".", suffix='.RData')
-        
-        paData = self.paData.getValue()
-        
-        c_nr = str(len(c_files))
-        names = string.join(c_names," ")
-        files = string.join(c_files," ")
-        kappa = string.join(c_kappa," ")
-        
-        cmd=["R --no-save --args %s %s %s %s %s %s < %s/sdm.r " % (rworkspace, self.paData.getValue(), indices_ref, indices_names, kappa, workdir)]
-        
-        self.output.setValue( rwork )
-        
-  
+      # train historical run 
+      
+      (fp_rwork, rwork) = tempfile.mkstemp(dir=".", suffix='.RData')
+      
+      paData = self.paData.getValue()
+      
+      c_nr = str(len(c_files))
+      names = string.join(c_names," ")
+      files = string.join(c_files," ")
+      kappa = string.join(c_kappa," ")
+      
+      cmd=["R --no-save --args %s %s %s %s %s %s < %s/sdm.r " % (rworkspace, self.paData.getValue(), indices_ref, indices_names, kappa, workdir)]
+      
+      self.output.setValue( rwork )
+      
+

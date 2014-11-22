@@ -9,6 +9,8 @@
 ## Se lance en BATCH par:
 ## qsub -q mediump -l nodes=1:ppn=12 /home/users/yiou/RStat/A2C2/analogs_slp-genericpar.sh
 
+sink('/home/nils/anaconda/var/log/pywps.Rlog.log', split = TRUE)
+print ('start test skript')
 
 library(ncdf) # Pour lire les fichiers netcdf d'entree
 library(parallel) # Pour la parallelisation
@@ -17,59 +19,65 @@ library(parallel) # Pour la parallelisation
 rm(list = ls(all = TRUE))
 
 # get the arguments
-# python call: cmd = 'R --vanilla --args %s %s %s %s %s <  %s' %  (ret, refSt, refEn , dateSt, dateEn, Rskript)
+# Rcmd = 'R --vanilla --args %s %s %s %i %i %s %s <  %s > %s ' %  (ret, dateSt.date(), dateEn.date(), refSt.year, refEn.year, Rsource, curdir, Rskript , Rlog )
 args <- commandArgs(trailingOnly = TRUE)
 
 print(args)
 
-fname  <- args[0]
-dateSt <- args[1]
-dateEn <- args[2]
-refSt  <- as.integer(args[3])
-refEn  <- as.integer(args[4])
-ppath <- file.path('.analogs.R')
+fname  <- args[1]
+dateSt <- args[2]
+dateEn <- args[3]
+refSt  <- as.integer(args[4])
+refEn  <- as.integer(args[5])
+Rsource <- args[6]
+wdir <- args[7]
 
-print (ppath)
-
+setwd(wdir)
 SI=Sys.info()
+print (SI)
 
 # if(SI[['nodename']] == "lsce3199.extra.cea.fr"){
-Rsource="~/sandbox/eucleia/"
-DATdir="~/data/"
-OUTdir=DATdir
+Rsource=Rsource # "/home/nils/birdhouse/flyingpigeon/flyingpigeon/processes/"
+DATdir= wdir
+OUTdir= DATdir
 # }
 
+print ('got the sources directories')
+print (Rsource)
 
 source(paste(Rsource,"readextranc.R",sep="")) #netcdf file functions
 source(paste(Rsource,"analogfun.R",sep="")) #Analogue functions
 
+print ('load the sources')
 
 ## INITIALISATIONS des parametres d'analyse
 ## Lecture des arguments d'entree
 #args=(commandArgs(TRUE))
 #print(args)
-suffana=""
-if(length(args)>10){
-  region=args[1]
-  nfen=as.integer(args[2])
-  if(length(args)>2){
-    lyear.ref=scan(file=args[3])
-    suffana="hiSST"
-  }
-}else{
-  region="NA"
-  nfen=1
-}
+#suffana=""
+#if(length(args)>10){
+#  region=args[1]
+#  nfen=as.integer(args[2])
+#  if(length(args)>2){
+#    lyear.ref=scan(file=args[3])
+#    suffana="hiSST"
+#  }
+#}else{
+region="NA"
+nfen=1
+#}
 
-dirname=paste(DATdir,"NCEP/",sep="")
-setwd(dirname)
+#dirname=paste(DATdir,"NCEP/",sep="")
 
 ipara=TRUE # Parallelisation
-nproc=12 # Nombre de processeurs
+#nproc=12 # Nombre de processeurs
 
 yrstart= 1948
 year.start=1948
+
 yr.now=as.integer(format(Sys.time(), "%Y")) # Annee en cours
+print ( yr.now )
+
 year.end = yr.now
 ## PARAMETRES CHANGEABLES
 prefname = "slp"
@@ -136,6 +144,9 @@ if(seacycnorm){
   dat.m=dat[ISEAS,]
   zsuff="raw"
 }
+
+print ('success fully season syncronised')
+
 ndat=nrow(dat.mcyc$anom)
 ngri=ncol(dat.m)
 
