@@ -119,7 +119,7 @@ class analogs(WPSProcess):
     import tarfile
     import ocgis 
     from ocgis import RequestDataset 
-    from subprocess import call
+    #from subprocess import call
     import os
     
     self.show_status('execution started at : %s '  % (os.system('date')) , 15)
@@ -144,29 +144,35 @@ class analogs(WPSProcess):
 
     for y in range(start.year , end.year +1 , 1): 
       url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.%i.nc' % (y)
-      call(['wget', url]) # ["ls", "-l"])nc = wget.download(url)
-      uris.append(('slp.%i.nc' % (y)))
-    uris.sort() # for time sorting
+      (fp_tf, tf ) = tempfile.mkstemp(dir=".", suffix=".nc")
+      (fp_tf2, tf2 ) = tempfile.mkstemp(dir=".", suffix=".nc")
+      cmd =  str('ncks -O -d lon,280.0,50.0 -d lat,22.5,70.0 %s %s' %( url, tf))
+      os.system(cmd) # ["ls", "-l"])nc = wget.download(url)
+      cdo_cmd = 'cdo sellonlatbox,-80,50,22.5,70 %s %s ' % (tf, tf2)
+      os.system(cdo_cmd)
+      uris.append(tf2)
+      self.show_status('NCEP Year downloaded : %i '  % (y) , 15)
+    us = ocgis.util.helpers.get_sorted_uris_by_time_dimension(uris, variable=None)  # for time sorting
     fname = str('slp_NOA_NCEP_%i_%i' % (start.year , end.year))
     self.show_status('download done for : %s '  % (fname) , 15)
 
     # ocgis specifications:
     # try: 
     # if (self.getInputValues(identifier='region') == 'NOA'):
-    geom = [-80, 22.5, 50, 70.0 ] # [min x, min y, max x, max y].
+    #geom = [-80, 22.5, 50, 70.0 ] # [min x, min y, max x, max y].
     ocgis.env.DIR_OUTPUT = self.working_dir
-    rds = RequestDataset(uris, 'slp')
-    ops = ocgis.OcgOperations(dataset=rds, geom=geom, prefix=fname,  output_format='nc', allow_empty=True, add_auxiliary_files=False)
+    rds = RequestDataset(us, 'slp')
+    ops = ocgis.OcgOperations(dataset=rds, prefix=fname,  output_format='nc', allow_empty=True, add_auxiliary_files=False)
     ret = ops.execute()
     fpath = '%s' % (ret)
     tar.add(fpath , arcname = fpath.replace(self.working_dir, ""))
     self.show_status('ocgis subset succeded for file : %s '  % (ret) , 15)
     
     ## run R file 
-    Rskript = os.path.join(os.path.dirname(__file__),'analogs.R')
-    cmd = 'R --vanilla --args %s %s %s %i %i <  %s' %  (ret, dateSt, dateEn, refSt.year, refEn.year, Rskript)
-    self.show_status('system call : %s '  % (cmd) , 15)
-    os.system(str(cmd))
+    #Rskript = os.path.join(os.path.dirname(__file__),'analogs.R')
+    #cmd = 'R --vanilla --args %s %s %s %i %i <  %s' %  (ret, dateSt, dateEn, refSt.year, refEn.year, Rskript)
+    #self.show_status('system call : %s '  % (cmd) , 15)
+    #os.system(str(cmd))
     
     #except Exception as e: 
       #self.show_status('failed for file : %s '  % ( e ) , 15)
