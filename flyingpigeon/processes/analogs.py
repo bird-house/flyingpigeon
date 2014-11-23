@@ -42,18 +42,18 @@ class analogs(WPSProcess):
       type=type(''),
       minOccurs=1,
       maxOccurs=1,
-      allowedValues=['NCEP', 'CMPI5', 'CORDEX']
+      allowedValues=['NCEP', 'Dummy', 'Dummy']
       )
        
     self.region = self.addLiteralInput(
       identifier="region",
       title="Select Region",
       abstract="Select a predifined region",
-      default="NOA",
+      default="NA",
       type=type(''),
       minOccurs=1,
       maxOccurs=1,
-      allowedValues=['NOA', 'Dummy', 'Dummy']
+      allowedValues=['NA', 'Dummy', 'Dummy']
       )       
 
     #self.bbox = self.addLiteralOutput(
@@ -86,8 +86,8 @@ class analogs(WPSProcess):
 
     self.refSt = self.addLiteralInput(
       identifier="refSt",
-      title="Start date of reference period",
-      abstract="This is a Date: 1955-01-01",
+      title="Start reference period",
+      abstract="Start YEAR of reference period",
       default="1955-01-01",
       type=type(date(1948,01,01)),
       minOccurs=1,
@@ -96,8 +96,8 @@ class analogs(WPSProcess):
     
     self.refEn = self.addLiteralInput(
       identifier="refEn",
-      title="End date of reference period",
-      abstract="This is a Date: 1985-12-31",
+      title="End reference period",
+      abstract="End YEAR of reference period",
       default="1957-12-31",
       type=type(date(1958,12,31)),
       minOccurs=1,
