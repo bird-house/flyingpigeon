@@ -38,7 +38,8 @@ print (SI)
 # if(SI[['nodename']] == "lsce3199.extra.cea.fr"){
 Rsource=Rsource # "/home/nils/birdhouse/flyingpigeon/flyingpigeon/processes/"
 DATdir= wdir
-OUTdir= dir.create(file.path(DATdir, 'RoutDir'))
+dir.create(file.path(DATdir, 'RoutDir'))
+OUTdir= './RoutDir/'
 sink('./RoutDir/Rlog.log', split = TRUE)
 
 # }
@@ -56,15 +57,15 @@ print ('load the sources')
 ## Lecture des arguments d'entree
 #args=(commandArgs(TRUE))
 #print(args)
-#suffana=""
-#if(length(args)>10){
+suffana=""
+# if(length(args)>10){
 #  region=args[1]
 #  nfen=as.integer(args[2])
 #  if(length(args)>2){
 #    lyear.ref=scan(file=args[3])
 #    suffana="hiSST"
 #  }
-#}else{
+# }else{
 region="NA"
 nfen=1
 #}
@@ -97,8 +98,7 @@ nanalog=20
 ##l.method=c("corrnk","rms","esv","mahalanobis2")
 l.method=c("rms","corrnk")
 method="rms"
-print(paste("Calculating analogues:",year.start,"-",yr.now,
-            "nwindow=",nfen,"region=",region))
+print(paste("Calculating analogues:",year.start,"-", yr.now , "nwindow=" ,nfen, "region=",region))
 
 ## FIN DES PARAMETRES CHANGEABLES
 ## Nom du fichier d'entree
@@ -121,7 +121,7 @@ list.lon=rep(lon,each=length(lat))
 ## Traitement du temps
 nctime = nc$dim[['time']]
 time=nctime$vals
-conv.time=caldat(time/24+julday(1,1,1))
+conv.time=caldat(time/24+julday(1,1,1800))
 ## Au cas ou on ne filtre pas les annees
 if(!exists("lyear.ref")) lyear.ref=unique(conv.time$year)
 ## Choix de la saison
@@ -211,14 +211,10 @@ for(method in l.method){
   Xanatest=t(matrix(unlist(Xanatestdum),nrow=(1+3*nanalog)))
 
 ## Sauvegarde en ASCII	 
-  filout=paste(OUTdir,"NCEP/slp",zsuff,"-",region,"_ref_",yst,"-",yen,".analog",
-    nwindow,method,".",
-    nfen,"d.",
-    seas,yrstart,suffana,".dat",sep="")
-  nam=c("date",paste("date.an",1:nanalog,sep=""),
-    paste("dis",1:nanalog,sep=""),
-    paste("cor",1:nanalog,sep="")
-    )
+  filout=paste(OUTdir,"slp",zsuff,"-",region,"_ref_",yst,"-",yen,".analog",
+    nwindow,method,".",nfen,"d.",seas,yrstart,suffana,".dat",sep="")
+  nam=c("date",paste("date.an",1:nanalog,sep=""), paste("dis",1:nanalog,sep=""),
+    paste("cor",1:nanalog,sep=""))
   write.table(file=filout,Xanatest,row.names=FALSE,col.names=nam,quote=FALSE)
 
 }#end for method

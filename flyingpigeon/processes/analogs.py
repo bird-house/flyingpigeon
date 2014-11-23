@@ -168,6 +168,7 @@ class analogs(WPSProcess):
       os.system(cdo_cmd)
       uris.append(tf2)
       self.show_status('NCEP file year: %i  downloaded'  % (y) , 15)
+      
     us = ocgis.util.helpers.get_sorted_uris_by_time_dimension(uris, variable=None)  # for time sorting
     fname = str('slp_NOA_NCEP_%i_%i' % (start.year , end.year))
     self.show_status('download done for : %s '  % (fname) , 15)
