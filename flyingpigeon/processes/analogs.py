@@ -182,7 +182,7 @@ class analogs(WPSProcess):
     ops = ocgis.OcgOperations(dataset=rds, prefix=fname,  output_format='nc', allow_empty=True, add_auxiliary_files=False)
     ret = ops.execute()
     fpath = '%s' % (ret)
-    tar.add(fpath , arcname = fpath.replace(self.working_dir, ""))
+    # tar.add(fpath , arcname = fpath.replace(self.working_dir, ""))
     self.show_status('ocgis subset succeded for file : %s '  % (ret) , 15)
     
     ### run R file 
@@ -190,23 +190,24 @@ class analogs(WPSProcess):
     
     Rskript = os.path.join(pf + '/Rsrc/analogs.R')
     Rsource = os.path.join(pf + '/Rsrc/')
-    (fp_tar, Rlog) = tempfile.mkstemp(dir=".", suffix='.log')
     self.show_status('found R skript : %s'  %  Rskript , 15)
     curdir = os.path.abspath(os.path.curdir)
     self.show_status('curdir : %s '  % (curdir) , 15)
     self.show_status('analogs.R : %s '  % (Rskript) , 15)
-    # R --vanilla --args   /Rsrc /home/nils/anaconda/var/tmp/pywps-instanceYNIX4b <  /Rsrc/analogs.R > /home/nils/anaconda/var/tmp/pywps-instanceYNIX4b/tmpfAXrIq.log
-    
-    Rcmd = 'R --vanilla --args %s %s %s %i %i %s %s <  %s > %s ' %  (ret, dateSt.date(), dateEn.date(), refSt.year, refEn.year, Rsource, curdir, Rskript , Rlog )
-    
-    os.system(str(Rcmd))
+    os.mkdir(os.path.curdir+'/RoutDir/')
+    RoutDir = os.path.join(os.path.curdir+'/RoutDir/')
+    (fp_Rlog, Rlog) = tempfile.mkstemp(dir="./RoutDir/", suffix='.log')
+    Rcmd = 'R --vanilla --args %s %s %s %i %i %s %s <  %s > %s ' % (ret, dateSt.date(), dateEn.date(), refSt.year, refEn.year, Rsource, curdir, Rskript, Rlog )
     self.show_status('system call : %s '  % (Rcmd) , 15)
     
+    # Call the R skript
+    os.system(str(Rcmd))
+    tar.add(RoutDir) # , arcname = fpath.replace(self.working_dir, ""))
     ##except Exception as e: 
       ##self.show_status('failed for file : %s '  % ( e ) , 15)
     tar.close()
     
     self.ncout.setValue(ret)
-    self.Rlogout.setValue(Rlog)
+    self.Rlogout.setValue( Rlog )
     self.tarout.setValue(tarout_file)
     self.show_status('execution ended at : %s'  %  dt.datetime.now() , 15)

@@ -9,7 +9,6 @@
 ## Se lance en BATCH par:
 ## qsub -q mediump -l nodes=1:ppn=12 /home/users/yiou/RStat/A2C2/analogs_slp-genericpar.sh
 
-sink('/home/nils/anaconda/var/log/pywps.Rlog.log', split = TRUE)
 print ('start test skript')
 
 library(ncdf) # Pour lire les fichiers netcdf d'entree
@@ -39,11 +38,14 @@ print (SI)
 # if(SI[['nodename']] == "lsce3199.extra.cea.fr"){
 Rsource=Rsource # "/home/nils/birdhouse/flyingpigeon/flyingpigeon/processes/"
 DATdir= wdir
-OUTdir= DATdir
+OUTdir= dir.create(file.path(DATdir, 'RoutDir'))
+sink('./RoutDir/Rlog.log', split = TRUE)
+
 # }
 
 print ('got the sources directories')
 print (Rsource)
+print (OUTdir)
 
 source(paste(Rsource,"readextranc.R",sep="")) #netcdf file functions
 source(paste(Rsource,"analogfun.R",sep="")) #Analogue functions
