@@ -1,6 +1,12 @@
 Changes
 *******
 
+0.1.2 (2014-11-24)
+==================
+
+* Using buildout 2.x.
+* Updated analogs and vbd process.
+
 0.1.1 (2014-11-11)
 ==================
 

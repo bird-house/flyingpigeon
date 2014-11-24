@@ -26,7 +26,7 @@ classifiers=[
         ]
 
 setup(name='flyingpigeon',
-      version='0.1.1',
+      version='0.1.2',
       description='Processes for climate data, indices and extrem events',
       long_description=README + '\n\n' + CHANGES,
       classifiers=classifiers,
