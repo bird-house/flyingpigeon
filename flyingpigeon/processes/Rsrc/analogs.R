@@ -9,6 +9,7 @@
 ## Se lance en BATCH par:
 ## qsub -q mediump -l nodes=1:ppn=12 /home/users/yiou/RStat/A2C2/analogs_slp-genericpar.sh
 
+print ('start test skript')
 
 library(ncdf) # Pour lire les fichiers netcdf d'entree
 library(parallel) # Pour la parallelisation
@@ -17,59 +18,69 @@ library(parallel) # Pour la parallelisation
 rm(list = ls(all = TRUE))
 
 # get the arguments
-# python call: cmd = 'R --vanilla --args %s %s %s %s %s <  %s' %  (ret, refSt, refEn , dateSt, dateEn, Rskript)
+# Rcmd = 'R --vanilla --args %s %s %s %i %i %s %s <  %s > %s ' %  (ret, dateSt.date(), dateEn.date(), refSt.year, refEn.year, Rsource, curdir, Rskript , Rlog )
 args <- commandArgs(trailingOnly = TRUE)
 
 print(args)
 
-fname  <- args[0]
-dateSt <- args[1]
-dateEn <- args[2]
-refSt  <- as.integer(args[3])
-refEn  <- as.integer(args[4])
-ppath <- file.path('.analogs.R')
+fname  <- args[1]
+dateSt <- args[2]
+dateEn <- args[3]
+refSt  <- as.integer(args[4])
+refEn  <- as.integer(args[5])
+Rsource <- args[6]
+wdir <- args[7]
 
-print (ppath)
-
+setwd(wdir)
 SI=Sys.info()
+print (SI)
 
 # if(SI[['nodename']] == "lsce3199.extra.cea.fr"){
-Rsource="~/sandbox/eucleia/"
-DATdir="~/data/"
-OUTdir=DATdir
+Rsource=Rsource # "/home/nils/birdhouse/flyingpigeon/flyingpigeon/processes/"
+DATdir= wdir
+dir.create(file.path(DATdir, 'RoutDir'))
+OUTdir= './RoutDir/'
+sink('./RoutDir/Rlog.log', split = TRUE)
+
 # }
 
+print ('got the sources directories')
+print (Rsource)
+print (OUTdir)
 
 source(paste(Rsource,"readextranc.R",sep="")) #netcdf file functions
 source(paste(Rsource,"analogfun.R",sep="")) #Analogue functions
 
+print ('load the sources')
 
 ## INITIALISATIONS des parametres d'analyse
 ## Lecture des arguments d'entree
 #args=(commandArgs(TRUE))
 #print(args)
 suffana=""
-if(length(args)>10){
-  region=args[1]
-  nfen=as.integer(args[2])
-  if(length(args)>2){
-    lyear.ref=scan(file=args[3])
-    suffana="hiSST"
-  }
-}else{
-  region="NA"
-  nfen=1
-}
+# if(length(args)>10){
+#  region=args[1]
+#  nfen=as.integer(args[2])
+#  if(length(args)>2){
+#    lyear.ref=scan(file=args[3])
+#    suffana="hiSST"
+#  }
+# }else{
+region="NA"
+nfen=1
+#}
 
-dirname=paste(DATdir,"NCEP/",sep="")
-setwd(dirname)
+#dirname=paste(DATdir,"NCEP/",sep="")
 
 ipara=TRUE # Parallelisation
-nproc=12 # Nombre de processeurs
+#nproc=12 # Nombre de processeurs
 
 yrstart= 1948
 year.start=1948
+
 yr.now=as.integer(format(Sys.time(), "%Y")) # Annee en cours
+print ( yr.now )
+
 year.end = yr.now
 ## PARAMETRES CHANGEABLES
 prefname = "slp"
@@ -87,8 +98,7 @@ nanalog=20
 ##l.method=c("corrnk","rms","esv","mahalanobis2")
 l.method=c("rms","corrnk")
 method="rms"
-print(paste("Calculating analogues:",year.start,"-",yr.now,
-            "nwindow=",nfen,"region=",region))
+print(paste("Calculating analogues:",year.start,"-", yr.now , "nwindow=" ,nfen, "region=",region))
 
 ## FIN DES PARAMETRES CHANGEABLES
 ## Nom du fichier d'entree
@@ -111,7 +121,7 @@ list.lon=rep(lon,each=length(lat))
 ## Traitement du temps
 nctime = nc$dim[['time']]
 time=nctime$vals
-conv.time=caldat(time/24+julday(1,1,1))
+conv.time=caldat(time/24+julday(1,1,1800))
 ## Au cas ou on ne filtre pas les annees
 if(!exists("lyear.ref")) lyear.ref=unique(conv.time$year)
 ## Choix de la saison
@@ -136,6 +146,9 @@ if(seacycnorm){
   dat.m=dat[ISEAS,]
   zsuff="raw"
 }
+
+print ('success fully season syncronised')
+
 ndat=nrow(dat.mcyc$anom)
 ngri=ncol(dat.m)
 
@@ -198,14 +211,10 @@ for(method in l.method){
   Xanatest=t(matrix(unlist(Xanatestdum),nrow=(1+3*nanalog)))
 
 ## Sauvegarde en ASCII	 
-  filout=paste(OUTdir,"NCEP/slp",zsuff,"-",region,"_ref_",yst,"-",yen,".analog",
-    nwindow,method,".",
-    nfen,"d.",
-    seas,yrstart,suffana,".dat",sep="")
-  nam=c("date",paste("date.an",1:nanalog,sep=""),
-    paste("dis",1:nanalog,sep=""),
-    paste("cor",1:nanalog,sep="")
-    )
+  filout=paste(OUTdir,"slp",zsuff,"-",region,"_ref_",yst,"-",yen,".analog",
+    nwindow,method,".",nfen,"d.",seas,yrstart,suffana,".dat",sep="")
+  nam=c("date",paste("date.an",1:nanalog,sep=""), paste("dis",1:nanalog,sep=""),
+    paste("cor",1:nanalog,sep=""))
   write.table(file=filout,Xanatest,row.names=FALSE,col.names=nam,quote=FALSE)
 
 }#end for method
