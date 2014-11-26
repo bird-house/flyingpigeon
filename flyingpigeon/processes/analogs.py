@@ -138,7 +138,7 @@ class analogs(WPSProcess):
     #from subprocess import call
     import os
     
-    self.show_status('execution started at : %s '  % dt.datetime.now() , 15)
+    self.show_status('execution started at : %s '  % dt.datetime.now() , 5)
 
     refSt = self.getInputValues(identifier='refSt')
     refEn = self.getInputValues(identifier='refEn')
@@ -158,20 +158,25 @@ class analogs(WPSProcess):
     (fp_tar, tarout_file) = tempfile.mkstemp(dir=".", suffix='.tar')
     tar = tarfile.open(tarout_file, "w")
 
+    from malleefowl.download import download
     for y in range(start.year , end.year +1 , 1): 
       url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.%i.nc' % (y)
       (fp_tf, tf ) = tempfile.mkstemp(dir=".", suffix=".nc")
       (fp_tf2, tf2 ) = tempfile.mkstemp(dir=".", suffix=".nc")
-      cmd =  str('ncks -O -d lon,280.0,50.0 -d lat,22.5,70.0 %s %s' %( url, tf))
-      os.system(cmd) # ["ls", "-l"])nc = wget.download(url)
-      cdo_cmd = 'cdo sellonlatbox,-80,50,22.5,70 %s %s ' % (tf, tf2)
-      os.system(cdo_cmd)
+      #cmd =  str('ncks -O -d lon,280.0,50.0 -d lat,22.5,70.0 %s %s' %( download(url), tf))
+      cmd = ['ncks', '-O', '-d', 'lon,280.0,50.0', '-d', 'lat,22.5,70.0', download(url), tf]
+      #os.system(cmd) # ["ls", "-l"])nc = wget.download(url)
+      self.cmd(cmd, stdout=True)
+      #cdo_cmd = 'cdo sellonlatbox,-80,50,22.5,70 %s %s ' % (tf, tf2)
+      cdo_cmd = ['cdo', 'sellonlatbox,-80,50,22.5,70', tf, tf2]
+      self.cmd(cdo_cmd, stdout=True)
+      #os.system(cdo_cmd)
       uris.append(tf2)
-      self.show_status('NCEP file year: %i  downloaded'  % (y) , 15)
+      self.show_status('NCEP file year: %i  downloaded'  % (y) , 7)
       
     us = ocgis.util.helpers.get_sorted_uris_by_time_dimension(uris, variable=None)  # for time sorting
     fname = str('slp_NOA_NCEP_%i_%i' % (start.year , end.year))
-    self.show_status('download done for : %s '  % (fname) , 15)
+    self.show_status('download done for : %s '  % (fname) , 10)
 
     # ocgis specifications:
     # try: 
@@ -191,18 +196,20 @@ class analogs(WPSProcess):
     
     Rskript = os.path.join(pf + '/Rsrc/analogs.R')
     Rsource = os.path.join(pf + '/Rsrc/')
-    self.show_status('found R skript : %s'  %  Rskript , 15)
+    logger.debug('found R skript : %s', Rskript)
     curdir = os.path.abspath(os.path.curdir)
-    self.show_status('curdir : %s '  % (curdir) , 15)
-    self.show_status('analogs.R : %s '  % (Rskript) , 15)
+    logger.debug('curdir : %s '  % (curdir))
+    logger.debug('analogs.R : %s '  % (Rskript))
     os.mkdir(os.path.curdir+'/RoutDir/')
     RoutDir = os.path.join(os.path.curdir+'/RoutDir/')
     (fp_Rlog, Rlog) = tempfile.mkstemp(dir="./RoutDir/", suffix='.log')
     Rcmd = 'R --vanilla --args %s %s %s %i %i %s %s <  %s > %s ' % (ret, dateSt.date(), dateEn.date(), refSt.year, refEn.year, Rsource, curdir, Rskript, Rlog )
-    self.show_status('system call : %s '  % (Rcmd) , 15)
+    #Rcmd = ['R', '--vanilla', '--args', ret, str(dateSt.date()), str(dateEn.date()), str(refSt.year), str(refEn.year), Rsource, curdir,'<', Rskript,'>', Rlog]
+    logger.debug('system call : %s '  % (Rcmd))
     
     # Call the R skript
     os.system(str(Rcmd))
+    #self.cmd(Rcmd, stdout=False)
     tar.add(RoutDir) # , arcname = fpath.replace(self.working_dir, ""))
     ##except Exception as e: 
       ##self.show_status('failed for file : %s '  % ( e ) , 15)
@@ -211,4 +218,4 @@ class analogs(WPSProcess):
     self.ncout.setValue(ret)
     self.Rlogout.setValue( Rlog )
     self.tarout.setValue(tarout_file)
-    self.show_status('execution ended at : %s'  %  dt.datetime.now() , 15)
+    self.show_status('execution ended at : %s'  %  dt.datetime.now() , 100)
