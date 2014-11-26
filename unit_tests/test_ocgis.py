@@ -4,6 +4,7 @@ from nose.plugins.attrib import attr
 
 
 def test_ocgis():
+    raise SkipTest
     import ocgis
 
     ncfile = 'examples/test1.nc'

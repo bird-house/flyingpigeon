@@ -16,15 +16,17 @@ def test_analogs():
         identifier = "analogs",
         inputs = [
             ('experiment', 'NCEP'),
-            ('dateSt','2013-07-15'),
-            ('dateEn','2013-12-31'),
-            ('refSt', '1955-01-01'),
-            ('refEn', '1957-12-31'),
+            ('dateSt','1958-07-15'),
+            ('dateEn','1958-12-31'),
+            #('refSt', '1955-01-01'),
+            #('refEn', '1957-12-31'),
         ],
         outputs = [('ncout', True), ('tarout', True), ('Rlogout', True)],
-        verbose=False
+        verbose=False,
+        sleep_secs=120,
         )
 
-    nose.tools.ok_(len(result) == 3, result)
-    nose.tools.ok_(False, result)
+    nose.tools.ok_(result['status'] == 'ProcessSucceeded', result)
+    nose.tools.ok_(len(result['processOutputs']) == 3, result)
+    #nose.tools.ok_(False, result)
     
