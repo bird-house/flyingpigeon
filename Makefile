@@ -169,6 +169,11 @@ buildclean:
 	@echo "Removing bootstrap.sh ..."
 	@test -e bootstrap.sh && rm -v bootstrap.sh
 
+.PHONY: test
+test:
+	@echo "Running tests ..."
+	bin/nosetests unit_tests
+
 .PHONY: selfupdate
 selfupdate: bootstrap.sh
 	@wget -q --no-check-certificate -O Makefile "https://raw.githubusercontent.com/bird-house/birdhousebuilder.bootstrap/$(RELEASE)/Makefile"
