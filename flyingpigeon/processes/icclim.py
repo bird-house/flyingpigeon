@@ -1,131 +1,171 @@
 from malleefowl.process import WPSProcess
 import subprocess
-
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
 
-class IndicesProcess(WPSProcess):
-    """This process calculates the relative humidity"""
+class icclimWorker(WPSProcess):
+  """This process calculates the relative humidity"""
+  def __init__(self):
+    WPSProcess.__init__(self, 
+      identifier = "indice",
+      title="Climate indices (icclim)",
+      version = "0.1",
+      metadata=[],
+      abstract="Calculation of climate indices based on icclim",
+      )
 
-    def __init__(self):
-        # definition of this process
-        WPSProcess.__init__(self, 
-            identifier = "indice",
-            title="Climate indices",
-            version = "0.1",
-            metadata=[],
-            abstract="Calculation of climate indices",
-            # TODO: filter are configured in phoenix
-            #extra_metadata={
-                #'esgfilter': 'variable:tas, variable:evspsblpot, variable:huss, variable:ps, variable:pr, variable:sftlf, time_frequency:day', 
-                #'esgquery': 'data_node:esg-dn1.nsc.liu.se' 
-                #},
-            ## extra_metadata={
-            ##       'esgfilter': 'variable:tasmax, variable:tasmin, variable:tas, variable:pr, project:CMIP5, project:CORDEX',  
-            ##       'esgquery': ' time_frequency:day' 
-            ##       },
-            )
+    self.netcdf_file = self.addComplexInput(
+      identifier="netcdf_file",
+      title="NetCDF File",
+      abstract="NetCDF File",
+      minOccurs=1,
+      maxOccurs=100,
+      maxmegabites=5000,
+      formats=[{"mimeType":"application/x-netcdf"}],
+      )
 
-
-
-        self.netcdf_file = self.addComplexInput(
-            identifier="netcdf_file",
-            title="NetCDF File",
-            abstract="NetCDF File",
-            minOccurs=1,
-            maxOccurs=100,
-            maxmegabites=5000,
-            formats=[{"mimeType":"application/x-netcdf"}],
-            )
-
-        self.TG = self.addLiteralInput(
-            identifier="TG",
-            title="TG",
-            abstract="Mean of mean temperatur (tas files as input files)",
-            type=type(False),
-            default=False,
-            minOccurs=0,
-            maxOccurs=0,
-            )
-            
-        self.TX = self.addLiteralInput(
-            identifier="TX",
-            title="TX",
-            abstract="mean of max temperatur (tasmax files as input files)",
-            default=False,
-            type=type(False),
-            minOccurs=0,
-            maxOccurs=0,
-            )
-            
-        self.TN = self.addLiteralInput(
-            identifier="TN",
-            title="TN",
-            abstract="Mean over min temperatur (tasmin files as input files)",
-            default=False,
-            type=type(False),
-            minOccurs=0,
-            maxOccurs=0,
-            )
+    self.TG = self.addLiteralInput(
+      identifier="TG",
+      title="TG",
+      abstract="Mean of mean temperatur (tas files as input files)",
+      type=type(False),
+      default=False,
+      minOccurs=0,
+      maxOccurs=0,
+      )
         
-        self.RR = self.addLiteralInput(
-            identifier="RR",
-            title="RR",
-            abstract="precipitation sum (pr files as input files) ",
-            default=False,
-            type=type(False),
-            minOccurs=0,
-            maxOccurs=0,
-            )
-
-            
-        self.SU = self.addLiteralInput(
-            identifier="SU",
-            title="SU",
-            abstract="Nr of summer days (tasmax files as input files)",
-            default=False,
-            type=type(False),
-            minOccurs=0,
-            maxOccurs=0,
-            )
-
-        # TXx, TXn, TNx, TNn, TR, CSU, GD4, FD, CFD, ID, HD17, CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day, SD, SD1, SD5cm, SD50cm
-
-        # complex output
-        # -------------
-        self.output = self.addComplexOutput(
-            identifier="output",
-            title="indice log",
-            abstract="indice log",
-            metadata=[],
-            formats=[{"mimeType":"text/plain"}],
-            asReference=True,
-            )
-    def execute(self):
-        import os
+    self.TX = self.addLiteralInput(
+      identifier="TX",
+      title="TX",
+      abstract="mean of max temperatur (tasmax files as input files)",
+      default=False,
+      type=type(False),
+      minOccurs=0,
+      maxOccurs=0,
+      )
         
-        self.show_status('starting calcualtion of icclim indices', 0)
+    self.TN = self.addLiteralInput(
+      identifier="TN",
+      title="TN",
+      abstract="Mean over min temperatur (tasmin files as input files)",
+      default=False,
+      type=type(False),
+      minOccurs=0,
+      maxOccurs=0,
+      )
+    
+    self.RR = self.addLiteralInput(
+      identifier="RR",
+      title="RR",
+      abstract="precipitation sum (pr files as input files) ",
+      default=False,
+      type=type(False),
+      minOccurs=0,
+      maxOccurs=0,
+      )
+        
+    self.SU = self.addLiteralInput(
+      identifier="SU",
+      title="SU",
+      abstract="Nr of summer days (tasmax files as input files)",
+      default=False,
+      type=type(False),
+      minOccurs=0,
+      maxOccurs=0,
+      )
 
-        ncfiles = self.getInputValues(identifier='netcdf_file')
+    # complex output
+    # -------------
+    self.logout = self.addComplexOutput(
+      identifier="logout",
+      title="indice log",
+      abstract="indice log",
+      metadata=[],
+      formats=[{"mimeType":"text/plain"}],
+      asReference=True,
+      )
+    
+    self.ncout = self.addComplexOutput(
+      title="netCDF inputfile",
+      abstract="netCDF file of the ps valuels",
+      formats=[{"mimeType":"application/netcdf"}],
+      asReference=True,
+      identifier="ncout",
+  )
 
-        from csc import tools
-        result = tools.indices(
-            os.curdir, ncfiles,
-            self.TG.getValue(),
-            self.TX.getValue(),
-            self.TN.getValue(),
-            self.RR.getValue(),
-            self.SU.getValue())
-
-        outfile = self.mktempfile(suffix='.txt')
+  def execute(self):
+    import os
+    import tools # from flyingpigeon 
+    import tarfile
+    import tempfile
+    
+    logger.debug('starting icclim indices execution')
+    
+    self.show_status('starting calcualtion of icclim indices', 0)
+    ncfiles = self.getInputValues(identifier='netcdf_file')
+    (fp_tar, tarf) = tempfile.mkstemp(dir=".", suffix='.tar')
+    tar = tarfile.open(tarf, "w")
+    
+    logger.debug('working dir prepared ')
+    
+    idic = { 'outdir':os.curdir, 
+             'ncs': ncfiles,
+             'TG': self.TG.getValue(),
+             'TX': self.TX.getValue(),
+            #'TXx':
+            #'TXn':
+             'TN':self.TN.getValue(),
+            #'TNx':
+            #'TNn':
+             'SU':self.SU.getValue()
+            #'CSU':
+            #'FD':
+            #'CFD':
+            #'TR':
+            #'ID':
+            #'HD17':
+            #'GD4':
+             'RR':self.RR.getValue(),
+            #'RR1':
+            #'CWD':
+            #'SDII':
+            #'R10mm':
+            #'R20mm':
+            #'RX1day':
+            #'RX5day':
+            #'SD':
+            #'SD1':
+            #'SD5cm':
+            #'SD50cm':
+            #'CDD':
+            #'DTR':
+            #'ETR':
+            #'vDTR':
+            }   
+    
+    logtxt = tools.indices(idic)
+    
+    logger.debug('icclim tool succeeded') 
+    
+    ncsout = [f for f in os.listdir(os.curdir) if '.nc' in f]
+    for n in ncsout: 
+      tar.add(n, arcname = n.replace(os.curdir, ""))
+    
+    logger.debug('tar ncfiles')
+    
+    logfile = self.mktempfile(suffix='.txt')
+    with open(logfile, 'w') as fp:
+        fp.write(logtxt)
+    
+    tar.add(logfile )
+    tar.close()    
+    
+    logger.debug('tar file closed')
+    
+    self.logout.setValue( logfile )
+    self.tarout.setValue( tarf )
+    self.show_status("processing done", 100)
+    
+    
         
-        with open(outfile, 'w') as fp:
-            fp.write(result)
-            
-        self.output.setValue( outfile )
-        
-        self.show_status("processing done", 100)
-        
-        
-            
