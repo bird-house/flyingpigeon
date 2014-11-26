@@ -52,3 +52,7 @@ docs/html/
 
 # External Sources
 src/
+
+# tests
+*.log
+*.lock
