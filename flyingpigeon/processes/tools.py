@@ -1,6 +1,6 @@
 ##
 import ocgis
-import icclim
+#import icclim
 from ocgis.interface.base.crs import CFWGS84
 
 from netCDF4 import Dataset
@@ -8,10 +8,10 @@ import os
 import time 
 
 import subprocess
-from malleefowl.process import WorkerProcess
-from malleefowl.utils import dupname
-from malleefowl import wpslogging as logging
-logger = logging.getLogger(__name__)
+#from malleefowl.process import WorkerProcess
+#from malleefowl.utils import dupname
+#from malleefowl import wpslogging as logging
+#logger = logging.getLogger(__name__)
 
 
 def fn_creator( ncs ):
@@ -32,7 +32,7 @@ def fn_creator( ncs ):
       gmodel = str(ds.model_id)
       exp = str(ds.experiment_id)
       ens = str(ds.parent_experiment_rip)
-      filename = var + '_' + str( gmodel + '_' + exp + '_' + ens + '_' + str(int(st)) + '_' + str(int(en)) + '.nc')
+      filename = var + '_' + str( gmodel + '_' + exp + '_' + ens + '_' + str(int(st)) + '-' + str(int(en)) + '.nc')
         
     elif (str(ds.project_id) == 'CORDEX'):
     #EUR-11_ICHEC-EC-EARTH_historical_r3i1p1_DMI-HIRHAM5_v1_day
@@ -45,7 +45,7 @@ def fn_creator( ncs ):
       ver = str(ds.rcm_version_id)
       frq = str(ds.frequency)
       filename = var + '_'+ str(dom + '_' + gmodel + '_' + exp + '_' + ens + '_' + rmodel + '_' + ver + \
-        '_' + frq + '_' + str(int(st)) + '_' + str(int(en)) + '.nc' )  
+        '_' + frq + '_' + str(int(st)) + '-' + str(int(en)) + '.nc' )  
     else:
       filename = fn 
       
@@ -57,6 +57,19 @@ def fn_creator( ncs ):
     newnames.append(os.path.join(fp, filename))
   return newnames
 
+
+def fn_sorter(ncs): 
+  ndic = {}
+  for nc in ncs: 
+    n = nc.split('_')
+    bn = '_'.join(n[0:-1])
+    ndic[bn] = []
+  for key in ndic: 
+    for n in ncs:
+      if key in n: 
+        ndic[key].append(n)  
+  return ndic
+  
 def indices( idic  ):
   # 
   # read the idic 
