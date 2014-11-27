@@ -86,13 +86,13 @@ class icclimWorker(WPSProcess):
       asReference=True,
       )
     
-    self.ncout = self.addComplexOutput(
-      title="netCDF inputfile",
-      abstract="netCDF file of the ps valuels",
-      formats=[{"mimeType":"application/netcdf"}],
+    self.tarout = self.addComplexOutput(
+      title="netCDF result files",
+      abstract="Tar archive containing the netCDF result files",
+      formats=[{"mimeType":"application/x-tar"}],
       asReference=True,
       identifier="ncout",
-  )
+      )
 
   def execute(self):
     import os
@@ -109,8 +109,10 @@ class icclimWorker(WPSProcess):
     
     logger.debug('working dir prepared ')
     
+    nc_renamed = tools.fn_creator(ncfiles)
+    
     idic = { 'outdir':os.curdir, 
-             'ncs': ncfiles,
+             'ncs': nc_renamed,
              'TG': self.TG.getValue(),
              'TX': self.TX.getValue(),
             #'TXx':
@@ -118,7 +120,7 @@ class icclimWorker(WPSProcess):
              'TN':self.TN.getValue(),
             #'TNx':
             #'TNn':
-             'SU':self.SU.getValue()
+             'SU':self.SU.getValue(),
             #'CSU':
             #'FD':
             #'CFD':
@@ -146,7 +148,7 @@ class icclimWorker(WPSProcess):
     
     logtxt = tools.indices(idic)
     
-    logger.debug('icclim tool succeeded') 
+    logger.debug('flyingpigeon indices tool processed') 
     
     ncsout = [f for f in os.listdir(os.curdir) if '.nc' in f]
     for n in ncsout: 
@@ -166,6 +168,3 @@ class icclimWorker(WPSProcess):
     self.logout.setValue( logfile )
     self.tarout.setValue( tarf )
     self.show_status("processing done", 100)
-    
-    
-        

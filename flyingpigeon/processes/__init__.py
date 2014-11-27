@@ -3,7 +3,7 @@ __all__ = [
         "extractpoints",
         "analogs",
         "ensembles",
-        "icclim",
+        "indices",
         "vbd",
-        "gam"
+#       "sdm"
         ]
