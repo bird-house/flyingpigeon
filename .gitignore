@@ -22,6 +22,7 @@ custom.cfg
 .coverage
 .tox
 nosetests.xml
+unit_tests/testdata.json
 
 # Eclipse / PyDev
 .project
@@ -51,7 +52,7 @@ docs/doctrees/
 docs/html/
 
 # External Sources
-src/
+#src/external
 
 # tests
 *.log

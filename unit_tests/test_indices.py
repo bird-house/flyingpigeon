@@ -4,7 +4,7 @@ from nose.plugins.attrib import attr
 
 from malleefowl import wpsclient
 
-import __init__ as base
+from __init__ import SERVICE, TESTDATA
 
 def setup():
     pass
@@ -12,9 +12,9 @@ def setup():
 @attr('online')   
 def test_indices():
     result = wpsclient.execute(
-        service = base.SERVICE,
+        service = SERVICE,
         identifier = "indice",
-        inputs = [('netcdf_file', 'http://localhost:8090/wpscache/tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_20010101-20051231.nc'),
+        inputs = [('netcdf_file', TESTDATA['tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_20010101-20051231.nc']),
         ('SU','True'),
         ],
         outputs = [('logout', True), ('ncout', True)],
