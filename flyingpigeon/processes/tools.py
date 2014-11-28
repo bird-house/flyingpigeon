@@ -10,8 +10,8 @@ import time
 import subprocess
 #from malleefowl.process import WorkerProcess
 #from malleefowl.utils import dupname
-#from malleefowl import wpslogging as logging
-#logger = logging.getLogger(__name__)
+from malleefowl import wpslogging as logging
+logger = logging.getLogger(__name__)
 
 
 def fn_creator( ncs ):
@@ -96,7 +96,7 @@ def indices( idic  ):
   
   # simple precesses realized by cdo commands:
   for nc in ncs:
-    fp, fn = os.split(nc)
+    fp, fn = os.path.split(nc)
     basename = os.path.splitext(fn)[0]
     try:
       if TG == True :
