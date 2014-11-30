@@ -4,8 +4,8 @@ import ocgis
 from ocgis.interface.base.crs import CFWGS84
 
 from netCDF4 import Dataset
-import os
-import time 
+import os 
+from datetime import datetime, timedelta
 
 import subprocess
 #from malleefowl.process import WorkerProcess
@@ -24,8 +24,9 @@ def fn_creator( ncs ):
     rd = []
     rd = ocgis.RequestDataset(nc)
     ts = ds.variables['time']
-    st = ts[0]
-    en = ts[-1]
+    reftime = reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
+    st = datetime.strftime(reftime + timedelta(days=ts[0]), '%Y%m%d') 
+    en = datetime.strftime(reftime + timedelta(days=ts[-1]), '%Y%m%d') 
     
     if (str(ds.project_id) == 'CMIP5'):
     #day_MPI-ESM-LR_historical_r1i1p1
@@ -109,7 +110,8 @@ def indices( idic  ):
   SD5cm = idic['SD5cm'] if idic.has_key('SD5cm') else  None
   SD50cm = idic['SD50cm'] if idic.has_key('SD50cm') else  None
   CDD = idic['CDD'] if idic.has_key('CDD') else  None
-
+  group = idic['group'] if idic.has_key('group') else  ['year']
+  logger.debug('gcalc_roup set to : %s' % ( group ))
   
   outlog = "Starting the indice calculation at: \n"
   logger.debug('starting icclim indices ... done')
@@ -119,13 +121,11 @@ def indices( idic  ):
   ocgis.env.DIR_DATA = os.path.curdir
   ocgis.env.DIR_OUTPUT = outdir    
   output_crs = None
-  group = ['year']
   
   logger.debug('settings for ocgis done')
   outlog = outlog + "settings for ocgis done \n"
   
   # simple precesses realized by cdo commands:
-  
   #rd_tas = ocgis.util.helpers.get_sorted_uris_by_time_dimension(ocgis.RequestDataset(ncs, 'tas'))
   #rd_tasmin = ocgis.util.helpers.get_sorted_uris_by_time_dimension(ocgis.RequestDataset(ncs, 'tasmin'))
   #rd_tasmax = ocgis.util.helpers.get_sorted_uris_by_time_dimension(ocgis.RequestDataset(ncs, 'tasmax'))
@@ -151,7 +151,6 @@ def indices( idic  ):
         logger.debug('calculation for TX started ')
         TX_file = None
         rd = ocgis.RequestDataset(nc, 'tasmax') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_TX','name':'TX'}]
         TX_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('tasmax_','TG_')) , output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('TX calculated ' )
@@ -161,7 +160,6 @@ def indices( idic  ):
         logger.debug('calculation for TN started ')
         TN_file = None
         rd = ocgis.RequestDataset(nc, 'tasmin') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_TN','name':'TN'}]
         TN_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('tasmin_','TN_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('TN calculated ' )
@@ -171,7 +169,6 @@ def indices( idic  ):
         logger.debug('calculation for TXx started ')
         TXx_file = None
         rd = ocgis.RequestDataset(nc, 'tasmax') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_TXx','name':'TXx'}]
         TXx_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('tasmax_','TXx_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('TXx calculated ' )
@@ -181,7 +178,6 @@ def indices( idic  ):
         logger.debug('calculation for TNx started ')
         TNx_file = None
         rd = ocgis.RequestDataset(nc, 'tasmin') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_TNx','name':'TNx'}]
         TN_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('tasmin_','TNx_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('TNx calculated ' )
@@ -191,7 +187,6 @@ def indices( idic  ):
         logger.debug('calculation for TNn started ')
         TNn_file = None
         rd = ocgis.RequestDataset(nc, 'tasmin') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_TNn','name':'TNn'}]
         TN_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('tasmin_','TNn_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('TNn calculated ' )
@@ -201,7 +196,6 @@ def indices( idic  ):
         logger.debug('calculation for SU started ')
         SU_file = None
         rd = ocgis.RequestDataset(nc, 'tasmax') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_SU','name':'SU'}]
         SU_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('tasmax_','SU_')), output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('SU calculated ' )
@@ -211,7 +205,6 @@ def indices( idic  ):
         logger.debug('calculation for CSU started ')
         SU_file = None
         rd = ocgis.RequestDataset(nc, 'tasmax') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_CSU','name':'CSU'}]
         CSU_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('tasmax_','CSU_')) ,
         output_format='nc', add_auxiliary_files=False).execute()
@@ -222,7 +215,6 @@ def indices( idic  ):
         logger.debug('calculation for FD started ')
         FD_file = None
         rd = ocgis.RequestDataset(nc, 'tasmin') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_FD','name':'FD'}]
         FD_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('tasmax_','FD_')) ,
         output_format='nc', add_auxiliary_files=False).execute()
@@ -233,7 +225,6 @@ def indices( idic  ):
         logger.debug('calculation for CFD started ')
         CFD_file = None
         rd = ocgis.RequestDataset(nc, 'tasmin') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_CFD','name':'CFD'}]
         CFD_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('tasmax_','CFD_')) ,
         output_format='nc', add_auxiliary_files=False).execute()
@@ -244,7 +235,6 @@ def indices( idic  ):
         logger.debug('calculation for TR started ')
         TR_file = None
         rd = ocgis.RequestDataset(nc, 'tasmin') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_TR','name':'TR'}]
         TR_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('tasmax_','TR_')) ,
         output_format='nc', add_auxiliary_files=False).execute()
@@ -256,7 +246,6 @@ def indices( idic  ):
         logger.debug('calculation for ID started ')
         ID_file = None
         rd = ocgis.RequestDataset(nc, 'tasmax') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_ID','name':'ID'}]
         IR_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('tasmax_','ID_')) ,
         output_format='nc', add_auxiliary_files=False).execute()
@@ -267,7 +256,6 @@ def indices( idic  ):
         logger.debug('calculation for HD17 started ')
         HD17_file = None
         rd = ocgis.RequestDataset(nc, 'tas') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_HD17','name':'HD17'}]
         IR_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('tas_','HD17_')) ,
         output_format='nc', add_auxiliary_files=False).execute()
@@ -278,7 +266,6 @@ def indices( idic  ):
         logger.debug('calculation for GD4 started ')
         GD4_file = None
         rd = ocgis.RequestDataset(nc, 'tas') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_GD4','name':'GD4'}]
         IR_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('tas_','GD4_')) , output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('GD4 calculated ' )
@@ -288,7 +275,6 @@ def indices( idic  ):
         logger.debug('calculation for RR started ')
         RR_file = None
         rd = ocgis.RequestDataset(nc, 'pr') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_RR','name':'RR'}]
         RR_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('pr_','RR_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('RR calculated ' )
@@ -298,7 +284,6 @@ def indices( idic  ):
         logger.debug('calculation for RR1 started ')
         RR1_file = None
         rd = ocgis.RequestDataset(nc, 'pr') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_RR1','name':'RR'}]
         RR_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('pr_','RR1_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('RR1 calculated ' )
@@ -308,7 +293,6 @@ def indices( idic  ):
         logger.debug('calculation for CWD started ')
         CWD_file = None
         rd = ocgis.RequestDataset(nc, 'pr') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_CWD','name':'CWD'}]
         RR_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('pr_','CWD_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('CWD calculated ' )
@@ -318,7 +302,6 @@ def indices( idic  ):
         logger.debug('calculation for SDII started ')
         SDII_file = None
         rd = ocgis.RequestDataset(nc, 'pr') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_SDII','name':'SDII'}]
         SDII_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('pr_','SDII_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('SDII calculated ' )
@@ -328,7 +311,6 @@ def indices( idic  ):
         logger.debug('calculation for R10mm started ')
         R10mm_file = None
         rd = ocgis.RequestDataset(nc, 'pr') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_R10mm','name':'R10mm'}]
         R10mm_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('pr_','R10mm_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('R10mm calculated ' )
@@ -338,7 +320,6 @@ def indices( idic  ):
         logger.debug('calculation for R20mm started ')
         R20mm_file = None
         rd = ocgis.RequestDataset(nc, 'pr') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_R20mm','name':'R20mm'}]
         R20mm_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('pr_','R20mm_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('R20mm calculated ' )
@@ -358,7 +339,6 @@ def indices( idic  ):
         logger.debug('calculation for RX5day started ')
         RX5day_file = None
         rd = ocgis.RequestDataset(nc, 'pr') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_RX5day','name':'RX5day'}]
         RX5day_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('pr_','RX5day_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('RX5day calculated ' )
@@ -368,7 +348,6 @@ def indices( idic  ):
         logger.debug('calculation for SD started ')
         SD_file = None
         rd = ocgis.RequestDataset(nc, 'prsn') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_SD','name':'SD'}]
         SD_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('prsn_','SD_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('SD calculated ' )
@@ -378,7 +357,6 @@ def indices( idic  ):
         logger.debug('calculation for SD1 started ')
         SD1_file = None
         rd = ocgis.RequestDataset(nc, 'prsn') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_SD1','name':'SD1'}]
         SD1_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('prsn_','SD1_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('SD1 calculated ' )
@@ -388,7 +366,6 @@ def indices( idic  ):
         logger.debug('calculation for SD5cm started ')
         SD5cm_file = None
         rd = ocgis.RequestDataset(nc, 'prsn') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_SD5cm','name':'SD5cm'}]
         SD5cm_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('prsn_','SD5cm_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('SD5cm calculated ' )
@@ -399,7 +376,6 @@ def indices( idic  ):
         logger.debug('calculation for SD50cm started ')
         SD50cm_file = None
         rd = ocgis.RequestDataset(nc, 'prsn') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_SD50cm','name':'SD50cm'}]
         SD5cm_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('prsn_','SD50cm_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('SD50cm calculated ' )
@@ -409,7 +385,6 @@ def indices( idic  ):
         logger.debug('calculation for CDD started ')
         CDD_file = None
         rd = ocgis.RequestDataset(nc, 'prsn') # time_range=[dt1, dt2]
-        group = ['year']
         calc_icclim = [{'func':'icclim_CDD','name':'CDD'}]
         SD5cm_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('prsn_','CDD_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('CDD calculated ' )
@@ -421,5 +396,4 @@ def indices( idic  ):
     logger.debug('processing done for file:  %s ' % nc )    
     outlog = outlog + 'processing done for file:  %s \n ' % nc 
   
-  return outlog ;
-  
+  return outlog;

@@ -26,6 +26,17 @@ class icclimWorker(WPSProcess):
       maxmegabites=5000,
       formats=[{"mimeType":"application/x-netcdf"}],
       )
+    
+    self.group = self.addLiteralInput(
+      identifier="group",
+      title="Group",
+      abstract="Select an aggregation",
+      default='year',
+      type=type(''),
+      minOccurs=0,
+      maxOccurs=3,
+      allowedValues=["year", "month"]
+      )
 
     self.TG = self.addLiteralInput(
       identifier="TG",
@@ -344,13 +355,15 @@ class icclimWorker(WPSProcess):
     outdir = (os.path.curdir+'/icclim_files/')
     
     logger.debug('working dir prepared ')
+    logger.debug('group parameter: %s ' % self.group.getValue() )
     
     nc_renamed = tools.fn_creator(ncfiles)
     
     idic = { 'outdir':outdir, 
             'ncs': nc_renamed,
-            'TG': self.TG.getValue(),
-            'TX': self.TX.getValue(),
+            'group':self.group.getValue(),
+            'TG':self.TG.getValue(),
+            'TX':self.TX.getValue(),
             'TXx':self.TXx.getValue(),
             'TXn':self.TXn.getValue(),
             'TN':self.TN.getValue(),
@@ -377,9 +390,6 @@ class icclimWorker(WPSProcess):
             'SD5cm':self.SD5cm.getValue(),
             'SD50cm':self.SD50cm.getValue(),
             'CDD':self.CDD.getValue(),
-            #'DTR':
-            #'ETR':
-            #'vDTR':
             }
 
 #multivariate indice     DTR, ETR, vDTR  indice_multivar(...)
