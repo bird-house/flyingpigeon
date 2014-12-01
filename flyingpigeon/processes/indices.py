@@ -398,6 +398,9 @@ class icclimWorker(WPSProcess):
     
     logtxt = tools.indices(idic)
     logger.debug('flyingpigeon indices tool processed') 
+    #ncs = os.listdir(outdir)
+    
+    #ncs_new = tools.fn_creator(ncs)
     
     tar.add(outdir, arcname = outdir.replace(os.curdir, ""))
     logger.debug('tar ncfiles')
