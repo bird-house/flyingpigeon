@@ -245,7 +245,7 @@ def indices( idic  ):
         logger.debug('calculation for CFD started ')
         CFD_file = None
         calc_icclim = [{'func':'icclim_CFD','name':'CFD'}]
-        CFD_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('tasmax_','CFD_')) ,
+        CFD_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix=(basename.replace('tasmin_','CFD_')) ,
         output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('CFD calculated ' )
         outlog = outlog + "CFD indice processed sucessfully  \n"
