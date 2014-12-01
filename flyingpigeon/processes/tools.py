@@ -30,7 +30,7 @@ def fn_creator( ncs ):
     
     if (str(ds.project_id) == 'CMIP5'):
     #day_MPI-ESM-LR_historical_r1i1p1
-      var = str(rd.variable)
+      var ==str(rd.variable)
       frq = str(ds.frequency)
       gmodel = str(ds.model_id)
       exp = str(ds.experiment_id)
@@ -39,7 +39,7 @@ def fn_creator( ncs ):
         
     elif (str(ds.project_id) == 'CORDEX'):
     #EUR-11_ICHEC-EC-EARTH_historical_r3i1p1_DMI-HIRHAM5_v1_day
-      var = str(rd.variable)
+      var ==str(rd.variable)
       dom = str(ds.CORDEX_domain)
       gmodel = str(ds.driving_model_id)
       exp = str(ds.experiment_id)
@@ -63,11 +63,12 @@ def fn_creator( ncs ):
   
   return newnames
 
-
 def fn_sorter(ncs): 
   ndic = {}
-  for nc in ncs: 
-    n = nc.path.split('_')
+  for nc in ncs:
+    #logger.debug('file: %s' % nc)
+    p, f = os.path.split(nc) 
+    n = f.split('_')
     bn = '_'.join(n[0:-1])
     ndic[bn] = []
   for key in ndic: 
@@ -75,6 +76,23 @@ def fn_sorter(ncs):
       if key in n: 
         ndic[key].append(n)  
   logger.debug('Data Experiment dictionary build: %i experiments found' % (len(ndic.keys())))
+  return ndic
+
+def fn_sorter_ch(ncs):
+    # concatinates szenarios and appropriate historical runs
+  ndic = {}
+  for nc in ncs:
+    p, f = os.path.split(nc) 
+    n = f.split('_')
+    bn = '_'.join(n[0:-1])
+    if n[3] != 'historical':
+      ndic[bn] = []
+  for key in ndic:
+    historical = key.replace('rcp26','historical').replace('rcp45','historical').replace('rcp85','historical')
+    for n in ncs:
+      if key in n or historical in n: 
+        ndic[key].append(n)
+  logger.debug('Data Experiment dictionary build: %i experiments found' % (len(ndic.keys())))      
   return ndic
   
 def indices( idic  ):
@@ -132,22 +150,33 @@ def indices( idic  ):
   #rd_pr = ocgis.util.helpers.get_sorted_uris_by_time_dimension(ocgis.RequestDataset(ncs, 'pr'))
   
   #self.show_status('Set ocgis outdir ...', 5)
-  for nc in ncs:
-    fp, fn = os.path.split(nc)
-    basename = os.path.splitext(fn)[0]
-    ds = Dataset(nc)
+  
+  exp = fn_sorter(ncs) # dictionary with experiment : files
+  
+  for key in exp.keys():
+    ncs = exp[key]
+    basename = key
+    var = key.split('_')[0]
+    ncs.sort()
+    rd = ocgis.RequestDataset(ncs, var) # time_range=[dt1, dt2]
+    logger.debug('calculation of experimtent %s with variable %s'% (key,var))
+    
+  #for nc in ncs:
+    #fp, fn = os.path.split(nc)
+    #basename = os.path.splitext(fn)[0]
+    #ds = Dataset(nc)
     try:
-      if TG == True and "tas" in ds.variables.keys():
+      if TG == True and var == 'tas': # ds.variables.keys():
         logger.debug('calculation for TG started ')
         TG_file = None
-        rd = ocgis.RequestDataset(nc, 'tas') # time_range=[dt1, dt2]
         calc_icclim = [{'func':'icclim_TG','name':'TG'}]
         rds = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=group, prefix= (basename.replace('tas_','TG_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False)
         TG_file= rds.execute()
         logger.debug('TG calculated ' )
         outlog = outlog + "TG indice processed sucessfully  \n"
-              
-      if TX == True and "tasmax" in ds.variables.keys():
+        #TG_file = fn_creator( TG_file )
+      
+      if TX == True and  var =="tasmax" :
         logger.debug('calculation for TX started ')
         TX_file = None
         rd = ocgis.RequestDataset(nc, 'tasmax') # time_range=[dt1, dt2]
@@ -156,7 +185,7 @@ def indices( idic  ):
         logger.debug('TX calculated ' )
         outlog = outlog + "TX indice processed sucessfully  \n"
               
-      if TN == True and "tasmin" in ds.variables.keys():
+      if TN == True and var =="tasmin" :
         logger.debug('calculation for TN started ')
         TN_file = None
         rd = ocgis.RequestDataset(nc, 'tasmin') # time_range=[dt1, dt2]
@@ -165,7 +194,7 @@ def indices( idic  ):
         logger.debug('TN calculated ' )
         outlog = outlog + "TN indice processed sucessfully  \n"
 
-      if TXx == True and "tasmax" in ds.variables.keys():
+      if TXx == True and  var =="tasmax" :
         logger.debug('calculation for TXx started ')
         TXx_file = None
         rd = ocgis.RequestDataset(nc, 'tasmax') # time_range=[dt1, dt2]
@@ -174,7 +203,7 @@ def indices( idic  ):
         logger.debug('TXx calculated ' )
         outlog = outlog + "TXx indice processed sucessfully  \n"
 
-      if TNx == True and "tasmin" in ds.variables.keys():
+      if TNx == True and var =="tasmin" :
         logger.debug('calculation for TNx started ')
         TNx_file = None
         rd = ocgis.RequestDataset(nc, 'tasmin') # time_range=[dt1, dt2]
@@ -183,7 +212,7 @@ def indices( idic  ):
         logger.debug('TNx calculated ' )
         outlog = outlog + "TNx indice processed sucessfully  \n"
 
-      if TNn == True and "tasmin" in ds.variables.keys():
+      if TNn == True and var =="tasmin" :
         logger.debug('calculation for TNn started ')
         TNn_file = None
         rd = ocgis.RequestDataset(nc, 'tasmin') # time_range=[dt1, dt2]
@@ -192,7 +221,7 @@ def indices( idic  ):
         logger.debug('TNn calculated ' )
         outlog = outlog + "TNn indice processed sucessfully  \n"
           
-      if SU == True and "tasmax" in ds.variables.keys():
+      if SU == True and  var =="tasmax" :
         logger.debug('calculation for SU started ')
         SU_file = None
         rd = ocgis.RequestDataset(nc, 'tasmax') # time_range=[dt1, dt2]
@@ -201,7 +230,7 @@ def indices( idic  ):
         logger.debug('SU calculated ' )
         outlog = outlog + "SU indice processed sucessfully  \n"
 
-      if CSU == True and "tasmax" in ds.variables.keys():
+      if CSU == True and  var =="tasmax" :
         logger.debug('calculation for CSU started ')
         SU_file = None
         rd = ocgis.RequestDataset(nc, 'tasmax') # time_range=[dt1, dt2]
@@ -211,7 +240,7 @@ def indices( idic  ):
         logger.debug('CSU calculated ' )
         outlog = outlog + "CSU indice processed sucessfully  \n"
 
-      if FD == True and "tasmin" in ds.variables.keys():
+      if FD == True and var =="tasmin" :
         logger.debug('calculation for FD started ')
         FD_file = None
         rd = ocgis.RequestDataset(nc, 'tasmin') # time_range=[dt1, dt2]
@@ -221,7 +250,7 @@ def indices( idic  ):
         logger.debug('FD calculated ' )
         outlog = outlog + "FD indice processed sucessfully  \n"
           
-      if CFD == True and "tasmin" in ds.variables.keys():
+      if CFD == True and var =="tasmin" :
         logger.debug('calculation for CFD started ')
         CFD_file = None
         rd = ocgis.RequestDataset(nc, 'tasmin') # time_range=[dt1, dt2]
@@ -231,7 +260,7 @@ def indices( idic  ):
         logger.debug('CFD calculated ' )
         outlog = outlog + "CFD indice processed sucessfully  \n"
           
-      if TR == True and "tasmin" in ds.variables.keys():
+      if TR == True and var =="tasmin" :
         logger.debug('calculation for TR started ')
         TR_file = None
         rd = ocgis.RequestDataset(nc, 'tasmin') # time_range=[dt1, dt2]
@@ -242,7 +271,7 @@ def indices( idic  ):
         outlog = outlog + "TR indice processed sucessfully  \n"
 
 
-      if ID == True and "tasmax" in ds.variables.keys():
+      if ID == True and  var =="tasmax" :
         logger.debug('calculation for ID started ')
         ID_file = None
         rd = ocgis.RequestDataset(nc, 'tasmax') # time_range=[dt1, dt2]
@@ -252,7 +281,7 @@ def indices( idic  ):
         logger.debug('ID calculated ' )
         outlog = outlog + "ID indice processed sucessfully  \n"
 
-      if HD17 == True and "tas" in ds.variables.keys(): 
+      if HD17 == True and var =="tas" :
         logger.debug('calculation for HD17 started ')
         HD17_file = None
         rd = ocgis.RequestDataset(nc, 'tas') # time_range=[dt1, dt2]
@@ -271,7 +300,7 @@ def indices( idic  ):
         logger.debug('GD4 calculated ' )
         outlog = outlog + "GD4 indice processed sucessfully  \n"
           
-      if RR == True and "pr" in ds.variables.keys():
+      if RR == True and var == "pr" :
         logger.debug('calculation for RR started ')
         RR_file = None
         rd = ocgis.RequestDataset(nc, 'pr') # time_range=[dt1, dt2]
@@ -280,7 +309,7 @@ def indices( idic  ):
         logger.debug('RR calculated ' )
         outlog = outlog + "RR indice processed sucessfully  \n"
                   
-      if RR1 == True and "pr" in ds.variables.keys():
+      if RR1 == True and var == "pr" :
         logger.debug('calculation for RR1 started ')
         RR1_file = None
         rd = ocgis.RequestDataset(nc, 'pr') # time_range=[dt1, dt2]
@@ -289,7 +318,7 @@ def indices( idic  ):
         logger.debug('RR1 calculated ' )
         outlog = outlog + "RR1 indice processed sucessfully  \n"           
                   
-      if CWD == True and "pr" in ds.variables.keys():
+      if CWD == True and var == "pr" :
         logger.debug('calculation for CWD started ')
         CWD_file = None
         rd = ocgis.RequestDataset(nc, 'pr') # time_range=[dt1, dt2]
@@ -298,7 +327,7 @@ def indices( idic  ):
         logger.debug('CWD calculated ' )
         outlog = outlog + "CWD indice processed sucessfully  \n"           
                   
-      if SDII == True and "pr" in ds.variables.keys():
+      if SDII == True and var == "pr" :
         logger.debug('calculation for SDII started ')
         SDII_file = None
         rd = ocgis.RequestDataset(nc, 'pr') # time_range=[dt1, dt2]
@@ -307,7 +336,7 @@ def indices( idic  ):
         logger.debug('SDII calculated ' )
         outlog = outlog + "SDII indice processed sucessfully  \n"           
                   
-      if R10mm == True and "pr" in ds.variables.keys():
+      if R10mm == True and var == "pr" :
         logger.debug('calculation for R10mm started ')
         R10mm_file = None
         rd = ocgis.RequestDataset(nc, 'pr') # time_range=[dt1, dt2]
@@ -316,7 +345,7 @@ def indices( idic  ):
         logger.debug('R10mm calculated ' )
         outlog = outlog + "R10mm indice processed sucessfully  \n"           
                   
-      if R20mm == True and "pr" in ds.variables.keys():
+      if R20mm == True and var == "pr" :
         logger.debug('calculation for R20mm started ')
         R20mm_file = None
         rd = ocgis.RequestDataset(nc, 'pr') # time_range=[dt1, dt2]
@@ -325,7 +354,7 @@ def indices( idic  ):
         logger.debug('R20mm calculated ' )
         outlog = outlog + "R20mm indice processed sucessfully  \n"           
                   
-      if RX1day == True and "pr" in ds.variables.keys():
+      if RX1day == True and var == "pr" :
         logger.debug('calculation for RX1day started ')
         RX1day_file = None
         rd = ocgis.RequestDataset(nc, 'pr') # time_range=[dt1, dt2]
@@ -335,7 +364,7 @@ def indices( idic  ):
         logger.debug('RX1day calculated ' )
         outlog = outlog + "RX1day indice processed sucessfully  \n"           
                                     
-      if RX5day == True and "pr" in ds.variables.keys():
+      if RX5day == True and var == "pr" :
         logger.debug('calculation for RX5day started ')
         RX5day_file = None
         rd = ocgis.RequestDataset(nc, 'pr') # time_range=[dt1, dt2]
@@ -344,7 +373,7 @@ def indices( idic  ):
         logger.debug('RX5day calculated ' )
         outlog = outlog + "RX5day indice processed sucessfully  \n" 
           
-      if SD == True and "prsn" in ds.variables.keys():
+      if SD == True and var == "prsn" ::
         logger.debug('calculation for SD started ')
         SD_file = None
         rd = ocgis.RequestDataset(nc, 'prsn') # time_range=[dt1, dt2]
@@ -353,7 +382,7 @@ def indices( idic  ):
         logger.debug('SD calculated ' )
         outlog = outlog + "SD indice processed sucessfully  \n"
           
-      if SD1 == True and "prsn" in ds.variables.keys():
+      if SD1 == True and var == "prsn" ::
         logger.debug('calculation for SD1 started ')
         SD1_file = None
         rd = ocgis.RequestDataset(nc, 'prsn') # time_range=[dt1, dt2]
@@ -362,7 +391,7 @@ def indices( idic  ):
         logger.debug('SD1 calculated ' )
         outlog = outlog + "SD1 indice processed sucessfully  \n"
           
-      if SD5cm == True and "prsn" in ds.variables.keys():
+      if SD5cm == True and var == "prsn" ::
         logger.debug('calculation for SD5cm started ')
         SD5cm_file = None
         rd = ocgis.RequestDataset(nc, 'prsn') # time_range=[dt1, dt2]
@@ -372,7 +401,7 @@ def indices( idic  ):
         outlog = outlog + "SD5cm indice processed sucessfully  \n"          
           
                   
-      if SD50cm == True and "prsn" in ds.variables.keys():
+      if SD50cm == True and var == "prsn" ::
         logger.debug('calculation for SD50cm started ')
         SD50cm_file = None
         rd = ocgis.RequestDataset(nc, 'prsn') # time_range=[dt1, dt2]
@@ -381,7 +410,7 @@ def indices( idic  ):
         logger.debug('SD50cm calculated ' )
         outlog = outlog + "SD50cm indice processed sucessfully  \n"          
 
-      if CDD == True and "prsn" in ds.variables.keys():
+      if CDD == True and var == "prsn" ::
         logger.debug('calculation for CDD started ')
         CDD_file = None
         rd = ocgis.RequestDataset(nc, 'prsn') # time_range=[dt1, dt2]
@@ -393,7 +422,8 @@ def indices( idic  ):
       msg = 'processing failed for file  : %s %s ' % ( basename , e)
       logger.error(msg)
       outlog = outlog + msg + '\n'
-    logger.debug('processing done for file:  %s ' % nc )    
-    outlog = outlog + 'processing done for file:  %s \n ' % nc 
+    logger.debug('processing done for experiment :  %s ' % key  )    
+    outlog = outlog + 'processing done for experiment:  %s \n ' % key 
   
   return outlog;
+              
