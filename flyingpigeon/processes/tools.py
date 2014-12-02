@@ -62,6 +62,7 @@ def fn_creator( ncs ):
 
 def fn_sorter(ncs): 
   ndic = {}
+  rndic = {}
   for nc in ncs:
     #logger.debug('file: %s' % nc)
     p, f = os.path.split(nc) 
@@ -74,8 +75,10 @@ def fn_sorter(ncs):
         ndic[key].append(n)  
   logger.debug('Data Experiment dictionary build: %i experiments found' % (len(ndic.keys())))
   for key in ndic:
+    logger.debug('dictionary key: %s.' % key)
     ncs = ndic[key]
     ncs.sort()
+    ds_fr = ds_ls = []
     ds_fr = Dataset(ncs[0])
     ds_ls = Dataset(ncs[-1])
     ts_fr = ds_fr.variables['time']
@@ -84,9 +87,10 @@ def fn_sorter(ncs):
     st = datetime.strftime(reftime + timedelta(days=ts_fr[0]), '%Y%m%d') 
     en = datetime.strftime(reftime + timedelta(days=ts_ls[-1]), '%Y%m%d')
     basename = str(key + '_' + st + '-' + en)
-    ndic[basename] = ndic.pop(key)
+    rndic[basename] = ndic[key]
+    logger.debug('dictionary newname : %s.' % basename)
   logger.debug('dictionary keys renamed including time info.')
-  return ndic
+  return rndic
 
 def fn_sorter_ch(ncs):
     # concatinates szenarios and appropriate historical runs
