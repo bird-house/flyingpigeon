@@ -95,7 +95,9 @@ class extractpointsProcess(WPSProcess):
         import os 
         import subprocess
         
-        from bokeh.plotting import *
+        import tools
+        
+        # from bokeh.plotting import *
         import pandas as pd 
         from pandas import DataFrame, read_csv
         import numpy as np
@@ -103,19 +105,23 @@ class extractpointsProcess(WPSProcess):
         # define logfile 
         # logout_file = self.mktempfile(suffix='.txt')
         
-        plotout_file = tempfile.mktemp(suffix='.html')
-        # definfe bokeh output plot 
-        output_file(plotout_file)
-        save()
-        hold()
-        figure(x_axis_type = "datetime", tools="pan,wheel_zoom,box_zoom,reset,previewsave")
-        self.show_status('output_file created: %s' % (plotout_file) , 5)
+        #plotout_file = tempfile.mktemp(suffix='.html')
+        ## definfe bokeh output plot 
+        #output_file(plotout_file)
+        #save()
+        #hold()
+        #figure(x_axis_type = "datetime", tools="pan,wheel_zoom,box_zoom,reset,previewsave")
+        #self.show_status('output_file created: %s' % (plotout_file) , 5)
         
         logger.debug('Initialise extractpoints ... done')
 
         # get the vaulues of WPS delivered arguments
-        ncfiles = self.getInputValues(identifier='netcdf_file')
+        ncs = self.getInputValues(identifier='netcdf_file')
         coords = self.coords.getValue()
+        os.mkdir(os.path.curdir+'/output_files/')
+        output_files = os.path.curdir+'/output_files/' 
+        ncs_rn = tools.fn_creator(ncs)
+        nc_exp = tools.fn_sorter(ncs_rn) # dictionary {experiment:[files]}
         
         geom = []
         for ugid, p in enumerate(coords, start=1):
@@ -126,37 +132,41 @@ class extractpointsProcess(WPSProcess):
             geom.append({'geom': point, 'properties': {'UGID': ugid}})
       
         ocgis.env.OVERWRITE = True
-        ocgis.env.DIR_OUTPUT = self.working_dir
+        ocgis.env.DIR_OUTPUT = output_files
       
         (fp_tar, tarout_file) = tempfile.mkstemp(dir=".", suffix='.tar')
         tar = tarfile.open(tarout_file, "w")
+        
         csvfiles = []
         
-        self.show_status('ncfiles and coords : %s , %s ' % (ncfiles, coords), 7)
+        self.show_status('coordinates : %s ' % ( coords), 7)
 
-        for nc in ncfiles:
+        for key in nc_exp:
+          ncs = nc_exp[key]
+          ncs.sort()
+          
+          basename = key
+          var = key.split('_')[0]
+          rd = ocgis.RequestDataset(ncs, var) # time_range=[dt1, dt2]
+          logger.debug('calculation of experimtent %s with variable %s'% (key,var))
+
           if  (self.type_nc.getValue() == True ): 
             try:
-              self.show_status('processing file: %s '  % (nc) , 15)
-              (fp_csv, nc_temp) = tempfile.mkstemp(dir=".", suffix=".nc") 
-              rd = ocgis.RequestDataset(uri=nc)
-              ops = ocgis.OcgOperations(dataset=rd, geom=geom, prefix=nc_temp.strip('.nc'), select_nearest=False, output_format='nc')
+              self.show_status('processing experiment: %s '  % (basename) , 15)
+              # (fp_csv, nc_temp) = tempfile.mkstemp(dir=".", suffix=".nc") 
+              # rd = ocgis.RequestDataset(uri=nc)
+              ops = ocgis.OcgOperations(dataset=rd, geom=geom, prefix=basename, select_nearest=False, output_format='nc')
               ret = ops.execute()
-                  
-              if os.path.isfile(nc_temp):
-                tar.add(nc_temp, arcname = nc_temp.replace(self.working_dir, ""))
-                self.show_status('ocgis process done for file : %s '  % (nc_temp) , 15)
-              else:
-                self.show_status('file : %s not found after ocgis processing'  % (nc_temp) , 15)  
             except Exception as e: 
-              self.show_status('failed for file : %s  \n %s '  % (nc, e ) , 15)
+              self.show_status('failed for experiment : %s  \n %s '  % (key, e ) , 15)
 
           if  (self.type_csv.getValue() == True ): 
             try: 
-                (fp_csv, csv_temp) = tempfile.mkstemp(dir=".", suffix=".csv") 
+                (fp_csv, csv_temp) = tempfile.mkstemp(dir=output_files, suffix=".csv")
+                
                 # csvout_file = tempfile.mktemp(suffix='.csv')
                 
-                self.show_status('processing files: %s, CSVfile : %s '  % (nc, csv_temp) , 15)
+                self.show_status('processing files: %s, CSVfile :'  % (basename) , 15)
                 coordsFrame = DataFrame()
                 coordsFrame.index.name = 'date'
                 
@@ -166,12 +176,13 @@ class extractpointsProcess(WPSProcess):
                     self.show_status('splited x and y coord : %s'  % (p) , 20)
                     point = Point(float(p[0]), float(p[1]))
                     
-                    rd = ocgis.RequestDataset(uri=nc)
-                    ops = ocgis.OcgOperations(dataset=rd, geom=point, select_nearest=True, output_format='csv')
+                    #rd = ocgis.RequestDataset(uri=nc)
+                    ops = ocgis.OcgOperations(dataset=rd, geom=point, select_nearest=True, output_format='numpy')
                     ret = ops.execute()
                     
-                    self.show_status('file : %s successfully ocgis procesed for %s  variable'  % (csv_temp, rd.variable) , 15)
+                    self.show_status('file : %s.csv successfully ocgis procesed.'  % (basename ) , 15)
                     
+                    # pandas conversion 
                     field_dict = ret[1]
                     field  = field_dict[rd.variable]
                     self.show_status('values in ocgis array', 15)
@@ -188,15 +199,24 @@ class extractpointsProcess(WPSProcess):
                     pointFrame.index.name = 'date'
                     coordsFrame = pd.concat([coordsFrame,pointFrame], axis=1, ignore_index=False) #coordsFrame.append(pointFrame)
                 coordsFrame.to_csv(csv_temp)
+                os.rename(csv_temp , os.path.join(output_files, basename+'.csv')) 
                 self.show_status('file : %s successfully pandas procesed'  % (csv_temp) , 15)
                 
-                if os.path.isfile(csv_temp):
-                    tar.add(csv_temp, arcname = csv_temp.replace(self.working_dir, "")) # csvfiles.append( csvout_file )
-                    self.show_status('file : %s successfully added to tarfile'  % (csv_temp) , 15)
-                else:
-                    self.show_status('file : %s not found after pandas processing'  % (csv_temp) , 15)
+                #if os.path.isfile(csv_temp):
+                    #tar.add(csv_temp, arcname = csv_temp.replace(self.working_dir, "")) # csvfiles.append( csvout_file )
+                    #self.show_status('file : %s successfully added to tarfile'  % (csv_temp) , 15)
+                #else:
+                    #self.show_status('file : %s not found after pandas processing'  % (csv_temp) , 15)
             except Exception as e: 
-                self.show_status('failed for file : %s  \n %s '  % (nc, e ) , 15)
-                
+                self.show_status('failed for file : %s  \n %s '  % (basename, e ) , 15)
+        
+        
+        if (len(os.listdir(output_files)) > 0):
+          tar.add(output_files, arcname = output_files.replace(self.working_dir, ""))
+          self.show_status('ocgis folder tared with : %i '  % (len(os.listdir(output_files))) , 15)
+        else:
+          self.show_status('ocgis folder contains NO files !!!')
+          
         tar.close()
+        
         self.tarout.setValue( tarout_file )

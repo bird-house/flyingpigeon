@@ -1,6 +1,5 @@
 ##
 import ocgis
-#import icclim
 from ocgis.interface.base.crs import CFWGS84
 
 from netCDF4 import Dataset
@@ -8,8 +7,6 @@ import os
 from datetime import datetime, timedelta
 
 import subprocess
-#from malleefowl.process import WorkerProcess
-#from malleefowl.utils import dupname
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
@@ -76,6 +73,19 @@ def fn_sorter(ncs):
       if key in n: 
         ndic[key].append(n)  
   logger.debug('Data Experiment dictionary build: %i experiments found' % (len(ndic.keys())))
+  for key in ndic:
+    ncs = ndic[key]
+    ncs.sort()
+    ds_fr = Dataset(ncs[0])
+    ds_ls = Dataset(ncs[-1])
+    ts_fr = ds_fr.variables['time']
+    ts_ls = ds_ls.variables['time']
+    reftime = reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
+    st = datetime.strftime(reftime + timedelta(days=ts_fr[0]), '%Y%m%d') 
+    en = datetime.strftime(reftime + timedelta(days=ts_ls[-1]), '%Y%m%d')
+    basename = str(key + '_' + st + '-' + en)
+    ndic[basename] = ndic.pop(key)
+  logger.debug('dictionary keys renamed including time info.')
   return ndic
 
 def fn_sorter_ch(ncs):
@@ -146,16 +156,11 @@ def indices( idic  ):
   exp = fn_sorter(ncs) # dictionary with experiment : files
   
   for key in exp.keys():
+    
     ncs = exp[key]
     ncs.sort()
-    ds_fr = Dataset(ncs[0])
-    ds_ls = Dataset(ncs[-1])
-    ts_fr = ds_fr.variables['time']
-    ts_ls = ds_ls.variables['time']
-    reftime = reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
-    st = datetime.strftime(reftime + timedelta(days=ts_fr[0]), '%Y%m%d') 
-    en = datetime.strftime(reftime + timedelta(days=ts_ls[-1]), '%Y%m%d')
-    basename = str(key + '_' + st + '-' + en)
+    
+    basename = key
     var = key.split('_')[0]
     rd = ocgis.RequestDataset(ncs, var) # time_range=[dt1, dt2]
     logger.debug('calculation of experimtent %s with variable %s'% (key,var))

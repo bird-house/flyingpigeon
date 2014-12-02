@@ -392,8 +392,10 @@ class icclimWorker(WPSProcess):
             'CDD':self.CDD.getValue(),
             }
 
-#multivariate indice     DTR, ETR, vDTR  indice_multivar(...)
-#percentile-based indice         TG10p, TX10p, TN10p, TG90p, TX90p, TN90p, WSDI, CSDI, R75p, R75TOT, R95p, R95TOT, R99p, R99TOT  indice_perc(...)
+#multivariate indice  DTR, ETR, vDTR  indice_multivar(...)
+
+#percentile-based indice TG10p, TX10p, TN10p, TG90p, TX90p, TN90p, WSDI, CSDI, R75p, R75TOT, R95p, R95TOT, R99p, R99TOT  indice_perc(...)
+
 #compound percentile-based indice        CD, CW, WD, WW  indice_compound(...)
     
     logtxt = tools.indices(idic)
