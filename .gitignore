@@ -29,6 +29,9 @@ unit_tests/testdata.json
 .pydevproject
 .settings
 
+# Kate
+*.kate-swp
+
 # Sublime Text Editor
 *.sublime*
 
