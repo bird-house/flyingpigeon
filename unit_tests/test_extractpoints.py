@@ -23,6 +23,24 @@ def test_extractpoints():
         verbose = False,
         sleep_secs=2
         )
+    # was the process successfull
     nose.tools.ok_(result['status'] == 'ProcessSucceeded', result)
-    nose.tools.ok_(len(result['processOutputs']) == 1, result)
+
+    # ... never trust the status ;) we look at the results:
     
+    # we expect only one result (tarout)
+    nose.tools.ok_(len(result['processOutputs']) == 1, result)
+
+    # open remote result file
+    import requests
+    url = result['processOutputs'][0]['reference']
+    response = requests.get(url)
+
+    # check size of files in remote tar file
+    import tarfile
+    from StringIO import StringIO
+    tar = tarfile.open(fileobj=StringIO(response.content))
+    nose.tools.ok_(len(tar.getmembers()) == 3, "num members should be 3, is: %d" % len(tar.getmembers()))
+    for member in tar.getmembers():
+        if member.isfile():
+            nose.tools.ok_(member.size > 0, "content %s has zero size" % member.name)
