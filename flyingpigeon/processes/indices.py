@@ -27,6 +27,16 @@ class icclimWorker(WPSProcess):
       formats=[{"mimeType":"application/x-netcdf"}],
       )
     
+    self.concat = self.addLiteralInput(
+      identifier="concat",
+      title="Concatination",
+      abstract="Concatination of rcps to the approprate historical runs",
+      type=type(False),
+      default=False,
+      minOccurs=0,
+      maxOccurs=0,
+      )
+    
     self.group = self.addLiteralInput(
       identifier="group",
       title="Group",
@@ -34,8 +44,8 @@ class icclimWorker(WPSProcess):
       default='year',
       type=type(''),
       minOccurs=0,
-      maxOccurs=3,
-      allowedValues=["year", "month"]
+      maxOccurs=1,
+      allowedValues=["year", "month", "sem"]
       )
 
     self.TG = self.addLiteralInput(
@@ -361,6 +371,7 @@ class icclimWorker(WPSProcess):
     
     idic = { 'outdir':outdir, 
             'ncs': nc_renamed,
+            'concat':self.concat.getValue(),
             'group':self.group.getValue(),
             'TG':self.TG.getValue(),
             'TX':self.TX.getValue(),

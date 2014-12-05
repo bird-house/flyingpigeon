@@ -95,25 +95,48 @@ def fn_sorter(ncs):
 def fn_sorter_ch(ncs):
     # concatinates szenarios and appropriate historical runs
   ndic = {}
+  rndic = {}
   for nc in ncs:
+    #logger.debug('file: %s' % nc)
     p, f = os.path.split(nc) 
     n = f.split('_')
     bn = '_'.join(n[0:-1])
     if n[3] != 'historical':
       ndic[bn] = []
+      
   for key in ndic:
     historical = key.replace('rcp26','historical').replace('rcp45','historical').replace('rcp85','historical')
     for n in ncs:
       if key in n or historical in n: 
         ndic[key].append(n)
-  logger.debug('Data Experiment dictionary build: %i experiments found' % (len(ndic.keys())))      
+        
+  logger.debug('Data Experiment dictionary build: %i experiments found' % (len(ndic.keys())))
+  for key in ndic:
+    logger.debug('dictionary key: %s.' % key)
+    ncs = ndic[key]
+    ncs.sort()
+    ds_fr = ds_ls = []
+    ds_fr = Dataset(ncs[0])
+    ds_ls = Dataset(ncs[-1])
+    ts_fr = ds_fr.variables['time']
+    ts_ls = ds_ls.variables['time']
+    reftime = reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
+    st = datetime.strftime(reftime + timedelta(days=ts_fr[0]), '%Y%m%d') 
+    en = datetime.strftime(reftime + timedelta(days=ts_ls[-1]), '%Y%m%d')
+    basename = str(key + '_' + st + '-' + en)
+    rndic[basename] = ndic[key]
+    logger.debug('dictionary newname : %s.' % basename)
+  logger.debug('dictionary keys renamed including time info.')
+  outlog = outlog + "dictionary created with %i rcp experiments and concatinated historical runs \n" % len(ndic.keys())  
   return ndic
+
   
 def indices( idic  ):
   # 
   # read the idic 
   outdir = idic['outdir'] if idic.has_key('outdir') else None
   ncs = idic['ncs'] if idic.has_key('ncs') else  None
+  concat = idic['concat'] if idic.has_key('concat') else  None
   TG = idic['TG'] if idic.has_key('TG') else  None
   TX = idic['TX'] if idic.has_key('TX') else  None
   TN = idic['TN'] if idic.has_key('TN') else  None
@@ -156,8 +179,11 @@ def indices( idic  ):
   
   logger.debug('settings for ocgis done')
   outlog = outlog + "settings for ocgis done \n"
- 
-  exp = fn_sorter(ncs) # dictionary with experiment : files
+
+  if concat == True:
+    exp = fn_sorter_ch(ncs)  # dictionary with experiment : files historical runs added to rcps
+  else:  
+    exp = fn_sorter(ncs) # dictionary with experiment : files
   
   for key in exp.keys():
     
