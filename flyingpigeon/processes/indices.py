@@ -342,11 +342,11 @@ class icclimWorker(WPSProcess):
       )
     
     self.tarout = self.addComplexOutput(
+      identifier="output",
       title="netCDF result files",
       abstract="Tar archive containing the netCDF result files",
       formats=[{"mimeType":"application/x-tar"}],
       asReference=True,
-      identifier="ncout",
       )
 
   def execute(self):
