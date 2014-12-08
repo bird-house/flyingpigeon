@@ -323,7 +323,7 @@ class icclimWorker(WPSProcess):
     self.CDD = self.addLiteralInput(
       identifier="CDD",
       title="CDD",
-      abstract="consecutive dry days (pr as input files) ",
+      abstract="Consecutive dry days (pr as input files) ",
       default=False,
       type=type(False),
       minOccurs=0,
@@ -342,11 +342,11 @@ class icclimWorker(WPSProcess):
       )
     
     self.tarout = self.addComplexOutput(
-      identifier="output",
       title="netCDF result files",
       abstract="Tar archive containing the netCDF result files",
       formats=[{"mimeType":"application/x-tar"}],
       asReference=True,
+      identifier="ncout",
       )
 
   def execute(self):
