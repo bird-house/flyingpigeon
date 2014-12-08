@@ -1,5 +1,5 @@
-import sys
-sys.path.append('/home/nils/birdhouse/malleefowl/malleefowl/process.py')
+#import sys
+#sys.path.append('/home/nils/birdhouse/malleefowl/malleefowl/process.py')
 
 from malleefowl.process import WPSProcess
 import subprocess
@@ -404,10 +404,8 @@ class icclimWorker(WPSProcess):
             }
 
 #multivariate indice  DTR, ETR, vDTR  indice_multivar(...)
-
 #percentile-based indice TG10p, TX10p, TN10p, TG90p, TX90p, TN90p, WSDI, CSDI, R75p, R75TOT, R95p, R95TOT, R99p, R99TOT  indice_perc(...)
-
-#compound percentile-based indice        CD, CW, WD, WW  indice_compound(...)
+#compound percentile-based indice CD, CW, WD, WW  indice_compound(...)
     
     logtxt = tools.indices(idic)
     logger.debug('flyingpigeon indices tool processed') 
