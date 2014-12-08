@@ -5,4 +5,5 @@ extends = buildout.cfg
 [settings]
 hostname = localhost
 http-port = 8093
+log-level = DEBUG
 
