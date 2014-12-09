@@ -1,16 +1,23 @@
 import ocgis
+from ocgis.util.helpers import get_sorted_uris_by_time_dimension
 from netCDF4 import Dataset
 
 #from malleefowl import wpslogging as logging
 import logging
 logger = logging.getLogger(__name__)
 
-def calc_indice(uri, indice="SU", variable="tasmax", grouping="year", out_dir=None):
+def calc_indice(resources, indice="SU", variable="tasmax", grouping="year", out_dir=None):
+    """
+    Calculates given indice for variable and grouping.
+
+    resources: single filename or list of filenames (netcdf)
+    out_dir: output directory for result file (netcdf)
+    """
     prefix = variable + '_' + indice
         
     calc_icclim = [{'func' : 'icclim_' + indice, 'name' : indice}]
     try:
-        rd = ocgis.RequestDataset(uri=uri, variable=variable) # TODO: time_range=[dt1, dt2]
+        rd = ocgis.RequestDataset(uri=_sort_by_time(resources), variable=variable) # TODO: time_range=[dt1, dt2]
         result = ocgis.OcgOperations(
             dataset=rd,
             calc=calc_icclim,
@@ -35,4 +42,11 @@ def _calc_grouping(grouping):
         logger.error(msg)
         raise Exception(msg)
     return calc_grouping
+
+def _sort_by_time(resources):
+    if type(resources) is list:
+        sorted_list = get_sorted_uris_by_time_dimension(resources)
+    else:
+        sorted_list = [resources]
+    return sorted_list
 

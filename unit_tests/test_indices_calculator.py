@@ -25,8 +25,11 @@ class IndicesCalculatorTestCase(TestCase):
         from urllib2 import urlparse
         # tas
         url_parts = urlparse.urlparse(
+            TESTDATA["tas_EUR-11_ICHEC-EC-EARTH_historical_r1i1p1_KNMI-RACMO22E_v1_mon_200101-200512.nc"])
+        cls.tas_2001_nc = url_parts.path
+        url_parts = urlparse.urlparse(
             TESTDATA['tas_EUR-11_ICHEC-EC-EARTH_rcp45_r1i1p1_KNMI-RACMO22E_v1_mon_200601-201012.nc'])
-        cls.tas_nc = url_parts.path
+        cls.tas_2006_nc = url_parts.path
         # tasmax
         url_parts = urlparse.urlparse(
             TESTDATA['tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_20010101-20051231.nc'])
@@ -56,6 +59,16 @@ class IndicesCalculatorTestCase(TestCase):
             assert False
         except:
             assert True
+
+    def test_sort_by_time(self):
+        result = indices_calculator._sort_by_time([self.tas_2001_nc, self.tas_2006_nc])
+        nose.tools.ok_('200101' in result[0], result)
+        nose.tools.ok_('200601' in result[1], result)
+        
+        result = indices_calculator._sort_by_time([self.tas_2006_nc, self.tas_2001_nc])
+        nose.tools.ok_('200101' in result[0], result)
+        nose.tools.ok_('200601' in result[1], result)
+        
         
         
     
