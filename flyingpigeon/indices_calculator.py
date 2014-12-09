@@ -2,8 +2,8 @@ import ocgis
 from ocgis.util.helpers import get_sorted_uris_by_time_dimension
 from netCDF4 import Dataset
 
-#from malleefowl import wpslogging as logging
-import logging
+from malleefowl import wpslogging as logging
+#import logging
 logger = logging.getLogger(__name__)
 
 def calc_indice(resources, indice="SU", variable="tasmax", grouping="year", out_dir=None):
@@ -12,6 +12,8 @@ def calc_indice(resources, indice="SU", variable="tasmax", grouping="year", out_
 
     resources: single filename or list of filenames (netcdf)
     out_dir: output directory for result file (netcdf)
+
+    result: netcdf files with calculated indices
     """
     prefix = variable + '_' + indice
         
