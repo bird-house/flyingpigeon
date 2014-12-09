@@ -55,7 +55,6 @@ def fn_creator( ncs ):
     os.rename(nc, os.path.join(fp, filename ))
     newnames.append(os.path.join(fp, filename))
     logger.debug('file name generated and renamed :%s' % ( filename))
-  
   return newnames
 
 def fn_sorter(ncs): 
@@ -126,7 +125,7 @@ def fn_sorter_ch(ncs):
     logger.debug('dictionary newname : %s.' % basename)
   logger.debug('dictionary keys renamed including time info.')
   # outlog = outlog + "dictionary created with %i rcp experiments and concatinated historical runs \n" % len(ndic.keys())  
-  return ndic
+  return rndic
 
   
 def indices( idic  ):
@@ -134,9 +133,13 @@ def indices( idic  ):
   # read the idic 
   group = idic['group'] if idic.has_key('group') else ['year']
   if group == 'sem': 
-    calc_grouping = [[12,1,2],[3,4,5],[6,7,8][9,10,11],'unique'] 
-  elif group == 'year' or 'month':
-    calc_grouping = group
+    calc_grouping = [[12,1,2],[3,4,5],[6,7,8],[9,10,11],'year']
+  if group == 'year':
+    calc_grouping = ['year']
+  elif group == 'mon':
+    calc_grouping = ['month']
+  
+  logger.debug('calc_grouping = %s' % calc_grouping)
   
   outdir = idic['outdir'] if idic.has_key('outdir') else None
   ncs = idic['ncs'] if idic.has_key('ncs') else  None
@@ -176,8 +179,6 @@ def indices( idic  ):
   logger.debug('outdir ... : %s' % ( outdir ))
   
   
-  
-  
   ocgis.env.OVERWRITE = True
   ocgis.env.DIR_DATA = os.path.curdir
   ocgis.env.DIR_OUTPUT = outdir    
@@ -213,7 +214,7 @@ def indices( idic  ):
         rds = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix= (basename.replace('tas_','TG_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False)
         TG_file= rds.execute()
         logger.debug('TG calculated ' )
-        outlog = outlog + "TG indice processed sucessfully  \n"
+        outlog = outlog + "TG indice processed sucessfully for %s \n" % basename
         #TG_file = fn_creator( TG_file )
       
       if TX == True and  var =="tasmax" :
@@ -222,7 +223,7 @@ def indices( idic  ):
         calc_icclim = [{'func':'icclim_TX','name':'TX'}]
         TX_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tasmax_','TG_')) , output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('TX calculated ' )
-        outlog = outlog + "TX indice processed sucessfully  \n"
+        outlog = outlog + "TX indice processed sucessfully for %s \n" % basename
               
       if TN == True and var =="tasmin" :
         logger.debug('calculation for TN started ')
@@ -230,7 +231,7 @@ def indices( idic  ):
         calc_icclim = [{'func':'icclim_TN','name':'TN'}]
         TN_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tasmin_','TN_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('TN calculated ' )
-        outlog = outlog + "TN indice processed sucessfully  \n"
+        outlog = outlog + "TN indice processed sucessfully for %s \n" % basename
 
       if TXx == True and  var =="tasmax" :
         logger.debug('calculation for TXx started ')
@@ -238,7 +239,7 @@ def indices( idic  ):
         calc_icclim = [{'func':'icclim_TXx','name':'TXx'}]
         TXx_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tasmax_','TXx_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('TXx calculated ' )
-        outlog = outlog + "TXx indice processed sucessfully  \n"
+        outlog = outlog + "TXx indice processed sucessfully for %s \n" % basename
 
       if TNx == True and var =="tasmin" :
         logger.debug('calculation for TNx started ')
@@ -246,7 +247,7 @@ def indices( idic  ):
         calc_icclim = [{'func':'icclim_TNx','name':'TNx'}]
         TN_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tasmin_','TNx_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('TNx calculated ' )
-        outlog = outlog + "TNx indice processed sucessfully  \n"
+        outlog = outlog + "TNx indice processed sucessfully for %s \n" % basename
 
       if TNn == True and var =="tasmin" :
         logger.debug('calculation for TNn started ')
@@ -254,7 +255,7 @@ def indices( idic  ):
         calc_icclim = [{'func':'icclim_TNn','name':'TNn'}]
         TN_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tasmin_','TNn_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('TNn calculated ' )
-        outlog = outlog + "TNn indice processed sucessfully  \n"
+        outlog = outlog + "TNn indice processed sucessfully for %s \n" % basename
           
       if SU == True and  var =="tasmax" :
         logger.debug('calculation for SU started ')
@@ -262,7 +263,7 @@ def indices( idic  ):
         calc_icclim = [{'func':'icclim_SU','name':'SU'}]
         SU_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tasmax_','SU_')), output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('SU calculated ' )
-        outlog = outlog + "SU indice processed sucessfully  \n"
+        outlog = outlog + "SU indice processed sucessfully for %s \n" % basename
 
       if CSU == True and  var =="tasmax" :
         logger.debug('calculation for CSU started ')
@@ -271,7 +272,7 @@ def indices( idic  ):
         CSU_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tasmax_','CSU_')) ,
         output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('CSU calculated ' )
-        outlog = outlog + "CSU indice processed sucessfully  \n"
+        outlog = outlog + "CSU indice processed sucessfully for %s \n" % basename
 
       if FD == True and var =="tasmin" :
         logger.debug('calculation for FD started ')
@@ -280,7 +281,7 @@ def indices( idic  ):
         FD_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tasmax_','FD_')) ,
         output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('FD calculated ' )
-        outlog = outlog + "FD indice processed sucessfully  \n"
+        outlog = outlog + "FD indice processed sucessfully for %s \n" % basename
           
       if CFD == True and var =="tasmin" :
         logger.debug('calculation for CFD started ')
@@ -289,7 +290,7 @@ def indices( idic  ):
         CFD_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tasmin_','CFD_')) ,
         output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('CFD calculated ' )
-        outlog = outlog + "CFD indice processed sucessfully  \n"
+        outlog = outlog + "CFD indice processed sucessfully for %s \n" % basename
           
       if TR == True and var =="tasmin" :
         logger.debug('calculation for TR started ')
@@ -298,7 +299,7 @@ def indices( idic  ):
         TR_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tasmax_','TR_')) ,
         output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('TR calculated ' )
-        outlog = outlog + "TR indice processed sucessfully  \n"
+        outlog = outlog + "TR indice processed sucessfully for %s \n" % basename
 
 
       if ID == True and  var =="tasmax" :
@@ -308,7 +309,7 @@ def indices( idic  ):
         IR_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tasmax_','ID_')) ,
         output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('ID calculated ' )
-        outlog = outlog + "ID indice processed sucessfully  \n"
+        outlog = outlog + "ID indice processed sucessfully for %s \n" % basename
 
       if HD17 == True and var =="tas" :
         logger.debug('calculation for HD17 started ')
@@ -317,7 +318,7 @@ def indices( idic  ):
         IR_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tas_','HD17_')) ,
         output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('HD17 calculated ' )
-        outlog = outlog + "HD17 indice processed sucessfully  \n"
+        outlog = outlog + "HD17 indice processed sucessfully for %s \n" % basename
 
       if GD4 == True and var =="tas" :
         logger.debug('calculation for GD4 started ')
@@ -325,7 +326,7 @@ def indices( idic  ):
         calc_icclim = [{'func':'icclim_GD4','name':'GD4'}]
         IR_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tas_','GD4_')) , output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('GD4 calculated ' )
-        outlog = outlog + "GD4 indice processed sucessfully  \n"
+        outlog = outlog + "GD4 indice processed sucessfully for %s \n" % basename
           
       if RR == True and var == "pr" :
         logger.debug('calculation for RR started ')
@@ -333,7 +334,7 @@ def indices( idic  ):
         calc_icclim = [{'func':'icclim_RR','name':'RR'}]
         RR_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('pr_','RR_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('RR calculated ' )
-        outlog = outlog + "RR indice processed sucessfully  \n"
+        outlog = outlog + "RR indice processed sucessfully for %s \n" % basename
                   
       if RR1 == True and var == "pr" :
         logger.debug('calculation for RR1 started ')
@@ -341,7 +342,7 @@ def indices( idic  ):
         calc_icclim = [{'func':'icclim_RR1','name':'RR'}]
         RR_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('pr_','RR1_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('RR1 calculated ' )
-        outlog = outlog + "RR1 indice processed sucessfully  \n"           
+        outlog = outlog + "RR1 indice processed sucessfully for %s \n" % basename           
                   
       if CWD == True and var == "pr" :
         logger.debug('calculation for CWD started ')
@@ -349,7 +350,7 @@ def indices( idic  ):
         calc_icclim = [{'func':'icclim_CWD','name':'CWD'}]
         RR_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('pr_','CWD_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('CWD calculated ' )
-        outlog = outlog + "CWD indice processed sucessfully  \n"           
+        outlog = outlog + "CWD indice processed sucessfully for %s \n" % basename           
                   
       if SDII == True and var == "pr" :
         logger.debug('calculation for SDII started ')
@@ -357,7 +358,7 @@ def indices( idic  ):
         calc_icclim = [{'func':'icclim_SDII','name':'SDII'}]
         SDII_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('pr_','SDII_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('SDII calculated ' )
-        outlog = outlog + "SDII indice processed sucessfully  \n"           
+        outlog = outlog + "SDII indice processed sucessfully for %s \n" % basename           
                   
       if R10mm == True and var == "pr" :
         logger.debug('calculation for R10mm started ')
@@ -365,7 +366,7 @@ def indices( idic  ):
         calc_icclim = [{'func':'icclim_R10mm','name':'R10mm'}]
         R10mm_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('pr_','R10mm_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('R10mm calculated ' )
-        outlog = outlog + "R10mm indice processed sucessfully  \n"           
+        outlog = outlog + "R10mm indice processed sucessfully for %s \n" % basename           
                   
       if R20mm == True and var == "pr" :
         logger.debug('calculation for R20mm started ')
@@ -373,7 +374,7 @@ def indices( idic  ):
         calc_icclim = [{'func':'icclim_R20mm','name':'R20mm'}]
         R20mm_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('pr_','R20mm_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('R20mm calculated ' )
-        outlog = outlog + "R20mm indice processed sucessfully  \n"           
+        outlog = outlog + "R20mm indice processed sucessfully for %s \n" % basename           
                   
       if RX1day == True and var == "pr" :
         logger.debug('calculation for RX1day started ')
@@ -382,7 +383,7 @@ def indices( idic  ):
         calc_icclim = [{'func':'icclim_RX1day','name':'RX1day'}]
         RX1day_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('pr_','RX1day_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('RX1day calculated ' )
-        outlog = outlog + "RX1day indice processed sucessfully  \n"           
+        outlog = outlog + "RX1day indice processed sucessfully for %s \n" % basename           
                                     
       if RX5day == True and var == "pr" :
         logger.debug('calculation for RX5day started ')
@@ -390,7 +391,7 @@ def indices( idic  ):
         calc_icclim = [{'func':'icclim_RX5day','name':'RX5day'}]
         RX5day_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('pr_','RX5day_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('RX5day calculated ' )
-        outlog = outlog + "RX5day indice processed sucessfully  \n" 
+        outlog = outlog + "RX5day indice processed sucessfully for %s \n" % basename 
           
       if SD == True and var == "prsn" :
         logger.debug('calculation for SD started ')
@@ -398,7 +399,7 @@ def indices( idic  ):
         calc_icclim = [{'func':'icclim_SD','name':'SD'}]
         SD_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('prsn_','SD_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('SD calculated ' )
-        outlog = outlog + "SD indice processed sucessfully  \n"
+        outlog = outlog + "SD indice processed sucessfully for %s \n" % basename
           
       if SD1 == True and var == "prsn" :
         logger.debug('calculation for SD1 started ')
@@ -406,7 +407,7 @@ def indices( idic  ):
         calc_icclim = [{'func':'icclim_SD1','name':'SD1'}]
         SD1_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('prsn_','SD1_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('SD1 calculated ' )
-        outlog = outlog + "SD1 indice processed sucessfully  \n"
+        outlog = outlog + "SD1 indice processed sucessfully for %s \n" % basename
           
       if SD5cm == True and var == "prsn" :
         logger.debug('calculation for SD5cm started ')
@@ -414,7 +415,7 @@ def indices( idic  ):
         calc_icclim = [{'func':'icclim_SD5cm','name':'SD5cm'}]
         SD5cm_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('prsn_','SD5cm_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('SD5cm calculated ' )
-        outlog = outlog + "SD5cm indice processed sucessfully  \n"          
+        outlog = outlog + "SD5cm indice processed sucessfully for %s \n" % basename          
           
                   
       if SD50cm == True and var == "prsn" :
@@ -423,7 +424,7 @@ def indices( idic  ):
         calc_icclim = [{'func':'icclim_SD50cm','name':'SD50cm'}]
         SD5cm_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('prsn_','SD50cm_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('SD50cm calculated ' )
-        outlog = outlog + "SD50cm indice processed sucessfully  \n"          
+        outlog = outlog + "SD50cm indice processed sucessfully for %s \n" % basename          
 
       if CDD == True and var == "prsn" :
         logger.debug('calculation for CDD started ')
@@ -431,7 +432,7 @@ def indices( idic  ):
         calc_icclim = [{'func':'icclim_CDD','name':'CDD'}]
         SD5cm_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('prsn_','CDD_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('CDD calculated ' )
-        outlog = outlog + "CDD indice processed sucessfully  \n"            
+        outlog = outlog + "CDD indice processed sucessfully for %s \n" % basename            
     except Exception as e:
       msg = 'processing failed for file  : %s %s ' % ( basename , e)
       logger.error(msg)
