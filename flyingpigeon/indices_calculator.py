@@ -6,6 +6,20 @@ from netCDF4 import Dataset
 import logging
 logger = logging.getLogger(__name__)
 
+_INDICES_ = dict(
+    SU=dict(variable='tasmax', description='Nr of summer days (tasmax as input files)'),
+    TG=dict(variable='tas', description='Mean of mean temperatur (tas as input files)'),
+)
+
+def indices():
+    return _INDICES_.keys()
+
+def indices_description():
+    description = ''
+    for indice in indices():
+        description = description + "%s: %s\n" % (indice, _INDICES_[indice]['description'])
+    return description
+
 def calc_indice(resources, indice="SU", variable="tasmax", grouping="year", out_dir=None):
     """
     Calculates given indice for variable and grouping.
@@ -15,6 +29,12 @@ def calc_indice(resources, indice="SU", variable="tasmax", grouping="year", out_
 
     result: netcdf files with calculated indices
     """
+
+    ## ocgis.env.OVERWRITE = True
+    ## ocgis.env.DIR_DATA = os.path.curdir
+    ## ocgis.env.DIR_OUTPUT = outdir    
+    ## output_crs = None
+    
     prefix = variable + '_' + indice
         
     calc_icclim = [{'func' : 'icclim_' + indice, 'name' : indice}]

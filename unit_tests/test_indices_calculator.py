@@ -35,6 +35,12 @@ class IndicesCalculatorTestCase(TestCase):
             TESTDATA['tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_20010101-20051231.nc'])
         cls.tasmax_nc = url_parts.path
 
+    def test_indices(self):
+        nose.tools.ok_( 'SU' in indices_calculator.indices(), indices_calculator.indices() )
+
+    def test_indices_description(self):
+        nose.tools.ok_( 'SU: ' in indices_calculator.indices_description(), indices_calculator.indices_description() )
+
     @attr('testdata')
     @attr('slow')
     def test_indice_su_tasmax(self):
