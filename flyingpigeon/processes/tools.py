@@ -135,9 +135,13 @@ def indices( idic  ):
   # read the idic 
   group = idic['group'] if idic.has_key('group') else ['year']
   if group == 'sem': 
-    calc_grouping = [[12,1,2],[3,4,5],[6,7,8][9,10,11],'unique'] 
-  elif group == 'year' or 'month':
-    calc_grouping = group
+    calc_grouping = [[12,1,2],[3,4,5],[6,7,8],[9,10,11],'year']
+  if group == 'year':
+    calc_grouping = ['year']
+  elif group == 'mon':
+    calc_grouping = ['month']
+  
+  logger.debug('calc_grouping = %s' % calc_grouping)
   
   outdir = idic['outdir'] if idic.has_key('outdir') else None
   ncs = idic['ncs'] if idic.has_key('ncs') else  None

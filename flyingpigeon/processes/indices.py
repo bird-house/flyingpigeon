@@ -45,7 +45,7 @@ class icclimWorker(WPSProcess):
       type=type(''),
       minOccurs=0,
       maxOccurs=1,
-      allowedValues=["year", "month", "sem"]
+      allowedValues=["year", "mon"] # sem
       )
 
     self.TG = self.addLiteralInput(
