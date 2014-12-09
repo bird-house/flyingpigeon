@@ -1,4 +1,3 @@
-##
 import ocgis
 from ocgis.interface.base.crs import CFWGS84
 
@@ -6,7 +5,6 @@ from netCDF4 import Dataset
 import os 
 from datetime import datetime, timedelta
 
-import subprocess
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
