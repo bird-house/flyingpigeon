@@ -20,7 +20,15 @@ def indices_description():
         description = description + "%s: %s\n" % (indice, _INDICES_[indice]['description'])
     return description
 
-def calc_indice(resources, indice="SU", variable="tasmax", grouping="year", out_dir=None):
+def indice_variable(indice):
+    variable = None
+    try:
+        variable = _INDICES_[indice]['variable']
+    except:
+        logger.error('unknown indice %s', indice)
+    return variable
+        
+def calc_indice(resources, indice="SU", grouping="year", out_dir=None):
     """
     Calculates given indice for variable and grouping.
 
@@ -34,11 +42,11 @@ def calc_indice(resources, indice="SU", variable="tasmax", grouping="year", out_
     ## ocgis.env.DIR_DATA = os.path.curdir
     ## ocgis.env.DIR_OUTPUT = outdir    
     ## output_crs = None
-    
-    prefix = variable + '_' + indice
         
     calc_icclim = [{'func' : 'icclim_' + indice, 'name' : indice}]
     try:
+        variable = indice_variable(indice)
+        prefix = variable + '_' + indice
         rd = ocgis.RequestDataset(uri=_sort_by_time(resources), variable=variable) # TODO: time_range=[dt1, dt2]
         result = ocgis.OcgOperations(
             dataset=rd,

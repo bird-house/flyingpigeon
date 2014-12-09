@@ -47,8 +47,9 @@ class IndicesCalculatorTestCase(TestCase):
         #raise SkipTest
         out_dir = tempfile.mkdtemp()
 
+        # SU expects tasmax
         result = indices_calculator.calc_indice(
-            self.tasmax_nc, indice='SU', variable='tasmax', grouping='year', out_dir=out_dir)
+            self.tasmax_nc, indice='SU', grouping='year', out_dir=out_dir)
 
         ds = Dataset(result)
         # SU variable must be in result

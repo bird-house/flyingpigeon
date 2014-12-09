@@ -25,7 +25,6 @@ class IndicesCalculatorTestCase(WpsTestCase):
     @attr('testdata')
     def test_su_tasmax(self):
         inputs = []
-        inputs.append(('variable', 'tasmax'))
         inputs.append(('indice', 'SU'))
         inputs.append(('grouping', 'year'))
         inputs.append(

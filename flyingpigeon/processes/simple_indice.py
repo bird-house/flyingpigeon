@@ -31,17 +31,6 @@ class CalcIndice(WPSProcess):
             formats=[{"mimeType":"application/x-netcdf"}],
             )
 
-        self.variable = self.addLiteralInput(
-            identifier="variable",
-            title="Variable",
-            abstract="Variable used for calculation",
-            default='tasmax',
-            type=type(''),
-            minOccurs=1,
-            maxOccurs=1,
-            allowedValues=["tasmax", "tasmin", "tas", "pr", "prsn"]
-            )
-      
         self.grouping = self.addLiteralInput(
             identifier="grouping",
             title="Grouping",
@@ -83,7 +72,6 @@ class CalcIndice(WPSProcess):
         result = indices_calculator.calc_indice(
             resources = resources,
             indice = self.indice.getValue(),
-            variable = self.variable.getValue(),
             grouping = self.grouping.getValue(),
             out_dir = self.working_dir,
             )
