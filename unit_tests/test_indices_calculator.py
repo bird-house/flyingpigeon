@@ -17,11 +17,6 @@ import ocgis
 
 from flyingpigeon import indices_calculator
 
-def my_monitor(execution):
-    print execution.status
-    print execution.percentCompleted
-    print execution.statusMessage
-
 class IndicesCalculatorTestCase(TestCase):
 
     @classmethod
@@ -41,8 +36,9 @@ class IndicesCalculatorTestCase(TestCase):
         cls.tasmax_nc = url_parts.path
 
     @attr('testdata')
+    @attr('slow')
     def test_indice_su_tasmax(self):
-        raise SkipTest
+        #raise SkipTest
         out_dir = tempfile.mkdtemp()
 
         result = indices_calculator.calc_indice(
@@ -75,15 +71,6 @@ class IndicesCalculatorTestCase(TestCase):
         nose.tools.ok_('200101' in result[0], result)
         nose.tools.ok_('200601' in result[1], result)
 
-    def test_workflow(self):
-        result = indices_calculator.indice_workflow(
-            url=SERVICE,
-            resources=[TESTDATA['tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_20010101-20051231.nc']],
-            indices=['SU'],
-            grouping='year',
-            monitor=my_monitor)
-
-        nose.tools.ok_(False, result)
         
         
         
