@@ -5,19 +5,34 @@ from netCDF4 import Dataset
 import logging
 logger = logging.getLogger(__name__)
 
-def calc_indice(nc_file, indice="SU", variable="tasmax", out_dir=None):
+def calc_indice(uri, indice="SU", variable="tasmax", grouping="year", out_dir=None):
     prefix = variable + '_' + indice
         
-    calc_icclim = [{'func' : 'icclim_SU', 'name' : indice}]
-    rd = ocgis.RequestDataset(nc_file, variable) # TODO: time_range=[dt1, dt2]
-    result = ocgis.OcgOperations(
-        dataset=rd,
-        calc=calc_icclim,
-        calc_grouping=['year'],
-        prefix=prefix,
-        output_format='nc',
-        dir_output=out_dir,
-        add_auxiliary_files=False).execute()
+    calc_icclim = [{'func' : 'icclim_' + indice, 'name' : indice}]
+    try:
+        rd = ocgis.RequestDataset(uri=uri, variable=variable) # TODO: time_range=[dt1, dt2]
+        result = ocgis.OcgOperations(
+            dataset=rd,
+            calc=calc_icclim,
+            calc_grouping=_calc_grouping(grouping),
+            prefix=prefix,
+            output_format='nc',
+            dir_output=out_dir,
+            add_auxiliary_files=False).execute()
+    except:
+        logger.exception('Could not calc indice %s with variable %s for file %s.', indice, variable, uri)
 
     return result
+
+def _calc_grouping(grouping):
+    calc_grouping = ['year'] # default year
+    if grouping == 'sem':
+        calc_grouping = [ [12,1,2], [3,4,5], [6,7,8], [9,10,11], 'unique'] 
+    elif grouping in ['year', 'month']:
+        calc_grouping = [grouping]
+    else:
+        msg = 'Unknown calculation grouping: %s' % grouping
+        logger.error(msg)
+        raise Exception(msg)
+    return calc_grouping
 
