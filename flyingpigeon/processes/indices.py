@@ -22,8 +22,8 @@ class icclimWorker(WPSProcess):
       title="NetCDF File",
       abstract="NetCDF File",
       minOccurs=1,
-      maxOccurs=100,
-      maxmegabites=5000,
+      maxOccurs=1000,
+      maxmegabites=500000,
       formats=[{"mimeType":"application/x-netcdf"}],
       )
     
@@ -34,7 +34,7 @@ class icclimWorker(WPSProcess):
       type=type(False),
       default=False,
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
     
     self.group = self.addLiteralInput(
@@ -55,7 +55,7 @@ class icclimWorker(WPSProcess):
       type=type(False),
       default=False,
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
       
     
@@ -66,7 +66,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
         
     self.TN = self.addLiteralInput(
@@ -76,7 +76,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
     
     self.TXx = self.addLiteralInput(
@@ -86,7 +86,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
     
     self.TXn = self.addLiteralInput(
@@ -96,7 +96,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
     
     self.TNx = self.addLiteralInput(
@@ -106,7 +106,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
     
     self.TNn = self.addLiteralInput(
@@ -116,7 +116,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
       
     self.SU = self.addLiteralInput(
@@ -126,7 +126,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
 
     self.CSU = self.addLiteralInput(
@@ -136,7 +136,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
 
     self.FD = self.addLiteralInput(
@@ -146,7 +146,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
     
     self.CFD = self.addLiteralInput(
@@ -156,7 +156,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
        
     
@@ -167,7 +167,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
        
     self.ID = self.addLiteralInput(
@@ -177,7 +177,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       ) 
        
     self.HD17 = self.addLiteralInput(
@@ -187,7 +187,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
     
     self.GD4 = self.addLiteralInput(
@@ -197,7 +197,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
     
     self.RR = self.addLiteralInput(
@@ -207,7 +207,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
     
     self.RR1 = self.addLiteralInput(
@@ -217,7 +217,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
     
     self.CWD = self.addLiteralInput(
@@ -227,7 +227,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
     
     self.SDII = self.addLiteralInput(
@@ -237,7 +237,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
              
     self.R10mm = self.addLiteralInput(
@@ -247,7 +247,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
          
     self.R20mm = self.addLiteralInput(
@@ -257,7 +257,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
               
     self.RX1day = self.addLiteralInput(
@@ -267,7 +267,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )   
                      
     self.RX5day = self.addLiteralInput(
@@ -277,7 +277,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
     
     self.SD = self.addLiteralInput(
@@ -287,7 +287,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
     
     self.SD1 = self.addLiteralInput(
@@ -297,7 +297,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )   
           
     self.SD5cm = self.addLiteralInput(
@@ -307,7 +307,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
      
     self.SD50cm = self.addLiteralInput(
@@ -317,7 +317,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )
     
     self.CDD = self.addLiteralInput(
@@ -327,7 +327,7 @@ class icclimWorker(WPSProcess):
       default=False,
       type=type(False),
       minOccurs=0,
-      maxOccurs=0,
+      maxOccurs=1,
       )             
         
     # complex output
