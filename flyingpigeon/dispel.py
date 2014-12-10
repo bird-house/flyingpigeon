@@ -7,15 +7,18 @@ from flyingpigeon import indices_calculator
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
-class CalcSimpleIndice(BaseWPS):
+class CalcSimpleIndice(GenericPE):
     """
     This PE calls the simple_indice Web Processing Service to calculate a climate indice.
     """
-    def __init__(self, url, indice, grouping, out_dir=None):
-        BaseWPS.__init__(self, url, 'simple_indice', output='output')
+    def __init__(self, indice, grouping, out_dir=None):
+        GenericPE.__init__(self)
         self.grouping = grouping
         self.indice = indice
         self.out_dir = out_dir
+
+        self.inputconnections = { 'resource' : { NAME : 'resource' } }
+        self.outputconnections = { 'output' : { NAME : 'output' } }
 
     def _process(self, inputs):
         # TODO: fix file:// url troubles ...
@@ -26,19 +29,24 @@ class CalcSimpleIndice(BaseWPS):
         filename = urlparse.urlparse(inputs['resource'][0]).path
         
         if indices_calculator.has_variable(filename, variable):
-            self.wps_inputs.append( ('grouping', self.grouping) )
-            self.wps_inputs.append( ('indice', self.indice) )
-
-            result = self.execute()
+            output = indices_calculator.calc_indice(
+                resources=inputs['resource'],
+                indice=self.indice,
+                grouping=self.grouping,
+                out_dir=self.out_dir)
+            result = {}
+            result['output'] = output
+            
             logger.info('result %s', result)
 
             # TODO: fix output collection
-            from os.path import join, curdir
-            if self.out_dir is None:
-                self.out_dir = curdir
-            outfile = join(self.out_dir, 'status_locations.txt')
-            with open(outfile, 'a') as fp: 
-                fp.write(result['status_location'] + '\n')
+            if output is not None:
+                from os.path import join, curdir
+                if self.out_dir is None:
+                    self.out_dir = curdir
+                outfile = join(self.out_dir, 'output.txt')
+                with open(outfile, 'a') as fp: 
+                    fp.write(output + '\n')
         return result
 
 class GroupByExperiment(GenericPE):
@@ -57,9 +65,9 @@ class GroupByExperiment(GenericPE):
         for key in exp_groups.keys():
             # TODO: wps needs file://
             self.log('starting experiment: %s' % key)
-            from os.path import abspath
-            nc_files = [ "file://%s" % abspath(path) for path in exp_groups[key] ]
-            self.write('output', nc_files)
+            #from os.path import abspath
+            #nc_files = [ "file://%s" % abspath(path) for path in exp_groups[key] ]
+            self.write('output', exp_groups[key])
 
 def climate_indice_workflow(url, resources, indices=['SU'], grouping='year', out_dir=None, monitor=None):
     from dispel4py.workflow_graph import WorkflowGraph
@@ -76,8 +84,7 @@ def climate_indice_workflow(url, resources, indices=['SU'], grouping='year', out
     group_by = GroupByExperiment(resources)
 
     for indice in indices:
-        calc_indice = CalcSimpleIndice(url, indice=indice, grouping=grouping, out_dir=out_dir)
-        calc_indice.set_monitor(monitor)
+        calc_indice = CalcSimpleIndice(indice=indice, grouping=grouping, out_dir=out_dir)
 
         graph.connect(group_by, 'output',  calc_indice, 'resource')
 
@@ -88,21 +95,13 @@ def climate_indice_workflow(url, resources, indices=['SU'], grouping='year', out
 
     # TODO: fix output collection
     from os.path import join
-    outfile = join(out_dir, 'status_locations.txt')
+    outfile = join(out_dir, 'output.txt')
     result = []
     
     with open(outfile, 'r') as fp:
         for line in fp.readlines():
-            status_location = line.strip()
-            if not 'http://' in status_location:
-                continue
-            from owslib.wps import WPSExecution
-            execution = WPSExecution()
-            execution.checkStatus(url=status_location, sleepSecs=0)
-            result.append(dict(
-                output=execution.processOutputs[0].reference,
-                status=execution.status,
-                status_location=execution.statusLocation))
+            output = line.strip()
+            result.append(dict(output=output))
     return result
 
 

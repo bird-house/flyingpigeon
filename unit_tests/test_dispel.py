@@ -39,8 +39,6 @@ class WorkflowTestCase(TestCase):
             out_dir=tempfile.mkdtemp())
 
         nose.tools.ok_(len(result) == 3, result)
-        for wps_result in result:
-            nose.tools.ok_(wps_result['status'] == 'ProcessSucceeded', wps_result)
         #nose.tools.ok_(False, result)
         
         
