@@ -125,7 +125,8 @@ def calc_indice(resources, indice="SU", grouping="year", out_dir=None):
     calc_icclim = [{'func' : 'icclim_' + indice, 'name' : indice}]
     try:
         variable = indice_variable(indice)
-        prefix = variable + '_' + indice
+        import uuid
+        prefix = '%s_%s_%s' % (indice, variable, uuid.uuid4().get_hex()) 
         rd = ocgis.RequestDataset(uri=sort_by_time(resources), variable=variable) # TODO: time_range=[dt1, dt2]
         result = ocgis.OcgOperations(
             dataset=rd,
@@ -136,6 +137,7 @@ def calc_indice(resources, indice="SU", grouping="year", out_dir=None):
             dir_output=out_dir,
             add_auxiliary_files=False).execute()
     except:
+        # TODO: should raise exception?
         logger.exception('Could not calc indice %s with variable %s for files %s.', indice, variable, resources)
 
     return result
