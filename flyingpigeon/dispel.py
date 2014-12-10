@@ -4,6 +4,9 @@ from malleefowl.dispel import BaseWPS
 
 from flyingpigeon import indices_calculator
 
+from malleefowl import wpslogging as logging
+logger = logging.getLogger(__name__)
+
 class CalcSimpleIndice(BaseWPS):
     """
     This PE calls the simple_indice Web Processing Service to calculate a climate indice.
@@ -13,17 +16,21 @@ class CalcSimpleIndice(BaseWPS):
         self.grouping = grouping
         self.indice = indice
         self.out_dir = out_dir
-        
+
     def _process(self, inputs):
         # TODO: fix file:// url troubles ...
         from urllib2 import urlparse
         result = None
         variable = indices_calculator.indice_variable(self.indice)
-        if indices_calculator.has_variable(urlparse.urlparse(inputs['resource'][0]).path, variable):
+
+        filename = urlparse.urlparse(inputs['resource'][0]).path
+        
+        if indices_calculator.has_variable(filename, variable):
             self.wps_inputs.append( ('grouping', self.grouping) )
             self.wps_inputs.append( ('indice', self.indice) )
 
             result = self.execute()
+            logger.info('result %s', result)
 
             # TODO: fix output collection
             from os.path import join, curdir
@@ -50,12 +57,16 @@ class GroupByExperiment(GenericPE):
         for key in exp_groups.keys():
             # TODO: wps needs file://
             self.log('starting experiment: %s' % key)
-            nc_files = [ "file://%s" % path for path in exp_groups[key] ]
+            from os.path import abspath
+            nc_files = [ "file://%s" % abspath(path) for path in exp_groups[key] ]
             self.write('output', nc_files)
 
 def climate_indice_workflow(url, resources, indices=['SU'], grouping='year', out_dir=None, monitor=None):
     from dispel4py.workflow_graph import WorkflowGraph
     from dispel4py.multi_process import multiprocess
+
+    #from os.path import abspath
+    #new_resources = [abspath(resource) for resource in resources]
 
     from os.path import curdir
     if out_dir is None:
@@ -79,6 +90,7 @@ def climate_indice_workflow(url, resources, indices=['SU'], grouping='year', out
     from os.path import join
     outfile = join(out_dir, 'status_locations.txt')
     result = []
+    
     with open(outfile, 'r') as fp:
         for line in fp.readlines():
             status_location = line.strip()

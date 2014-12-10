@@ -4,21 +4,22 @@ from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
 from flyingpigeon import indices_calculator
+from flyingpigeon import dispel
 
-class CalcIndice(WPSProcess):
-    """This process calculates a climate indice for the given input netcdf files."""
+class CalcMultipleIndices(WPSProcess):
 
     def __init__(self):
         WPSProcess.__init__(
             self, 
-            identifier = "simple_indice",
-            title="Calculation of climate indice (simple)",
+            identifier = "multi_indice",
+            title="Calculation of climate multiple indices",
             version = "1.0",
             metadata=[],
-            abstract="This process calculates a climate indice for the given input netcdf files."
+            abstract="This process calculates a multiple climate indices for the given input netcdf files."
             )
 
         indice_values = indices_calculator.indices()
+        num_indices = len(indice_values)
         indice_abstract = indices_calculator.indices_description()
 
         self.resource = self.addComplexInput(
@@ -26,7 +27,7 @@ class CalcIndice(WPSProcess):
             title="Resouce",
             abstract="NetCDF File",
             minOccurs=1,
-            maxOccurs=100,
+            maxOccurs=1024,
             maxmegabites=5000,
             formats=[{"mimeType":"application/x-netcdf"}],
             )
@@ -49,7 +50,7 @@ class CalcIndice(WPSProcess):
             default='SU',
             type=type(''),
             minOccurs=1,
-            maxOccurs=1,
+            maxOccurs=num_indices,
             allowedValues=indice_values
             )
       
@@ -60,26 +61,28 @@ class CalcIndice(WPSProcess):
             title="Indice",
             abstract="Calculated indice as NetCDF file",
             metadata=[],
-            formats=[{"mimeType":"application/x-netcdf"}],
+            formats=[{"mimeType":"text/text"}],
             asReference=True
             )
         
     def execute(self):
         resources = self.getInputValues(identifier='resource')
+        indices = self.getInputValues(identifier='indice')
 
-        import os
-        self.show_status('starting: indice=%s, grouping=%s, num_files=%s, size:%s' % (self.indice.getValue(), self.grouping.getValue(), len(resources), os.path.getsize(resources[0])), 0)
+        self.show_status('starting: indice=%s, num_files=%s' % (indices, len(resources)), 0)
 
-        result = indices_calculator.calc_indice(
-            resources = resources,
-            indice = self.indice.getValue(),
-            grouping = self.grouping.getValue(),
-            out_dir = self.working_dir,
-            )
+        import tempfile
         
-        self.show_status('result %s' % result, 90)
-
+        result = dispel.climate_indice_workflow(
+            url = 'http://localhost:8093/wps',
+            resources = resources,
+            indices = indices,
+            grouping = self.grouping.getValue(),
+            #out_dir = self.working_dir,
+            out_dir = tempfile.mkdtemp(),
+            monitor=self.show_status,
+            )
         self.output.setValue( result )
 
-        self.show_status('done: indice=%s, num_files=%s' % (self.indice.getValue(), len(resources)), 100)
+        self.show_status('done: indice=%s, num_files=%s' % (indices, len(resources)), 100)
 
