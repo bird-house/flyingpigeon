@@ -4,31 +4,34 @@ from malleefowl.dispel import BaseWPS
 
 from flyingpigeon import indices_calculator
 
-#from malleefowl import wpslogging as logging
-import logging
-logger = logging.getLogger(__name__)
-
 class CalcSimpleIndice(BaseWPS):
     """
     This PE calls the simple_indice Web Processing Service to calculate a climate indice.
     """
-    def __init__(self, url, indice, grouping):
+    def __init__(self, url, indice, grouping, out_dir=None):
         BaseWPS.__init__(self, url, 'simple_indice', output='output')
         self.grouping = grouping
         self.indice = indice
+        self.out_dir = out_dir
         
     def _process(self, inputs):
         # TODO: fix file:// url troubles ...
         from urllib2 import urlparse
-        result = {}
+        result = None
         variable = indices_calculator.indice_variable(self.indice)
         if indices_calculator.has_variable(urlparse.urlparse(inputs['resource'][0]).path, variable):
             self.wps_inputs.append( ('grouping', self.grouping) )
             self.wps_inputs.append( ('indice', self.indice) )
 
             result = self.execute()
-        else:
-            result['output'] = None
+
+            # TODO: fix output collection
+            from os.path import join, curdir
+            if self.out_dir is None:
+                self.out_dir = curdir
+            outfile = join(self.out_dir, 'status_locations.txt')
+            with open(outfile, 'a') as fp: 
+                fp.write(result['status_location'] + '\n')
         return result
 
 class GroupByExperiment(GenericPE):
@@ -46,50 +49,48 @@ class GroupByExperiment(GenericPE):
         exp_groups = indices_calculator.group_by_experiment( local_files )
         for key in exp_groups.keys():
             # TODO: wps needs file://
+            self.log('starting experiment: %s' % key)
             nc_files = [ "file://%s" % path for path in exp_groups[key] ]
             self.write('output', nc_files)
 
-class CollectResults(GenericPE):
-    '''
-    This PE takes num_inputs inputs and it merges into one oputput.  
-    '''
-    def __init__(self, num_inputs):
-        GenericPE.__init__(self)
-        if num_inputs == 1:
-            self.inputconnections = { 'input' : { NAME : 'input' } }
-        else:
-            for i in range(num_inputs):
-                self.inputconnections['input%s' % i] = { NAME : 'input%s' % i } 
-        self.outputconnections = { 'output' : { NAME : 'output' } }
-    def process(self, inputs):
-        # print '%s: inputs %s' % (self.id, inputs)
-        result = ''
-        for inp in self.inputconnections:
-            if inp in inputs:
-                result += '%s' % (inputs[inp])
-        if result:
-            # print '%s: result %s' % (self.id, result)
-            return { 'output' : result }
-
-
-def climate_indice_workflow(url, resources, indices=['SU'], grouping='year', monitor=None):
+def climate_indice_workflow(url, resources, indices=['SU'], grouping='year', out_dir=None, monitor=None):
     from dispel4py.workflow_graph import WorkflowGraph
     from dispel4py.multi_process import multiprocess
 
+    from os.path import curdir
+    if out_dir is None:
+        out_dir = curdir
+
     graph = WorkflowGraph()
     group_by = GroupByExperiment(resources)
-    #collect = CollectResults()
 
-    count = 0
     for indice in indices:
-        calc_indice = CalcSimpleIndice(url, indice=indice, grouping=grouping)
+        calc_indice = CalcSimpleIndice(url, indice=indice, grouping=grouping, out_dir=out_dir)
         calc_indice.set_monitor(monitor)
 
         graph.connect(group_by, 'output',  calc_indice, 'resource')
-        #graph.connect(calc_indice, 'output', collect, 'input' )
-        count = count + 1
 
-    result = multiprocess(graph, 8, [{}])
+    from multiprocessing import cpu_count
+    numProcesses = 2 * cpu_count()
+
+    multiprocess(graph, numProcesses=numProcesses, inputs=[{}], simple=False)
+
+    # TODO: fix output collection
+    from os.path import join
+    outfile = join(out_dir, 'status_locations.txt')
+    result = []
+    with open(outfile, 'r') as fp:
+        for line in fp.readlines():
+            status_location = line.strip()
+            if not 'http://' in status_location:
+                continue
+            from owslib.wps import WPSExecution
+            execution = WPSExecution()
+            execution.checkStatus(url=status_location, sleepSecs=0)
+            result.append(dict(
+                output=execution.processOutputs[0].reference,
+                status=execution.status,
+                status_location=execution.statusLocation))
     return result
 
 
