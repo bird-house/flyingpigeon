@@ -26,14 +26,20 @@ class IndicesCalculatorTestCase(TestCase):
         # tas
         url_parts = urlparse.urlparse(
             TESTDATA["tas_EUR-11_ICHEC-EC-EARTH_historical_r1i1p1_KNMI-RACMO22E_v1_mon_200101-200512.nc"])
-        cls.tas_2001_nc = url_parts.path
+        cls.tas_historical_2001_nc = url_parts.path
         url_parts = urlparse.urlparse(
             TESTDATA['tas_EUR-11_ICHEC-EC-EARTH_rcp45_r1i1p1_KNMI-RACMO22E_v1_mon_200601-201012.nc'])
-        cls.tas_2006_nc = url_parts.path
+        cls.tas_rcp45_2006_nc = url_parts.path
         # tasmax
         url_parts = urlparse.urlparse(
             TESTDATA['tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_20010101-20051231.nc'])
-        cls.tasmax_nc = url_parts.path
+        cls.tasmax_historical_2001_nc = url_parts.path
+        url_parts = urlparse.urlparse(
+            TESTDATA['tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19960101-20001231.nc'])
+        cls.tasmax_historical_1996_nc = url_parts.path
+        url_parts = urlparse.urlparse(
+            TESTDATA['tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19910101-19951231.nc'])
+        cls.tasmax_historical_1991_nc = url_parts.path
 
     def test_indices(self):
         nose.tools.ok_( 'SU' in indices_calculator.indices(), indices_calculator.indices() )
@@ -49,7 +55,7 @@ class IndicesCalculatorTestCase(TestCase):
 
         # SU expects tasmax
         result = indices_calculator.calc_indice(
-            self.tasmax_nc, indice='SU', grouping='year', out_dir=out_dir)
+            self.tasmax_historical_1991_nc, indice='SU', grouping='year', out_dir=out_dir)
 
         ds = Dataset(result)
         # SU variable must be in result
@@ -71,22 +77,30 @@ class IndicesCalculatorTestCase(TestCase):
 
     @attr('testdata')
     def test_sort_by_time(self):
-        result = indices_calculator._sort_by_time([self.tas_2001_nc, self.tas_2006_nc])
-        nose.tools.ok_('200101' in result[0], result)
-        nose.tools.ok_('200601' in result[1], result)
-        
-        result = indices_calculator._sort_by_time([self.tas_2006_nc, self.tas_2001_nc])
-        nose.tools.ok_('200101' in result[0], result)
-        nose.tools.ok_('200601' in result[1], result)
+        result = indices_calculator._sort_by_time([self.tasmax_historical_1991_nc, self.tasmax_historical_1996_nc])
+        nose.tools.ok_('19910101' in result[0], result)
+        nose.tools.ok_('19960101' in result[1], result)
+
+        result = indices_calculator._sort_by_time([self.tasmax_historical_1996_nc, self.tasmax_historical_1991_nc])
+        nose.tools.ok_('19910101' in result[0], result)
+        nose.tools.ok_('19960101' in result[1], result)
 
     @attr('testdata')
     def test_group_by_experiment(self):
         nc_files = []
-        nc_files.append(self.tas_2001_nc)
-        nc_files.append(self.tas_2006_nc)
-        nc_files.append(self.tasmax_nc)
+        nc_files.append(self.tas_historical_2001_nc)
+        nc_files.append(self.tas_rcp45_2006_nc)
+        nc_files.append(self.tasmax_historical_1991_nc)
+        nc_files.append(self.tasmax_historical_1996_nc)
         result = indices_calculator.group_by_experiment(nc_files)
-        nose.tools.ok_(False, result)
+        
+        nose.tools.ok_(len(result) == 3, result)
+        nose.tools.ok_("tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day" in result, result)
+        group = result["tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day"]
+        nose.tools.ok_(len(group) == 2, result)
+        nose.tools.ok_("tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19910101-19951231.nc" in group[0], result)
+        nose.tools.ok_("tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19960101-20001231.nc" in group[1], result)
+
 
         
         

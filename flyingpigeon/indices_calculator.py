@@ -47,10 +47,10 @@ def group_by_experiment(nc_files):
     We collect for each experiment all files on the time axis:
     200101-200512, 200601-201012, ...
 
-    Time axis is not sorted by time!
+    Time axis is sorted by time.
     """
     
-    exp_group = {}
+    groups = {}
     for nc_file in nc_files:
         ds = Dataset(nc_file)
         rd = ocgis.RequestDataset(nc_file)
@@ -67,11 +67,16 @@ def group_by_experiment(nc_files):
             version = ds.rcm_version_id,
             frequency = ds.frequency)
 
-        if exp_group.has_key(key):
-            exp_group.append(nc_file)
+        # collect files of each group (time axis)
+        if groups.has_key(key):
+            groups[key].append(nc_file)
         else:
-            exp_group[key] = [nc_file]
-    return exp_group
+            groups[key] = [nc_file]
+
+        # sort files by time
+        for key in groups.keys():
+            groups[key] = _sort_by_time(groups[key])   
+    return groups
 
 def calc_indice(resources, indice="SU", grouping="year", out_dir=None):
     """
