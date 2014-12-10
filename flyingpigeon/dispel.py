@@ -23,7 +23,8 @@ class CalcSimpleIndice(BaseWPS):
         self.wps_inputs.append( ('grouping', self.grouping) )
         self.wps_inputs.append( ('indice', self.indice) )
 
-        return self.execute()
+        result = self.execute()
+        return result
 
 class GroupByExperiment(GenericPE):
     '''
@@ -39,7 +40,9 @@ class GroupByExperiment(GenericPE):
         local_files = [ urlparse.urlparse(url).path for url in inputs['resource'] ]
         exp_groups = indices_calculator.group_by_experiment( local_files )
         for key in exp_groups.keys():
-            self.write('output', exp_groups[key])
+            # TODO: wps needs file://
+            nc_files = [ "file://%s" % path for path in exp_groups[key] ]
+            self.write('output', nc_files)
 
 class CollectResults(GenericPE):
     '''
