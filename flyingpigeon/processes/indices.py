@@ -203,7 +203,7 @@ class icclimWorker(WPSProcess):
     self.RR = self.addLiteralInput(
       identifier="RR",
       title="RR",
-      abstract="precipitation flux (pr as input files) ",
+      abstract="Precipitation flux mean (mon / year) (pr as input files) ",
       default=False,
       type=type(False),
       minOccurs=0,
@@ -213,33 +213,13 @@ class icclimWorker(WPSProcess):
     self.RR1 = self.addLiteralInput(
       identifier="RR1",
       title="RR1",
-      abstract="precipitation ... (pr as input files) ",
+      abstract="Nr of days with precipitation > 1 mm  (pr as input files) ",
       default=False,
       type=type(False),
       minOccurs=0,
       maxOccurs=1,
       )
     
-    self.CWD = self.addLiteralInput(
-      identifier="CWD",
-      title="CWD",
-      abstract="Consecutive wet days (pr as input files) ",
-      default=False,
-      type=type(False),
-      minOccurs=0,
-      maxOccurs=1,
-      )
-    
-    self.SDII = self.addLiteralInput(
-      identifier="SDII",
-      title="SDII",
-      abstract="... (pr as input files) ",
-      default=False,
-      type=type(False),
-      minOccurs=0,
-      maxOccurs=1,
-      )
-             
     self.R10mm = self.addLiteralInput(
       identifier="R10mm",
       title="R10mm",
@@ -253,7 +233,7 @@ class icclimWorker(WPSProcess):
     self.R20mm = self.addLiteralInput(
       identifier="R20mm",
       title="R20mm",
-      abstract="Nr of days >20mm (pr as input files) ",
+      abstract="Nr of days with precipitation > 20 mm (pr as input files) ",
       default=False,
       type=type(False),
       minOccurs=0,
@@ -279,6 +259,26 @@ class icclimWorker(WPSProcess):
       minOccurs=0,
       maxOccurs=1,
       )
+
+    self.CWD = self.addLiteralInput(
+      identifier="CWD",
+      title="CWD",
+      abstract="Consecutive wet days (pr as input files) ",
+      default=False,
+      type=type(False),
+      minOccurs=0,
+      maxOccurs=1,
+      )
+    
+    self.SDII = self.addLiteralInput(
+      identifier="SDII",
+      title="SDII",
+      abstract="Simple drought index (pr as input files) ",
+      default=False,
+      type=type(False),
+      minOccurs=0,
+      maxOccurs=1,
+      )
     
     self.SD = self.addLiteralInput(
       identifier="SD",
@@ -293,7 +293,7 @@ class icclimWorker(WPSProcess):
     self.SD1 = self.addLiteralInput(
       identifier="SD1",
       title="SD1",
-      abstract=" ... (prsn as input files) ",
+      abstract="Nr of days with snow > 1cm  (prsn as input files) ",
       default=False,
       type=type(False),
       minOccurs=0,
@@ -303,7 +303,7 @@ class icclimWorker(WPSProcess):
     self.SD5cm = self.addLiteralInput(
       identifier="SD5cm",
       title="SD5cm",
-      abstract=" ... (prsn as input files) ",
+      abstract="Nr of days with snow > 5cm (prsn as input files) ",
       default=False,
       type=type(False),
       minOccurs=0,
@@ -313,7 +313,7 @@ class icclimWorker(WPSProcess):
     self.SD50cm = self.addLiteralInput(
       identifier="SD50cm",
       title="SD50cm",
-      abstract=" ... (prsn as input files) ",
+      abstract="Nr of days with snow > 50 cm (prsn as input files) ",
       default=False,
       type=type(False),
       minOccurs=0,
@@ -357,7 +357,7 @@ class icclimWorker(WPSProcess):
     
     logger.debug('starting icclim indices execution')
     
-    self.show_status('starting calcualtion of icclim indices', 0)
+    self.show_status('starting calcualtion of icclim indices', 5)
     ncfiles = self.getInputValues(identifier='netcdf_file')
     (fp_tar, tarf) = tempfile.mkstemp(dir=".", suffix='.tar')
     tar = tarfile.open(tarf, "w")
@@ -408,7 +408,8 @@ class icclimWorker(WPSProcess):
 #compound percentile-based indice CD, CW, WD, WW  indice_compound(...)
     
     logtxt = tools.indices(idic)
-    logger.debug('flyingpigeon indices tool processed') 
+    logger.debug('flyingpigeon indices tool processed')
+    self.show_status('flyingpigeon indices tool processed', 98)
     #ncs = os.listdir(outdir)
     
     #ncs_new = tools.fn_creator(ncs)
@@ -423,6 +424,7 @@ class icclimWorker(WPSProcess):
     tar.add(logfile, arcname = outdir.replace(os.curdir, ""))
     tar.close()
     logger.debug('tar file closed')
+    self.show_status('tar file closed ', 99)
     
     self.logout.setValue( logfile )
     self.tarout.setValue( tarf )

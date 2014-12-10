@@ -177,7 +177,7 @@ class extractpointsProcess(WPSProcess):
           self.show_status('failed for file : %s  \n %s '  % (key+'.csv', e ) , 15)
     
     if (len(os.listdir(out_dir)) > 0):
-      tar.add(out_dir, arcname = out_dir.replace(self.working_dir, ""))
+      tar.add(out_dir, arcname = out_dir.replace(os.curdir , ""))
       self.show_status('ocgis folder tared with : %i '  % (len(os.listdir(out_dir))) , 15)
     else:
       self.show_status('ocgis folder contains NO files !!!')
