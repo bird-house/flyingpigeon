@@ -1,13 +1,19 @@
-from malleefowl.dispel import BaseWPS
 from dispel4py.workflow_graph import WorkflowGraph
 from dispel4py import simple_process
 from dispel4py.core import GenericPE, NAME
+
+from malleefowl.dispel import BaseWPS
+
+from flyingpigeon import indices_calculator
 
 #from malleefowl import wpslogging as logging
 import logging
 logger = logging.getLogger(__name__)
 
 class CalcSimpleIndice(BaseWPS):
+    """
+    This PE calls the simple_indice Web Processing Service to calculate a climate indice.
+    """
     def __init__(self, url, indice, grouping):
         BaseWPS.__init__(self, url, 'simple_indice', output='output')
         self.grouping = grouping
@@ -16,8 +22,24 @@ class CalcSimpleIndice(BaseWPS):
     def _process(self, inputs):
         self.wps_inputs.append( ('grouping', self.grouping) )
         self.wps_inputs.append( ('indice', self.indice) )
-        
+
         return self.execute()
+
+class GroupByExperiment(GenericPE):
+    '''
+    This PE takes gets netcdf input files and groups them by experiment.
+    '''
+    def __init__(self):
+        GenericPE.__init__(self)
+        self.inputconnections = { 'input' : { NAME : 'resource' } }
+        self.outputconnections = { 'output' : { NAME : 'output' } }
+    def process(self, inputs):
+        from urllib2 import urlparse
+        # TODO: Dataset doest not like file:// urls
+        local_files = [ urlparse.urlparse(url).path for url in inputs['resource'] ]
+        exp_groups = indices_calculator.group_by_experiment( local_files )
+        for key in exp_groups.keys():
+            self.write('output', exp_groups[key])
 
 class CollectResults(GenericPE):
     '''
@@ -55,19 +77,22 @@ class TestOneInOneOut(GenericPE):
         print inputs
         return { 'output' : inputs['input'] }
 
-def indice_workflow(url, resources, indices=['SU'], grouping='year', monitor=None):
+def climate_indice_workflow(url, resources, indices=['SU'], grouping='year', monitor=None):
     graph = WorkflowGraph()
 
+    # nodes
     wget = TestOneInOneOut()
-
+    group_by_experiment = GroupByExperiment()
     collect = CollectResults(num_inputs = len(indices))
+    
+    graph.connect(wget, 'output', group_by_experiment, 'resource')
 
     count = 0
     for indice in indices:
         calc_indice = CalcSimpleIndice(url, indice=indice, grouping=grouping)
         calc_indice.set_monitor(monitor)
 
-        graph.connect(wget, 'output', calc_indice, 'resource')
+        graph.connect(group_by_experiment, 'output', calc_indice, 'resource')
         graph.connect(calc_indice, 'output', collect, 'input%s' % count )
         count = count + 1
 

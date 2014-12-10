@@ -101,8 +101,8 @@ def calc_indice(resources, indice="SU", grouping="year", out_dir=None):
     """
     Calculates given indice for variable and grouping.
 
-    resources: single filename or list of filenames (netcdf)
-    out_dir: output directory for result file (netcdf)
+    param: resources: single filename or list of filenames (netcdf)
+    param: out_dir: output directory for result file (netcdf)
 
     result: netcdf files with calculated indices
     """
@@ -111,7 +111,8 @@ def calc_indice(resources, indice="SU", grouping="year", out_dir=None):
     ## ocgis.env.DIR_DATA = os.path.curdir
     ## ocgis.env.DIR_OUTPUT = outdir    
     ## output_crs = None
-        
+
+    result = None
     calc_icclim = [{'func' : 'icclim_' + indice, 'name' : indice}]
     try:
         variable = indice_variable(indice)
@@ -126,7 +127,7 @@ def calc_indice(resources, indice="SU", grouping="year", out_dir=None):
             dir_output=out_dir,
             add_auxiliary_files=False).execute()
     except:
-        logger.exception('Could not calc indice %s with variable %s for file %s.', indice, variable, uri)
+        logger.exception('Could not calc indice %s with variable %s for files %s.', indice, variable, resources)
 
     return result
 
