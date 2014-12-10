@@ -65,9 +65,11 @@ class CalcIndice(WPSProcess):
             )
         
     def execute(self):
-        self.show_status('starting ...', 0)
+        self.show_status('starting ... ', 0)
 
         resources = self.getInputValues(identifier='resource')
+
+        self.show_status('indice=%s, num_files=%s' % (self.indice.getValue(), len(resources)), 1)
 
         result = indices_calculator.calc_indice(
             resources = resources,
@@ -77,4 +79,5 @@ class CalcIndice(WPSProcess):
             )
         self.output.setValue( result )
 
-        self.show_status('done', 100)
+        self.show_status('done: indice=%s, num_files=%s' % (self.indice.getValue(), len(resources)), 100)
+

@@ -101,6 +101,11 @@ class IndicesCalculatorTestCase(TestCase):
         nose.tools.ok_("tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19910101-19951231.nc" in group[0], result)
         nose.tools.ok_("tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19960101-20001231.nc" in group[1], result)
 
+    @attr('testdata')
+    def test_has_variable(self):
+        nose.tools.ok_(indices_calculator.has_variable(self.tasmax_historical_1996_nc, 'tasmax') == True)
+        nose.tools.ok_(indices_calculator.has_variable(self.tasmax_historical_1996_nc, 'tas') == False)
+
 
         
         

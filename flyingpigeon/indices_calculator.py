@@ -97,6 +97,15 @@ def sort_by_time(resources):
         sorted_list = [resources]
     return sorted_list
 
+def has_variable(resource, variable):
+    success = False
+    try:
+        rd = ocgis.RequestDataset(uri=resource)
+        success = rd.variable == variable
+    except:
+        logger.exception('has_variable failed.')
+    return success
+
 def calc_indice(resources, indice="SU", grouping="year", out_dir=None):
     """
     Calculates given indice for variable and grouping.
