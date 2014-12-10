@@ -63,10 +63,22 @@ class GroupByExperiment(GenericPE):
         exp_groups = indices_calculator.group_by_experiment( local_files )
         for key in exp_groups.keys():
             # TODO: wps needs file://
-            self.log('starting experiment: %s' % key)
             #from os.path import abspath
             #nc_files = [ "file://%s" % abspath(path) for path in exp_groups[key] ]
             self.write('output', exp_groups[key])
+
+class CollectResults(GenericPE):
+    def __init__(self):
+        GenericPE.__init__(self)
+        self.results = []
+        self.inputconnections = { 'input' : { NAME : 'input'} }
+    def process(self, inputs):
+        logger.info('add result %s', inputs)
+        self.results.append(inputs['input'])
+        logger.info("num results = %s", len(self.results))
+    def get_results(self):
+        logger.info('num results = %s', len(self.results))
+        return self.results
 
 def climate_indice_workflow(resources, indices=['SU'], grouping='year', out_dir=None, monitor=None):
     from dispel4py.workflow_graph import WorkflowGraph
@@ -81,11 +93,13 @@ def climate_indice_workflow(resources, indices=['SU'], grouping='year', out_dir=
 
     graph = WorkflowGraph()
     group_by = GroupByExperiment(resources)
+    collect = CollectResults()
 
     for indice in indices:
         calc_indice = CalcSimpleIndice(indice=indice, grouping=grouping, out_dir=out_dir)
 
         graph.connect(group_by, 'output',  calc_indice, 'resource')
+        graph.connect(calc_indice, 'output', collect, 'input')
 
     from multiprocessing import cpu_count
     numProcesses = 2 * cpu_count()
@@ -101,6 +115,6 @@ def climate_indice_workflow(resources, indices=['SU'], grouping='year', out_dir=
         for line in fp.readlines():
             output = line.strip()
             result.append(dict(output=output))
-    return result
+    return collect.get_results()
 
 
