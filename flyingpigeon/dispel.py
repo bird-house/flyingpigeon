@@ -23,7 +23,7 @@ class CalcSimpleIndice(GenericPE):
     def _process(self, inputs):
         # TODO: fix file:// url troubles ...
         from urllib2 import urlparse
-        result = None
+        result = dict(output='ProcessFailed')
         variable = indices_calculator.indice_variable(self.indice)
 
         filename = urlparse.urlparse(inputs['resource'][0]).path
@@ -34,19 +34,18 @@ class CalcSimpleIndice(GenericPE):
                 indice=self.indice,
                 grouping=self.grouping,
                 out_dir=self.out_dir)
-            result = {}
-            result['output'] = output
-            
-            logger.info('result %s', result)
+                
+            logger.info('output %s', output)
 
             # TODO: fix output collection
             if output is not None:
-                from os.path import join, curdir
-                if self.out_dir is None:
-                    self.out_dir = curdir
-                outfile = join(self.out_dir, 'output.txt')
-                with open(outfile, 'a') as fp: 
-                    fp.write(output + '\n')
+                result['output'] = output
+            from os.path import join, curdir
+            if self.out_dir is None:
+                self.out_dir = curdir
+            outfile = join(self.out_dir, 'output.txt')
+            with open(outfile, 'a') as fp: 
+                fp.write(result['output'] + '\n')
         return result
 
 class GroupByExperiment(GenericPE):
@@ -69,7 +68,7 @@ class GroupByExperiment(GenericPE):
             #nc_files = [ "file://%s" % abspath(path) for path in exp_groups[key] ]
             self.write('output', exp_groups[key])
 
-def climate_indice_workflow(url, resources, indices=['SU'], grouping='year', out_dir=None, monitor=None):
+def climate_indice_workflow(resources, indices=['SU'], grouping='year', out_dir=None, monitor=None):
     from dispel4py.workflow_graph import WorkflowGraph
     from dispel4py.multi_process import multiprocess
 

@@ -71,18 +71,20 @@ class CalcMultipleIndices(WPSProcess):
 
         self.show_status('starting: indice=%s, num_files=%s' % (indices, len(resources)), 0)
 
-        import tempfile
-        
+        #from icclim import calc_indice
+
         result = dispel.climate_indice_workflow(
-            url = 'http://localhost:8093/wps',
             resources = resources,
             indices = indices,
             grouping = self.grouping.getValue(),
-            #out_dir = self.working_dir,
-            out_dir = tempfile.mkdtemp(),
+            out_dir = self.working_dir,
             monitor=self.show_status,
             )
-        self.output.setValue( result )
+        import json
+        outfile = self.mktempfile(suffix='.json')
+        with open(outfile, 'w') as fp:
+            json.dump(obj=result, fp=fp, indent=4, sort_keys=True)
+        self.output.setValue( outfile )
 
         self.show_status('done: indice=%s, num_files=%s' % (indices, len(resources)), 100)
 

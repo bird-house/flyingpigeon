@@ -31,7 +31,6 @@ class WorkflowTestCase(TestCase):
     def test_indice_workflow(self):
         import tempfile
         result = climate_indice_workflow(
-            url=SERVICE,
             resources=self.nc_files,
             indices=['SU', 'TG'],
             grouping='year',
