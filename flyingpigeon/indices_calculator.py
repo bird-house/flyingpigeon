@@ -12,22 +12,67 @@ _INDICES_ = dict(
 )
 
 def indices():
+    """
+    returns a list of all climate indices.
+    """
     return _INDICES_.keys()
 
 def indices_description():
+    """
+    returns a discription of all climate indices.
+    """
     description = ''
     for indice in indices():
         description = description + "%s: %s\n" % (indice, _INDICES_[indice]['description'])
     return description
 
 def indice_variable(indice):
+    """
+    returns variable (tasmax, tas, ...) which can be used for the climate indice.
+    """
     variable = None
     try:
         variable = _INDICES_[indice]['variable']
     except:
         logger.error('unknown indice %s', indice)
     return variable
+
+def group_by_experiment(nc_files):
+    """
+    groups nc_files by experiment name. Experiment examples:
+    
+    CORDEX: EUR-11_ICHEC-EC-EARTH_historical_r3i1p1_DMI-HIRHAM5_v1_day
+    CMIP5:
+
+    We collect for each experiment all files on the time axis:
+    200101-200512, 200601-201012, ...
+
+    Time axis is not sorted by time!
+    """
+    
+    exp_group = {}
+    for nc_file in nc_files:
+        ds = Dataset(nc_file)
+        rd = ocgis.RequestDataset(nc_file)
         
+        # CORDEX example: EUR-11_ICHEC-EC-EARTH_historical_r3i1p1_DMI-HIRHAM5_v1_day
+        cordex_pattern = "{variable}_{domain}_{driving_model}_{experiment}_{ensemble}_{model}_{version}_{frequency}"
+        key = cordex_pattern.format(
+            variable = rd.variable,
+            domain = ds.CORDEX_domain,
+            driving_model = ds.driving_model_id,
+            experiment = ds.experiment_id,
+            ensemble = ds.driving_model_ensemble_member,
+            model = ds.model_id,
+            version = ds.rcm_version_id,
+            frequency = ds.frequency)
+
+        if exp_group.has_key(key):
+            exp_group.append(nc_file)
+        else:
+            exp_group[key] = [nc_file]
+    return exp_group
+
 def calc_indice(resources, indice="SU", grouping="year", out_dir=None):
     """
     Calculates given indice for variable and grouping.

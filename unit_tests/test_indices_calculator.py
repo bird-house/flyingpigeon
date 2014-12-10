@@ -69,6 +69,7 @@ class IndicesCalculatorTestCase(TestCase):
         except:
             assert True
 
+    @attr('testdata')
     def test_sort_by_time(self):
         result = indices_calculator._sort_by_time([self.tas_2001_nc, self.tas_2006_nc])
         nose.tools.ok_('200101' in result[0], result)
@@ -77,6 +78,15 @@ class IndicesCalculatorTestCase(TestCase):
         result = indices_calculator._sort_by_time([self.tas_2006_nc, self.tas_2001_nc])
         nose.tools.ok_('200101' in result[0], result)
         nose.tools.ok_('200601' in result[1], result)
+
+    @attr('testdata')
+    def test_group_by_experiment(self):
+        nc_files = []
+        nc_files.append(self.tas_2001_nc)
+        nc_files.append(self.tas_2006_nc)
+        nc_files.append(self.tasmax_nc)
+        result = indices_calculator.group_by_experiment(nc_files)
+        nose.tools.ok_(False, result)
 
         
         
