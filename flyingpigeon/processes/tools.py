@@ -176,7 +176,7 @@ def indices( idic  ):
   CDD = idic['CDD'] if idic.has_key('CDD') else  None
   logger.debug('gcalc_roup set to : %s' % ( group ))
   
-  outlog = "Starting the indice calculation at: \n"
+  outlog = "Starting the indice calculation at: %s \n" % (datetime.strftime(datetime.now(), '%H:%M:%S %d-%m-%Y'))
   logger.debug('starting icclim indices ... done')
   logger.debug('outdir ... : %s' % ( outdir ))
   
@@ -473,7 +473,8 @@ def indices( idic  ):
       logger.error(msg)
       outlog = outlog + msg + '\n'
     logger.debug('processing done for experiment :  %s ' % key  )    
-    outlog = outlog + 'processing done for experiment:  %s \n ' % key 
+    outlog = outlog + 'processing done for experiment:  %s \n ' % key
   
+  outlog = outlog + "Finished the indice calculation at: %s \n" % (datetime.strftime(datetime.now(), '%H:%M:%S %d-%m-%Y'))
   return outlog;
               
