@@ -75,8 +75,27 @@ def group_by_experiment(nc_files):
 
         # sort files by time
         for key in groups.keys():
-            groups[key] = _sort_by_time(groups[key])   
+            groups[key] = sort_by_time(groups[key])   
     return groups
+
+def calc_grouping(grouping):
+    calc_grouping = ['year'] # default year
+    if grouping == 'sem':
+        calc_grouping = [ [12,1,2], [3,4,5], [6,7,8], [9,10,11], 'unique'] 
+    elif grouping in ['year', 'month']:
+        calc_grouping = [grouping]
+    else:
+        msg = 'Unknown calculation grouping: %s' % grouping
+        logger.error(msg)
+        raise Exception(msg)
+    return calc_grouping
+
+def sort_by_time(resources):
+    if type(resources) is list:
+        sorted_list = get_sorted_uris_by_time_dimension(resources)
+    else:
+        sorted_list = [resources]
+    return sorted_list
 
 def calc_indice(resources, indice="SU", grouping="year", out_dir=None):
     """
@@ -97,11 +116,11 @@ def calc_indice(resources, indice="SU", grouping="year", out_dir=None):
     try:
         variable = indice_variable(indice)
         prefix = variable + '_' + indice
-        rd = ocgis.RequestDataset(uri=_sort_by_time(resources), variable=variable) # TODO: time_range=[dt1, dt2]
+        rd = ocgis.RequestDataset(uri=sort_by_time(resources), variable=variable) # TODO: time_range=[dt1, dt2]
         result = ocgis.OcgOperations(
             dataset=rd,
             calc=calc_icclim,
-            calc_grouping=_calc_grouping(grouping),
+            calc_grouping=calc_grouping(grouping),
             prefix=prefix,
             output_format='nc',
             dir_output=out_dir,
@@ -110,24 +129,4 @@ def calc_indice(resources, indice="SU", grouping="year", out_dir=None):
         logger.exception('Could not calc indice %s with variable %s for file %s.', indice, variable, uri)
 
     return result
-
-def _calc_grouping(grouping):
-    calc_grouping = ['year'] # default year
-    if grouping == 'sem':
-        calc_grouping = [ [12,1,2], [3,4,5], [6,7,8], [9,10,11], 'unique'] 
-    elif grouping in ['year', 'month']:
-        calc_grouping = [grouping]
-    else:
-        msg = 'Unknown calculation grouping: %s' % grouping
-        logger.error(msg)
-        raise Exception(msg)
-    return calc_grouping
-
-def _sort_by_time(resources):
-    if type(resources) is list:
-        sorted_list = get_sorted_uris_by_time_dimension(resources)
-    else:
-        sorted_list = [resources]
-    return sorted_list
-
 

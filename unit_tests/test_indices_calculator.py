@@ -64,9 +64,9 @@ class IndicesCalculatorTestCase(TestCase):
         nose.tools.ok_(len(ds.variables['time']) == 5, len(ds.variables['time']))
 
     def test_calc_grouping(self):
-        nose.tools.ok_(indices_calculator._calc_grouping('year') == ['year'])
-        nose.tools.ok_(indices_calculator._calc_grouping('month') == ['month'])
-        nose.tools.ok_(indices_calculator._calc_grouping('sem') == [ [12,1,2], [3,4,5], [6,7,8], [9,10,11], 'unique'] )
+        nose.tools.ok_(indices_calculator.calc_grouping('year') == ['year'])
+        nose.tools.ok_(indices_calculator.calc_grouping('month') == ['month'])
+        nose.tools.ok_(indices_calculator.calc_grouping('sem') == [ [12,1,2], [3,4,5], [6,7,8], [9,10,11], 'unique'] )
 
         # check invalid value: should raise an exception
         try:
@@ -77,11 +77,11 @@ class IndicesCalculatorTestCase(TestCase):
 
     @attr('testdata')
     def test_sort_by_time(self):
-        result = indices_calculator._sort_by_time([self.tasmax_historical_1991_nc, self.tasmax_historical_1996_nc])
+        result = indices_calculator.sort_by_time([self.tasmax_historical_1991_nc, self.tasmax_historical_1996_nc])
         nose.tools.ok_('19910101' in result[0], result)
         nose.tools.ok_('19960101' in result[1], result)
 
-        result = indices_calculator._sort_by_time([self.tasmax_historical_1996_nc, self.tasmax_historical_1991_nc])
+        result = indices_calculator.sort_by_time([self.tasmax_historical_1996_nc, self.tasmax_historical_1991_nc])
         nose.tools.ok_('19910101' in result[0], result)
         nose.tools.ok_('19960101' in result[1], result)
 
