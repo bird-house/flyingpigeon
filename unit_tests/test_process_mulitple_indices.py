@@ -33,7 +33,7 @@ class MultipleIndicesTestCase(WpsTestCase):
              ))
 
         output=[('output', True)]
-        execution = self.wps.execute(identifier="multi_indice", inputs=inputs, output=output)
+        execution = self.wps.execute(identifier="multiple_indices", inputs=inputs, output=output)
         monitorExecution(execution, sleepSecs=1)
 
         nose.tools.ok_(execution.status == 'ProcessSucceeded', execution.status)
