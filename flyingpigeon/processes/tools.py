@@ -74,20 +74,25 @@ def fn_sorter(ncs):
         ndic[key].append(n)  
   logger.debug('Data Experiment dictionary build: %i experiments found' % (len(ndic.keys())))
   for key in ndic:
-    logger.debug('dictionary key: %s.' % key)
-    ncs = ndic[key]
-    ncs.sort()
-    ds_fr = ds_ls = []
-    ds_fr = Dataset(ncs[0])
-    ds_ls = Dataset(ncs[-1])
-    ts_fr = ds_fr.variables['time']
-    ts_ls = ds_ls.variables['time']
-    reftime = reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
-    st = datetime.strftime(reftime + timedelta(days=ts_fr[0]), '%Y%m%d') 
-    en = datetime.strftime(reftime + timedelta(days=ts_ls[-1]), '%Y%m%d')
-    basename = str(key + '_' + st + '-' + en)
-    rndic[basename] = ndic[key]
-    logger.debug('dictionary newname : %s.' % basename)
+    try:
+      logger.debug('experiment dic key: %s.' % key)
+      ncs = ndic[key]
+      ncs.sort()
+      ds_fr = ds_ls = []
+      ds_fr = Dataset(ncs[0])
+      ds_ls = Dataset(ncs[-1])
+      ts_fr = ds_fr.variables['time']
+      ts_ls = ds_ls.variables['time']
+      reftime = reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
+      st = datetime.strftime(reftime + timedelta(days=ts_fr[0]), '%Y%m%d') 
+      en = datetime.strftime(reftime + timedelta(days=ts_ls[-1]), '%Y%m%d')
+      basename = str(key + '_' + st + '-' + en)
+      rndic[basename] = ndic[key]
+      logger.debug('experiment dic newkey with time info: %s.' % basename)
+    except Exception as e:
+      msg = 'new key name faild for key   : %s ' % ( key , e)
+      logger.error(msg)
+      
   logger.debug('dictionary keys renamed including time info.')
   return rndic
 
@@ -101,8 +106,7 @@ def fn_sorter_ch(ncs):
     n = f.split('_')
     bn = '_'.join(n[0:-1])
     if n[3] != 'historical':
-      ndic[bn] = []
-      
+      ndic[bn] = []      
   for key in ndic:
     historical = key.replace('rcp26','historical').replace('rcp45','historical').replace('rcp85','historical')
     for n in ncs:
@@ -111,24 +115,26 @@ def fn_sorter_ch(ncs):
         
   logger.debug('Data Experiment dictionary build: %i experiments found' % (len(ndic.keys())))
   for key in ndic:
-    logger.debug('dictionary key: %s.' % key)
-    ncs = ndic[key]
-    ncs.sort()
-    ds_fr = ds_ls = []
-    ds_fr = Dataset(ncs[0])
-    ds_ls = Dataset(ncs[-1])
-    ts_fr = ds_fr.variables['time']
-    ts_ls = ds_ls.variables['time']
-    reftime = reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
-    st = datetime.strftime(reftime + timedelta(days=ts_fr[0]), '%Y%m%d') 
-    en = datetime.strftime(reftime + timedelta(days=ts_ls[-1]), '%Y%m%d')
-    basename = str(key + '_' + st + '-' + en)
-    rndic[basename] = ndic[key]
-    logger.debug('dictionary newname : %s.' % basename)
+    try: 
+      logger.debug('dictionary key: %s.' % key)
+      ncs = ndic[key]
+      ncs.sort()
+      ds_fr = ds_ls = []
+      ds_fr = Dataset(ncs[0])
+      ds_ls = Dataset(ncs[-1])
+      ts_fr = ds_fr.variables['time']
+      ts_ls = ds_ls.variables['time']
+      reftime = reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
+      st = datetime.strftime(reftime + timedelta(days=ts_fr[0]), '%Y%m%d') 
+      en = datetime.strftime(reftime + timedelta(days=ts_ls[-1]), '%Y%m%d')
+      basename = str(key + '_' + st + '-' + en)
+      rndic[basename] = ndic[key]
+      logger.debug('dictionary newname : %s.' % basename)
+    except Exception as e:
+      msg = 'new key name faild for key   : %s ' % ( key , e)
+      logger.error(msg)
   logger.debug('dictionary keys renamed including time info.')
-  # outlog = outlog + "dictionary created with %i rcp experiments and concatinated historical runs \n" % len(ndic.keys())  
   return rndic
-
   
 def indices( idic, monitor=dummy_monitor ):
   # 
@@ -138,8 +144,6 @@ def indices( idic, monitor=dummy_monitor ):
   monitor('monitor: starting indices calculation', 6)
   
   group = idic['group'] if idic.has_key('group') else ['year']
-  if group == 'sem': 
-    calc_grouping = [[12,1,2],[3,4,5],[6,7,8],[9,10,11],'year']
   if group == 'year':
     calc_grouping = ['year']
   elif group == 'mon':
@@ -148,7 +152,7 @@ def indices( idic, monitor=dummy_monitor ):
   logger.debug('calc_grouping = %s' % calc_grouping)
   
   outdir = idic['outdir'] if idic.has_key('outdir') else None
-  ncs = idic['ncs'] if idic.has_key('ncs') else  None
+  uris = idic['ncs'] if idic.has_key('ncs') else  None
   concat = idic['concat'] if idic.has_key('concat') else  None
   TG = idic['TG'] if idic.has_key('TG') else  None
   TX = idic['TX'] if idic.has_key('TX') else  None
@@ -184,8 +188,6 @@ def indices( idic, monitor=dummy_monitor ):
   logger.debug('starting icclim indices ... done')
   logger.debug('outdir ... : %s' % ( outdir ))
   
-  
-  
   ocgis.env.OVERWRITE = True
   ocgis.env.DIR_DATA = os.path.curdir
   ocgis.env.DIR_OUTPUT = outdir    
@@ -195,15 +197,15 @@ def indices( idic, monitor=dummy_monitor ):
   outlog = outlog + "settings for ocgis done \n"
 
   if concat == True:
-    exp = fn_sorter_ch(ncs)  # dictionary with experiment : files historical runs added to rcps
+    exp = fn_sorter_ch(uris)  # dictionary with experiment : files historical runs added to rcps
   else:  
-    exp = fn_sorter(ncs) # dictionary with experiment : files
+    exp = fn_sorter(uris) # dictionary with experiment : files
   
   c = 0 
   for key in exp.keys():
     
     c = c + 1 
-    #self.show_status('Starting icclim indices for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+    monitor('Starting icclim indices for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
     
     ncs = exp[key]
     ncs.sort()
@@ -226,7 +228,7 @@ def indices( idic, monitor=dummy_monitor ):
         TG_file= rds.execute()
         logger.debug('TG calculated ' )
         outlog = outlog + "TG indice processed sucessfully for %s \n" % basename
-        #self.show_status('TG indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('TG indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
         #TG_file = fn_creator( TG_file )
       
       if TX == True and  var =="tasmax" :
@@ -236,7 +238,7 @@ def indices( idic, monitor=dummy_monitor ):
         TX_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tasmax_','TG_')) , output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('TX calculated ' )
         outlog = outlog + "TX indice processed sucessfully for %s \n" % basename
-        #self.show_status('TX indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('TX indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
         
       if TN == True and var =="tasmin" :
         logger.debug('calculation for TN started ')
@@ -245,7 +247,7 @@ def indices( idic, monitor=dummy_monitor ):
         TN_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tasmin_','TN_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('TN calculated ' )
         outlog = outlog + "TN indice processed sucessfully for %s \n" % basename
-        #self.show_status('TN indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('TN indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
 
       if TXx == True and  var =="tasmax" :
         logger.debug('calculation for TXx started ')
@@ -254,7 +256,7 @@ def indices( idic, monitor=dummy_monitor ):
         TXx_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tasmax_','TXx_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('TXx calculated ' )
         outlog = outlog + "TXx indice processed sucessfully for %s \n" % basename
-        #self.show_status('TXx indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('TXx indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
 
       if TNx == True and var =="tasmin" :
         logger.debug('calculation for TNx started ')
@@ -263,7 +265,7 @@ def indices( idic, monitor=dummy_monitor ):
         TN_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tasmin_','TNx_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('TNx calculated ' )
         outlog = outlog + "TNx indice processed sucessfully for %s \n" % basename
-        #self.show_status('TNx indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('TNx indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
 
       if TNn == True and var =="tasmin" :
         logger.debug('calculation for TNn started ')
@@ -272,7 +274,7 @@ def indices( idic, monitor=dummy_monitor ):
         TN_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tasmin_','TNn_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('TNn calculated ' )
         outlog = outlog + "TNn indice processed sucessfully for %s \n" % basename
-        #self.show_status('TNn indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('TNn indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
           
       if SU == True and  var =="tasmax" :
         logger.debug('calculation for SU started ')
@@ -281,7 +283,7 @@ def indices( idic, monitor=dummy_monitor ):
         SU_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tasmax_','SU_')), output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('SU calculated ' )
         outlog = outlog + "SU indice processed sucessfully for %s \n" % basename
-        #self.show_status('SU indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('SU indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
 
       if CSU == True and  var =="tasmax" :
         logger.debug('calculation for CSU started ')
@@ -291,7 +293,7 @@ def indices( idic, monitor=dummy_monitor ):
         output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('CSU calculated ' )
         outlog = outlog + "CSU indice processed sucessfully for %s \n" % basename
-        #self.show_status('CSU indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('CSU indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
 
       if FD == True and var =="tasmin" :
         logger.debug('calculation for FD started ')
@@ -301,7 +303,7 @@ def indices( idic, monitor=dummy_monitor ):
         output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('FD calculated ' )
         outlog = outlog + "FD indice processed sucessfully for %s \n" % basename
-        #self.show_status('FD indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('FD indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
           
       if CFD == True and var =="tasmin" :
         logger.debug('calculation for CFD started ')
@@ -311,7 +313,7 @@ def indices( idic, monitor=dummy_monitor ):
         output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('CFD calculated ' )
         outlog = outlog + "CFD indice processed sucessfully for %s \n" % basename
-        #self.show_status('CFD indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('CFD indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
           
       if TR == True and var =="tasmin" :
         logger.debug('calculation for TR started ')
@@ -321,7 +323,7 @@ def indices( idic, monitor=dummy_monitor ):
         output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('TR calculated ' )
         outlog = outlog + "TR indice processed sucessfully for %s \n" % basename
-        #self.show_status('TR indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('TR indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
 
 
       if ID == True and  var =="tasmax" :
@@ -332,7 +334,7 @@ def indices( idic, monitor=dummy_monitor ):
         output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('ID calculated ' )
         outlog = outlog + "ID indice processed sucessfully for %s \n" % basename
-        #self.show_status('ID indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('ID indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
 
       if HD17 == True and var =="tas" :
         logger.debug('calculation for HD17 started ')
@@ -342,7 +344,7 @@ def indices( idic, monitor=dummy_monitor ):
         output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('HD17 calculated ' )
         outlog = outlog + "HD17 indice processed sucessfully for %s \n" % basename
-        #self.show_status('HD17 indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('HD17 indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
 
       if GD4 == True and var =="tas" :
         logger.debug('calculation for GD4 started ')
@@ -351,7 +353,7 @@ def indices( idic, monitor=dummy_monitor ):
         IR_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tas_','GD4_')) , output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('GD4 calculated ' )
         outlog = outlog + "GD4 indice processed sucessfully for %s \n" % basename
-        #self.show_status('GD4 indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('GD4 indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
           
       if RR == True and var == "pr" :
         logger.debug('calculation for RR started ')
@@ -360,7 +362,7 @@ def indices( idic, monitor=dummy_monitor ):
         RR_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('pr_','RR_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('RR calculated ' )
         outlog = outlog + "RR indice processed sucessfully for %s \n" % basename
-        #self.show_status('RR indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('RR indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
                   
       if RR1 == True and var == "pr" :
         logger.debug('calculation for RR1 started ')
@@ -369,7 +371,7 @@ def indices( idic, monitor=dummy_monitor ):
         RR_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('pr_','RR1_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('RR1 calculated ' )
         outlog = outlog + "RR1 indice processed sucessfully for %s \n" % basename
-        #self.show_status('RR1 indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('RR1 indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
                   
       if CWD == True and var == "pr" :
         logger.debug('calculation for CWD started ')
@@ -378,7 +380,7 @@ def indices( idic, monitor=dummy_monitor ):
         RR_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('pr_','CWD_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('CWD calculated ' )
         outlog = outlog + "CWD indice processed sucessfully for %s \n" % basename
-        #self.show_status('CWD indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('CWD indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
                   
       if SDII == True and var == "pr" :
         logger.debug('calculation for SDII started ')
@@ -387,7 +389,7 @@ def indices( idic, monitor=dummy_monitor ):
         SDII_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('pr_','SDII_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('SDII calculated ' )
         outlog = outlog + "SDII indice processed sucessfully for %s \n" % basename
-        #self.show_status('SDII indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('SDII indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
                   
       if R10mm == True and var == "pr" :
         logger.debug('calculation for R10mm started ')
@@ -396,7 +398,7 @@ def indices( idic, monitor=dummy_monitor ):
         R10mm_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('pr_','R10mm_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('R10mm calculated ' )
         outlog = outlog + "R10mm indice processed sucessfully for %s \n" % basename
-        #self.show_status('R10mm indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('R10mm indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
                   
       if R20mm == True and var == "pr" :
         logger.debug('calculation for R20mm started ')
@@ -405,7 +407,7 @@ def indices( idic, monitor=dummy_monitor ):
         R20mm_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('pr_','R20mm_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('R20mm calculated ' )
         outlog = outlog + "R20mm indice processed sucessfully for %s \n" % basename
-        #self.show_status('R20mm indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('R20mm indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
                   
       if RX1day == True and var == "pr" :
         logger.debug('calculation for RX1day started ')
@@ -415,7 +417,7 @@ def indices( idic, monitor=dummy_monitor ):
         RX1day_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('pr_','RX1day_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('RX1day calculated ' )
         outlog = outlog + "RX1day indice processed sucessfully for %s \n" % basename
-        #self.show_status('RX1day indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('RX1day indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
                                     
       if RX5day == True and var == "pr" :
         logger.debug('calculation for RX5day started ')
@@ -424,7 +426,7 @@ def indices( idic, monitor=dummy_monitor ):
         RX5day_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('pr_','RX5day_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('RX5day calculated ' )
         outlog = outlog + "RX5day indice processed sucessfully for %s \n" % basename
-        #self.show_status('RX5day indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('RX5day indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
           
       if SD == True and var == "prsn" :
         logger.debug('calculation for SD started ')
@@ -433,7 +435,7 @@ def indices( idic, monitor=dummy_monitor ):
         SD_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('prsn_','SD_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('SD calculated ' )
         outlog = outlog + "SD indice processed sucessfully for %s \n" % basename
-        #self.show_status('SD indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('SD indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
           
       if SD1 == True and var == "prsn" :
         logger.debug('calculation for SD1 started ')
@@ -442,7 +444,7 @@ def indices( idic, monitor=dummy_monitor ):
         SD1_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('prsn_','SD1_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('SD1 calculated ' )
         outlog = outlog + "SD1 indice processed sucessfully for %s \n" % basename
-        #self.show_status('SD1 indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('SD1 indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
           
       if SD5cm == True and var == "prsn" :
         logger.debug('calculation for SD5cm started ')
@@ -451,7 +453,7 @@ def indices( idic, monitor=dummy_monitor ):
         SD5cm_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('prsn_','SD5cm_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('SD5cm calculated ' )
         outlog = outlog + "SD5cm indice processed sucessfully for %s \n" % basename
-        #self.show_status('SD5cm indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('SD5cm indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
           
                   
       if SD50cm == True and var == "prsn" :
@@ -461,7 +463,7 @@ def indices( idic, monitor=dummy_monitor ):
         SD5cm_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('prsn_','SD50cm_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('SD50cm calculated ' )
         outlog = outlog + "SD50cm indice processed sucessfully for %s \n" % basename
-        #self.show_status('SD50cm indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('SD50cm indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
 
       if CDD == True and var == "prsn" :
         logger.debug('calculation for CDD started ')
@@ -470,7 +472,7 @@ def indices( idic, monitor=dummy_monitor ):
         SD5cm_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('prsn_','CDD_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('CDD calculated ' )
         outlog = outlog + "CDD indice processed sucessfully for %s \n" % basename
-        #self.show_status('CDD indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
+        monitor('CDD indice processed for %i of %i experiments ' % (c , len(exp.keys())) , (100/len(exp.keys())*c ))
         
     except Exception as e:
       msg = 'processing failed for file  : %s %s ' % ( basename , e)

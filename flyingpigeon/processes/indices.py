@@ -36,7 +36,17 @@ class icclimWorker(WPSProcess):
       minOccurs=0,
       maxOccurs=1,
       )
-    
+
+    self.cviewer = self.addLiteralInput(
+      identifier="cviewer",
+      title="Cordex Viewer",
+      abstract="Polygon subsetting for EURO - Cordex Viewer",
+      type=type(False),
+      default=False,
+      minOccurs=0,
+      maxOccurs=1,
+      )
+
     self.group = self.addLiteralInput(
       identifier="group",
       title="Group",
@@ -346,8 +356,18 @@ class icclimWorker(WPSProcess):
       abstract="Tar archive containing the netCDF result files",
       formats=[{"mimeType":"application/x-tar"}],
       asReference=True,
-      identifier="ncout",
+      identifier="tarout",
       )
+
+    self.cvout = self.addComplexOutput(
+      title="netCDF Cordex Viewer files",
+      abstract="Tar archive containing the netCDF result files prepared for Cordex Viewer",
+      formats=[{"mimeType":"application/x-tar"}],
+      asReference=True,
+      identifier="cvout",
+      )
+
+
 
   def execute(self):
     import os
@@ -423,9 +443,24 @@ class icclimWorker(WPSProcess):
     
     tar.add(logfile, arcname = outdir.replace(os.curdir, ""))
     tar.close()
-    logger.debug('tar file closed')
-    self.show_status('tar file closed ', 99)
+    logger.debug('tar file with icclim files closed')
+    self.show_status('tar with icclim files created ', 70)
+    
+    logger.debug('starting Cordex viewer preparation')
+    
+    self.show_status('starting Cordex viewer preparation', 75)
+    
+    (fp_tar, cv_tarf) = tempfile.mkstemp(dir=".", suffix='.tar')
+    cv_tar = tarfile.open(cv_tarf, "w")
+    os.mkdir(os.path.curdir+'/cv_files/')
+    cv_dir = (os.path.curdir+'/cv_files/')
+    
+    # tools.cv_creator(icclim_dir, cv_dir)
+    
+    cv_tar.add(cv_dir, arcname = outdir.replace(os.curdir, ""))
+    cv_tar.close()
     
     self.logout.setValue( logfile )
     self.tarout.setValue( tarf )
+    self.cvout.setValue( cv_tarf )
     self.show_status("processing done", 100)
