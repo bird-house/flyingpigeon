@@ -20,12 +20,10 @@ class CalcSimpleIndice(GenericPE):
         self.inputconnections = { 'resource' : { NAME : 'resource' } }
         self.outputconnections = { 'output' : { NAME : 'output' } }
 
-    def _process(self, inputs):
+    def process(self, inputs):
         # TODO: fix file:// url troubles ...
         from urllib2 import urlparse
-        result = dict(output='ProcessFailed')
         variable = indices_calculator.indice_variable(self.indice)
-
         filename = urlparse.urlparse(inputs['resource'][0]).path
         
         if indices_calculator.has_variable(filename, variable):
@@ -34,19 +32,7 @@ class CalcSimpleIndice(GenericPE):
                 indice=self.indice,
                 grouping=self.grouping,
                 out_dir=self.out_dir)
-                
-            logger.info('output %s', output)
-
-            # TODO: fix output collection
-            if output is not None:
-                result['output'] = output
-            from os.path import join, curdir
-            if self.out_dir is None:
-                self.out_dir = curdir
-            outfile = join(self.out_dir, 'output.txt')
-            with open(outfile, 'a') as fp: 
-                fp.write(result['output'] + '\n')
-        return result
+            self.write('output', output)
 
 class GroupByExperiment(GenericPE):
     '''
