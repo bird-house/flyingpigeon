@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
+def dummy_monitor(message, status):
+    logger.info("%s: progress %s/100", message, status)
 
 def fn_creator( ncs ):
   newnames = []
@@ -128,9 +130,13 @@ def fn_sorter_ch(ncs):
   return rndic
 
   
-def indices( idic  ):
+def indices( idic, monitor=dummy_monitor ):
   # 
-  # read the idic 
+  # read the idic
+
+  # show wps status
+  monitor('monitor: starting indices calculation', 6)
+  
   group = idic['group'] if idic.has_key('group') else ['year']
   if group == 'sem': 
     calc_grouping = [[12,1,2],[3,4,5],[6,7,8],[9,10,11],'year']

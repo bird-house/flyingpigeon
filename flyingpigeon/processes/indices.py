@@ -407,7 +407,7 @@ class icclimWorker(WPSProcess):
 #percentile-based indice TG10p, TX10p, TN10p, TG90p, TX90p, TN90p, WSDI, CSDI, R75p, R75TOT, R95p, R95TOT, R99p, R99TOT  indice_perc(...)
 #compound percentile-based indice CD, CW, WD, WW  indice_compound(...)
     
-    logtxt = tools.indices(idic)
+    logtxt = tools.indices(idic, monitor=self.show_status)
     logger.debug('flyingpigeon indices tool processed')
     self.show_status('flyingpigeon indices tool processed', 98)
     #ncs = os.listdir(outdir)
