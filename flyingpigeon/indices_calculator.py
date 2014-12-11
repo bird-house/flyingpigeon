@@ -76,7 +76,7 @@ def drs_filename( nc_file, skip_timestamp=False ):
                 variable = rd.variable,
                 model = ds.model_id,
                 experiment = ds.experiment,
-                ensemble = "ensemble"
+                ensemble = ds.parent_experiment_rip
                 )
         else:
             raise Exception('unknown project %s' % ds.project_id)

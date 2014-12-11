@@ -103,10 +103,10 @@ class IndicesCalculatorTestCase(TestCase):
             filename == "tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day.nc",
             filename)
 
-        # TODO: cmip5 ... false name generation
+        # cmip5
         filename = indices_calculator.drs_filename(self.cmip5_historical_1850_nc)
         nose.tools.ok_(
-            filename == "cct_MPI-ESM-LR_historical_ensemble_19491216-21051115.nc",
+            filename == "cct_MPI-ESM-LR_historical_r1i1p1_19491216-21051115.nc",
             filename)
 
     @attr('testdata')
