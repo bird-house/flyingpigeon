@@ -189,7 +189,7 @@ def calc_indice(resources=[], indice="SU", grouping="year", out_dir=None):
         prefix = '%s_%s_%s' % (indice, variable, uuid.uuid4().get_hex())
         logger.debug('calculating %s', prefix)
         rd = ocgis.RequestDataset(uri=nc_files, variable=variable) # TODO: time_range=[dt1, dt2]
-        result = ocgis.OcgOperations(
+        output = ocgis.OcgOperations(
             dataset=rd,
             calc=calc_icclim,
             calc_grouping=calc_grouping(grouping),
@@ -201,5 +201,5 @@ def calc_indice(resources=[], indice="SU", grouping="year", out_dir=None):
         # TODO: should raise exception?
         logger.exception('Could not calc indice %s', indice)
 
-    return result, filename
+    return dict(output=output, drs_filename=filename)
 

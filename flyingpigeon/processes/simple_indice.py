@@ -64,8 +64,8 @@ class CalcIndice(WPSProcess):
             asReference=True
             )
 
-        self.filename = self.addLiteralOutput(
-            identifier = "filename",
+        self.drs_filename = self.addLiteralOutput(
+            identifier = "drs_filename",
             title = "DRS Filename",
             type = type(''))
         
@@ -74,7 +74,7 @@ class CalcIndice(WPSProcess):
 
         self.show_status('starting: indice=%s, grouping=%s, num_files=%s' % (self.indice.getValue(), self.grouping.getValue(), len(resources)), 0)
 
-        result,filename = indices_calculator.calc_indice(
+        result = indices_calculator.calc_indice(
             resources = resources,
             indice = self.indice.getValue(),
             grouping = self.grouping.getValue(),
@@ -83,8 +83,8 @@ class CalcIndice(WPSProcess):
         
         self.show_status('result %s' % result, 90)
 
-        self.output.setValue( result )
-        self.filename.setValue( filename )
+        self.output.setValue( result.get('output') )
+        self.drs_filename.setValue( result.get('drs_filename') )
 
         self.show_status('done: indice=%s, num_files=%s' % (self.indice.getValue(), len(resources)), 100)
 
