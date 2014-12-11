@@ -2,8 +2,8 @@ import ocgis
 from ocgis.util.helpers import get_sorted_uris_by_time_dimension
 from netCDF4 import Dataset
 
-from malleefowl import wpslogging as logging
-#import logging
+#from malleefowl import wpslogging as logging
+import logging
 logger = logging.getLogger(__name__)
 
 _INDICES_ = dict(

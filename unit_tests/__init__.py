@@ -1,4 +1,6 @@
-import logging
+from malleefowl import wpslogging as logging
+logger = logging.getLogger(__name__)
+logger.setLevel('DEBUG')
 
 SERVICE = "http://localhost:8093/wps"
 TESTDATA = {}

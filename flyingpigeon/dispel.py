@@ -4,15 +4,23 @@ from malleefowl.dispel import BaseWPS
 
 from flyingpigeon import indices_calculator
 
-from malleefowl import wpslogging as logging
+import logging
 logger = logging.getLogger(__name__)
 
-class CalcSimpleIndice(GenericPE):
+class BasePE(GenericPE):
+    def __init__(self):
+        GenericPE.__init__(self)
+    def debug(self, message):
+        with open('dispel.log', 'a') as fp:
+            fp.write('DEBUG: %s\n' % (message))
+            fp.flush()
+
+class CalcSimpleIndice(BasePE):
     """
     This PE calls the simple_indice Web Processing Service to calculate a climate indice.
     """
     def __init__(self, indice, grouping, out_dir=None):
-        GenericPE.__init__(self)
+        BasePE.__init__(self)
         self.grouping = grouping
         self.indice = indice
         self.out_dir = out_dir
@@ -25,56 +33,62 @@ class CalcSimpleIndice(GenericPE):
         from urllib2 import urlparse
         variable = indices_calculator.indice_variable(self.indice)
         filename = urlparse.urlparse(inputs['resource'][0]).path
+
+        self.debug('filename=%s, variable=%s, indice=%s' % ( filename, variable, self.indice))
         
         if indices_calculator.has_variable(filename, variable):
+            self.debug('start calculation ...')
             output = indices_calculator.calc_indice(
                 resources=inputs['resource'],
                 indice=self.indice,
                 grouping=self.grouping,
                 out_dir=self.out_dir)
+            self.debug('calc_indice output=%s' % output)
             self.write('output', output)
+        else:
+            self.debug('skip file: has not variable %s' % (variable))
 
-class GroupByExperiment(GenericPE):
+class GroupByExperiment(BasePE):
     '''
     This PE takes gets netcdf input files and groups them by experiment.
     '''
     def __init__(self, resources):
-        GenericPE.__init__(self)
+        BasePE.__init__(self)
         self.resources = resources
         self.outputconnections = { 'output' : { NAME : 'output' } }
+
     def process(self, inputs):
         from urllib2 import urlparse
         # TODO: Dataset doest not like file:// urls
         local_files = [ urlparse.urlparse(url).path for url in self.resources ]
+        self.debug("%s" % local_files)
         exp_groups = indices_calculator.group_by_experiment( local_files )
         for key in exp_groups.keys():
             # TODO: wps needs file://
             #from os.path import abspath
             #nc_files = [ "file://%s" % abspath(path) for path in exp_groups[key] ]
+            self.debug('start with experiment group %s' % key)
             self.write('output', exp_groups[key])
 
-class Results(GenericPE):
+class Results(BasePE):
     def __init__(self, out_dir='.'):
-        GenericPE.__init__(self)
+        BasePE.__init__(self)
         from os.path import join
         self.outfile = join(out_dir, 'outputs.json')
-        self.outputs = []
         self.inputconnections = { 'input' : { NAME : 'input'} }
+        
     def process(self, inputs):
-        self.outputs.append(inputs['input'])
-
-    def postprocess(self):
-        import json
-        with open(self.outfile, 'w') as fp:
-            json.dump(obj=self.outputs, fp=fp, indent=4, sort_keys=True)
+        self.debug('write result')
+        with open(self.outfile, 'a') as fp:
+            fp.write("%s\n" % (inputs['input']))
+            fp.flush()
 
     def get_outputs(self):
         outputs = []
-        import json
         with open(self.outfile, 'r') as fp:
-            outputs = json.load(fp=fp)
+            for line in fp.readlines():
+                outputs.append(line.strip())
         return outputs
-        
 
 def climate_indice_workflow(resources, indices=['SU'], grouping='year', out_dir=None, monitor=None):
     from dispel4py.workflow_graph import WorkflowGraph
@@ -92,8 +106,11 @@ def climate_indice_workflow(resources, indices=['SU'], grouping='year', out_dir=
 
     from multiprocessing import cpu_count
     numProcesses = 2 * cpu_count()
-    multiprocess(graph, numProcesses=numProcesses, inputs=[{}], simple=False)
 
+    logger.debug('run multiprocess')
+    multiprocess(graph, numProcesses=numProcesses, inputs=[{}], simple=False)
+    logger.debug('done')
+    
     return results.get_outputs()
 
 
