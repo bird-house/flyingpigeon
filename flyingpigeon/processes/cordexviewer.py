@@ -19,10 +19,10 @@ class cordexviewer(WPSProcess):
       title="Tar archiv",
       abstract="Tar archiv with icclim output",
       minOccurs=1,
-      maxOccurs=1000,
+      maxOccurs=1,
       maxmegabites=500000,
-      formats=[{"mimeType":"application/x-netcdf"}],
-      asReference=True,
+      formats=[{"mimeType":"application/x-tar"}],
+     # asReference=True,
       )
     
 # output
