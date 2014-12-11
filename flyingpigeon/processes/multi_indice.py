@@ -11,11 +11,11 @@ class CalcMultipleIndices(WPSProcess):
     def __init__(self):
         WPSProcess.__init__(
             self, 
-            identifier = "multi_indice",
-            title="Calculation of climate multiple indices",
+            identifier = "multiple_indices",
+            title="Calculation of multiple climate indices",
             version = "1.0",
             metadata=[],
-            abstract="This process calculates a multiple climate indices for the given input netcdf files."
+            abstract="This process calculates multiple climate indices for the given input netcdf files."
             )
 
         indice_values = indices_calculator.indices()
@@ -70,8 +70,6 @@ class CalcMultipleIndices(WPSProcess):
         indices = self.getInputValues(identifier='indice')
 
         self.show_status('starting: indice=%s, num_files=%s' % (indices, len(resources)), 0)
-
-        #from icclim import calc_indice
 
         result = dispel.climate_indice_workflow(
             resources = resources,
