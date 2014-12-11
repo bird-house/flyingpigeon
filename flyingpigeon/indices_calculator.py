@@ -37,6 +37,36 @@ def indice_variable(indice):
         logger.error('unknown indice %s', indice)
     return variable
 
+def drs_filename( nc_file, skip_timestamp=False ):
+    """
+    generates filename according to the data reference syntax (DRS).
+    
+    http://cmip-pcmdi.llnl.gov/cmip5/docs/cmip5_data_reference_syntax.pdf
+    https://pypi.python.org/pypi/drslib
+
+    :param nc_file: netcdf file
+    :param skip_timestamp: if True then from/to timestamp is not added to the filename
+                           (default: False)
+    :return: DRS filename
+    """
+
+    ds = Dataset(nc_file)
+    rd = ocgis.RequestDataset(nc_file)
+
+    # CORDEX example: EUR-11_ICHEC-EC-EARTH_historical_r3i1p1_DMI-HIRHAM5_v1_day
+    cordex_pattern = "{variable}_{domain}_{driving_model}_{experiment}_{ensemble}_{model}_{version}_{frequency}"
+    filename = cordex_pattern.format(
+        variable = rd.variable,
+        domain = ds.CORDEX_domain,
+        driving_model = ds.driving_model_id,
+        experiment = ds.experiment_id,
+        ensemble = ds.driving_model_ensemble_member,
+        model = ds.model_id,
+        version = ds.rcm_version_id,
+        frequency = ds.frequency)
+    
+    return filename
+
 def group_by_experiment(nc_files):
     """
     groups nc_files by experiment name. Experiment examples:
@@ -52,20 +82,7 @@ def group_by_experiment(nc_files):
     
     groups = {}
     for nc_file in nc_files:
-        ds = Dataset(nc_file)
-        rd = ocgis.RequestDataset(nc_file)
-        
-        # CORDEX example: EUR-11_ICHEC-EC-EARTH_historical_r3i1p1_DMI-HIRHAM5_v1_day
-        cordex_pattern = "{variable}_{domain}_{driving_model}_{experiment}_{ensemble}_{model}_{version}_{frequency}"
-        key = cordex_pattern.format(
-            variable = rd.variable,
-            domain = ds.CORDEX_domain,
-            driving_model = ds.driving_model_id,
-            experiment = ds.experiment_id,
-            ensemble = ds.driving_model_ensemble_member,
-            model = ds.model_id,
-            version = ds.rcm_version_id,
-            frequency = ds.frequency)
+        key = drs_filename(nc_file, skip_timestamp=True)
 
         # collect files of each group (time axis)
         if groups.has_key(key):
