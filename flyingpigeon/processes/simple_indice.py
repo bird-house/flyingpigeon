@@ -63,14 +63,18 @@ class CalcIndice(WPSProcess):
             formats=[{"mimeType":"application/x-netcdf"}],
             asReference=True
             )
+
+        self.filename = self.addLiteralOutput(
+            identifier = "filename",
+            title = "DRS Filename",
+            type = type(''))
         
     def execute(self):
         resources = self.getInputValues(identifier='resource')
 
-        import os
-        self.show_status('starting: indice=%s, grouping=%s, num_files=%s, size:%s' % (self.indice.getValue(), self.grouping.getValue(), len(resources), os.path.getsize(resources[0])), 0)
+        self.show_status('starting: indice=%s, grouping=%s, num_files=%s' % (self.indice.getValue(), self.grouping.getValue(), len(resources)), 0)
 
-        result = indices_calculator.calc_indice(
+        result,filename = indices_calculator.calc_indice(
             resources = resources,
             indice = self.indice.getValue(),
             grouping = self.grouping.getValue(),
@@ -80,6 +84,7 @@ class CalcIndice(WPSProcess):
         self.show_status('result %s' % result, 90)
 
         self.output.setValue( result )
+        self.filename.setValue( filename )
 
         self.show_status('done: indice=%s, num_files=%s' % (self.indice.getValue(), len(resources)), 100)
 

@@ -156,11 +156,11 @@ def has_variable(resource, variable):
         logger.exception('has_variable failed.')
     return success
 
-def calc_indice(resources, indice="SU", grouping="year", out_dir=None):
+def calc_indice(resources=[], indice="SU", grouping="year", out_dir=None):
     """
     Calculates given indice for variable and grouping.
 
-    :param resources: single filename or list of filenames (netcdf)
+    :param resources: list of filenames (netcdf)
     :param out_dir: output directory for result file (netcdf)
 
     :return: netcdf files with calculated indices
@@ -173,11 +173,22 @@ def calc_indice(resources, indice="SU", grouping="year", out_dir=None):
 
     result = None
     calc_icclim = [{'func' : 'icclim_' + indice, 'name' : indice}]
+    filename = None
+    logger.debug('resources = %s', resources)
     try:
+        groups = group_by_experiment(resources)
+        if len(groups) > 1:
+            logger.warning('more than one expermint group selected: %s', groups.keys())
+        if len(groups) == 0:
+            raise Exception('no valid input data found!')
+        filename = groups.keys()[0]
+        logger.debug('group filename = %s', filename)
+        nc_files = groups[filename]
         variable = indice_variable(indice)
         import uuid
-        prefix = '%s_%s_%s' % (indice, variable, uuid.uuid4().get_hex()) 
-        rd = ocgis.RequestDataset(uri=sort_by_time(resources), variable=variable) # TODO: time_range=[dt1, dt2]
+        prefix = '%s_%s_%s' % (indice, variable, uuid.uuid4().get_hex())
+        logger.debug('calculating %s', prefix)
+        rd = ocgis.RequestDataset(uri=nc_files, variable=variable) # TODO: time_range=[dt1, dt2]
         result = ocgis.OcgOperations(
             dataset=rd,
             calc=calc_icclim,
@@ -188,7 +199,7 @@ def calc_indice(resources, indice="SU", grouping="year", out_dir=None):
             add_auxiliary_files=False).execute()
     except:
         # TODO: should raise exception?
-        logger.exception('Could not calc indice %s with variable %s for files %s.', indice, variable, resources)
+        logger.exception('Could not calc indice %s', indice)
 
-    return result
+    return result, filename
 

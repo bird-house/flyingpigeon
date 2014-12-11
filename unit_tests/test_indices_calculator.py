@@ -55,9 +55,11 @@ class IndicesCalculatorTestCase(TestCase):
         out_dir = tempfile.mkdtemp()
 
         # SU expects tasmax
-        result = indices_calculator.calc_indice(
-            self.tasmax_historical_1991_nc, indice='SU', grouping='year', out_dir=out_dir)
+        result,filename = indices_calculator.calc_indice(
+            [self.tasmax_historical_1991_nc], indice='SU', grouping='year', out_dir=out_dir)
 
+        nose.tools.ok_(filename == 'tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day.nc', filename)
+        
         ds = Dataset(result)
         # SU variable must be in result
         nose.tools.ok_('SU' in ds.variables, ds.variables.keys())
