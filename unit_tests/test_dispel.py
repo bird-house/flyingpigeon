@@ -33,7 +33,7 @@ class WorkflowTestCase(TestCase):
             out_dir=tempfile.mkdtemp())
 
         nose.tools.ok_(len(result) == 3, result)
-        nose.tools.ok_(False, result)
+        #nose.tools.ok_(False, result)
         
         
         

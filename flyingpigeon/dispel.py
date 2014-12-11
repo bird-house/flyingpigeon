@@ -98,6 +98,9 @@ def climate_indice_workflow(resources, indices=['SU'], grouping='year', out_dir=
     group_by = GroupByExperiment(resources)
     results = Results(out_dir)
 
+    # make indices list unique
+    indices = set(indices)
+    
     for indice in indices:
         calc_indice = CalcSimpleIndice(indice=indice, grouping=grouping, out_dir=out_dir)
 
