@@ -13,13 +13,13 @@ _INDICES_ = dict(
 
 def indices():
     """
-    returns a list of all climate indices.
+    :return: a list of all climate indices.
     """
     return _INDICES_.keys()
 
 def indices_description():
     """
-    returns a discription of all climate indices.
+    :return: a discription of all climate indices.
     """
     description = ''
     for indice in indices():
@@ -28,7 +28,7 @@ def indices_description():
 
 def indice_variable(indice):
     """
-    returns variable (tasmax, tas, ...) which can be used for the climate indice.
+    :return: variable (tasmax, tas, ...) which can be used for the climate indice.
     """
     variable = None
     try:
@@ -110,10 +110,10 @@ def calc_indice(resources, indice="SU", grouping="year", out_dir=None):
     """
     Calculates given indice for variable and grouping.
 
-    param: resources: single filename or list of filenames (netcdf)
-    param: out_dir: output directory for result file (netcdf)
+    :param resources: single filename or list of filenames (netcdf)
+    :param out_dir: output directory for result file (netcdf)
 
-    result: netcdf files with calculated indices
+    :return: netcdf files with calculated indices
     """
 
     ## ocgis.env.OVERWRITE = True
