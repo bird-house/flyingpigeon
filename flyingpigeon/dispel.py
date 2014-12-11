@@ -67,54 +67,47 @@ class GroupByExperiment(GenericPE):
             #nc_files = [ "file://%s" % abspath(path) for path in exp_groups[key] ]
             self.write('output', exp_groups[key])
 
-class CollectResults(GenericPE):
-    def __init__(self):
+class Results(GenericPE):
+    def __init__(self, out_dir='.'):
         GenericPE.__init__(self)
-        self.results = []
+        from os.path import join
+        self.outfile = join(out_dir, 'outputs.json')
+        self.outputs = []
         self.inputconnections = { 'input' : { NAME : 'input'} }
     def process(self, inputs):
-        logger.info('add result %s', inputs)
-        self.results.append(inputs['input'])
-        logger.info("num results = %s", len(self.results))
-    def get_results(self):
-        logger.info('num results = %s', len(self.results))
-        return self.results
+        self.outputs.append(inputs['input'])
+
+    def postprocess(self):
+        import json
+        with open(self.outfile, 'w') as fp:
+            json.dump(obj=self.outputs, fp=fp, indent=4, sort_keys=True)
+
+    def get_outputs(self):
+        outputs = []
+        import json
+        with open(self.outfile, 'r') as fp:
+            outputs = json.load(fp=fp)
+        return outputs
+        
 
 def climate_indice_workflow(resources, indices=['SU'], grouping='year', out_dir=None, monitor=None):
     from dispel4py.workflow_graph import WorkflowGraph
     from dispel4py.multi_process import multiprocess
 
-    #from os.path import abspath
-    #new_resources = [abspath(resource) for resource in resources]
-
-    from os.path import curdir
-    if out_dir is None:
-        out_dir = curdir
-
     graph = WorkflowGraph()
     group_by = GroupByExperiment(resources)
-    collect = CollectResults()
+    results = Results(out_dir)
 
     for indice in indices:
         calc_indice = CalcSimpleIndice(indice=indice, grouping=grouping, out_dir=out_dir)
 
         graph.connect(group_by, 'output',  calc_indice, 'resource')
-        graph.connect(calc_indice, 'output', collect, 'input')
+        graph.connect(calc_indice, 'output', results, 'input')
 
     from multiprocessing import cpu_count
     numProcesses = 2 * cpu_count()
-
     multiprocess(graph, numProcesses=numProcesses, inputs=[{}], simple=False)
 
-    # TODO: fix output collection
-    from os.path import join
-    outfile = join(out_dir, 'output.txt')
-    result = []
-    
-    with open(outfile, 'r') as fp:
-        for line in fp.readlines():
-            output = line.strip()
-            result.append(dict(output=output))
-    return collect.get_results()
+    return results.get_outputs()
 
 
