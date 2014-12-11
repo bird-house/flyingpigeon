@@ -61,7 +61,7 @@ class CalcMultipleIndices(WPSProcess):
             title="Indice",
             abstract="Calculated indice as NetCDF file",
             metadata=[],
-            formats=[{"mimeType":"text/text"}],
+            formats=[{"mimeType":"appliation/x-tar-netcdf"}],
             asReference=True
             )
         
@@ -71,18 +71,23 @@ class CalcMultipleIndices(WPSProcess):
 
         self.show_status('starting: indice=%s, num_files=%s' % (indices, len(resources)), 0)
 
-        result = dispel.climate_indice_workflow(
+        results = dispel.climate_indice_workflow(
             resources = resources,
             indices = indices,
             grouping = self.grouping.getValue(),
             out_dir = self.working_dir,
             monitor=self.show_status,
             )
-        import json
-        outfile = self.mktempfile(suffix='.json')
-        with open(outfile, 'w') as fp:
-            json.dump(obj=result, fp=fp, indent=4, sort_keys=True)
-        self.output.setValue( outfile )
+
+        import tarfile
+        import tempfile
+        _,filename = tempfile.mkstemp(dir=".", suffix='.tar')
+        tar = tarfile.open(filename, "w")
+        for result in results:
+            tar.add(result.strip())
+        tar.close()
+        
+        self.output.setValue( filename )
 
         self.show_status('done: indice=%s, num_files=%s' % (indices, len(resources)), 100)
 

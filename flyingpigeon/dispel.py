@@ -80,7 +80,7 @@ class Results(BasePE):
     def process(self, inputs):
         self.debug('write result')
         with open(self.outfile, 'a') as fp:
-            fp.write("%s\n" % (inputs['input']))
+            fp.write("%s\n" % (inputs['input']['output']))
             fp.flush()
 
     def get_outputs(self):
