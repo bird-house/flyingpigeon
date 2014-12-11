@@ -59,7 +59,7 @@ class IndicesCalculatorTestCase(TestCase):
             [self.tasmax_historical_1991_nc], indice='SU', grouping='year', out_dir=out_dir)
 
         nose.tools.ok_(
-            result['drs_filename'] == 'tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day.nc',
+            result['drs_filename'] == 'SU_tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day.nc',
             result)
         
         ds = Dataset(result['output'])
@@ -123,8 +123,8 @@ class IndicesCalculatorTestCase(TestCase):
         result = indices_calculator.group_by_experiment(nc_files)
         
         nose.tools.ok_(len(result) == 3, result)
-        nose.tools.ok_("tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day.nc" in result, result)
-        group = result["tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day.nc"]
+        nose.tools.ok_("tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day" in result, result)
+        group = result["tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day"]
         nose.tools.ok_(len(group) == 2, result)
         nose.tools.ok_("tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19910101-19951231.nc" in group[0], result)
         nose.tools.ok_("tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19960101-20001231.nc" in group[1], result)

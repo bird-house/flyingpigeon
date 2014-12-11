@@ -37,7 +37,7 @@ def indice_variable(indice):
         logger.error('unknown indice %s', indice)
     return variable
 
-def drs_filename( nc_file, skip_timestamp=False ):
+def drs_filename( nc_file, skip_timestamp=False, skip_format=False ):
     """
     generates filename according to the data reference syntax (DRS).
     
@@ -91,7 +91,8 @@ def drs_filename( nc_file, skip_timestamp=False ):
             filename = "%s_%s-%s" % (filename, int(from_timestamp), int(to_timestamp))
 
         # add format extension
-        filename = filename + '.nc'
+        if skip_format == False:
+            filename = filename + '.nc'
     except:
         logger.exception('Could not generate DRS filename for %s', nc_file)
     
@@ -115,7 +116,7 @@ def group_by_experiment(nc_files):
     
     groups = {}
     for nc_file in nc_files:
-        key = drs_filename(nc_file, skip_timestamp=True)
+        key = drs_filename(nc_file, skip_timestamp=True, skip_format=True)
 
         # collect files of each group (time axis)
         if groups.has_key(key):
@@ -174,20 +175,21 @@ def calc_indice(resources=[], indice="SU", grouping="year", out_dir=None):
     result = None
     calc_icclim = [{'func' : 'icclim_' + indice, 'name' : indice}]
     filename = None
-    logger.debug('resources = %s', resources)
     try:
         groups = group_by_experiment(resources)
         if len(groups) > 1:
             logger.warning('more than one expermint group selected: %s', groups.keys())
         if len(groups) == 0:
             raise Exception('no valid input data found!')
-        filename = groups.keys()[0]
-        logger.debug('group filename = %s', filename)
-        nc_files = groups[filename]
+        group_name = groups.keys()[0]
+        logger.debug('group = %s', group_name)
+        nc_files = groups[group_name]
         variable = indice_variable(indice)
         import uuid
-        prefix = '%s_%s_%s' % (indice, variable, uuid.uuid4().get_hex())
-        logger.debug('calculating %s', prefix)
+        #prefix = '%s_%s_%s' % (indice, variable, uuid.uuid4().get_hex())
+        prefix = '%s_%s' % (indice, group_name)
+        filename = prefix + '.nc'
+        logger.debug('calculating %s', filename)
         rd = ocgis.RequestDataset(uri=nc_files, variable=variable) # TODO: time_range=[dt1, dt2]
         output = ocgis.OcgOperations(
             dataset=rd,
