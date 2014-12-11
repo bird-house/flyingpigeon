@@ -7,11 +7,6 @@ from __init__ import TESTDATA, SERVICE
 
 from flyingpigeon.dispel import climate_indice_workflow
 
-# TODO: set GDAL_DATA in a save way
-import os
-from os.path import join
-os.environ['GDAL_DATA'] = join(os.environ['HOME'], 'anaconda', 'share', 'gdal')
-
 def my_monitor(execution):
     print execution.status
     print execution.percentCompleted

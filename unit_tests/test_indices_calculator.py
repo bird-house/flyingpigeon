@@ -8,13 +8,6 @@ from __init__ import TESTDATA, SERVICE
 import tempfile
 from netCDF4 import Dataset
 
-# ocgis needs GDAL_DATA on import
-import os
-from os.path import join
-# TODO: set GDAL_DATA in a save way
-os.environ['GDAL_DATA'] = join(os.environ['HOME'], 'anaconda', 'share', 'gdal')
-import ocgis
-
 from flyingpigeon import indices_calculator
 
 class IndicesCalculatorTestCase(TestCase):
