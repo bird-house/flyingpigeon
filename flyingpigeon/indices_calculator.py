@@ -64,6 +64,18 @@ def drs_filename( nc_file, skip_timestamp=False ):
         model = ds.model_id,
         version = ds.rcm_version_id,
         frequency = ds.frequency)
+
+    # add from/to timestamp if not skipped
+    if skip_timestamp == False:
+         time_list = ds.variables['time']
+         from datetime import datetime, timedelta
+         reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
+         from_timestamp = datetime.strftime(reftime + timedelta(days=time_list[0]), '%Y%m%d') 
+         to_timestamp = datetime.strftime(reftime + timedelta(days=time_list[-1]), '%Y%m%d')
+         filename = "%s_%s-%s" % (filename, int(from_timestamp), int(to_timestamp))
+
+    # add format extension
+    filename = filename + '.nc'
     
     return filename
 
@@ -78,6 +90,9 @@ def group_by_experiment(nc_files):
     200101-200512, 200601-201012, ...
 
     Time axis is sorted by time.
+
+    :param nc_files: list of netcdf files
+    :return: dictonary with key=experiment name and value=list of netcdf files
     """
     
     groups = {}
