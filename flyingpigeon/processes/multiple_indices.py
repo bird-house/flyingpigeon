@@ -79,15 +79,16 @@ class CalcMultipleIndices(WPSProcess):
             monitor=self.show_status,
             )
 
+        # tar results ...
         import tarfile
-        import tempfile
-        _,filename = tempfile.mkstemp(dir=".", suffix='.tar')
-        tar = tarfile.open(filename, "w")
+        from os.path import basename
+        outfile = "outfile.tar"
+        tar = tarfile.open(outfile, "w")
         for result in results:
-            tar.add(result.strip())
+            tar.add(basename(result.strip()))
         tar.close()
         
-        self.output.setValue( filename )
+        self.output.setValue( outfile )
 
         self.show_status('done: indice=%s, num_files=%s' % (indices, len(resources)), 100)
 
