@@ -23,16 +23,24 @@ class IndicesCalculatorTestCase(TestCase):
         url_parts = urlparse.urlparse(
             TESTDATA['tas_EUR-11_ICHEC-EC-EARTH_rcp45_r1i1p1_KNMI-RACMO22E_v1_mon_200601-201012.nc'])
         cls.tas_rcp45_2006_nc = url_parts.path
+        
         # tasmax
         url_parts = urlparse.urlparse(
             TESTDATA['tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_20010101-20051231.nc'])
         cls.tasmax_historical_2001_nc = url_parts.path
+        
         url_parts = urlparse.urlparse(
             TESTDATA['tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19960101-20001231.nc'])
         cls.tasmax_historical_1996_nc = url_parts.path
+        
         url_parts = urlparse.urlparse(
             TESTDATA['tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19910101-19951231.nc'])
         cls.tasmax_historical_1991_nc = url_parts.path
+
+        # cmip5 ...
+        url_parts = urlparse.urlparse(
+            TESTDATA['cct_Amon_MPI-ESM-LR_historical_r1i1p1_185001-200512.nc'])
+        cls.cmip5_historical_1850_nc = url_parts.path
 
     def test_indices(self):
         nose.tools.ok_( 'SU' in indices_calculator.indices(), indices_calculator.indices() )
@@ -89,9 +97,16 @@ class IndicesCalculatorTestCase(TestCase):
             filename == "tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19960101-20001231.nc",
             filename)
 
+        # skip timestamp 
         filename = indices_calculator.drs_filename(self.tasmax_historical_1996_nc, skip_timestamp=True)
         nose.tools.ok_(
             filename == "tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day.nc",
+            filename)
+
+        # TODO: cmip5 ... false name generation
+        filename = indices_calculator.drs_filename(self.cmip5_historical_1850_nc)
+        nose.tools.ok_(
+            filename == "cct_MPI-ESM-LR_historical_ensemble_19491216-21051115.nc",
             filename)
 
     @attr('testdata')

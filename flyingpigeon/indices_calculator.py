@@ -55,27 +55,45 @@ def drs_filename( nc_file, skip_timestamp=False ):
 
     # CORDEX example: EUR-11_ICHEC-EC-EARTH_historical_r3i1p1_DMI-HIRHAM5_v1_day
     cordex_pattern = "{variable}_{domain}_{driving_model}_{experiment}_{ensemble}_{model}_{version}_{frequency}"
-    filename = cordex_pattern.format(
-        variable = rd.variable,
-        domain = ds.CORDEX_domain,
-        driving_model = ds.driving_model_id,
-        experiment = ds.experiment_id,
-        ensemble = ds.driving_model_ensemble_member,
-        model = ds.model_id,
-        version = ds.rcm_version_id,
-        frequency = ds.frequency)
+    # CMIP5 example: tas_MPI-ESM-LR_historical_r1i1p1
+    cmip5_pattern = "{variable}_{model}_{experiment}_{ensemble}"
 
-    # add from/to timestamp if not skipped
-    if skip_timestamp == False:
-         time_list = ds.variables['time']
-         from datetime import datetime, timedelta
-         reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
-         from_timestamp = datetime.strftime(reftime + timedelta(days=time_list[0]), '%Y%m%d') 
-         to_timestamp = datetime.strftime(reftime + timedelta(days=time_list[-1]), '%Y%m%d')
-         filename = "%s_%s-%s" % (filename, int(from_timestamp), int(to_timestamp))
+    filename = nc_file
+    try:
+        if ds.project_id == 'CORDEX':
+            filename = cordex_pattern.format(
+                variable = rd.variable,
+                domain = ds.CORDEX_domain,
+                driving_model = ds.driving_model_id,
+                experiment = ds.experiment_id,
+                ensemble = ds.driving_model_ensemble_member,
+                model = ds.model_id,
+                version = ds.rcm_version_id,
+                frequency = ds.frequency)
+        elif ds.project_id == 'CMIP5':
+            # TODO: attributes missing in netcdf file for name generation?
+            filename = cmip5_pattern.format(
+                variable = rd.variable,
+                model = ds.model_id,
+                experiment = ds.experiment,
+                ensemble = "ensemble"
+                )
+        else:
+            raise Exception('unknown project %s' % ds.project_id)
 
-    # add format extension
-    filename = filename + '.nc'
+        # add from/to timestamp if not skipped
+        if skip_timestamp == False:
+            time_list = ds.variables['time']
+            from datetime import datetime, timedelta
+            reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
+            from_timestamp = datetime.strftime(reftime + timedelta(days=time_list[0]), '%Y%m%d') 
+            to_timestamp = datetime.strftime(reftime + timedelta(days=time_list[-1]), '%Y%m%d')
+            filename = "%s_%s-%s" % (filename, int(from_timestamp), int(to_timestamp))
+
+        # add format extension
+        filename = filename + '.nc'
+    except:
+        logger.exception('Could not generate DRS filename for %s', nc_file)
     
     return filename
 
