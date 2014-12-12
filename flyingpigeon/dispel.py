@@ -78,15 +78,19 @@ class GroupByExperiment(BasePE):
             self.write('output', exp_groups[key])
 
 class Results(BasePE):
-    def __init__(self, out_dir='.', monitor=None):
+    def __init__(self, max_results, out_dir='.', monitor=None):
         BasePE.__init__(self, monitor)
         from os.path import join
         self.outfile = join(out_dir, 'outputs.json')
         self.inputconnections = { 'input' : { NAME : 'input'} }
+        self.max_results = max_results
+        self.count = 0
         
     def process(self, inputs):
+        from os.path import basename
         output = inputs['input']['output']
-        self.debug('output = %s' % output)
+        self.count = self.count + 1
+        self.monitor('output=%s' % basename(output), self.count * 100 / self.max_results)
         with open(self.outfile, 'a') as fp:
             fp.write("%s\n" % (inputs['input']['output']))
             fp.flush()
@@ -103,8 +107,8 @@ def climate_indice_workflow(resources, indices=['SU'], grouping='year', out_dir=
     from dispel4py.multi_process import multiprocess
 
     graph = WorkflowGraph()
-    group_by = GroupByExperiment(resources)
-    results = Results(out_dir)
+    group_by = GroupByExperiment(resources, monitor=monitor)
+    results = Results(max_results=len(resources), out_dir=out_dir, monitor=monitor)
 
     # make indices list unique
     indices = set(indices)
