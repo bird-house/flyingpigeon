@@ -7,11 +7,6 @@ from __init__ import TESTDATA, SERVICE
 
 from flyingpigeon.dispel import climate_indice_workflow
 
-def my_monitor(execution):
-    print execution.status
-    print execution.percentCompleted
-    print execution.statusMessage
-
 class WorkflowTestCase(TestCase):
 
     @classmethod
@@ -29,7 +24,7 @@ class WorkflowTestCase(TestCase):
             resources=self.nc_files,
             indices=['SU', 'TG'],
             grouping='year',
-            monitor=my_monitor,
+            monitor=None,
             out_dir=tempfile.mkdtemp())
 
         nose.tools.ok_(len(result) == 3, result)

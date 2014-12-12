@@ -8,8 +8,15 @@ from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
 class BasePE(GenericPE):
-    def __init__(self):
+    def __init__(self, monitor=None):
         GenericPE.__init__(self)
+        def internal_monitor(message, progress):
+            logger.info("%s, progress=%s/100", message, progress)
+        if monitor is not None:
+            self.monitor = monitor
+        else:
+            self.monitor = internal_monitor
+        
     def debug(self, message):
         logger.debug(message)
 
@@ -17,8 +24,8 @@ class CalcSimpleIndice(BasePE):
     """
     This PE calls the simple_indice Web Processing Service to calculate a climate indice.
     """
-    def __init__(self, indice, grouping, out_dir=None):
-        BasePE.__init__(self)
+    def __init__(self, indice, grouping, out_dir=None, monitor=None):
+        BasePE.__init__(self, monitor)
         self.grouping = grouping
         self.indice = indice
         self.out_dir = out_dir
@@ -41,7 +48,7 @@ class CalcSimpleIndice(BasePE):
                 indice=self.indice,
                 grouping=self.grouping,
                 out_dir=self.out_dir)
-            self.debug('calc_indice output=%s' % output)
+            self.debug('calc_indice done. output=%s' % output)
             self.write('output', output)
         else:
             self.debug('skip file: has not variable %s' % (variable))
@@ -50,33 +57,36 @@ class GroupByExperiment(BasePE):
     '''
     This PE takes gets netcdf input files and groups them by experiment.
     '''
-    def __init__(self, resources):
-        BasePE.__init__(self)
+    def __init__(self, resources, monitor=None):
+        BasePE.__init__(self, monitor)
         self.resources = resources
         self.outputconnections = { 'output' : { NAME : 'output' } }
+        self.count = 0
 
     def process(self, inputs):
         from urllib2 import urlparse
         # TODO: Dataset doest not like file:// urls
         local_files = [ urlparse.urlparse(url).path for url in self.resources ]
-        self.debug("%s" % local_files)
         exp_groups = indices_calculator.group_by_experiment( local_files )
+        max_count = len(exp_groups)
         for key in exp_groups.keys():
             # TODO: wps needs file://
             #from os.path import abspath
             #nc_files = [ "file://%s" % abspath(path) for path in exp_groups[key] ]
-            self.debug('start with experiment group %s' % key)
+            self.monitor('experiment=%s' % key, self.count * 100 / max_count)
+            self.count = self.count + 1
             self.write('output', exp_groups[key])
 
 class Results(BasePE):
-    def __init__(self, out_dir='.'):
-        BasePE.__init__(self)
+    def __init__(self, out_dir='.', monitor=None):
+        BasePE.__init__(self, monitor)
         from os.path import join
         self.outfile = join(out_dir, 'outputs.json')
         self.inputconnections = { 'input' : { NAME : 'input'} }
         
     def process(self, inputs):
-        self.debug('write result')
+        output = inputs['input']['output']
+        self.debug('output = %s' % output)
         with open(self.outfile, 'a') as fp:
             fp.write("%s\n" % (inputs['input']['output']))
             fp.flush()
@@ -100,7 +110,7 @@ def climate_indice_workflow(resources, indices=['SU'], grouping='year', out_dir=
     indices = set(indices)
     
     for indice in indices:
-        calc_indice = CalcSimpleIndice(indice=indice, grouping=grouping, out_dir=out_dir)
+        calc_indice = CalcSimpleIndice(indice=indice, grouping=grouping, out_dir=out_dir, monitor=monitor)
 
         graph.connect(group_by, 'output',  calc_indice, 'resource')
         graph.connect(calc_indice, 'output', results, 'input')
@@ -108,9 +118,9 @@ def climate_indice_workflow(resources, indices=['SU'], grouping='year', out_dir=
     from multiprocessing import cpu_count
     numProcesses = cpu_count()
 
-    logger.debug('run multiprocess')
+    logger.debug('start multiprocessesing workflow')
     multiprocess(graph, numProcesses=numProcesses, inputs=[{}], simple=False)
-    logger.debug('done')
+    logger.debug('workflow done')
     
     return results.get_outputs()
 
