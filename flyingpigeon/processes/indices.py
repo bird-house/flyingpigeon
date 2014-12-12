@@ -280,6 +280,16 @@ class icclimWorker(WPSProcess):
       maxOccurs=1,
       )
     
+    self.CDD = self.addLiteralInput(
+      identifier="CDD",
+      title="CDD",
+      abstract="Consecutive dry days (pr as input files) ",
+      default=False,
+      type=type(False),
+      minOccurs=0,
+      maxOccurs=1,
+      )             
+    
     self.SDII = self.addLiteralInput(
       identifier="SDII",
       title="SDII",
@@ -330,16 +340,6 @@ class icclimWorker(WPSProcess):
       maxOccurs=1,
       )
     
-    self.CDD = self.addLiteralInput(
-      identifier="CDD",
-      title="CDD",
-      abstract="Consecutive dry days (pr as input files) ",
-      default=False,
-      type=type(False),
-      minOccurs=0,
-      maxOccurs=1,
-      )             
-        
     # complex output
     # -------------
     self.logout = self.addComplexOutput(
