@@ -58,10 +58,10 @@ class CalcMultipleIndices(WPSProcess):
         # -------------
         self.output = self.addComplexOutput(
             identifier="output",
-            title="Indice",
-            abstract="Calculated indice as NetCDF file",
+            title="Indices",
+            abstract="List of calculated indices.",
             metadata=[],
-            formats=[{"mimeType":"appliation/x-tar-netcdf"}],
+            formats=[{"mimeType":"text/json"}],
             asReference=True
             )
         
@@ -79,16 +79,18 @@ class CalcMultipleIndices(WPSProcess):
             monitor=self.show_status,
             )
 
-        # tar results ...
-        import tarfile
-        from os.path import basename
-        outfile = "outfile.tar"
-        tar = tarfile.open(outfile, "w")
-        for result in results:
-            tar.add(basename(result.strip()))
-        tar.close()
+        self.show_status("publishing results ...", 99)
         
-        self.output.setValue( outfile )
+        files = [result.strip() for result in results]
 
+        from malleefowl.publish import publish
+        urls = publish(files)
+
+        import json
+        outfile = self.mktempfile(suffix='.txt')
+        with open(outfile, 'w') as fp:
+            json.dump(obj=urls, fp=fp, indent=4, sort_keys=True)
+            self.output.setValue(outfile)
+        
         self.show_status('done: indice=%s, num_files=%s' % (indices, len(resources)), 100)
 
