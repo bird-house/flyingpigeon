@@ -27,15 +27,15 @@ class icclimWorker(WPSProcess):
       formats=[{"mimeType":"application/x-netcdf"}],
       )
     
-    self.concat = self.addLiteralInput(
-      identifier="concat",
-      title="Concatination",
-      abstract="Concatination of rcps to the approprate historical runs",
-      type=type(False),
-      default=False,
-      minOccurs=0,
-      maxOccurs=1,
-      )
+    #self.concat = self.addLiteralInput(
+      #identifier="concat",
+      #title="Concatination",
+      #abstract="Concatination of rcps to the approprate historical runs",
+      #type=type(False),
+      #default=False,
+      #minOccurs=0,
+      #maxOccurs=1,
+      #)
 
     self.cviewer = self.addLiteralInput(
       identifier="cviewer",
@@ -389,9 +389,9 @@ class icclimWorker(WPSProcess):
     
     nc_renamed = tools.fn_creator(ncfiles)
     
-    idic = { 'outdir':outdir, 
-             'ncs': nc_renamed,
-             'concat':self.concat.getValue(),
+    idic = {'outdir':outdir, 
+            'ncs': nc_renamed,
+            # 'concat':self.concat.getValue(),
             'group':self.group.getValue(),
             'TG':self.TG.getValue(),
             'TX':self.TX.getValue(),
@@ -437,14 +437,6 @@ class icclimWorker(WPSProcess):
     tar.add(outdir, arcname = outdir.replace(os.curdir, ""))
     logger.debug('tar ncfiles')
     
-    logfile = self.mktempfile(suffix='.txt')
-    with open(logfile, 'w') as fp:
-        fp.write(logtxt)
-    
-    tar.add(logfile, arcname = outdir.replace(os.curdir, ""))
-    tar.close()
-    logger.debug('tar file with icclim files closed')
-    self.show_status('tar with icclim files created ', 70)
     
     logger.debug('starting Cordex viewer preparation')
     
@@ -456,10 +448,22 @@ class icclimWorker(WPSProcess):
     cv_dir = (os.path.curdir+'/cv_files/')
     
     if self.cviewer.getValue() == True:  
-      tools.cv_creator(outdir, cv_dir, monitor=self.show_status )
+      logtxt = logtxt + tools.cv_creator(outdir, cv_dir, monitor=self.show_status )
     
-    cv_tar.add(cv_dir, arcname = outdir.replace(os.curdir, ""))
+    cv_tar.add(cv_dir, arcname = outdir.replace(outdir , ""))
     cv_tar.close()
+
+
+    logfile = self.mktempfile(suffix='.txt')
+    with open(logfile, 'w') as fp:
+        fp.write(logtxt)
+    
+    tar.add(logfile, arcname = outdir.replace(os.curdir, ""))
+    tar.close()
+    logger.debug('tar file with icclim files closed')
+    self.show_status('tar with icclim files created ', 70)
+
+
     
     self.logout.setValue( logfile )
     self.tarout.setValue( tarf )
