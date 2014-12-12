@@ -30,8 +30,11 @@ class CalcSimpleIndice(BasePE):
         self.indice = indice
         self.out_dir = out_dir
 
-        self.inputconnections = { 'resource' : { NAME : 'resource' } }
-        self.outputconnections = { 'output' : { NAME : 'output' } }
+        self.inputconnections = {}
+        self.inputconnections['resource'] = dict( NAME='resource' )
+        self.outputconnections = {}
+        self.outputconnections['output'] = dict( NAME='output' )
+        self.outputconnections['status_log'] = dict( NAME='status_log' ) 
 
     def process(self, inputs):
         # TODO: fix file:// url troubles ...
@@ -48,8 +51,11 @@ class CalcSimpleIndice(BasePE):
                 indice=self.indice,
                 grouping=self.grouping,
                 out_dir=self.out_dir)
+            success = 'Succeeded'
             self.debug('calc_indice done. output=%s' % output)
             self.write('output', output)
+            status_log = "indice=%s, variable=%s, filename=%s, status=%s" % (self.indice, variable, output['drs_filename'], success)
+            self.write('status_log', status_log)
         else:
             self.debug('skip file: has not variable %s' % (variable))
 
@@ -77,11 +83,33 @@ class GroupByExperiment(BasePE):
             self.count = self.count + 1
             self.write('output', exp_groups[key])
 
+
+class StatusLog(BasePE):
+    def __init__(self, out_dir='.', monitor=None):
+        BasePE.__init__(self, monitor)
+        from os.path import join
+        self.outfile = join(out_dir, 'status.log')
+        self.inputconnections = { 'status_log' : { NAME : 'status_log'} }
+
+    def process(self, inputs):
+        from os.path import basename
+        output = inputs['status_log']
+        with open(self.outfile, 'a') as fp:
+            fp.write("%s\n" % (inputs['status_log']))
+            fp.flush()
+
+    def get_status_log(self):
+        logs = []
+        with open(self.outfile, 'r') as fp:
+            for line in fp.readlines():
+                logs.append(line.strip())
+        return logs
+            
 class Results(BasePE):
     def __init__(self, max_results, out_dir='.', monitor=None):
         BasePE.__init__(self, monitor)
         from os.path import join
-        self.outfile = join(out_dir, 'outputs.json')
+        self.outfile = join(out_dir, 'outputs.txt')
         self.inputconnections = { 'input' : { NAME : 'input'} }
         self.max_results = max_results
         self.count = 0
@@ -109,6 +137,7 @@ def climate_indice_workflow(resources, indices=['SU'], grouping='year', out_dir=
     graph = WorkflowGraph()
     group_by = GroupByExperiment(resources, monitor=monitor)
     results = Results(max_results=len(resources), out_dir=out_dir, monitor=monitor)
+    status_log = StatusLog(out_dir=out_dir, monitor=monitor)
 
     # make indices list unique
     indices = set(indices)
@@ -118,6 +147,7 @@ def climate_indice_workflow(resources, indices=['SU'], grouping='year', out_dir=
 
         graph.connect(group_by, 'output',  calc_indice, 'resource')
         graph.connect(calc_indice, 'output', results, 'input')
+        graph.connect(calc_indice, 'status_log', status_log, 'status_log')
 
     from multiprocessing import cpu_count
     numProcesses = cpu_count()
@@ -126,6 +156,6 @@ def climate_indice_workflow(resources, indices=['SU'], grouping='year', out_dir=
     multiprocess(graph, numProcesses=numProcesses, inputs=[{}], simple=False)
     logger.debug('workflow done')
     
-    return results.get_outputs()
+    return results.get_outputs(), status_log.get_status_log()
 
 

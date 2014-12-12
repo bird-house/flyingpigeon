@@ -64,6 +64,14 @@ class CalcMultipleIndices(WPSProcess):
             formats=[{"mimeType":"text/json"}],
             asReference=True
             )
+        self.status_log = self.addComplexOutput(
+            identifier="status_log",
+            title="Status Logfile",
+            abstract="Status of processed files.",
+            metadata=[],
+            formats=[{"mimeType":"text/text"}],
+            asReference=True
+            )
         
     def execute(self):
         resources = self.getInputValues(identifier='resource')
@@ -71,7 +79,7 @@ class CalcMultipleIndices(WPSProcess):
 
         self.show_status('starting: indice=%s, num_files=%s' % (indices, len(resources)), 0)
 
-        results = dispel.climate_indice_workflow(
+        results,status_log = dispel.climate_indice_workflow(
             resources = resources,
             indices = indices,
             grouping = self.grouping.getValue(),
@@ -91,6 +99,12 @@ class CalcMultipleIndices(WPSProcess):
         with open(outfile, 'w') as fp:
             json.dump(obj=urls, fp=fp, indent=4, sort_keys=True)
             self.output.setValue(outfile)
+
+        outfile = self.mktempfile(suffix='.txt')
+        with open(outfile, 'w') as fp:
+            for status in status_log:
+                fp.write("%s\n" % status)
+            self.status_log.setValue(outfile)
         
         self.show_status('done: indice=%s, num_files=%s' % (indices, len(resources)), 100)
 

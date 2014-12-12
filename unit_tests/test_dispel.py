@@ -20,7 +20,7 @@ class WorkflowTestCase(TestCase):
 
     def test_indice_workflow(self):
         import tempfile
-        result = climate_indice_workflow(
+        result,status_log = climate_indice_workflow(
             resources=self.nc_files,
             indices=['SU', 'TG'],
             grouping='year',
@@ -28,7 +28,8 @@ class WorkflowTestCase(TestCase):
             out_dir=tempfile.mkdtemp())
 
         nose.tools.ok_(len(result) == 3, result)
-        #nose.tools.ok_(False, result)
+        nose.tools.ok_(len(status_log) == 3, status_log)
+        #nose.tools.ok_(False, status_log)
         
         
         
