@@ -27,11 +27,13 @@ class OCGISTestCase(TestCase):
 
     @attr('testdata')
     def test_ocgis_inspect(self):
+        import ocgis
         rd = ocgis.RequestDataset(self.tas_nc, 'tas')
         rd.inspect()
 
     @attr('testdata')
     def test_ocgis_su_tasmax(self):
+        import ocgis
         out_dir = tempfile.mkdtemp()
         prefix = 'tasmax_su'
         
@@ -46,6 +48,7 @@ class OCGISTestCase(TestCase):
             dir_output=out_dir,
             add_auxiliary_files=False).execute()
 
+        from os.path import join
         result = Dataset(join(out_dir, prefix + '.' + self.output_format))
         # SU variable must be in result
         nose.tools.ok_('SU' in result.variables, result.variables.keys())
