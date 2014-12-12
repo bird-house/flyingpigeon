@@ -4,16 +4,14 @@ from malleefowl.dispel import BaseWPS
 
 from flyingpigeon import indices_calculator
 
-import logging
+from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
 class BasePE(GenericPE):
     def __init__(self):
         GenericPE.__init__(self)
     def debug(self, message):
-        with open('dispel.log', 'a') as fp:
-            fp.write('DEBUG: %s\n' % (message))
-            fp.flush()
+        logger.debug(message)
 
 class CalcSimpleIndice(BasePE):
     """
