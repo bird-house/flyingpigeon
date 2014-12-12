@@ -390,8 +390,8 @@ class icclimWorker(WPSProcess):
     nc_renamed = tools.fn_creator(ncfiles)
     
     idic = { 'outdir':outdir, 
-            'ncs': nc_renamed,
-            'concat':self.concat.getValue(),
+             'ncs': nc_renamed,
+             'concat':self.concat.getValue(),
             'group':self.group.getValue(),
             'TG':self.TG.getValue(),
             'TX':self.TX.getValue(),
@@ -455,7 +455,8 @@ class icclimWorker(WPSProcess):
     os.mkdir(os.path.curdir+'/cv_files/')
     cv_dir = (os.path.curdir+'/cv_files/')
     
-    # tools.cv_creator(icclim_dir, cv_dir)
+    if self.cviewer.getValue() == True:  
+      tools.cv_creator(outdir, cv_dir, monitor=self.show_status )
     
     cv_tar.add(cv_dir, arcname = outdir.replace(os.curdir, ""))
     cv_tar.close()
