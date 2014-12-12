@@ -483,4 +483,68 @@ def indices( idic, monitor=dummy_monitor ):
   
   outlog = outlog + "Finished the indice calculation at: %s \n" % (datetime.strftime(datetime.now(), '%H:%M:%S %d-%m-%Y'))
   return outlog;
+
+def cv_creator(outdir, cv_dir, monitor=dummy_monitor ):
+  from ocgis.util.shp_process import ShpProcess
+  from ocgis.util.shp_cabinet import ShpCabinetIterator
+  logger.debug('starting cv_creator')
+  
+  # preparing the working directory 
+  ocgis.env.OVERWRITE = True
+  ocgis.env.DIR_DATA = outdir
+  #ocgis.env.DIR_OUTPUT = cv_dir    
+  output_crs = None
+  
+  p_dir, p = os.path.split(os.path.abspath(__file__)) 
+  SHP_DIR =  os.path.join(p_dir + '/shapefiles/' )
+  logger.debug('SHP_DIR: %s' % SHP_DIR )
+  europa = ['AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN','FRA','GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX','MLT','NLD','POL','PRT','ROU','SVK','SVN','SWE','NOR','CHE','ISL','MKD','MNE','SRB','MDA','UKR','BIH','ALB','BLR','KOS']
+  geoms = '50m_country' # 'world_countries_boundary_file_world_2002'
+  ocgis.env.DIR_SHPCABINET = SHP_DIR 
+  ocgis.env.OVERWRITE = True
+  sc = ocgis.ShpCabinet()
+  sci = ShpCabinetIterator(geoms)
+
+  # ref_time = [datetime(1971,01,01),datetime(2000,12,31)]
+  ncs = os.listdir(outdir)
+  
+  for land in europa:
+    select_ugid = []
+    geom_rows = []
+
+    for row in sci:
+      if row['properties']['adm0_a3'] == land:
+        select_ugid.append(row['properties']['UGID'])
+        geom_rows.append(row)
+
+      # select_ugid.sort()
+    if not os.path.exists(cv_dir +'/'+ land):
+      os.makedirs(cv_dir +'/'+ land)
+    OUT_DIR = os.path.join(cv_dir +'/'+ land)
+    
+    #dir_output = tempfile.mkdtemp()
+    ocgis.env.DIR_OUTPUT = OUT_DIR
+    
+    for nc in ncs:
+      
+      p, f = os.path.split(nc)
+      prefix = f.replace('EUR',land)
+      var = f.split('_')[0]
+      rd = ocgis.RequestDataset(nc) # time_range=[dt1, dt2]
+      logger.debug('calculation of polygon %s with variable %s'% (prefix,var))
+      try:
+        geom_nc = ocgis.OcgOperations(dataset=rd, geom=geoms, output_format='nc', select_ugid=select_ugid, prefix=prefix , add_auxiliary_files=False ).execute()
+      except Exception as e:
+        msg = 'processing failed for file  : %s %s ' % ( prefix , e)
+        logger.error(msg)
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
               
