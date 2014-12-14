@@ -70,7 +70,7 @@ def calc_indice(resources=[], indice="SU", grouping="year", out_dir=None):
     try:
         aggs = aggregations(resources)
         if len(aggs) > 1:
-            logger.warning('more than one expermint group selected: %s', aggs.keys())
+            logger.warning('more than one experiment group selected: %s', aggs.keys())
         if len(aggs) == 0:
             raise Exception('no valid input data found!')
         agg_name = aggs.keys()[0]

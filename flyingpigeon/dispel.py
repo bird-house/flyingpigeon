@@ -43,8 +43,9 @@ class CalcSimpleIndice(BasePE):
         filename = urlparse.urlparse(inputs['resource'][0]).path
 
         self.debug('filename=%s, variable=%s, indice=%s' % ( filename, variable, self.indice))
-        
-        if indices_calculator.has_variable(filename, variable):
+
+        from flyingpigeon.utils import has_variable
+        if has_variable(filename, variable):
             self.debug('start calculation ...')
             output = indices_calculator.calc_indice(
                 resources=inputs['resource'],
@@ -59,9 +60,9 @@ class CalcSimpleIndice(BasePE):
         else:
             self.debug('skip file: has not variable %s' % (variable))
 
-class GroupByExperiment(BasePE):
+class Aggregate(BasePE):
     '''
-    This PE takes gets netcdf input files and groups them by experiment.
+    This PE takes gets netcdf input files and aggregates them by experiment.
     '''
     def __init__(self, resources, monitor=None):
         BasePE.__init__(self, monitor)
@@ -73,15 +74,16 @@ class GroupByExperiment(BasePE):
         from urllib2 import urlparse
         # TODO: Dataset doest not like file:// urls
         local_files = [ urlparse.urlparse(url).path for url in self.resources ]
-        exp_groups = indices_calculator.group_by_experiment( local_files )
-        max_count = len(exp_groups)
-        for key in exp_groups.keys():
+        from flyingpigeon.utils import aggregations
+        aggs = aggregations( local_files )
+        max_count = len(aggs)
+        for key in aggs.keys():
             # TODO: wps needs file://
             #from os.path import abspath
             #nc_files = [ "file://%s" % abspath(path) for path in exp_groups[key] ]
             self.monitor('experiment=%s' % key, self.count * 100 / max_count)
             self.count = self.count + 1
-            self.write('output', exp_groups[key])
+            self.write('output', aggs[key]['files'])
 
 
 class StatusLog(BasePE):
@@ -135,7 +137,7 @@ def climate_indice_workflow(resources, indices=['SU'], grouping='year', out_dir=
     from dispel4py.multi_process import multiprocess
 
     graph = WorkflowGraph()
-    group_by = GroupByExperiment(resources, monitor=monitor)
+    aggregate = Aggregate(resources, monitor=monitor)
     results = Results(max_results=len(resources), out_dir=out_dir, monitor=monitor)
     status_log = StatusLog(out_dir=out_dir, monitor=monitor)
 
@@ -145,7 +147,7 @@ def climate_indice_workflow(resources, indices=['SU'], grouping='year', out_dir=
     for indice in indices:
         calc_indice = CalcSimpleIndice(indice=indice, grouping=grouping, out_dir=out_dir, monitor=monitor)
 
-        graph.connect(group_by, 'output',  calc_indice, 'resource')
+        graph.connect(aggregate, 'output',  calc_indice, 'resource')
         graph.connect(calc_indice, 'output', results, 'input')
         graph.connect(calc_indice, 'status_log', status_log, 'status_log')
 
