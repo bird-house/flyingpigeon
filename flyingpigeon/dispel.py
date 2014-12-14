@@ -152,7 +152,7 @@ def climate_indice_workflow(resources, indices=['SU'], grouping='year', out_dir=
         graph.connect(calc_indice, 'status_log', status_log, 'status_log')
 
     from multiprocessing import cpu_count
-    numProcesses = cpu_count()
+    numProcesses = min(cpu_count(), 4)  # max 4 cpus
 
     logger.debug('start multiprocessesing workflow')
     multiprocess(graph, numProcesses=numProcesses, inputs=[{}], simple=False)
