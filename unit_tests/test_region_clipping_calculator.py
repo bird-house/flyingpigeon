@@ -36,7 +36,7 @@ class RegionClippingCalculatorTestCase(TestCase):
         nose.tools.ok_(select_ugid('unknown') == [], select_ugid('unknown'))
 
     @attr('testdata')
-    def test_calc_region_clipping_cmip5(self):
+    def test_calc_region_clipping_nc_cmip5(self):
         #raise SkipTest
         out_dir = tempfile.mkdtemp()
 
@@ -49,6 +49,22 @@ class RegionClippingCalculatorTestCase(TestCase):
         
         ds = Dataset(result['output'])
         nose.tools.ok_('cct' in ds.variables, ds.variables.keys())
+
+    @attr('testdata')
+    def test_calc_region_clipping_csv_cmip5(self):
+        #raise SkipTest
+        out_dir = tempfile.mkdtemp()
+
+        result = region_clipping_calculator.calc_region_clipping(
+            [self.cmip5_historical_1850_nc], variable='cct', region='ITA', output_format='csv', out_dir=out_dir)
+
+        nose.tools.ok_(
+            result['drs_filename'] == 'cct_MPI-ESM-LR_historical_r1i1p1_19491216-21051115.nc',
+            result)
+
+        nose.tools.ok_(
+            'ITA.csv' in result['output'],
+            result)
 
 
 
