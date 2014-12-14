@@ -60,3 +60,8 @@ docs/html/
 # tests
 *.log
 *.lock
+
+# shapefiles
+*.fix
+*.qix
+
