@@ -23,11 +23,15 @@ class RegionClippingCalculatorTestCase(TestCase):
         url_parts = urlparse.urlparse(
             TESTDATA['tas_EUR-11_ICHEC-EC-EARTH_rcp45_r1i1p1_KNMI-RACMO22E_v1_mon_200601-201012.nc'])
         cls.tas_rcp45_2006_nc = url_parts.path
-        
+
+    def test_select_ugid(self):
+        from flyingpigeon.region_clipping_calculator import select_ugid
+        nose.tools.ok_(select_ugid('AUT') == [17], select_ugid('AUT'))
+        nose.tools.ok_(select_ugid('ITA') == [107], select_ugid('ITA'))
 
     @attr('testdata')
     def test_calc_region_clipping(self):
-        #raise SkipTest
+        raise SkipTest
         out_dir = tempfile.mkdtemp()
 
         # SU expects tasmax

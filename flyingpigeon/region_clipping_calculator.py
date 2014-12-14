@@ -24,7 +24,11 @@ def calc_region_clipping(resources=[], variable='tas', region='AUT', output_form
     """
     calculates geometry clipping of netcdf files and given region.
 
+    :param resources: list of netcdf filenames
+    :param out_dir: output directory for result file (netcdf)
     :param output_format: format of result file (nc or csv)
+
+    :return: netcdf file for region
     """
   
     # preparing the working directory 
