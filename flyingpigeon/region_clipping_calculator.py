@@ -36,23 +36,25 @@ def calc_region_clipping(resources=[], variable='tas', region='AUT', output_form
   
     # preparing the working directory 
     #ocgis.env.OVERWRITE = True
-    ocgis.env.DIR_DATA = out_dir
+    #ocgis.env.DIR_DATA = out_dir
 
-    from ocgis.interface.base.crs import CFWGS84
-    rd = ocgis.RequestDataset(resources, variable) 
+    #from ocgis.interface.base.crs import CFWGS84
+    rd = ocgis.RequestDataset(resources, variable)
+    from flyingpigeon.utils import drs_filename
 
     prefix = region
     output = None
-    filename = ''
+    filename = drs_filename(resources[0])
     try:
         logger.debug('calculation of polygon %s with variable %s in %s' % (prefix, variable, region))
         output = ocgis.OcgOperations(
             dataset=rd,
             geom=COUNTRY_SHP,
-            output_crs=None,
+            #output_crs=CFWGS84,
             output_format=output_format,
             select_ugid=select_ugid(region),
-            prefix=prefix ,
+            prefix=prefix,
+            dir_output=out_dir,
             add_auxiliary_files=False ).execute()
     except:
         logger.exception('processing failed for file prefix=%s', prefix)
