@@ -66,9 +66,9 @@ def drs_filename( nc_file, skip_timestamp=False, skip_format=False ):
     
     return filename
 
-def group_by_experiment(nc_files):
+def aggregations(nc_files):
     """
-    groups nc_files by experiment name. Experiment examples:
+    aggregates netcdf files by experiment. Aggregation examples:
     
     CORDEX: EUR-11_ICHEC-EC-EARTH_historical_r3i1p1_DMI-HIRHAM5_v1_day
     CMIP5:
@@ -79,23 +79,23 @@ def group_by_experiment(nc_files):
     Time axis is sorted by time.
 
     :param nc_files: list of netcdf files
-    :return: dictonary with key=experiment name and value=list of netcdf files
+    :return: dictonary with key=experiment
     """
     
-    groups = {}
+    aggregations = {}
     for nc_file in nc_files:
         key = drs_filename(nc_file, skip_timestamp=True, skip_format=True)
 
-        # collect files of each group (time axis)
-        if groups.has_key(key):
-            groups[key].append(nc_file)
+        # collect files of each aggregation (time axis)
+        if aggregations.has_key(key):
+            aggregations[key]['files'].append(nc_file)
         else:
-            groups[key] = [nc_file]
+            aggregations[key] = dict(files=[nc_file])
 
         # sort files by time
-        for key in groups.keys():
-            groups[key] = sort_by_time(groups[key])   
-    return groups
+        for key in aggregations.keys():
+            aggregations[key]['files'] = sort_by_time(aggregations[key]['files'])   
+    return aggregations
 
 def sort_by_time(resources):
     from ocgis.util.helpers import get_sorted_uris_by_time_dimension

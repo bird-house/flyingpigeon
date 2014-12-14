@@ -82,14 +82,15 @@ class UtilsTestCase(TestCase):
         nc_files.append(self.tas_rcp45_2006_nc)
         nc_files.append(self.tasmax_historical_1991_nc)
         nc_files.append(self.tasmax_historical_1996_nc)
-        result = utils.group_by_experiment(nc_files)
+        result = utils.aggregations(nc_files)
         
         nose.tools.ok_(len(result) == 3, result)
         nose.tools.ok_("tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day" in result, result)
-        group = result["tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day"]
-        nose.tools.ok_(len(group) == 2, result)
-        nose.tools.ok_("tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19910101-19951231.nc" in group[0], result)
-        nose.tools.ok_("tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19960101-20001231.nc" in group[1], result)
+        aggregation = result["tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day"]
+        agg_files = aggregation['files']
+        nose.tools.ok_(len(agg_files) == 2, result)
+        nose.tools.ok_("tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19910101-19951231.nc" in agg_files[0], result)
+        nose.tools.ok_("tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19960101-20001231.nc" in agg_files[1], result)
 
     @attr('testdata')
     def test_has_variable(self):
