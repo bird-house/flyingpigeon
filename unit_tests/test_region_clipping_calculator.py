@@ -33,7 +33,7 @@ class RegionClippingCalculatorTestCase(TestCase):
 
     @attr('testdata')
     def test_calc_region_clipping(self):
-        raise SkipTest
+        #raise SkipTest
         out_dir = tempfile.mkdtemp()
 
         # SU expects tasmax

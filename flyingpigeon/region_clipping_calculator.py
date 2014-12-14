@@ -37,7 +37,8 @@ def calc_region_clipping(resources=[], variable='tas', region='AUT', output_form
     # preparing the working directory 
     #ocgis.env.OVERWRITE = True
     ocgis.env.DIR_DATA = out_dir
-      
+
+    from ocgis.interface.base.crs import CFWGS84
     rd = ocgis.RequestDataset(resources, variable) 
 
     prefix = region
@@ -48,6 +49,7 @@ def calc_region_clipping(resources=[], variable='tas', region='AUT', output_form
         output = ocgis.OcgOperations(
             dataset=rd,
             geom=COUNTRY_SHP,
+            output_crs=None,
             output_format=output_format,
             select_ugid=select_ugid(region),
             prefix=prefix ,
