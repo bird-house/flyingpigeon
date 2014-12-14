@@ -200,8 +200,8 @@ def indices( idic, monitor=dummy_monitor ):
     
     p, f = os.path.split(os.path.abspath(nc))
     logger.debug('processing file %s ' % (f ))
-    basename, ext = os.path.splitext(f)
-    # basename = f.replace('day',group)
+    bn, ext = os.path.splitext(f)
+    basename = bn.replace('day',group[0])
     
     var = f.split('_')[0]
     rd = ocgis.RequestDataset(nc, var) # time_range=[dt1, dt2]
@@ -445,8 +445,7 @@ def indices( idic, monitor=dummy_monitor ):
         SD5cm_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('prsn_','SD5cm_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('SD5cm calculated ' )
         outlog = outlog + "SD5cm indice processed sucessfully for %s \n" % basename
-        monitor('SD5cm indice processed for %i of %i experiments ' % (c , len(uris)) , (100/len(uris)*c ))
-          
+        monitor('SD5cm indice processed for %i of %i experiments ' % (c , len(uris)) , (100/len(uris)*c ))     
                   
       if SD50cm == True and var == "prsn" :
         logger.debug('calculation for SD50cm started ')
@@ -457,14 +456,14 @@ def indices( idic, monitor=dummy_monitor ):
         outlog = outlog + "SD50cm indice processed sucessfully for %s \n" % basename
         monitor('SD50cm indice processed for %i of %i experiments ' % (c , len(uris)) , (100/len(uris)*c ))
 
-      if CDD == True and var == "prsn" :
+      if CDD == True and var == "pr" :
         logger.debug('calculation for CDD started ')
         CDD_file = None
         calc_icclim = [{'func':'icclim_CDD','name':'CDD'}]
-        SD5cm_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('prsn_','CDD_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
+        SD5cm_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('pr_','CDD_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('CDD calculated ' )
         outlog = outlog + "CDD indice processed sucessfully for %s \n" % basename
-        monitor('CDD indice processed for %i of %i experiments ' % (c , len(uris)) , (100/len(uris)*c ))
+        monitor('CDD indice processed for %i of %i experiments ' % (c , len(uris)) , (100/len(uris) * c ))
         
     except Exception as e:
       msg = 'processing failed for file  : %s %s ' % ( basename , e)
@@ -478,6 +477,8 @@ def indices( idic, monitor=dummy_monitor ):
   return outlog;
 
 def cv_creator(outdir, cv_dir, monitor=dummy_monitor ):
+  
+  monitor('monitor: starting Cordex Viewer preparation ' , 6)
   
   outlog = "Starting the Cordex Viwer preparation at : %s \n" % (datetime.strftime(datetime.now(), '%H:%M:%S %d-%m-%Y'))
   from ocgis.util.shp_process import ShpProcess
@@ -504,18 +505,18 @@ def cv_creator(outdir, cv_dir, monitor=dummy_monitor ):
   ncs = [os.path.join(outdir, f) for f in os.listdir(outdir)]
   
   exp = fn_sorter_ch(ncs) # dictionary with experiment : files
-  outlog = outlog + ('dictionary build with: \n %s \n'% (exp.keys()))
+  outlog = outlog + ('dictionary build with %i experiments : \n %s \n'% (len(exp.keys()), exp ))
   
-  
+  c = 0 
   for key in exp.keys():
+    c = c + 1
+    
     ncs = exp[key]
     ncs.sort()
-    rd = ocgis.RequestDataset(ncs) # time_range=[dt1, dt2]
-    
-    #p, f = os.path.split(os.path.abspath(nc))
-    #prefix, ext = os.path.splitext(f)
-    prefix = key 
     var = key.split('_')[0]
+    rd = ocgis.RequestDataset(ncs, var) # time_range=[dt1, dt2]
+    
+    #p, f = os.patexi os.path.splitext(f)
     
     for land in europa:
       select_ugid = []
@@ -532,18 +533,20 @@ def cv_creator(outdir, cv_dir, monitor=dummy_monitor ):
       
       #dir_output = tempfile.mkdtemp()
       ocgis.env.DIR_OUTPUT = OUT_DIR
-      prefix = prefix.replace('EUR',land)
+      prefix = key.replace('EUR',land)
     
       try:
-        logger.debug('calculation of polygon %s with variable %s'% (prefix,var))
+        logger.debug('calculation of polygon %s with variable %s in %s'% (prefix,var, land))
         geom_nc = ocgis.OcgOperations(dataset=rd, geom=geoms, output_format='nc', select_ugid=select_ugid, prefix=prefix , add_auxiliary_files=False ).execute()
         geom_csv = ocgis.OcgOperations(dataset=rd, geom=geoms, output_format='csv', select_ugid=select_ugid, prefix=prefix, aggregate=True, add_auxiliary_files=False ).execute()
-        outlog = outlog + ('calculation of polygon %s with variable %s ... done \n'% (prefix,var))
+        outlog = outlog + ('calculation of polygon %s with variable %s ... done \n'% (prefix , var))
 
       except Exception as e:
         msg = 'processing failed for file  : %s %s ' % ( prefix , e)
         logger.error(msg)
         outlog = outlog + ('faided for polygon %s ! %s ... done \n'% (prefix , e))
+      
+      monitor('CViewer for timeserie %i in %s ...  done' % (c , land) , (100/len( exp.keys() ) * c ))
   
   outlog = outlog + "Finish the Cordex Viwer preparation at : %s \n" % (datetime.strftime(datetime.now(), '%H:%M:%S %d-%m-%Y'))
   return outlog;
