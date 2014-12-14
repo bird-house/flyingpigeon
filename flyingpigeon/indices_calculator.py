@@ -62,22 +62,22 @@ def calc_indice(resources=[], indice="SU", grouping="year", out_dir=None):
     ## ocgis.env.DIR_OUTPUT = outdir    
     ## output_crs = None
 
-    from utils import group_by_experiment
+    from utils import aggregations
 
-    result = None
+    output = None
     calc_icclim = [{'func' : 'icclim_' + indice, 'name' : indice}]
     filename = None
     try:
-        groups = group_by_experiment(resources)
-        if len(groups) > 1:
-            logger.warning('more than one expermint group selected: %s', groups.keys())
-        if len(groups) == 0:
+        aggs = aggregations(resources)
+        if len(aggs) > 1:
+            logger.warning('more than one expermint group selected: %s', aggs.keys())
+        if len(aggs) == 0:
             raise Exception('no valid input data found!')
-        group_name = groups.keys()[0]
-        logger.debug('group = %s', group_name)
-        nc_files = groups[group_name]
+        agg_name = aggs.keys()[0]
+        logger.debug('aggregation = %s', agg_name)
+        nc_files = aggs[agg_name]['files']
         variable = indice_variable(indice)
-        prefix = '%s_%s' % (indice, group_name)
+        prefix = '%s_%s' % (indice, agg_name)
         filename = prefix + '.nc'
         logger.debug('calculating %s', filename)
         rd = ocgis.RequestDataset(uri=nc_files, variable=variable) # TODO: time_range=[dt1, dt2]
