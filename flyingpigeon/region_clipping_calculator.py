@@ -11,6 +11,9 @@ from os.path import dirname, join
 ocgis.env.DIR_SHPCABINET = join(dirname(__file__), 'processes', 'shapefiles')
 
 def select_ugid(region):
+    """
+    returns geometry id of given region in country shapefile.
+    """
     from ocgis.util.shp_cabinet import ShpCabinetIterator
     sc_iter = ShpCabinetIterator(COUNTRY_SHP)
 

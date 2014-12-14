@@ -27,7 +27,9 @@ class RegionClippingCalculatorTestCase(TestCase):
     def test_select_ugid(self):
         from flyingpigeon.region_clipping_calculator import select_ugid
         nose.tools.ok_(select_ugid('AUT') == [17], select_ugid('AUT'))
+        nose.tools.ok_(select_ugid('FIN') == [70], select_ugid('FIN'))
         nose.tools.ok_(select_ugid('ITA') == [107], select_ugid('ITA'))
+        nose.tools.ok_(select_ugid('unknown') == [], select_ugid('unknown'))
 
     @attr('testdata')
     def test_calc_region_clipping(self):
