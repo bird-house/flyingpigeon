@@ -1,7 +1,7 @@
 import ocgis
 
-#from malleefowl import wpslogging as logging
-import logging
+from malleefowl import wpslogging as logging
+#import logging
 logger = logging.getLogger(__name__)
 
 def drs_filename( nc_file, skip_timestamp=False, skip_format=False ):
