@@ -34,10 +34,11 @@ def calc_region_clipping(resources=[], variable='tas', region='AUT', output_form
     rd = ocgis.RequestDataset(resources, variable) 
 
     prefix = region
-    result = None
+    output = None
+    filename = ''
     try:
         logger.debug('calculation of polygon %s with variable %s in %s' % (prefix, variable, region))
-        result = ocgis.OcgOperations(
+        output = ocgis.OcgOperations(
             dataset=rd,
             geom=COUNTRY_SHP,
             output_format=output_format,
@@ -47,7 +48,7 @@ def calc_region_clipping(resources=[], variable='tas', region='AUT', output_form
     except:
         logger.exception('processing failed for file prefix=%s', prefix)
 
-    return result
+    return dict(output=output, drs_filename=filename)
   
   
   
