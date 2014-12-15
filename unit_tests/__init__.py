@@ -13,7 +13,7 @@ os.environ['GDAL_DATA'] = join(os.environ['HOME'], 'anaconda', 'share', 'gdal')
 try:
     import ocgis
 except:
-    logging.exception('ocgis is not available!')
+    logger.exception('ocgis is not available!')
 
 # load test data
 from os.path import join, dirname
@@ -28,5 +28,5 @@ try:
         for key in TESTDATA.keys():
             TESTDATA[key] = str(TESTDATA[key]) 
 except:
-    logging.exception('could not read testdata! %s', __testdata_filename__ )
+    logger.exception('could not read testdata! %s', __testdata_filename__ )
 
