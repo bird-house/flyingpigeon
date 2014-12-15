@@ -63,6 +63,9 @@ class UtilsTestCase(TestCase):
         variable = utils.get_variable(self.tasmax_historical_1991_nc)
         nose.tools.ok_("tasmax" == variable, variable)
 
+        variable = utils.get_variable(self.tas_historical_2001_nc)
+        nose.tools.ok_("tas" == variable, variable)
+
     @attr('testdata')
     def test_drs_filename(self):
         filename = utils.drs_filename(self.tas_historical_2001_nc)
@@ -112,6 +115,9 @@ class UtilsTestCase(TestCase):
 
         # check variable
         nose.tools.ok_(agg['variable'] == "tasmax", agg)
+
+        # check filename
+        nose.tools.ok_(agg['filename'] == 'tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19910101-20001231.nc', agg)
 
     @attr('testdata')
     def test_has_variable(self):

@@ -32,37 +32,37 @@ class CalcSimpleIndice(BasePE):
 
         self.inputconnections = {}
         self.inputconnections['resource'] = dict( NAME='resource' )
+        #self.inputconnections['metadata'] = dict( NAME='metadata' )
         self.outputconnections = {}
         self.outputconnections['output'] = dict( NAME='output' )
         self.outputconnections['status_log'] = dict( NAME='status_log' ) 
 
     def process(self, inputs):
-        # TODO: fix file:// url troubles ...
-        from urllib2 import urlparse
-        variable = indices_calculator.indice_variable(self.indice)
-        filename = urlparse.urlparse(inputs['resource'][0]).path
+        variable = inputs['resource'].get('variable')
+        drs_filename = inputs['resource'].get('filename')
 
-        self.debug('filename=%s, variable=%s, indice=%s' % ( filename, variable, self.indice))
+        self.debug('filename=%s, variable=%s, indice=%s' % ( drs_filename, variable, self.indice))
 
-        from flyingpigeon.utils import has_variable
-        if has_variable(filename, variable):
+        # does variable fit to indice?
+        if variable == indices_calculator.indice_variable(self.indice):
             self.debug('start calculation ...')
             success = 'Failed'
             try:
                 output = indices_calculator.calc_indice(
-                    resources=inputs['resource'],
+                    resources=inputs['resource'].get('files', []),
                     indice=self.indice,
                     grouping=self.grouping,
                     out_dir=self.out_dir)
+                drs_filename = output['drs_filename']
                 success = 'Succeeded'
                 self.debug('calc_indice done. output=%s' % output)
                 self.write('output', output)
             except:
                 self.debug('indice calculation failed: indice=%s' % self.indice)
-            status_log = "indice=%s, variable=%s, filename=%s, status=%s" % (self.indice, variable, output['drs_filename'], success)
+            status_log = "indice=%s, variable=%s, filename=%s, status=%s" % (self.indice, variable, drs_filename, success)
             self.write('status_log', status_log)
         else:
-            self.debug('skip file: has not variable %s' % (variable))
+            self.debug('skip file: variable=%s' % (variable))
 
 class Aggregate(BasePE):
     '''
@@ -71,7 +71,9 @@ class Aggregate(BasePE):
     def __init__(self, resources, monitor=None):
         BasePE.__init__(self, monitor)
         self.resources = resources
-        self.outputconnections = { 'output' : { NAME : 'output' } }
+        self.outputconnections = {}
+        self.outputconnections['output'] = dict( NAME='output' )
+        #self.outputconnections['metadata'] = dict( NAME='metadata' )
         self.count = 0
 
     def process(self, inputs):
@@ -87,8 +89,7 @@ class Aggregate(BasePE):
             #nc_files = [ "file://%s" % abspath(path) for path in exp_groups[key] ]
             self.monitor('experiment=%s' % key, self.count * 100 / max_count)
             self.count = self.count + 1
-            self.write('output', aggs[key]['files'])
-
+            self.write('output', aggs[key])
 
 class StatusLog(BasePE):
     def __init__(self, out_dir='.', monitor=None):

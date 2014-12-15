@@ -106,8 +106,9 @@ def aggregations(nc_files):
         else:
             aggregations[key] = dict(files=[nc_file])
 
-    # sort files by time
+    # collect aggregation metadata
     for key in aggregations.keys():
+        # sort files by time
         aggregations[key]['files'] = sort_by_time(aggregations[key]['files'])
         # start timestamp of first file
         start, _ = get_timestamps(aggregations[key]['files'][0])
@@ -115,7 +116,8 @@ def aggregations(nc_files):
         _, end = get_timestamps(aggregations[key]['files'][-1])
         aggregations[key]['from_timestamp'] = start
         aggregations[key]['to_timestamp'] = end
-        aggregations[key]['variable'] = get_variable(nc_file)
+        aggregations[key]['variable'] = get_variable(aggregations[key]['files'][0])
+        aggregations[key]['filename'] = "%s_%s-%s.nc" % (key, start, end)
     
     return aggregations
 
