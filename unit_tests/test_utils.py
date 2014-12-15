@@ -94,10 +94,16 @@ class UtilsTestCase(TestCase):
         nose.tools.ok_(len(aggs) == 3, aggs)
         nose.tools.ok_("tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day" in aggs, aggs)
         agg = aggs["tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day"]
+
+        # check aggregation files
         agg_files = agg['files']
         nose.tools.ok_(len(agg_files) == 2, agg)
         nose.tools.ok_("tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19910101-19951231.nc" in agg_files[0], agg)
         nose.tools.ok_("tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19960101-20001231.nc" in agg_files[1], agg)
+
+        # check timestamps
+        nose.tools.ok_(agg['from_timestamp'] == '19910101', agg)
+        nose.tools.ok_(agg['to_timestamp'] == '20001231', agg)
 
     @attr('testdata')
     def test_has_variable(self):
