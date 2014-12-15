@@ -68,7 +68,7 @@ class RegionClippingCalculatorTestCase(TestCase):
 
     @attr('testdata')
     def test_calc_region_clipping_nc_cordex(self):
-        #raise SkipTest
+        raise SkipTest
         out_dir = tempfile.mkdtemp()
 
         result = region_clipping_calculator.calc_region_clipping(
@@ -80,6 +80,21 @@ class RegionClippingCalculatorTestCase(TestCase):
         
         ds = Dataset(result['output'])
         nose.tools.ok_('tas' in ds.variables, ds.variables.keys())
+
+    def test_proj_cordex(self):
+        import subprocess
+        cmd = ['proj',
+               '-f', '"%.6f"',
+               '-m', '57.2957795130823',
+               '+proj=ob_tran',
+               '+o_proj=latlon',
+               '+o_lon_p=-162.0',
+               '+o_lat_p=39.25',
+               '+lon_0=180',
+               self.tas_historical_2001_nc]
+        subprocess.check_call(cmd)
+        
+        
 
 
 
