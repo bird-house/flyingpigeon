@@ -1,5 +1,7 @@
 import ocgis
 
+from .exceptions import CalculationException
+
 from malleefowl import wpslogging as logging
 #import logging
 logger = logging.getLogger(__name__)
@@ -90,8 +92,9 @@ def calc_indice(resources=[], indice="SU", grouping="year", out_dir=None):
             dir_output=out_dir,
             add_auxiliary_files=False).execute()
     except:
-        # TODO: should raise exception?
-        logger.exception('Could not calc indice %s', indice)
+        msg = 'Could not calc indice %s' % indice
+        logger.exception(msg)
+        raise CalculationException(msg)
 
     return dict(output=output, drs_filename=filename)
 

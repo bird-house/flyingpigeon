@@ -47,14 +47,18 @@ class CalcSimpleIndice(BasePE):
         from flyingpigeon.utils import has_variable
         if has_variable(filename, variable):
             self.debug('start calculation ...')
-            output = indices_calculator.calc_indice(
-                resources=inputs['resource'],
-                indice=self.indice,
-                grouping=self.grouping,
-                out_dir=self.out_dir)
-            success = 'Succeeded'
-            self.debug('calc_indice done. output=%s' % output)
-            self.write('output', output)
+            success = 'Failed'
+            try:
+                output = indices_calculator.calc_indice(
+                    resources=inputs['resource'],
+                    indice=self.indice,
+                    grouping=self.grouping,
+                    out_dir=self.out_dir)
+                success = 'Succeeded'
+                self.debug('calc_indice done. output=%s' % output)
+                self.write('output', output)
+            except:
+                self.debug('indice calculation failed: indice=%s' % self.indice)
             status_log = "indice=%s, variable=%s, filename=%s, status=%s" % (self.indice, variable, output['drs_filename'], success)
             self.write('status_log', status_log)
         else:
