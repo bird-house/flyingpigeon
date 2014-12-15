@@ -53,6 +53,12 @@ class UtilsTestCase(TestCase):
         nose.tools.ok_('19960101' in result[1], result)
 
     @attr('testdata')
+    def test_get_timestamps(self):
+        start,end = utils.get_timestamps(self.tasmax_historical_1991_nc)
+        nose.tools.ok_("19910101" == start, start)
+        nose.tools.ok_("19951231" == end, end)
+
+    @attr('testdata')
     def test_drs_filename(self):
         filename = utils.drs_filename(self.tas_historical_2001_nc)
         nose.tools.ok_(
@@ -76,21 +82,22 @@ class UtilsTestCase(TestCase):
             filename)
 
     @attr('testdata')
-    def test_group_by_experiment(self):
+    def test_aggregations(self):
         nc_files = []
         nc_files.append(self.tas_historical_2001_nc)
         nc_files.append(self.tas_rcp45_2006_nc)
         nc_files.append(self.tasmax_historical_1991_nc)
         nc_files.append(self.tasmax_historical_1996_nc)
-        result = utils.aggregations(nc_files)
+
+        aggs = utils.aggregations(nc_files)
         
-        nose.tools.ok_(len(result) == 3, result)
-        nose.tools.ok_("tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day" in result, result)
-        aggregation = result["tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day"]
-        agg_files = aggregation['files']
-        nose.tools.ok_(len(agg_files) == 2, result)
-        nose.tools.ok_("tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19910101-19951231.nc" in agg_files[0], result)
-        nose.tools.ok_("tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19960101-20001231.nc" in agg_files[1], result)
+        nose.tools.ok_(len(aggs) == 3, aggs)
+        nose.tools.ok_("tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day" in aggs, aggs)
+        agg = aggs["tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day"]
+        agg_files = agg['files']
+        nose.tools.ok_(len(agg_files) == 2, agg)
+        nose.tools.ok_("tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19910101-19951231.nc" in agg_files[0], agg)
+        nose.tools.ok_("tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19960101-20001231.nc" in agg_files[1], agg)
 
     @attr('testdata')
     def test_has_variable(self):

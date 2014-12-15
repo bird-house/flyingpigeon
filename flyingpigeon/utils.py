@@ -1,4 +1,5 @@
 import ocgis
+from netCDF4 import Dataset
 
 from malleefowl import wpslogging as logging
 #import logging
@@ -16,8 +17,6 @@ def drs_filename( nc_file, skip_timestamp=False, skip_format=False ):
                            (default: False)
     :return: DRS filename
     """
-    from netCDF4 import Dataset
-
     ds = Dataset(nc_file)
     rd = ocgis.RequestDataset(nc_file)
 
@@ -51,11 +50,7 @@ def drs_filename( nc_file, skip_timestamp=False, skip_format=False ):
 
         # add from/to timestamp if not skipped
         if skip_timestamp == False:
-            time_list = ds.variables['time']
-            from datetime import datetime, timedelta
-            reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
-            from_timestamp = datetime.strftime(reftime + timedelta(days=time_list[0]), '%Y%m%d') 
-            to_timestamp = datetime.strftime(reftime + timedelta(days=time_list[-1]), '%Y%m%d')
+            from_timestamp, to_timestamp = get_timestamps(nc_file)
             filename = "%s_%s-%s" % (filename, int(from_timestamp), int(to_timestamp))
 
         # add format extension
@@ -66,6 +61,21 @@ def drs_filename( nc_file, skip_timestamp=False, skip_format=False ):
     
     return filename
 
+def get_timestamps(nc_file):
+    """
+    returns from/to timestamp of given netcdf file.
+    
+    :param nc_file: NetCDF file
+    returns tuple (from_timestamp, to_timestamp)
+    """
+    ds = Dataset(nc_file)
+    time_list = ds.variables['time']
+    from datetime import datetime, timedelta
+    reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
+    from_timestamp = datetime.strftime(reftime + timedelta(days=time_list[0]), '%Y%m%d') 
+    to_timestamp = datetime.strftime(reftime + timedelta(days=time_list[-1]), '%Y%m%d')
+    return (from_timestamp, to_timestamp)
+    
 def aggregations(nc_files):
     """
     aggregates netcdf files by experiment. Aggregation examples:
@@ -92,9 +102,16 @@ def aggregations(nc_files):
         else:
             aggregations[key] = dict(files=[nc_file])
 
-        # sort files by time
-        for key in aggregations.keys():
-            aggregations[key]['files'] = sort_by_time(aggregations[key]['files'])   
+    # sort files by time
+    for key in aggregations.keys():
+        aggregations[key]['files'] = sort_by_time(aggregations[key]['files'])
+        # start timestamp of first file
+        start, _ = get_timestamps(aggregations[key]['files'][0])
+        # end timestamp of last file
+        _, end = get_timestamps(aggregations[key]['files'][-1])
+        aggregations[key]['from_timestamp'] = start
+        aggregations[key]['to_timestamp'] = end
+    
     return aggregations
 
 def sort_by_time(resources):
