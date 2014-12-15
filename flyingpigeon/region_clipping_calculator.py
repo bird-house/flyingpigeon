@@ -50,7 +50,7 @@ def calc_region_clipping(resources=[], variable='tas', region='AUT', output_form
         output = ocgis.OcgOperations(
             dataset=rd,
             geom=COUNTRY_SHP,
-            #output_crs=CFWGS84,
+            #output_crs=None,
             output_format=output_format,
             select_ugid=select_ugid(region),
             prefix=prefix,

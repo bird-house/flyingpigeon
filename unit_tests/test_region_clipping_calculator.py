@@ -52,12 +52,12 @@ class RegionClippingCalculatorTestCase(TestCase):
 
     @attr('testdata')
     def test_calc_region_clipping_csv_cmip5(self):
-        #raise SkipTest
         out_dir = tempfile.mkdtemp()
 
         result = region_clipping_calculator.calc_region_clipping(
             [self.cmip5_historical_1850_nc], variable='cct', region='ITA', output_format='csv', out_dir=out_dir)
 
+        # TODO: check names and content
         nose.tools.ok_(
             result['drs_filename'] == 'cct_MPI-ESM-LR_historical_r1i1p1_19491216-21051115.nc',
             result)
@@ -65,6 +65,22 @@ class RegionClippingCalculatorTestCase(TestCase):
         nose.tools.ok_(
             'ITA.csv' in result['output'],
             result)
+
+    @attr('testdata')
+    def test_calc_region_clipping_nc_cordex(self):
+        #raise SkipTest
+        out_dir = tempfile.mkdtemp()
+
+        result = region_clipping_calculator.calc_region_clipping(
+            [self.tas_historical_2001_nc], variable='tas', region='ITA', output_format='nc', out_dir=out_dir)
+
+        nose.tools.ok_(
+            result['drs_filename'] == 'tas_EUR-11_ICHEC-EC-EARTH_historical_r1i1p1_KNMI-RACMO22E_v1_mon_20010116-20051216.nc',
+            result)
+        
+        ds = Dataset(result['output'])
+        nose.tools.ok_('tas' in ds.variables, ds.variables.keys())
+
 
 
 
