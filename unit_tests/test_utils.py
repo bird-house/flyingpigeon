@@ -59,6 +59,11 @@ class UtilsTestCase(TestCase):
         nose.tools.ok_("19951231" == end, end)
 
     @attr('testdata')
+    def test_get_variable(self):
+        variable = utils.get_variable(self.tasmax_historical_1991_nc)
+        nose.tools.ok_("tasmax" == variable, variable)
+
+    @attr('testdata')
     def test_drs_filename(self):
         filename = utils.drs_filename(self.tas_historical_2001_nc)
         nose.tools.ok_(
@@ -104,6 +109,9 @@ class UtilsTestCase(TestCase):
         # check timestamps
         nose.tools.ok_(agg['from_timestamp'] == '19910101', agg)
         nose.tools.ok_(agg['to_timestamp'] == '20001231', agg)
+
+        # check variable
+        nose.tools.ok_(agg['variable'] == "tasmax", agg)
 
     @attr('testdata')
     def test_has_variable(self):

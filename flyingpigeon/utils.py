@@ -18,7 +18,7 @@ def drs_filename( nc_file, skip_timestamp=False, skip_format=False ):
     :return: DRS filename
     """
     ds = Dataset(nc_file)
-    rd = ocgis.RequestDataset(nc_file)
+    variable = get_variable(nc_file)
 
     # CORDEX example: EUR-11_ICHEC-EC-EARTH_historical_r3i1p1_DMI-HIRHAM5_v1_day
     cordex_pattern = "{variable}_{domain}_{driving_model}_{experiment}_{ensemble}_{model}_{version}_{frequency}"
@@ -29,7 +29,7 @@ def drs_filename( nc_file, skip_timestamp=False, skip_format=False ):
     try:
         if ds.project_id == 'CORDEX':
             filename = cordex_pattern.format(
-                variable = rd.variable,
+                variable = variable,
                 domain = ds.CORDEX_domain,
                 driving_model = ds.driving_model_id,
                 experiment = ds.experiment_id,
@@ -40,7 +40,7 @@ def drs_filename( nc_file, skip_timestamp=False, skip_format=False ):
         elif ds.project_id == 'CMIP5':
             # TODO: attributes missing in netcdf file for name generation?
             filename = cmip5_pattern.format(
-                variable = rd.variable,
+                variable = variable,
                 model = ds.model_id,
                 experiment = ds.experiment,
                 ensemble = ds.parent_experiment_rip
@@ -60,6 +60,10 @@ def drs_filename( nc_file, skip_timestamp=False, skip_format=False ):
         logger.exception('Could not generate DRS filename for %s', nc_file)
     
     return filename
+
+def get_variable(nc_file):
+    rd = ocgis.RequestDataset(nc_file)
+    return rd.variable
 
 def get_timestamps(nc_file):
     """
@@ -111,6 +115,7 @@ def aggregations(nc_files):
         _, end = get_timestamps(aggregations[key]['files'][-1])
         aggregations[key]['from_timestamp'] = start
         aggregations[key]['to_timestamp'] = end
+        aggregations[key]['variable'] = get_variable(nc_file)
     
     return aggregations
 
