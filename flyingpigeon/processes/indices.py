@@ -39,8 +39,8 @@ class icclimWorker(WPSProcess):
 
     self.cviewer = self.addLiteralInput(
       identifier="cviewer",
-      title="Cordex Viewer",
-      abstract="Polygon subsetting for EURO - Cordex Viewer",
+      title="Subsetting",
+      abstract="Country polygon subsetting for EURO - Cordex Viewer",
       type=type(False),
       default=False,
       minOccurs=0,
@@ -183,7 +183,7 @@ class icclimWorker(WPSProcess):
     self.ID = self.addLiteralInput(
       identifier="ID",
       title="ID",
-      abstract=" ... (tasmax as input files)",
+      abstract="Nr of Ice days (tasmax as input files)",
       default=False,
       type=type(False),
       minOccurs=0,
@@ -377,7 +377,7 @@ class icclimWorker(WPSProcess):
     
     logger.debug('starting icclim indices execution')
     
-    self.show_status('starting calcualtion of icclim indices', 5)
+    self.show_status('starting calcualtion icclim indices', 5)
     ncfiles = self.getInputValues(identifier='netcdf_file')
     (fp_tar, tarf) = tempfile.mkstemp(dir=".", suffix='.tar')
     tar = tarfile.open(tarf, "w")
