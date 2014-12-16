@@ -5,6 +5,11 @@ from malleefowl import wpslogging as logging
 #import logging
 logger = logging.getLogger(__name__)
 
+def local_path(url):
+    from urllib2 import urlparse
+    url_parts = urlparse.urlparse(url)
+    return url_parts.path
+
 def drs_filename( nc_file, skip_timestamp=False, skip_format=False ):
     """
     generates filename according to the data reference syntax (DRS).

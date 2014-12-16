@@ -42,6 +42,10 @@ class UtilsTestCase(TestCase):
             TESTDATA['cct_Amon_MPI-ESM-LR_historical_r1i1p1_185001-200512.nc'])
         cls.cmip5_historical_1850_nc = url_parts.path
 
+    def test_local_path(self):
+        nose.tools.ok_(utils.local_path('file:///tmp/test.nc') == '/tmp/test.nc')
+        nose.tools.ok_(utils.local_path('/tmp/test.nc') == '/tmp/test.nc')
+
     @attr('testdata')
     def test_sort_by_time(self):
         result = utils.sort_by_time([self.tasmax_historical_1991_nc, self.tasmax_historical_1996_nc])
