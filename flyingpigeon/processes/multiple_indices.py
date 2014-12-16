@@ -3,7 +3,7 @@ from malleefowl.process import WPSProcess
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
-from flyingpigeon import indices_calculator
+from flyingpigeon.indices import indices, indices_description
 from flyingpigeon import dispel
 
 class CalcMultipleIndices(WPSProcess):
@@ -17,10 +17,6 @@ class CalcMultipleIndices(WPSProcess):
             metadata=[],
             abstract="This process calculates multiple climate indices for the given input netcdf files."
             )
-
-        indice_values = indices_calculator.indices()
-        num_indices = len(indice_values)
-        indice_abstract = indices_calculator.indices_description()
 
         self.resource = self.addComplexInput(
             identifier="resource",
@@ -46,12 +42,12 @@ class CalcMultipleIndices(WPSProcess):
         self.indice = self.addLiteralInput(
             identifier="indice",
             title="Indice",
-            abstract=indice_abstract,
+            abstract=indices_description(),
             default='SU',
             type=type(''),
             minOccurs=1,
-            maxOccurs=num_indices,
-            allowedValues=indice_values
+            maxOccurs=len(indices()),
+            allowedValues=indices()
             )
       
         # complex output
@@ -75,13 +71,13 @@ class CalcMultipleIndices(WPSProcess):
         
     def execute(self):
         resources = self.getInputValues(identifier='resource')
-        indices = self.getInputValues(identifier='indice')
+        indice_list = self.getInputValues(identifier='indice')
 
-        self.show_status('starting: indice=%s, num_files=%s' % (indices, len(resources)), 0)
+        self.show_status('starting: indice=%s, num_files=%s' % (indice_list, len(resources)), 0)
 
         results,status_log = dispel.climate_indice_workflow(
             resources = resources,
-            indices = indices,
+            indices = indice_list,
             grouping = self.grouping.getValue(),
             out_dir = self.working_dir,
             monitor=self.show_status,
@@ -106,5 +102,5 @@ class CalcMultipleIndices(WPSProcess):
                 fp.write("%s\n" % status)
             self.status_log.setValue(outfile)
         
-        self.show_status('done: indice=%s, num_files=%s' % (indices, len(resources)), 100)
+        self.show_status('done: indice=%s, num_files=%s' % (indice_list, len(resources)), 100)
 
