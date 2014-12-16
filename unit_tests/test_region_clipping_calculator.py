@@ -27,6 +27,10 @@ class RegionClippingCalculatorTestCase(TestCase):
         url_parts = urlparse.urlparse(
             TESTDATA['cct_Amon_MPI-ESM-LR_historical_r1i1p1_185001-200512.nc'])
         cls.cmip5_historical_1850_nc = url_parts.path
+        # pr cordex ...
+        url_parts = urlparse.urlparse(
+            TESTDATA['pr_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20110101-20151231.nc'])
+        cls.pr_rcp85_2011_nc = url_parts.path
 
     def test_select_ugid(self):
         from flyingpigeon.region_clipping_calculator import select_ugid
@@ -68,20 +72,21 @@ class RegionClippingCalculatorTestCase(TestCase):
 
     @attr('testdata')
     def test_calc_region_clipping_nc_cordex(self):
-        raise SkipTest
+        #raise SkipTest
         out_dir = tempfile.mkdtemp()
 
         result = region_clipping_calculator.calc_region_clipping(
-            [self.tas_historical_2001_nc], variable='tas', region='ITA', output_format='nc', out_dir=out_dir)
+            [self.pr_rcp85_2011_nc], variable='pr', region='FRA', output_format='nc', out_dir=out_dir)
 
         nose.tools.ok_(
-            result['drs_filename'] == 'tas_EUR-11_ICHEC-EC-EARTH_historical_r1i1p1_KNMI-RACMO22E_v1_mon_20010116-20051216.nc',
+            result['drs_filename'] == 'pr_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20110101-20151231.nc',
             result)
         
         ds = Dataset(result['output'])
-        nose.tools.ok_('tas' in ds.variables, ds.variables.keys())
+        nose.tools.ok_('pr' in ds.variables, ds.variables.keys())
 
-    def test_proj_cordex(self):
+    def test_proj_cordex_1(self):
+        #raise SkipTest
         import subprocess
         cmd = ['proj',
                '-f', '"%.6f"',
@@ -91,8 +96,16 @@ class RegionClippingCalculatorTestCase(TestCase):
                '+o_lon_p=-162.0',
                '+o_lat_p=39.25',
                '+lon_0=180',
-               self.tas_historical_2001_nc]
-        subprocess.check_call(cmd)
+               self.pr_rcp85_2011_nc
+               ]
+        subprocess.check_output(cmd)
+
+    def test_proj_cordex_2(self):
+        #raise SkipTest
+        import subprocess
+        import shlex
+        cmd = "proj +proj=omerc +lat_0=0 +lonc=0 +alpha=0 +k=1 +x_0=0 +y_0=0 +gamma=0 +ellps=WGS84 +units=m +no_defs"
+        subprocess.check_output(shlex.split(cmd))
         
         
 
