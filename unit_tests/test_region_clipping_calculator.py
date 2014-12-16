@@ -45,7 +45,7 @@ class RegionClippingCalculatorTestCase(TestCase):
         out_dir = tempfile.mkdtemp()
 
         result = region_clipping_calculator.calc_region_clipping(
-            [self.cmip5_historical_1850_nc], variable='cct', region='ITA', output_format='nc', out_dir=out_dir)
+            [self.cmip5_historical_1850_nc], region='ITA', output_format='nc', out_dir=out_dir)
 
         nose.tools.ok_(
             result['drs_filename'] == 'cct_MPI-ESM-LR_historical_r1i1p1_19491216-21051115.nc',
@@ -59,7 +59,7 @@ class RegionClippingCalculatorTestCase(TestCase):
         out_dir = tempfile.mkdtemp()
 
         result = region_clipping_calculator.calc_region_clipping(
-            [self.cmip5_historical_1850_nc], variable='cct', region='ITA', output_format='csv', out_dir=out_dir)
+            [self.cmip5_historical_1850_nc], region='ITA', output_format='csv', out_dir=out_dir)
 
         # TODO: check names and content
         nose.tools.ok_(
@@ -76,7 +76,7 @@ class RegionClippingCalculatorTestCase(TestCase):
         out_dir = tempfile.mkdtemp()
 
         result = region_clipping_calculator.calc_region_clipping(
-            [self.pr_rcp85_2011_nc], variable='pr', region='FRA', output_format='nc', out_dir=out_dir)
+            [self.pr_rcp85_2011_nc], region='FRA', output_format='nc', out_dir=out_dir)
 
         nose.tools.ok_(
             result['drs_filename'] == 'pr_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20110101-20151231.nc',

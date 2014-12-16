@@ -23,7 +23,7 @@ def select_ugid(region):
             result.append(row['properties']['UGID'])
     return result
 
-def calc_region_clipping(resources=[], variable='tas', region='AUT', output_format='nc', out_dir=None):
+def calc_region_clipping(resources=[], region='AUT', output_format='nc', out_dir=None):
     """
     calculates geometry clipping of netcdf files and given region.
 
@@ -39,14 +39,15 @@ def calc_region_clipping(resources=[], variable='tas', region='AUT', output_form
     #ocgis.env.DIR_DATA = out_dir
 
     #from ocgis.interface.base.crs import CFWGS84
-    rd = ocgis.RequestDataset(resources, variable)
+    #rd = ocgis.RequestDataset(resources, variable)
+    rd = ocgis.RequestDataset(resources)
     from flyingpigeon.utils import drs_filename
 
     prefix = region
     output = None
     filename = drs_filename(resources[0])
     try:
-        logger.debug('calculation of polygon %s with variable %s in %s' % (prefix, variable, region))
+        logger.debug('calculation of polygon %s with variable %s in %s' % (prefix, rd.variable, region))
         output = ocgis.OcgOperations(
             dataset=rd,
             geom=COUNTRY_SHP,
