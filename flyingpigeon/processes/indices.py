@@ -204,7 +204,7 @@ class icclimWorker(WPSProcess):
     self.HD17 = self.addLiteralInput(
       identifier="HD17",
       title="HD17",
-      abstract=" ... (tas as input files)",
+      abstract="Heating degree days [sum of 17 degrees - mean temperature] (tas as input files)",
       default=False,
       type=type(False),
       minOccurs=0,
@@ -214,7 +214,7 @@ class icclimWorker(WPSProcess):
     self.GD4 = self.addLiteralInput(
       identifier="GD4",
       title="GD4",
-      abstract=" ... (tas as input files)",
+      abstract="Growing degree days [sum of TG > 4 degrees] (tas as input files)",
       default=False,
       type=type(False),
       minOccurs=0,
@@ -264,7 +264,7 @@ class icclimWorker(WPSProcess):
     self.RX1day = self.addLiteralInput(
       identifier="RX1day",
       title="RX1day",
-      abstract=" ...  (pr as input files) ",
+      abstract="Highest 1-day precipitation amount (pr as input files) ",
       default=False,
       type=type(False),
       minOccurs=0,
@@ -274,7 +274,7 @@ class icclimWorker(WPSProcess):
     self.RX5day = self.addLiteralInput(
       identifier="RX5day",
       title="RX5day",
-      abstract=" ...  (pr as input files) ",
+      abstract="Highest 5-day precipitation amount (pr as input files) ",
       default=False,
       type=type(False),
       minOccurs=0,
@@ -304,7 +304,7 @@ class icclimWorker(WPSProcess):
     self.SDII = self.addLiteralInput(
       identifier="SDII",
       title="SDII",
-      abstract="Simple drought index (pr as input files) ",
+      abstract="Simple daily intensity index for wet days [mm/wet day] (pr as input files) ",
       default=False,
       type=type(False),
       minOccurs=0,
