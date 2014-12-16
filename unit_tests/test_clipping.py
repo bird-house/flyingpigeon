@@ -8,9 +8,9 @@ from __init__ import TESTDATA, SERVICE
 import tempfile
 from netCDF4 import Dataset
 
-from flyingpigeon import region_clipping_calculator
+from flyingpigeon import clipping
 
-class RegionClippingCalculatorTestCase(TestCase):
+class ClippingTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -33,7 +33,7 @@ class RegionClippingCalculatorTestCase(TestCase):
         cls.pr_rcp85_2011_nc = url_parts.path
 
     def test_select_ugid(self):
-        from flyingpigeon.region_clipping_calculator import select_ugid
+        from flyingpigeon.clipping import select_ugid
         nose.tools.ok_(select_ugid('AUT') == [17], select_ugid('AUT'))
         nose.tools.ok_(select_ugid('FIN') == [70], select_ugid('FIN'))
         nose.tools.ok_(select_ugid('ITA') == [107], select_ugid('ITA'))
@@ -44,7 +44,7 @@ class RegionClippingCalculatorTestCase(TestCase):
         #raise SkipTest
         out_dir = tempfile.mkdtemp()
 
-        result = region_clipping_calculator.calc_region_clipping(
+        result = clipping.calc_region_clipping(
             [self.cmip5_historical_1850_nc], region='ITA', output_format='nc', out_dir=out_dir)
 
         nose.tools.ok_(
@@ -58,7 +58,7 @@ class RegionClippingCalculatorTestCase(TestCase):
     def test_calc_region_clipping_csv_cmip5(self):
         out_dir = tempfile.mkdtemp()
 
-        result = region_clipping_calculator.calc_region_clipping(
+        result = clipping.calc_region_clipping(
             [self.cmip5_historical_1850_nc], region='ITA', output_format='csv', out_dir=out_dir)
 
         # TODO: check names and content
@@ -75,7 +75,7 @@ class RegionClippingCalculatorTestCase(TestCase):
         #raise SkipTest
         out_dir = tempfile.mkdtemp()
 
-        result = region_clipping_calculator.calc_region_clipping(
+        result = clipping.calc_region_clipping(
             [self.pr_rcp85_2011_nc], region='FRA', output_format='nc', out_dir=out_dir)
 
         nose.tools.ok_(

@@ -3,7 +3,7 @@ from malleefowl.process import WPSProcess
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
-from flyingpigeon.region_clipping_calculator import REGION_EUROPE, calc_region_clipping
+from flyingpigeon.clipping import REGION_EUROPE, calc_region_clipping
 
 class CalcClipping(WPSProcess):
 
@@ -19,7 +19,7 @@ class CalcClipping(WPSProcess):
 
         self.resource = self.addComplexInput(
             identifier="resource",
-            title="Resouce",
+            title="Resource",
             abstract="NetCDF File",
             minOccurs=1,
             maxOccurs=100,
