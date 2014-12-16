@@ -566,10 +566,11 @@ def cv_creator(icclim, polygons , domain, normalizer, monitor=dummy_monitor ):
             result =  '%s/%s.nc' % (dir_output, prefix )
             input1 = '%s' % (geom_nc)
             input2 = '%s' % (geom_ref)
+            input3 = ' %s %s ' % (tmp1 , tmp2)
 
             cdo.fldmean (input = input1 , output = tmp1)
             cdo.fldmean (input = input2 , output = tmp2 )
-            cdo.sub(input = " "+ tmp1 +" "+ tmp2, output = result)
+            cdo.sub(input = input3 , output = result)
             outlog = outlog + ('normalized fieldmean for polygon %s with variable %s ... done \n'% (prefix , var))
           except Exception as e:
             msg = 'normalized fieldmean failed for file  : %s %s ' % ( prefix , e)
