@@ -114,7 +114,7 @@ init: .gitignore custom.cfg downloads
 
 bootstrap.py:
 	@echo "Update buildout bootstrap.py ..."
-	@test -f boostrap.py || wget --no-check-certificate -O bootstrap.py http://downloads.buildout.org/2/bootstrap.py
+	@test -f boostrap.py || wget --no-check-certificate -O bootstrap.py https://bootstrap.pypa.io/bootstrap-buildout.py
 
 ## Anaconda targets
 
