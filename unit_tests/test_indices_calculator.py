@@ -8,7 +8,7 @@ from __init__ import TESTDATA, SERVICE
 import tempfile
 from netCDF4 import Dataset
 
-from flyingpigeon import indices_calculator
+from flyingpigeon import indices
 
 class IndicesCalculatorTestCase(TestCase):
 
@@ -43,10 +43,10 @@ class IndicesCalculatorTestCase(TestCase):
         cls.cmip5_historical_1850_nc = url_parts.path
 
     def test_indices(self):
-        nose.tools.ok_( 'SU' in indices_calculator.indices(), indices_calculator.indices() )
+        nose.tools.ok_( 'SU' in indices.indices(), indices.indices() )
 
     def test_indices_description(self):
-        nose.tools.ok_( 'SU: ' in indices_calculator.indices_description(), indices_calculator.indices_description() )
+        nose.tools.ok_( 'SU: ' in indices.indices_description(), indices.indices_description() )
 
     @attr('testdata')
     @attr('slow')
@@ -55,7 +55,7 @@ class IndicesCalculatorTestCase(TestCase):
         out_dir = tempfile.mkdtemp()
 
         # SU expects tasmax
-        result = indices_calculator.calc_indice(
+        result = indices.calc_indice(
             [self.tasmax_historical_1991_nc], indice='SU', grouping='year', out_dir=out_dir)
 
         nose.tools.ok_(
@@ -69,13 +69,13 @@ class IndicesCalculatorTestCase(TestCase):
         nose.tools.ok_(len(ds.variables['time']) == 5, len(ds.variables['time']))
 
     def test_calc_grouping(self):
-        nose.tools.ok_(indices_calculator.calc_grouping('year') == ['year'])
-        nose.tools.ok_(indices_calculator.calc_grouping('month') == ['month'])
-        nose.tools.ok_(indices_calculator.calc_grouping('sem') == [ [12,1,2], [3,4,5], [6,7,8], [9,10,11], 'unique'] )
+        nose.tools.ok_(indices.calc_grouping('year') == ['year'])
+        nose.tools.ok_(indices.calc_grouping('month') == ['month'])
+        nose.tools.ok_(indices.calc_grouping('sem') == [ [12,1,2], [3,4,5], [6,7,8], [9,10,11], 'unique'] )
 
         # check invalid value: should raise an exception
         try:
-            nose.tools.ok_(indices_calculator._calc_grouping('unknown') == ['year'])
+            nose.tools.ok_(indices.calc_grouping('unknown') == ['year'])
             assert False
         except:
             assert True

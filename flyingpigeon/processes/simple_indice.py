@@ -3,7 +3,7 @@ from malleefowl.process import WPSProcess
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
-from flyingpigeon import indices_calculator
+from flyingpigeon.indices import indices, indices_description, calc_indice
 
 class CalcIndice(WPSProcess):
     """This process calculates a climate indice for the given input netcdf files."""
@@ -17,9 +17,6 @@ class CalcIndice(WPSProcess):
             metadata=[],
             abstract="This process calculates a climate indice for the given input netcdf files."
             )
-
-        indice_values = indices_calculator.indices()
-        indice_abstract = indices_calculator.indices_description()
 
         self.resource = self.addComplexInput(
             identifier="resource",
@@ -45,12 +42,12 @@ class CalcIndice(WPSProcess):
         self.indice = self.addLiteralInput(
             identifier="indice",
             title="Indice",
-            abstract=indice_abstract,
+            abstract=indices_description(),
             default='SU',
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
-            allowedValues=indice_values
+            allowedValues=indices()
             )
       
         # complex output
@@ -74,7 +71,7 @@ class CalcIndice(WPSProcess):
 
         self.show_status('starting: indice=%s, grouping=%s, num_files=%s' % (self.indice.getValue(), self.grouping.getValue(), len(resources)), 0)
 
-        result = indices_calculator.calc_indice(
+        result = calc_indice(
             resources = resources,
             indice = self.indice.getValue(),
             grouping = self.grouping.getValue(),

@@ -2,7 +2,7 @@ from dispel4py.core import GenericPE, NAME
 
 from malleefowl.dispel import BaseWPS
 
-from flyingpigeon import indices_calculator
+from flyingpigeon.indices import calc_indice, indice_variable
 
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
@@ -44,11 +44,11 @@ class CalcSimpleIndice(BasePE):
         self.debug('filename=%s, variable=%s, indice=%s' % ( drs_filename, variable, self.indice))
 
         # does variable fit to indice?
-        if variable == indices_calculator.indice_variable(self.indice):
+        if variable == indice_variable(self.indice):
             self.debug('start calculation ...')
             success = 'Failed'
             try:
-                output = indices_calculator.calc_indice(
+                output = calc_indice(
                     resources=inputs['resource'].get('files', []),
                     indice=self.indice,
                     grouping=self.grouping,
