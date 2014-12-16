@@ -148,7 +148,7 @@ def indices( idic, monitor=dummy_monitor ):
   
   logger.debug('calc_grouping = %s' % calc_grouping)
   
-  outdir = idic['outdir'] if idic.has_key('outdir') else None
+  icclim = idic['icclim'] if idic.has_key('icclim') else None
   uris = idic['ncs'] if idic.has_key('ncs') else  None
   concat = idic['concat'] if idic.has_key('concat') else  None
   TG = idic['TG'] if idic.has_key('TG') else  None
@@ -183,11 +183,11 @@ def indices( idic, monitor=dummy_monitor ):
   
   outlog = "Starting the indice calculation at: %s \n" % (datetime.strftime(datetime.now(), '%H:%M:%S %d-%m-%Y'))
   logger.debug('starting icclim indices ... done')
-  logger.debug('outdir ... : %s' % ( outdir ))
+  logger.debug('icclim ... : %s' % ( icclim ))
   
   ocgis.env.OVERWRITE = True
   ocgis.env.DIR_DATA = os.path.curdir
-  ocgis.env.DIR_OUTPUT = outdir    
+  ocgis.env.DIR_OUTPUT = icclim    
   output_crs = None
   
   logger.debug('settings for ocgis done')
@@ -202,7 +202,7 @@ def indices( idic, monitor=dummy_monitor ):
     p, f = os.path.split(os.path.abspath(nc))
     logger.debug('processing file %s ' % (f ))
     bn, ext = os.path.splitext(f)
-    basename = bn.replace('day',group[0])
+    basename = bn.replace('day', str(group))
     
     var = f.split('_')[0]
     rd = ocgis.RequestDataset(nc, var) # time_range=[dt1, dt2]
@@ -477,11 +477,14 @@ def indices( idic, monitor=dummy_monitor ):
   outlog = outlog + "Finished the indice calculation at: %s \n" % (datetime.strftime(datetime.now(), '%H:%M:%S %d-%m-%Y'))
   return outlog;
 
-def cv_creator(outdir, cv_dir, monitor=dummy_monitor ):
+def cv_creator(icclim, polygons , domain, normalizer, monitor=dummy_monitor ):
   
   monitor('monitor: starting Cordex Viewer preparation ' , 6)
   
   outlog = "Starting the Cordex Viwer preparation at : %s \n" % (datetime.strftime(datetime.now(), '%H:%M:%S %d-%m-%Y'))
+  outlog = outlog + "Domain = %s \n" % (domain)
+  outlog = outlog + "normalizer = %s \n" % (normalizer)
+  
   from ocgis.util.shp_process import ShpProcess
   from ocgis.util.shp_cabinet import ShpCabinetIterator
   from cdo import *   
@@ -491,8 +494,8 @@ def cv_creator(outdir, cv_dir, monitor=dummy_monitor ):
   
   # preparing the working directory 
   ocgis.env.OVERWRITE = True
-  ocgis.env.DIR_DATA = outdir
-  #ocgis.env.DIR_OUTPUT = cv_dir    
+  ocgis.env.DIR_DATA = icclim
+  #ocgis.env.DIR_OUTPUT = polygons    
   output_crs = None
   
   p_dir, p = os.path.split(os.path.abspath(__file__)) 
@@ -506,9 +509,13 @@ def cv_creator(outdir, cv_dir, monitor=dummy_monitor ):
   sci = ShpCabinetIterator(geoms)
 
   # ref_time = [datetime(1971,01,01),datetime(2000,12,31)]
-  ncs = [os.path.join(outdir, f) for f in os.listdir(outdir)]
+  ncs = [os.path.join(icclim, f) for f in os.listdir(icclim)]
   
-  exp = fn_sorter_ch(ncs) # dictionary with experiment : files
+  if any("_rcp" in nc for nc in ncs):
+    exp = fn_sorter_ch(ncs) # dictionary with experiment : files
+  else:
+    exp = fn_sorter(ncs) # dictionary with experiment : files
+    
   outlog = outlog + ('dictionary build with %i experiments. \n '% (len(exp.keys())))
   
   c = 0 
@@ -535,35 +542,41 @@ def cv_creator(outdir, cv_dir, monitor=dummy_monitor ):
           geom_rows.append(row)
           
         # select_ugid.sort()
-      if not os.path.exists(cv_dir +'/'+ var +'/'+ land):
-        os.makedirs(cv_dir +'/'+ var +'/'+ land)
-      OUT_DIR = os.path.join(cv_dir +'/'+ var +'/'+ land)
+      if not os.path.exists(os.path.join(polygons , var , land)):
+        os.makedirs(os.path.join(polygons , var , land))
+      OUT_DIR = os.path.join(polygons , var , land)
       
       #dir_output = tempfile.mkdtemp()
       ocgis.env.DIR_OUTPUT = OUT_DIR
       prefix = key.replace('EUR',land)
-    
+      
       try:
-        logger.debug('calculation of polygon %s with variable %s in %s'% (prefix,var, land))
-        geom_nc = ocgis.OcgOperations(dataset=rd, geom=geoms, output_format='nc', select_ugid=select_ugid, prefix=prefix , add_auxiliary_files=False ).execute()
+        geom_nc = ocgis.OcgOperations(dataset=rd, geom=geoms, dir_output=OUT_DIR, output_format='nc', select_ugid=select_ugid, prefix=prefix , add_auxiliary_files=False ).execute()
+        outlog = outlog + ('---------calculation of polygon %s with variable %s ... done \n'% (prefix , var))
         
-        
-        geom_ref = ocgis.OcgOperations(dataset=rd, geom=geoms, output_format='nc', select_ugid=select_ugid, prefix='ref_'+prefix, add_auxiliary_files=False, calc=calc, calc_grouping=calc_grouping , time_range=time_range  ).execute()
-        
-        tmp1 = os.path.join(os.curdir,'nc_temp_' + prefix + '.nc')
-        tmp2 = os.path.join(os.curdir,'nc_temp2_' + prefix + '.nc')
-        
-        output = os.path.join(OUT_DIR,'norm_'+prefix+'.nc')
-        input1 = '%s' % (geom_nc)
-        input2 = '%s' % (geom_ref)
+        if normalizer == True:
+          try: 
+            if not os.path.exists(os.path.join(os.curdir + '/normalized/', var , land)):
+              os.makedirs(os.path.join(os.curdir + '/normalized/', var , land))
+            dir_output = os.path.join(os.curdir + '/normalized/', var , land)
+            
+            geom_ref = ocgis.OcgOperations(dataset=rd, geom=geoms, dir_output=None,  output_format='nc', select_ugid=select_ugid, prefix='ref_'+prefix, add_auxiliary_files=False, calc=calc, calc_grouping=calc_grouping , time_range=time_range  ).execute()
+            tmp1 =  '%s/nc_temp_%s.nc' % (os.curdir, prefix )
+            tmp2 =  '%s/nc_temp2_%s.nc' % (os.curdir, prefix )
+            result =  '%s/%s.nc' % (dir_output, prefix )
+            input1 = '%s' % (geom_nc)
+            input2 = '%s' % (geom_ref)
 
-        cdo.fldmean (input = input1 , output = tmp1)
-        cdo.fldmean (input = input2 , output = tmp2 )
-        cdo.sub(input = " "+ tmp1 +" "+ tmp2, output = output)
-        
-        # output as csv
-        #geom_csv = ocgis.OcgOperations(dataset=rd, geom=geoms, output_format='csv', select_ugid=select_ugid, prefix=prefix, aggregate=True, add_auxiliary_files=False ).execute()
-        #outlog = outlog + ('calculation of polygon %s with variable %s ... done \n'% (prefix , var))
+            cdo.fldmean (input = input1 , output = tmp1)
+            cdo.fldmean (input = input2 , output = tmp2 )
+            cdo.sub(input = " "+ tmp1 +" "+ tmp2, output = result)
+            outlog = outlog + ('normalized fieldmean for polygon %s with variable %s ... done \n'% (prefix , var))
+          except Exception as e:
+            msg = 'normalized fieldmean failed for file  : %s %s ' % ( prefix , e)
+            logger.error(msg)
+            outlog = outlog + ('normalized fieldmean failed for file %s ! %s ... failed !!! \n'% (prefix , e))
+
+        logger.debug('calculation of file %s with variable %s in %s ... done'% (prefix,var, land))
 
       except Exception as e:
         msg = 'processing failed for file  : %s %s ' % ( prefix , e)
@@ -571,6 +584,5 @@ def cv_creator(outdir, cv_dir, monitor=dummy_monitor ):
         outlog = outlog + ('failed for polygon %s ! %s ... failed !!! \n'% (prefix , e))
       
       monitor('Timeserie %i/%i for polygon: %s' % (c, len( exp.keys()), land) , (100/len( exp.keys() ) * c ))
-  
   outlog = outlog + "Finish the Cordex Viwer preparation at : %s \n" % (datetime.strftime(datetime.now(), '%H:%M:%S %d-%m-%Y'))
   return outlog;

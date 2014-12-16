@@ -37,10 +37,21 @@ class icclimWorker(WPSProcess):
       #maxOccurs=1,
       #)
 
-    self.cviewer = self.addLiteralInput(
-      identifier="cviewer",
-      title="Subsetting",
-      abstract="Country polygon subsetting for EURO - Cordex Viewer",
+    self.domain = self.addLiteralInput(
+      identifier="domain",
+      title="Country subsetting",
+      abstract="Select a domain for Country polygon subsetting",
+      default='None',
+      type=type(''),
+      minOccurs=0,
+      maxOccurs=1,
+      allowedValues=["None", "EUR"] # sem
+      )
+    
+    self.normalizer = self.addLiteralInput(
+      identifier="normalizer",
+      title="Normalized",
+      abstract="normalized fieldmean of country subsetts [ref period (1971-2000) must be available]",
       type=type(False),
       default=False,
       minOccurs=0,
@@ -203,7 +214,7 @@ class icclimWorker(WPSProcess):
     self.GD4 = self.addLiteralInput(
       identifier="GD4",
       title="GD4",
-      abstract=" ... (tasmean as input files)",
+      abstract=" ... (tas as input files)",
       default=False,
       type=type(False),
       minOccurs=0,
@@ -344,7 +355,7 @@ class icclimWorker(WPSProcess):
     # -------------
     self.logout = self.addComplexOutput(
       identifier="logout",
-      title="indice log",
+      title="Indice log-file",
       abstract="indice log",
       metadata=[],
       formats=[{"mimeType":"text/plain"}],
@@ -352,20 +363,20 @@ class icclimWorker(WPSProcess):
       )
     
     self.tarout = self.addComplexOutput(
-      title="netCDF result files",
+      title="Result files",
       abstract="Tar archive containing the netCDF result files",
       formats=[{"mimeType":"application/x-tar"}],
       asReference=True,
       identifier="tarout",
       )
 
-    self.cvout = self.addComplexOutput(
-      title="netCDF Cordex Viewer files",
-      abstract="Tar archive containing the netCDF result files prepared for Cordex Viewer",
-      formats=[{"mimeType":"application/x-tar"}],
-      asReference=True,
-      identifier="cvout",
-      )
+    #self.cvout = self.addComplexOutput(
+      #title="netCDF Cordex Viewer files",
+      #abstract="Tar archive containing the netCDF result files prepared for Cordex Viewer",
+      #formats=[{"mimeType":"application/x-tar"}],
+      #asReference=True,
+      #identifier="cvout",
+      #)
 
 
 
@@ -381,15 +392,15 @@ class icclimWorker(WPSProcess):
     ncfiles = self.getInputValues(identifier='netcdf_file')
     (fp_tar, tarf) = tempfile.mkstemp(dir=".", suffix='.tar')
     tar = tarfile.open(tarf, "w")
-    os.mkdir(os.path.curdir+'/icclim_files/')
-    outdir = (os.path.curdir+'/icclim_files/')
+    os.mkdir(os.path.curdir+'/icclim/')
+    icclim = (os.path.curdir+'/icclim/')
     
     logger.debug('working dir prepared ')
     logger.debug('group parameter: %s ' % self.group.getValue() )
     
     nc_renamed = tools.fn_creator(ncfiles)
     
-    idic = {'outdir':outdir, 
+    idic = {'icclim':icclim, 
             'ncs': nc_renamed,
             # 'concat':self.concat.getValue(),
             'group':self.group.getValue(),
@@ -430,42 +441,38 @@ class icclimWorker(WPSProcess):
     logtxt = tools.indices(idic, monitor=self.show_status)
     logger.debug('flyingpigeon indices tool processed')
     self.show_status('flyingpigeon indices tool processed', 98)
-    #ncs = os.listdir(outdir)
-    
+    #ncs = os.listdir(icclim)
     #ncs_new = tools.fn_creator(ncs)
     
-    tar.add(outdir, arcname = outdir.replace(os.curdir, ""))
+    tar.add(icclim, arcname = icclim.replace(os.curdir, ""))
     logger.debug('tar ncfiles')
-    
     
     logger.debug('starting Cordex viewer preparation')
     
     self.show_status('starting Cordex viewer preparation', 75)
     
-    (fp_tar, cv_tarf) = tempfile.mkstemp(dir=".", suffix='.tar')
-    cv_tar = tarfile.open(cv_tarf, "w")
-    os.mkdir(os.path.curdir+'/cv_files/')
-    cv_dir = (os.path.curdir+'/cv_files/')
+    os.mkdir(os.path.join(os.path.curdir,'polygons/'))
+    polygons = os.path.join(os.path.curdir,'polygons/')
+    domain=self.domain.getValue()
     
-    if self.cviewer.getValue() == True:  
-      logtxt = logtxt + tools.cv_creator(outdir, cv_dir, monitor=self.show_status )
-    
-    cv_tar.add(cv_dir, arcname = outdir.replace(outdir , ""))
-    cv_tar.close()
-
+    if self.domain.getValue() != None:
+      logger.debug('domain.getValue = %s' % (self.domain.getValue()))
+      logtxt = logtxt + tools.cv_creator(icclim, polygons, domain, self.normalizer.getValue(), monitor=self.show_status)
+      tar.add(polygons, arcname = polygons.replace(os.curdir , ""))
+      if self.normalizer.getValue() == True:
+        normalized_dir = os.path.join(os.curdir + '/normalized/')
+        tar.add(normalized_dir, arcname = normalized_dir.replace(os.curdir , ""))
 
     logfile = self.mktempfile(suffix='.txt')
     with open(logfile, 'w') as fp:
         fp.write(logtxt)
     
-    tar.add(logfile, arcname = outdir.replace(os.curdir, ""))
+    tar.add(logfile, arcname = icclim.replace(os.curdir, ""))
     tar.close()
     logger.debug('tar file with icclim files closed')
     self.show_status('tar with icclim files created ', 70)
-
-
     
     self.logout.setValue( logfile )
     self.tarout.setValue( tarf )
-    self.cvout.setValue( cv_tarf )
+   # self.cvout.setValue( cv_tarf )
     self.show_status("processing done", 100)

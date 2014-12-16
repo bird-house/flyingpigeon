@@ -4,7 +4,5 @@ __all__ = [
         "analogs",
         "ensembles",
         "indices",
-        "cordexviewer",
         "vbd",
-#       "sdm"
         ]
