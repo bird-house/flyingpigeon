@@ -292,7 +292,7 @@ def indices( idic, monitor=dummy_monitor ):
         logger.debug('calculation for FD started ')
         FD_file = None
         calc_icclim = [{'func':'icclim_FD','name':'FD'}]
-        FD_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tasmax_','FD_')) ,
+        FD_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tasmin_','FD_')) ,
         output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('FD calculated ' )
         outlog = outlog + "FD indice processed sucessfully for %s \n" % basename
@@ -312,7 +312,7 @@ def indices( idic, monitor=dummy_monitor ):
         logger.debug('calculation for TR started ')
         TR_file = None
         calc_icclim = [{'func':'icclim_TR','name':'TR'}]
-        TR_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tasmax_','TR_')) ,
+        TR_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('tasmin_','TR_')) ,
         output_format='nc', add_auxiliary_files=False).execute()
         logger.debug('TR calculated ' )
         outlog = outlog + "TR indice processed sucessfully for %s \n" % basename
