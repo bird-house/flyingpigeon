@@ -82,6 +82,7 @@ class ClippingTestCase(TestCase):
         output = clipping.normalize(
             self.pr_rcp85_2011_nc,
             region='FRA',
+            grouping='year',
             start_date="2011-01-01",
             end_date="2012-12-31",
             out_dir=self.out_dir)

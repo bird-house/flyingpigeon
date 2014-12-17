@@ -1,6 +1,7 @@
 import ocgis
 
 from .exceptions import CalculationException
+from .utils import drs_filename, calc_grouping
 
 from malleefowl import wpslogging as logging
 #import logging
@@ -43,7 +44,6 @@ def calc_region_clipping(resource, region='AUT', out_dir=None):
     #from ocgis.interface.base.crs import CFWGS84
     #rd = ocgis.RequestDataset(resources, variable)
     rd = ocgis.RequestDataset(resource)
-    from flyingpigeon.utils import drs_filename
 
     filename = drs_filename(resource)
     filename = filename.replace("EUR", region)
@@ -67,7 +67,7 @@ def calc_region_clipping(resource, region='AUT', out_dir=None):
 
     return output
 
-def normalize(resource, region='AUT', start_date="1971-01-01", end_date="2010-12-31", out_dir=None):
+def normalize(resource, grouping='year', region='AUT', start_date="1971-01-01", end_date="2010-12-31", out_dir=None):
     """
     noramlize netcdf file for region and timeperiod
 
@@ -83,9 +83,7 @@ def normalize(resource, region='AUT', start_date="1971-01-01", end_date="2010-12
     from dateutil import parser as date_parser
     time_range=[ date_parser.parse(start_date) , date_parser.parse(end_date) ]
     calc = [{'func':'mean','name':'ref_' + variable }] 
-    calc_grouping = ['year']
 
-    from flyingpigeon.utils import drs_filename
     filename = drs_filename(resource)
     filename = filename.replace("EUR", region)
     from os.path import join
@@ -103,7 +101,7 @@ def normalize(resource, region='AUT', start_date="1971-01-01", end_date="2010-12
             prefix=prefix,
             add_auxiliary_files=False,
             calc=calc,
-            calc_grouping=calc_grouping ,
+            calc_grouping=calc_grouping(grouping),
             time_range=time_range  ).execute()
 
         from tempfile import mkstemp
