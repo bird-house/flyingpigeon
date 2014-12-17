@@ -9,28 +9,24 @@ import tempfile
 from netCDF4 import Dataset
 
 from flyingpigeon import clipping
+from flyingpigeon.utils import local_path
 
 class ClippingTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
         # TODO: ocgis does not like file:// urls
-        from urllib2 import urlparse
         # tas
-        url_parts = urlparse.urlparse(
+        cls.tas_historical_2001_nc = local_path(
             TESTDATA["tas_EUR-11_ICHEC-EC-EARTH_historical_r1i1p1_KNMI-RACMO22E_v1_mon_200101-200512.nc"])
-        cls.tas_historical_2001_nc = url_parts.path
-        url_parts = urlparse.urlparse(
+        cls.tas_rcp45_2006_nc = local_path(
             TESTDATA['tas_EUR-11_ICHEC-EC-EARTH_rcp45_r1i1p1_KNMI-RACMO22E_v1_mon_200601-201012.nc'])
-        cls.tas_rcp45_2006_nc = url_parts.path
         # cmip5 ...
-        url_parts = urlparse.urlparse(
+        cls.cmip5_historical_1850_nc = local_path(
             TESTDATA['cct_Amon_MPI-ESM-LR_historical_r1i1p1_185001-200512.nc'])
-        cls.cmip5_historical_1850_nc = url_parts.path
         # pr cordex ...
-        url_parts = urlparse.urlparse(
+        cls.pr_rcp85_2011_nc = local_path(
             TESTDATA['pr_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20110101-20151231.nc'])
-        cls.pr_rcp85_2011_nc = url_parts.path
 
     def test_select_ugid(self):
         from flyingpigeon.clipping import select_ugid
@@ -88,17 +84,10 @@ class ClippingTestCase(TestCase):
     def test_proj_cordex_1(self):
         #raise SkipTest
         import subprocess
-        cmd = ['proj',
-               '-f', '"%.6f"',
-               '-m', '57.2957795130823',
-               '+proj=ob_tran',
-               '+o_proj=latlon',
-               '+o_lon_p=-162.0',
-               '+o_lat_p=39.25',
-               '+lon_0=180',
-               self.pr_rcp85_2011_nc
-               ]
-        subprocess.check_output(cmd)
+        import shlex
+        cmd = 'proj -f "%.6f" -m 57.2957795130823 +proj=ob_tran +o_proj=latlon +o_lon_p=-162.0 +o_lat_p=39.25 +lon_0=180'
+        cmd += cmd + ' ' + self.pr_rcp85_2011_nc
+        subprocess.check_output(shlex.split(cmd))
 
     def test_proj_cordex_2(self):
         raise SkipTest
