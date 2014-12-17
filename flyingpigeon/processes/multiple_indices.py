@@ -31,8 +31,8 @@ class CalcMultipleIndices(WPSProcess):
 
         self.grouping = self.addLiteralInput(
             identifier="grouping",
-            title="Grouping",
-            abstract="Select an aggregation grouping",
+            title="Time Aggregation",
+            abstract="Select time aggegation",
             default='year',
             type=type(''),
             minOccurs=1,
