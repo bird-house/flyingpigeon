@@ -455,7 +455,7 @@ class icclimWorker(WPSProcess):
     polygons = os.path.join(os.path.curdir,'polygons/')
     domain=self.domain.getValue()
     
-    if self.domain.getValue() != None:
+    if self.domain.getValue() == 'EUR' :
       logger.debug('domain.getValue = %s' % (self.domain.getValue()))
       logtxt = logtxt + tools.cv_creator(icclim, polygons, domain, self.normalizer.getValue(), monitor=self.show_status)
       tar.add(polygons, arcname = polygons.replace(os.curdir , ""))

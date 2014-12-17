@@ -140,11 +140,11 @@ def fn_sorter_ch(ncs):
 def indices( idic, monitor=dummy_monitor ):
   monitor('monitor: starting indices calculation', 6)
   
-  group = idic['group'] if idic.has_key('group') else ['year']
-  if group == 'year':
-    calc_grouping = ['year']
-  elif group == 'mon':
+  group = idic['group'][0] if idic.has_key('group') else 'year'
+  if group == 'mon':
     calc_grouping = ['month']
+  else: #  group == 'year':
+    calc_grouping = ['year']
   
   logger.debug('calc_grouping = %s' % calc_grouping)
   
@@ -202,7 +202,7 @@ def indices( idic, monitor=dummy_monitor ):
     p, f = os.path.split(os.path.abspath(nc))
     logger.debug('processing file %s ' % (f ))
     bn, ext = os.path.splitext(f)
-    basename = bn.replace('day', str(group))
+    basename = bn.replace('day', group)
     
     var = f.split('_')[0]
     rd = ocgis.RequestDataset(nc, var) # time_range=[dt1, dt2]
