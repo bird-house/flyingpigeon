@@ -9,38 +9,28 @@ import tempfile
 from netCDF4 import Dataset
 
 from flyingpigeon import indices
+from flyingpigeon.utils import local_path
 
 class IndicesCalculatorTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
         # TODO: ocgis does not like file:// urls
-        from urllib2 import urlparse
         # tas
-        url_parts = urlparse.urlparse(
+        cls.tas_historical_2001_nc = local_path(
             TESTDATA["tas_EUR-11_ICHEC-EC-EARTH_historical_r1i1p1_KNMI-RACMO22E_v1_mon_200101-200512.nc"])
-        cls.tas_historical_2001_nc = url_parts.path
-        url_parts = urlparse.urlparse(
+        cls.tas_rcp45_2006_nc = local_path(
             TESTDATA['tas_EUR-11_ICHEC-EC-EARTH_rcp45_r1i1p1_KNMI-RACMO22E_v1_mon_200601-201012.nc'])
-        cls.tas_rcp45_2006_nc = url_parts.path
-        
         # tasmax
-        url_parts = urlparse.urlparse(
+        cls.tasmax_historical_2001_nc = local_path(
             TESTDATA['tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_20010101-20051231.nc'])
-        cls.tasmax_historical_2001_nc = url_parts.path
-        
-        url_parts = urlparse.urlparse(
+        cls.tasmax_historical_1996_nc = local_path(
             TESTDATA['tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19960101-20001231.nc'])
-        cls.tasmax_historical_1996_nc = url_parts.path
-        
-        url_parts = urlparse.urlparse(
+        cls.tasmax_historical_1991_nc = local_path(
             TESTDATA['tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19910101-19951231.nc'])
-        cls.tasmax_historical_1991_nc = url_parts.path
-
         # cmip5 ...
-        url_parts = urlparse.urlparse(
+        cls.cmip5_historical_1850_nc = local_path(
             TESTDATA['cct_Amon_MPI-ESM-LR_historical_r1i1p1_185001-200512.nc'])
-        cls.cmip5_historical_1850_nc = url_parts.path
 
     def test_indices(self):
         nose.tools.ok_( 'SU' in indices.indices(), indices.indices() )
