@@ -5,16 +5,16 @@ logger = logging.getLogger(__name__)
 
 from flyingpigeon.clipping import REGION_EUROPE, calc_region_clipping
 
-class CalcClipping(WPSProcess):
+class SimpleClipping(WPSProcess):
 
     def __init__(self):
         WPSProcess.__init__(
             self, 
             identifier = "clipping",
-            title="Calculation of region clipping",
+            title="Simple Clipping",
             version = "1.0",
             metadata=[],
-            abstract="This process returns only the given region from netcdf file."
+            abstract="This process returns only the given region from NetCDF file."
             )
 
         self.resource = self.addComplexInput(
@@ -43,7 +43,7 @@ class CalcClipping(WPSProcess):
         self.output = self.addComplexOutput(
             identifier="output",
             title="Output",
-            abstract="Calculated region as NetCDF file",
+            abstract="NetCDF file of region.",
             metadata=[],
             formats=[{"mimeType":"application/x-netcdf"}],
             asReference=True
