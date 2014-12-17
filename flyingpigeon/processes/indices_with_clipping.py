@@ -5,18 +5,18 @@ logger = logging.getLogger(__name__)
 
 from flyingpigeon.clipping import REGION_EUROPE
 from flyingpigeon.indices import indices, indices_description
-from flyingpigeon.workflow import calc_indice
+from flyingpigeon.workflow import calc_indice_with_clipping
 
-class CalcMultipleIndices(WPSProcess):
+class CalcIndicesWithClipping(WPSProcess):
 
     def __init__(self):
         WPSProcess.__init__(
             self, 
-            identifier = "multiple_indices",
-            title="Calculation of multiple climate indices",
+            identifier = "indices_clipping",
+            title="Calculation of multiple climate indices with clipping",
             version = "1.0",
             metadata=[],
-            abstract="This process calculates multiple climate indices for the given input netcdf files."
+            abstract="This process calculates multiple climate indices for the given input netcdf files and clips regions."
             )
 
         self.resource = self.addComplexInput(
@@ -51,6 +51,34 @@ class CalcMultipleIndices(WPSProcess):
             allowedValues=indices()
             )
 
+        self.region = self.addLiteralInput(
+            identifier="region",
+            title="Region",
+            abstract="European Regions ...",
+            default='FRA',
+            type=type(''),
+            minOccurs=1,
+            allowedValues=REGION_EUROPE
+            )
+
+        self.start_date = self.addLiteralInput(
+            identifier="start",
+            title="Start",
+            abstract="Start date: 2001-01-01",
+            type=type("2001-01-01"),
+            minOccurs=0,
+            maxOccurs=1,
+            )
+
+        self.end_date = self.addLiteralInput(
+            identifier="end",
+            title="End",
+            abstract="End date: 2005-12-31",
+            type=type("2005-12-31"),
+            minOccurs=0,
+            maxOccurs=1,
+            )
+      
         # complex output
         # -------------
         self.output = self.addComplexOutput(
@@ -77,7 +105,7 @@ class CalcMultipleIndices(WPSProcess):
 
         self.show_status('starting: indice=%s, num_files=%s' % (indice_list, len(resources)), 0)
 
-        results,status_log = calc_indice(
+        results,status_log = calc_indice_with_clipping(
             resources = resources,
             indices = indice_list,
             regions = region_list,
