@@ -3,8 +3,9 @@ from malleefowl.process import WPSProcess
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
+from flyingpigeon.clipping import REGION_EUROPE
 from flyingpigeon.indices import indices, indices_description
-from flyingpigeon import dispel
+from flyingpigeon import workflow
 
 class CalcMultipleIndices(WPSProcess):
 
@@ -49,6 +50,34 @@ class CalcMultipleIndices(WPSProcess):
             maxOccurs=len(indices()),
             allowedValues=indices()
             )
+
+        self.region = self.addLiteralInput(
+            identifier="region",
+            title="Region",
+            abstract="European Regions ...",
+            default='FRA',
+            type=type(''),
+            minOccurs=1,
+            allowedValues=REGION_EUROPE
+            )
+
+        self.start_date = self.addLiteralInput(
+            identifier="start",
+            title="Start",
+            abstract="Start date: 2001-01-01",
+            type=type("2001-01-01"),
+            minOccurs=0,
+            maxOccurs=1,
+            )
+
+        self.end_date = self.addLiteralInput(
+            identifier="end",
+            title="End",
+            abstract="End date: 2005-12-31",
+            type=type("2005-12-31"),
+            minOccurs=0,
+            maxOccurs=1,
+            )
       
         # complex output
         # -------------
@@ -72,13 +101,17 @@ class CalcMultipleIndices(WPSProcess):
     def execute(self):
         resources = self.getInputValues(identifier='resource')
         indice_list = self.getInputValues(identifier='indice')
+        region_list = self.getInputValues(identifier='region')
 
         self.show_status('starting: indice=%s, num_files=%s' % (indice_list, len(resources)), 0)
 
-        results,status_log = dispel.climate_indice_workflow(
+        results,status_log = workflow.calc_indice(
             resources = resources,
             indices = indice_list,
+            regions = region_list,
             grouping = self.grouping.getValue(),
+            start_date = self.start_date.getValue(),
+            end_date = self.end_date.getValue(),
             out_dir = self.working_dir,
             monitor=self.show_status,
             )
