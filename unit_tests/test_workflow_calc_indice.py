@@ -42,25 +42,6 @@ class WorkflowTestCase(TestCase):
         for filename in result:
             nose.tools.ok_(basename(filename) in wanted, filename)
         
-    def test_indice_with_clipping_workflow(self):
-        raise SkipTest
-    
-        import tempfile
-        from flyingpigeon.workflow import calc_indice_with_clipping
-        
-        result, status_log = calc_indice_with_clipping(
-            resources=self.nc_files,
-            indices=['SU', 'TG'],
-            regions=['FRA', 'GBR'],
-            grouping='year',
-            start_date='2002-01-01',
-            end_date='2002-12-31',
-            monitor=None,
-            out_dir=tempfile.mkdtemp())
-
-        nose.tools.ok_(len(result) == 4, result)
-        nose.tools.ok_(len(status_log) == 9, status_log)
-        #nose.tools.ok_(False, status_log)
         
         
         
