@@ -26,10 +26,15 @@ class MultipleIndicesTestCase(WpsTestCase):
     def test_su_tasmax(self):
         inputs = []
         inputs.append(('indice', 'SU'))
+        inputs.append(('indice', 'TG'))
         inputs.append(('grouping', 'year'))
         inputs.append(
             ('resource',
              TESTDATA['tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_20010101-20051231.nc']
+             ))
+        inputs.append(
+            ('resource',
+             TESTDATA['tas_EUR-11_ICHEC-EC-EARTH_historical_r1i1p1_KNMI-RACMO22E_v1_mon_200101-200512.nc']
              ))
 
         output=[('output', True)]

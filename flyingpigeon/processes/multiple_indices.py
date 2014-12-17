@@ -80,10 +80,7 @@ class CalcMultipleIndices(WPSProcess):
         results,status_log = calc_indice(
             resources = resources,
             indices = indice_list,
-            regions = region_list,
             grouping = self.grouping.getValue(),
-            start_date = self.start_date.getValue(),
-            end_date = self.end_date.getValue(),
             out_dir = self.working_dir,
             monitor=self.show_status,
             )
