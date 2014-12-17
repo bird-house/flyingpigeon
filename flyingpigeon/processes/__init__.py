@@ -8,5 +8,5 @@ __all__ = [
 #       "sdm",
         "simple_indice",
         "multiple_indices",
-        "clipping",
+        "simple_clipping",
         ]

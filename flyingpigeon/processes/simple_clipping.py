@@ -10,7 +10,7 @@ class SimpleClipping(WPSProcess):
     def __init__(self):
         WPSProcess.__init__(
             self, 
-            identifier = "clipping",
+            identifier = "simple_clipping",
             title="Simple Clipping",
             version = "1.0",
             metadata=[],
