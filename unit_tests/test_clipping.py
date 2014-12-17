@@ -101,7 +101,7 @@ class ClippingTestCase(TestCase):
         subprocess.check_output(cmd)
 
     def test_proj_cordex_2(self):
-        #raise SkipTest
+        raise SkipTest
         import subprocess
         import shlex
         cmd = "proj +proj=omerc +lat_0=0 +lonc=0 +alpha=0 +k=1 +x_0=0 +y_0=0 +gamma=0 +ellps=WGS84 +units=m +no_defs"
