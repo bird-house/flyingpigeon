@@ -1,5 +1,7 @@
 import ocgis
 
+from .exceptions import CalculationException
+
 from malleefowl import wpslogging as logging
 #import logging
 logger = logging.getLogger(__name__)
@@ -58,9 +60,56 @@ def calc_region_clipping(resources=[], region='AUT', output_format='nc', out_dir
             dir_output=out_dir,
             add_auxiliary_files=False ).execute()
     except:
-        logger.exception('processing failed for file prefix=%s', prefix)
+        msg = 'processing failed for file prefix=%s' % prefix
+        logger.exception(msg)
+        raise CalculationException(msg)
 
     return dict(output=output, drs_filename=filename)
+
+def normalize(resources=[], region='AUT', start_date="1971-01-01", end_date="2010-12-31", output_format='nc', out_dir=None):
+    rd = ocgis.RequestDataset(resources)
+    variable = rd.variable
+    from dateutil import parser as date_parser
+    time_range=[ date_parser.parse(start_date) , date_parser.parse(end_date) ]
+    calc = [{'func':'mean','name':'ref_' + variable }] 
+    calc_grouping = ['month']
+
+    prefix = "ref_"
+    output = None
+    from flyingpigeon.utils import drs_filename
+    filename = drs_filename(resources[0])
+    
+    try: 
+        output = ocgis.OcgOperations(
+            dataset=rd,
+            geom=COUNTRY_SHP,
+            dir_output=out_dir,
+            output_format=output_format,
+            select_ugid=select_ugid(region),
+            prefix=prefix,
+            add_auxiliary_files=False,
+            calc=calc,
+            calc_grouping=calc_grouping ,
+            time_range=time_range  ).execute()
+
+        ## tmp1 =  '%s/nc_temp_%s.nc' % (os.curdir, prefix )
+        ## tmp2 =  '%s/nc_temp2_%s.nc' % (os.curdir, prefix )
+        ## result =  '%s/%s.nc' % (dir_output, prefix )
+        ## input1 = '%s' % (geom_nc)
+        ## input2 = '%s' % (geom_ref)
+        ## input3 = ' %s %s ' % (tmp1 , tmp2)
+
+        ## from cdo import Cdo   
+        ## cdo = Cdo()
+        ## cdo.fldmean (input = input1 , output = tmp1)
+        ## cdo.fldmean (input = input2 , output = tmp2 )
+        ## cdo.sub(input = input3 , output = result)
+    except:
+        msg = 'normalized fieldmean failed for file : %s ' % filename
+        logger.exception(msg)
+        raise CalculationException(msg)
+    return dict(output=output, drs_filename=filename)
+
   
   
   

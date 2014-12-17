@@ -95,6 +95,21 @@ class ClippingTestCase(TestCase):
         import shlex
         cmd = "proj +proj=omerc +lat_0=0 +lonc=0 +alpha=0 +k=1 +x_0=0 +y_0=0 +gamma=0 +ellps=WGS84 +units=m +no_defs"
         subprocess.check_output(shlex.split(cmd))
+
+    @attr('testdata')
+    def test_normalize(self):
+        #raise SkipTest
+        out_dir = tempfile.mkdtemp()
+
+        result = clipping.normalize(
+            [self.pr_rcp85_2011_nc], region='FRA', start_date="2011-01-01", end_date="2012-12-31", output_format='nc', out_dir=out_dir)
+
+        nose.tools.ok_(
+            result['drs_filename'] == 'pr_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20110101-20151231.nc',
+            result)
+        
+        ds = Dataset(result['output'])
+        nose.tools.ok_('ref_pr' in ds.variables, ds.variables.keys())
         
         
 
