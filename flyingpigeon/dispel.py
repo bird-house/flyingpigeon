@@ -1,8 +1,7 @@
+from os.path import basename
 from dispel4py.core import GenericPE, NAME
 
-from malleefowl.dispel import BaseWPS
-
-from flyingpigeon.indices import calc_indice, indice_variable
+#from malleefowl.dispel import BaseWPS
 
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
@@ -16,81 +15,6 @@ class BasePE(GenericPE):
             self.monitor = monitor
         else:
             self.monitor = internal_monitor
-        
-class CalcIndice(BasePE):
-    """
-    This PE calculates a climate indice.
-    """
-    def __init__(self, indice, grouping, out_dir=None, monitor=None):
-        BasePE.__init__(self, monitor)
-        self.grouping = grouping
-        self.indice = indice
-        self.out_dir = out_dir
-
-        self.inputconnections = {}
-        self.inputconnections['resource'] = dict( NAME='resource' )
-        self.outputconnections = {}
-        self.outputconnections['output'] = dict( NAME='output' )
-        self.outputconnections['status_log'] = dict( NAME='status_log' ) 
-
-    def process(self, inputs):
-        variable = inputs['resource'].get('variable')
-        drs_filename = inputs['resource'].get('filename')
-
-        logger.debug('filename=%s, variable=%s, indice=%s' % ( drs_filename, variable, self.indice))
-
-        # does variable fit to indice?
-        if variable == indice_variable(self.indice):
-            logger.debug('start calc_indice ...')
-            success = 'Failed'
-            try:
-                output = calc_indice(
-                    resources=inputs['resource'].get('files', []),
-                    indice=self.indice,
-                    grouping=self.grouping,
-                    out_dir=self.out_dir)
-                drs_filename = output['drs_filename']
-                success = 'Succeeded'
-                logger.debug('calc_indice done. output=%s', output)
-                self.write('output', output)
-            except:
-                logger.exception('indice calculation failed: indice=%s', self.indice)
-            status_log = "indice=%s, variable=%s, filename=%s, status=%s" % (self.indice, variable, drs_filename, success)
-            self.write('status_log', status_log)
-        else:
-            logger.warn('skip file: variable=%s', variable)
-
-class CalcClipping(BasePE):
-    """
-    This PE calculates a region clipping.
-    """
-    def __init__(self, region, out_dir=None, monitor=None):
-        BasePE.__init__(self, monitor)
-        self.region = region
-        self.out_dir = out_dir
-
-        self.inputconnections = {}
-        self.inputconnections['resource'] = dict( NAME='resource' )
-        self.outputconnections = {}
-        self.outputconnections['output'] = dict( NAME='output' )
-        self.outputconnections['status_log'] = dict( NAME='status_log' ) 
-
-    def process(self, inputs):
-        logger.debug('start clipping ...')
-        success = 'Failed'
-        try:
-            from flyingpigeon.clipping import calc_region_clipping
-            output = calc_region_clipping(
-                resource=inputs['resource']['output'],
-                region=self.region,
-                out_dir=self.out_dir)
-            success = 'Succeeded'
-            logger.debug('clipping done. output=%s', output)
-            self.write('output', output)
-        except:
-            logger.exception('clipping failed for region %s' % self.region)
-        status_log = "region=%s, status=%s" % (self.region, success)
-        self.write('status_log', status_log)
 
 class Aggregate(BasePE):
     '''
@@ -118,6 +42,84 @@ class Aggregate(BasePE):
             self.monitor('experiment=%s' % key, self.count * 100 / max_count)
             self.count = self.count + 1
             self.write('output', aggs[key])
+        
+class CalcIndice(BasePE):
+    """
+    This PE calculates a climate indice.
+    """
+    def __init__(self, indice, grouping, out_dir=None, monitor=None):
+        BasePE.__init__(self, monitor)
+        self.grouping = grouping
+        self.indice = indice
+        self.out_dir = out_dir
+
+        self.inputconnections = {}
+        self.inputconnections['resource'] = dict( NAME='resource' )
+        self.outputconnections = {}
+        self.outputconnections['output'] = dict( NAME='output' )
+        self.outputconnections['status_log'] = dict( NAME='status_log' ) 
+
+    def process(self, inputs):
+        from flyingpigeon.indices import calc_indice, indice_variable
+        variable = inputs['resource'].get('variable')
+        filename = inputs['resource'].get('filename')
+
+        logger.debug('filename=%s, variable=%s, indice=%s' % ( filename, variable, self.indice))
+
+        # does variable fit to indice?
+        if variable == indice_variable(self.indice):
+            logger.debug('start calc_indice ...')
+            success = 'Failed'
+            try:
+                output = calc_indice(
+                    resources=inputs['resource'].get('files', []),
+                    indice=self.indice,
+                    grouping=self.grouping,
+                    out_dir=self.out_dir)
+                filename = basename(output)
+                success = 'Succeeded'
+                logger.debug('calc_indice done. output=%s', output)
+                self.write('output', output)
+            except:
+                logger.exception('indice calculation failed: indice=%s', self.indice)
+            status_log = "process:calc_indice, filename:%s, params:indice=%s, status:%s" % (filename, self.indice, success)
+            self.write('status_log', status_log)
+        else:
+            logger.warn('skip file: variable=%s', variable)
+
+class CalcClipping(BasePE):
+    """
+    This PE calculates a region clipping.
+    """
+    def __init__(self, region, out_dir=None, monitor=None):
+        BasePE.__init__(self, monitor)
+        self.region = region
+        self.out_dir = out_dir
+
+        self.inputconnections = {}
+        self.inputconnections['resource'] = dict( NAME='resource' )
+        self.outputconnections = {}
+        self.outputconnections['output'] = dict( NAME='output' )
+        self.outputconnections['status_log'] = dict( NAME='status_log' ) 
+
+    def process(self, inputs):
+        logger.debug('start clipping ...')
+        success = 'Failed'
+        filename = basename(inputs['resource'])
+        try:
+            from flyingpigeon.clipping import calc_region_clipping
+            output = calc_region_clipping(
+                resource=inputs['resource'],
+                region=self.region,
+                out_dir=self.out_dir)
+            success = 'Succeeded'
+            logger.debug('clipping done. output=%s', output)
+            self.write('output', output)
+        except:
+            logger.exception('clipping failed for region %s' % self.region)
+        status_log = "process:clipping, filename:%s, params:region=%s, status:%s" % (filename, self.region, success)
+        self.write('status_log', status_log)
+
 
 class StatusLog(BasePE):
     def __init__(self, out_dir='.', monitor=None):
@@ -150,12 +152,11 @@ class Results(BasePE):
         self.count = 0
         
     def process(self, inputs):
-        from os.path import basename
-        output = inputs['input']['output']
+        output = inputs['input']
         self.count = self.count + 1
         self.monitor('output=%s' % basename(output), self.count * 100 / self.max_results)
         with open(self.outfile, 'a') as fp:
-            fp.write("%s\n" % (inputs['input']['output']))
+            fp.write("%s\n" % (inputs['input']))
             fp.flush()
 
     def get_outputs(self):
@@ -165,27 +166,36 @@ class Results(BasePE):
                 outputs.append(line.strip())
         return outputs
 
-def climate_indice_workflow(resources, indices=['SU'], grouping='year', out_dir=None, monitor=None):
+def climate_indice_workflow(
+        resources,
+        indices=['SU'],
+        grouping='year',
+        regions=['FRA'],
+        out_dir=None,
+        monitor=None):
     from dispel4py.workflow_graph import WorkflowGraph
     from dispel4py.multi_process import multiprocess
 
     graph = WorkflowGraph()
     aggregate = Aggregate(resources, monitor=monitor)
-    clipping = CalcClipping(region="FRA", monitor=monitor)
     results = Results(max_results=len(resources), out_dir=out_dir, monitor=monitor)
     status_log = StatusLog(out_dir=out_dir, monitor=monitor)
 
-    # make indices list unique
+    # make indice and region list unique
     indices = set(indices)
-    
+    regions = set(regions)
+
     for indice in indices:
         calc_indice = CalcIndice(indice=indice, grouping=grouping, out_dir=out_dir, monitor=monitor)
 
         graph.connect(aggregate, 'output',  calc_indice, 'resource')
-        graph.connect(calc_indice, 'output', clipping, 'resource')
-        graph.connect(clipping, 'output', results, 'input')
         graph.connect(calc_indice, 'status_log', status_log, 'status_log')
-
+        for region in regions:
+            clipping = CalcClipping(region=region, monitor=monitor)
+            graph.connect(calc_indice, 'output', clipping, 'resource')
+            graph.connect(clipping, 'output', results, 'input')
+            graph.connect(clipping, 'status_log', status_log, 'status_log')
+        
     from multiprocessing import cpu_count
     numProcesses = min(cpu_count(), 4)  # max 4 cpus
 
