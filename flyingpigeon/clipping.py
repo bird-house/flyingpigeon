@@ -66,8 +66,8 @@ def calc_region_clipping(resources=[], region='AUT', output_format='nc', out_dir
 
     return dict(output=output, drs_filename=filename)
 
-def normalize(resources=[], region='AUT', start_date="1971-01-01", end_date="2010-12-31", output_format='nc', out_dir=None):
-    rd = ocgis.RequestDataset(resources)
+def normalize(resource, region='AUT', start_date="1971-01-01", end_date="2010-12-31", output_format='nc', out_dir=None):
+    rd = ocgis.RequestDataset(resource)
     variable = rd.variable
     from dateutil import parser as date_parser
     time_range=[ date_parser.parse(start_date) , date_parser.parse(end_date) ]
@@ -75,12 +75,12 @@ def normalize(resources=[], region='AUT', start_date="1971-01-01", end_date="201
     calc_grouping = ['month']
 
     prefix = "ref_"
-    output = None
     from flyingpigeon.utils import drs_filename
-    filename = drs_filename(resources[0])
+    output = drs_filename(resource)
+    output = output.replace("EUR", region)
     
     try: 
-        output = ocgis.OcgOperations(
+        reference = ocgis.OcgOperations(
             dataset=rd,
             geom=COUNTRY_SHP,
             dir_output=out_dir,
@@ -99,16 +99,19 @@ def normalize(resources=[], region='AUT', start_date="1971-01-01", end_date="201
         ## input2 = '%s' % (geom_ref)
         ## input3 = ' %s %s ' % (tmp1 , tmp2)
 
-        ## from cdo import Cdo   
-        ## cdo = Cdo()
-        ## cdo.fldmean (input = input1 , output = tmp1)
-        ## cdo.fldmean (input = input2 , output = tmp2 )
-        ## cdo.sub(input = input3 , output = result)
+        from tempfile import mkstemp
+        from cdo import Cdo   
+        cdo = Cdo()
+        _,out_resource = mkstemp(prefix="out_resource_", dir=out_dir)
+        cdo.fldmean(input = resource , output = out_resource)
+        _,out_ref = mkstemp(prefix="out_ref_", dir=out_dir)
+        cdo.fldmean(input = reference , output = out_ref )
+        cdo.sub(input = "%s %s" % (out_resource, out_ref) , output = output)
     except:
         msg = 'normalized fieldmean failed for file : %s ' % filename
         logger.exception(msg)
         raise CalculationException(msg)
-    return dict(output=output, drs_filename=filename)
+    return output
 
   
   
