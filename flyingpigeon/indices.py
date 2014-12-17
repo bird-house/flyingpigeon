@@ -87,14 +87,18 @@ def calc_indice(resources=[], indice="SU", grouping="year", out_dir=None):
         if len(aggs) > 1:
             logger.warning('more than one experiment group selected: %s', aggs.keys())
         if len(aggs) == 0:
-            raise Exception('no valid input data found!')
+            raise CalculationException('no valid input data found!')
         agg_name = aggs.keys()[0]
         logger.debug('aggregation = %s', agg_name)
         nc_files = aggs[agg_name]['files']
-        variable = indice_variable(indice)
-        prefix = '%s_%s' % (indice, agg_name)
+        variable = aggs[agg_name]['variable']
+        if variable != indice_variable(indice):
+            raise Exception('can not calculate indice %s for variable %s' % (indice, variable))
+        # TODO: improve naming of result files
+        prefix = agg_name.replace(variable, indice, 1)
         filename = prefix + '.nc'
         logger.debug('calculating %s', filename)
+        # run ocgis ...
         rd = ocgis.RequestDataset(uri=nc_files, variable=variable)
         output = ocgis.OcgOperations(
             dataset=rd,

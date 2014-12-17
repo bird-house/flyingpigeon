@@ -16,6 +16,7 @@ class IndicesCalculatorTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        cls.out_dir = tempfile.mkdtemp()
         # TODO: ocgis does not like file:// urls
         # tas
         cls.tas_historical_2001_nc = local_path(
@@ -29,6 +30,8 @@ class IndicesCalculatorTestCase(TestCase):
             TESTDATA['tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19960101-20001231.nc'])
         cls.tasmax_historical_1991_nc = local_path(
             TESTDATA['tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19910101-19951231.nc'])
+        cls.tasmax_eur11_day_2006_nc = local_path(
+            TESTDATA['tasmax_EUR-11_ICHEC-EC-EARTH_rcp85_r1i1p1_KNMI-RACMO22E_v1_day_20060101-20101231.nc'])
         # cmip5 ...
         cls.cmip5_historical_1850_nc = local_path(
             TESTDATA['cct_Amon_MPI-ESM-LR_historical_r1i1p1_185001-200512.nc'])
@@ -43,14 +46,13 @@ class IndicesCalculatorTestCase(TestCase):
     @attr('slow')
     def test_indice_su_tasmax(self):
         #raise SkipTest
-        out_dir = tempfile.mkdtemp()
 
         # SU expects tasmax
         output = indices.calc_indice(
-            [self.tasmax_historical_1991_nc], indice='SU', grouping='year', out_dir=out_dir)
+            [self.tasmax_historical_1991_nc], indice='SU', grouping='year', out_dir=self.out_dir)
 
         nose.tools.ok_(
-            basename(output) == 'SU_tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day.nc',
+            basename(output) == 'SU_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day.nc',
             output)
         
         ds = Dataset(output)
@@ -58,6 +60,27 @@ class IndicesCalculatorTestCase(TestCase):
         nose.tools.ok_('SU' in ds.variables, ds.variables.keys())
         # 5 years
         nose.tools.ok_(len(ds.variables['time']) == 5, len(ds.variables['time']))
+
+    @attr('testdata')
+    @attr('slow')
+    def test_indice_su_tasmax_eur11_day(self):
+        #raise SkipTest
+
+        # SU expects tasmax
+        output = indices.calc_indice(
+            [self.tasmax_eur11_day_2006_nc], indice='SU', grouping='year', out_dir=self.out_dir)
+
+        nose.tools.ok_(
+            basename(output) == 'SU_EUR-11_ICHEC-EC-EARTH_rcp85_r1i1p1_KNMI-RACMO22E_v1_day.nc',
+            output)
+        
+        ds = Dataset(output)
+        # SU variable must be in result
+        nose.tools.ok_('SU' in ds.variables, ds.variables.keys())
+        # 5 years
+        nose.tools.ok_(len(ds.variables['time']) == 5, len(ds.variables['time']))
+
+    
 
     
 
