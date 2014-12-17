@@ -63,18 +63,6 @@ def indice_variable(indice):
         logger.error('unknown indice %s', indice)
     return variable
 
-def calc_grouping(grouping):
-    calc_grouping = ['year'] # default year
-    if grouping == 'sem':
-        calc_grouping = [ [12,1,2], [3,4,5], [6,7,8], [9,10,11], 'unique'] 
-    elif grouping in ['year', 'month']:
-        calc_grouping = [grouping]
-    else:
-        msg = 'Unknown calculation grouping: %s' % grouping
-        logger.error(msg)
-        raise Exception(msg)
-    return calc_grouping
-
 def calc_indice(resources=[], indice="SU", grouping="year", out_dir=None):
     """
     Calculates given indice for variable and grouping.
@@ -90,7 +78,7 @@ def calc_indice(resources=[], indice="SU", grouping="year", out_dir=None):
     ## ocgis.env.DIR_OUTPUT = outdir    
     ## output_crs = None
 
-    from utils import aggregations
+    from utils import aggregations, calc_grouping
 
     output = None
     calc_icclim = [{'func' : 'icclim_' + indice, 'name' : indice}]

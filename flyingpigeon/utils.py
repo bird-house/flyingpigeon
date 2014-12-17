@@ -10,6 +10,18 @@ def local_path(url):
     url_parts = urlparse.urlparse(url)
     return url_parts.path
 
+def calc_grouping(grouping):
+    calc_grouping = ['year'] # default year
+    if grouping == 'sem':
+        calc_grouping = [ [12,1,2], [3,4,5], [6,7,8], [9,10,11], 'unique'] 
+    elif grouping in ['year', 'month']:
+        calc_grouping = [grouping]
+    else:
+        msg = 'Unknown calculation grouping: %s' % grouping
+        logger.error(msg)
+        raise Exception(msg)
+    return calc_grouping
+
 def drs_filename( nc_file, skip_timestamp=False, skip_format=False ):
     """
     generates filename according to the data reference syntax (DRS).

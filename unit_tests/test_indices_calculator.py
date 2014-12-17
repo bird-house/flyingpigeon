@@ -59,17 +59,7 @@ class IndicesCalculatorTestCase(TestCase):
         # 5 years
         nose.tools.ok_(len(ds.variables['time']) == 5, len(ds.variables['time']))
 
-    def test_calc_grouping(self):
-        nose.tools.ok_(indices.calc_grouping('year') == ['year'])
-        nose.tools.ok_(indices.calc_grouping('month') == ['month'])
-        nose.tools.ok_(indices.calc_grouping('sem') == [ [12,1,2], [3,4,5], [6,7,8], [9,10,11], 'unique'] )
-
-        # check invalid value: should raise an exception
-        try:
-            nose.tools.ok_(indices.calc_grouping('unknown') == ['year'])
-            assert False
-        except:
-            assert True
+    
 
 
 
