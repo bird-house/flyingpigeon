@@ -55,12 +55,12 @@ class SimpleClipping(WPSProcess):
         self.show_status('starting: region=%s, num_files=%s' % (self.region.getValue(), len(resources)), 0)
 
         result = calc_region_clipping(
-            resources = resources,
+            resource = resources[0],
             region = self.region.getValue(),
             out_dir = self.working_dir,
             )
         
-        self.output.setValue( result.get('output') )
+        self.output.setValue( result )
 
         self.show_status('done: region=%s, num_files=%s' % (self.region.getValue(), len(resources)), 100)
 
