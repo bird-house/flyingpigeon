@@ -243,12 +243,12 @@ def climate_indice_workflow(
             graph.connect(clipping, 'status_log', status_log, 'status_log')
 
             # normalize with status log
-            normalize = Normalize(region=region, start_date=start_date, end_date=end_date, monitor=monitor)
-            graph.connect(clipping, 'output', normalize, 'resource')
-            graph.connect(clipping, 'status_log', status_log, 'status_log')
+            #normalize = Normalize(region=region, start_date=start_date, end_date=end_date, monitor=monitor)
+            #graph.connect(clipping, 'output', normalize, 'resource')
+            #graph.connect(clipping, 'status_log', status_log, 'status_log')
 
             # collect results
-            graph.connect(normalize, 'output', results, 'input')
+            graph.connect(clipping, 'output', results, 'input')
             
     # ... now let's run the workflow on max 4 CPUs
     from multiprocessing import cpu_count
