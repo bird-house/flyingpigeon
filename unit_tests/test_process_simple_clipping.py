@@ -32,7 +32,7 @@ class SimpleClippingTestCase(WpsTestCase):
              ))
 
         output=[('output', True)]
-        execution = self.wps.execute(identifier="clipping", inputs=inputs, output=output)
+        execution = self.wps.execute(identifier="simple_clipping", inputs=inputs, output=output)
         monitorExecution(execution, sleepSecs=1)
 
         nose.tools.ok_(execution.status == 'ProcessSucceeded', execution.status)
