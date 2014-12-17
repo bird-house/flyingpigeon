@@ -5,7 +5,7 @@ from nose.plugins.attrib import attr
 
 from __init__ import TESTDATA, SERVICE
 
-from flyingpigeon.dispel import climate_indice_workflow
+from flyingpigeon.workflow import climate_indice_workflow
 
 class WorkflowTestCase(TestCase):
 
@@ -20,7 +20,7 @@ class WorkflowTestCase(TestCase):
 
     def test_indice_workflow(self):
         import tempfile
-        result,status_log = climate_indice_workflow(
+        result, status_log = climate_indice_workflow(
             resources=self.nc_files,
             indices=['SU', 'TG'],
             regions=['FRA', 'GBR'],
