@@ -36,25 +36,26 @@ def calc_indice(
         calc_indice = CalcIndice(indice=indice, grouping=grouping, out_dir=out_dir, monitor=monitor)
         graph.connect(aggregate, 'output',  calc_indice, 'resource')
         graph.connect(calc_indice, 'status_log', status_log, 'status_log')
+        graph.connect(calc_indice, 'output', results, 'input')
 
         # loop all regions
-        for region in regions:
-            # clipping with status log
-            clipping = Clipping(region=region, monitor=monitor)
-            graph.connect(calc_indice, 'output', clipping, 'resource')
-            graph.connect(clipping, 'status_log', status_log, 'status_log')
+        ## for region in regions:
+        ##     # clipping with status log
+        ##     clipping = Clipping(region=region, monitor=monitor)
+        ##     graph.connect(calc_indice, 'output', clipping, 'resource')
+        ##     graph.connect(clipping, 'status_log', status_log, 'status_log')
 
-            # normalize with status log
-            #normalize = Normalize(region=region, start_date=start_date, end_date=end_date, monitor=monitor)
-            #graph.connect(clipping, 'output', normalize, 'resource')
-            #graph.connect(clipping, 'status_log', status_log, 'status_log')
+        ##     # normalize with status log
+        ##     #normalize = Normalize(region=region, start_date=start_date, end_date=end_date, monitor=monitor)
+        ##     #graph.connect(clipping, 'output', normalize, 'resource')
+        ##     #graph.connect(clipping, 'status_log', status_log, 'status_log')
 
-            # collect results
-            graph.connect(clipping, 'output', results, 'input')
+        ##     # collect results
+        ##     graph.connect(clipping, 'output', results, 'input')
             
-    # ... now let's run the workflow on max 4 CPUs
+    # ... now let's run the workflow
     from multiprocessing import cpu_count
-    numProcesses = min(cpu_count(), 4)  # max 4 cpus
+    numProcesses = min(2*cpu_count(), 8)  # max 8 processes
 
     logger.debug('start multiprocessesing workflow')
     multiprocess(graph, numProcesses=numProcesses, inputs=[{}], simple=False)
