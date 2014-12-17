@@ -45,6 +45,31 @@ class MultipleIndicesTestCase(WpsTestCase):
 
         # TODO: check contents
 
+    @attr('online')
+    @attr('testdata')
+    @attr('slow')
+    def test_su_tasmax_day(self):
+        inputs = []
+        inputs.append(('indice', 'SU'))
+        inputs.append(('indice', 'TG'))
+        inputs.append(('grouping', 'year'))
+        inputs.append(
+            ('resource',
+             TESTDATA['tasmax_EUR-11_ICHEC-EC-EARTH_rcp85_r1i1p1_KNMI-RACMO22E_v1_day_20060101-20101231.nc']
+             ))
+        inputs.append(
+            ('resource',
+             TESTDATA['tas_EUR-11_ICHEC-EC-EARTH_historical_r1i1p1_KNMI-RACMO22E_v1_mon_200101-200512.nc']
+             ))
+
+        output=[('output', True)]
+        execution = self.wps.execute(identifier="multiple_indices", inputs=inputs, output=output)
+        monitorExecution(execution, sleepSecs=1)
+
+        nose.tools.ok_(execution.status == 'ProcessSucceeded', execution.status)
+
+        # TODO: check contents
+
 
 
 
