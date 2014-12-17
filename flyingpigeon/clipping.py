@@ -66,7 +66,17 @@ def calc_region_clipping(resources=[], region='AUT', output_format='nc', out_dir
 
     return dict(output=output, drs_filename=filename)
 
-def normalize(resource, region='AUT', start_date="1971-01-01", end_date="2010-12-31", output_format='nc', out_dir=None):
+def normalize(resource, region='AUT', start_date="1971-01-01", end_date="2010-12-31", out_dir=None):
+    """
+    noramlize netcdf file for region and timeperiod
+
+    :param resource: netcdf filename
+    :param start_date: string with start date
+    :param end_date: string with end date
+    :param out_dir: output directory for result file (netcdf)
+
+    :return: normalized netcdf file
+    """
     rd = ocgis.RequestDataset(resource)
     variable = rd.variable
     from dateutil import parser as date_parser
@@ -86,7 +96,7 @@ def normalize(resource, region='AUT', start_date="1971-01-01", end_date="2010-12
             dataset=rd,
             geom=COUNTRY_SHP,
             dir_output=out_dir,
-            output_format=output_format,
+            output_format="nc",
             select_ugid=select_ugid(region),
             prefix=prefix,
             add_auxiliary_files=False,

@@ -106,7 +106,6 @@ class ClippingTestCase(TestCase):
             region='FRA',
             start_date="2011-01-01",
             end_date="2012-12-31",
-            output_format='nc',
             out_dir=out_dir)
 
         from os.path import basename
