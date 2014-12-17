@@ -6,7 +6,7 @@ from .base import Aggregate, Results, CalcIndice, Clipping, Normalize, StatusLog
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
-def climate_indice_workflow(
+def calc_indice(
         resources,
         indices=['SU'],
         grouping='year',
