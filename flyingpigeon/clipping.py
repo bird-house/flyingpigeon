@@ -25,11 +25,11 @@ def select_ugid(region):
             result.append(row['properties']['UGID'])
     return result
 
-def calc_region_clipping(resources=[], region='AUT', output_format='nc', out_dir=None):
+def calc_region_clipping(resource, region='AUT', out_dir=None):
     """
     calculates geometry clipping of netcdf files and given region.
 
-    :param resources: list of netcdf filenames
+    :param resource: netcdf filename
     :param out_dir: output directory for result file (netcdf)
     :param output_format: format of result file (nc or csv)
 
@@ -42,19 +42,20 @@ def calc_region_clipping(resources=[], region='AUT', output_format='nc', out_dir
 
     #from ocgis.interface.base.crs import CFWGS84
     #rd = ocgis.RequestDataset(resources, variable)
-    rd = ocgis.RequestDataset(resources)
+    rd = ocgis.RequestDataset(resource)
     from flyingpigeon.utils import drs_filename
 
-    prefix = region
-    output = None
-    filename = drs_filename(resources[0])
+    filename = drs_filename(resource)
+    filename = filename.replace("EUR", region)
+    prefix = filename.replace(".nc", "")
+    
     try:
-        logger.debug('calculation of polygon %s with variable %s in %s' % (prefix, rd.variable, region))
+        logger.debug('calculation of region %s with variable %s' % (region, rd.variable))
         output = ocgis.OcgOperations(
             dataset=rd,
             geom=COUNTRY_SHP,
             #output_crs=None,
-            output_format=output_format,
+            output_format="nc",
             select_ugid=select_ugid(region),
             prefix=prefix,
             dir_output=out_dir,
@@ -64,7 +65,7 @@ def calc_region_clipping(resources=[], region='AUT', output_format='nc', out_dir
         logger.exception(msg)
         raise CalculationException(msg)
 
-    return dict(output=output, drs_filename=filename)
+    return output
 
 def normalize(resource, region='AUT', start_date="1971-01-01", end_date="2010-12-31", out_dir=None):
     """

@@ -7,6 +7,7 @@ from __init__ import TESTDATA, SERVICE
 
 import tempfile
 from netCDF4 import Dataset
+from os.path import basename
 
 from flyingpigeon import clipping
 from flyingpigeon.utils import local_path
@@ -40,45 +41,33 @@ class ClippingTestCase(TestCase):
         #raise SkipTest
         out_dir = tempfile.mkdtemp()
 
-        result = clipping.calc_region_clipping(
-            [self.cmip5_historical_1850_nc], region='ITA', output_format='nc', out_dir=out_dir)
+        output = clipping.calc_region_clipping(
+            self.cmip5_historical_1850_nc,
+            region='ITA',
+            out_dir=out_dir)
 
         nose.tools.ok_(
-            result['drs_filename'] == 'cct_MPI-ESM-LR_historical_r1i1p1_19491216-21051115.nc',
-            result)
+            basename(output) == 'cct_MPI-ESM-LR_historical_r1i1p1_19491216-21051115.nc',
+            output)
         
-        ds = Dataset(result['output'])
+        ds = Dataset(output)
         nose.tools.ok_('cct' in ds.variables, ds.variables.keys())
-
-    @attr('testdata')
-    def test_calc_region_clipping_csv_cmip5(self):
-        out_dir = tempfile.mkdtemp()
-
-        result = clipping.calc_region_clipping(
-            [self.cmip5_historical_1850_nc], region='ITA', output_format='csv', out_dir=out_dir)
-
-        # TODO: check names and content
-        nose.tools.ok_(
-            result['drs_filename'] == 'cct_MPI-ESM-LR_historical_r1i1p1_19491216-21051115.nc',
-            result)
-
-        nose.tools.ok_(
-            'ITA.csv' in result['output'],
-            result)
 
     @attr('testdata')
     def test_calc_region_clipping_nc_cordex(self):
         #raise SkipTest
         out_dir = tempfile.mkdtemp()
 
-        result = clipping.calc_region_clipping(
-            [self.pr_rcp85_2011_nc], region='FRA', output_format='nc', out_dir=out_dir)
+        output = clipping.calc_region_clipping(
+            self.pr_rcp85_2011_nc,
+            region='FRA',
+            out_dir=out_dir)
 
         nose.tools.ok_(
-            result['drs_filename'] == 'pr_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20110101-20151231.nc',
-            result)
+            basename(output) == 'pr_FRA-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20110101-20151231.nc',
+            output)
         
-        ds = Dataset(result['output'])
+        ds = Dataset(output)
         nose.tools.ok_('pr' in ds.variables, ds.variables.keys())
 
     def test_proj_cordex_1(self):
@@ -108,7 +97,7 @@ class ClippingTestCase(TestCase):
             end_date="2012-12-31",
             out_dir=out_dir)
 
-        from os.path import basename
+       
         nose.tools.ok_(
             basename(output) == 'pr_FRA-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20110101-20151231.nc',
             output)
