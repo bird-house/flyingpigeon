@@ -109,8 +109,9 @@ class ClippingTestCase(TestCase):
             output_format='nc',
             out_dir=out_dir)
 
+        from os.path import basename
         nose.tools.ok_(
-            output == 'pr_FRA-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20110101-20151231.nc',
+            basename(output) == 'pr_FRA-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20110101-20151231.nc',
             output)
         
         ds = Dataset(output)

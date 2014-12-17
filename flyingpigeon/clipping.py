@@ -76,8 +76,10 @@ def normalize(resource, region='AUT', start_date="1971-01-01", end_date="2010-12
 
     prefix = "ref_"
     from flyingpigeon.utils import drs_filename
-    output = drs_filename(resource)
-    output = output.replace("EUR", region)
+    filename = drs_filename(resource)
+    filename = filename.replace("EUR", region)
+    from os.path import join
+    output = join(out_dir, filename)
     
     try: 
         reference = ocgis.OcgOperations(
@@ -91,13 +93,6 @@ def normalize(resource, region='AUT', start_date="1971-01-01", end_date="2010-12
             calc=calc,
             calc_grouping=calc_grouping ,
             time_range=time_range  ).execute()
-
-        ## tmp1 =  '%s/nc_temp_%s.nc' % (os.curdir, prefix )
-        ## tmp2 =  '%s/nc_temp2_%s.nc' % (os.curdir, prefix )
-        ## result =  '%s/%s.nc' % (dir_output, prefix )
-        ## input1 = '%s' % (geom_nc)
-        ## input2 = '%s' % (geom_ref)
-        ## input3 = ' %s %s ' % (tmp1 , tmp2)
 
         from tempfile import mkstemp
         from cdo import Cdo   
