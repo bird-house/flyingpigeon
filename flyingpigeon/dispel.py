@@ -45,7 +45,7 @@ class Aggregate(BasePE):
         
 class CalcIndice(BasePE):
     """
-    This PE calculates a climate indice.
+    This PE calls indices.calc_indice().
     """
     def __init__(self, indice, grouping, out_dir=None, monitor=None):
         BasePE.__init__(self, monitor)
@@ -89,7 +89,7 @@ class CalcIndice(BasePE):
 
 class CalcClipping(BasePE):
     """
-    This PE calculates a region clipping.
+    This PE calls clipping.calc_region_clipping()
     """
     def __init__(self, region, out_dir=None, monitor=None):
         BasePE.__init__(self, monitor)
@@ -120,6 +120,42 @@ class CalcClipping(BasePE):
         status_log = "process:clipping, filename:%s, params:region=%s, status:%s" % (filename, self.region, success)
         self.write('status_log', status_log)
 
+class Normalize(BasePE):
+    """
+    This PE calls clipping.normalize().
+    """
+    def __init__(self, region, start_date, end_date, out_dir=None, monitor=None):
+        BasePE.__init__(self, monitor)
+        self.region = region
+        self.start_date = start_date
+        self.end_date = end_date
+        self.out_dir = out_dir
+
+        self.inputconnections = {}
+        self.inputconnections['resource'] = dict( NAME='resource' )
+        self.outputconnections = {}
+        self.outputconnections['output'] = dict( NAME='output' )
+        self.outputconnections['status_log'] = dict( NAME='status_log' ) 
+
+    def process(self, inputs):
+        logger.debug('start normalize ...')
+        success = 'Failed'
+        filename = basename(inputs['resource'])
+        try:
+            from flyingpigeon.clipping import normalize
+            output = normalize(
+                resource=inputs['resource'],
+                region=self.region,
+                start_date=self.start_date,
+                end_date=self.end_date,
+                out_dir=self.out_dir)
+            success = 'Succeeded'
+            logger.debug('clipping done. output=%s', output)
+            self.write('output', output)
+        except:
+            logger.exception('clipping failed for region %s' % self.region)
+        status_log = "process:normalize, filename:%s, params:, status:%s" % (filename, success)
+        self.write('status_log', status_log)
 
 class StatusLog(BasePE):
     def __init__(self, out_dir='.', monitor=None):
@@ -171,31 +207,50 @@ def climate_indice_workflow(
         indices=['SU'],
         grouping='year',
         regions=['FRA'],
+        start_date=None,
+        end_date=None,
         out_dir=None,
         monitor=None):
     from dispel4py.workflow_graph import WorkflowGraph
     from dispel4py.multi_process import multiprocess
 
-    graph = WorkflowGraph()
-    aggregate = Aggregate(resources, monitor=monitor)
-    results = Results(max_results=len(resources), out_dir=out_dir, monitor=monitor)
-    status_log = StatusLog(out_dir=out_dir, monitor=monitor)
-
     # make indice and region list unique
     indices = set(indices)
     regions = set(regions)
 
-    for indice in indices:
-        calc_indice = CalcIndice(indice=indice, grouping=grouping, out_dir=out_dir, monitor=monitor)
+    # build workflow graph
+    graph = WorkflowGraph()
 
+    # start with experiment aggregation
+    aggregate = Aggregate(resources, monitor=monitor)
+    status_log = StatusLog(out_dir=out_dir, monitor=monitor)
+
+    # need result node to collect results
+    results = Results(max_results=len(resources), out_dir=out_dir, monitor=monitor)
+    
+    # loop all indices
+    for indice in indices:
+        # calc indice with status log
+        calc_indice = CalcIndice(indice=indice, grouping=grouping, out_dir=out_dir, monitor=monitor)
         graph.connect(aggregate, 'output',  calc_indice, 'resource')
         graph.connect(calc_indice, 'status_log', status_log, 'status_log')
+
+        # loop all regions
         for region in regions:
+            # clipping with status log
             clipping = CalcClipping(region=region, monitor=monitor)
             graph.connect(calc_indice, 'output', clipping, 'resource')
-            graph.connect(clipping, 'output', results, 'input')
             graph.connect(clipping, 'status_log', status_log, 'status_log')
-        
+
+            # normalize with status log
+            normalize = Normalize(region=region, start_date=start_date, end_date=end_date, monitor=monitor)
+            graph.connect(clipping, 'output', normalize, 'resource')
+            graph.connect(clipping, 'status_log', status_log, 'status_log')
+
+            # collect results
+            graph.connect(normalize, 'output', results, 'input')
+            
+    # ... now let's run the workflow on max 4 CPUs
     from multiprocessing import cpu_count
     numProcesses = min(cpu_count(), 4)  # max 4 cpus
 

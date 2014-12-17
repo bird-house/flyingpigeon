@@ -25,6 +25,8 @@ class WorkflowTestCase(TestCase):
             indices=['SU', 'TG'],
             regions=['FRA', 'GBR'],
             grouping='year',
+            start_date='2002-01-01',
+            end_date='2002-12-31',
             monitor=None,
             out_dir=tempfile.mkdtemp())
 

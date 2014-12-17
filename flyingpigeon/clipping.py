@@ -83,14 +83,15 @@ def normalize(resource, region='AUT', start_date="1971-01-01", end_date="2010-12
     from dateutil import parser as date_parser
     time_range=[ date_parser.parse(start_date) , date_parser.parse(end_date) ]
     calc = [{'func':'mean','name':'ref_' + variable }] 
-    calc_grouping = ['month']
+    calc_grouping = ['year']
 
-    prefix = "ref_"
     from flyingpigeon.utils import drs_filename
     filename = drs_filename(resource)
     filename = filename.replace("EUR", region)
     from os.path import join
     output = join(out_dir, filename)
+    prefix = "ref_%s" % filename
+    prefix = prefix.replace('.nc', '')
     
     try: 
         reference = ocgis.OcgOperations(
@@ -114,7 +115,7 @@ def normalize(resource, region='AUT', start_date="1971-01-01", end_date="2010-12
         cdo.fldmean(input = reference , output = out_ref )
         cdo.sub(input = "%s %s" % (out_resource, out_ref) , output = output)
     except:
-        msg = 'normalized fieldmean failed for file : %s ' % filename
+        msg = 'normalize failed for file : %s ' % filename
         logger.exception(msg)
         raise CalculationException(msg)
     return output
