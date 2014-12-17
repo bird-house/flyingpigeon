@@ -17,12 +17,9 @@ class BasePE(GenericPE):
         else:
             self.monitor = internal_monitor
         
-    def debug(self, message):
-        logger.debug(message)
-
-class CalcSimpleIndice(BasePE):
+class CalcIndice(BasePE):
     """
-    This PE calls the simple_indice Web Processing Service to calculate a climate indice.
+    This PE calculates a climate indice.
     """
     def __init__(self, indice, grouping, out_dir=None, monitor=None):
         BasePE.__init__(self, monitor)
@@ -32,7 +29,6 @@ class CalcSimpleIndice(BasePE):
 
         self.inputconnections = {}
         self.inputconnections['resource'] = dict( NAME='resource' )
-        #self.inputconnections['metadata'] = dict( NAME='metadata' )
         self.outputconnections = {}
         self.outputconnections['output'] = dict( NAME='output' )
         self.outputconnections['status_log'] = dict( NAME='status_log' ) 
@@ -41,11 +37,11 @@ class CalcSimpleIndice(BasePE):
         variable = inputs['resource'].get('variable')
         drs_filename = inputs['resource'].get('filename')
 
-        self.debug('filename=%s, variable=%s, indice=%s' % ( drs_filename, variable, self.indice))
+        logger.debug('filename=%s, variable=%s, indice=%s' % ( drs_filename, variable, self.indice))
 
         # does variable fit to indice?
         if variable == indice_variable(self.indice):
-            self.debug('start calculation ...')
+            logger.debug('start calc_indice ...')
             success = 'Failed'
             try:
                 output = calc_indice(
@@ -55,14 +51,46 @@ class CalcSimpleIndice(BasePE):
                     out_dir=self.out_dir)
                 drs_filename = output['drs_filename']
                 success = 'Succeeded'
-                self.debug('calc_indice done. output=%s' % output)
+                logger.debug('calc_indice done. output=%s', output)
                 self.write('output', output)
             except:
-                self.debug('indice calculation failed: indice=%s' % self.indice)
+                logger.exception('indice calculation failed: indice=%s', self.indice)
             status_log = "indice=%s, variable=%s, filename=%s, status=%s" % (self.indice, variable, drs_filename, success)
             self.write('status_log', status_log)
         else:
-            self.debug('skip file: variable=%s' % (variable))
+            logger.warn('skip file: variable=%s', variable)
+
+class CalcClipping(BasePE):
+    """
+    This PE calculates a region clipping.
+    """
+    def __init__(self, region, out_dir=None, monitor=None):
+        BasePE.__init__(self, monitor)
+        self.region = region
+        self.out_dir = out_dir
+
+        self.inputconnections = {}
+        self.inputconnections['resource'] = dict( NAME='resource' )
+        self.outputconnections = {}
+        self.outputconnections['output'] = dict( NAME='output' )
+        self.outputconnections['status_log'] = dict( NAME='status_log' ) 
+
+    def process(self, inputs):
+        logger.debug('start clipping ...')
+        success = 'Failed'
+        try:
+            from flyingpigeon.clipping import calc_region_clipping
+            output = calc_region_clipping(
+                resource=inputs['resource']['output'],
+                region=self.region,
+                out_dir=self.out_dir)
+            success = 'Succeeded'
+            logger.debug('clipping done. output=%s', output)
+            self.write('output', output)
+        except:
+            logger.exception('clipping failed for region %s' % self.region)
+        status_log = "region=%s, status=%s" % (self.region, success)
+        self.write('status_log', status_log)
 
 class Aggregate(BasePE):
     '''
@@ -143,6 +171,7 @@ def climate_indice_workflow(resources, indices=['SU'], grouping='year', out_dir=
 
     graph = WorkflowGraph()
     aggregate = Aggregate(resources, monitor=monitor)
+    clipping = CalcClipping(region="FRA", monitor=monitor)
     results = Results(max_results=len(resources), out_dir=out_dir, monitor=monitor)
     status_log = StatusLog(out_dir=out_dir, monitor=monitor)
 
@@ -150,10 +179,11 @@ def climate_indice_workflow(resources, indices=['SU'], grouping='year', out_dir=
     indices = set(indices)
     
     for indice in indices:
-        calc_indice = CalcSimpleIndice(indice=indice, grouping=grouping, out_dir=out_dir, monitor=monitor)
+        calc_indice = CalcIndice(indice=indice, grouping=grouping, out_dir=out_dir, monitor=monitor)
 
         graph.connect(aggregate, 'output',  calc_indice, 'resource')
-        graph.connect(calc_indice, 'output', results, 'input')
+        graph.connect(calc_indice, 'output', clipping, 'resource')
+        graph.connect(clipping, 'output', results, 'input')
         graph.connect(calc_indice, 'status_log', status_log, 'status_log')
 
     from multiprocessing import cpu_count

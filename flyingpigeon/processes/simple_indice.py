@@ -80,8 +80,9 @@ class CalcIndice(WPSProcess):
         
         self.show_status('result %s' % result, 90)
 
-        self.output.setValue( result.get('output') )
-        self.drs_filename.setValue( result.get('drs_filename') )
+        self.output.setValue( result )
+        from os.path import basename
+        self.drs_filename.setValue( basename(result) )
 
         self.show_status('done: indice=%s, num_files=%s' % (self.indice.getValue(), len(resources)), 100)
 

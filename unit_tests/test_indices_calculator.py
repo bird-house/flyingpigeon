@@ -7,6 +7,7 @@ from __init__ import TESTDATA, SERVICE
 
 import tempfile
 from netCDF4 import Dataset
+from os.path import basename
 
 from flyingpigeon import indices
 from flyingpigeon.utils import local_path
@@ -45,14 +46,14 @@ class IndicesCalculatorTestCase(TestCase):
         out_dir = tempfile.mkdtemp()
 
         # SU expects tasmax
-        result = indices.calc_indice(
+        output = indices.calc_indice(
             [self.tasmax_historical_1991_nc], indice='SU', grouping='year', out_dir=out_dir)
 
         nose.tools.ok_(
-            result['drs_filename'] == 'SU_tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day.nc',
-            result)
+            basename(output) == 'SU_tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day.nc',
+            output)
         
-        ds = Dataset(result['output'])
+        ds = Dataset(output)
         # SU variable must be in result
         nose.tools.ok_('SU' in ds.variables, ds.variables.keys())
         # 5 years

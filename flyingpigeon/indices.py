@@ -94,7 +94,6 @@ def calc_indice(resources=[], indice="SU", grouping="year", out_dir=None):
 
     output = None
     calc_icclim = [{'func' : 'icclim_' + indice, 'name' : indice}]
-    filename = None
     try:
         aggs = aggregations(resources)
         if len(aggs) > 1:
@@ -108,7 +107,7 @@ def calc_indice(resources=[], indice="SU", grouping="year", out_dir=None):
         prefix = '%s_%s' % (indice, agg_name)
         filename = prefix + '.nc'
         logger.debug('calculating %s', filename)
-        rd = ocgis.RequestDataset(uri=nc_files, variable=variable) # TODO: time_range=[dt1, dt2]
+        rd = ocgis.RequestDataset(uri=nc_files, variable=variable)
         output = ocgis.OcgOperations(
             dataset=rd,
             calc=calc_icclim,
@@ -122,5 +121,5 @@ def calc_indice(resources=[], indice="SU", grouping="year", out_dir=None):
         logger.exception(msg)
         raise CalculationException(msg)
 
-    return dict(output=output, drs_filename=filename)
+    return output
 
