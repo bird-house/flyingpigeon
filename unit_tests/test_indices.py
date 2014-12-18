@@ -14,15 +14,22 @@ def test_indices():
     result = wpsclient.execute(
         service = SERVICE,
         identifier = "indice",
-        inputs = [('netcdf_file', TESTDATA['tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_20010101-20051231.nc']),
-                 # ('netcdf_file', TESTDATA['tas_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_20010101-20051231.nc']),
-                 # ('netcdf_file', TESTDATA['tasmin_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_20010101-20051231.nc']),
-                 # ('netcdf_file', TESTDATA['pr_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_20010101-20051231.nc']),
+        inputs = [('netcdf_file', TESTDATA['tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20510101-20551231.nc']),
+                  ('netcdf_file', TESTDATA['tasmax_EUR-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20010101-20051231.nc']),
+                  ('netcdf_file', TESTDATA['tasmax_EUR-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_19960101-20001231.nc']),
+                  ('netcdf_file', TESTDATA['tasmax_EUR-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_19910101-19951231.nc']),
+                  ('netcdf_file', TESTDATA['tasmax_EUR-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_19810101-19851231.nc']),
+                  ('netcdf_file', TESTDATA['tasmax_EUR-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_19760101-19801231.nc']),
+                  ('netcdf_file', TESTDATA['tasmax_EUR-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_19710101-19751231.nc']),
+                  
                   ('domain','EUR'),
-                  ('normalizer','False'),
+                  ('normalizer','True'),
                   ('group','year'),
-                  ('SU','True') ,
-                  #('TG','True'),('TX','True'),('TXx','True'), ('TXn','True'), ('TN','True'), ('TNx','True'), ('TNn','True'), ('CSU','True'), ('FD','True'),('CFD','True'),('TR','True'), ('ID','True'), ('HD17','True'), ('GD4','True'), ('RR','True'), ('RR1','True'),('CWD','True'), ('SDII','True'), ('R10mm','True'), ('R20mm','True'),('RX1day','True'), ('RX5day','True'), ('SD','True'), ('SD1','True'),('SD5cm','True'), ('SD50cm','True'), ('CDD','True')
+                  ('SU','True'),
+                  ('ID','True'),
+                  # ('CSU','True'),
+                  
+                  #('TG','True'),('TX','True'),('TXx','True'), ('TXn','True'), ('TN','True'), ('TNx','True'), ('TNn','True'),  ('FD','True'),('CFD','True'),('TR','True'), , ('HD17','True'), ('GD4','True'), ('RR','True'), ('RR1','True'),('CWD','True'), ('SDII','True'), ('R10mm','True'), ('R20mm','True'),('RX1day','True'), ('RX5day','True'), ('SD','True'), ('SD1','True'),('SD5cm','True'), ('SD50cm','True'), ('CDD','True')
                   ],
         outputs = [('logout', True),('tarout', True)], # ('cvout', True),
         verbose = False,
