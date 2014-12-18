@@ -214,7 +214,7 @@ def indices( idic, monitor=dummy_monitor ):
       bn, ext = os.path.splitext(f)
       n = bn.split('_')
       base = '_'.join(n[0:-1]) # extract the dateinfo
-      basename = %s_%i % (base, y)
+      basename = '%s_%i' % (base, y)
       # = bn # .replace('day', group)
       
       var = f.split('_')[0]
@@ -478,19 +478,15 @@ def indices( idic, monitor=dummy_monitor ):
           SD5cm_file = ocgis.OcgOperations(dataset=rd, calc=calc_icclim, calc_grouping=calc_grouping, prefix=(basename.replace('pr_','CDD_')), output_crs=output_crs, output_format='nc', add_auxiliary_files=False).execute()
           logger.debug('CDD calculated ' )
           outlog = outlog + "CDD indice processed sucessfully for %s \n" % basename
-          monitor('CDD indice processed for file %i/%i  ' % (c , len(uris)) , (100/len(uris)* c ))
+          monitor('CDD indice processed for file %i/%i  ' % (c , len(uris)) , (100/len(uris)* c ))  
         
-      logger.debug('processing done for experiment :  %s ' % basename  )    
-      outlog = outlog + 'processing done for experiment:  %s \n ' % basename    
+        logger.debug('processing done for experiment :  %s ' % basename  )    
+        outlog = outlog + 'processing done for experiment:  %s \n ' % basename    
+      except Exception as e:
+        msg = 'processing failed for file  : %s %s ' % ( basename , e)
+        logger.error(msg)
+        outlog = outlog + msg + '\n'
     
-    except Exception as e:
-      msg = 'processing failed for file  : %s %s ' % ( basename , e)
-      logger.error(msg)
-      outlog = outlog + msg + '\n'
-    
-    
-    
-  
   outlog = outlog + "Finished the indice calculation at: %s \n" % (datetime.strftime(datetime.now(), '%H:%M:%S %d-%m-%Y'))
   return outlog;
 
