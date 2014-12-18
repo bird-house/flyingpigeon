@@ -30,6 +30,9 @@ class ClippingTestCase(TestCase):
         # pr cordex ...
         cls.pr_rcp85_2011_nc = local_path(
             TESTDATA['pr_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20110101-20151231.nc'])
+        # tasmax eur-44 day
+        cls.tasmax_eur44_day_2021_nc = local_path(
+            TESTDATA['tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20210101-20251231.nc'])
 
     def test_select_ugid(self):
         from flyingpigeon.clipping import select_ugid
@@ -68,6 +71,21 @@ class ClippingTestCase(TestCase):
         ds = Dataset(output)
         nose.tools.ok_('pr' in ds.variables, ds.variables.keys())
 
+    @attr('testdata')
+    def test_calc_clipping_eur44_day(self):
+        #raise SkipTest
+        output = clipping.calc_region_clipping(
+            self.tasmax_eur44_day_2021_nc,
+            region='FRA',
+            out_dir=self.out_dir)
+
+        nose.tools.ok_(
+            basename(output) == 'tasmax_FRA-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20210101-20251231.nc',
+            output)
+        
+        ds = Dataset(output)
+        nose.tools.ok_('tasmax' in ds.variables, ds.variables.keys())
+
     def test_proj_cordex_1(self):
         #raise SkipTest
         import subprocess
@@ -93,6 +111,24 @@ class ClippingTestCase(TestCase):
         
         ds = Dataset(output)
         nose.tools.ok_('pr' in ds.variables, ds.variables.keys())
+
+    @attr('testdata')
+    def test_normalize_eur44_day(self):
+        #raise SkipTest
+        output = clipping.normalize(
+            self.tasmax_eur44_day_2021_nc,
+            region='FRA',
+            grouping='year',
+            start_date="2022-01-01",
+            end_date="2022-12-31",
+            out_dir=self.out_dir)
+
+        nose.tools.ok_(
+            basename(output) == 'tasmax_FRA-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20210101-20251231.nc',
+            output)
+        
+        ds = Dataset(output)
+        nose.tools.ok_('tasmax' in ds.variables, ds.variables.keys())
 
         
         
