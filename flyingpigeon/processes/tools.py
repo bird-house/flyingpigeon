@@ -5,7 +5,6 @@ from netCDF4 import Dataset
 import os 
 from datetime import datetime, timedelta
 
-import subprocess
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
@@ -604,4 +603,5 @@ def cv_creator(icclim, polygons , domain, normalizer, monitor=dummy_monitor ):
       
       monitor('Timeserie %i/%i for polygon: %s' % (c, len( exp.keys()), land) , (100/len( exp.keys() ) * c ))
   outlog = outlog + "Finish the Cordex Viwer preparation at : %s \n" % (datetime.strftime(datetime.now(), '%H:%M:%S %d-%m-%Y'))
+
   return outlog;

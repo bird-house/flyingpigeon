@@ -5,4 +5,9 @@ __all__ = [
         "ensembles",
         "indices",
         "vbd",
+#       "sdm",
+        "simple_indice",
+        "multiple_indices",
+        "indices_with_clipping",
+        "simple_clipping",
         ]
