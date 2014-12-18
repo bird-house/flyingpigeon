@@ -50,7 +50,7 @@ class MultipleIndicesTestCase(WpsTestCase):
     @attr('slow')
     @attr('loadtest')
     def test_eur11_day(self):
-        #raise SkipTest
+        raise SkipTest
         inputs = []
         inputs.append(('indice', 'SU'))
         inputs.append(('indice', 'TG'))
