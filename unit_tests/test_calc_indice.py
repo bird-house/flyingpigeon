@@ -32,6 +32,8 @@ class IndicesCalculatorTestCase(TestCase):
             TESTDATA['tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19910101-19951231.nc'])
         cls.tasmax_eur11_day_2006_nc = local_path(
             TESTDATA['tasmax_EUR-11_ICHEC-EC-EARTH_rcp85_r1i1p1_KNMI-RACMO22E_v1_day_20060101-20101231.nc'])
+        cls.tasmax_eur44_day_2021_nc = local_path(
+            TESTDATA['tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20210101-20251231.nc'])
         # cmip5 ...
         cls.cmip5_historical_1850_nc = local_path(
             TESTDATA['cct_Amon_MPI-ESM-LR_historical_r1i1p1_185001-200512.nc'])
@@ -80,10 +82,24 @@ class IndicesCalculatorTestCase(TestCase):
         # 5 years
         nose.tools.ok_(len(ds.variables['time']) == 5, len(ds.variables['time']))
 
-    
+    @attr('testdata')
+    @attr('slow')
+    def test_indice_su_tasmax_eur44_day(self):
+        #raise SkipTest
 
-    
+        # SU expects tasmax
+        output = indices.calc_indice(
+            [self.tasmax_eur44_day_2021_nc], indice='SU', grouping='year', out_dir=self.out_dir)
 
+        nose.tools.ok_(
+            basename(output) == 'SU_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day.nc',
+            output)
+        
+        ds = Dataset(output)
+        # SU variable must be in result
+        nose.tools.ok_('SU' in ds.variables, ds.variables.keys())
+        # 5 years
+        nose.tools.ok_(len(ds.variables['time']) == 5, len(ds.variables['time']))
 
 
         
