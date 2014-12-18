@@ -24,6 +24,7 @@ class MultipleIndicesTestCase(WpsTestCase):
     @attr('online')
     @attr('testdata')
     def test_su_tasmax(self):
+        #raise SkipTest
         inputs = []
         inputs.append(('indice', 'SU'))
         inputs.append(('indice', 'TG'))
@@ -80,6 +81,42 @@ class MultipleIndicesTestCase(WpsTestCase):
         inputs.append(
             ('resource',
              TESTDATA['tasmin_EUR-11_ICHEC-EC-EARTH_rcp85_r1i1p1_KNMI-RACMO22E_v1_day_20210101-20251231.nc']
+             ))
+
+        output=[('output', True)]
+        execution = self.wps.execute(identifier="multiple_indices", inputs=inputs, output=output)
+        monitorExecution(execution, sleepSecs=1)
+
+        nose.tools.ok_(execution.status == 'ProcessSucceeded', execution.status)
+
+        # TODO: check contents
+
+    @attr('online')
+    @attr('testdata')
+    @attr('slow')
+    def test_eur44_day(self):
+        #raise SkipTest
+        inputs = []
+        inputs.append(('indice', 'SU'))
+        inputs.append(('indice', 'TG'))
+        inputs.append(('indice', 'TR'))
+        inputs.append(('indice', 'SD'))
+        inputs.append(('grouping', 'year'))
+        inputs.append(
+            ('resource',
+             TESTDATA['pr_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20210101-20251231.nc']
+             ))
+        inputs.append(
+            ('resource',
+             TESTDATA['tas_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20210101-20251231.nc']
+             ))
+        inputs.append(
+            ('resource',
+             TESTDATA['tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20210101-20251231.nc']
+             ))
+        inputs.append(
+            ('resource',
+             TESTDATA['tasmin_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20210101-20251231.nc']
              ))
 
         output=[('output', True)]
