@@ -64,7 +64,7 @@ class MultipleIndicesTestCase(WpsTestCase):
              ))
         inputs.append(
             ('resource',
-             TESTDATA['tas_EUR-11_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20010101-20051231.nc']
+             TESTDATA['tasmax_EUR-11_CNRM-CERFACS-CNRM-CM5_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20010101-20051231.nc']
              ))
 
         output=[('output', True)]
