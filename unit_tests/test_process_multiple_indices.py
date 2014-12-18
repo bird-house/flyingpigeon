@@ -48,11 +48,14 @@ class MultipleIndicesTestCase(WpsTestCase):
     @attr('online')
     @attr('testdata')
     @attr('slow')
+    @attr('loadtest')
     def test_eur11_day(self):
-        #raise SkipTest
+        raise SkipTest
         inputs = []
         inputs.append(('indice', 'SU'))
         inputs.append(('indice', 'TG'))
+        inputs.append(('indice', 'TR'))
+        inputs.append(('indice', 'SD'))
         inputs.append(('grouping', 'year'))
         inputs.append(
             ('resource',
@@ -65,6 +68,18 @@ class MultipleIndicesTestCase(WpsTestCase):
         inputs.append(
             ('resource',
              TESTDATA['tasmax_EUR-11_CNRM-CERFACS-CNRM-CM5_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20010101-20051231.nc']
+             ))
+        inputs.append(
+            ('resource',
+             TESTDATA['prsn_EUR-11_ICHEC-EC-EARTH_rcp85_r1i1p1_KNMI-RACMO22E_v1_day_20210101-20251231.nc']
+             ))
+        inputs.append(
+            ('resource',
+             TESTDATA['tas_EUR-11_ICHEC-EC-EARTH_rcp85_r1i1p1_KNMI-RACMO22E_v1_day_20210101-20251231.nc']
+             ))
+        inputs.append(
+            ('resource',
+             TESTDATA['tasmin_EUR-11_ICHEC-EC-EARTH_rcp85_r1i1p1_KNMI-RACMO22E_v1_day_20210101-20251231.nc']
              ))
 
         output=[('output', True)]
