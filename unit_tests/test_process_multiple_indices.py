@@ -48,7 +48,8 @@ class MultipleIndicesTestCase(WpsTestCase):
     @attr('online')
     @attr('testdata')
     @attr('slow')
-    def test_su_tasmax_day(self):
+    def test_eur11_day(self):
+        #raise SkipTest
         inputs = []
         inputs.append(('indice', 'SU'))
         inputs.append(('indice', 'TG'))
@@ -60,6 +61,10 @@ class MultipleIndicesTestCase(WpsTestCase):
         inputs.append(
             ('resource',
              TESTDATA['tas_EUR-11_ICHEC-EC-EARTH_historical_r1i1p1_KNMI-RACMO22E_v1_mon_200101-200512.nc']
+             ))
+        inputs.append(
+            ('resource',
+             TESTDATA['tas_EUR-11_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20010101-20051231.nc']
              ))
 
         output=[('output', True)]
