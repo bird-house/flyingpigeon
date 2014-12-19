@@ -103,7 +103,6 @@ def aggregations(nc_files):
     
     CORDEX: EUR-11_ICHEC-EC-EARTH_historical_r3i1p1_DMI-HIRHAM5_v1_day
     CMIP5:
-
     We collect for each experiment all files on the time axis:
     200101-200512, 200601-201012, ...
 

@@ -67,8 +67,8 @@ class CalcIndice(WPSProcess):
             type = type(''))
         
     def execute(self):
+        
         resources = self.getInputValues(identifier='resource')
-
         self.show_status('starting: indice=%s, grouping=%s, num_files=%s' % (self.indice.getValue(), self.grouping.getValue(), len(resources)), 0)
 
         result = calc_indice(

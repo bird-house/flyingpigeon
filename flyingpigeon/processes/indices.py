@@ -457,10 +457,14 @@ class icclimWorker(WPSProcess):
     
     if self.domain.getValue() == 'EUR' :
       logger.debug('domain.getValue = %s' % (self.domain.getValue()))
+      if self.normalizer.getValue() == True:
+        os.makedirs(os.path.join(os.curdir + '/normalized/'))
+        normalized_dir = os.path.join(os.curdir + '/normalized/')
+        
       logtxt = logtxt + tools.cv_creator(icclim, polygons, domain, self.normalizer.getValue(), monitor=self.show_status)
       tar.add(polygons, arcname = polygons.replace(os.curdir , ""))
+      
       if self.normalizer.getValue() == True:
-        normalized_dir = os.path.join(os.curdir + '/normalized/')
         tar.add(normalized_dir, arcname = normalized_dir.replace(os.curdir , ""))
 
     logfile = self.mktempfile(suffix='.txt')

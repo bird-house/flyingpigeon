@@ -73,28 +73,7 @@ def fn_sorter(ncs):
       if key in n: 
         ndic[key].append(n)  
   logger.debug('Data Experiment dictionary build: %i experiments found' % (len(ndic.keys())))
-  for key in ndic.keys():
-    try:
-      logger.debug('experiment dic key: %s ' % (key) )
-      ncs = ndic[key]
-      ncs.sort()
-      ds_fr = ds_ls = []
-      ds_fr = Dataset(ncs[0])
-      ds_ls = Dataset(ncs[-1])
-      ts_fr = ds_fr.variables['time']
-      ts_ls = ds_ls.variables['time']
-      reftime = reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
-      st = datetime.strftime(reftime + timedelta(days=ts_fr[0]), '%Y%m%d') 
-      en = datetime.strftime(reftime + timedelta(days=ts_ls[-1]), '%Y%m%d')
-      basename = str(key + '_' + st + '-' + en)
-      rndic[basename] = ndic[key]
-      logger.debug('experiment dic newkey with time info: %s' % (basename) )
-    except Exception as e:
-      msg = 'new key name faild for key   : %s %s ' % ( key , e)
-      logger.error(msg)
-      
-  logger.debug('dictionary keys renamed including time info.')
-  return rndic
+  return ndic
 
 def fn_sorter_ch(ncs):
   ndic = {}
@@ -112,29 +91,7 @@ def fn_sorter_ch(ncs):
         ndic[key].append(n)     
   logger.debug('Data Experiment dictionary build: %i experiments found' % (len(ndic.keys())))
   logger.debug('experiments: %s ' % (ndic.keys()))
-  
-  rndic = {}
-  for key in ndic.keys():
-    try: 
-      logger.debug('dictionary key: %s with %i files: %s ' % (key , len(ndic[key]), ndic[key] ) )
-      ncs = ndic[key]
-      ncs.sort()
-      ds_fr = ds_ls = []
-      ds_fr = Dataset(ncs[0])
-      ds_ls = Dataset(ncs[-1])     
-      ts_fr = ds_fr.variables['time']
-      ts_ls = ds_ls.variables['time']
-      reftime = reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
-      st = datetime.strftime(reftime + timedelta(days=ts_fr[0]), '%Y%m%d') 
-      en = datetime.strftime(reftime + timedelta(days=ts_ls[-1]), '%Y%m%d')
-      basename = str(key + '_' + st + '-' + en)
-      rndic[basename] = ndic[key]
-      logger.debug('dictionary newname : %s ' % (basename))
-    except Exception as e:
-      msg = 'new key name faild for key   : %s %s' % ( key , e)
-      logger.error(msg)
-  logger.debug('dictionary keys renamed including time info.')
-  return rndic
+  return ndic # rndic
   
 def indices( idic, monitor=dummy_monitor ):
   monitor('monitor: starting indices calculation', 6)
@@ -481,7 +438,7 @@ def indices( idic, monitor=dummy_monitor ):
           monitor('CDD indice processed for file %i/%i  ' % (c , len(uris)) , (100/len(uris)* c ))  
         
         logger.debug('processing done for experiment :  %s ' % basename  )    
-        outlog = outlog + 'processing done for experiment:  %s \n ' % basename    
+        outlog = outlog + 'processing done for experiment:  %s \n' % basename    
       except Exception as e:
         msg = 'processing failed for file  : %s %s ' % ( basename , e)
         logger.error(msg)
@@ -500,6 +457,8 @@ def cv_creator(icclim, polygons , domain, normalizer, monitor=dummy_monitor ):
   
   from ocgis.util.shp_process import ShpProcess
   from ocgis.util.shp_cabinet import ShpCabinetIterator
+  from ocgis.util.helpers import get_sorted_uris_by_time_dimension
+  
   from cdo import *   
   cdo = Cdo()
   
@@ -526,18 +485,22 @@ def cv_creator(icclim, polygons , domain, normalizer, monitor=dummy_monitor ):
   
   if any("_rcp" in nc for nc in ncs):
     exp = fn_sorter_ch(ncs) # dictionary with experiment : files
+    outlog = outlog + ('dictionary build with %i concatinated experiments of %i files.\n'% (len(exp.keys()), len(ncs)))
   else:
     exp = fn_sorter(ncs) # dictionary with experiment : files
-    
-  outlog = outlog + ('dictionary build with %i experiments. \n '% (len(exp.keys())))
+    outlog = outlog + ('dictionary build with %i seperate experiments of %i files.\n'% (len(exp.keys()), len(ncs)))
   
   c = 0 
   
   for key in exp.keys():
     c = c + 1
     
-    ncs = exp[key]
-    ncs.sort()
+    nc = exp[key]
+    
+    ncs = get_sorted_uris_by_time_dimension(nc)
+    
+    # ncs.sort()
+    
     var = key.split('_')[0]
     rd = ocgis.RequestDataset(ncs, var) # 
     time_range=[datetime(1971,01,01) , datetime(2000,12,31)]
