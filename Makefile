@@ -112,7 +112,7 @@ downloads:
 .PHONY: init
 init: .gitignore custom.cfg downloads
 
-bootstrap.py:
+bootstrap-buildout.py:
 	@echo "Update buildout bootstrap-buildout.py ..."
 	@test -f boostrap-buildout.py || wget --no-check-certificate -O bootstrap-buildout.py https://bootstrap.pypa.io/bootstrap-buildout.py
 
@@ -137,7 +137,7 @@ conda_pkgs: anaconda
 ## Build targets
 
 .PHONY: bootstrap
-bootstrap: init anaconda bootstrap.py
+bootstrap: init anaconda bootstrap-buildout.py
 	@echo "Bootstrap buildout ..."
 	@test -f bin/buildout || $(ANACONDA_HOME)/bin/python bootstrap-buildout.py -c custom.cfg --allow-site-packages --version=2.2.5 --setuptools-version=7.0
 
