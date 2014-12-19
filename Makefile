@@ -125,6 +125,11 @@ anaconda:
 	@test -d $(ANACONDA_HOME) || bash "$(DOWNLOAD_CACHE)/$(FN)" -b -p $(ANACONDA_HOME)   
 	@echo "Add '$(ANACONDA_HOME)/bin' to your PATH variable in '.bashrc'."
 
+.PHONY: conda_pinned
+conda_pinned:
+	@echo "Update pinned conda packages ..."
+	@test -d $(ANACONDA_HOME) && wget -q -c -O "$(ANACONDA_HOME)/conda-meta/pinned" https://raw.githubusercontent.com/bird-house/birdhousebuilder.bootstrap/master/conda_pinned 
+
 .PHONY: conda_pkgs
 conda_pkgs: anaconda
 	"$(ANACONDA_HOME)/bin/conda" install --yes pyopenssl
@@ -144,7 +149,7 @@ sysinstall: bootstrap.sh requirements.sh
 	@bash requirements.sh
 
 .PHONY: install
-install: bootstrap conda_pkgs
+install: bootstrap conda_pinned conda_pkgs
 	@echo "Installing application with buildout ..."
 	bin/buildout -c custom.cfg
 
