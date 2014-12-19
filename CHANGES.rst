@@ -1,6 +1,14 @@
 Changes
 *******
 
+0.1.3 ()
+==================
+
+* added region clipping.
+* refactored indices to work with large data files.
+* using dispel4py workflow engine.
+* fixed bootstrap buildout.
+
 0.1.2 (2014-11-24)
 ==================
 
