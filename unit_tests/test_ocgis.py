@@ -39,7 +39,7 @@ class OCGISTestCase(TestCase):
     @attr('testdata')
     @attr('slow')
     def test_ocgis_su_tasmax(self):
-        raise SkipTest
+        #raise SkipTest
         out_dir = tempfile.mkdtemp()
         prefix = 'tasmax_su'
         
@@ -64,27 +64,34 @@ class OCGISTestCase(TestCase):
     @attr('testdata')
     @attr('slow')
     def test_ocgis_eur11_day(self):
-        raise SkipTest
+        #raise SkipTest
         out_dir = tempfile.mkdtemp()
-        prefix = 'tasmax_su'
         
         calc = [{'func':'icclim_SU','name':'SU'}]
-        rd = RequestDataset(self.tasmax_eur11_day_2006_nc, "tasmax", time_region = {'year':[2006]}) 
-        SU_file = OcgOperations(
-            dataset=rd,
-            calc=calc,
-            calc_grouping=['year'],
-            prefix=prefix,
-            output_format=self.output_format,
-            dir_output=out_dir,
-            add_auxiliary_files=False).execute()
-
+        results = []
+        for year in [2006, 2007, 2008, 2009, 2010]:
+            prefix = 'tasmax_su_%s' % year
+            rd = RequestDataset(self.tasmax_eur11_day_2006_nc, "tasmax", time_region = {'year':[year]}) 
+            ops = OcgOperations(
+                dataset=rd,
+                calc=calc,
+                calc_grouping=['year'],
+                prefix=prefix,
+                output_format=self.output_format,
+                dir_output=out_dir,
+                add_auxiliary_files=False)
+            results.append(ops.execute())
+        from cdo import Cdo
+        cdo = Cdo()
         from os.path import join
-        result = Dataset(join(out_dir, prefix + '.' + self.output_format))
+        output = join(out_dir, "out.nc")
+        cdo.mergetime(input=' '.join(results), output=output)
+
+        result = Dataset(output)
         # SU variable must be in result
         nose.tools.ok_('SU' in result.variables, result.variables.keys())
         # 5 years
-        nose.tools.ok_(len(result.variables['time']) == 1, len(result.variables['time']))
+        nose.tools.ok_(len(result.variables['time']) == 5, len(result.variables['time']))
 
     @attr('testdata')
     @attr('slow')
