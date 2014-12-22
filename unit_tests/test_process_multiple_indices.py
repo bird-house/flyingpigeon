@@ -26,8 +26,8 @@ class MultipleIndicesTestCase(WpsTestCase):
     def test_su_tasmax(self):
         #raise SkipTest
         inputs = []
-        inputs.append(('indice', 'SU'))
-        inputs.append(('indice', 'TG'))
+        inputs.append(('SU', 'True'))
+        inputs.append(('TG', 'True'))
         inputs.append(('grouping', 'year'))
         inputs.append(
             ('resource',
@@ -53,10 +53,10 @@ class MultipleIndicesTestCase(WpsTestCase):
     def test_eur11_day(self):
         raise SkipTest
         inputs = []
-        inputs.append(('indice', 'SU'))
-        inputs.append(('indice', 'TG'))
-        inputs.append(('indice', 'TR'))
-        inputs.append(('indice', 'SD'))
+        inputs.append(('SU', 'True'))
+        inputs.append(('TG', 'True'))
+        inputs.append(('TR', 'True'))
+        inputs.append(('SD', 'True'))
         inputs.append(('grouping', 'year'))
         inputs.append(
             ('resource',
@@ -97,10 +97,10 @@ class MultipleIndicesTestCase(WpsTestCase):
     def test_eur44_day(self):
         #raise SkipTest
         inputs = []
-        inputs.append(('indice', 'SU'))
-        inputs.append(('indice', 'TG'))
-        inputs.append(('indice', 'TR'))
-        inputs.append(('indice', 'SD'))
+        inputs.append(('SU', 'True'))
+        inputs.append(('TG', 'True'))
+        inputs.append(('TR', 'True'))
+        inputs.append(('SD', 'True'))
         inputs.append(('grouping', 'year'))
         inputs.append(
             ('resource',

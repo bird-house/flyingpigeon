@@ -43,7 +43,9 @@ def indices():
     """
     :return: a list of all climate indices.
     """
-    return _INDICES_.keys()
+    indices = _INDICES_.keys()
+    indices.sort()
+    return indices
 
 def indices_description():
     """
@@ -53,6 +55,17 @@ def indices_description():
     for indice in indices():
         description = description + "%s: %s\n" % (indice, _INDICES_[indice]['description'])
     return description
+
+def indice_description(indice):
+    """
+    :return: a discription of given climate indices.
+    """
+    desc = None
+    try:
+        desc = _INDICES_[indice]['description']
+    except:
+        logger.error('unknown indice %s', indice)
+    return desc
 
 def indice_variable(indice):
     """

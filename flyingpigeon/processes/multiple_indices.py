@@ -4,7 +4,7 @@ from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
 from flyingpigeon.clipping import REGION_EUROPE
-from flyingpigeon.indices import indices, indices_description
+from flyingpigeon.indices import indices, indice_description
 from flyingpigeon.workflow import calc_indice
 
 class CalcMultipleIndices(WPSProcess):
@@ -18,6 +18,8 @@ class CalcMultipleIndices(WPSProcess):
             metadata=[],
             abstract="This process calculates multiple climate indices for the given input netcdf files."
             )
+
+        indice_list = indices()
 
         self.resource = self.addComplexInput(
             identifier="resource",
@@ -40,16 +42,16 @@ class CalcMultipleIndices(WPSProcess):
             allowedValues=["year", "month", "sem"]
             )
 
-        self.indice = self.addLiteralInput(
-            identifier="indice",
-            title="Indice",
-            abstract=indices_description(),
-            default='SU',
-            type=type(''),
-            minOccurs=1,
-            maxOccurs=len(indices()),
-            allowedValues=indices()
-            )
+        for indice in indice_list:
+            setattr(self, indice,  self.addLiteralInput(
+                identifier=indice,
+                title=indice,
+                abstract=indice_description(indice),
+                default=False,
+                type=type(False),
+                minOccurs=1,
+                maxOccurs=1,
+                ))
 
         # complex output
         # -------------
@@ -72,14 +74,19 @@ class CalcMultipleIndices(WPSProcess):
         
     def execute(self):
         resources = self.getInputValues(identifier='resource')
-        indice_list = self.getInputValues(identifier='indice')
         region_list = self.getInputValues(identifier='region')
 
-        self.show_status('starting: indice=%s, num_files=%s' % (indice_list, len(resources)), 0)
+        my_indices = []
+        indice_list = indices()
+        for indice in indice_list:
+            if self.getInputValue(identifier=indice) == True:
+                my_indices.append(indice)
+
+        self.show_status('starting: indice=%s, num_files=%s' % (my_indices, len(resources)), 0)
 
         results,status_log = calc_indice(
             resources = resources,
-            indices = indice_list,
+            indices = my_indices,
             grouping = self.grouping.getValue(),
             out_dir = self.working_dir,
             monitor=self.show_status,
