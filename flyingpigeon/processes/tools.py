@@ -461,72 +461,73 @@ def cv_creator(icclim, polygons , domain, normalizer, monitor=dummy_monitor ):
   
   from cdo import *   
   cdo = Cdo()
-  
-  logger.debug('starting cv_creator')
-  
-  # preparing the working directory 
-  ocgis.env.OVERWRITE = True
-  ocgis.env.DIR_DATA = icclim
-  #ocgis.env.DIR_OUTPUT = polygons    
-  output_crs = None
-  
-  p_dir, p = os.path.split(os.path.abspath(__file__)) 
-  SHP_DIR =  os.path.join(p_dir + '/shapefiles/' )
-  logger.debug('SHP_DIR: %s' % SHP_DIR )
-  europa = ['AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN','FRA','GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX','MLT','NLD','POL','PRT','ROU','SVK','SVN','SWE','NOR','CHE','ISL','MKD','MNE','SRB','MDA','UKR','BIH','ALB','BLR','KOS']
-  geoms = '50m_country' # 'world_countries_boundary_file_world_2002'
-  ocgis.env.DIR_SHPCABINET = SHP_DIR 
-  ocgis.env.OVERWRITE = True
-  sc = ocgis.ShpCabinet()
-  sci = ShpCabinetIterator(geoms)
+  try: 
+    logger.debug('starting cv_creator')
+    # preparing the working directory 
+    ocgis.env.OVERWRITE = True
+    ocgis.env.DIR_DATA = icclim
+    #ocgis.env.DIR_OUTPUT = polygons    
+    output_crs = None
+    
+    p_dir, p = os.path.split(os.path.abspath(__file__)) 
+    SHP_DIR =  os.path.join(p_dir + '/shapefiles/' )
+    logger.debug('SHP_DIR: %s' % SHP_DIR )
+    europa = ['AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN','FRA','GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX','MLT','NLD','POL','PRT','ROU','SVK','SVN','SWE','NOR','CHE','ISL','MKD','MNE','SRB','MDA','UKR','BIH','ALB','BLR','KOS']
+    geoms = '50m_country' # 'world_countries_boundary_file_world_2002'
+    ocgis.env.DIR_SHPCABINET = SHP_DIR 
+    ocgis.env.OVERWRITE = True
+    sc = ocgis.ShpCabinet()
+    sci = ShpCabinetIterator(geoms)
 
-  # ref_time = [datetime(1971,01,01),datetime(2000,12,31)]
-  ncs = [os.path.join(icclim, f) for f in os.listdir(icclim)]
+    # ref_time = [datetime(1971,01,01),datetime(2000,12,31)]
+    ncs = [os.path.join(icclim, f) for f in os.listdir(icclim)]
+    
+    if any("_rcp" in nc for nc in ncs):
+      exp = fn_sorter_ch(ncs) # dictionary with experiment : files
+      outlog = outlog + ('dictionary build with %i concatinated experiments of %i files.\n'% (len(exp.keys()), len(ncs)))
+    else:
+      exp = fn_sorter(ncs) # dictionary with experiment : files
+      outlog = outlog + ('dictionary build with %i seperate experiments of %i files.\n'% (len(exp.keys()), len(ncs)))
+  except Exception as e:
+    msg = 'Clipping preparation failed for : %s %s ' % ( domain , e)
+    logger.error(msg)
+    outlog = outlog + msg + '\n'
   
-  if any("_rcp" in nc for nc in ncs):
-    exp = fn_sorter_ch(ncs) # dictionary with experiment : files
-    outlog = outlog + ('dictionary build with %i concatinated experiments of %i files.\n'% (len(exp.keys()), len(ncs)))
-  else:
-    exp = fn_sorter(ncs) # dictionary with experiment : files
-    outlog = outlog + ('dictionary build with %i seperate experiments of %i files.\n'% (len(exp.keys()), len(ncs)))
-  
-  c = 0 
-  
+  c = 0  
   for key in exp.keys():
-    c = c + 1
-    
-    nc = exp[key]
-    
-    ncs = get_sorted_uris_by_time_dimension(nc)
-    
-    # ncs.sort()
-    
-    var = key.split('_')[0]
-    rd = ocgis.RequestDataset(ncs, var) # 
-    time_range=[datetime(1971,01,01) , datetime(2000,12,31)]
-    calc = [{'func':'mean','name':'ref_' + var }] 
-    calc_grouping = ['month']
-    
-    #p, f = os.patexi os.path.splitext(f)
+    try:
+      c = c + 1
+      nc = exp[key]
+      ncs = get_sorted_uris_by_time_dimension(nc)
+      # ncs.sort()
+      var = key.split('_')[0]
+      rd = ocgis.RequestDataset(ncs, var) # 
+      time_range=[datetime(1971,01,01) , datetime(2000,12,31)]
+      calc = [{'func':'mean','name':'ref_' + var }] 
+      calc_grouping = ['month']
+    except Exception as e:
+      msg = 'sorting preparation failed for : %s %s ' % ( key , e)
+      logger.error(msg)
+      outlog = outlog + msg + '\n'
     
     for land in europa:
-      select_ugid = []
-      geom_rows = []
-      for row in sci:
-        if row['properties']['adm0_a3'] == land:
-          select_ugid.append(row['properties']['UGID'])
-          geom_rows.append(row)
-          
-        # select_ugid.sort()
-      if not os.path.exists(os.path.join(polygons , var , land)):
-        os.makedirs(os.path.join(polygons , var , land))
-      OUT_DIR = os.path.join(polygons , var , land)
-      
-      #dir_output = tempfile.mkdtemp()
-      ocgis.env.DIR_OUTPUT = OUT_DIR
-      prefix = key.replace('EUR',land)
-      
       try:
+        select_ugid = []
+        geom_rows = []
+        for row in sci:
+          if row['properties']['adm0_a3'] == land:
+            select_ugid.append(row['properties']['UGID'])
+            geom_rows.append(row)
+            
+          # select_ugid.sort()
+        if not os.path.exists(os.path.join(polygons , var , land)):
+          os.makedirs(os.path.join(polygons , var , land))
+        OUT_DIR = os.path.join(polygons , var , land)
+        
+        #dir_output = tempfile.mkdtemp()
+        ocgis.env.DIR_OUTPUT = OUT_DIR
+        prefix = key.replace('EUR',land)
+        
         geom_nc = ocgis.OcgOperations(dataset=rd, geom=geoms, dir_output=OUT_DIR, output_format='nc', select_ugid=select_ugid, prefix=prefix , add_auxiliary_files=False ).execute()
         outlog = outlog + ('calculation of polygon %s with variable %s ... done \n'% (prefix , var))
         
@@ -554,13 +555,13 @@ def cv_creator(icclim, polygons , domain, normalizer, monitor=dummy_monitor ):
             outlog = outlog + ('normalized fieldmean failed for file %s ! %s ... failed !!! \n'% (prefix , e))
 
         logger.debug('calculation of file %s with variable %s in %s ... done'% (prefix,var, land))
+        monitor('Timeserie %i/%i for polygon: %s' % (c, len( exp.keys()), land) , (100/len( exp.keys() ) * c ))
 
       except Exception as e:
         msg = 'processing failed for file  : %s %s ' % ( prefix , e)
         logger.error(msg)
         outlog = outlog + ('failed for polygon %s ! %s ... failed !!! \n'% (prefix , e))
-      
-      monitor('Timeserie %i/%i for polygon: %s' % (c, len( exp.keys()), land) , (100/len( exp.keys() ) * c ))
+     
   outlog = outlog + "Finish the Cordex Viwer preparation at : %s \n" % (datetime.strftime(datetime.now(), '%H:%M:%S %d-%m-%Y'))
 
   return outlog;
