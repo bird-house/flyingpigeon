@@ -462,17 +462,27 @@ class icclimWorker(WPSProcess):
         normalized_dir = os.path.join(os.curdir + '/normalized/')
         
       logtxt = logtxt + tools.cv_creator(icclim, polygons, domain, self.normalizer.getValue(), monitor=self.show_status)
-      tar.add(polygons, arcname = polygons.replace(os.curdir , ""))
       
-      if self.normalizer.getValue() == True:
-        tar.add(normalized_dir, arcname = normalized_dir.replace(os.curdir , ""))
-
+      try: 
+        tar.add(polygons, arcname = polygons.replace(os.curdir , ""))
+        if self.normalizer.getValue() == True:
+          tar.add(normalized_dir, arcname = normalized_dir.replace(os.curdir , ""))
+          logger.debug('tar file polygons and normalized added')
+        logger.debug('tar file polygons added') 
+      except Exception as e:
+        msg = 'add Tar faild  : %s ' % (e)
+        logger.error(msg)
+        outlog = outlog + msg + '\n'
+    
     logfile = self.mktempfile(suffix='.txt')
+    
     with open(logfile, 'w') as fp:
         fp.write(logtxt)
     
     tar.add(logfile, arcname = icclim.replace(os.curdir, ""))
+    
     tar.close()
+    
     logger.debug('tar file with icclim files closed')
     self.show_status('tar with icclim files created ', 70)
     
