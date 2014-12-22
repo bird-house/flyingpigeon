@@ -3,7 +3,7 @@ from unittest import TestCase
 from nose import SkipTest
 from nose.plugins.attrib import attr
 
-from os.path import basename
+from os.path import basename, join
 
 from __init__ import TESTDATA, SERVICE
 
@@ -21,17 +21,20 @@ class WorkflowTestCase(TestCase):
     def test_indice_workflow(self):
         import tempfile
         from flyingpigeon.workflow import calc_indice
+
+        out_dir = tempfile.mkdtemp()
         
-        result, status_log = calc_indice(
+        result = calc_indice(
             resources=self.nc_files,
             indices=['SU', 'TG'],
             grouping='year',
             monitor=None,
-            out_dir=tempfile.mkdtemp())
+            out_dir=out_dir)
 
         nose.tools.ok_(len(result) == 3, result)
-        nose.tools.ok_(len(status_log) == 3, status_log)
-        #nose.tools.ok_(False, status_log)
+        with open(join(out_dir, "status.log")) as fp:
+            status_log = fp.readlines()
+            nose.tools.ok_(len(status_log) == 3, status_log)
 
         wanted = [
             "TG_EUR-11_ICHEC-EC-EARTH_historical_r1i1p1_KNMI-RACMO22E_v1_mon.nc",

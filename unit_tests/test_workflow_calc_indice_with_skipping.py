@@ -3,7 +3,7 @@ from unittest import TestCase
 from nose import SkipTest
 from nose.plugins.attrib import attr
 
-from os.path import basename
+from os.path import basename, join
 
 from __init__ import TESTDATA, SERVICE
 
@@ -19,12 +19,12 @@ class WorkflowTestCase(TestCase):
         #cls.nc_files.append( TESTDATA['tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_19910101-19951231.nc'] )
 
     def test_indice_with_clipping_workflow(self):
-        #raise SkipTest
+        raise SkipTest
     
         import tempfile
         from flyingpigeon.workflow import calc_indice_with_clipping
         
-        result, status_log = calc_indice_with_clipping(
+        result = calc_indice_with_clipping(
             resources=self.nc_files,
             indices=['SU', 'TG'],
             regions=['FRA', 'GBR'],
@@ -35,8 +35,10 @@ class WorkflowTestCase(TestCase):
             out_dir=tempfile.mkdtemp())
 
         nose.tools.ok_(len(result) == 4, result)
-        nose.tools.ok_(len(status_log) == 9, status_log)
-        #nose.tools.ok_(False, status_log)
+        
+        with open(join(out_dir, "status.log")) as fp:
+            status_log = fp.readlines()
+            nose.tools.ok_(len(status_log) == 9, status_log)
         
         
         

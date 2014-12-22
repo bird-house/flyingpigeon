@@ -1,25 +1,59 @@
 from os.path import basename
 from dispel4py.core import GenericPE, NAME
 
-from malleefowl import wpslogging as logging
-logger = logging.getLogger(__name__)
+from malleefowl import wpslogging as wpslogging
+logger = wpslogging.getLogger(__name__)
+
+try:
+    from cloghandler import ConcurrentRotatingFileHandler as RFHandler
+except ImportError:
+    # Next 2 lines are optional:  issue a warning to the user
+    from warnings import warn
+    warn("ConcurrentLogHandler package not installed.  Using builtin log handler")
+    from logging.handlers import RotatingFileHandler as RFHandler
+
+def get_status_logger(log_path='.'):
+    import logging as logging       
+    status_logger = logging.getLogger('status_log')
+    status_logger.setLevel(logging.INFO)
+
+    formatter = logging.Formatter('%(asctime)-15s - %(message)s')
+
+    # log handler
+    from os.path import join
+    log_filename = join(log_path, 'status.log')
+    fh = RFHandler(log_filename, "a", 10*1024*1024, 1) 
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(formatter)
+    status_logger.addHandler(fh)
+    return status_logger
 
 class BasePE(GenericPE):
-    def __init__(self, monitor=None):
+    
+    def __init__(self, out_dir='.', monitor=None):
         GenericPE.__init__(self)
+        self.out_dir = out_dir
         def internal_monitor(message, progress):
             logger.info("%s, progress=%s/100", message, progress)
         if monitor is not None:
             self.monitor = monitor
         else:
             self.monitor = internal_monitor
+        def internal_status(message, success=False):
+            logger.info("%s, success=%s", message, success)
+        self.status = internal_status
+
+    def set_status_logger(self, status_logger):
+        def log_status(message, success=False):
+            status_logger.info("%s, success=%s", message, success)
+        self.status = log_status
 
 class Aggregate(BasePE):
     '''
     This PE takes gets netcdf input files and aggregates them by experiment.
     '''
-    def __init__(self, resources, monitor=None):
-        BasePE.__init__(self, monitor)
+    def __init__(self, resources, out_dir=None, monitor=None):
+        BasePE.__init__(self, out_dir, monitor)
         self.resources = resources
         self.outputconnections = {}
         self.outputconnections['output'] = dict( NAME='output' )
@@ -42,16 +76,14 @@ class CalcIndice(BasePE):
     This PE calls indices.calc_indice().
     """
     def __init__(self, indice, grouping, out_dir=None, monitor=None):
-        BasePE.__init__(self, monitor)
+        BasePE.__init__(self, out_dir, monitor)
         self.grouping = grouping
         self.indice = indice
-        self.out_dir = out_dir
 
         self.inputconnections = {}
         self.inputconnections['resource'] = dict( NAME='resource' )
         self.outputconnections = {}
         self.outputconnections['output'] = dict( NAME='output' )
-        self.outputconnections['status_log'] = dict( NAME='status_log' ) 
 
     def process(self, inputs):
         from flyingpigeon.indices import calc_indice, indice_variable
@@ -63,7 +95,7 @@ class CalcIndice(BasePE):
         # does variable fit to indice?
         if variable == indice_variable(self.indice):
             logger.debug('start calc_indice ...')
-            success = 'Failed'
+            success = False
             try:
                 output = calc_indice(
                     resources=inputs['resource'].get('files', []),
@@ -71,13 +103,13 @@ class CalcIndice(BasePE):
                     grouping=self.grouping,
                     out_dir=self.out_dir)
                 filename = basename(output)
-                success = 'Succeeded'
+                success = True
                 logger.debug('calc_indice done. output=%s', output)
                 self.write('output', output)
             except:
                 logger.exception('indice calculation failed: indice=%s', self.indice)
-            status_log = "process:calc_indice, filename:%s, params:indice=%s, status:%s" % (filename, self.indice, success)
-            self.write('status_log', status_log)
+            message = "process:calc_indice, filename:%s, params:indice=%s" % (filename, self.indice)
+            self.status(message, success)
         else:
             logger.warn('skip file: variable=%s', variable)
 
@@ -86,19 +118,17 @@ class Clipping(BasePE):
     This PE calls clipping.calc_region_clipping()
     """
     def __init__(self, region, out_dir=None, monitor=None):
-        BasePE.__init__(self, monitor)
+        BasePE.__init__(self, out_dir, monitor)
         self.region = region
-        self.out_dir = out_dir
 
         self.inputconnections = {}
         self.inputconnections['resource'] = dict( NAME='resource' )
         self.outputconnections = {}
         self.outputconnections['output'] = dict( NAME='output' )
-        self.outputconnections['status_log'] = dict( NAME='status_log' ) 
 
     def process(self, inputs):
         logger.debug('start clipping ...')
-        success = 'Failed'
+        success = False
         filename = basename(inputs['resource'])
         try:
             from flyingpigeon.clipping import calc_region_clipping
@@ -106,34 +136,32 @@ class Clipping(BasePE):
                 resource=inputs['resource'],
                 region=self.region,
                 out_dir=self.out_dir)
-            success = 'Succeeded'
+            success = True
             logger.debug('clipping done. output=%s', output)
             self.write('output', output)
         except:
             logger.exception('clipping failed for region %s' % self.region)
-        status_log = "process:clipping, filename:%s, params:region=%s, status:%s" % (filename, self.region, success)
-        self.write('status_log', status_log)
+        message = "process:clipping, filename:%s, params:region=%s" % (filename, self.region)
+        self.status(message, success)
 
 class Normalize(BasePE):
     """
     This PE calls clipping.normalize().
     """
     def __init__(self, region, start_date, end_date, out_dir=None, monitor=None):
-        BasePE.__init__(self, monitor)
+        BasePE.__init__(self, out_dir, monitor)
         self.region = region
         self.start_date = start_date
         self.end_date = end_date
-        self.out_dir = out_dir
 
         self.inputconnections = {}
         self.inputconnections['resource'] = dict( NAME='resource' )
         self.outputconnections = {}
         self.outputconnections['output'] = dict( NAME='output' )
-        self.outputconnections['status_log'] = dict( NAME='status_log' ) 
 
     def process(self, inputs):
         logger.debug('start normalize ...')
-        success = 'Failed'
+        success = False
         filename = basename(inputs['resource'])
         try:
             from flyingpigeon.clipping import normalize
@@ -143,38 +171,17 @@ class Normalize(BasePE):
                 start_date=self.start_date,
                 end_date=self.end_date,
                 out_dir=self.out_dir)
-            success = 'Succeeded'
+            success = True
             logger.debug('clipping done. output=%s', output)
             self.write('output', output)
         except:
             logger.exception('clipping failed for region %s' % self.region)
-        status_log = "process:normalize, filename:%s, params:, status:%s" % (filename, success)
-        self.write('status_log', status_log)
+        message = "process:normalize, filename:%s, params:" % (filename)
+        self.message(message, success)
 
-class StatusLog(BasePE):
-    def __init__(self, out_dir='.', monitor=None):
-        BasePE.__init__(self, monitor)
-        from os.path import join
-        self.outfile = join(out_dir, 'status.log')
-        self.inputconnections = { 'status_log' : { NAME : 'status_log'} }
-
-    def process(self, inputs):
-        from os.path import basename
-        output = inputs['status_log']
-        with open(self.outfile, 'a') as fp:
-            fp.write("%s\n" % (inputs['status_log']))
-            fp.flush()
-
-    def get_status_log(self):
-        logs = []
-        with open(self.outfile, 'r') as fp:
-            for line in fp.readlines():
-                logs.append(line.strip())
-        return logs
-            
 class Results(BasePE):
     def __init__(self, max_results, out_dir='.', monitor=None):
-        BasePE.__init__(self, monitor)
+        BasePE.__init__(self, out_dir, monitor)
         from os.path import join
         self.outfile = join(out_dir, 'outputs.txt')
         self.inputconnections = { 'input' : { NAME : 'input'} }
