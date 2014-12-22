@@ -66,7 +66,7 @@ class IndicesCalculatorTestCase(TestCase):
     @attr('testdata')
     @attr('slow')
     def test_indice_su_tasmax_eur11_day(self):
-        raise SkipTest
+        #raise SkipTest
 
         # SU expects tasmax
         output = indices.calc_indice(

@@ -132,6 +132,8 @@ def aggregations(nc_files):
         _, end = get_timestamps(aggregations[key]['files'][-1])
         aggregations[key]['from_timestamp'] = start
         aggregations[key]['to_timestamp'] = end
+        aggregations[key]['start_year'] = int(start[0:4])
+        aggregations[key]['end_year'] = int(end[0:4])
         aggregations[key]['variable'] = get_variable(aggregations[key]['files'][0])
         aggregations[key]['filename'] = "%s_%s-%s.nc" % (key, start, end)
     
@@ -153,4 +155,6 @@ def has_variable(resource, variable):
     except:
         logger.exception('has_variable failed.')
     return success
+
+    
 
