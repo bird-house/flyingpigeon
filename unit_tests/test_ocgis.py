@@ -3,7 +3,8 @@ from unittest import TestCase
 from nose import SkipTest
 from nose.plugins.attrib import attr
 
-import ocgis
+from ocgis import RequestDataset, OcgOperations
+from ocgis.util.large_array import compute
 
 from __init__ import TESTDATA, SERVICE
 
@@ -32,7 +33,7 @@ class OCGISTestCase(TestCase):
 
     @attr('testdata')
     def test_ocgis_inspect(self):
-        rd = ocgis.RequestDataset(self.tas_nc, 'tas')
+        rd = RequestDataset(self.tas_nc, 'tas')
         rd.inspect()
 
     @attr('testdata')
@@ -43,8 +44,8 @@ class OCGISTestCase(TestCase):
         prefix = 'tasmax_su'
         
         calc_icclim = [{'func':'icclim_SU','name':'SU'}]
-        rd = ocgis.RequestDataset(self.tasmax_nc, "tasmax") 
-        SU_file = ocgis.OcgOperations(
+        rd = RequestDataset(self.tasmax_nc, "tasmax") 
+        SU_file = OcgOperations(
             dataset=rd,
             calc=calc_icclim,
             calc_grouping=['year'],
@@ -63,15 +64,15 @@ class OCGISTestCase(TestCase):
     @attr('testdata')
     @attr('slow')
     def test_ocgis_eur11_day(self):
-        #raise SkipTest
+        raise SkipTest
         out_dir = tempfile.mkdtemp()
         prefix = 'tasmax_su'
         
-        calc_icclim = [{'func':'icclim_SU','name':'SU'}]
-        rd = ocgis.RequestDataset(self.tasmax_eur11_day_2006_nc, "tasmax", time_region = {'year':[2006]}) 
-        SU_file = ocgis.OcgOperations(
+        calc = [{'func':'icclim_SU','name':'SU'}]
+        rd = RequestDataset(self.tasmax_eur11_day_2006_nc, "tasmax", time_region = {'year':[2006]}) 
+        SU_file = OcgOperations(
             dataset=rd,
-            calc=calc_icclim,
+            calc=calc,
             calc_grouping=['year'],
             prefix=prefix,
             output_format=self.output_format,
@@ -84,7 +85,30 @@ class OCGISTestCase(TestCase):
         nose.tools.ok_('SU' in result.variables, result.variables.keys())
         # 5 years
         nose.tools.ok_(len(result.variables['time']) == 1, len(result.variables['time']))
-        
-        
-    
 
+    @attr('testdata')
+    @attr('slow')
+    def test_eur11_day_with_compute(self):
+        raise SkipTest
+        rd = RequestDataset(self.tasmax_eur11_day_2006_nc, variable="tasmax")
+        calc = [{'func':'icclim_SU','name':'SU'}]
+        calc_grouping = ['year']
+        out_dir = tempfile.mkdtemp()
+ 
+        # output must be netCDF. otherwise, all operations should be accepted. it could be fragile with some things, so
+        # me know if you encounter any issues.
+        ops = OcgOperations(
+            dataset=rd,
+            calc=calc,
+            calc_grouping=calc_grouping,
+            output_format='nc',
+            dir_output=out_dir)
+ 
+        # this is an estimate of the request size (in kilobytes) which could be useful.
+        print ops.get_base_request_size()['total']
+ 
+        # the tile dimension splits data into squares. edge effects are handled.
+        tile_dimension = 20
+        path_nc = compute(ops, tile_dimension, verbose=True)
+        
+  
