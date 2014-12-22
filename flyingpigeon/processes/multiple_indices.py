@@ -84,7 +84,7 @@ class CalcMultipleIndices(WPSProcess):
 
         self.show_status('starting: indice=%s, num_files=%s' % (my_indices, len(resources)), 0)
 
-        results,status_log = calc_indice(
+        results = calc_indice(
             resources = resources,
             indices = my_indices,
             grouping = self.grouping.getValue(),
@@ -105,11 +105,7 @@ class CalcMultipleIndices(WPSProcess):
             json.dump(obj=urls, fp=fp, indent=4, sort_keys=True)
             self.output.setValue(outfile)
 
-        outfile = self.mktempfile(suffix='.txt')
-        with open(outfile, 'w') as fp:
-            for status in status_log:
-                fp.write("%s\n" % status)
-            self.status_log.setValue(outfile)
+        self.status_log.setValue('status.log')
         
         self.show_status('done: indice=%s, num_files=%s' % (indice_list, len(resources)), 100)
 
