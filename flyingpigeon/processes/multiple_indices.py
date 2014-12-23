@@ -84,11 +84,13 @@ class CalcMultipleIndices(WPSProcess):
 
         self.show_status('starting: indice=%s, num_files=%s' % (my_indices, len(resources)), 0)
 
+        from os.path import join
         results = calc_indice(
             resources = resources,
             indices = my_indices,
             grouping = self.grouping.getValue(),
             out_dir = self.working_dir,
+            status_log = join(self.working_dir, 'status.log'),
             monitor=self.show_status,
             )
 

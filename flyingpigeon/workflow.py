@@ -20,13 +20,14 @@ def calc_indice(
         indices=['SU'],
         grouping='year',
         out_dir=None,
+        status_log=None,
         monitor=None):
     
     # make indice and region list unique
     indices = set(indices)
 
     # status logger
-    status_logger = get_status_logger(log_path=out_dir)
+    status_logger = get_status_logger(filename=status_log)
 
     # build workflow graph
     graph = WorkflowGraph()
@@ -59,6 +60,7 @@ def calc_indice_with_clipping(
         start_date=None,
         end_date=None,
         out_dir=None,
+        status_log=None,
         monitor=None):
     
     # make indice and region list unique
@@ -66,7 +68,7 @@ def calc_indice_with_clipping(
     regions = set(regions)
 
     # status logger
-    status_logger = get_status_logger(log_path=out_dir)
+    status_logger = get_status_logger(filename=status_log)
 
     # build workflow graph
     graph = WorkflowGraph()

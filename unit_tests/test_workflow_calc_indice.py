@@ -23,16 +23,18 @@ class WorkflowTestCase(TestCase):
         from flyingpigeon.workflow import calc_indice
 
         out_dir = tempfile.mkdtemp()
+        status_log = join(out_dir, 'status.log')
         
         result = calc_indice(
             resources=self.nc_files,
             indices=['SU', 'TG'],
             grouping='year',
             monitor=None,
+            status_log = status_log,
             out_dir=out_dir)
 
         nose.tools.ok_(len(result) == 3, result)
-        with open(join(out_dir, "status.log")) as fp:
+        with open(status_log) as fp:
             status_log = fp.readlines()
             nose.tools.ok_(len(status_log) == 3, status_log)
 

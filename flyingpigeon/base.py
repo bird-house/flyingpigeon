@@ -12,7 +12,11 @@ except ImportError:
     warn("ConcurrentLogHandler package not installed.  Using builtin log handler")
     from logging.handlers import RotatingFileHandler as RFHandler
 
-def get_status_logger(log_path='.'):
+def get_status_logger(filename="status.log"):
+    """
+    :param filename: path to status log file.
+    :return: a status logger for concurrent logging.
+    """
     import logging as logging       
     status_logger = logging.getLogger('status_log')
     status_logger.setLevel(logging.INFO)
@@ -20,9 +24,7 @@ def get_status_logger(log_path='.'):
     formatter = logging.Formatter('%(asctime)-15s - %(message)s')
 
     # log handler
-    from os.path import join
-    log_filename = join(log_path, 'status.log')
-    fh = RFHandler(log_filename, "a", 10*1024*1024, 1) 
+    fh = RFHandler(filename, "a", 10*1024*1024, 1) 
     fh.setLevel(logging.DEBUG)
     fh.setFormatter(formatter)
     status_logger.addHandler(fh)
