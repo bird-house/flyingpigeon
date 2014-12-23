@@ -128,7 +128,7 @@ def calc_indice(resources=[], indice="SU", grouping="year", out_dir=None):
                     add_auxiliary_files=False)
                 outputs.append( ops.execute() )
             except:
-                logger.warning('could not calc indice %s for year %s', indice, year)
+                logger.exception('could not calc indice %s for year %s', indice, year)
         # merge by time
         from os.path import join
         output = join(out_dir, "%s.nc" % agg_name.replace(variable, indice, 1))
