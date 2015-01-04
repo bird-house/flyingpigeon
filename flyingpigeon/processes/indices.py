@@ -479,7 +479,7 @@ class icclimWorker(WPSProcess):
     with open(logfile, 'w') as fp:
         fp.write(logtxt)
     
-    tar.add(logfile, arcname = icclim.replace(os.curdir, ""))
+    tar.add(logfile, arcname = os.curdir )
     
     tar.close()
     
