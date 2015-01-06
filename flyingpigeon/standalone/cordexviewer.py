@@ -29,11 +29,11 @@ def file_sorter(ncs):
   return ndic
 
 try:
-  data_basedir = '/media/nils/Iomega HDD/data/'
-  normalized_dir = '/media/nils/Iomega HDD/data/normalized/'
-  concat_dir = '/media/nils/Iomega HDD/data/concat/'
-  polygon_dir = '/media/nils/Iomega HDD/data/polygon/'
-  icclim = '/media/nils/Iomega HDD/data/icclim'
+  data_basedir = '/run/media/nhempel/Iomega HDD/data'
+  normalized_dir = '/homel/nhempel/data/cviewer/normalized/'
+  concat_dir = os.path.join('%s/concat/' % (data_basedir))
+  polygon_dir = os.path.join('%s/polygon/' % (data_basedir))
+  icclim = os.path.join('%s/icclim/' % (data_basedir)) 
   # logger.debug('starting cv_creator')
   # preparing the working directory 
   ocgis.env.OVERWRITE = True
@@ -42,7 +42,7 @@ try:
   output_crs = None
   
 #  p_dir, p = os.path.split(os.path.abspath(__file__)) 
-  SHP_DIR =  '/home/nils/birdhouse/flyingpigeon/flyingpigeon/processes/shapefiles/'
+  SHP_DIR =  '/homel/nhempel/birdhouse/flyingpigeon/flyingpigeon/processes/shapefiles/'
   #logger.debug('SHP_DIR: %s' % SHP_DIR )
   europa = ['AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN','FRA','GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX','MLT','NLD','POL','PRT','ROU','SVK','SVN','SWE','NOR','CHE','ISL','MKD','MNE','SRB','MDA','UKR','BIH','ALB','BLR','KOS']
   geoms = '50m_country' # 'world_countries_boundary_file_world_2002'
@@ -58,10 +58,12 @@ try:
   
   #exp = file_sorter(ncs)
   #print 'Dictionary build with %i Experiments' % (len(exp.keys()))
-#  print exp.keys()
+  #print exp.keys()
+  
+  print 'preperation of Workdir done'
 
 except Exception as e:
-  msg = 'Clipping preparation failed: %s ' % (e)
+  msg = 'preperation of Workdir failed: %s ' % (e)
   print msg
   
 #c = 0  
@@ -105,62 +107,127 @@ except Exception as e:
 
 ncs = [os.path.join(concat_dir, f) for f in os.listdir(concat_dir)]
 
-for nc in ncs:  
-  try:
-    for land in europa:
-      try: 
-        p, f = os.path.split(nc)
-        var = f.split('_')[0]
-        scenario = f.split('_')[3]
-        rd = ocgis.RequestDataset(nc, var) # 
-        time_range=[datetime(1971,01,01) , datetime(2000,12,31)]
-        select_ugid = []
-        geom_rows = []
-        for row in sci:
-          if row['properties']['adm0_a3'] == land:
-            select_ugid.append(row['properties']['UGID'])
-            geom_rows.append(row)
-            
-        # select_ugid.sort()
-        if not os.path.exists(os.path.join(polygon_dir, var , scenario, land)):
-          os.makedirs(os.path.join(polygon_dir, var , scenario, land))
-        OUT_DIR = os.path.join(polygon_dir, var, scenario, land)
+aggregation = ['yr','DJF','MAM','JJA','SON']
 
-        if var == 'RR' or var == 'R20mm' or var == 'SU' or var ==  'ID': # CDD  CSU  TX  TXx
-          calc = [{'func':'sum', 'name':var}] 
-          calc_grouping = ['year']
+for nc in ncs:  
+  if 'RR_' in nc: 
+    try:
+      for land in europa:
+        try: 
+          p, f = os.path.split(nc)
+          var = f.split('_')[0]
+          scenario = f.split('_')[3]
+          rd = ocgis.RequestDataset(nc, var) # 
+          time_range=[datetime(1971,01,01) , datetime(2000,12,31)]
+          select_ugid = []
+          geom_rows = []
+          for row in sci:
+            if row['properties']['adm0_a3'] == land:
+              select_ugid.append(row['properties']['UGID'])
+              geom_rows.append(row)
+              
+          # select_ugid.sort()
+          if not os.path.exists(os.path.join(normalized_dir, var , scenario, land)):
+            os.makedirs(os.path.join(normalized_dir, var , scenario, land))
+          OUT_DIR = os.path.join(normalized_dir, var, scenario, land)
+
+          if var == 'RR' or var == 'R20mm' or var == 'SU' or var ==  'ID': # CDD  CSU  TX  TXx
+            calc = [{'func':'sum', 'name':var}] 
+            
+          elif var == 'TXx' or var == 'RX5day':
+            calc = [{'func':'max', 'name':var}] 
+          else :
+            calc = [{'func':'mean', 'name':var}] 
           
-        elif var == 'TXx' or var == 'RX5day':
-          calc = [{'func':'max', 'name':var}] 
-          calc_grouping = ['year']
-        else :
-          calc = [{'func':'mean', 'name':var}] 
-          calc_grouping = ['year']
-        
-        if calc_grouping[0] == 'year':
-          prefix = f.replace('EUR',land).replace('_mon','_yr').strip('.nc')
-        
-        # dir_output = tempfile.mkdtemp()
-        ocgis.env.DIR_OUTPUT = OUT_DIR
-        
-        
-        geom_nc = ocgis.OcgOperations(dataset=rd, dir_output=OUT_DIR, geom=geoms, select_ugid=select_ugid,  output_format='nc', prefix=prefix, add_auxiliary_files=False ).execute()
-        print 'done for %s ' % (prefix)
-      except Exception as e:
-        msg = 'clipping filed for : %s %s ' % (land, e)
-        print msg
-  except Exception as e:
-    msg = 'processing failed for file  : %s %s ' % (nc, e)
-    print msg 
+          #aggregation = ['_yr', 'DJF', 'MAM', 'JJA', 'SON']
+          
+          ocgis.env.DIR_OUTPUT = OUT_DIR
+          
+          for agg in aggregation:
+            try: 
+              print 'processing of %s %s %s ' % (var, land, agg)
+              calc_grouping= []
+              prefix = []
+              
+              if agg == 'yr':
+                calc_grouping= ['year']        
+                prefix = f.replace('EUR',land).replace('_mon','_yr').strip('.nc')
+                # dir_output = tempfile.mkdtemp()
+              elif agg == 'DJF':
+                calc_grouping = [[12,1,2] ,'unique']
+                prefix = f.replace('EUR',land).replace('_mon','_DJF').strip('.nc')
+              elif agg == 'MAM':
+                calc_grouping = [[3,4,5],'unique']
+                prefix = f.replace('EUR',land).replace('_mon','_MAM').strip('.nc')
+              elif agg == 'JJA':
+                calc_grouping = [[6,7,8] ,'unique']
+                prefix = f.replace('EUR',land).replace('_mon','_JJA').strip('.nc')
+              elif agg == 'SON':
+                calc_grouping = [[9,10,11] ,'unique']
+                prefix = f.replace('EUR',land).replace('_mon','_SON').strip('.nc')
+              else: 
+                print 'no aggregation found' 
+                
+              result =  '%s/%s.nc' % (OUT_DIR, prefix )
+              
+              if not os.path.exists(result):
+                tmp_dir = tempfile.mkdtemp()
+                p1, tmp1 = tempfile.mkstemp(dir=tmp_dir)
+                path1, temp_nc = os.path.split(tmp1)
+                
+                p2, tmp2 = tempfile.mkstemp(dir=tmp_dir)
+                path2, temp_ref = os.path.split(tmp2)
+                
+                geom_nc  = ocgis.OcgOperations(dataset=rd, dir_output=path1, calc=calc, calc_grouping=calc_grouping, geom=geoms, select_ugid=select_ugid, output_format='nc', prefix=temp_nc,  add_auxiliary_files=False ).execute()
+                geom_ref = ocgis.OcgOperations(dataset=rd, dir_output=path2, calc=calc, calc_grouping=calc_grouping ,geom=geoms, select_ugid=select_ugid, output_format='nc', prefix=temp_ref, add_auxiliary_files=False, time_range=time_range ).execute()
+                
+                p3, tmp3 =  tempfile.mkstemp(dir=tmp_dir, suffix='.nc') 
+                p4, tmp4 =  tempfile.mkstemp(dir=tmp_dir, suffix='.nc')
+                p5, tmp5 =  tempfile.mkstemp(dir=tmp_dir, suffix='.nc')
+                
+                input1 = '%s' % (geom_nc)
+                input2 = '%s' % (geom_ref)
+                input3 = ' %s %s ' % (tmp3 , tmp5)
+                
+                # print result , tmp1 , tmp2 , tmp3  
+
+                cdo.fldmean (input = input1 , output = tmp3)
+                
+                cdo.timmean (input = input2 , output = tmp4 )
+                cdo.fldmean (input = tmp4 , output = tmp5 )
+                
+                print input3 , result
+              
+                cdo.sub(input = input3 , output = result)
+                
+                print 'done for %s in %s as %s ' % (var, land, agg)
+                
+                os.close( p1 )
+                os.close( p2 )
+                os.close( p3 )
+                os.close( p4 )
+                os.close( p5 )
+                os.rmdir(tmp_dir)
+            
+              else : 
+                print 'allready done for %s in %s as %s ' % (var, land, agg)
+              
+            except Exception as e:
+              msg = 'aggregation failed for :%s %s %s ' % (land, agg,  e)
+              print msg
+            
+              
+        except Exception as e:
+          msg = 'clipping failed for : %s %s ' % (land, e)
+          print msg
+    except Exception as e:
+      msg = 'processing failed for file  : %s %s ' % (nc, e)
+      print msg 
       
     #try:
       ## make temofiles 
-      
-              
-      ##temp_id1, nc = tempfile.mkstemp()
-      ##p, temp_nc = os.path.split(nc)
-      ##temp_id2, ref = tempfile.mkstemp()
-      ##p, temp_ref = os.path.split(ref)
+                
+
 
       #geom_nc = ocgis.OcgOperations(dataset=rd, geom=geoms, dir_output=OUT_DIR, output_format='nc', select_ugid=select_ugid, prefix=prefix, add_auxiliary_files=False ).execute()
 
