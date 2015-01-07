@@ -1,6 +1,7 @@
 ''' preparing netCDF files for Cordex viewer'''
 from datetime import datetime, timedelta
 import tempfile
+import shutil
 
 import ocgis 
 from ocgis.util.shp_process import ShpProcess
@@ -110,7 +111,7 @@ ncs = [os.path.join(concat_dir, f) for f in os.listdir(concat_dir)]
 aggregation = ['yr','DJF','MAM','JJA','SON']
 
 for nc in ncs:  
-  if 'RR_' in nc: 
+  if 'CDD' in nc: 
     try:
       for land in europa:
         try: 
@@ -129,19 +130,18 @@ for nc in ncs:
           # select_ugid.sort()
           if not os.path.exists(os.path.join(normalized_dir, var , scenario, land)):
             os.makedirs(os.path.join(normalized_dir, var , scenario, land))
+          
           OUT_DIR = os.path.join(normalized_dir, var, scenario, land)
+          ocgis.env.DIR_OUTPUT = OUT_DIR
 
           if var == 'RR' or var == 'R20mm' or var == 'SU' or var ==  'ID': # CDD  CSU  TX  TXx
             calc = [{'func':'sum', 'name':var}] 
-            
           elif var == 'TXx' or var == 'RX5day':
             calc = [{'func':'max', 'name':var}] 
           else :
             calc = [{'func':'mean', 'name':var}] 
           
           #aggregation = ['_yr', 'DJF', 'MAM', 'JJA', 'SON']
-          
-          ocgis.env.DIR_OUTPUT = OUT_DIR
           
           for agg in aggregation:
             try: 
@@ -178,36 +178,52 @@ for nc in ncs:
                 p2, tmp2 = tempfile.mkstemp(dir=tmp_dir)
                 path2, temp_ref = os.path.split(tmp2)
                 
-                geom_nc  = ocgis.OcgOperations(dataset=rd, dir_output=path1, calc=calc, calc_grouping=calc_grouping, geom=geoms, select_ugid=select_ugid, output_format='nc', prefix=temp_nc,  add_auxiliary_files=False ).execute()
-                geom_ref = ocgis.OcgOperations(dataset=rd, dir_output=path2, calc=calc, calc_grouping=calc_grouping ,geom=geoms, select_ugid=select_ugid, output_format='nc', prefix=temp_ref, add_auxiliary_files=False, time_range=time_range ).execute()
+                try: 
+                  geom_nc  = ocgis.OcgOperations(dataset=rd, dir_output=path1, calc=calc, calc_grouping=calc_grouping, geom=geoms, select_ugid=select_ugid, output_format='nc', prefix=temp_nc,  add_auxiliary_files=False ).execute()
+                  geom_ref = ocgis.OcgOperations(dataset=rd, dir_output=path2, calc=calc, calc_grouping=calc_grouping ,geom=geoms, select_ugid=select_ugid, output_format='nc', prefix=temp_ref, add_auxiliary_files=False, time_range=time_range ).execute()
+                  clipping = True 
+                except Exception as e:
+                  clipping = False
+                  os.close( p1 )
+                  os.close( p2 )
+                  shutil.rmtree(tmp_dir) # os.rmdir(tmp_dir)
+                  msg = 'clipping failed for :%s %s %s ' % (land, agg,  e)
+                  print msg
+                  
                 
-                p3, tmp3 =  tempfile.mkstemp(dir=tmp_dir, suffix='.nc') 
-                p4, tmp4 =  tempfile.mkstemp(dir=tmp_dir, suffix='.nc')
-                p5, tmp5 =  tempfile.mkstemp(dir=tmp_dir, suffix='.nc')
-                
-                input1 = '%s' % (geom_nc)
-                input2 = '%s' % (geom_ref)
-                input3 = ' %s %s ' % (tmp3 , tmp5)
-                
-                # print result , tmp1 , tmp2 , tmp3  
+                if clipping == True: 
+                  p3, tmp3 =  tempfile.mkstemp(dir=tmp_dir, suffix='.nc') 
+                  p4, tmp4 =  tempfile.mkstemp(dir=tmp_dir, suffix='.nc')
+                  p5, tmp5 =  tempfile.mkstemp(dir=tmp_dir, suffix='.nc')
+                  
+                  input1 = '%s' % (geom_nc)
+                  input2 = '%s' % (geom_ref)
+                  input3 = ' %s %s ' % (tmp3 , tmp5)
+                  
+                  # print result , tmp1 , tmp2 , tmp3  
 
-                cdo.fldmean (input = input1 , output = tmp3)
+                  cdo.fldmean (input = input1 , output = tmp3)
+                  
+                  cdo.timmean (input = input2 , output = tmp4 )
+                  cdo.fldmean (input = tmp4 , output = tmp5 )
+                  
+                  print input3 , result
                 
-                cdo.timmean (input = input2 , output = tmp4 )
-                cdo.fldmean (input = tmp4 , output = tmp5 )
-                
-                print input3 , result
-              
-                cdo.sub(input = input3 , output = result)
-                
-                print 'done for %s in %s as %s ' % (var, land, agg)
-                
-                os.close( p1 )
-                os.close( p2 )
-                os.close( p3 )
-                os.close( p4 )
-                os.close( p5 )
-                os.rmdir(tmp_dir)
+                  cdo.sub(input = input3 , output = result)
+                  
+                  print 'done for %s in %s as %s ' % (var, land, agg)
+                  
+                  try: 
+                    os.close( p1 )
+                    os.close( p2 )
+                    os.close( p3 )
+                    os.close( p4 )
+                    os.close( p5 )
+                  except Exception as e:
+                    msg = 'failed to close file %s ' % ( e)
+                    print msg
+                        
+                  shutil.rmtree(tmp_dir) # os.rmdir(tmp_dir)
             
               else : 
                 print 'allready done for %s in %s as %s ' % (var, land, agg)
