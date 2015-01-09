@@ -111,134 +111,135 @@ ncs = [os.path.join(concat_dir, f) for f in os.listdir(concat_dir)]
 aggregation = ['yr','DJF','MAM','JJA','SON']
 
 for nc in ncs:  
-  if 'CDD' in nc: 
-    try:
-      for land in europa:
-        try: 
-          p, f = os.path.split(nc)
-          var = f.split('_')[0]
-          scenario = f.split('_')[3]
-          rd = ocgis.RequestDataset(nc, var) # 
-          time_range=[datetime(1971,01,01) , datetime(2000,12,31)]
-          select_ugid = []
-          geom_rows = []
-          for row in sci:
-            if row['properties']['adm0_a3'] == land:
-              select_ugid.append(row['properties']['UGID'])
-              geom_rows.append(row)
-              
-          # select_ugid.sort()
-          if not os.path.exists(os.path.join(normalized_dir, var , scenario, land)):
-            os.makedirs(os.path.join(normalized_dir, var , scenario, land))
-          
-          OUT_DIR = os.path.join(normalized_dir, var, scenario, land)
-          ocgis.env.DIR_OUTPUT = OUT_DIR
+  if not 'CDD' in nc: 
+    if not 'RR_' in nc:
+      if not 'ID_' in nc:
+        if not 'RX5day_' in nc:
+          try:
+            for land in europa:
+              try: 
+                p, f = os.path.split(nc)
+                var = f.split('_')[0]
+                scenario = f.split('_')[3]
+                rd = ocgis.RequestDataset(nc, var) # 
+                time_range=[datetime(1971,01,01) , datetime(2000,12,31)]
+                select_ugid = []
+                geom_rows = []
+                for row in sci:
+                  if row['properties']['adm0_a3'] == land:
+                    select_ugid.append(row['properties']['UGID'])
+                    geom_rows.append(row)
+                    
+                # select_ugid.sort()
+                if not os.path.exists(os.path.join(normalized_dir, var , scenario, land)):
+                  os.makedirs(os.path.join(normalized_dir, var , scenario, land))
+                
+                OUT_DIR = os.path.join(normalized_dir, var, scenario, land)
+                ocgis.env.DIR_OUTPUT = OUT_DIR
 
-          if var == 'RR' or var == 'R20mm' or var == 'SU' or var ==  'ID': # CDD  CSU  TX  TXx
-            calc = [{'func':'sum', 'name':var}] 
-          elif var == 'TXx' or var == 'RX5day':
-            calc = [{'func':'max', 'name':var}] 
-          else :
-            calc = [{'func':'mean', 'name':var}] 
-          
-          #aggregation = ['_yr', 'DJF', 'MAM', 'JJA', 'SON']
-          
-          for agg in aggregation:
-            try: 
-              print 'processing of %s %s %s ' % (var, land, agg)
-              calc_grouping= []
-              prefix = []
-              
-              if agg == 'yr':
-                calc_grouping= ['year']        
-                prefix = f.replace('EUR',land).replace('_mon','_yr').strip('.nc')
-                # dir_output = tempfile.mkdtemp()
-              elif agg == 'DJF':
-                calc_grouping = [[12,1,2] ,'unique']
-                prefix = f.replace('EUR',land).replace('_mon','_DJF').strip('.nc')
-              elif agg == 'MAM':
-                calc_grouping = [[3,4,5],'unique']
-                prefix = f.replace('EUR',land).replace('_mon','_MAM').strip('.nc')
-              elif agg == 'JJA':
-                calc_grouping = [[6,7,8] ,'unique']
-                prefix = f.replace('EUR',land).replace('_mon','_JJA').strip('.nc')
-              elif agg == 'SON':
-                calc_grouping = [[9,10,11] ,'unique']
-                prefix = f.replace('EUR',land).replace('_mon','_SON').strip('.nc')
-              else: 
-                print 'no aggregation found' 
+                if var == 'RR' or var == 'R20mm' or var == 'SU' or var ==  'ID': # CDD  CSU  TX  TXx
+                  calc = [{'func':'sum', 'name':var}] 
+                elif var == 'TXx' or var == 'RX5day':
+                  calc = [{'func':'max', 'name':var}] 
+                else :
+                  calc = [{'func':'mean', 'name':var}] 
                 
-              result =  '%s/%s.nc' % (OUT_DIR, prefix )
-              
-              if not os.path.exists(result):
-                tmp_dir = tempfile.mkdtemp()
-                p1, tmp1 = tempfile.mkstemp(dir=tmp_dir)
-                path1, temp_nc = os.path.split(tmp1)
+                #aggregation = ['_yr', 'DJF', 'MAM', 'JJA', 'SON']
                 
-                p2, tmp2 = tempfile.mkstemp(dir=tmp_dir)
-                path2, temp_ref = os.path.split(tmp2)
-                
-                try: 
-                  geom_nc  = ocgis.OcgOperations(dataset=rd, dir_output=path1, calc=calc, calc_grouping=calc_grouping, geom=geoms, select_ugid=select_ugid, output_format='nc', prefix=temp_nc,  add_auxiliary_files=False ).execute()
-                  geom_ref = ocgis.OcgOperations(dataset=rd, dir_output=path2, calc=calc, calc_grouping=calc_grouping ,geom=geoms, select_ugid=select_ugid, output_format='nc', prefix=temp_ref, add_auxiliary_files=False, time_range=time_range ).execute()
-                  clipping = True 
-                except Exception as e:
-                  clipping = False
-                  os.close( p1 )
-                  os.close( p2 )
-                  shutil.rmtree(tmp_dir) # os.rmdir(tmp_dir)
-                  msg = 'clipping failed for :%s %s %s ' % (land, agg,  e)
-                  print msg
-                  
-                
-                if clipping == True: 
-                  p3, tmp3 =  tempfile.mkstemp(dir=tmp_dir, suffix='.nc') 
-                  p4, tmp4 =  tempfile.mkstemp(dir=tmp_dir, suffix='.nc')
-                  p5, tmp5 =  tempfile.mkstemp(dir=tmp_dir, suffix='.nc')
-                  
-                  input1 = '%s' % (geom_nc)
-                  input2 = '%s' % (geom_ref)
-                  input3 = ' %s %s ' % (tmp3 , tmp5)
-                  
-                  # print result , tmp1 , tmp2 , tmp3  
-
-                  cdo.fldmean (input = input1 , output = tmp3)
-                  
-                  cdo.timmean (input = input2 , output = tmp4 )
-                  cdo.fldmean (input = tmp4 , output = tmp5 )
-                  
-                  print input3 , result
-                
-                  cdo.sub(input = input3 , output = result)
-                  
-                  print 'done for %s in %s as %s ' % (var, land, agg)
-                  
+                for agg in aggregation:
                   try: 
-                    os.close( p1 )
-                    os.close( p2 )
-                    os.close( p3 )
-                    os.close( p4 )
-                    os.close( p5 )
-                  except Exception as e:
-                    msg = 'failed to close file %s ' % ( e)
-                    print msg
+                    print 'processing of %s %s %s ' % (var, land, agg)
+                    calc_grouping= []
+                    prefix = []
+                    
+                    if agg == 'yr':
+                      calc_grouping= ['year']        
+                      prefix = f.replace('EUR',land).replace('_mon','_yr').strip('.nc')
+                      # dir_output = tempfile.mkdtemp()
+                    elif agg == 'DJF':
+                      calc_grouping = [[12,1,2] ,'unique']
+                      prefix = f.replace('EUR',land).replace('_mon','_DJF').strip('.nc')
+                    elif agg == 'MAM':
+                      calc_grouping = [[3,4,5],'unique']
+                      prefix = f.replace('EUR',land).replace('_mon','_MAM').strip('.nc')
+                    elif agg == 'JJA':
+                      calc_grouping = [[6,7,8] ,'unique']
+                      prefix = f.replace('EUR',land).replace('_mon','_JJA').strip('.nc')
+                    elif agg == 'SON':
+                      calc_grouping = [[9,10,11] ,'unique']
+                      prefix = f.replace('EUR',land).replace('_mon','_SON').strip('.nc')
+                    else: 
+                      print 'no aggregation found' 
+                      
+                    result =  '%s/%s.nc' % (OUT_DIR, prefix )
+                    
+                    if not os.path.exists(result):
+                      tmp_dir = tempfile.mkdtemp()
+                      p1, tmp1 = tempfile.mkstemp(dir=tmp_dir)
+                      path1, temp_nc = os.path.split(tmp1)
+                      
+                      p2, tmp2 = tempfile.mkstemp(dir=tmp_dir)
+                      path2, temp_ref = os.path.split(tmp2)
+                      
+                      try: 
+                        geom_nc  = ocgis.OcgOperations(dataset=rd, dir_output=path1, calc=calc, calc_grouping=calc_grouping, geom=geoms, select_ugid=select_ugid, output_format='nc', prefix=temp_nc,  add_auxiliary_files=False ).execute()
+                        geom_ref = ocgis.OcgOperations(dataset=rd, dir_output=path2, calc=calc, calc_grouping=calc_grouping ,geom=geoms, select_ugid=select_ugid, output_format='nc', prefix=temp_ref, add_auxiliary_files=False, time_range=time_range ).execute()
+                        clipping = True 
+                      except Exception as e:
+                        clipping = False
+                        os.close( p1 )
+                        os.close( p2 )
+                        shutil.rmtree(tmp_dir) # os.rmdir(tmp_dir)
+                        msg = 'clipping failed for :%s %s %s ' % (land, agg,  e)
+                        print msg
                         
-                  shutil.rmtree(tmp_dir) # os.rmdir(tmp_dir)
-            
-              else : 
-                print 'allready done for %s in %s as %s ' % (var, land, agg)
-              
-            except Exception as e:
-              msg = 'aggregation failed for :%s %s %s ' % (land, agg,  e)
-              print msg
-            
-              
-        except Exception as e:
-          msg = 'clipping failed for : %s %s ' % (land, e)
-          print msg
-    except Exception as e:
-      msg = 'processing failed for file  : %s %s ' % (nc, e)
-      print msg 
+                      
+                      if clipping == True: 
+                        p3, tmp3 =  tempfile.mkstemp(dir=tmp_dir, suffix='.nc') 
+                        p4, tmp4 =  tempfile.mkstemp(dir=tmp_dir, suffix='.nc')
+                        p5, tmp5 =  tempfile.mkstemp(dir=tmp_dir, suffix='.nc')
+                        
+                        input1 = '%s' % (geom_nc)
+                        input2 = '%s' % (geom_ref)
+                        input3 = ' %s %s ' % (tmp3 , tmp5)
+                        
+                        # print result , tmp1 , tmp2 , tmp3  
+
+                        cdo.fldmean (input = input1 , output = tmp3)
+                        
+                        cdo.timmean (input = input2 , output = tmp4 )
+                        cdo.fldmean (input = tmp4 , output = tmp5 )
+                        
+                        print input3 , result
+                      
+                        cdo.sub(input = input3 , output = result)
+                        
+                        print 'done for %s in %s as %s ' % (var, land, agg)
+                        
+                        try: 
+                          os.close( p1 )
+                          os.close( p2 )
+                          os.close( p3 )
+                          os.close( p4 )
+                          os.close( p5 )
+                        except Exception as e:
+                          msg = 'failed to close file %s ' % ( e)
+                          print msg
+                              
+                        shutil.rmtree(tmp_dir) # os.rmdir(tmp_dir)
+                  
+                    else : 
+                      print 'allready done for %s in %s as %s ' % (var, land, agg)
+                    
+                  except Exception as e:
+                    msg = 'aggregation failed for :%s %s %s ' % (land, agg,  e)
+                    print msg
+              except Exception as e:
+                msg = 'clipping failed for : %s %s ' % (land, e)
+                print msg
+          except Exception as e:
+            msg = 'processing failed for file  : %s %s ' % (nc, e)
+            print msg 
       
     #try:
       ## make temofiles 

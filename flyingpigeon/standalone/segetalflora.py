@@ -106,13 +106,10 @@ out = '/homel/nhempel/data/cdotest.nc'
 # create temp dir
 tmp_dir = tempfile.mkdtemp()
 
-p1, tmp1 = tempfile.mkstemp(dir=tmp_dir, suffix='.nc' )
-
+p1, tmp1 = tempfile.mkstemp(dir=tmp_dir, suffix='.nc')
 cdo.yearmean (input = nc , output = tmp1)
 
-
 nc_eur = clipping( '%s' % (tmp1) , tmp_dir)
-
 cdo.expr(equation , input=tmp1, output=out)
 
 os.close( p1 )
