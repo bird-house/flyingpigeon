@@ -129,20 +129,20 @@ for key in exp.keys():
           
           if agg == 'yr':
             calc_grouping= ['year']        
-            prefix = f.replace('EUR',land).replace('_mon','_yr').strip('.nc')
+            prefix = key.replace('EUR',land).replace('_mon','_yr').strip('.nc')
             # dir_output = tempfile.mkdtemp()
           elif agg == 'DJF':
             calc_grouping = [[12,1,2] ,'unique']
-            prefix = f.replace('EUR',land).replace('_mon','_DJF').strip('.nc')
+            prefix = key.replace('EUR',land).replace('_mon','_DJF').strip('.nc')
           elif agg == 'MAM':
             calc_grouping = [[3,4,5],'unique']
-            prefix = f.replace('EUR',land).replace('_mon','_MAM').strip('.nc')
+            prefix = key.replace('EUR',land).replace('_mon','_MAM').strip('.nc')
           elif agg == 'JJA':
             calc_grouping = [[6,7,8] ,'unique']
-            prefix = f.replace('EUR',land).replace('_mon','_JJA').strip('.nc')
+            prefix = key.replace('EUR',land).replace('_mon','_JJA').strip('.nc')
           elif agg == 'SON':
             calc_grouping = [[9,10,11] ,'unique']
-            prefix = f.replace('EUR',land).replace('_mon','_SON').strip('.nc')
+            prefix = key.replace('EUR',land).replace('_mon','_SON').strip('.nc')
           else: 
             print 'no aggregation found' 
             
@@ -189,7 +189,7 @@ for key in exp.keys():
             
               cdo.sub(input = input3 , output = result)
               
-              print 'done for %s in %s as %s ' % (var, land, agg)
+              print 'done for: %s ' % ( agg )
               
               try: 
                 os.close( p1 )
@@ -198,13 +198,13 @@ for key in exp.keys():
                 os.close( p4 )
                 os.close( p5 )
               except Exception as e:
-                msg = 'failed to close file %s ' % ( e)
+                msg = 'failed to close file %s ' % (e)
                 print msg
                     
               shutil.rmtree(tmp_dir) # os.rmdir(tmp_dir)
         
           else : 
-            print 'allready done for %s in %s as %s ' % (var, land, agg)
+            print 'allready done for: %s' % ( agg )
           
         except Exception as e:
           msg = 'aggregation failed for :%s %s %s ' % (land, agg,  e)
