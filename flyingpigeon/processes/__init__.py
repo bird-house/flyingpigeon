@@ -5,6 +5,7 @@ __all__ = [
         "ensembles",
         "indices",
         "vbd",
+        "sflora",
 #       "sdm",
         "simple_indice",
         "multiple_indices",
