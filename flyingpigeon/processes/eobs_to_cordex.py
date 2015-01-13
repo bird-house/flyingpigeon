@@ -53,8 +53,7 @@ class eobs_to_cordex(WPSProcess):
       asReference=True,
       )
     
-   def execute(self):
-
+  def execute(self):
     import tempfile 
     import datetime as dt
     import os
