@@ -86,7 +86,7 @@ def get_equation(culture_type, climate_type):
     elif climate_type == '4': 
       equation ="\'sf_ext_4=-0.7587*%s^2+17.8515*%s-32.8794\'" %('tas','tas')
     elif climate_type == '5': 
-      equation ="\'sf_ext_5=0.0817*exp(0.4597*%s)\'" %('tas').
+      equation ="\'sf_ext_5=0.0817*exp(0.4597*%s)\'" %('tas')
     elif climate_type == '6': 
       equation ="\'sf_ext_6=-0.0263*%s^3+0.7119%s^2-4.878*%s+11.154\'" %('tas','tas','tas')
     elif climate_type == '7': 
