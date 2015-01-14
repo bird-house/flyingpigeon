@@ -79,30 +79,31 @@ class eobs_to_cordex(WPSProcess):
       var = 'pr'
       unit = 'kg m-2 s-1'
       
-    url_2014 = 'http://www.ecad.eu/download/ensembles/data/months/%s_0.22deg_rot_2014.nc.gz'       % (var_eobs)  
-    urs = 'http://www.ecad.eu/download/ensembles/data/Grid_0.22deg_rot/%s_0.22deg_rot_v10.0.nc.gz' % (var_eobs)
+    url_2014 = 'http://www.ecad.eu/download/ensembles/data/months/%s_0.22deg_rot_2014.nc.gz' % (var_eobs)  
+    url = 'http://www.ecad.eu/download/ensembles/data/Grid_0.22deg_rot/%s_0.22deg_rot_v10.0.nc.gz' % (var_eobs)
+    nc_2014 = os.path.join(path,'%s_0.22deg_rot_2014.nc' % var_eobs )
+    nc = os.path.join(path,'%s_0.22deg_rot_v10.0.nc' % var_eobs )
     
-    ##(fp_tf, tf ) = tempfile.mkstemp(dir=".", suffix=".nc")
-    ##(fp_tf2, tf2 ) = tempfile.mkstemp(dir=".", suffix=".nc")
+    # todo: check if decompressed file exist. 
     
-    #cmd = ['wget url_2014; wget url']
-    #self.cmd(cmd, stout=True)
-    #self.show_status('EOBS files downloaded', 7)
+    eobs_2014 = download(url_2014)
+    eobs = download(url)
     
-    #nc_2014 = '%s_0.22deg_rot_2014.nc' % (var_eobs)
-    #nc = '%s_0.22deg_rot_v10.0.nc' % (var_eobs)
+    path, gz_2014 = os.path.split(eobs)
+    cmd = 'gunzip %s; gunzip %s ' % (eobs_2014, eobs)
+    os.system(cmd)
     
-    #rd = ocgis.RequestDataset([nc,nc_2014] , var_eobs, conform_units_to=unit)
+    rd = ocgis.RequestDataset([nc,nc_2014] , var_eobs, conform_units_to=unit)
 
-    #ocgis.env.OVERWRITE=True
+    ocgis.env.OVERWRITE=True
 
-    #geom_file = ocgis.OcgOperations(dataset= rd, output_format='nc', dir_output= '.', add_auxiliary_files=False).execute()
+    geom_file = ocgis.OcgOperations(dataset= rd, output_format='nc', dir_output= '.', add_auxiliary_files=False).execute()
     ### print(geom_file)
 
     ##cdo.setreftime('1949-12-01,00:00:00,days', input=geom_file, output='/home/nils/data/EOBS/tx_0.22deg_rot_2014_Cordex.nc')
     ##cdo.setname('tasmax', input='/home/nils/data/EOBS/tx_0.22deg_rot_2014_Cordex.nc' , output='/home/nils/data/EOBS/tasmax_EOBS-22_2014.nc')
     
-    #self.ncout.setValue('%s' % (geom_file))
+    self.ncout.setValue('%s' % (geom_file))
     self.show_status('execution ended at : %s'  %  dt.datetime.now() , 100)
     
     

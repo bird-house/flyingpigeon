@@ -31,7 +31,7 @@ def file_sorter(ncs):
 
 try:
   data_basedir = '/run/media/nhempel/Iomega HDD/data'
-  normalized_dir = '/homel/nhempel/data/cviewer/normalized/'
+  anomalie_dir = '/homel/nhempel/data/cviewer/anomalies/'
   concat_dir = os.path.join('%s/concat/' % (data_basedir))
   polygon_dir = os.path.join('%s/polygon/' % (data_basedir))
   icclim = os.path.join('%s/icclim/' % (data_basedir)) 
@@ -106,10 +106,10 @@ for key in exp.keys():
           geom_rows.append(row)
           
       # select_ugid.sort()
-      if not os.path.exists(os.path.join(normalized_dir, var , scenario, land)):
-        os.makedirs(os.path.join(normalized_dir, var , scenario, land))
+      if not os.path.exists(os.path.join(anomalie_dir, var , scenario, land)):
+        os.makedirs(os.path.join(anomalie_dir, var , scenario, land))
       
-      OUT_DIR = os.path.join(normalized_dir, var, scenario, land)
+      OUT_DIR = os.path.join(anomalie_dir, var, scenario, land)
       ocgis.env.DIR_OUTPUT = OUT_DIR
 
       if var == 'RR' or var == 'R20mm' or var == 'SU' or var ==  'ID': # CDD  CSU  TX  TXx
@@ -157,8 +157,8 @@ for key in exp.keys():
             path2, temp_ref = os.path.split(tmp2)
             
             try: 
-              geom_nc  = ocgis.OcgOperations(dataset=rd, dir_output=path1, calc=calc, calc_grouping=calc_grouping, geom=geoms, select_ugid=select_ugid, output_format='nc', prefix=temp_nc,  add_auxiliary_files=False ).execute()
               geom_ref = ocgis.OcgOperations(dataset=rd, dir_output=path2, calc=calc, calc_grouping=calc_grouping ,geom=geoms, select_ugid=select_ugid, output_format='nc', prefix=temp_ref, add_auxiliary_files=False, time_range=time_range ).execute()
+              geom_nc  = ocgis.OcgOperations(dataset=rd, dir_output=path1, calc=calc, calc_grouping=calc_grouping, geom=geoms, select_ugid=select_ugid, output_format='nc', prefix=temp_nc,  add_auxiliary_files=False ).execute()
               clipping = True 
             except Exception as e:
               clipping = False
@@ -185,7 +185,7 @@ for key in exp.keys():
               cdo.timmean (input = input2 , output = tmp4 )
               cdo.fldmean (input = tmp4 , output = tmp5 )
               
-              print input3 , result
+              # print input3 , result
             
               cdo.sub(input = input3 , output = result)
               
