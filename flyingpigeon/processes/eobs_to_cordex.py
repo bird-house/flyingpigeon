@@ -65,7 +65,15 @@ class eobs_to_cordex(WPSProcess):
     
     self.show_status('execution started at : %s '  % dt.datetime.now() , 5)
 
-    var_eobs = self.getInputValues(identifier='var_eobs')
+    list_eobs = self.getInputValues(identifier='var_eobs')
+
+    if type(list_eobs) == list:
+      var_eobs = list_eobs[0]
+    elif type(list_eobs) == str:
+      var_eobs = list_eobs
+    else: 
+      logger.exception('eobs variable setting failed!')
+      
     if var_eobs == 'tg':
       var = 'tas'
       unit = 'K'
@@ -78,30 +86,36 @@ class eobs_to_cordex(WPSProcess):
     elif var_eobs == 'rr':
       var = 'pr'
       unit = 'kg m-2 s-1'
-      
+    
     url_2014 = 'http://www.ecad.eu/download/ensembles/data/months/%s_0.22deg_rot_2014.nc.gz' % (var_eobs)  
     url = 'http://www.ecad.eu/download/ensembles/data/Grid_0.22deg_rot/%s_0.22deg_rot_v10.0.nc.gz' % (var_eobs)
-    nc_2014 = os.path.join(path,'%s_0.22deg_rot_2014.nc' % var_eobs )
-    nc = os.path.join(path,'%s_0.22deg_rot_v10.0.nc' % var_eobs )
     
     # todo: check if decompressed file exist. 
     
+    self.show_status('downlaoding  EOBS file.gz: %s '  % var_eobs , 5)
     eobs_2014 = download(url_2014)
     eobs = download(url)
+   
+    self.show_status('extraction of : %s '  % var_eobs , 5)
+    p, gz_2014 = os.path.split(eobs)
     
-    path, gz_2014 = os.path.split(eobs)
     cmd = 'gunzip %s; gunzip %s ' % (eobs_2014, eobs)
+    logger.debug('system call : %s '  % (cmd))
     os.system(cmd)
     
+    nc_2014 = os.path.join(p,'%s_0.22deg_rot_2014.nc' % var_eobs )
+    nc = os.path.join(p,'%s_0.22deg_rot_v10.0.nc' % var_eobs )
+    
+    self.show_status('processing with ocgis : %s '  % var_eobs , 5)
     rd = ocgis.RequestDataset([nc,nc_2014] , var_eobs, conform_units_to=unit)
-
     ocgis.env.OVERWRITE=True
 
     geom_file = ocgis.OcgOperations(dataset= rd, output_format='nc', dir_output= '.', add_auxiliary_files=False).execute()
+    
     ### print(geom_file)
-
     ##cdo.setreftime('1949-12-01,00:00:00,days', input=geom_file, output='/home/nils/data/EOBS/tx_0.22deg_rot_2014_Cordex.nc')
     ##cdo.setname('tasmax', input='/home/nils/data/EOBS/tx_0.22deg_rot_2014_Cordex.nc' , output='/home/nils/data/EOBS/tasmax_EOBS-22_2014.nc')
+    
     
     self.ncout.setValue('%s' % (geom_file))
     self.show_status('execution ended at : %s'  %  dt.datetime.now() , 100)

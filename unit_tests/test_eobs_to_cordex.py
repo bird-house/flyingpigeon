@@ -10,7 +10,7 @@ def setup():
     pass
 
 @attr('online')   
-def test_analogs():
+def test_eobs_to_cordex():
     result = wpsclient.execute(
         service = base.SERVICE,
         identifier = "eobs_to_cordex",
