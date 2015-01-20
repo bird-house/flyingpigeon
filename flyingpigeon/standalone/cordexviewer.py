@@ -158,6 +158,7 @@ for key in exp.keys():
             
             try: 
               geom_ref = ocgis.OcgOperations(dataset=rd, dir_output=path2, calc=calc, calc_grouping=calc_grouping ,geom=geoms, select_ugid=select_ugid, output_format='nc', prefix=temp_ref, add_auxiliary_files=False, time_range=time_range ).execute()
+              
               geom_nc  = ocgis.OcgOperations(dataset=rd, dir_output=path1, calc=calc, calc_grouping=calc_grouping, geom=geoms, select_ugid=select_ugid, output_format='nc', prefix=temp_nc,  add_auxiliary_files=False ).execute()
               clipping = True 
             except Exception as e:

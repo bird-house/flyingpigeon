@@ -7,7 +7,7 @@ from netCDF4 import Dataset
 from cdo import *
 cdo = Cdo()
 
-norm_dir = '/homel/nhempel/data/cviewer/normalized/'
+anom_dir = '/homel/nhempel/data/cviewer/anomalies/'
 ens_dir  = '/homel/nhempel/data/cviewer/ensemble/'
 
 def listdir_fullpath(d):
@@ -28,23 +28,27 @@ def get_timestamps(nc_file):
     to_timestamp = datetime.strftime(reftime + timedelta(days=time_list[-1]), '%Y%m%d')
     return (from_timestamp, to_timestamp)
 
-
 aggregation = ['yr','DJF','MAM','JJA','SON']
 
-for indice in os.listdir(norm_dir): # /RR/rcp45/AUT/
-  for scenario in os.listdir(os.path.join(norm_dir,indice)): 
-    for land in os.listdir(os.path.join(norm_dir,indice,scenario)): 
+for indice in os.listdir(anom_dir): # /RR/rcp45/AUT/
+  for scenario in os.listdir(os.path.join(anom_dir,indice)): 
+    for land in os.listdir(os.path.join(anom_dir,indice,scenario)): 
       
-      ncs = listdir_fullpath(os.path.join(norm_dir,indice,scenario, land ))
+      ncs = listdir_fullpath(os.path.join(anom_dir,indice,scenario, land ))
+      
       
       if not os.path.exists(os.path.join(ens_dir,indice,scenario, land)):
         os.makedirs(os.path.join(ens_dir,indice,scenario, land ))
       OUT_DIR = os.path.join(ens_dir,indice,scenario, land)
+      ms = listdir_fullpath(os.path.join(ens_dir,indice,scenario, land ))
+      
       try : 
         for agg in aggregation:
           files = []
           files = [nc for nc in ncs if '_%s.nc' %(agg) in nc]
-          if len(files) > 0:
+          rm_ms = [nc for nc in ms if '_%s_m' %(agg) in nc]
+          m = len(files) 
+          if m > 0:
             print 'Ensmean preparing %s %s ' % (indice, land )
             tmp_dir = tempfile.mkdtemp()
             try: 
@@ -53,18 +57,26 @@ for indice in os.listdir(norm_dir): # /RR/rcp45/AUT/
                 year = '1971-2100'
                 for f in files: 
                   p1, tmp1 = tempfile.mkstemp(dir=tmp_dir, suffix='_%s_.nc' %(year))
-                  cdo.inttime('1971-01-01,12:00:00,1years', input=f, output = tmp1)
+                  cdo.inttime('1971-01-01,00:00:00,1years', input=f, output = tmp1)
                   os.close(p1)
                 
                 f_list = listdir_fullpath(tmp_dir)
                 f_year = [n for n in f_list if '_%s_.nc' %(year) in n ]
                 
-                
                 input1 = ' '.join(f_year)
+                
                 n_mean = 'mean_%s_%s.nc' % (year, agg)            
                 f_mean = os.path.join(OUT_DIR, n_mean )
                 cdo.ensmean(input = input1 , output = f_mean)
-                print 'Ensmean done for %s %s %s ' % (indice, land , n_mean )
+                
+                
+                
+                print 'Ensmean done for %s %s %s' % (indice, land , n_mean)
+                
+                n_median = 'median_%s_%s.nc' % (year, agg)            
+                f_median = os.path.join(OUT_DIR, n_median )
+                cdo.enspctl('50', input = input1 , output = f_median)
+                print 'Ensmean done for %s %s %s' % (indice, land , n_median)
                 
                 n_pctl33 = 'pctl33_%s_%s.nc' % (year, agg)            
                 f_pctl33 = os.path.join(OUT_DIR, n_pctl33 )
@@ -75,6 +87,10 @@ for indice in os.listdir(norm_dir): # /RR/rcp45/AUT/
                 f_pctl66 = os.path.join(OUT_DIR, n_pctl66 )
                 cdo.enspctl('66', input = input1 , output = f_pctl66)
                 print 'Ensmean done for %s %s %s ' % (indice, land, n_pctl66)
+                
+                for f in rm_ms: 
+                  os.remove(f)
+                print 'old ensembles removed'
               except Exception as e:
                 msg = 'file failed : %s %s %s ' % ( indice, land, e)
                 print msg
