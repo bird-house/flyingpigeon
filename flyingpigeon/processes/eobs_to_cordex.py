@@ -3,6 +3,10 @@ from malleefowl.process import WPSProcess
 from datetime import datetime, date
 import types
 
+from cdo import * 
+cdo = Cdo()
+
+
 # initialise
 logger = logging.getLogger(__name__)
 
@@ -60,8 +64,7 @@ class eobs_to_cordex(WPSProcess):
     from malleefowl.download import download
     
     import ocgis
-    from cdo import * 
-    cdo = Cdo()
+
     
     self.show_status('execution started at : %s '  % dt.datetime.now() , 5)
 
@@ -107,17 +110,21 @@ class eobs_to_cordex(WPSProcess):
     nc = os.path.join(p,'%s_0.22deg_rot_v10.0.nc' % var_eobs )
     
     self.show_status('processing with ocgis : %s '  % var_eobs , 5)
-    rd = ocgis.RequestDataset([nc,nc_2014] , var_eobs, conform_units_to=unit)
+    rd = ocgis.RequestDataset([nc, nc_2014] , var_eobs, conform_units_to=unit) # 
     ocgis.env.OVERWRITE=True
 
     geom_file = ocgis.OcgOperations(dataset= rd, output_format='nc', dir_output= '.', add_auxiliary_files=False).execute()
     
+    logger.debug('geom_file : %s '  % (geom_file))
+    
+    p1, tmp1 = tempfile.mkstemp(dir='.', suffix='.nc')
+    p2, tmp2 = tempfile.mkstemp(dir='.', suffix='.nc')
+    
     ### print(geom_file)
-    ##cdo.setreftime('1949-12-01,00:00:00,days', input=geom_file, output='/home/nils/data/EOBS/tx_0.22deg_rot_2014_Cordex.nc')
-    ##cdo.setname('tasmax', input='/home/nils/data/EOBS/tx_0.22deg_rot_2014_Cordex.nc' , output='/home/nils/data/EOBS/tasmax_EOBS-22_2014.nc')
+    cdo.setreftime('1949-12-01,00:00:00,days', input=geom_file, output=tmp1)
+    cdo.setname('tasmax', input=tmp1, output=tmp2)
     
-    
-    self.ncout.setValue('%s' % (geom_file))
+    self.ncout.setValue('%s' % (tmp2))
     self.show_status('execution ended at : %s'  %  dt.datetime.now() , 100)
     
     

@@ -3,6 +3,10 @@ import subprocess
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
+from cdo import *
+cdo = Cdo()
+
+
 class sflora(WPSProcess):
   """This process calculates the relative humidity"""
   def __init__(self):
@@ -51,9 +55,6 @@ class sflora(WPSProcess):
   def execute(self):
     import tempfile
     import shutil
-
-    from cdo import *
-    cdo = Cdo()
 
     def get_equation(culture_type, climate_type):
       if culture_type == 'fallow': 

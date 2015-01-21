@@ -2,9 +2,10 @@ import ocgis
 from cdo import * 
 cdo = Cdo()
 
-nc = '/home/nils/data/EOBS/tx_0.22deg_rot_2014.nc'
+nc = '/home/nils//anaconda/var/cache/pywps/tx_0.22deg_rot_2014.nc'
+nc2 = '/home/nils//anaconda/var/cache/pywps/tx_0.22deg_rot_v10.0.nc'
 
-rd = ocgis.RequestDataset(nc, 'tx', conform_units_to='K')
+rd = ocgis.RequestDataset([nc,nc2], 'tx', conform_units_to='K')
 
 ocgis.env.OVERWRITE=True
 
