@@ -90,8 +90,8 @@ class eobs_to_cordex(WPSProcess):
       var = 'pr'
       unit = 'kg m-2 s-1'
     
-    url_2014 = 'http://www.ecad.eu/download/ensembles/data/months/%s_0.22deg_rot_2014.nc.gz' % (var_eobs)  
-    url = 'http://www.ecad.eu/download/ensembles/data/Grid_0.22deg_rot/%s_0.22deg_rot_v10.0.nc.gz' % (var_eobs)
+    url_2014 = 'http://www.ecad.eu/download/ensembles/data/months/%s_0.25deg_reg_2014.nc.gz' % (var_eobs)  
+    url = 'http://www.ecad.eu/download/ensembles/data/Grid_0.22deg_rot/%s_0.25deg_reg_v10.0.nc.gz' % (var_eobs)
     
     # todo: check if decompressed file exist. 
     
@@ -110,7 +110,7 @@ class eobs_to_cordex(WPSProcess):
     nc = os.path.join(p,'%s_0.22deg_rot_v10.0.nc' % var_eobs )
     
     self.show_status('processing with ocgis : %s '  % var_eobs , 5)
-    rd = ocgis.RequestDataset([nc, nc_2014] , var_eobs, conform_units_to=unit) #  
+    rd = ocgis.RequestDataset([nc_2014] , var_eobs, conform_units_to=unit) # nc, nc,   
     ocgis.env.OVERWRITE=True
 
     geom_file = ocgis.OcgOperations(dataset= rd, output_format='nc', dir_output= '.', add_auxiliary_files=False).execute()
