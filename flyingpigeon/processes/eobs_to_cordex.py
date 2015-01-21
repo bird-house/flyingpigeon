@@ -106,11 +106,18 @@ class eobs_to_cordex(WPSProcess):
     logger.debug('system call : %s '  % (cmd))
     os.system(cmd)
     
-    nc_2014 = os.path.join(p,'%s_0.22deg_rot_2014.nc' % var_eobs )
-    nc = os.path.join(p,'%s_0.22deg_rot_v10.0.nc' % var_eobs )
+    nc_2014 = os.path.join(p,'%s_0.25deg_reg_2014.nc' % var_eobs )
+    nc = os.path.join(p,'%s_0.25deg_reg_v10.0.nc' % var_eobs )
+    
+    logger.debug('starting mergetime ')
+    
+    p1, nc_merge = tempfile.mkstemp(dir='.', suffix='.nc')
+    cdo.mergetime(input = [nc, nc_2014], output=nc_merge)
+    
+    logger.debug('mergetime done')
     
     self.show_status('processing with ocgis : %s '  % var_eobs , 5)
-    rd = ocgis.RequestDataset([nc, nc_2014] , var_eobs, conform_units_to=unit) # nc, nc,   
+    rd = ocgis.RequestDataset( nc_merge , var_eobs, conform_units_to=unit) # nc, nc,   , nc_2014
     ocgis.env.OVERWRITE=True
 
     geom_file = ocgis.OcgOperations(dataset= rd, output_format='nc', dir_output= '.', add_auxiliary_files=False).execute()
@@ -167,7 +174,7 @@ class eobs_to_cordex(WPSProcess):
 #:history = "Wed Jan 21 12:08:17 2015: cdo setname,tasmax /home/nils/anaconda/var/tmp/pywps-instanceP7sNaQ/tmplQqdsp.nc /home/nils/anaconda/var/tmp/pywps-instanceP7sNaQ/tmpchdCfC.nc\n",
         #"Wed Jan 21 12:08:14 2015: cdo setreftime,1949-12-01,00:00:00,days ./ocgis_output.nc /home/nils/anaconda/var/tmp/pywps-instanceP7sNaQ/tmplQqdsp.nc\n",
         #"\n",
-        #"2015-01-21 11:08:13.977041 UTC ocgis-1.0.1-next: OcgOperations(calc_sample_size=False, optimizations=None, output_format=\"nc\", select_ugid=None, format_time=True, select_nearest=False, output_crs=None, time_range=None, calc_grouping=None, prefix=\"ocgis_output\", abstraction=\"None\", regrid_destination=None, allow_empty=False, vector_wrap=False, aggregate=False, interpolate_spatial_bounds=False, dataset=RequestDatasetCollection(request_datasets=[RequestDataset(uri=\"/home/nils/anaconda/var/cache/pywps/tn_0.22deg_rot_2014.nc\", variable=\"tn\", alias=\"tn\", units=None, time_range=None, time_region=None, level_range=None, conform_units_to=\"K\", crs={\'no_defs\': True, \'ellps\': \'WGS84\', \'proj\': \'longlat\', \'towgs84\': \'0,0,0,0,0,0,0\'}, t_units=None, t_calendar=None, t_conform_units_to=None, did=1, meta={}, s_abstraction=None, dimension_map=None, name=\"tn\", driver=\"netCDF\", regrid_source=True, regrid_destination=False)]), dir_output=\".\", backend=\"ocg\", search_radius_mult=2.0, add_auxiliary_files=False, slice=None, callback=None, calc_raw=False, agg_selection=False, level_range=None, snippet=False, time_region=None, geom=None, regrid_options={\'value_mask\': None, \'with_corners\': \'choose\'}, conform_units_to=None, spatial_operation=\"intersects\", headers=None, calc=None, file_only=False, )" ;
+        #"2015-01-21 11:08:13.977041 UTC ocgis-1.0.1-next: OcgOperations(calc_sample_size=False, optimizations=None, output_format=\"nc\", select_ugid=None, format_time=True, select_nearest=False, output_crs=None, time_range=None, calc_grouping=None, prefix=\"ocgis_output\", abstraction=\"None\", regrid_destination=None, allow_empty=False, vector_wrap=False, aggregate=False, interpolate_spatial_bounds=False, dataset=RequestDatasetCollection(request_datasets=[RequestDataset(uri=\"/home/nils/anaconda/var/cache/pywps/tn_0.25deg_reg_2014.nc\", variable=\"tn\", alias=\"tn\", units=None, time_range=None, time_region=None, level_range=None, conform_units_to=\"K\", crs={\'no_defs\': True, \'ellps\': \'WGS84\', \'proj\': \'longlat\', \'towgs84\': \'0,0,0,0,0,0,0\'}, t_units=None, t_calendar=None, t_conform_units_to=None, did=1, meta={}, s_abstraction=None, dimension_map=None, name=\"tn\", driver=\"netCDF\", regrid_source=True, regrid_destination=False)]), dir_output=\".\", backend=\"ocg\", search_radius_mult=2.0, add_auxiliary_files=False, slice=None, callback=None, calc_raw=False, agg_selection=False, level_range=None, snippet=False, time_region=None, geom=None, regrid_options={\'value_mask\': None, \'with_corners\': \'choose\'}, conform_units_to=None, spatial_operation=\"intersects\", headers=None, calc=None, file_only=False, )" ;
 #:Ensembles_ECAD = "9.0" ;
 #:References = "http://www.ecad.eu\\nhttp://www.ecad.eu/download/ensembles/ensembles.php\\nhttp://www.ecad.eu/download/ensembles/Haylock_et_al_2008.pdf" ;
 #:grid_north_pole_latitude = 39.25f ;
