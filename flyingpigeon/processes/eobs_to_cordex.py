@@ -110,7 +110,7 @@ class eobs_to_cordex(WPSProcess):
     nc = os.path.join(p,'%s_0.22deg_rot_v10.0.nc' % var_eobs )
     
     self.show_status('processing with ocgis : %s '  % var_eobs , 5)
-    rd = ocgis.RequestDataset([nc_2014] , var_eobs, conform_units_to=unit) # nc, nc,   
+    rd = ocgis.RequestDataset([nc, nc_2014] , var_eobs, conform_units_to=unit) # nc, nc,   
     ocgis.env.OVERWRITE=True
 
     geom_file = ocgis.OcgOperations(dataset= rd, output_format='nc', dir_output= '.', add_auxiliary_files=False).execute()
