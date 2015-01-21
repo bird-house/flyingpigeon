@@ -91,7 +91,7 @@ class eobs_to_cordex(WPSProcess):
       unit = 'kg m-2 s-1'
     
     url_2014 = 'http://www.ecad.eu/download/ensembles/data/months/%s_0.25deg_reg_2014.nc.gz' % (var_eobs)  
-    url = 'http://www.ecad.eu/download/ensembles/data/Grid_0.22deg_rot/%s_0.25deg_reg_v10.0.nc.gz' % (var_eobs)
+    url = 'http://www.ecad.eu/download/ensembles/data/Grid_0.25deg_reg/%s_0.25deg_reg_v10.0.nc.gz' % (var_eobs)
     
     # todo: check if decompressed file exist. 
     
