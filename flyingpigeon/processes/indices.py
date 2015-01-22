@@ -48,10 +48,10 @@ class icclimWorker(WPSProcess):
       allowedValues=["None", "EUR"] # sem
       )
     
-    self.normalizer = self.addLiteralInput(
-      identifier="normalizer",
-      title="Normalized",
-      abstract="normalized fieldmean of country subsetts [ref period (1971-2000) must be available]",
+    self.anomalies = self.addLiteralInput(
+      identifier="anomalies",
+      title="Anomalies",
+      abstract="Fieldmean of country subset as timeserie of anomalies [ref period (1971-2000) must be available]",
       type=type(False),
       default=False,
       minOccurs=0,
@@ -369,6 +369,14 @@ class icclimWorker(WPSProcess):
       asReference=True,
       identifier="tarout",
       )
+    
+    self.anomaliesout = self.addComplexOutput(
+      title="Anomalies files",
+      abstract="Tar archive containing the netCDF result files of anomaies timeseries",
+      formats=[{"mimeType":"application/x-tar"}],
+      asReference=True,
+      identifier="anomaliesout",
+      )
 
     #self.cvout = self.addComplexOutput(
       #title="netCDF Cordex Viewer files",
@@ -390,8 +398,12 @@ class icclimWorker(WPSProcess):
     
     self.show_status('starting calcualtion icclim indices', 5)
     ncfiles = self.getInputValues(identifier='netcdf_file')
-    (fp_tar, tarf) = tempfile.mkstemp(dir=".", suffix='.tar')
+    (fp_tarf, tarf) = tempfile.mkstemp(dir=".", suffix='.tar')
     tar = tarfile.open(tarf, "w")
+    
+    (fp_anomalies, tar_a) = tempfile.mkstemp(dir=".", suffix='.tar')
+    tar_anomalies = tarfile.open(tar_a, "w")
+    
     os.mkdir(os.path.curdir+'/icclim/')
     icclim = (os.path.curdir+'/icclim/')
     
@@ -446,7 +458,6 @@ class icclimWorker(WPSProcess):
     
     tar.add(icclim, arcname = icclim.replace(os.curdir, ""))
     logger.debug('tar ncfiles')
-    
     logger.debug('starting Cordex viewer preparation')
     
     self.show_status('starting Cordex viewer preparation', 75)
@@ -457,17 +468,17 @@ class icclimWorker(WPSProcess):
     
     if self.domain.getValue() == 'EUR' :
       logger.debug('domain.getValue = %s' % (self.domain.getValue()))
-      if self.normalizer.getValue() == True:
-        os.makedirs(os.path.join(os.curdir + '/normalized/'))
-        normalized_dir = os.path.join(os.curdir + '/normalized/')
+      if self.anomalies.getValue() == True:
+        os.makedirs(os.path.join(os.curdir + '/anomalies/'))
+        anomalies_dir = os.path.join(os.curdir + '/anomalies/')
         
-      logtxt = logtxt + tools.cv_creator(icclim, polygons, domain, self.normalizer.getValue(), monitor=self.show_status)
+      logtxt = logtxt + tools.cv_creator(icclim, polygons, domain, self.anomalies.getValue(), monitor=self.show_status)
       
       try: 
         tar.add(polygons, arcname = polygons.replace(os.curdir , ""))
-        if self.normalizer.getValue() == True:
-          tar.add(normalized_dir, arcname = normalized_dir.replace(os.curdir , ""))
-          logger.debug('tar file polygons and normalized added')
+        if self.anomalies.getValue() == True:
+          tar_anomalies.add(anomalies_dir, arcname = anomalies_dir.replace(os.curdir , ""))
+          logger.debug('tar file polygons and anomalies added')
         logger.debug('tar file polygons added') 
       except Exception as e:
         msg = 'add Tar faild  : %s ' % (e)
@@ -475,18 +486,18 @@ class icclimWorker(WPSProcess):
         outlog = outlog + msg + '\n'
     
     logfile = self.mktempfile(suffix='.txt')
-    
     with open(logfile, 'w') as fp:
         fp.write(logtxt)
     
-    tar.add(logfile, arcname = os.curdir )
+    tar.add(logfile, arcname = os.curdir)
     
     tar.close()
+    tar_anomalies.close()
     
     logger.debug('tar file with icclim files closed')
     self.show_status('tar with icclim files created ', 70)
     
     self.logout.setValue( logfile )
     self.tarout.setValue( tarf )
-   # self.cvout.setValue( cv_tarf )
+    self.anomaliesout.setValue( tar_a )
     self.show_status("processing done", 100)

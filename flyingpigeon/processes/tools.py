@@ -1,4 +1,5 @@
 import ocgis
+from ocgis import RequestDataset
 from ocgis.interface.base.crs import CFWGS84
 
 from netCDF4 import Dataset
@@ -14,12 +15,11 @@ def dummy_monitor(message, status):
 def fn_creator( ncs ):
   newnames = []
   for nc in ncs:
-    
     fp ,fn = os.path.split(nc)
-    logger.debug('fn_gerator for: %s' % fn)
+    # logger.debug('fn_creator for: %s' % fn)
     ds = Dataset(nc)
     rd = []
-    rd = ocgis.RequestDataset(nc)
+    rd = RequestDataset(nc)
     ts = ds.variables['time']
     reftime = reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
     st = datetime.strftime(reftime + timedelta(days=ts[0]), '%Y%m%d') 
@@ -175,8 +175,7 @@ def indices( idic, monitor=dummy_monitor ):
       # = bn # .replace('day', group)
       
       var = f.split('_')[0]
-      rd = ocgis.RequestDataset(nc, var, time_region = {'year':[y]}) # time_range=[dt1, dt2]
-      
+      rd = RequestDataset(nc, var, time_region = {'year':[y]}) # time_range=[dt1, dt2] 
       logger.debug('calculation of experimtent %s with variable %s' % (basename , var))
       
     #for nc in ncs:
@@ -447,17 +446,18 @@ def indices( idic, monitor=dummy_monitor ):
   outlog = outlog + "Finished the indice calculation at: %s \n" % (datetime.strftime(datetime.now(), '%H:%M:%S %d-%m-%Y'))
   return outlog;
 
-def cv_creator(icclim, polygons , domain, normalizer, monitor=dummy_monitor ):
+def cv_creator(icclim, polygons, domain, anomalies, monitor=dummy_monitor ):
   
   monitor('monitor: starting Cordex Viewer preparation ' , 6)
   
   outlog = "Starting the Cordex Viwer preparation at : %s \n" % (datetime.strftime(datetime.now(), '%H:%M:%S %d-%m-%Y'))
   outlog = outlog + "Domain = %s \n" % (domain)
-  outlog = outlog + "normalizer = %s \n" % (normalizer)
+  outlog = outlog + "anomalies = %s \n" % (anomalies)
   
   from ocgis.util.shp_process import ShpProcess
   from ocgis.util.shp_cabinet import ShpCabinetIterator
   from ocgis.util.helpers import get_sorted_uris_by_time_dimension
+  import shutil
   
   from cdo import *   
   cdo = Cdo()
@@ -493,6 +493,7 @@ def cv_creator(icclim, polygons , domain, normalizer, monitor=dummy_monitor ):
     logger.error(msg)
     outlog = outlog + msg + '\n'
   
+  aggregation = ['yr','DJF','MAM','JJA','SON']
   c = 0  
   for key in exp.keys():
     try:
@@ -501,10 +502,10 @@ def cv_creator(icclim, polygons , domain, normalizer, monitor=dummy_monitor ):
       ncs = get_sorted_uris_by_time_dimension(nc)
       # ncs.sort()
       var = key.split('_')[0]
-      rd = ocgis.RequestDataset(ncs, var) # 
+      scenario = key.split('_')[3]
+      rd = RequestDataset(ncs, var) # 
       time_range=[datetime(1971,01,01) , datetime(2000,12,31)]
-      calc = [{'func':'mean','name':'ref_' + var }] 
-      calc_grouping = ['month']
+      
     except Exception as e:
       msg = 'sorting preparation failed for : %s %s ' % ( key , e)
       logger.error(msg)
@@ -518,50 +519,111 @@ def cv_creator(icclim, polygons , domain, normalizer, monitor=dummy_monitor ):
           if row['properties']['adm0_a3'] == land:
             select_ugid.append(row['properties']['UGID'])
             geom_rows.append(row)
-            
-          # select_ugid.sort()
-        if not os.path.exists(os.path.join(polygons , var , land)):
-          os.makedirs(os.path.join(polygons , var , land))
-        OUT_DIR = os.path.join(polygons , var , land)
+          
+        if not os.path.exists(os.path.join(os.curdir + '/anomalies/', var, scenario, land)):
+          os.makedirs(os.path.join(os.curdir + '/anomalies/', var, scenario, land))
+        OUT_DIR = os.path.join(os.curdir + '/anomalies/', var, scenario, land)
         
         #dir_output = tempfile.mkdtemp()
         ocgis.env.DIR_OUTPUT = OUT_DIR
-        prefix = key.replace('EUR',land)
         
-        geom_nc = ocgis.OcgOperations(dataset=rd, geom=geoms, dir_output=OUT_DIR, output_format='nc', select_ugid=select_ugid, prefix=prefix , add_auxiliary_files=False ).execute()
-        outlog = outlog + ('calculation of polygon %s with variable %s ... done \n'% (prefix , var))
+        if var == 'RR' or var == 'R20mm' or var == 'SU' or var ==  'ID': # CDD  CSU  TX  TXx
+          calc = [{'func':'sum', 'name':var}] 
+        elif var == 'TXx' or var == 'RX5day':
+          calc = [{'func':'max', 'name':var}] 
+        else :
+          calc = [{'func':'mean', 'name':var}] 
         
-        if normalizer == True:
+        for agg in aggregation: 
           try: 
-            if not os.path.exists(os.path.join(os.curdir + '/normalized/', var , land)):
-              os.makedirs(os.path.join(os.curdir + '/normalized/', var , land))
-            dir_output = os.path.join(os.curdir + '/normalized/', var , land)
+            logger.debug('processing of %s %s %s ' % (var, land, agg))
+            calc_grouping= []
+            prefix = []
             
-            geom_ref = ocgis.OcgOperations(dataset=rd, geom=geoms, dir_output=None,  output_format='nc', select_ugid=select_ugid, prefix='ref_'+prefix, add_auxiliary_files=False, calc=calc, calc_grouping=calc_grouping , time_range=time_range  ).execute()
-            tmp1 =  '%s/nc_temp_%s.nc' % (os.curdir, prefix )
-            tmp2 =  '%s/nc_temp2_%s.nc' % (os.curdir, prefix )
-            result =  '%s/%s.nc' % (dir_output, prefix )
-            input1 = '%s' % (geom_nc)
-            input2 = '%s' % (geom_ref)
-            input3 = ' %s %s ' % (tmp1 , tmp2)
+            if agg == 'yr':
+              calc_grouping= ['year']        
+              prefix = key.replace('EUR',land).replace('_mon','_yr').strip('.nc')
+              # dir_output = tempfile.mkdtemp()
+            elif agg == 'DJF':
+              calc_grouping = [[12,1,2] ,'unique']
+              prefix = key.replace('EUR',land).replace('_mon','_DJF').strip('.nc')
+            elif agg == 'MAM':
+              calc_grouping = [[3,4,5],'unique']
+              prefix = key.replace('EUR',land).replace('_mon','_MAM').strip('.nc')
+            elif agg == 'JJA':
+              calc_grouping = [[6,7,8] ,'unique']
+              prefix = key.replace('EUR',land).replace('_mon','_JJA').strip('.nc')
+            elif agg == 'SON':
+              calc_grouping = [[9,10,11] ,'unique']
+              prefix = key.replace('EUR',land).replace('_mon','_SON').strip('.nc')
+            else: 
+             logger.error('no aggregation found')
+             
+            result =  '%s/%s.nc' % (OUT_DIR, prefix )
+            
+            tmp_dir = tempfile.mkdtemp(dir='.')
+            p1, tmp1 = tempfile.mkstemp(dir='tmp_dir')
+            path1, temp_nc = os.path.split(tmp1)
+            
+            p2, tmp2 = tempfile.mkstemp(dir='tmp_dir')
+            path2, temp_ref = os.path.split(tmp2)
+            
+            try:
+              monitor('Clipping %i/%i for polygon: %s' % (c, len( exp.keys()), land) , (100/len( exp.keys() ) * c ))
+              geom_ref = ocgis.OcgOperations(dataset=rd,  dir_output=path2, calc=calc, calc_grouping=calc_grouping, output_format='nc', geom=geoms, select_ugid=select_ugid, prefix=temp_ref, add_auxiliary_files=False, time_range=time_range  ).execute()
+              
+              geom_nc = ocgis.OcgOperations(dataset=rd,  dir_output=path1, calc=calc, calc_grouping=calc_grouping, output_format='nc', geom=geoms, select_ugid=select_ugid, prefix=temp_nc, add_auxiliary_files=False ).execute()
+              clipping = True
+              outlog = outlog + ('calculation of polygon %s with variable %s ... done \n'% (prefix , var))
+              
+            except Exception as e:
+              clipping = False
+              os.close( p1 )
+              os.close( p2 )
+              shutil.rmtree(tmp_dir) # os.rmdir(tmp_dir)
+              msg = 'clipping failed for :%s %s %s ' % (land, agg,  e)
+              logger.error(msg)
+              outlog = outlog + ('calculation of polygon %s with variable %s ... Failed \n'% (prefix , var))
+              
+            if clipping == True:
+              monitor('Anomalie %i/%i for polygon: %s' % (c, len( exp.keys()), land) , (100/len( exp.keys() ) * c ))
+              p3, tmp3 =  tempfile.mkstemp(dir=tmp_dir, suffix='.nc') 
+              p4, tmp4 =  tempfile.mkstemp(dir=tmp_dir, suffix='.nc')
+              p5, tmp5 =  tempfile.mkstemp(dir=tmp_dir, suffix='.nc')
+              
+              input1 = '%s' % (geom_nc)
+              input2 = '%s' % (geom_ref)
+              input3 = ' %s %s ' % (tmp3 , tmp5)
+              
+              # print result , tmp1 , tmp2 , tmp3  
 
-            cdo.fldmean (input = input1 , output = tmp1)
-            cdo.fldmean (input = input2 , output = tmp2 )
-            cdo.sub(input = input3 , output = result)
-            outlog = outlog + ('normalized fieldmean for polygon %s with variable %s ... done \n'% (prefix , var))
+              cdo.fldmean (input = input1 , output = tmp3)
+              
+              cdo.timmean (input = input2 , output = tmp4 )
+              cdo.fldmean (input = tmp4 , output = tmp5 )
+              
+              # print input3 , result
+            
+              cdo.sub(input = input3 , output = result)
+              logger.debug( 'done for: %s ' % ( agg ))
+              
+              try: 
+                os.close( p1 )
+                os.close( p2 )
+                os.close( p3 )
+                os.close( p4 )
+                os.close( p5 )
+              except Exception as e:
+                msg = 'failed to close file %s ' % (e)
+                logger.error( msg )              
+              shutil.rmtree(tmp_dir) # os.rmdir(tmp_dir)
+              logger.debug('calculation of file %s with variable %s in %s ... done'% (prefix,var, land)) 
           except Exception as e:
-            msg = 'normalized fieldmean failed for file  : %s %s ' % ( prefix , e)
+            msg = 'aggregation failed for :%s %s %s ' % (land, agg,  e)
             logger.error(msg)
-            outlog = outlog + ('normalized fieldmean failed for file %s ! %s ... failed !!! \n'% (prefix , e))
-
-        logger.debug('calculation of file %s with variable %s in %s ... done'% (prefix,var, land))
-        monitor('Timeserie %i/%i for polygon: %s' % (c, len( exp.keys()), land) , (100/len( exp.keys() ) * c ))
-
       except Exception as e:
         msg = 'processing failed for file  : %s %s ' % ( prefix , e)
         logger.error(msg)
         outlog = outlog + ('failed for polygon %s ! %s ... failed !!! \n'% (prefix , e))
-     
   outlog = outlog + "Finish the Cordex Viwer preparation at : %s \n" % (datetime.strftime(datetime.now(), '%H:%M:%S %d-%m-%Y'))
-
   return outlog;
