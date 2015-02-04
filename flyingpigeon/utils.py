@@ -12,8 +12,24 @@ def local_path(url):
 
 def calc_grouping(grouping):
     calc_grouping = ['year'] # default year
-    if grouping == 'sem':
+    if grouping == 'yr':
+        calc_grouping = ['year']
+    elif grouping == 'sem':
         calc_grouping = [ [12,1,2], [3,4,5], [6,7,8], [9,10,11], 'unique'] 
+    elif grouping == 'ONDJFM':
+        calc_grouping = [ [10,11,12,1,2,3], 'unique'] 
+    elif grouping == 'AMJJAS':
+        calc_grouping = [ [4,5,6,7,8,9], 'unique'] 
+    elif grouping == 'DJF':
+        calc_grouping = [[12,1,2], 'unique']    
+    elif grouping == 'MAM':
+        calc_grouping = [[3,4,5], 'unique']    
+    elif grouping == 'JJA':
+        calc_grouping = [[6,7,8], 'unique']    
+    elif grouping == 'SON':
+        calc_grouping = [[9,10,11], 'unique']
+    elif grouping == 'mon':
+        calc_grouping = ['year', 'month']
     elif grouping in ['year', 'month']:
         calc_grouping = [grouping]
     else:
