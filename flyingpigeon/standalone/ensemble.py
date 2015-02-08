@@ -36,7 +36,6 @@ for indice in os.listdir(anom_dir): # /RR/rcp45/AUT/
       
       ncs = listdir_fullpath(os.path.join(anom_dir,indice,scenario, land ))
       
-      
       if not os.path.exists(os.path.join(ens_dir,indice,scenario, land)):
         os.makedirs(os.path.join(ens_dir,indice,scenario, land ))
       OUT_DIR = os.path.join(ens_dir,indice,scenario, land)

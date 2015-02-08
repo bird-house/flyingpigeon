@@ -6,7 +6,6 @@ import types
 from cdo import * 
 cdo = Cdo()
 
-
 # initialise
 logger = logging.getLogger(__name__)
 
@@ -102,7 +101,7 @@ class eobs_to_cordex(WPSProcess):
     self.show_status('extraction of : %s '  % var_eobs , 5)
     p, gz_2014 = os.path.split(eobs)
     
-    cmd = 'gunzip %s; gunzip %s ' % (eobs_2014, eobs)
+    cmd = 'gunzip -k %s; gunzip -k %s ' % (eobs_2014, eobs)
     logger.debug('system call : %s '  % (cmd))
     os.system(cmd)
     
