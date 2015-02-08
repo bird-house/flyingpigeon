@@ -37,7 +37,7 @@ class CalcIndicesWithClipping(WPSProcess):
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
-            allowedValues=["year", "month", "sem"]
+            allowedValues=["yr", "mon", "sem", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON" ]
             )
 
         self.indice = self.addLiteralInput(
