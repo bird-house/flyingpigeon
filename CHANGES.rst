@@ -4,6 +4,7 @@ Changes
 0.1.3 ()
 ==================
 
+* install R packages from anaconda.
 * added region clipping.
 * refactored indices to work with large data files.
 * using dispel4py workflow engine.
