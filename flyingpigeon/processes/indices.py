@@ -477,7 +477,7 @@ class icclimWorker(WPSProcess):
       try: 
         tar.add(polygons, arcname = polygons.replace(os.curdir , ""))
         if self.anomalies.getValue() == True:
-          tar_anomalies.add(anomalies_dir, arcname = anomalies_dir.replace(os.curdir , ""))
+          tar_anomalies.add(anomalies_dir, arcname = anomalies_dir.replace(os.curdir, ""))
           logger.debug('tar file polygons and anomalies added')
         logger.debug('tar file polygons added') 
       except Exception as e:
