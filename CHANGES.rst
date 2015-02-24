@@ -1,7 +1,12 @@
 Changes
 *******
 
-0.1.3 ()
+0.2.0 (2015-02-24)
+==================
+
+* Now possible to use shared anaconda installation.
+
+0.1.3 (2015-02-23)
 ==================
 
 * install R packages from anaconda.
