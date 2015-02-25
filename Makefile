@@ -1,4 +1,4 @@
-VERSION := 0.2.0
+VERSION := 0.2.1
 RELEASE := master
 
 # Application
@@ -129,11 +129,6 @@ anaconda:
 	@test -d $(ANACONDA_HOME) || bash "$(DOWNLOAD_CACHE)/$(FN)" -b -p $(ANACONDA_HOME)   
 	@echo "Add '$(ANACONDA_HOME)/bin' to your PATH variable in '.bashrc'."
 
-#.PHONY: conda_pinned
-#conda_pinned:
-#	@echo "Update pinned conda packages ..."
-#	@test -d $(ANACONDA_HOME) && wget -q -c -O "$(ANACONDA_HOME)/conda-meta/pinned" https://raw.githubusercontent.com/bird-house/birdhousebuilder.bootstrap/master/conda_pinned 
-
 .PHONY: conda_config
 conda_config: anaconda
 	@echo "Update ~/.condarc"
@@ -141,10 +136,16 @@ conda_config: anaconda
 	@"$(ANACONDA_HOME)/bin/conda" config --set ssl_verify false
 	@"$(ANACONDA_HOME)/bin/conda" config --add channels defaults
 	@"$(ANACONDA_HOME)/bin/conda" config --add channels birdhouse
+	@"$(ANACONDA_HOME)/bin/conda" config --add channels pingucarsti
 
 .PHONY: conda_env
 conda_env: anaconda conda_config
-	@test -d $(PREFIX) || "$(ANACONDA_HOME)/bin/conda" create -m -p $(PREFIX) -c birdhouse --yes python setuptools pyopenssl genshi mako
+	@test -d $(PREFIX) || "$(ANACONDA_HOME)/bin/conda" create -m -p $(PREFIX) -c birdhouse --yes python=2.7.8 setuptools pyopenssl genshi mako
+
+.PHONY: conda_pinned
+conda_pinned: conda_env
+	@echo "Update pinned conda packages ..."
+	@test -d $(PREFIX) && wget -q -c -O "$(PREFIX)/conda-meta/pinned" https://raw.githubusercontent.com/bird-house/birdhousebuilder.bootstrap/master/conda_pinned 
 
 .PHONY: conda_clean
 conda_clean: anaconda conda_config
@@ -153,7 +154,7 @@ conda_clean: anaconda conda_config
 ## Build targets
 
 .PHONY: bootstrap
-bootstrap: init conda_env bootstrap-buildout.py
+bootstrap: init conda_env conda_pinned bootstrap-buildout.py
 	@echo "Bootstrap buildout ..."
 	@test -f bin/buildout || bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);python bootstrap-buildout.py -c custom.cfg --allow-site-packages"
 
