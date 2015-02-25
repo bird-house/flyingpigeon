@@ -1,4 +1,4 @@
-VERSION := 0.2.1
+VERSION := 0.2.2
 RELEASE := master
 
 # Application
@@ -51,10 +51,12 @@ help:
 	@echo "\t version     \t- Prints version number of this Makefile."
 	@echo "\t info        \t- Prints information about your system."
 	@echo "\t install     \t- Installs your application by running 'bin/buildout -c custom.cfg'."
+	@echo "\t test        \t- Run tests (but skip long running tests)."
+	@echo "\t testall     \t- Run all tests (including long running tests)."
 	@echo "\t clean       \t- Deletes all files that are created by running buildout."
 	@echo "\t distclean   \t- Removes *all* files that are not controlled by 'git'.\n\t\t\tWARNING: use it *only* if you know what you do!"
 	@echo "\t sysinstall  \t- Installs system packages from requirements.sh. You can also call 'bash requirements.sh' directly."
-	@echo "\t docs        \t- Generates HTML documentation with Sphinx. Open in you browser: docs/build/html/index.html"
+#	@echo "\t docs        \t- Generates HTML documentation with Sphinx. Open in you browser: docs/build/html/index.html"
 	@echo "\t selfupdate  \t- Updates this Makefile."
 	@echo "\nSupervisor targets:\n"
 	@echo "\t start       \t- Starts supervisor service: $(PREFIX)/etc/init.d/supervisord start"
@@ -194,6 +196,12 @@ buildclean:
 
 .PHONY: test
 test:
+	@echo "Running tests (skip slow tests) ..."
+	bin/nosetests -a '!slow' unit_tests
+
+.PHONY: testall
+testall:
+	@echo "Running all tests (include slow tests) ..."
 	@echo "Running tests ..."
 	bin/nosetests unit_tests
 
