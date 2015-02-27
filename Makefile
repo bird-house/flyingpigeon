@@ -158,6 +158,7 @@ conda_clean: anaconda conda_config
 .PHONY: bootstrap
 bootstrap: init conda_env conda_pinned bootstrap-buildout.py
 	@echo "Bootstrap buildout ..."
+	@-test -f bin/buildout || "$(ANACONDA_HOME)/bin/conda" remove -y -n $(CONDA_ENV) curl setuptools
 	@test -f bin/buildout || bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);python bootstrap-buildout.py -c custom.cfg --allow-site-packages"
 
 .PHONY: sysinstall
