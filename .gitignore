@@ -54,6 +54,10 @@ bootstrap.py
 #docs/make.bat
 docs/build/
 
+
+# ipython
+.ipynb_checkpoints
+
 # External Sources
 #src/external
 
