@@ -56,7 +56,7 @@ help:
 	@echo "\t clean       \t- Deletes all files that are created by running buildout."
 	@echo "\t distclean   \t- Removes *all* files that are not controlled by 'git'.\n\t\t\tWARNING: use it *only* if you know what you do!"
 	@echo "\t sysinstall  \t- Installs system packages from requirements.sh. You can also call 'bash requirements.sh' directly."
-	@echo "\t docs        \t- Generates HTML documentation with Sphinx. Open in you browser: docs/build/html/index.html"
+	@echo "\t docs        \t- Generates HTML documentation with Sphinx.
 	@echo "\t selfupdate  \t- Updates this Makefile."
 	@echo "\nSupervisor targets:\n"
 	@echo "\t start       \t- Starts supervisor service: $(PREFIX)/etc/init.d/supervisord start"
@@ -210,6 +210,7 @@ testall:
 docs:
 	@echo "Generating docs with Sphinx ..."
 	$(MAKE) -C $@ html
+	@echo "open your browser: firefox docs/build/html/index.html"
 
 .PHONY: selfupdate
 selfupdate: bootstrap.sh
