@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Flyingpigeon's documentation!
-========================================
+Introduction
+============
 
 Flying Pigeon (the bird)
   *The Pigeon find its way home over extremely long distances. [..].* (`Wikipedia <https://en.wikipedia.org/wiki/Pigeon_flying>`_).
@@ -19,8 +19,8 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   installation/index
-   configuration/index
+   installation
+   configuration
    processes/index
  
 
