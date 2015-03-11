@@ -23,7 +23,7 @@ Contents:
 
    installation
    configuration
-   processes/index
+   processes
  
 
 Indices and tables
