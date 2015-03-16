@@ -28,8 +28,8 @@ USER phoenix
 # Update makefile and run install
 RUN bash bootstrap.sh -u && make clean install 
 
-# cd into anaconda
-WORKDIR /home/phoenix/anaconda
+# cd into conda birdhouse environment
+WORKDIR /home/phoenix/.conda/envs/birdhouse
 
 # all currently used ports in birdhouse
 EXPOSE 8080 8081 8082 8090 8091 8092 8093 8094 9001
