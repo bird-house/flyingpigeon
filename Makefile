@@ -209,7 +209,7 @@ testall:
 .PHONY: docs
 docs:
 	@echo "Generating docs with Sphinx ..."
-	$(MAKE) -C $@ html
+	$(MAKE) -C $@ clean html
 	@echo "open your browser: firefox docs/build/html/index.html"
 
 .PHONY: selfupdate
