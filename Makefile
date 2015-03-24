@@ -142,7 +142,7 @@ conda_config: anaconda
 
 .PHONY: conda_env
 conda_env: anaconda conda_config
-	@test -d $(PREFIX) || "$(ANACONDA_HOME)/bin/conda" create -m -p $(PREFIX) -c birdhouse --yes python=2.7.8 setuptools pyopenssl genshi mako
+	@test -d $(PREFIX) || "$(ANACONDA_HOME)/bin/conda" create -m -p $(PREFIX) -c birdhouse --yes python=2.7.8 setuptools=14.3 curl pyopenssl genshi mako
 
 .PHONY: conda_pinned
 conda_pinned: conda_env
@@ -158,8 +158,7 @@ conda_clean: anaconda conda_config
 .PHONY: bootstrap
 bootstrap: init conda_env conda_pinned bootstrap-buildout.py
 	@echo "Bootstrap buildout ..."
-	@-test -f bin/buildout || "$(ANACONDA_HOME)/bin/conda" remove -y -n $(CONDA_ENV) curl setuptools
-	@test -f bin/buildout || bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);python bootstrap-buildout.py -c custom.cfg --allow-site-packages"
+	@test -f bin/buildout || bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);python bootstrap-buildout.py -c custom.cfg --allow-site-packages --setuptools-version 14.3 --version 2.3.1"
 
 .PHONY: sysinstall
 sysinstall: bootstrap.sh requirements.sh
