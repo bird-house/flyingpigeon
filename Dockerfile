@@ -1,6 +1,7 @@
 FROM ubuntu:14.04
 MAINTAINER Flyingpigeon WPS Application
 
+
 # Add user phoenix
 RUN useradd -d /home/phoenix -m phoenix
 
