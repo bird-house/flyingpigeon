@@ -21,10 +21,15 @@ install_pkgs() {
     elif [ -f /etc/redhat-release ] ; then
         echo "Install CentOS packages for Birdhouse build ..."
         #sudo rpm -i http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-        sudo yum -y update
-        sudo yum -y install epel-release
-        sudo yum -y install wget curl gcc-c++
-        sudo yum -y install vim-common  # anaconda needs xxd
+        sudo yum update -y
+        sudo yum install -y epel-release
+        sudo yum install -y wget
+        sudo yum install -y curl
+        sudo yum install -y gcc-c++
+        sudo yum install -y make
+        sudo yum install -y tar
+        sudo yum install -y bzip2
+        sudo yum install -y vim-common  # anaconda needs xxd
     elif [ `uname -s` = "Darwin" ] ; then
         echo "Install Homebrew packages for Birdhouse build ..."
         brew install wget curl libmagic

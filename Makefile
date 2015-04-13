@@ -96,6 +96,7 @@ backup:
 	@echo "Setup default .gitignore ..."
 	@wget -q --no-check-certificate -O .gitignore "https://raw.githubusercontent.com/bird-house/birdhousebuilder.bootstrap/$(RELEASE)/dot_gitignore"
 
+.PHONY: bootstrap.sh
 bootstrap.sh:
 	@echo "Update bootstrap.sh ..."
 	@wget -q --no-check-certificate -O bootstrap.sh "https://raw.githubusercontent.com/bird-house/birdhousebuilder.bootstrap/$(RELEASE)/bootstrap.sh"
