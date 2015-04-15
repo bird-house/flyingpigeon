@@ -2,6 +2,9 @@ import rpy2.robjects as robjects
 from rpy2.robjects.packages import importr
 
 def RL(T,a,b,s):
+        """Calculation of return levels.
+        RL(T,a,b,s)
+         """
         T = float(T)
         from math import log 
         yT = -1/log(1 - 1/T)
@@ -12,6 +15,8 @@ def RL(T,a,b,s):
         return(zT)
 
 def rl_bootstrap(ts, T=100, nsim=1000):
+    """rl_bootstrap(ts, T=100, nsim=1000)
+    """
     import rpy2.robjects.numpy2ri
     from rpy2.robjects import FloatVector
     from numpy import sort , array
@@ -43,6 +48,8 @@ def rl_bootstrap(ts, T=100, nsim=1000):
     return RL_bt
 
 def eventdistribution(ts, nsim=100, rp = [ 5. ,10. ,20., 50. ,100. ,200., 300., 400. ,500., 700, 1000. ]):
+    """ eventdistribution(ts, nsim=100, rp = [ 5. ,10. ,20., 50. ,100. ,200., 300., 400. ,500., 700, 1000. ])
+    """
     from rpy2.robjects import FloatVector
     from numpy import vstack, array, percentile
     import rpy2.robjects.numpy2ri
