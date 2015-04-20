@@ -47,7 +47,7 @@ def rl_bootstrap(ts, T=100, nsim=1000):
         
     return RL_bt
 
-def eventdistribution(ts, nsim=100, rp = [ 5. ,10. ,20., 50. ,100. ,200., 300., 400. ,500., 700, 1000. ]):
+def eventdistribution(ts, per=[33,66], nsim=100, rp = [ 5. ,10. ,20., 50. ,100. ,200., 300., 400. ,500., 700, 1000. ]):
     """ eventdistribution(ts, nsim=100, rp = [ 5. ,10. ,20., 50. ,100. ,200., 300., 400. ,500., 700, 1000. ])
     """
     from rpy2.robjects import FloatVector
@@ -66,18 +66,18 @@ def eventdistribution(ts, nsim=100, rp = [ 5. ,10. ,20., 50. ,100. ,200., 300., 
     rl = []
     edist = []
 
-    per10 = []
-    per90 = []
+    per_low = []
+    per_high = []
 
     for T in rp:
         rl.append(RL(T,a,b,s))
         
         RL_bt = rl_bootstrap(ts,T, nsim=100)
-        per = percentile(RL_bt,[10,90])
-        per10.append(per[0])
-        per90.append(per[1])
+        per = percentile(RL_bt,[33,66])
+        per_low.append(per[0])
+        per_high.append(per[1])
 
-    rl_c = vstack((rp,per10,rl, per90))
+    rl_c = vstack((rp,per_low,rl, per_high))
     
     return (rl_c)
 
