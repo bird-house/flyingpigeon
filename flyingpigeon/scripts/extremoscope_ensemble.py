@@ -52,9 +52,9 @@ indice_units = {'ID':'days',
              'TX':'Celcius',
              }
 
-i = os.listdir(anom_dir)
+indices = os.listdir(ts_dir)
 
-for indice in i : # /RR/rcp45/AUT/
+for indice in indices : # /RR/rcp45/AUT/
   s = os.listdir(os.path.join(ts_dir,indice))
   for scenario in s:
     l = os.listdir(os.path.join(ts_dir,indice,scenario))
