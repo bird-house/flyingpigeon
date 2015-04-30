@@ -19,11 +19,23 @@ def add_statistic(nc_url, var):
     jd = netCDF4.num2date(times[:],times.units)
     hs = pd.Series(h,index=jd)
     
-    showyear = cdo.showyear(input = file )
+    showyear = cdo.showyear(input = nc_url )
     years = [int(i) for i in showyear[0].split(' ')]
 
-    nc.createDimension('ref_period', len(period))
+    ref_periods = []
+    ref_stds = []
+    ref_medians = []
+    ref_means = []
+
+    for start in years[:-29]:
+        end = start + 30
+        ref_periods.append(start)
+        ref_stds.append(hs[str(start):str(end)].std())
+        ref_medians.append(hs[str(start):str(end)].median())
+        ref_means.append(hs[str(start):str(end)].mean())
     
+
+    nc.createDimension('ref_period', len(ref_periods))
     ref_period = nc.createVariable(varname= 'ref_period', datatype = 'i', dimensions='ref_period')
     ref_median = nc.createVariable(varname= 'ref_median', datatype = 'float', dimensions='ref_period')
     ref_mean = nc.createVariable(varname= 'ref_mean', datatype = 'float', dimensions='ref_period')
@@ -46,17 +58,6 @@ def add_statistic(nc_url, var):
     ref_median.setncatts(ref_median_att)
 
 
-    ref_periods = []
-    ref_stds = []
-    ref_medians = []
-    ref_means = []
-
-    for start in years[:-29]:
-        end = start + 30
-        ref_periods.append(start)
-        ref_stds.append(hs[str(start):str(end)].std())
-        ref_medians.append(hs[str(start):str(end)].median())
-        ref_means.append(hs[str(start):str(end)].mean())
 
 
     ref_period[:] = ref_periods
