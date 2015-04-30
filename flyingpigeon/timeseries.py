@@ -1,15 +1,17 @@
 """ processing of timeseries """
 
-def add_statistics(nc_url, var):
-""" add statistic variables to a given netCDF file for a given variable. 
-The statisitcs is calculated as a running 30 Year moving time window"""
+from cdo import *   # python version
+cdo = Cdo()
+
+
+def add_statistic(nc_url, var):
+    """ add statistic variables to a given netCDF file for a given variable. 
+    The statisitcs is calculated as a running 30 Year moving time window"""
  
     import pandas as pd
     import netCDF4
     from numpy import squeeze
     import numpy as np 
-    from cdo import *   # python version
-    cdo = Cdo()
 
     nc = netCDF4.Dataset(nc_url, mode="a")
     h =  squeeze(nc.variables[var])
@@ -59,10 +61,7 @@ The statisitcs is calculated as a running 30 Year moving time window"""
 
     ref_period[:] = ref_periods
     ref_median[:] = ref_medians
-    ref_mean[:] = ref_mean
+    ref_mean[:] = ref_means
     ref_std[:] = ref_stds
 
     nc.close()
-
-
-
