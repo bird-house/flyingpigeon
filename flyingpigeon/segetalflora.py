@@ -1,6 +1,4 @@
-
-
-def get_equation(culture_type, climate_type):
+def get_equation(culture_type= 'fallow', climate_type=2):
   climate_type = str(climate_type)
   if culture_type == 'fallow':  
     if climate_type == '1': 
@@ -21,7 +19,7 @@ def get_equation(culture_type, climate_type):
       equation ="\'sf_fal_a=0.2787*(%s-273.15)^3-7.5658*(%s-273.15)^2+72.4143*(%s-273.15)-76.29\'" %('tas','tas','tas')
     else: 
       equation = 'no equation found'
-     
+      
     return equation  
   
   

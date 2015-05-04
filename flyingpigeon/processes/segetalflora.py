@@ -50,7 +50,6 @@ class sflora(WPSProcess):
       allowedValues=["fallow", "intensiv", "extensiv", "all"] # sem
       )
 
-
 # calculation of number of segetal flora species
   def execute(self):
     import tempfile
