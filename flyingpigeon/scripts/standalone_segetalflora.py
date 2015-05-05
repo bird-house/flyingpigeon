@@ -7,18 +7,18 @@ from cdo import *
 cdo = Cdo()
 
 # birdhouse WPS must be running (make start # in the toplevel of one of the birds)
+# export PYTHONPATH=$HOME/birdhouse/flyingpigeon/flyingpigeon/
 
 from flyingpigeon import segetalflora as sg
 from flyingpigeon import clipping
-
      
 climate_type = ['1','2','3','4','5','6','7','all']
 culture_type = ['fallow', 'extensiv', 'intensiv', 'all']
 
-nc = '/homel/nhempel/anaconda/var/cache/pywps/tas_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20210101-20251231.nc'
+nc  = '/homel/nhempel/anaconda/var/cache/pywps/tas_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20210101-20251231.nc'
 out = '/homel/nhempel/data/cdotest.nc'
 
-calc = [{'func':'mean','name':'mean'}]
+calc = [{'func':'mean','name':'tas'}]
 calc_grouping = ['year']
 
 # create temp dir
