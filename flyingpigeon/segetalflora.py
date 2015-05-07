@@ -1,4 +1,8 @@
 def get_equation(culture_type= 'fallow', climate_type=2):
+  """
+  example: 
+  eq = get_equation(culture_type= 'fallow', climate_type=2)
+  """
   climate_type = str(climate_type)
   if culture_type == 'fallow':  
     if climate_type == '1': 

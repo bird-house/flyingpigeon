@@ -3,9 +3,16 @@
 from cdo import *   # python version
 cdo = Cdo()
 
+def fldmean(polygon, dir_output = '.'):
+  from os.path import join, basename 
+  """ gives a statisitcs timeseries of an given polygon"""  
+  
+  output = join(dir_output, basename(polygon))
+  cdo.fldmean(input = polygon , output = output)
+  return output
 
 def add_statistic(nc_url, var):
-    """ add statistic variables to a given netCDF file for a given variable. 
+    """ add statistic variables to a given netCDF file timeseries for a given variable. 
     The statisitcs is calculated as a running 30 Year moving time window"""
  
     import pandas as pd
@@ -56,9 +63,6 @@ def add_statistic(nc_url, var):
     ref_std.setncatts(ref_std_att)
     ref_mean.setncatts(ref_mean_att)
     ref_median.setncatts(ref_median_att)
-
-
-
 
     ref_period[:] = ref_periods
     ref_median[:] = ref_medians

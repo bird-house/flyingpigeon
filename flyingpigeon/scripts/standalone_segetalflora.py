@@ -1,5 +1,7 @@
 # calculation of number of segetal flora species
 
+from os import environ, mkdir
+from os.path import join
 import tempfile
 # import shutil
 
@@ -8,30 +10,33 @@ cdo = Cdo()
 
 # birdhouse WPS must be running (make start # in the toplevel of one of the birds)
 # export PYTHONPATH=$HOME/birdhouse/flyingpigeon/flyingpigeon/
-
 from flyingpigeon import segetalflora as sg
 from flyingpigeon import clipping
      
 climate_type = ['1','2','3','4','5','6','7','all']
 culture_type = ['fallow', 'extensiv', 'intensiv', 'all']
-
-nc  = '/homel/nhempel/anaconda/var/cache/pywps/tas_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20210101-20251231.nc'
-out = '/homel/nhempel/data/cdotest.nc'
-
+HOME = environ['HOME']
+nc  = join(HOME , '.conda/envs/birdhouse/var/cache/pywps/tas_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20210101-20251231.nc')
 calc = [{'func':'mean','name':'tas'}]
 calc_grouping = ['year']
 
 # create temp dir
-tmp_dir = tempfile.mkdtemp()
+mkdir(os.path.curdir+'/dir_tas/')
+mkdir(os.path.curdir+'/dir_polygons/')
+mkdir(os.path.curdir+'/dir_timeseries/')
+mkdir(join(dir_polygons,'EUR/')
+dir_tas = (os.path.curdir+'/dir_tas/')
+dir_polygons = (os.path.curdir+'/dir_polygons/')
+dir_timeseries = (os.path.curdir+'/dir_timeseries/')
+
 # prepare input files, Europe clipping and concatination 
-europe_yearsum = clipping.clip_continent(urls=nc, calc=calc,calc_grouping= calc_grouping, 
-                                         prefix='tas_Europe_year', continent='Europe',  dir_output=tmp_dir)
+europe_yearsum = clipping.clip_continent(urls=nc, calc=calc,calc_grouping= calc_grouping,
+                                         prefix='tas_Europe_year', continent='Europe', dir_output=dir_tas)
 
-p1, tmp1 = tempfile.mkstemp( suffix='.nc')
-cdo.yearmean (input = nc , output = tmp1)
 
-nc_eur = clipping( '%s' % (tmp1) , tmp_dir)
-cdo.expr(eq , input=tmp1, output=out)
+cdo.expr(eq , input=europe_yearsum, output=join(dir_polygons,'EUR/', out))
 
-os.close( p1 )
-shutil.rmtree(tmp_dir)
+EUR_seglo = clipping.clip_counties_EUR(urls=out, prefix='tas_FRA_year', dir_output = dir_polygons, country='FRA')
+
+fldmean = timeseries.fldmean(EUR_seglo, dir_output = dir_timeseries)
+
