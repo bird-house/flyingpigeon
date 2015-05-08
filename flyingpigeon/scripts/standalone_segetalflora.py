@@ -19,8 +19,13 @@ from malleefowl import wpslogging as logging
 climate_type = ['1','2','3','4','5','6','7','all']
 culture_type = ['fallow', 'extensiv', 'intensiv', 'all']
 HOME = environ['HOME']
-nc  = join(HOME , '.conda/envs/birdhouse/var/cache/pywps/tas_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20210101-20251231.nc')
+nc1  = join(HOME , '.conda/envs/birdhouse/var/cache/pywps/tas_EUR-11_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_sem_200101-200510.nc')
+nc2  = join(HOME , '.conda/envs/birdhouse/var/cache/pywps/tas_EUR-11_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_sem_199101-200010.nc')
+
 countries = ['AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN','FRA','GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX','MLT','NLD','POL','PRT','ROU','SVK','SVN','SWE','NOR','CHE','ISL','MKD','MNE','SRB','MDA','UKR','BIH','ALB','BLR','KOS']
+
+ncs = [nc1,nc2]
+
 
 prefix = drs_filename(nc).strip('.nc')
 calc = [{'func':'mean','name':'tas'}]

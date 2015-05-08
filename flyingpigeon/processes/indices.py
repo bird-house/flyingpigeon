@@ -461,7 +461,6 @@ class icclimWorker(WPSProcess):
     logger.debug('starting Cordex viewer preparation')
     
     self.show_status('starting Cordex viewer preparation', 75)
-    
     os.mkdir(os.path.join(os.path.curdir,'polygons/'))
     polygons = os.path.join(os.path.curdir,'polygons/')
     domain=self.domain.getValue()

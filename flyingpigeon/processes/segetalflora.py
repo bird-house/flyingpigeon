@@ -1,8 +1,8 @@
-from malleefowl.process import WPSProcess
-import subprocess
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
+from malleefowl.process import WPSProcess
+import subprocess
 
 class segetalflora(WPSProcess):
   """This process calculates the relative humidity"""
@@ -90,39 +90,94 @@ class segetalflora(WPSProcess):
     import tarfile
     import tempfile
     
-    import tools #, clipping, timeseries, utils
-    import segetalflora as sg
-
+    import utils
+    
     logger.debug('starting segetalflora process execution')
     self.show_status('starting calcualtion segetalflora', 5)
     
     ## prepare environment
 
-    # create the tar files 
-    (fp_tarf_tas, tarf_tas) = tempfile.mkstemp(dir=".", suffix='.tar')
-    (fp_tarf_polygons, tarf_polygons) = tempfile.mkstemp(dir=".", suffix='.tar')
-    (fp_tarf_fieldmeans, tarf_fieldmeans) = tempfile.mkstemp(dir=".", suffix='.tar')
-    tar_tas = tarfile.open(tarf_tas, "w")
-    tar_polygons = tarfile.open(tarf_polygons, "w")
-    tar_fieldmeans = tarfile.open(tarf_fieldmeans, "w")
-    
-    # create output folders
-    dir_tas = (curdir+'/dir_tas/')
-    dir_polygons = (curdir+'/dir_polygons/')
-    dir_fieldmeans = (curdir+'/dir_fieldmeans/')
-    mkdir(dir_tas)
-    mkdir(dir_polygons)
-    mkdir(dir_fieldmeans)
+    # create the tar files
+    try: 
+      (fp_tarf_tas, tarf_tas) = tempfile.mkstemp(dir=".", suffix='.tar')
+      (fp_tarf_polygons, tarf_polygons) = tempfile.mkstemp(dir=".", suffix='.tar')
+      (fp_tarf_fieldmeans, tarf_fieldmeans) = tempfile.mkstemp(dir=".", suffix='.tar')
+      tar_tas = tarfile.open(tarf_tas, "w")
+      tar_polygons = tarfile.open(tarf_polygons, "w")
+      tar_fieldmeans = tarfile.open(tarf_fieldmeans, "w")
+      logger.debug('tar files initialized')
+      
+      # create output folders
+      dir_tas = (curdir+'/dir_tas/')
+      dir_polygons = (curdir+'/dir_polygons/')
+      dir_fieldmeans = (curdir+'/dir_fieldmeans/')
+      mkdir(dir_tas)
+      mkdir(dir_polygons)
+      mkdir(dir_fieldmeans)
+      logger.debug('out directories created')
+    except  Exception as e:
+      msg = 'tar file or mkdir failed!: %s ' % (e)
+      logger.error(msg)
+      
+    countries = ['AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN','FRA','GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX','MLT','NLD','POL','PRT','ROU','SVK','SVN','SWE','NOR','CHE','ISL','MKD','MNE','SRB','MDA','UKR','BIH','ALB','BLR','KOS']
 
+    calc = [{'func':'mean','name':'tas'}]
+    calc_grouping = ['year']
+    
     # read argments to variables
+    #try:  
     ncs = self.getInputValues(identifier='netcdf_file')
-    
+    #climate_type = self.climate_type.getValue()
+    #culture_type = self.culture_type.getValue()
+    self.show_status('urls for %s ncs found' % (len(ncs)), 6)
+    #except  Exception as e:
+      #msg = 'read in the argments failed: %s ' % (e)
+      #logger.error(msg)
+     
     # recreate the filenames for CORDEX convention
-    nc_renamed = tools.fn_creator(ncs)
-
-    logger.debug('working dir environment prepared ')
-
-
+    #try:
+    ncs_renamed = utils.filename_creator(ncs)
+    self.show_status('urls for %s ncs_renamed found' % (len(ncs_renamed)), 6)
+    ncs_dic = utils.sort_by_filename(ncs_renamed)
+    logger.debug('filename created and files sorted')
+    self.show_status('working dir environment prepared', 7)
+    #  logger.error(msg)
+    
+    ##
+    # segetal flora calculation
+    import segetalflora as sg
+    import clipping_test as clipping
+    import timeseries
+    
+    for c, key in enumerate(ncs_dic):
+    
+      prefix = key
+      ncs_sort = utils.sort_by_time(ncs_dic[key])
+      self.show_status('%s' % (key), 7)
+      
+    
+      EUR_tas_mean = clipping.clip_continent(urls=ncs_sort, calc=calc,calc_grouping=calc_grouping,
+                                             prefix=prefix , continent='Europe', dir_output=dir_tas)
+      fldmean = timeseries.fldmean(europe_yearsum, dir_output = dir_fieldmeans)
+      """    
+      for cult in culture_type: 
+        for clim in climate_type:
+          
+          eq = sg.get_equation(culture_type= cult , climate_type=clim)
+          sf_prefix = prefix.replace('tas_', 'sf_%s_%s_' %(cult, clim))
+          output = join(dir_polygons, sf_prefix+'.nc' ) 
+          cdo.expr(eq , input=europe_yearsum, output=output)
+          fldmean = timeseries.fldmean(output, dir_output = dir_fieldmeans)
+          for country in countries:
+            try:
+              self.show_status('processing %s model %s cult %s climate %s country' %(c, cult, clim, country ), 5)
+              EUR_seglo = clipping.clip_counties_EUR(urls=output, prefix= sf_prefix.replace('_EUR', '_%s'% (country)), dir_output = dir_polygons, country=country)
+              fldmean = timeseries.fldmean(EUR_seglo, dir_output = dir_fieldmeans)
+            except Exception as e:
+              msg = 'ocgis calculations failed '
+              #logger.exception(msg)
+              #raise CalculationException(msg, e)
+    """
     self.show_status('files to tar archives', 75)
     tar_tas.add(dir_tas, arcname = dir_tas.replace(curdir, ""))
     tar_polygons.add(dir_polygons, arcname = dir_polygons.replace(curdir, ""))

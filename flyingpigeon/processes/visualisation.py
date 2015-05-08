@@ -9,10 +9,9 @@ from netCDF4 import Dataset
 import numpy as np
 
 from bokeh.plotting import *
-
 from malleefowl.process import WPSProcess
-class VisualisationProcess(WPSProcess):
 
+class VisualisationProcess(WPSProcess):
     def __init__(self):
         # definition of this process
         WPSProcess.__init__(self, 
@@ -58,9 +57,7 @@ class VisualisationProcess(WPSProcess):
             )         
             
     def execute(self):
-        
         import cdo 
-    
         cdo = cdo.Cdo()
 
         ncfiles = self.getInputValues(identifier='netcdf_file')
@@ -147,7 +144,6 @@ class VisualisationProcess(WPSProcess):
             meanData = np.mean(data,axis=1)
             ts = np.mean(meanData,axis=1)
             logger.debug('ts array  : %s ' % (len(ts)), 66)
-            
             
             for t in range(0, len(strDate)) : 
                 x = ddates.get(strDate[t],0)
