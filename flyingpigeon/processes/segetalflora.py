@@ -1,8 +1,9 @@
+from malleefowl.process import WPSProcess
+import subprocess
+
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
-from malleefowl.process import WPSProcess
-import subprocess
 
 class segetalflora(WPSProcess):
   """This process calculates the relative humidity"""
@@ -11,7 +12,7 @@ class segetalflora(WPSProcess):
       identifier = "segetalflora",
       title="Segetal Flora",
       version = "0.1",
-      metadata=[],
+      metadata=[{"title": "Institut Pierre Simon Laplace", "href": "https://www.ipsl.fr/en/"}],
       abstract="Species biodiversity of segetal flora",
       )
 
@@ -86,7 +87,7 @@ class segetalflora(WPSProcess):
   def execute(self):
     
     from os import mkdir
-    from os.path import curdir
+    from os.path import curdir, join
     import tarfile
     import tempfile
     
@@ -127,9 +128,16 @@ class segetalflora(WPSProcess):
     # read argments to variables
     #try:  
     ncs = self.getInputValues(identifier='netcdf_file')
-    #climate_type = self.climate_type.getValue()
-    #culture_type = self.culture_type.getValue()
-    self.show_status('urls for %s ncs found' % (len(ncs)), 6)
+    climate_type = self.climate_type.getValue()
+    culture_type = self.culture_type.getValue()
+    
+    if type(climate_type) != list:
+      climate_type = list([climate_type])
+    if type(culture_type) != list:
+      climate_type = list([culture_type])
+      
+    logger.debug('urls for %s ncs found' % (len(ncs)))
+    logger.debug('culture type: %s ' % (culture_type))
     #except  Exception as e:
       #msg = 'read in the argments failed: %s ' % (e)
       #logger.error(msg)
@@ -137,7 +145,7 @@ class segetalflora(WPSProcess):
     # recreate the filenames for CORDEX convention
     #try:
     ncs_renamed = utils.filename_creator(ncs)
-    self.show_status('urls for %s ncs_renamed found' % (len(ncs_renamed)), 6)
+    logger.debug('urls for ncs_renamed: %s' % (len(ncs_renamed)))
     ncs_dic = utils.sort_by_filename(ncs_renamed)
     logger.debug('filename created and files sorted')
     self.show_status('working dir environment prepared', 7)
@@ -145,39 +153,47 @@ class segetalflora(WPSProcess):
     
     ##
     # segetal flora calculation
-    import segetalflora as sg
-    import clipping_test as clipping
-    import timeseries
+    from flyingpigeon import segetalflora as sg
+    from flyingpigeon import clipping
+    from flyingpigeon import timeseries
     
+    from cdo import *
+    cdo = Cdo()
+
     for c, key in enumerate(ncs_dic):
-    
-      prefix = key
-      ncs_sort = utils.sort_by_time(ncs_dic[key])
-      self.show_status('%s' % (key), 7)
-      
-    
-      EUR_tas_mean = clipping.clip_continent(urls=ncs_sort, calc=calc,calc_grouping=calc_grouping,
-                                             prefix=prefix , continent='Europe', dir_output=dir_tas)
-      fldmean = timeseries.fldmean(europe_yearsum, dir_output = dir_fieldmeans)
-      """    
-      for cult in culture_type: 
-        for clim in climate_type:
-          
-          eq = sg.get_equation(culture_type= cult , climate_type=clim)
-          sf_prefix = prefix.replace('tas_', 'sf_%s_%s_' %(cult, clim))
-          output = join(dir_polygons, sf_prefix+'.nc' ) 
-          cdo.expr(eq , input=europe_yearsum, output=output)
-          fldmean = timeseries.fldmean(output, dir_output = dir_fieldmeans)
-          for country in countries:
-            try:
-              self.show_status('processing %s model %s cult %s climate %s country' %(c, cult, clim, country ), 5)
-              EUR_seglo = clipping.clip_counties_EUR(urls=output, prefix= sf_prefix.replace('_EUR', '_%s'% (country)), dir_output = dir_polygons, country=country)
-              fldmean = timeseries.fldmean(EUR_seglo, dir_output = dir_fieldmeans)
+      self.show_status('clipping Europe from %s/%s' %(c+1, len(ncs_dic)), 20)
+      try: 
+        prefix = key
+        ncs_sort = utils.sort_by_time(ncs_dic[key])
+        
+        EUR_tas_mean = clipping.clip_continent(urls=ncs_sort, 
+                                              calc=calc,calc_grouping=calc_grouping, prefix=prefix , continent='Europe', dir_output=dir_tas)
+        fldmean = timeseries.fldmean(EUR_tas_mean, dir_output = dir_fieldmeans)
+            
+        for cult in range(len(culture_type)): 
+          for clim in range(len(climate_type)):
+            try: 
+              eq = sg.get_equation(culture_type= culture_type[cult] , climate_type=climate_type[clim])
+              sf_prefix = prefix.replace('tas_', 'sf_%s_%s_' %(culture_type[cult], climate_type[clim]))
+              output = join(dir_polygons, sf_prefix+'.nc' ) 
+              cdo.expr(eq , input=EUR_tas_mean, output=output)
+              fldmean = timeseries.fldmean(output, dir_output = dir_fieldmeans)
+              for country in countries:
+                try:
+                  self.show_status('processing model %s/%s cult %s climate %s country %s' %(c+1,len(ncs_dic) culture_type[cult], climate_type[clim], country ), 50)
+                  EUR_seglo = clipping.clip_counties_EUR(urls=output, prefix= sf_prefix.replace('_EUR', '_%s'% (country)), dir_output = dir_polygons, country=country)
+                  fldmean = timeseries.fldmean(EUR_seglo, dir_output = dir_fieldmeans)
+                except Exception as e:
+                  msg = 'ocgis calculations failed '
+                  logger.exception(msg)
             except Exception as e:
-              msg = 'ocgis calculations failed '
-              #logger.exception(msg)
-              #raise CalculationException(msg, e)
-    """
+                  msg = 'subset calculation failed for %s, %s, %s ' % (key, culture_type[cult], climate_type[clim])
+                  logger.exception(msg)      
+      except Exception as e:
+          msg = 'segeltalflora processing failed for %s ' %s (key)
+          logger.exception(msg)
+          
+    
     self.show_status('files to tar archives', 75)
     tar_tas.add(dir_tas, arcname = dir_tas.replace(curdir, ""))
     tar_polygons.add(dir_polygons, arcname = dir_polygons.replace(curdir, ""))

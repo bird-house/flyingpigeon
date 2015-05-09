@@ -202,14 +202,16 @@ def has_variable(resource, variable):
 def filename_creator(nc_files):
   from os import path , rename
   from ocgis import RequestDataset
+  from netCDF4 import Dataset
   from datetime import datetime, timedelta
-  
+    
   if type(nc_files) != list:
-    nc_files = list(nc_files)
+    nc_files = list([nc_files])
   newnames = []
   for i in range(len(nc_files)):
     fp ,fn = path.split(nc_files[i])
     # logger.debug('fn_creator for: %s' % fn)
+    
     ds = Dataset(nc_files[i])
     rd = []
     rd = RequestDataset(nc_files[i])
@@ -242,13 +244,9 @@ def filename_creator(nc_files):
     else:
       filename = fn 
       logger.debug('WPS name forwarded :%s' % ( filename))
-      
-    ##except Exception as e: 
-      #msg = 'Could not define file name for file : %s %s' % ( nc , e )
-      #logger.error(msg)
-      #outlog = outlog + msg + '\n'
-    rename(nc_files[i], path.join(fp, filename ))
-    newnames.append(path.join(fp, filename))
+    rename(path.join(fp ,fn), path.join(fp, filename ))
+    if path.exists(path.join(fp, filename)):
+      newnames.append(path.join(fp, filename))
     logger.debug('file name generated and renamed :%s' % (len(filename)))
   return newnames    
 
