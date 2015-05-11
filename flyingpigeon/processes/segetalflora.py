@@ -48,16 +48,16 @@ class segetalflora(WPSProcess):
       allowedValues=["fallow", "intensiv", "extensiv", "all"] # sem
       )
 
-    # complex output
-    # -------------
-    #self.logout = self.addComplexOutput(
-      #identifier="logout",
-      #title="Indice log-file",
-      #abstract="logfile for segetalflora process",
-      #metadata=[],
-      #formats=[{"mimeType":"text/plain"}],
-      #asReference=True,
-      #)
+    #complex output
+    #-------------
+    self.logout = self.addComplexOutput(
+      identifier="logout",
+      title="Indice log-file",
+      abstract="logfile for segetalflora process",
+      metadata=[],
+      formats=[{"mimeType":"text/plain"}],
+      asReference=True,
+      )
     
     self.out_tas = self.addComplexOutput(
       title="tas_EUR",
@@ -90,11 +90,13 @@ class segetalflora(WPSProcess):
     from os.path import curdir, join
     import tarfile
     import tempfile
+    from datetime import datetime
     
     import utils
     
     logger.debug('starting segetalflora process execution')
     self.show_status('starting calcualtion segetalflora', 5)
+    outlog = "Starting the segetalflora calculation at: %s \n" % (datetime.strftime(datetime.now(), '%H:%M:%S %d-%m-%Y'))
     
     ## prepare environment
 
@@ -166,10 +168,11 @@ class segetalflora(WPSProcess):
         prefix = key
         ncs_sort = utils.sort_by_time(ncs_dic[key])
         
-        EUR_tas_mean = clipping.clip_continent(urls=ncs_sort, 
-                                              calc=calc,calc_grouping=calc_grouping, prefix=prefix , continent='Europe', dir_output=dir_tas)
+        EUR_tas_mean = clipping.clip_continent(urls=ncs_sort, calc=calc, 
+                                               calc_grouping=calc_grouping, prefix=prefix,
+                                               continent='Europe', dir_output=dir_tas)
         fldmean = timeseries.fldmean(EUR_tas_mean, dir_output = dir_fieldmeans)
-            
+        outlog = outlog + '*** tas mean calculated for Europe with %s' %(ncs_dic[key])    
         for cult in range(len(culture_type)): 
           for clim in range(len(climate_type)):
             try: 
@@ -183,15 +186,19 @@ class segetalflora(WPSProcess):
                   self.show_status('processing model %s/%s cult %s climate %s country %s' %(c+1,len(ncs_dic), culture_type[cult], climate_type[clim], country ), 50)
                   EUR_seglo = clipping.clip_counties_EUR(urls=output, prefix= sf_prefix.replace('_EUR', '_%s'% (country)), dir_output = dir_polygons, country=country)
                   fldmean = timeseries.fldmean(EUR_seglo, dir_output = dir_fieldmeans)
+                  outlog = outlog + '*** Processed for model  cult %s climate %s country %s' %(ncs_dic[key], culture_type[cult], climate_type[clim], country )
                 except Exception as e:
-                  msg = 'ocgis calculations failed '
+                  msg = 'ocgis calculations failed : %s \n' % (e)
                   logger.exception(msg)
+                  outlog = outlog + msg
             except Exception as e:
-                  msg = 'subset calculation failed for %s, %s, %s ' % (key, culture_type[cult], climate_type[clim])
-                  logger.exception(msg)      
+                  msg = 'subset calculation failed for %s, %s, %s: %s \n' % (key, culture_type[cult], climate_type[clim], e)
+                  logger.exception(msg)
+                  outlog = outlog + msg
       except Exception as e:
-          msg = 'segeltalflora processing failed for %s '% (key)
+          msg = 'segeltalflora processing failed for %s, %s \n'% (key, e)
           logger.exception(msg)
+          outlog = outlog + msg
           
     
     self.show_status('files to tar archives', 75)
@@ -203,7 +210,13 @@ class segetalflora(WPSProcess):
     tar_polygons.close()
     logger.debug('tar ncfiles closed')
     
-   # self.logout.setValue( logfile )
+    outlog = outlog + "Finishing the segetalflora calculation at: %s \n" % (datetime.strftime(datetime.now(), '%H:%M:%S %d-%m-%Y'))
+    
+    logfile = self.mktempfile(suffix='.txt')
+    with open(logfile, 'w') as fp:
+        fp.write(outlog)
+    
+    self.logout.setValue( logfile )
     self.out_fieldmeans.setValue( tarf_fieldmeans )
     self.out_polygons.setValue( tarf_polygons )
     self.out_tas.setValue( tarf_tas )
