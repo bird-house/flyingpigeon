@@ -190,7 +190,7 @@ class segetalflora(WPSProcess):
                   msg = 'subset calculation failed for %s, %s, %s ' % (key, culture_type[cult], climate_type[clim])
                   logger.exception(msg)      
       except Exception as e:
-          msg = 'segeltalflora processing failed for %s ' %s (key)
+          msg = 'segeltalflora processing failed for %s '% (key)
           logger.exception(msg)
           
     

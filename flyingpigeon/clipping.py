@@ -163,7 +163,8 @@ def clip_continent(urls, calc=None,  calc_grouping= None, prefix=None,
     rd = ocgis.RequestDataset(urls)
     ocgis.env.DIR_OUTPUT = dir_output
     ocgis.env.PREFIX = prefix    
-    geom_file = ocgis.OcgOperations(dataset=rd, calc=calc, calc_grouping=calc_grouping, output_format=output_format, select_ugid=ugids, geom=geom, add_auxiliary_files=False).execute()
+    geom_file = ocgis.OcgOperations(dataset=rd, calc=calc, calc_grouping=calc_grouping,
+                                    output_format=output_format, select_ugid=ugids, geom=geom, add_auxiliary_files=False).execute()
   except Exception as e:
       msg = 'ocgis calculations failed '
       logger.exception(msg)
@@ -173,7 +174,10 @@ def clip_continent(urls, calc=None,  calc_grouping= None, prefix=None,
 def clip_counties_EUR(urls, calc=None, calc_grouping= None, prefix=None,
                    country='FRA', output_format='nc', dir_output=None):
   """ possible continent entries:
-  'AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN','FRA','GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX','MLT','NLD','POL','PRT','ROU','SVK','SVN','SWE','NOR','CHE','ISL','MKD','MNE','SRB','MDA','UKR','BIH','ALB','BLR','KOS'"""
+  'AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN','FRA',
+  'GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX','MLT','NLD',
+  'POL','PRT','ROU','SVK','SVN','SWE','NOR','CHE','ISL','MKD','MNE',
+  'SRB','MDA','UKR','BIH','ALB','BLR','KOS'"""
   
   from ocgis.util.shp_cabinet import ShpCabinetIterator
   ocgis.env.OVERWRITE = True
