@@ -180,7 +180,7 @@ class segetalflora(WPSProcess):
               fldmean = timeseries.fldmean(output, dir_output = dir_fieldmeans)
               for country in countries:
                 try:
-                  self.show_status('processing model %s/%s cult %s climate %s country %s' %(c+1,len(ncs_dic) culture_type[cult], climate_type[clim], country ), 50)
+                  self.show_status('processing model %s/%s cult %s climate %s country %s' %(c+1,len(ncs_dic), culture_type[cult], climate_type[clim], country ), 50)
                   EUR_seglo = clipping.clip_counties_EUR(urls=output, prefix= sf_prefix.replace('_EUR', '_%s'% (country)), dir_output = dir_polygons, country=country)
                   fldmean = timeseries.fldmean(EUR_seglo, dir_output = dir_fieldmeans)
                 except Exception as e:
