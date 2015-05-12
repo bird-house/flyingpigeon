@@ -86,13 +86,15 @@ class segetalflora(WPSProcess):
 # calculation of number of segetal flora species
   def execute(self):
     
-    from os import mkdir
-    from os.path import curdir, join
+    from os import mkdir, 
+    from os.path import curdir, join , split
     import tarfile
     import tempfile
     from datetime import datetime
     
-    import utils
+    #from flyingpigeon import utils
+    #from flyingpigeon import timeseries
+    #from flyingpigeon import subseting as sub
     
     logger.debug('starting segetalflora process execution')
     self.show_status('starting calcualtion segetalflora', 5)
@@ -122,7 +124,11 @@ class segetalflora(WPSProcess):
       msg = 'tar file or mkdir failed!: %s ' % (e)
       logger.error(msg)
       
-    countries = ['AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN','FRA','GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX','MLT','NLD','POL','PRT','ROU','SVK','SVN','SWE','NOR','CHE','ISL','MKD','MNE','SRB','MDA','UKR','BIH','ALB','BLR','KOS']
+    countries = ['AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP',
+                 'EST','FIN','FRA','GBR','GRC','HUN','HRV','IRL',
+                 'ITA','LVA','LTU','LUX','MLT','NLD','POL','PRT',
+                 'ROU','SVK','SVN','SWE','NOR','CHE','ISL','MKD',
+                 'MNE','SRB','MDA','UKR','BIH','ALB','BLR','KOS']
 
     calc = [{'func':'mean','name':'tas'}]
     calc_grouping = ['year']
@@ -142,37 +148,40 @@ class segetalflora(WPSProcess):
     logger.debug('culture type: %s ' % (culture_type))
     #except  Exception as e:
       #msg = 'read in the argments failed: %s ' % (e)
-      #logger.error(msg)
-     
+      #logger.error(msg) 
     # recreate the filenames for CORDEX convention
     #try:
-    ncs_renamed = utils.filename_creator(ncs)
+    
+    nc_europe =[]
+    self.show_status('subset Europe', 7)
+    
+    for c, nc in enumerate(ncs): 
+      n = sub.masking(ncs[c], 'Europe')
+      nc_europe[c] = utils.filename_creator(n)
+    
+    # ncs_renamed = utils.filename_creator(ncs)
     logger.debug('urls for ncs_renamed: %s' % (len(ncs_renamed)))
-    ncs_dic = utils.sort_by_filename(ncs_renamed)
-    logger.debug('filename created and files sorted')
+    ncs_merge = timeseries.merge(nc_europe)
+    logger.debug('Europe files merged ')
     self.show_status('working dir environment prepared', 7)
     #  logger.error(msg)
-    
     ##
     # segetal flora calculation
     from flyingpigeon import segetalflora as sg
     from flyingpigeon import clipping
-    from flyingpigeon import timeseries
     
     from cdo import *
     cdo = Cdo()
-
-    for c, key in enumerate(ncs_dic):
-      self.show_status('clipping Europe from %s/%s' %(c+1, len(ncs_dic)), 20)
-      try: 
-        prefix = key
-        ncs_sort = utils.sort_by_time(ncs_dic[key])
+    
+    for c, nc in enumerate(ncs_merge):
+      self.show_status('timeseries Europe from %s/%s' %(c+1, len(ncs_dic)), 20)
+      try:
+        prefix = path.split(nc)[1].strip('.nc')
+        output = join(dir_polygons, prefix+'.nc' )
+        cdo.yearmean( input= nc, output=output)
         
-        EUR_tas_mean = clipping.clip_continent(urls=ncs_sort, calc=calc, 
-                                               calc_grouping=calc_grouping, prefix=prefix,
-                                               continent='Europe', dir_output=dir_tas)
-        fldmean = timeseries.fldmean(EUR_tas_mean, dir_output = dir_fieldmeans)
-        outlog = outlog + '*** tas mean calculated for Europe with %s' %(ncs_dic[key])    
+        fldmean = timeseries.fldmean(output, dir_output = dir_fieldmeans)
+        outlog = outlog + '*** tas mean calculated for Europe with %s' %(nc)    
         for cult in range(len(culture_type)): 
           for clim in range(len(climate_type)):
             try: 

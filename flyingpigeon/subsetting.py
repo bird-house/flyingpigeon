@@ -12,18 +12,31 @@ from os.path import dirname, join
 DIR_MASKS = join(dirname(__file__), 'processes', 'masks')
 
 def masking(resource , mask):
+  """ possible masks: 
+  'Europe'
+  """
+  
   from cdo import Cdo
-  from tempfile import mkstemp
-  
   cdo = Cdo()
-  grid = cdo.griddes(input = resource)
+  from tempfile import mkstemp
+  from os import system 
   
-  gt, gridtxt= mkstemp(suffix='.txt')
-  with open(gridtxt, 'w') as fp:
-    for row in grid:
-      fp.write('%s \n'% (row))
-      
-  gt, nc_remap= mkstemp(suffix='.nc')    
-  cdo.remapnn('%s'% (gridtxt), input = resource, output = nc_remap )     
+  masks = {'Europe':'/homel/nhempel/birdhouse/flyingpigeon/flyingpigeon/processes/masks/Europa.nc'}
+  
+  gnc, nc_remap= mkstemp(suffix='.nc')
+  try:  
+    call = "cdo div '%s' '%s' '%s'" % ( resource , masks[mask], nc_remap)
+    system(call)
+  except Exception as e:
+    print 'direct masking failed %s' % (e)
+  #else:
+    try:
+      gnc, mask_rm= mkstemp(suffix='.nc')    
+      call = "cdo remapnn,%s %s %s" % (resource, masks[mask], mask_rm)
+      masks[mask] = mask_rm
+      call = "cdo div '%s' '%s' '%s'" % ( resource , masks[mask], nc_remap)
+      system(call)
+    except  Exception as e:
+      print 'remaped masking failed %s' % (e)
   return nc_remap
   
