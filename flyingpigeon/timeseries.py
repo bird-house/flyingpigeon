@@ -71,8 +71,15 @@ def add_statistic(nc_url, var):
 
     nc.close()
     
-def merge(resource, historical_concatination = False): 
-  """ sort according to filename (in DSR convention) and merge appropriate netCDF files"""
+def merge(resource, historical_concatination = False, dir_output = None): 
+  """
+  returns list of path to merged netCDF files.
+  sort according to filename (in DSR convention) and merge appropriate netCDF files
+  
+  :param resource: list of dictionary of netCDF file path equal domain is required for merging
+  :param historical_concatination : concatination of historical files to rcp szenarios (default = False)
+  ;param dir_output : path to directory for output 
+  """
   
   import utils
   from ocgis import RequestDataset , OcgOperations
@@ -82,12 +89,15 @@ def merge(resource, historical_concatination = False):
   res_dic = utils.sort_by_filename(resource, historical_concatination = historical_concatination)
   
   for key in res_dic:
-    ncs = utils.sort_by_time(res_dic[key])
-    rd = RequestDataset(uri=ncs )
-    ops = OcgOperations( dataset=rd, output_format='nc', add_auxiliary_files=False)
-    m_file = ops.execute()
-    merged_files.append(utils.filename_creator(m_file))
-  
+    if len(res_dic[key]) > 1: 
+      ncs = utils.sort_by_time(res_dic[key])    
+      rd = RequestDataset(uri=ncs )
+      ops = OcgOperations( dataset=rd, prefix = key, output_format='nc', dir_output = dir_output, add_auxiliary_files=False)
+      m_file = ops.execute()
+      var = key.split('_')[0]
+      merged_files.append(utils.drs_filename(m_file, variable=var))
+    else: 
+      merged_files.append(res_dic[key])
   return merged_files
   
   

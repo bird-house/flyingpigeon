@@ -15,28 +15,26 @@ def masking(resource , mask):
   """ possible masks: 
   'Europe'
   """
-  
   from cdo import Cdo
   cdo = Cdo()
   from tempfile import mkstemp
-  from os import system 
+  from os import system, path 
   
-  masks = {'Europe':'/homel/nhempel/birdhouse/flyingpigeon/flyingpigeon/processes/masks/Europa.nc'}
+  masks = {'Europe':'Europa.nc'}
+  gnc, nc_masked = mkstemp(dir= path.curdir, suffix='.nc')
   
-  gnc, nc_remap= mkstemp(suffix='.nc')
   try:  
-    call = "cdo div '%s' '%s' '%s'" % ( resource , masks[mask], nc_remap)
+    call = "cdo div '%s' '%s' '%s'" % ( resource , path.join(DIR_MASKS,masks[mask]), nc_masked)
     system(call)
   except Exception as e:
     print 'direct masking failed %s' % (e)
   #else:
     try:
-      gnc, mask_rm= mkstemp(suffix='.nc')    
-      call = "cdo remapnn,%s %s %s" % (resource, masks[mask], mask_rm)
+      gnc, mask_rm = mkstemp(dir= path.curdir, suffix='.nc')    
+      call = "cdo remapnn,%s %s %s" % ( resource, path.join(DIR_MASKS,masks[mask]), mask_rm)
       masks[mask] = mask_rm
-      call = "cdo div '%s' '%s' '%s'" % ( resource , masks[mask], nc_remap)
+      call = "cdo div '%s' '%s' '%s'" % ( resource , path.join(DIR_MASKS,masks[mask]), nc_masked)
       system(call)
     except  Exception as e:
       print 'remaped masking failed %s' % (e)
-  return nc_remap
-  
+  return nc_masked

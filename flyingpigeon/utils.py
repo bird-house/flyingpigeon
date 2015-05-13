@@ -228,6 +228,8 @@ def has_variable(resource, variable):
     return success
 
 def filename_creator(nc_files, var=None):
+  """ use drs_filename instead """
+  
   from os import path , rename
   from ocgis import RequestDataset
   from netCDF4 import Dataset
