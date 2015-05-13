@@ -72,22 +72,21 @@ def add_statistic(nc_url, var):
     nc.close()
     
 def merge(resource, historical_concatination = False): 
-  """ sort and merge netCDF Cordex files """
-  from flyingpigen.utils import sort_by_filename
-  from flyingpigen.utils import filename_creator
-  from flyingpigen.utils import sort_by_time
+  """ sort according to filename (in DSR convention) and merge appropriate netCDF files"""
+  
+  import utils
   from ocgis import RequestDataset , OcgOperations
   
   merged_files = []
-  renamed = filename_creator(resource)
-  res_dic = sort_by_filename(renamed, historical_concatination = historical_concatination)
+  # renamed = utils.filename_creator(resource)
+  res_dic = utils.sort_by_filename(resource, historical_concatination = historical_concatination)
   
   for key in res_dic:
-    ncs = sort_by_time(res_dic[key])
+    ncs = utils.sort_by_time(res_dic[key])
     rd = RequestDataset(uri=ncs )
     ops = OcgOperations( dataset=rd, output_format='nc', add_auxiliary_files=False)
     m_file = ops.execute()
-    merged_files.append(filename_creator(m_file))
+    merged_files.append(utils.filename_creator(m_file))
   
   return merged_files
   

@@ -38,7 +38,8 @@ def calc_grouping(grouping):
         raise Exception(msg)
     return calc_grouping
 
-def drs_filename( nc_file, skip_timestamp=False, skip_format=False ):
+def drs_filename( nc_file, skip_timestamp=False, skip_format=False , variable=None, rename_file=False  ):
+    
     """
     generates filename according to the data reference syntax (DRS).
     
@@ -48,10 +49,16 @@ def drs_filename( nc_file, skip_timestamp=False, skip_format=False ):
     :param nc_file: netcdf file
     :param skip_timestamp: if True then from/to timestamp is not added to the filename
                            (default: False)
+    :param variable : apprpriate variable for filename, if not set (default), variable will 
+                      be determinated. for files with more than one data variables 
+                      the variable parameter has to be defined (default: )
+                      example: variable='tas'
+    :param rename_file: rename the file. (default: False)                   
     :return: DRS filename
     """
     ds = Dataset(nc_file)
-    variable = get_variable(nc_file)
+    if variable == None: 
+      variable = get_variable(nc_file)
 
     # CORDEX example: EUR-11_ICHEC-EC-EARTH_historical_r3i1p1_DMI-HIRHAM5_v1_day
     cordex_pattern = "{variable}_{domain}_{driving_model}_{experiment}_{ensemble}_{model}_{version}_{frequency}"
@@ -89,6 +96,14 @@ def drs_filename( nc_file, skip_timestamp=False, skip_format=False ):
         # add format extension
         if skip_format == False:
             filename = filename + '.nc'
+        
+        # rename the file
+        if rename_file==True:
+          from os import path, rename
+          if path.exists(path.join(nc_file)):
+            pf  = path.dirname(nc_file)
+            rename(nc_file, path.join(pf, filename ))
+          
     except:
         logger.exception('Could not generate DRS filename for %s', nc_file)
     
@@ -167,27 +182,40 @@ def sort_by_filename(resources , historical_concatination = False ):
   """ Sort a list of files with Cordex conform file names. 
   returns a dictionary with name:list_of_files"""
   from os  import path
+  # from numpy import squeeze
+  
+  logger.debug('sort_by_filename module: len(resources) = %s ' % len(resources))  
   ndic = {}
-  for nc in resources:
-    #logger.debug('file: %s' % nc)
-    p, f = path.split(nc) 
-    n = f.split('_')
-    bn = '_'.join(n[0:-1])
-    if historical_concatination == False: 
-      ndic[bn] = [] # iniciate an approriate key with empty list in the dictionary
-    if historical_concatination == True:
-      if n[3] != 'historical':
-        ndic[bn] = []      
-  for key in ndic:
-    if historical_concatination == False:
-      for n in resources:
-        if key in n: 
-          ndic[key].append(n)
-    if historical_concatination == True:
-      historical = key.replace('rcp26','historical').replace('rcp45','historical').replace('rcp65','historical').replace('rcp85','historical')
-      for n in resources:
-        if key in n or historical in n: 
-          ndic[key].append(n)     
+  if type(resources) == list:
+    for nc in resources:
+      logger.debug('file: %s' % nc)
+      
+      p, f = path.split(path.abspath(nc)) 
+      n = f.split('_')
+      bn = '_'.join(n[0:-1])
+      if historical_concatination == False: 
+        ndic[bn] = [] # iniciate an approriate key with empty list in the dictionary
+      if historical_concatination == True:
+        if n[3] != 'historical':
+          ndic[bn] = []      
+    
+    for key in ndic:
+      if historical_concatination == False:
+        for n in resources:
+          if key in n: 
+            ndic[key].append(n)
+      if historical_concatination == True:
+        historical = key.replace('rcp26','historical').replace('rcp45','historical').replace('rcp65','historical').replace('rcp85','historical')
+        for n in resources:
+          if key in n or historical in n: 
+            ndic[key].append(n)
+  elif type(resources) == str:
+    p, f = path.split(path.abspath(resources))
+    ndic[f.replace('.nc','')] = resources
+  else:      
+    logger.error('sort_by_filename module failed: resources is not str or list')
+  
+  logger.debug('sort_by_filename module done: len(ndic) = %s ' % len(ndic))  
   return ndic # rndic
 
 def has_variable(resource, variable):
@@ -199,7 +227,7 @@ def has_variable(resource, variable):
         logger.exception('has_variable failed.')
     return success
 
-def filename_creator(nc_files):
+def filename_creator(nc_files, var=None):
   from os import path , rename
   from ocgis import RequestDataset
   from netCDF4 import Dataset
@@ -208,42 +236,41 @@ def filename_creator(nc_files):
   if type(nc_files) != list:
     nc_files = list([nc_files])
   newnames = []
-  for i in range(len(nc_files)):
-    fp ,fn = path.split(nc_files[i])
+  for i, nc in enumerate(nc_files):
+    fp ,fn = path.split(nc)
     # logger.debug('fn_creator for: %s' % fn)
     
-    ds = Dataset(nc_files[i])
+    ds = Dataset(nc)
     rd = []
-    rd = RequestDataset(nc_files[i])
+    rd = RequestDataset(nc)
     ts = ds.variables['time']
     reftime = reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
     st = datetime.strftime(reftime + timedelta(days=ts[0]), '%Y%m%d') 
     en = datetime.strftime(reftime + timedelta(days=ts[-1]), '%Y%m%d') 
     
+    if var == None:
+      var = str(rd.variable)
+    frq = str(ds.frequency)
+    exp = str(ds.experiment_id)
+    
     if (str(ds.project_id) == 'CMIP5'):
     #day_MPI-ESM-LR_historical_r1i1p1
-      var = str(rd.variable)
-      frq = str(ds.frequency)
       gmodel = str(ds.model_id)
-      exp = str(ds.experiment_id)
       ens = str(ds.parent_experiment_rip)
-      filename = var + '_' + str( gmodel + '_' + exp + '_' + ens + '_' + str(int(st)) + '-' + str(int(en)) + '.nc')
-        
+      filename = var + '_' + str( gmodel + '_' + exp + '_' + ens + '_' + str(int(st)) + '-' + str(int(en)) + '.nc')  
     elif (str(ds.project_id) == 'CORDEX'):
     #EUR-11_ICHEC-EC-EARTH_historical_r3i1p1_DMI-HIRHAM5_v1_day
-      var = str(rd.variable)
       dom = str(ds.CORDEX_domain)
       gmodel = str(ds.driving_model_id)
-      exp = str(ds.experiment_id)
       ens = str(ds.driving_model_ensemble_member)
       rmodel = str(ds.model_id)
       ver = str(ds.rcm_version_id)
-      frq = str(ds.frequency)
       filename = str(var + '_'+ dom + '_' + gmodel + '_' + exp + '_' + ens + '_' + rmodel + '_' + ver + \
         '_' + frq + '_' + str(int(st)) + '-' + str(int(en)) + '.nc' )
     else:
       filename = fn 
       logger.debug('WPS name forwarded :%s' % ( filename))
+    
     rename(path.join(fp ,fn), path.join(fp, filename ))
     if path.exists(path.join(fp, filename)):
       newnames.append(path.join(fp, filename))

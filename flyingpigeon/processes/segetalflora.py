@@ -64,7 +64,7 @@ class segetalflora(WPSProcess):
       abstract="Tar archive containing the netCDF EUR tas mean files",
       formats=[{"mimeType":"application/x-tar"}],
       asReference=True,
-      identifier="tar_tas",
+      identifier="out_tas",
       )
 
     self.out_polygons = self.addComplexOutput(
@@ -72,7 +72,7 @@ class segetalflora(WPSProcess):
       abstract="Tar archive containing the netCDF EU-countries polygons segetalflora ",
       formats=[{"mimeType":"application/x-tar"}],
       asReference=True,
-      identifier="tar_polygons",
+      identifier="out_polygons",
       )
 
     self.out_fieldmeans = self.addComplexOutput(
@@ -80,42 +80,41 @@ class segetalflora(WPSProcess):
       abstract="Tar archive containing the netCDF EU-countries fieldmeans segetalflora ",
       formats=[{"mimeType":"application/x-tar"}],
       asReference=True,
-      identifier="tar_fieldmeans",
+      identifier="out_fieldmeans",
       )
 
 # calculation of number of segetal flora species
   def execute(self):
     
-    from os import mkdir, 
-    from os.path import curdir, join , split
+    from os import mkdir, path
     import tarfile
-    import tempfile
+    from tempfile import  mkstemp
     from datetime import datetime
     
-    #from flyingpigeon import utils
-    #from flyingpigeon import timeseries
-    #from flyingpigeon import subseting as sub
+    from flyingpigeon import utils
+    from flyingpigeon import timeseries
+    from flyingpigeon import subsetting as sub
     
     logger.debug('starting segetalflora process execution')
     self.show_status('starting calcualtion segetalflora', 5)
     outlog = "Starting the segetalflora calculation at: %s \n" % (datetime.strftime(datetime.now(), '%H:%M:%S %d-%m-%Y'))
     
     ## prepare environment
-
     # create the tar files
+    
     try: 
-      (fp_tarf_tas, tarf_tas) = tempfile.mkstemp(dir=".", suffix='.tar')
-      (fp_tarf_polygons, tarf_polygons) = tempfile.mkstemp(dir=".", suffix='.tar')
-      (fp_tarf_fieldmeans, tarf_fieldmeans) = tempfile.mkstemp(dir=".", suffix='.tar')
+      (fp_tarf_tas, tarf_tas) = mkstemp(dir=".", suffix='.tar')
+      (fp_tarf_polygons, tarf_polygons) = mkstemp(dir=".", suffix='.tar')
+      (fp_tarf_fieldmeans, tarf_fieldmeans) = mkstemp(dir=".", suffix='.tar')
       tar_tas = tarfile.open(tarf_tas, "w")
       tar_polygons = tarfile.open(tarf_polygons, "w")
       tar_fieldmeans = tarfile.open(tarf_fieldmeans, "w")
       logger.debug('tar files initialized')
       
       # create output folders
-      dir_tas = (curdir+'/dir_tas/')
-      dir_polygons = (curdir+'/dir_polygons/')
-      dir_fieldmeans = (curdir+'/dir_fieldmeans/')
+      dir_tas = (path.curdir+'/dir_tas/')
+      dir_polygons = (path.curdir+'/dir_polygons/')
+      dir_fieldmeans = (path.curdir+'/dir_fieldmeans/')
       mkdir(dir_tas)
       mkdir(dir_polygons)
       mkdir(dir_fieldmeans)
@@ -146,24 +145,43 @@ class segetalflora(WPSProcess):
       
     logger.debug('urls for %s ncs found' % (len(ncs)))
     logger.debug('culture type: %s ' % (culture_type))
-    #except  Exception as e:
-      #msg = 'read in the argments failed: %s ' % (e)
-      #logger.error(msg) 
-    # recreate the filenames for CORDEX convention
-    #try:
     
-    nc_europe =[]
+    # first processing step: masking Europe for each file
     self.show_status('subset Europe', 7)
+    ncs_europe = []
     
-    for c, nc in enumerate(ncs): 
-      n = sub.masking(ncs[c], 'Europe')
-      nc_europe[c] = utils.filename_creator(n)
+    if type(ncs) != list: 
+      ncs = list([ncs])
+    outlog = outlog + '*** %s file(s) will be processed \n' % (len(ncs))
     
-    # ncs_renamed = utils.filename_creator(ncs)
-    logger.debug('urls for ncs_renamed: %s' % (len(ncs_renamed)))
-    ncs_merge = timeseries.merge(nc_europe)
-    logger.debug('Europe files merged ')
-    self.show_status('working dir environment prepared', 7)
+    for c, nc in enumerate(ncs):
+      try: 
+        n = sub.masking(nc, 'Europe')
+        nc_p = path.dirname(path.abspath(nc))
+        name = utils.drs_filename(n, variable = 'tas', rename_file=True)# filename_creator(n, var='tas')
+        ncs_europe.append(path.join(nc_p, name))
+        logger.debug('*** subsetting done for %s at : %s \n' % (ncs_europe[-1], datetime.strftime(datetime.now(), '%H:%M:%S %d-%m-%Y')))
+        outlog = outlog + '*** subsetting done for %s at: %s \n' % (ncs_europe[-1], datetime.strftime(datetime.now(), '%H:%M:%S %d-%m-%Y'))
+      except Exception as e:
+        msg = 'subsetting failed for %s : %s \n' % (nc, e)
+        logger.exception(msg)
+        outlog = outlog + msg
+    
+    logger.debug('*** %s nc files masked and renamed \n' % (len( ncs_europe )))
+    outlog = outlog + '*** %s nc files masked and renamed \n' % ( ncs_europe )
+    
+    try:
+      nc_sorted = utils.sort_by_filename(ncs_europe)
+      outlog = outlog + '### nc_sorted: %s \n ' % (nc_sorted)
+      # ncs_merge = timeseries.merge(ncs_europe)
+      msg = '*** sort and merge done for %s experiments at: %s \n' % (len(nc_sorted), datetime.strftime(datetime.now(), '%H:%M:%S %d-%m-%Y'))
+      logger.debug(msg)
+      outlog = outlog + msg
+    except Exception as e:
+      msg = 'sort or merge failed: %s \n' % (e)
+      logger.exception(msg)
+      outlog = outlog + msg
+  
     #  logger.error(msg)
     ##
     # segetal flora calculation
@@ -173,47 +191,47 @@ class segetalflora(WPSProcess):
     from cdo import *
     cdo = Cdo()
     
-    for c, nc in enumerate(ncs_merge):
-      self.show_status('timeseries Europe from %s/%s' %(c+1, len(ncs_dic)), 20)
-      try:
-        prefix = path.split(nc)[1].strip('.nc')
-        output = join(dir_polygons, prefix+'.nc' )
-        cdo.yearmean( input= nc, output=output)
+    #for c, nc in enumerate(ncs_merge):
+      #self.show_status('timeseries Europe from %s/%s' %(c+1, len(ncs_dic)), 20)
+      #try:
+        #prefix = path.split(nc)[1].strip('.nc')
+        #output = path.join(dir_polygons, prefix+'.nc' )
+        #cdo.yearmean( input= nc, output=output)
         
-        fldmean = timeseries.fldmean(output, dir_output = dir_fieldmeans)
-        outlog = outlog + '*** tas mean calculated for Europe with %s' %(nc)    
-        for cult in range(len(culture_type)): 
-          for clim in range(len(climate_type)):
-            try: 
-              eq = sg.get_equation(culture_type= culture_type[cult] , climate_type=climate_type[clim])
-              sf_prefix = prefix.replace('tas_', 'sf_%s_%s_' %(culture_type[cult], climate_type[clim]))
-              output = join(dir_polygons, sf_prefix+'.nc' ) 
-              cdo.expr(eq , input=EUR_tas_mean, output=output)
-              fldmean = timeseries.fldmean(output, dir_output = dir_fieldmeans)
-              for country in countries:
-                try:
-                  self.show_status('processing model %s/%s cult %s climate %s country %s' %(c+1,len(ncs_dic), culture_type[cult], climate_type[clim], country ), 50)
-                  EUR_seglo = clipping.clip_counties_EUR(urls=output, prefix= sf_prefix.replace('_EUR', '_%s'% (country)), dir_output = dir_polygons, country=country)
-                  fldmean = timeseries.fldmean(EUR_seglo, dir_output = dir_fieldmeans)
-                  outlog = outlog + '*** Processed for model  cult %s climate %s country %s' %(ncs_dic[key], culture_type[cult], climate_type[clim], country )
-                except Exception as e:
-                  msg = 'ocgis calculations failed : %s \n' % (e)
-                  logger.exception(msg)
-                  outlog = outlog + msg
-            except Exception as e:
-                  msg = 'subset calculation failed for %s, %s, %s: %s \n' % (key, culture_type[cult], climate_type[clim], e)
-                  logger.exception(msg)
-                  outlog = outlog + msg
-      except Exception as e:
-          msg = 'segeltalflora processing failed for %s, %s \n'% (key, e)
-          logger.exception(msg)
-          outlog = outlog + msg
+        #fldmean = timeseries.fldmean(output, dir_output = dir_fieldmeans)
+        #outlog = outlog + '*** tas mean calculated for Europe with %s' %(nc)    
+        #for cult in range(len(culture_type)): 
+          #for clim in range(len(climate_type)):
+            #try: 
+              #eq = sg.get_equation(culture_type= culture_type[cult] , climate_type=climate_type[clim])
+              #sf_prefix = prefix.replace('tas_', 'sf_%s_%s_' %(culture_type[cult], climate_type[clim]))
+              #output = path.join(dir_polygons, sf_prefix+'.nc' ) 
+              #cdo.expr(eq , input=EUR_tas_mean, output=output)
+              #fldmean = timeseries.fldmean(output, dir_output = dir_fieldmeans)
+              #for country in countries:
+                #try:
+                  #self.show_status('processing model %s/%s cult %s climate %s country %s' %(c+1,len(ncs_dic), culture_type[cult], climate_type[clim], country ), 50)
+                  #EUR_seglo = clipping.clip_counties_EUR(urls=output, prefix= sf_prefix.replace('_EUR', '_%s'% (country)), dir_output = dir_polygons, country=country)
+                  #fldmean = timeseries.fldmean(EUR_seglo, dir_output = dir_fieldmeans)
+                  #outlog = outlog + '*** Processed for model  cult %s climate %s country %s' %(ncs_dic[key], culture_type[cult], climate_type[clim], country )
+                #except Exception as e:
+                  #msg = 'ocgis calculations failed : %s \n' % (e)
+                  #logger.exception(msg)
+                  #outlog = outlog + msg
+            #except Exception as e:
+                  #msg = 'subset calculation failed for %s, %s, %s: %s \n' % (key, culture_type[cult], climate_type[clim], e)
+                  #logger.exception(msg)
+                  #outlog = outlog + msg
+      #except Exception as e:
+          #msg = 'segeltalflora processing failed for %s, %s \n'% (key, e)
+          #logger.exception(msg)
+          #outlog = outlog + msg
           
     
     self.show_status('files to tar archives', 75)
-    tar_tas.add(dir_tas, arcname = dir_tas.replace(curdir, ""))
-    tar_polygons.add(dir_polygons, arcname = dir_polygons.replace(curdir, ""))
-    tar_fieldmeans.add(dir_fieldmeans, arcname = dir_fieldmeans.replace(curdir, ""))
+    tar_tas.add(dir_tas, arcname = dir_tas.replace(path.curdir, ""))
+    tar_polygons.add(dir_polygons, arcname = dir_polygons.replace(path.curdir, ""))
+    tar_fieldmeans.add(dir_fieldmeans, arcname = dir_fieldmeans.replace(path.curdir, ""))
     tar_tas.close()
     tar_fieldmeans.close()
     tar_polygons.close()
@@ -221,7 +239,7 @@ class segetalflora(WPSProcess):
     
     outlog = outlog + "Finishing the segetalflora calculation at: %s \n" % (datetime.strftime(datetime.now(), '%H:%M:%S %d-%m-%Y'))
     
-    logfile = self.mktempfile(suffix='.txt')
+    l1, logfile = mkstemp(dir=".", suffix='.txt') 
     with open(logfile, 'w') as fp:
         fp.write(outlog)
     
