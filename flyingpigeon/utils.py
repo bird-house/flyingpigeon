@@ -55,6 +55,7 @@ def drs_filename( nc_file, skip_timestamp=False, skip_format=False , variable=No
                       example: variable='tas'
     :param rename_file: rename the file. (default: False)                   
     :return: DRS filename
+    
     """
     ds = Dataset(nc_file)
     if variable == None: 
@@ -178,7 +179,7 @@ def sort_by_time(resources):
         sorted_list = [resources]
     return sorted_list
 
-def sort_by_filename(resources , historical_concatination = False ):
+def sort_by_filename(resources, historical_concatination = False ):
   """ Sort a list of files with Cordex conform file names. 
   returns a dictionary with name:list_of_files"""
   from os  import path
@@ -277,5 +278,4 @@ def filename_creator(nc_files, var=None):
     if path.exists(path.join(fp, filename)):
       newnames.append(path.join(fp, filename))
     logger.debug('file name generated and renamed :%s' % (len(filename)))
-  return newnames    
-
+  return newnames   

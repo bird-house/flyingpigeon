@@ -3,12 +3,23 @@
 from cdo import *   # python version
 cdo = Cdo()
 
-def fldmean(polygon, dir_output = '.'):
-  from os.path import join, basename 
+def fldmean(resource, dir_output = None ):
+  from os.path import join, basename , curdir
+  from tempfile import mkdtemp , mkstemp
   """ gives a statisitcs timeseries of an given polygon"""  
   
-  output = join(dir_output, basename(polygon))
-  cdo.fldmean(input = polygon , output = output)
+  if type(resource) == str:
+    resource = list([resource])
+  
+  if dir_output == None: 
+    dir_output = mkdtemp(dir= curdir)
+  
+  output = []
+  
+  for rs in resource: 
+    p, op = mkstemp(dir= dir_output, suffix='.nc')
+    cdo.fldmean(input = rs , output = op)
+    output.append(op)
   return output
 
 def add_statistic(nc_url, var):
@@ -71,36 +82,42 @@ def add_statistic(nc_url, var):
 
     nc.close()
     
-def merge(resource, historical_concatination = False, dir_output = None): 
+def merge(resource, dir_output=None, historical_concatination=False): 
   """
-  returns list of path to merged netCDF files.
+  returns list of paths of sorted and merged netCDF files.
   sort according to filename (in DSR convention) and merge appropriate netCDF files
   
-  :param resource: list of dictionary of netCDF file path equal domain is required for merging
+  :param resource: list of netCDF file pathes equal domain and DSR name convention is required for merging
   :param historical_concatination : concatination of historical files to rcp szenarios (default = False)
   ;param dir_output : path to directory for output 
   """
   
+  from os.path import curdir, basename, join
+  from os import rename
+  #from tempfile import mkdtemp
   import utils
   from ocgis import RequestDataset , OcgOperations
   
-  merged_files = []
-  # renamed = utils.filename_creator(resource)
+  #if type(resource) == list: 
+    #resource = {'merge':resource}
+    
   res_dic = utils.sort_by_filename(resource, historical_concatination = historical_concatination)
+  merged_files = []
+  
+  if dir_output == None:
+    dir_output = curdir
   
   for key in res_dic:
     if len(res_dic[key]) > 1: 
-      ncs = utils.sort_by_time(res_dic[key])    
+      ncs = utils.sort_by_time(resource[key])    
       rd = RequestDataset(uri=ncs )
       ops = OcgOperations( dataset=rd, prefix = key, output_format='nc', dir_output = dir_output, add_auxiliary_files=False)
       m_file = ops.execute()
       var = key.split('_')[0]
       merged_files.append(utils.drs_filename(m_file, variable=var))
-    else: 
-      merged_files.append(res_dic[key])
+    else:
+      bn = basename(res_dic[key][0])
+      newname = str(join(dir_output, bn))
+      rename(bn,newname)
+      merged_files.append(newname)
   return merged_files
-  
-  
-  
-  
-

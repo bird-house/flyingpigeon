@@ -141,6 +141,8 @@ class segetalflora(WPSProcess):
     climate_type = self.climate_type.getValue()
     culture_type = self.culture_type.getValue()
     
+    if type(ncs) != list:
+      ncs = list([ncs])
     if type(climate_type) != list:
       climate_type = list([climate_type])
     if type(culture_type) != list:
@@ -150,19 +152,21 @@ class segetalflora(WPSProcess):
     logger.debug('culture type: %s ' % (culture_type))
     
     # first processing step: masking Europe for each file
-    self.show_status('subset Europe', 7)
+    
     ncs_europe = []
     
     if type(ncs) != list: 
       ncs = list([ncs])
-    outlog = outlog + '%s : %s file(s) will be processed \n' % ( datetime.strftime(datetime.now(), '%d-%m-%Y %H:%M:%S'), len(ncs))
+    outlog = outlog + '%s : %s file(s), type: %s will be processed \n' % ( datetime.strftime(datetime.now(), '%d-%m-%Y %H:%M:%S'), len(ncs), type(ncs))
     
     for c, nc in enumerate(ncs):
-      try: 
-        n = sub.masking(nc, 'Europe')
-        nc_p = path.dirname(path.abspath(nc))
-        name = utils.drs_filename(n, variable = 'tas', rename_file=True)# filename_creator(n, var='tas')
-        ncs_europe.append(path.join(nc_p, name))
+      try:
+        self.show_status('Mask Europe %s/%s ' % (c+1, len(ncs)), 7)
+        nc_dir = path.dirname(path.abspath(nc))
+        domain = utils.drs_filename(nc, variable = 'tas').split('_')[1]
+        n = sub.masking(nc, domain)
+        name = utils.drs_filename(n, variable = 'tas', rename_file=True) # filename_creator(n, var='tas')
+        ncs_europe.append(path.join(path.dirname(path.abspath(nc)), name) )
         logger.debug('%s : subsetting done for %s \n' % (datetime.strftime(datetime.now(), '%d-%m-%Y %H:%M:%S') , name ))
         outlog = outlog + '%s : subsetting done for %s \n' % (datetime.strftime(datetime.now(), '%d-%m-%Y %H:%M:%S'), name )
         
@@ -171,14 +175,13 @@ class segetalflora(WPSProcess):
         logger.exception(msg)
         outlog = outlog + msg
     
-    logger.debug('%s nc files masked and renamed \n' % (len( ncs_europe )))
-    outlog = outlog + '%s : %s nc files masked and renamed \n' % (datetime.strftime(datetime.now(), '%d-%m-%Y %H:%M:%S'), len(ncs_europe))
+    logger.debug('%s nc file(s) masked and renamed \n' % (len( ncs_europe )))
+    outlog = outlog + '%s : %s nc file(s) masked and renamed \n' % (datetime.strftime(datetime.now(), '%d-%m-%Y %H:%M:%S'), len(ncs_europe))
     
     try:
-      #nc_sorted = utils.sort_by_filename(ncs_europe)
-      #outlog = outlog + '### nc_sorted: %s \n' % (nc_sorted)
+      self.show_status('Sort and merge %s files %s according to experiments' % (len(ncs_europe), type(ncs_europe)), 10)
       ncs_merge = timeseries.merge(ncs_europe, dir_output = dir_tas )
-      msg = '%s : sort and merge done for %s experiments\n' % (datetime.strftime(datetime.now(), '%d-%m-%Y %H:%M:%S'), len(ncs_merge))
+      msg = '%s : sort and merge done for %s experiment(s) \n' % (datetime.strftime(datetime.now(), '%d-%m-%Y %H:%M:%S'), len(ncs_merge))
       logger.debug(msg)
       outlog = outlog + msg
     except Exception as e:
@@ -191,36 +194,34 @@ class segetalflora(WPSProcess):
     # segetal flora calculation
     from flyingpigeon import segetalflora as sg
     from flyingpigeon import clipping
-    from numpy import squeeze 
     
     from cdo import *
     cdo = Cdo()
     
-    if type(ncs_merge[0]) == list:
-      ncs_merge = squeeze(ncs_merge)
-    
     for c, nc in enumerate(ncs_merge):
-      self.show_status('timeseries Europe from %s/%s' %(c+1 , len(ncs_merge)), 20)
+      self.show_status('timeseries Europe from %s/%s nc type %s' %(c+1 , len(ncs_merge), type(nc)), 20)
       try:
-        prefix = path.basename(path.abspath(str(nc))).replace('.nc', '')
-        EUR_tas_mean = path.join(dir_polygons, prefix + '.nc' )
-        cdo.yearmean( input = nc, output=EUR_tas_mean)
-        fldmean = timeseries.fldmean(EUR_tas_mean, dir_output = dir_fieldmeans)
-        outlog = outlog + '%s : tas year mean calculated %s \n' %(datetime.strftime(datetime.now(), '%d-%m-%Y %H:%M:%S'), prefix)
+        basename = path.basename(path.abspath(nc))
+        self.show_status('basename: %s' %(basename), 20)
+        EUR_tas_mean = path.join(dir_polygons, basename )
+        cdo.yearmean( input = nc, output = EUR_tas_mean)
+        fld = timeseries.fldmean( EUR_tas_mean , dir_output = dir_fieldmeans)
+        fldmean = utils.drs_filename(fld[0], variable = 'tas', rename_file=True)
+        outlog = outlog + '%s : tas year mean calculated %s \n' %(datetime.strftime(datetime.now(), '%d-%m-%Y %H:%M:%S'), basename)
         
         for cult in culture_type: 
           for clim in climate_type:
-            try: 
-              eq = sg.get_equation(culture_type=cult , climate_type=clim ) 
-              sf_prefix = prefix.replace('tas_', 'sf_%s_%s_' % (cult, clim))
+            try:
+              self.show_status('processing model %s/%s cult %s climate %s \n' %(c+1,len(ncs_merge), cult , clim ), 50)
+              eq = sg.get_equation( culture_type=cult, climate_type=clim) 
+              sf_prefix = basename.strip('.nc').replace('tas_', 'sf-%s-%s_' % (cult, clim))
               output = path.join(dir_polygons, sf_prefix+'.nc' ) 
               cdo.expr(eq , input=EUR_tas_mean, output=output)
               fldmean = timeseries.fldmean(output, dir_output = dir_fieldmeans)
               outlog = outlog + '%s : segetalflora processed for model %s \n' % (datetime.strftime(datetime.now(), '%d-%m-%Y %H:%M:%S'), sf_prefix )
               for country in countries:
                 try:
-                  self.show_status('processing model %s/%s cult %s climate %s country %s \n' %(c+1,len(ncs_merge), cult , clim , country ), 50)
-                  sf_country_prefix = sf_prefix.replace('_EUR', '_%s' % (country))
+                  sf_country_prefix = sf_prefix.replace('_EUR-', '_%s-' % (country))
                   EUR_seglo = clipping.clip_counties_EUR(urls=output, prefix= sf_country_prefix, dir_output = dir_polygons, country=country)
                   fldmean = timeseries.fldmean(EUR_seglo, dir_output = dir_fieldmeans)
                   outlog = outlog + '%s : Processed for model %s \n' %(datetime.strftime(datetime.now(), '%d-%m-%Y %H:%M:%S'), sf_country_prefix)
@@ -233,7 +234,7 @@ class segetalflora(WPSProcess):
                   logger.exception(msg)
                   outlog = outlog + msg
       except Exception as e:
-        msg = ' tas year mean calculation failed %s : %s\n' %(datetime.strftime(datetime.now(), '%d-%m-%Y %H:%M:%S'), prefix, e) 
+        msg = 'tas year mean calculation failed %s : %s\n' %( nc, e) 
         logger.exception(msg)
         outlog = outlog + msg
         
