@@ -109,8 +109,9 @@ def merge(resource, dir_output=None, historical_concatination=False):
   
   for key in res_dic:
     if len(res_dic[key]) > 1: 
-      ncs = utils.sort_by_time(resource[key])    
-      rd = RequestDataset(uri=ncs )
+      ncs = utils.sort_by_time(res_dic[key])
+      var = key.split('_')[0]
+      rd = RequestDataset(uri=ncs, variable=var )
       ops = OcgOperations( dataset=rd, prefix = key, output_format='nc', dir_output = dir_output, add_auxiliary_files=False)
       m_file = ops.execute()
       var = key.split('_')[0]
