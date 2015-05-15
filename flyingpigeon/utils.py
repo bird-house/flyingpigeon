@@ -173,15 +173,18 @@ def aggregations(nc_files):
 
 def sort_by_time(resources):
     from ocgis.util.helpers import get_sorted_uris_by_time_dimension
-    if type(resources) is list:
+    
+    if type(resources) is list and len(resources) > 1:
         sorted_list = get_sorted_uris_by_time_dimension(resources)
-    else:
+    elif type(resources) is str:
         sorted_list = [resources]
+    else: 
+        sorted_list = resources
     return sorted_list
 
 def sort_by_filename(resources, historical_concatination = False ):
   """ Sort a list of files with Cordex conform file names. 
-  returns a dictionary with name:list_of_files"""
+  returns a dictionary with name:list_of_sorted_files"""
   from os  import path
   # from numpy import squeeze
   
@@ -196,20 +199,25 @@ def sort_by_filename(resources, historical_concatination = False ):
       bn = '_'.join(n[0:-1])
       if historical_concatination == False: 
         ndic[bn] = [] # iniciate an approriate key with empty list in the dictionary
-      if historical_concatination == True:
+      elif historical_concatination == True:
         if n[3] != 'historical':
-          ndic[bn] = []      
-    
+          ndic[bn] = []
+      else:
+        logger.error('determine key names failed for ' % (nc))
+        
     for key in ndic:
       if historical_concatination == False:
         for n in resources:
           if key in n: 
-            ndic[key].append(n)
-      if historical_concatination == True:
+            ndic[key].append(path.join(p,n))
+      elif historical_concatination == True:
         historical = key.replace('rcp26','historical').replace('rcp45','historical').replace('rcp65','historical').replace('rcp85','historical')
         for n in resources:
           if key in n or historical in n: 
-            ndic[key].append(n)
+            ndic[key].append(path.join(p,n))
+      else:
+        logger.error('append filespathes to dictionary for key %s failed' % (key))
+      ndic[key].sort()
   elif type(resources) == str:
     p, f = path.split(path.abspath(resources))
     ndic[f.replace('.nc','')] = resources
@@ -278,4 +286,44 @@ def filename_creator(nc_files, var=None):
     if path.exists(path.join(fp, filename)):
       newnames.append(path.join(fp, filename))
     logger.debug('file name generated and renamed :%s' % (len(filename)))
-  return newnames   
+  return newnames
+
+
+def get_dimension_map(resource): 
+  """ returns the dimension map for a file, required for ocgis processing. 
+  file must have a DRS conform filename (see: utils.drs_filename())
+  
+  :param resource: str input file path
+  """
+  from os.path import basename
+  file_name = basename(resource)
+  
+  dim_map1 = {'X': {'variable': 'lon', 'dimension': 'x', 'pos': 2},
+              'Y': {'variable': 'lat', 'dimension': 'y', 'pos': 1},
+              'T': {'variable': 'time', 'dimension': 'time', 'pos': 0}}
+  
+  dim_map2 = {'X': {'variable': 'lon', 'dimension': 'x', 'pos': 2},
+              'Y': {'variable': 'lat', 'dimension': 'y', 'pos': 1},
+              'T': {'variable': 'time', 'dimension': 'time', 'pos': 0, 'bounds': 'time_bnds'}}
+  
+  dim_map3 = {'X': {'variable': 'rlon', 'dimension': 'x', 'pos': 2},
+              'Y': {'variable': 'rlat', 'dimension': 'y', 'pos': 1},
+              'T': {'variable': 'time', 'dimension': 'time', 'pos': 0 }}
+
+  dim_map4 = {'X': {'variable': 'x', 'dimension': 'x', 'pos': 2},
+              'Y': {'variable': 'y', 'dimension': 'y', 'pos': 1},
+              'T': {'variable': 'time', 'dimension': 'time', 'pos': 0 }}
+  
+  if 'CM5A-MR_WRF331F' in file_name: 
+    dimension_map = dim_map1
+  elif 'CNRM-CM5_CNRM-ALADIN53' in file_name: 
+    dimension_map = dim_map1
+  elif 'MPI-ESM-LR_REMO019' in file_name: 
+    dimension_map = dim_map1
+  elif 'CLMcom-CCLM4-8-17' in file_name:
+    dimension_map = dim_map1
+  #elif 'KNMI-RACMO22E' in file_name:   
+    #dimension_map = dim_map1
+  else:     
+    dimension_map = None
+  return dimension_map

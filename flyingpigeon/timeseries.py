@@ -6,20 +6,22 @@ cdo = Cdo()
 def fldmean(resource, dir_output = None ):
   from os.path import join, basename , curdir
   from tempfile import mkdtemp , mkstemp
-  """ gives a statisitcs timeseries of an given polygon"""  
-  
-  if type(resource) == str:
-    resource = list([resource])
+  """
+  retuns a field mean over the whole domain
+  gives a statisitcs timeseries of an given polygon"""  
   
   if dir_output == None: 
     dir_output = mkdtemp(dir= curdir)
   
-  output = []
-  
-  for rs in resource: 
-    p, op = mkstemp(dir= dir_output, suffix='.nc')
-    cdo.fldmean(input = rs , output = op)
-    output.append(op)
+  if resource == str:
+    p, output = mkstemp(dir= dir_output, suffix='.nc')
+    cdo.fldmean(input = resource , output = output)
+  elif resource == list:   
+    output = []
+    for rs in resource: 
+      p, op = mkstemp(dir= dir_output, suffix='.nc')
+      cdo.fldmean(input = rs , output = op)
+      output.append(op)
   return output
 
 def add_statistic(nc_url, var):
@@ -109,7 +111,7 @@ def merge(resource, dir_output=None, historical_concatination=False):
   
   for key in res_dic:
     if len(res_dic[key]) > 1: 
-      ncs = utils.sort_by_time(res_dic[key])
+      ncs = res_dic[key]
       var = key.split('_')[0]
       rd = RequestDataset(uri=ncs, variable=var )
       ops = OcgOperations( dataset=rd, prefix = key, output_format='nc', dir_output = dir_output, add_auxiliary_files=False)

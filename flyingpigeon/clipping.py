@@ -43,7 +43,7 @@ def ugid_EUR(region):
             result.append(row['properties']['UGID'])
     return result
 
-def calc_region_clipping(resource, region='AUT', out_dir=None):
+def calc_region_clipping(resource, region='AUT', out_dir=None , variable=None):
     """
     calculates geometry clipping of netcdf files and given region.
 
@@ -60,9 +60,11 @@ def calc_region_clipping(resource, region='AUT', out_dir=None):
 
     #from ocgis.interface.base.crs import CFWGS84
     #rd = ocgis.RequestDataset(resources, variable)
-    rd = ocgis.RequestDataset(resource)
+    
+    
+    rd = ocgis.RequestDataset(resource, variable=variable)
 
-    filename = drs_filename(resource)
+    filename = drs_filename(resource, variable=variable)
     filename = filename.replace("EUR", region)
     prefix = filename.replace(".nc", "")
     
@@ -77,8 +79,8 @@ def calc_region_clipping(resource, region='AUT', out_dir=None):
             prefix=prefix,
             dir_output=out_dir,
             add_auxiliary_files=False ).execute()
-    except:
-        msg = 'processing failed for file prefix=%s' % prefix
+    except Exception as e:
+        msg = 'processing failed for file prefix=%s : %s' % (prefix, e)
         logger.exception(msg)
         raise CalculationException(msg)
 
@@ -137,9 +139,11 @@ def normalize(resource, grouping='year', region='AUT', start_date="1971-01-01", 
 
   
 
-def clip_continent(urls, calc=None,  calc_grouping= None, prefix=None, 
+def clip_continent(urls, variable, dimension_map,  calc=None,  calc_grouping= None, prefix=None, 
                    continent='Europe', output_format='nc', dir_output='.'):
-  """ possible continent entries: 
+  """ returns clipped netCDF file 
+  
+  possible continent entries: 
   'Africa', 'Asia', 'Australia',
   'North America', 'Oceania', 
   'South America', 'Antarctica', 'Europe'"""
@@ -173,38 +177,55 @@ def clip_continent(urls, calc=None,  calc_grouping= None, prefix=None,
       raise CalculationException(msg, e)
   return  geom_file
 
-def clip_counties_EUR(urls, calc=None, calc_grouping= None, prefix=None,
+def clip_counties_EUR(urls, variable=None, dimension_map=None, calc=None, calc_grouping= None, prefix=None,
                    country='FRA', output_format='nc', dir_output=None):
+  """ returns clipped netCDF file. 
   
-  """ possible continent entries:
-  'AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN','FRA',
-  'GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX','MLT','NLD',
-  'POL','PRT','ROU','SVK','SVN','SWE','NOR','CHE','ISL','MKD','MNE',
-  'SRB','MDA','UKR','BIH','ALB','BLR','KOS'"""
+  :param urls: str of input url netCDF file
+  :param varible: variable to be clipped in netCDF file (see: utils.get_variable)
+  :param dimension_map: required dimension_map (see: utils.get_dimensionmap)
+  :param calc: parameter for calculation options (see: ocgis Documentation)
+  :param calc_grouping: ocgis parameter for aggregation 
   
+  :param country: Abreviation for EUR countries (default='FRA') possible values
+      'AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN','FRA',
+      'GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX','MLT','NLD',
+      'POL','PRT','ROU','SVK','SVN','SWE','NOR','CHE','ISL','MKD','MNE',
+      'SRB','MDA','UKR','BIH','ALB','BLR','KOS'"""
+    
   from ocgis.util.shp_cabinet import ShpCabinetIterator
+  from flyingpigeon import utils
+  from os.path import basename
+  
   ocgis.env.OVERWRITE = True
   sci = ShpCabinetIterator('50m_country')
   geoms = '50m_country'
   
+  #if urls == str: 
+    #urls = list([urls])
+  if variable == None: 
+    variable = basename(urls).split('_')[0]
+  if dimension_map == None: 
+    dimension_map = utils.get_dimension_map(urls)
+    
   try : 
     ugid = ugid_EUR(country)
   except Exception as e:
     msg = 'selection of continent failed'
     logger.exception(msg)
     raise CalculationException(msg, e)
-  try:    
-    rd = ocgis.RequestDataset(urls)
+  try:
+    rd = ocgis.RequestDataset(urls, variable=variable, dimension_map=dimension_map)
     ocgis.env.DIR_OUTPUT = dir_output
     ocgis.env.PREFIX = prefix
-    geom_file = ocgis.OcgOperations(dataset=rd, #calc=calc, calc_grouping=calc_grouping, 
-                                    #output_format=output_format, select_ugid=ugid, geom=geoms,
+    geom_file = ocgis.OcgOperations(dataset=rd, calc=calc, calc_grouping=calc_grouping, 
+                                    output_format=output_format, select_ugid=ugid, geom=geoms,
                                     add_auxiliary_files=False).execute()
   except Exception as e:
-      msg = 'ocgis calculations failed '
+      msg = 'ocgis calculations failed dimension_map = %s' % (dimension_map)
       logger.exception(msg)
       raise CalculationException(msg, e)
-  return ugid # geom_file # countrycountry # # geom_file
+  return  geom_file
         
         
   

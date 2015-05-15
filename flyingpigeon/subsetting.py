@@ -31,7 +31,7 @@ def masking(resource , mask, prefix=None, dir_output=None):
   if prefix == None: 
     p1 , resource_masked = mkstemp(dir = dir_output, suffix='.nc')
   else: 
-    resource_masked = path.join(dir_output, prefix[c] + '.nc')
+    resource_masked = path.join(dir_output, prefix + '.nc')
 # try:
   call = "cdo div '%s' '%s' '%s'" % ( resource , nc_mask , resource_masked)
   system(call)
