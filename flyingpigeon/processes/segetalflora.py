@@ -230,11 +230,11 @@ class segetalflora(WPSProcess):
                                                       prefix= sf_country_prefix, dir_output = dir_polygons, country=country)
               outlog = outlog + '%s : CLIPPING FAILED! for model %s \n' %(datetime.strftime(datetime.now(), '%d-%m-%Y %H:%M:%S'), sf_country_prefix)
               
-              msg = 'Clipping for %s : %s\n' %(sf_country_prefix ) 
+              msg = 'Clipping done for %s : %s\n' %(sf_country_prefix ) 
               logger.exception(msg)
               outlog = outlog + msg
             except Exception as e:
-              msg = 'Clipping failed %s : %s\n' %(nc , e) 
+              msg = 'Clipping failed %s %s:\n %s\n' %(country, path.basename, e) 
               logger.exception(msg)
               outlog = outlog + msg    
 

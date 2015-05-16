@@ -46,15 +46,15 @@ def get_equation(culture_type= 'fallow', climate_type=2):
   
   elif culture_type == 'intensiv': 
     if climate_type == '1': 
-      equation ="\'sfintensiv1=exp(46.0518-15.4597*%s+0.7143*%s^2)\'" %('tas'.'tas')
+      equation ="\'sfintensiv1=exp(46.0518-15.4597*%s+0.7143*%s^2)\'" %('tas','tas')
     elif climate_type == '2': 
       equation ="\'sfintensiv2=31.3493*exp(-0.1108*%s)\'" %('tas')
     elif climate_type == '3': 
-      equation ="\'sfintensiv3=exp(1.0791+0.3449*%s-0.0189*%s^2)\'" %('tas'.'tas')
+      equation ="\'sfintensiv3=exp(1.0791+0.3449*%s-0.0189*%s^2)\'" %('tas','tas')
     elif climate_type == '4': 
-      equation ="\'sfintensiv4=-0.0919**%s^3+2.3824*%s^2-14.29*%s+38.93\'" %('tas'.'tas'.'tas')
+      equation ="\'sfintensiv4=-0.0919**%s^3+2.3824*%s^2-14.29*%s+38.93\'" %('tas','tas','tas')
     elif climate_type == '5': 
-      equation ="\'sfintensiv5=exp(0.1663+0.0457*%s+0.0128*%s^2)\'" %('tas'.'tas')
+      equation ="\'sfintensiv5=exp(0.1663+0.0457*%s+0.0128*%s^2)\'" %('tas','tas')
     elif climate_type == '6': 
       equation ="\'sfintensiv6=14.1641*exp(-0.0363*%s)\'" %('tas')
     elif climate_type == '7': 
