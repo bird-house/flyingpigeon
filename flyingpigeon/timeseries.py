@@ -47,8 +47,8 @@ def add_statistic(nc_url, var):
     ref_medians = []
     ref_means = []
 
-    for start in years[:-29]:
-        end = start + 30
+    for start in years[:-30]:
+        end = start + 31
         ref_periods.append(start)
         ref_stds.append(hs[str(start):str(end)].std())
         ref_medians.append(hs[str(start):str(end)].median())
@@ -124,3 +124,42 @@ def merge(resource, dir_output=None, historical_concatination=False):
       rename(bn,newname)
       merged_files.append(newname)
   return merged_files
+
+
+
+def get_yearmean(resources, variable=None, dir_output = None): 
+  """
+  returns a list of file pathes 
+  
+  :param resources: str or list of input file pathes
+  """
+  from flyingpigeon import utils
+  import ocgis 
+ 
+  if type(resources) == str :
+    resources = list([resources])
+ 
+  rs = []
+  for nc in resources: 
+    rs.append(utils.drs_filename(nc, variable=None, rename_file=True, 
+                                 add_file_path=True))
+  ncs = utils.sort_by_filename(rs)
+  
+  if variable==None: 
+    name = 'mean'
+  else: 
+    name = variable
+  calc = [{'func':'mean','name':name}]
+  calc_grouping = ['year']
+  
+  year_means = []
+  
+  for prefix in ncs: 
+    rd = ocgis.RequestDataset(ncs[prefix], variable=variable)
+    f = ocgis.OcgOperations(dataset=rd, calc=calc, calc_grouping=calc_grouping, 
+                                    prefix=prefix, output_format='nc',dir_output=dir_output)
+    year_means.append(f.execute())
+  # sort files
+  # aggregate mean years
+  
+  return ncs # resources # ncs # year_means

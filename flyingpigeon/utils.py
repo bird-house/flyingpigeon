@@ -38,14 +38,15 @@ def calc_grouping(grouping):
         raise Exception(msg)
     return calc_grouping
 
-def drs_filename( nc_file, skip_timestamp=False, skip_format=False , variable=None, rename_file=False  ):
-    
+def drs_filename(nc_file, skip_timestamp=False, skip_format=False , 
+                 variable=None, rename_file=False, add_file_path=False  ):
     """
     generates filename according to the data reference syntax (DRS).
     
     http://cmip-pcmdi.llnl.gov/cmip5/docs/cmip5_data_reference_syntax.pdf
     https://pypi.python.org/pypi/drslib
 
+    :param add_file_path: if add_file_path=True, path to file will be added (default=False)
     :param nc_file: netcdf file
     :param skip_timestamp: if True then from/to timestamp is not added to the filename
                            (default: False)
@@ -57,6 +58,8 @@ def drs_filename( nc_file, skip_timestamp=False, skip_format=False , variable=No
     :return: DRS filename
     
     """
+    from os import path, rename
+    
     ds = Dataset(nc_file)
     if variable == None: 
       variable = get_variable(nc_file)
@@ -98,11 +101,14 @@ def drs_filename( nc_file, skip_timestamp=False, skip_format=False , variable=No
         if skip_format == False:
             filename = filename + '.nc'
         
+        pf = path.dirname(nc_file)
+        # add file path 
+        if add_file_path == True:
+          filename = path.join( pf , filename )
+        
         # rename the file
         if rename_file==True:
-          from os import path, rename
           if path.exists(path.join(nc_file)):
-            pf  = path.dirname(nc_file)
             rename(nc_file, path.join(pf, filename ))
           
     except:

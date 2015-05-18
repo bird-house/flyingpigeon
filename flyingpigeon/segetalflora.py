@@ -1,7 +1,14 @@
-def get_equation(culture_type= 'fallow', climate_type=2):
-  """
-  example: 
-  eq = get_equation(culture_type= 'fallow', climate_type=2)
+import ocgis
+
+def get_equation(culture_type='fallow', climate_type=2):
+  """ 
+  returns the equation as basis to calculate the segetal flora 
+  
+  :param culture_type: Type of culture. possible values are
+                       'fallow', 'intensiv', 'extensive' (default:'fallow')
+  :param climate_type: Type of climate: number 1 to 7 or 'all' (default: 2)
+  
+  :example: eq = get_equation(culture_type= 'fallow', climate_type=2)
   """
   climate_type = str(climate_type)
   if culture_type == 'fallow':  
@@ -65,7 +72,34 @@ def get_equation(culture_type= 'fallow', climate_type=2):
       equation = None    
   else: 
     equation = None
-     
   return equation  
 
+
+
+def get_segetalflora(resources, culture_type='fallow', climate_type=2 ):
+  """ 
+  returns a netCDF file containing vaulues of number of segetal flora species
+  
+  :param resources: dictionary of sorted tas mean input file(s)
+  :param culture_type: Type of culture. possible values are
+                       'fallow', 'intensiv', 'extensive' (default:'fallow')
+  :param climate_type: Type of climate: number 1 to 7 or 'all' (default: 2)
+  
+  """
+  from tempfile import mkstemp
+  from os import path
+  from flyingpigeon import timeseries as ts 
+  
+  tas_yearmean = ts.get_yearmean(resources, variable='tas')
+  
+  p1, prefix = mkstemp()
+  
+  calc = get_equation(culture_type=culture_type, climate_type=climate_type)
+  rd = ocgis.RequestDataset(resources, 'tas')
+  
+ # geom_file = ocgis.OcgOperations(dataset=rd, calc=calc, 
+ #                               prefix=prefix, add_auxiliary_files=True,).execute()
+  
+  
+  return tas_yearmean
       
