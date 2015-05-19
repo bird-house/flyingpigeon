@@ -50,14 +50,14 @@ class segetalflora(WPSProcess):
 
     #complex output
     #-------------
-    self.logout = self.addComplexOutput(
-      identifier="logout",
-      title="Indice log-file",
-      abstract="logfile for segetalflora process",
-      metadata=[],
-      formats=[{"mimeType":"text/plain"}],
-      asReference=True,
-      )
+    #self.logout = self.addComplexOutput(
+      #identifier="logout",
+      #title="Indice log-file",
+      #abstract="logfile for segetalflora process",
+      #metadata=[],
+      #formats=[{"mimeType":"text/plain"}],
+      #asReference=True,
+      #)
     
     self.out_tas = self.addComplexOutput(
       title="tas_EUR",
@@ -258,11 +258,11 @@ class segetalflora(WPSProcess):
     
     outlog = outlog + "%s Finishing the segetalflora calculation \n" % (datetime.strftime(datetime.now(), '%d-%m-%Y %H:%M:%S'))
     
-    l1, logfile = mkstemp(dir=".", suffix='.txt') 
-    with open(logfile, 'w') as fp:
-        fp.write(outlog)
+    #l1, logfile = mkstemp(dir=".", suffix='.txt') 
+    #with open(logfile, 'w') as fp:
+        #fp.write(outlog)
     
-    self.logout.setValue( logfile )
+   # self.logout.setValue( logfile )
     self.out_fieldmeans.setValue( tarf_fieldmeans )
     self.out_segetalflora.setValue( tarf_segetalflora )
     self.out_tas.setValue( tarf_tas )
