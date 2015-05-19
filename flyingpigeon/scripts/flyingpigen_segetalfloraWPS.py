@@ -28,6 +28,3 @@ for o in execute.processOutputs:
     print o.reference
 
 print '\n'
-    
-call =  'curl %s' % (execute.processOutputs[2].reference)
-system(call)

@@ -96,9 +96,13 @@ def get_segetalflora(resources, culture_type='fallow', climate_type=2, dir_seget
   """
   from tempfile import mkstemp 
   from os import path , mkdir
-  from flyingpigeon import timeseries as ts 
+  from flyingpigeon import timeseries as ts
+  
   
   ocgis.env.OVERWRITE = True
+  ocgis.env.DIR_SHPCABINET = path.join(path.dirname(__file__), 'processes', 'shapefiles')
+  geom = 'continent'
+  ugid_europa = [8]
   
   logger.debug('dir_outputs created')
   
@@ -116,7 +120,7 @@ def get_segetalflora(resources, culture_type='fallow', climate_type=2, dir_seget
       prefix = basename.replace('tas_', 'sf%s%s_'%(culture_type, climate_type)).strip('.nc') 
       rd = ocgis.RequestDataset(tas_yearmean , 'tas')
       
-      geom_file = ocgis.OcgOperations(dataset=rd, calc=calc, dir_output=dir_segetalflora, prefix=prefix, add_auxiliary_files=False, output_format='nc').execute()
+      geom_file = ocgis.OcgOperations(dataset=rd, calc=calc, dir_output=dir_segetalflora, prefix=prefix,  add_auxiliary_files=False, output_format='nc').execute() #geom=geom, select_ugid=ugid_europa,
       sf_files.append(geom_file)
       logger.debug('segetalflora processed : %s' % (basename))
     except Exception as e:
