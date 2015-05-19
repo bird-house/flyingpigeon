@@ -1,4 +1,7 @@
 """ processing of timeseries """
+from malleefowl import wpslogging as logging
+#import logging
+logger = logging.getLogger(__name__)
 
 from cdo import *   # python version
 cdo = Cdo()
@@ -151,15 +154,15 @@ def get_yearmean(resources, variable=None, dir_output = None):
     name = variable
   calc = [{'func':'mean','name':name}]
   calc_grouping = ['year']
-  
+  ocgis.env.DIR_OUTPUT = dir_output
   year_means = []
   
   for prefix in ncs: 
     rd = ocgis.RequestDataset(ncs[prefix], variable=variable)
-    f = ocgis.OcgOperations(dataset=rd, calc=calc, calc_grouping=calc_grouping, 
-                                    prefix=prefix, output_format='nc',dir_output=dir_output)
+    f = ocgis.OcgOperations(dataset=rd, calc=calc, calc_grouping=calc_grouping,
+                            prefix=prefix, output_format='nc', dir_output=dir_output, add_auxiliary_files=False )
     year_means.append(f.execute())
   # sort files
   # aggregate mean years
   
-  return ncs # resources # ncs # year_means
+  return year_means # resources # ncs # year_means
