@@ -151,13 +151,15 @@ class segetalflora(WPSProcess):
     if type(culture_type) != list:
       culture_type = list([culture_type])
       
+
+      
     logger.debug('urls for %s ncs found' % (len(ncs)))
     logger.debug('culture type: %s ' % (culture_type))
     
     for cult in culture_type: 
       for clim in climate_type: 
         try:
-          sf_files =  sf.get_segetalflora(ncs, culture_type=cult, climate_type=clim , dir_tas=dir_tas , dir_segetalflora=dir_segetalflora, dir_fieldmean=dir_fieldmean)
+          sf_files =  sf.get_segetalflora(ncs, culture_type=cult, climate_type=clim , countries=countries, dir_tas=dir_tas , dir_segetalflora=dir_segetalflora, dir_fieldmean=dir_fieldmean)
           self.show_status("processing of %s segetalflora files done " % (len(sf_files)) , 80)
         except Exception as e:
           msg = 'segetalflora calculation failed %s %s : %s\n' %( climate_type, culture_type, e) 

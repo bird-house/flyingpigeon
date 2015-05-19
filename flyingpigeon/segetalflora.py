@@ -84,7 +84,7 @@ def get_equation(culture_type='fallow', climate_type=2):
 
 
 
-def get_segetalflora(resources, culture_type='fallow', climate_type=2, dir_segetalflora=None, dir_tas=None, dir_fieldmean=None ):
+def get_segetalflora(resources, culture_type='fallow', climate_type=2, countries=None, dir_segetalflora=None, dir_tas=None, dir_fieldmean=None ):
   """ 
   returns a netCDF file containing vaulues of number of segetal flora species
   
@@ -97,13 +97,13 @@ def get_segetalflora(resources, culture_type='fallow', climate_type=2, dir_seget
   from tempfile import mkstemp 
   from os import path , mkdir
   from flyingpigeon import timeseries as ts
-  
+  from flyingpigeon import clipping
   
   ocgis.env.OVERWRITE = True
   ocgis.env.DIR_SHPCABINET = path.join(path.dirname(__file__), 'processes', 'shapefiles')
   geom = 'continent'
   ugid_europa = [8]
-  
+    
   logger.debug('dir_outputs created')
   
   tas_yearmean = ts.get_yearmean(resources, variable='tas', dir_output=dir_tas)
@@ -122,7 +122,16 @@ def get_segetalflora(resources, culture_type='fallow', climate_type=2, dir_seget
       
       geom_file = ocgis.OcgOperations(dataset=rd, calc=calc, dir_output=dir_segetalflora, prefix=prefix,  add_auxiliary_files=False, output_format='nc').execute() #geom=geom, select_ugid=ugid_europa,
       sf_files.append(geom_file)
-      logger.debug('segetalflora processed : %s' % (basename))
+      logger.debug('segetalflora Europa processed : %s' % (prefix))
+      if countries != None: 
+        if type(countries) == str:
+          countries = list([countries])
+        for country in countries:
+          prefix_coutry = prefix.replace('EUR-','%s-' % (country))
+          nc_country = clipping.clip_counties_EUR(nc, variable='tas', 
+                                                calc=calc,  prefix=prefix_coutry, country=country, output_format='nc', dir_output=dir_segetalflora)
+          sf_files.append(nc_country)
+          logger.debug('segetalflora Country %s processed : %s' % (country, prefix_coutry))
     except Exception as e:
       msg = 'segetalflora calculation failed %s : %s\n' %( nc, e) 
       logger.exception(msg)
