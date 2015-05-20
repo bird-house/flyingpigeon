@@ -83,6 +83,14 @@ class segetalflora(WPSProcess):
       identifier="out_fieldmeans",
       )
 
+    self.out_plots = self.addComplexOutput(
+      title="plots",
+      abstract="Tar archive containing the bokeh plots html files for segetalflora ",
+      formats=[{"mimeType":"application/x-tar"}],
+      asReference=True,
+      identifier="out_plots",
+      )
+
 # calculation of number of segetal flora species
   def execute(self):
     
@@ -103,19 +111,24 @@ class segetalflora(WPSProcess):
       (fp_tarf_tas, tarf_tas) = mkstemp(dir=".", suffix='.tar')
       (fp_tarf_segetalflora, tarf_segetalflora) = mkstemp(dir=".", suffix='.tar')
       (fp_tarf_fieldmeans, tarf_fieldmeans) = mkstemp(dir=".", suffix='.tar')
+      (fp_tarf_plots, tarf_plots) = mkstemp(dir=".", suffix='.tar')
       tar_tas = tarfile.open(tarf_tas, "w")
       tar_segetalflora = tarfile.open(tarf_segetalflora, "w")
       tar_fieldmeans = tarfile.open(tarf_fieldmeans, "w")
+      tar_plots = tarfile.open(tarf_plots, "w")
+      
       logger.debug('tar files initialized')
       
       # create output folders
       dir_tas = path.abspath(path.curdir+'/dir_tas/')
       dir_segetalflora = path.abspath(path.curdir+'/dir_segetalflora/')
       dir_fieldmean = path.abspath(path.curdir+'/dir_fieldmean/')
+      dir_plots = path.abspath(path.curdir+'/dir_plots/')
       
       mkdir(dir_tas)
       mkdir(dir_segetalflora)
       mkdir(dir_fieldmean)
+      mkdir(dir_plots)
       logger.debug('out directories created')
     except  Exception as e:
       msg = 'tar file or mkdir failed!: %s ' % (e)
@@ -171,6 +184,34 @@ class segetalflora(WPSProcess):
     except Exception as e:
       logger.exception('fieldmeans failed: %s\n' % (e))
     
+
+# === visualisation 
+    from flyingpigeon import visualisation as vs
+    self.show_status('processing fieldmeans' , 98)
+    
+    try:
+      ncs = listdir(dir_segetalflora)
+      set_var = set()
+      set_contry = set()
+      for nc in ncs: 
+        set_var = set_var.union([nc.split('_'[0])])
+        set_contry = set_contry.union([nc.split('_'[1])])
+      logger.debug('%s plots sorted' % (len(ncs)))
+    except Exception as e:
+      logger.exception('plots sorting failed: %s\n' % (e))
+
+    try:
+      plots = []
+      for v in set_var: 
+        for c in set_contry: 
+          ncs = [path.join(dir_segetalflora,nc) for nc in listdir(dir_segetalflora) if v in nc and c in nc ]
+          logger.debug('plot created for %s %s' % (v, c ))
+          p = vs.spaghetti(ncs, variable=v, title='Segetalflora %s in %s' % (v, c), dir_out=dir_plots)
+          plots.append(p)
+    
+    except Exception as e:
+      logger.exception('ploting failed: %s\n' % (e))
+
 # === tar file archiving 
     self.show_status('files to tar archives', 99)
     tar_tas.add(dir_tas, arcname = dir_tas.replace(path.abspath(path.curdir), ""))
@@ -180,9 +221,11 @@ class segetalflora(WPSProcess):
     tar_fieldmeans.close()
     tar_segetalflora.close()
     logger.debug('tar ncfiles closed')
+    
 
 # === set output parameter   
     self.out_fieldmeans.setValue( tarf_fieldmeans )
     self.out_segetalflora.setValue( tarf_segetalflora )
     self.out_tas.setValue( tarf_tas )
+    self.out_plots.setValue( tarf_plots )
     self.show_status("processing done", 100)

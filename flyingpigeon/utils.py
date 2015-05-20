@@ -131,9 +131,25 @@ def get_timestamps(nc_file):
     time_list = ds.variables['time']
     from datetime import datetime, timedelta
     reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
+    
     from_timestamp = datetime.strftime(reftime + timedelta(days=time_list[0]), '%Y%m%d') 
     to_timestamp = datetime.strftime(reftime + timedelta(days=time_list[-1]), '%Y%m%d')
     return (from_timestamp, to_timestamp)
+
+def get_time(nc_file):
+    """
+    returns all timestamps of given netcdf file as datetime list.
+    
+    :param nc_file: NetCDF file
+    """
+    ds = Dataset(nc_file)
+    time_list = ds.variables['time']
+    from datetime import datetime, timedelta
+    reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
+    ts = [reftime + timedelta(days= t) for t in time_list]
+    
+    return ts
+  
     
 def aggregations(nc_files):
     """
