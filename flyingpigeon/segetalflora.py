@@ -84,7 +84,8 @@ def get_equation(culture_type='fallow', climate_type=2):
 
 
 
-def get_segetalflora(resources, culture_type='fallow', climate_type=2, countries=None, dir_segetalflora=None, dir_tas=None, dir_fieldmean=None ):
+def get_segetalflora(resources, culture_type='fallow', climate_type=2, countries=None, dir_segetalflora=None, 
+                     dir_tas=None, dir_fieldmean=None ):
   """ 
   returns a netCDF file containing vaulues of number of segetal flora species
   
@@ -99,6 +100,7 @@ def get_segetalflora(resources, culture_type='fallow', climate_type=2, countries
   from flyingpigeon import timeseries as ts
   from flyingpigeon import clipping
   from flyingpigeon import subsetting
+  from flyingpigeon import utils
   
   ocgis.env.OVERWRITE = True
   ocgis.env.DIR_SHPCABINET = path.join(path.dirname(__file__), 'processes', 'shapefiles')
@@ -110,19 +112,18 @@ def get_segetalflora(resources, culture_type='fallow', climate_type=2, countries
   tas_yearmean = ts.get_yearmean(resources, variable='tas', dir_output=dir_tas)
   calc = get_equation(culture_type=culture_type, climate_type=climate_type)
   
-  logger.debug('tas_yearmean dictionay build')
+  logger.debug('tas_yearmean list build')
   ocgis.env.DIR_OUTPUT = dir_segetalflora
   
   sf_files = []
   
   for nc in tas_yearmean:
     try:
-      basename = path.basename(tas_yearmean[0])
+      basename = utils.drs_filename(nc, variable='tas', rename_file=False, add_file_path=False) 
       prefix = basename.replace('tas_', 'sf%s%s_'%(culture_type, climate_type)).strip('.nc') 
       prefix_mask = prefix.replace('EUR-','EURmask-')
       mask = basename.split('_')[1]
-      rd = ocgis.RequestDataset(tas_yearmean , 'tas')
-      
+      rd = ocgis.RequestDataset(nc , 'tas')
       sf_tmp = ocgis.OcgOperations(dataset=rd, calc=calc, prefix=prefix, dir_output=dir_segetalflora,
                                    add_auxiliary_files=False, output_format='nc').execute()
       
@@ -147,5 +148,11 @@ def get_segetalflora(resources, culture_type='fallow', climate_type=2, countries
       except Exception as e:
         msg = 'segetalflora Country failed %s : %s\n' %( nc, e) 
         logger.exception(msg)
-    
+  if len(sf_files) > 1:
+    for fm in sf_files:
+      try:
+        fm_file = ts.fldmean(fm, dir_output=dir_fieldmean)
+      except Exception as e:
+        msg = 'fieldmean failed for %s : %s\n' %( fm, e) 
+  
   return sf_files
