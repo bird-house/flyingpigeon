@@ -51,11 +51,12 @@ def spaghetti(resouces , variable=None, title=None, dir_out=None):
         data = np.squeeze(ds.variables[variable][:])
         meanData = np.mean(data,axis=1)
         ts = np.mean(meanData,axis=1)
+        fig.line( dt,ts )
       except Exception as e:
         logger.exception('bokeh lineplot failed for %s: %s\n' % (nc, e))
 
       # plot into current figure
-      fig.line( dt,ts ) # , legend= nc 
+       # , legend= nc 
   
   logger.debug('timesseries lineplot done.') 
   #fig.legend()[0].orientation = "bottom_left"
