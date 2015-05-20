@@ -102,7 +102,7 @@ class segetalflora(WPSProcess):
     
     logger.debug('starting segetalflora process execution')
     self.show_status('starting calcualtion segetalflora', 5)
-    outlog = "%s : Starting the segetalflora calculation \n" % (datetime.strftime(datetime.now(), '%d-%m-%Y %H:%M:%S'))
+    #outlog = "%s : Starting the segetalflora calculation \n" % (datetime.strftime(datetime.now(), '%d-%m-%Y %H:%M:%S'))
     
     ## prepare environment
     # create the tar files
@@ -164,7 +164,7 @@ class segetalflora(WPSProcess):
         except Exception as e:
           msg = 'segetalflora calculation failed %s %s : %s\n' %( climate_type, culture_type, e) 
           logger.exception(msg)
-          outlog = outlog + msg
+          #outlog = outlog + msg
   
     # first processing step: masking Europe for each file
     
@@ -172,7 +172,7 @@ class segetalflora(WPSProcess):
     
     #if type(ncs) != list: 
       #ncs = list([ncs])
-    #outlog = outlog + '%s : %s file(s), type: %s will be processed \n' % ( datetime.strftime(datetime.now(), '%d-%m-%Y %H:%M:%S'), len(ncs), type(ncs))
+    ##outlog = outlog + '%s : %s file(s), type: %s will be processed \n' % ( datetime.strftime(datetime.now(), '%d-%m-%Y %H:%M:%S'), len(ncs), type(ncs))
       
     #ncs_year_mean = []  
     #dir_temp = mkdtemp()  
@@ -212,11 +212,11 @@ class segetalflora(WPSProcess):
             #cdo.expr(eq , input=nc , output = output)
             #msg = 'CDO expression calculation for %s \n' %( basename) 
             #logger.exception(msg)
-            #outlog = outlog + msg
+            ##outlog = outlog + msg
           #except Exception as e:
             #msg = 'CDO expression calculation failed %s : %s\n' %( nc, e) 
             #logger.exception(msg)
-            #outlog = outlog + msg
+            ##outlog = #outlog + msg
           
           #try:
             #domain = basename.split('_')[1]
@@ -226,11 +226,11 @@ class segetalflora(WPSProcess):
             #cdo.fldmean(input=output_mask , output=path.join(dir_fieldmean, path.basename(output_mask)) )
             #msg = 'CDO fieldmean calculation for %s \n' %( basename) 
             #logger.debug(msg)
-            #outlog = outlog + msg
+            ##outlog = outlog + msg
           #except Exception as e:
             #msg = 'CDO fieldmean calculation failed %s : %s\n' %( nc, e) 
             #logger.exception(msg)
-            #outlog = outlog + msg
+            ##outlog = outlog + msg
           
 
           #for country in countries:
@@ -238,15 +238,15 @@ class segetalflora(WPSProcess):
               #sf_country_prefix = prefix.replace('_EUR-', '_%s-' % (country))
               #EUR_seglo = clipping.clip_counties_EUR(urls=output, variable= sf_var,
                                                       #prefix= sf_country_prefix, dir_output = dir_polygons, country=country)
-              #outlog = outlog + '%s : CLIPPING FAILED! for model %s \n' %(datetime.strftime(datetime.now(), '%d-%m-%Y %H:%M:%S'), sf_country_prefix)
+              ##outlog = outlog + '%s : CLIPPING FAILED! for model %s \n' %(datetime.strftime(datetime.now(), '%d-%m-%Y %H:%M:%S'), sf_country_prefix)
               
               #msg = 'Clipping done for %s : %s\n' %(sf_country_prefix ) 
               #logger.exception(msg)
-              #outlog = outlog + msg
+              ##outlog = outlog + msg
             #except Exception as e:
               #msg = 'Clipping failed %s %s:\n %s\n' %(country, path.basename, e) 
               #logger.exception(msg)
-              #outlog = outlog + msg    
+              ##outlog = outlog + msg    
 
    
     self.show_status('files to tar archives', 75)
@@ -258,7 +258,7 @@ class segetalflora(WPSProcess):
     tar_segetalflora.close()
     logger.debug('tar ncfiles closed')
     
-    outlog = outlog + "%s Finishing the segetalflora calculation \n" % (datetime.strftime(datetime.now(), '%d-%m-%Y %H:%M:%S'))
+    #outlog = outlog + "%s Finishing the segetalflora calculation \n" % (datetime.strftime(datetime.now(), '%d-%m-%Y %H:%M:%S'))
     
     #l1, logfile = mkstemp(dir=".", suffix='.txt') 
     #with open(logfile, 'w') as fp:

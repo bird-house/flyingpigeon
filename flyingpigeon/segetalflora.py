@@ -98,6 +98,7 @@ def get_segetalflora(resources, culture_type='fallow', climate_type=2, countries
   from os import path , mkdir
   from flyingpigeon import timeseries as ts
   from flyingpigeon import clipping
+  from flyingpigeon import subsetting
   
   ocgis.env.OVERWRITE = True
   ocgis.env.DIR_SHPCABINET = path.join(path.dirname(__file__), 'processes', 'shapefiles')
@@ -118,12 +119,23 @@ def get_segetalflora(resources, culture_type='fallow', climate_type=2, countries
     try:
       basename = path.basename(tas_yearmean[0])
       prefix = basename.replace('tas_', 'sf%s%s_'%(culture_type, climate_type)).strip('.nc') 
+      prefix_mask = prefix.replace('EUR-','EURmask-')
+      mask = basename.split('_')[1]
       rd = ocgis.RequestDataset(tas_yearmean , 'tas')
       
-      geom_file = ocgis.OcgOperations(dataset=rd, calc=calc, dir_output=dir_segetalflora, prefix=prefix,  add_auxiliary_files=False, output_format='nc').execute() #geom=geom, select_ugid=ugid_europa,
-      sf_files.append(geom_file)
+      sf_tmp = ocgis.OcgOperations(dataset=rd, calc=calc, prefix=prefix, dir_output=dir_segetalflora,
+                                   add_auxiliary_files=False, output_format='nc').execute()
+      
+      geom_file = subsetting.masking(sf_tmp, mask=mask, prefix=prefix_mask, dir_output=dir_segetalflora) 
+      
+      sf_files.append(geom_file[0])
       logger.debug('segetalflora Europa processed : %s' % (prefix))
-      if countries != None: 
+    except Exception as e:
+      msg = 'segetalflora failed %s : %s\n' %( nc, e) 
+      logger.exception(msg)
+      
+    if countries != None:
+      try:
         if type(countries) == str:
           countries = list([countries])
         for country in countries:
@@ -132,9 +144,8 @@ def get_segetalflora(resources, culture_type='fallow', climate_type=2, countries
                                                 calc=calc,  prefix=prefix_coutry, country=country, output_format='nc', dir_output=dir_segetalflora)
           sf_files.append(nc_country)
           logger.debug('segetalflora Country %s processed : %s' % (country, prefix_coutry))
-    except Exception as e:
-      msg = 'segetalflora calculation failed %s : %s\n' %( nc, e) 
-      logger.exception(msg)
-      outlog = outlog + msg
-      
+      except Exception as e:
+        msg = 'segetalflora Country failed %s : %s\n' %( nc, e) 
+        logger.exception(msg)
+    
   return sf_files
