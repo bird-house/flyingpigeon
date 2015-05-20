@@ -6,25 +6,54 @@ logger = logging.getLogger(__name__)
 from cdo import *   # python version
 cdo = Cdo()
 
-def fldmean(resource, dir_output = None ):
-  from os.path import join, basename , curdir
-  from tempfile import mkdtemp , mkstemp
+def fldmean(resource, prefix=None, dir_output = None ):
+  from os import path # join, basename , curdir
+  from os import mkdir
   """
-  retuns a field mean over the whole domain
-  gives a statisitcs timeseries of an given polygon"""  
+  retuns a str or list of netCDF filepathes containing the 
+  field mean over the whole domain of the resource file
   
-  if dir_output == None: 
-    dir_output = mkdtemp(dir= curdir)
-  
-  if resource == str:
-    p, output = mkstemp(dir= dir_output, suffix='.nc')
-    cdo.fldmean(input = resource , output = output)
-  elif resource == list:   
-    output = []
-    for rs in resource: 
-      p, op = mkstemp(dir= dir_output, suffix='.nc')
-      cdo.fldmean(input = rs , output = op)
-      output.append(op)
+  :param resources: string or list of input file path(es)
+  :param dir_output: string for path of output dircetory. in None (default) 
+  temporare directory will be created
+  :param prefix: prefix of the output file. If None (default) is set, 
+  basename of infile will be set as basename
+  """  
+  print 'start'
+  if dir_output == None:
+    if not path.exists('fldmeans'):
+      dir_output = mkdir('fldmeans')
+    else:
+      dir_output = 'fldmeans'
+  print dir_output
+  if type(resource) == str:
+    try:
+      if prefix == None: 
+        name = path.basename(resource)
+      else: 
+        name = prefix+'.nc'
+      output = path.join(dir_output,name) 
+      cdo.fldmean(input = resource , output = output)
+      logger.debug('fieldmean for string path processed.')
+    except Exception as e:
+      logger.exception('fieldmean for sting path failed: %s\n' % (e))
+    
+  elif type(resource) == list:
+    try:
+      output = []
+      for i , rs in enumerate(resource):
+        if prefix == None: 
+          name = path.basename(rs)
+        else: 
+          name = prefix[i]+'.nc'
+        op = path.join(dir_output,name) 
+        cdo.fldmean(input = rs , output = op)
+        output.append(op)
+      logger.debug('fieldmean for list processed.')  
+    except Exception as e:
+      logger.exception('fieldmean for list of pathes failed: %s\n' % (e))
+  else:
+    logger.exception('resouce is %s , expect str or list: ' % (type(resource)))
   return output
 
 def add_statistic(nc_url, var):

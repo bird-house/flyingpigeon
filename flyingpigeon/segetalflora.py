@@ -85,7 +85,7 @@ def get_equation(culture_type='fallow', climate_type=2):
 
 
 def get_segetalflora(resources, culture_type='fallow', climate_type=2, countries=None, dir_segetalflora=None, 
-                     dir_tas=None, dir_fieldmean=None ):
+                     dir_tas=None ):
   """ 
   returns a netCDF file containing vaulues of number of segetal flora species
   
@@ -96,7 +96,7 @@ def get_segetalflora(resources, culture_type='fallow', climate_type=2, countries
   
   """
   from tempfile import mkstemp 
-  from os import path , mkdir
+  from os import path , mkdir, listdir
   from flyingpigeon import timeseries as ts
   from flyingpigeon import clipping
   from flyingpigeon import subsetting
@@ -148,11 +148,6 @@ def get_segetalflora(resources, culture_type='fallow', climate_type=2, countries
       except Exception as e:
         msg = 'segetalflora Country failed %s : %s\n' %( nc, e) 
         logger.exception(msg)
-  if len(sf_files) > 1:
-    for fm in sf_files:
-      try:
-        fm_file = ts.fldmean(fm, dir_output=dir_fieldmean)
-      except Exception as e:
-        msg = 'fieldmean failed for %s : %s\n' %( fm, e) 
-  
+    logger.debug('%s segetalflora files processed:' % (len(sf_files)))   
+              
   return sf_files

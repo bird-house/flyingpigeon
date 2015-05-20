@@ -86,7 +86,7 @@ class segetalflora(WPSProcess):
 # calculation of number of segetal flora species
   def execute(self):
     
-    from os import mkdir, path
+    from os import mkdir, path, listdir 
     import tarfile
     from tempfile import  mkstemp #, mkdtemp
     from datetime import datetime
@@ -139,32 +139,39 @@ class segetalflora(WPSProcess):
     if type(culture_type) != list:
       culture_type = list([culture_type])
       
-
-      
     logger.debug('urls for %s ncs found' % (len(ncs)))
     logger.debug('culture type: %s ' % (culture_type))
-    
+
+
+# === main call for segetalflora processing    
     stepps = len(culture_type) + len(climate_type)
-    
     for a, cult in enumerate(culture_type): 
       for b, clim in enumerate(climate_type):
         start = a + b + 2 
         per = (start / stepps) * 95
         self.show_status('%s/%s processing for %s climate type: %s' %(start, stepps, culture_type, climate_type), per)
         try:
-          sf_files =  sf.get_segetalflora(ncs, culture_type=cult, climate_type=clim , countries=countries, dir_tas=dir_tas , dir_segetalflora=dir_segetalflora, dir_fieldmean=dir_fieldmean)
+          sf_files =  sf.get_segetalflora(ncs, culture_type=cult,
+                                          climate_type=clim,
+                                          countries=countries, 
+                                          dir_tas=dir_tas,
+                                          dir_segetalflora=dir_segetalflora)
           self.show_status("processing of %s segetalflora files done " % (len(sf_files)) , 95)
         except Exception as e:
           msg = 'segetalflora calculation failed %s %s : %s\n' %( climate_type, culture_type, e) 
           logger.exception(msg)
         
+# === fieldmeans         
+    from flyingpigeon import timeseries as ts
+    self.show_status('processing fieldmeans' , 97)
+    try:
+      ncs = [path.join(dir_segetalflora,nc) for nc in listdir(dir_segetalflora)]
+      ncs_fld = ts.fldmean(ncs, dir_output=dir_fieldmean)
+      logger.debug('%s fieldmeans processed' % (len(ncs_fld)))
+    except Exception as e:
+      logger.exception('fieldmeans failed: %s\n' % (e))
     
-    self.show_status('files merged' , 97)
-
-    #  logger.error(msg)
-    ##
-    # segetal flora calculation
-
+# === tar file archiving 
     self.show_status('files to tar archives', 99)
     tar_tas.add(dir_tas, arcname = dir_tas.replace(path.abspath(path.curdir), ""))
     tar_segetalflora.add(dir_segetalflora, arcname = dir_segetalflora.replace(path.abspath(path.curdir), ""))
@@ -173,7 +180,8 @@ class segetalflora(WPSProcess):
     tar_fieldmeans.close()
     tar_segetalflora.close()
     logger.debug('tar ncfiles closed')
-   
+
+# === set output parameter   
     self.out_fieldmeans.setValue( tarf_fieldmeans )
     self.out_segetalflora.setValue( tarf_segetalflora )
     self.out_tas.setValue( tarf_tas )
