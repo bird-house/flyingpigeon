@@ -4,6 +4,7 @@ import subprocess
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
+from flyingpigeon.clipping import REGION_EUROPE
 
 class segetalflora(WPSProcess):
   """This process calculates the relative humidity"""
@@ -13,7 +14,7 @@ class segetalflora(WPSProcess):
       title="Segetal Flora",
       version = "0.1",
       metadata=[{"title": "Institut Pierre Simon Laplace", "href": "https://www.ipsl.fr/en/"}],
-      abstract="Species biodiversity of segetal flora",
+      abstract="Species biodiversity of segetal flora. Imput files: variable:tas , domain: EUR-11 or EUR-44",
       )
 
     self.netcdf_file = self.addComplexInput(
@@ -47,6 +48,18 @@ class segetalflora(WPSProcess):
       maxOccurs=8,
       allowedValues=["fallow", "intensiv", "extensiv"] # sem
       )
+    
+    self.region = self.addLiteralInput(
+      identifier="region",
+      title="Region",
+      abstract="European Regions ...",
+      default='FRA',
+      type=type(''),
+      minOccurs=0,
+      maxOccurs=25,
+      allowedValues=REGION_EUROPE
+      )
+
 
     #complex output
     #-------------
@@ -146,11 +159,14 @@ class segetalflora(WPSProcess):
     ncs = self.getInputValues(identifier='netcdf_file')
     climate_type = self.climate_type.getValue()
     culture_type = self.culture_type.getValue()
+    countries = self.getInputValues(identifier='region')
     
     if type(climate_type) != list:
       climate_type = list([climate_type])
     if type(culture_type) != list:
       culture_type = list([culture_type])
+    if type(countries) != list:
+      countries = list([countries])
       
     logger.debug('urls for %s ncs found' % (len(ncs)))
     logger.debug('culture type: %s ' % (culture_type))
@@ -188,6 +204,8 @@ class segetalflora(WPSProcess):
 
 # === visualisation 
     from flyingpigeon import visualisation as vs
+    from os import rename
+    
     self.show_status('processing visualisation' , 98)
     
     # sort files for plotting
@@ -208,9 +226,14 @@ class segetalflora(WPSProcess):
       for v in set_var: 
         for c in set_contry: 
           ncs = [path.join(dir_segetalflora,nc) for nc in listdir(dir_segetalflora) if v in nc and c in nc ]
-          p = vs.spaghetti(ncs, variable=v, title='Segetalflora %s in %s' % (v, c), dir_out=dir_plots)
-          plots.append(p)
-          logger.debug('plot created for %s %s' % (v, c )) 
+          p = vs.spaghetti(ncs,
+                           variable=v,
+                           title='Segetalflora %s in %s' % (v, c),
+                           dir_out=dir_plots)
+          newname = path.dirname(p)+'/%s_%s_birdhouse_output.nc' %(v,c)
+          rename(p,newname)
+          plots.append(newname)
+          logger.debug('plot created and renamed for %s %s' % (v, c )) 
     except Exception as e:
       logger.exception('ploting failed: %s\n' % (e))
 
