@@ -189,26 +189,27 @@ class segetalflora(WPSProcess):
     from flyingpigeon import visualisation as vs
     self.show_status('processing fieldmeans' , 98)
     
+    # sort files for plotting
     try:
       ncs = listdir(dir_segetalflora)
       set_var = set()
       set_contry = set()
       for nc in ncs: 
-        set_var = set_var.union([nc.split('_'[0])])
-        set_contry = set_contry.union([nc.split('_'[1])])
-      logger.debug('%s plots sorted' % (len(ncs)))
+        set_var = set_var.union([nc.split('_')[0]])
+        set_contry = set_contry.union([nc.split('_')[1]])
+      logger.debug('%s files to plots sorted' % (len(ncs)))
     except Exception as e:
-      logger.exception('plots sorting failed: %s\n' % (e))
-
+      logger.exception('files sorting failed: %s\n' % (e))
+      
+    # plot sorted files 
     try:
       plots = []
       for v in set_var: 
         for c in set_contry: 
           ncs = [path.join(dir_segetalflora,nc) for nc in listdir(dir_segetalflora) if v in nc and c in nc ]
-          logger.debug('plot created for %s %s' % (v, c ))
           p = vs.spaghetti(ncs, variable=v, title='Segetalflora %s in %s' % (v, c), dir_out=dir_plots)
           plots.append(p)
-    
+          logger.debug('plot created for %s %s' % (v, c )) 
     except Exception as e:
       logger.exception('ploting failed: %s\n' % (e))
 
@@ -217,9 +218,12 @@ class segetalflora(WPSProcess):
     tar_tas.add(dir_tas, arcname = dir_tas.replace(path.abspath(path.curdir), ""))
     tar_segetalflora.add(dir_segetalflora, arcname = dir_segetalflora.replace(path.abspath(path.curdir), ""))
     tar_fieldmeans.add(dir_fieldmean, arcname = dir_fieldmean.replace(path.abspath(path.curdir), ""))
+    tar_plots.add(dir_plots, arcname = dir_plots.replace(path.abspath(path.curdir), ""))
+    
     tar_tas.close()
     tar_fieldmeans.close()
     tar_segetalflora.close()
+    tar_plots.close()
     logger.debug('tar ncfiles closed')
     
 

@@ -173,7 +173,9 @@ def get_yearmean(resources, variable=None, dir_output = None):
  
   rs = []
   for nc in resources: 
-    rs.append(utils.drs_filename(nc, variable=None, rename_file=True, 
+    rs.append(utils.drs_filename(nc, 
+                                 variable=None, 
+                                 rename_file=True, 
                                  add_file_path=True))
   ncs = utils.sort_by_filename(rs)
   
