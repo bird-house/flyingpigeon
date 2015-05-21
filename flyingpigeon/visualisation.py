@@ -41,7 +41,7 @@ def spaghetti(resouces , variable=None, title=None, dir_out=None):
     
     fig = figure(x_axis_type = "datetime", tools="pan,wheel_zoom,box_zoom,reset,previewsave")
     logger.debug('output_file.html created')
-    
+    output_file(output_html, title=variable, autosave=True,)
     #bplt.hold()
     for c , nc in enumerate(resouces):
         # get timestapms
@@ -65,9 +65,9 @@ def spaghetti(resouces , variable=None, title=None, dir_out=None):
 
     window_size = 30
     window = np.ones(window_size)/float(window_size)
-    # save(fig)
+    save(fig)
     #bplt.hold('off')
-    output_file(output_html, title=variable, autosave=True,)
+    
     logger.debug('timesseries spagetti plot done for %s with %s lines.'% (variable, c)) 
   except Exception as e:
     logger.exception('bokeh spagetti plot failed for %s : %s\n' % (variable , e))  

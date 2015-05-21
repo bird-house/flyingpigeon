@@ -157,10 +157,11 @@ class segetalflora(WPSProcess):
 
 
 # === main call for segetalflora processing    
-    stepps = len(culture_type) + len(climate_type)
+    stepps = len(culture_type) * len(climate_type)
+    
     for a, cult in enumerate(culture_type): 
       for b, clim in enumerate(climate_type):
-        start = a + b + 2 
+        start = (a + 1) * (b + 1) 
         per = (start / stepps) * 95
         self.show_status('%s/%s processing for %s climate type: %s' %(start, stepps, culture_type, climate_type), per)
         try:
@@ -187,7 +188,7 @@ class segetalflora(WPSProcess):
 
 # === visualisation 
     from flyingpigeon import visualisation as vs
-    self.show_status('processing fieldmeans' , 98)
+    self.show_status('processing visualisation' , 98)
     
     # sort files for plotting
     try:
