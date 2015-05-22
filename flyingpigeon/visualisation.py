@@ -73,50 +73,50 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
     logger.exception('bokeh spagetti plot failed for %s : %s\n' % (variable , e))  
   return output_html  
 
-def uncertainty(resouces , variable=None, title=None, dir_out=None): 
-  """
-  retunes an html file containing the appropriate uncertainty plot. 
+#def uncertainty(resouces , variable=None, title=None, dir_out=None): 
+  #"""
+  #retunes an html file containing the appropriate uncertainty plot. 
   
-  :param resouces: list of files containing the same variable 
-  :param variable: variable to be visualised, if None (default) variable will be detected
-  :param title: sting to be used as title
-  """
-  logger.debug('Start visualisation uncertainty plot')
+  #:param resouces: list of files containing the same variable 
+  #:param variable: variable to be visualised, if None (default) variable will be detected
+  #:param title: sting to be used as title
+  #"""
+  #logger.debug('Start visualisation uncertainty plot')
 
 
 
-  # === prepare invironment
-  if type(resouces) == str: 
-    resouces = list([resouces])    
-  if variable == None:
-    variable = utils.get_variable(resouces[0])
-  if title == None:
-    title = "Field mean of %s " % variable
-  if dir_out == None: 
-    dir_out = '.'
+  ## === prepare invironment
+  #if type(resouces) == str: 
+    #resouces = list([resouces])    
+  #if variable == None:
+    #variable = utils.get_variable(resouces[0])
+  #if title == None:
+    #title = "Field mean of %s " % variable
+  #if dir_out == None: 
+    #dir_out = '.'
 
-  # === prepare bokeh
-  try: 
-    o1 , output_html = mkstemp(dir=dir_out, suffix='.html')
+  ## === prepare bokeh
+  #try: 
+    #o1 , output_html = mkstemp(dir=dir_out, suffix='.html')
   
-    figure(x_axis_type = "datetime", tools="pan,wheel_zoom,box_zoom,reset,previewsave")
+    #figure(x_axis_type = "datetime", tools="pan,wheel_zoom,box_zoom,reset,previewsave")
     
-    output_file(output_html, title=variable, autosave=True,)
+    #output_file(output_html, title=variable, autosave=True,)
   
-    # === get the datetime
-    for nc in resouces:
+    ## === get the datetime
+    #for nc in resouces:
 
-        logger.debug('looping files : %s ' % (nc))
-        # get timestapms
-        rawDate = cdo.showdate(input= nc) # ds.variables['time'][:]
-        strDate = rawDate[0].split('  ')
-        logger.debug('len strDate : %s ' % (len(strDate)))
-        dates = dates.union(strDate)
+        #logger.debug('looping files : %s ' % (nc))
+        ## get timestapms
+        #rawDate = cdo.showdate(input= nc) # ds.variables['time'][:]
+        #strDate = rawDate[0].split('  ')
+        #logger.debug('len strDate : %s ' % (len(strDate)))
+        #dates = dates.union(strDate)
 
-    #self.show_status('dates : %s ' % len(dates), 62)
-    ldates = list(dates)
-    ldates.sort()
-    ddates = dict( (ldates[i], i) for i in range(0,len(ldates)))
+    ##self.show_status('dates : %s ' % len(dates), 62)
+    #ldates = list(dates)
+    #ldates.sort()
+    #ddates = dict( (ldates[i], i) for i in range(0,len(ldates)))
 
     #initialise matirx
 
