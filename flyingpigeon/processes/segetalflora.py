@@ -230,7 +230,7 @@ class segetalflora(WPSProcess):
                            variable=v,
                            title='Segetalflora %s in %s' % (v, c),
                            dir_out=dir_plots)
-          newname = path.dirname(p)+'/%s_%s_birdhouse_output.nc' %(v,c)
+          newname = path.dirname(p)+'/%s_%s_birdhouse_output.html' %(v,c)
           rename(p,newname)
           plots.append(newname)
           logger.debug('plot created and renamed for %s %s' % (v, c )) 

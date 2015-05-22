@@ -3,8 +3,11 @@ from malleefowl import wpslogging as logging
 #import logging
 logger = logging.getLogger(__name__)
 
+from netCDF4 import  Dataset
+
 from cdo import *   # python version
 cdo = Cdo()
+
 
 def fldmean(resource, prefix=None, dir_output = None ):
   from os import path # join, basename , curdir
@@ -197,3 +200,38 @@ def get_yearmean(resources, variable=None, dir_output = None):
   # aggregate mean years
   
   return year_means # resources # ncs # year_means
+
+
+def get_time(nc_file):
+    """
+    returns all timestamps of given netcdf file as datetime list.
+    
+    :param nc_file: NetCDF file
+    """
+    ds = Dataset(nc_file)
+    time_list = ds.variables['time']
+    from datetime import datetime, timedelta
+    reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
+    ts = [reftime + timedelta(days= t) for t in time_list]
+    
+    return ts
+  
+def get_variable(nc_file, variable=None):
+    """
+    returns a list of variabel values
+    
+    :param nc_file: NetCDF file
+    """
+    
+    from flyingpigeon import utils
+    from numpy import squeeze
+    
+    if variable == None: 
+      var = utils.get_variable(nc_file)
+    else:
+      var = variable
+    
+    ds = Dataset(nc_file)
+    values = squeeze(ds.variables[var]).tolist()
+    
+    return values  
