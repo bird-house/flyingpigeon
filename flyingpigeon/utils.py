@@ -5,10 +5,14 @@ from malleefowl import wpslogging as logging
 #import logging
 logger = logging.getLogger(__name__)
 
+GROUPING = ["yr", "mon", "sem", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON" ]
+
+
 def local_path(url):
     from urllib2 import urlparse
     url_parts = urlparse.urlparse(url)
     return url_parts.path
+
 
 def calc_grouping(grouping):
     calc_grouping = ['year'] # default year
@@ -193,27 +197,27 @@ def aggregations(nc_files):
     
     return aggregations
 
-def sort_by_time(resources):
+def sort_by_time(resource):
     from ocgis.util.helpers import get_sorted_uris_by_time_dimension
     
-    if type(resources) is list and len(resources) > 1:
-        sorted_list = get_sorted_uris_by_time_dimension(resources)
-    elif type(resources) is str:
-        sorted_list = [resources]
+    if type(resource) is list and len(resource) > 1:
+        sorted_list = get_sorted_uris_by_time_dimension(resource)
+    elif type(resource) is str:
+        sorted_list = [resource]
     else: 
-        sorted_list = resources
+        sorted_list = resource
     return sorted_list
 
-def sort_by_filename(resources, historical_concatination = False ):
+def sort_by_filename(resource, historical_concatination = False ):
   """ Sort a list of files with Cordex conform file names. 
   returns a dictionary with name:list_of_sorted_files"""
   from os  import path
   # from numpy import squeeze
   
-  logger.debug('sort_by_filename module: len(resources) = %s ' % len(resources))  
+  logger.debug('sort_by_filename module: len(resource) = %s ' % len(resource))  
   ndic = {}
-  if type(resources) == list:
-    for nc in resources:
+  if type(resource) == list:
+    for nc in resource:
       logger.debug('file: %s' % nc)
       
       p, f = path.split(path.abspath(nc)) 
@@ -229,22 +233,22 @@ def sort_by_filename(resources, historical_concatination = False ):
         
     for key in ndic:
       if historical_concatination == False:
-        for n in resources:
+        for n in resource:
           if key in n: 
             ndic[key].append(path.join(p,n))
       elif historical_concatination == True:
         historical = key.replace('rcp26','historical').replace('rcp45','historical').replace('rcp65','historical').replace('rcp85','historical')
-        for n in resources:
+        for n in resource:
           if key in n or historical in n: 
             ndic[key].append(path.join(p,n))
       else:
         logger.error('append filespathes to dictionary for key %s failed' % (key))
       ndic[key].sort()
-  elif type(resources) == str:
-    p, f = path.split(path.abspath(resources))
-    ndic[f.replace('.nc','')] = resources
+  elif type(resource) == str:
+    p, f = path.split(path.abspath(resource))
+    ndic[f.replace('.nc','')] = resource
   else:      
-    logger.error('sort_by_filename module failed: resources is not str or list')
+    logger.error('sort_by_filename module failed: resource is not str or list')
   
   logger.debug('sort_by_filename module done: len(ndic) = %s ' % len(ndic))  
   return ndic # rndic

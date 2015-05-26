@@ -21,8 +21,8 @@ class CalcIndicesWithClipping(WPSProcess):
 
         self.resource = self.addComplexInput(
             identifier="resource",
-            title="Resouce",
-            abstract="NetCDF File",
+            title="Resouces",
+            abstract="NetCDF File(s)",
             minOccurs=1,
             maxOccurs=1024,
             maxmegabites=5000,
@@ -89,6 +89,7 @@ class CalcIndicesWithClipping(WPSProcess):
             formats=[{"mimeType":"text/json"}],
             asReference=True
             )
+        
         self.status_log = self.addComplexOutput(
             identifier="status_log",
             title="Status Logfile",
@@ -99,14 +100,14 @@ class CalcIndicesWithClipping(WPSProcess):
             )
         
     def execute(self):
-        resources = self.getInputValues(identifier='resource')
+        ncs = self.getInputValues(identifier='resource')
         indice_list = self.getInputValues(identifier='indice')
         region_list = self.getInputValues(identifier='region')
 
-        self.show_status('starting: indice=%s, num_files=%s' % (indice_list, len(resources)), 0)
+        self.show_status('starting: indice=%s, num_files=%s' % (indice_list, len(ncs)), 0)
 
         results,status_log = calc_indice_with_clipping(
-            resources = resources,
+            resource = ncs,
             indices = indice_list,
             regions = region_list,
             grouping = self.grouping.getValue(),
@@ -135,5 +136,5 @@ class CalcIndicesWithClipping(WPSProcess):
                 fp.write("%s\n" % status)
             self.status_log.setValue(outfile)
         
-        self.show_status('done: indice=%s, num_files=%s' % (indice_list, len(resources)), 100)
+        self.show_status('done: indice=%s, num_files=%s' % (indice_list, len(ncs)), 100)
 

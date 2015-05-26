@@ -16,7 +16,7 @@ def run(graph):
     logger.debug('workflow done')
 
 def calc_indice(
-        resources,
+        resource,
         indices=['SU'],
         grouping='year',
         out_dir=None,
@@ -33,11 +33,11 @@ def calc_indice(
     graph = WorkflowGraph()
 
     # start with experiment aggregation
-    aggregate = Aggregate(resources, out_dir=out_dir, monitor=monitor)
+    aggregate = Aggregate(resource, out_dir=out_dir, monitor=monitor)
     aggregate.set_status_logger(status_logger)
 
     # need result node to collect results
-    results = Results(max_results=len(resources), out_dir=out_dir, monitor=monitor)
+    results = Results(max_results=len(resource), out_dir=out_dir, monitor=monitor)
     results.set_status_logger(status_logger)
     
     # loop all indices
@@ -53,7 +53,7 @@ def calc_indice(
 
 
 def calc_indice_with_clipping(
-        resources,
+        resource,
         indices=['SU'],
         grouping='year',
         regions=['FRA'],
@@ -73,10 +73,10 @@ def calc_indice_with_clipping(
     # build workflow graph
     graph = WorkflowGraph()
     # start with experiment aggregation
-    aggregate = Aggregate(resources, monitor=monitor)
+    aggregate = Aggregate(resource, monitor=monitor)
     aggregate.set_status_logger(status_logger)
     # need result node to collect results
-    results = Results(max_results=len(resources), out_dir=out_dir, monitor=monitor)
+    results = Results(max_results=len(resource), out_dir=out_dir, monitor=monitor)
     results.set_status_logger(status_logger)
     
     # loop all indices
@@ -94,8 +94,8 @@ def calc_indice_with_clipping(
             graph.connect(calc_indice, 'output', clipping, 'resource')
 
             # normalize with status log
-            #normalize = Normalize(region=region, start_date=start_date, end_date=end_date, monitor=monitor)
-            #graph.connect(clipping, 'output', normalize, 'resource')
+            # normalize = Normalize(region=region, start_date=start_date, end_date=end_date, monitor=monitor)
+            # graph.connect(clipping, 'output', normalize, 'resource')
 
             # collect results
             graph.connect(clipping, 'output', results, 'input')
@@ -103,4 +103,34 @@ def calc_indice_with_clipping(
     run(graph)
     
     return results.get_outputs()
+   
+def calc_cordexviewer(
+        resource,
+        indices=['SU'],
+        grouping='year',
+        regions=['FRA'],
+        #start_date=None,
+        #end_date=None,
+        out_dir=None,
+        status_log=None,
+        monitor=None
+        ):
+  
+  results = calc_indice_with_clipping(
+    resource,
+    indices=indices,
+    grouping=grouping,
+    regions=regions,
+    #start_date=None,
+    #end_date=None,
+    #out_dir=None,
+    status_log=status_log,
+    monitor=monitor
+    )    
+  
+  return results
+  
+        
+
+
 

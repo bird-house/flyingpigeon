@@ -8,6 +8,7 @@ from malleefowl import wpslogging as logging
 #import logging
 logger = logging.getLogger(__name__)
 
+
 _INDICES_ = dict(
     TG=dict(variable='tas', description='Mean of mean temperatur (tas as input files)'),
     TX=dict(variable='tasmax', description='Mean of max temperatur (tasmax as input files)'),
@@ -78,11 +79,11 @@ def indice_variable(indice):
         logger.error('unknown indice %s', indice)
     return variable
 
-def calc_indice(resources=[], indice="SU", grouping="year", out_dir=None):
+def calc_indice(resource=[], indice="SU", grouping="year", out_dir=None):
     """
     Calculates given indice for variable and grouping.
 
-    :param resources: list of filenames (netcdf)
+    :param resource: list of filenames (netcdf)
     :param out_dir: output directory for result file (netcdf)
 
     :return: netcdf files with calculated indices
@@ -98,7 +99,7 @@ def calc_indice(resources=[], indice="SU", grouping="year", out_dir=None):
     output = None
     calc = [{'func' : 'icclim_' + indice, 'name' : indice}]
     try:
-        aggs = aggregations(resources)
+        aggs = aggregations(resource)
         if len(aggs) > 1:
             logger.warning('more than one experiment group selected: %s', aggs.keys())
         if len(aggs) == 0:
