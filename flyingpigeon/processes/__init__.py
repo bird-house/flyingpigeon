@@ -1,5 +1,5 @@
 __all__ = [
-#        "visualisation",
+        "visualisation",
         "extractpoints",
 #        "analogs",
         "ensembles",
