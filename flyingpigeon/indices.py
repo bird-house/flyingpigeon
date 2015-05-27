@@ -79,7 +79,7 @@ def indice_variable(indice):
         logger.error('unknown indice %s', indice)
     return variable
 
-def calc_indice(resource=[], indice="SU", grouping="year", out_dir=None):
+def calc_indice(resource=[], indice="TG", grouping="yr", out_dir=None):
     """
     Calculates given indice for variable and grouping.
 
@@ -105,31 +105,41 @@ def calc_indice(resource=[], indice="SU", grouping="year", out_dir=None):
         if len(aggs) == 0:
             raise CalculationException('no valid input data found!')
         agg_name = aggs.keys()[0]
-        logger.debug('aggregation = %s', agg_name)
-        agg = aggs[agg_name]
-        nc_files = agg['files']
-        variable = agg['variable']
-        if variable != indice_variable(indice):
-            raise CaclulationException('can not calculate indice %s for variable %s' % (indice, variable))
-        # run ocgis ...
+        logger.debug('aggregations = %s', agg_name)
+        
         outputs = []
-        from os.path import basename
-        for year in range(agg['start_year'], agg['end_year']+1):
-            _,prefix = tempfile.mkstemp(prefix=indice + '_' + str(year), dir=out_dir)
-            prefix = basename(prefix)
-            try:
-                rd = RequestDataset(uri=nc_files, variable=variable, time_region = {'year':[year]})
-                ops = OcgOperations(
-                    dataset=rd,
-                    calc=calc,
-                    calc_grouping=calc_grouping(grouping),
-                    prefix=prefix,
-                    output_format='nc',
-                    dir_output=out_dir,
-                    add_auxiliary_files=False)
-                outputs.append( ops.execute() )
-            except:
-                logger.exception('could not calc indice %s for year %s', indice, year)
+        for agg_name in aggs.keys(): 
+            agg = aggs[agg_name]
+            nc_files = aggs[agg_name]['files']
+            variable = aggs[agg_name]['variable']
+            # run ocgis if variabel fitts to aggregation
+            if variable == indice_variable(indice): # calculate only if indice is calculateable with files.
+              try:
+                logger.debug('%s variable is fitting to Aggregarion %s' % (variable,agg_name))
+                
+                from os.path import basename
+                for year in range(agg['start_year'], agg['end_year']+1):
+                    
+                    _,prefix = tempfile.mkstemp(prefix=indice + agg_name.strip(variable)+ '_' + str(year), dir=out_dir)
+                    prefix = basename(prefix)
+                    try:
+                        rd = RequestDataset(uri=nc_files, variable=variable, time_region = {'year':[year]})
+                        ops = OcgOperations(
+                            dataset=rd,
+                            calc=calc,
+                            calc_grouping=calc_grouping(grouping),
+                            prefix=prefix,
+                            output_format='nc',
+                            dir_output=out_dir,
+                            add_auxiliary_files=False)
+                        outputs.append( ops.execute() )
+                    except Exception as e:
+                      logger.exception('could not calc indice %s for year %s: %s', indice, year, e)
+              except Exception as e:
+                logger.exception('could not calc indice %s for aggregation %s: %s', indice, agg_name, e )        
+            else:
+              logger.exception('Indice %s not possible for Experiment %s with variable %s : %s' % (indice, agg_name, variable))
+
         # merge by time
         from os.path import join
         output = join(out_dir, "%s.nc" % agg_name.replace(variable, indice, 1))

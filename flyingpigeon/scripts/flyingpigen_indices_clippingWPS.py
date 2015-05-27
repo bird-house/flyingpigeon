@@ -11,7 +11,7 @@ for process in wps.processes:
     print '%s : \t %s' % (process.identifier, process.abstract)
 
 execute = wps.execute(
-    identifier="indices_with_clipping", #indices_clipping",
+    identifier="indices_clipping", #indices_clipping",
     inputs=[
        ("resource","http://localhost:8090/wpscache/tas_EUR-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20010101-20051231.nc"),
        ("resource","http://localhost:8090/wpscache/tas_EUR-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_19910101-19951231.nc"),
@@ -21,11 +21,10 @@ execute = wps.execute(
        #("resource","http://localhost:8090/wpscache/tas_EUR-11_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_19910101-19951231.nc"),
        #("resource","http://localhost:8090/wpscache/tas_EUR-11_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_19860101-19901231.nc"),
        #("resource","http://localhost:8090/wpscache/tas_EUR-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20010101-20051231.nc"),
-       # ("indice" , "TG"), 
-       # ("region" , "FRA"), 
-#    grouping = ['yr'],
-#    polygons = ['FRA']
+       ("indice" , "TG"),
+       ("region","DEU")
        ])
+    
 #output= [('out_fieldmeans', True),('out_polygons', True),('out_tas', True)]   
 # check process if completed ...
 monitorExecution(execute, sleepSecs=5)
