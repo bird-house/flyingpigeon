@@ -9,7 +9,7 @@ try:
 except ImportError:
     # Next 2 lines are optional:  issue a warning to the user
     from warnings import warn
-    warn("ConcurrentLogHandler package not installed.  Using builtin log handler")
+    warn("ConcurrentLogHandler package not installed. Using builtin log handler")
     from logging.handlers import RotatingFileHandler as RFHandler
 
 def get_status_logger(filename="status.log"):

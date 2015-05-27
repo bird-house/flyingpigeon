@@ -20,6 +20,7 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
   :param variable: variable to be visualised, if None (default) variable will be detected
   :param title: sting to be used as title
   """
+  
   logger.debug('Start visualisation spagetti plot')
   
   # === prepare invironment
@@ -73,102 +74,113 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
     logger.exception('bokeh spagetti plot failed for %s : %s\n' % (variable , e))  
   return output_html  
 
-#def uncertainty(resouces , variable=None, title=None, dir_out=None): 
-  #"""
-  #retunes an html file containing the appropriate uncertainty plot. 
+def uncertainty(resouces , variable=None, title=None, dir_out=None): 
+  """
+  retunes an html file containing the appropriate uncertainty plot. 
   
-  #:param resouces: list of files containing the same variable 
-  #:param variable: variable to be visualised, if None (default) variable will be detected
-  #:param title: sting to be used as title
-  #"""
-  #logger.debug('Start visualisation uncertainty plot')
+  :param resouces: list of files containing the same variable 
+  :param variable: variable to be visualised, if None (default) variable will be detected
+  :param title: sting to be used as title
+  """
+  logger.debug('Start visualisation uncertainty plot')
 
-
-
-  ## === prepare invironment
-  #if type(resouces) == str: 
-    #resouces = list([resouces])    
-  #if variable == None:
-    #variable = utils.get_variable(resouces[0])
-  #if title == None:
-    #title = "Field mean of %s " % variable
-  #if dir_out == None: 
-    #dir_out = '.'
-
-  ## === prepare bokeh
-  #try: 
-    #o1 , output_html = mkstemp(dir=dir_out, suffix='.html')
+  import cdo 
+  cdo = cdo.Cdo()
   
-    #figure(x_axis_type = "datetime", tools="pan,wheel_zoom,box_zoom,reset,previewsave")
+  # === prepare invironment
+  if type(resouces) == str: 
+    resouces = list([resouces])    
+  if variable == None:
+    variable = utils.get_variable(resouces[0])
+  if title == None:
+    title = "Field mean of %s " % variable
+  if dir_out == None: 
+    dir_out = '.'
+
+  # === prepare bokeh
+  try: 
+    o1 , output_html = mkstemp(dir=dir_out, suffix='.html')
+  
+    fig = figure(x_axis_type = "datetime", tools="pan,wheel_zoom,box_zoom,reset,previewsave")
     
-    #output_file(output_html, title=variable, autosave=True,)
+    output_file(output_html, title=variable, autosave=True,)
   
-    ## === get the datetime
-    #for nc in resouces:
+    # === get the datetime
+    dates = set()
+    for nc in resouces:
 
-        #logger.debug('looping files : %s ' % (nc))
-        ## get timestapms
-        #rawDate = cdo.showdate(input= nc) # ds.variables['time'][:]
-        #strDate = rawDate[0].split('  ')
-        #logger.debug('len strDate : %s ' % (len(strDate)))
-        #dates = dates.union(strDate)
+        logger.debug('looping files : %s ' % (nc))
+        # get timestapms
+        rawDate = cdo.showdate(input= nc) # ds.variables['time'][:]
+        strDate = rawDate[0].split('  ')
+        logger.debug('len strDate : %s ' % (len(strDate)))
+        dates =  dates.union(strDate) #dates.union( utils.get_time(nc))
 
-    ##self.show_status('dates : %s ' % len(dates), 62)
-    #ldates = list(dates)
-    #ldates.sort()
-    #ddates = dict( (ldates[i], i) for i in range(0,len(ldates)))
+    #self.show_status('dates : %s ' % len(dates), 62)
+    ldates = list(dates)
+    ldates.sort()
+    ddates = dict( (ldates[i], i) for i in range(0,len(ldates)))
 
-    #initialise matirx
+    # initialise matirx
 
+    ma = np.empty([len(ddates), len(resouces)])*np.nan
+    #self.show_status('ddates : %s ' % ddates, 62)
 
-    #ma = np.empty([len(ddates), len(ncfiles)])*np.nan
-    ##self.show_status('ddates : %s ' % ddates, 62)
+    # fill matrix
+    for y in range(0,len(resouces)) : 
+        rawDate = cdo.showdate(input= resouces[y]) # ds.variables['time'][:]
+        strDate = rawDate[0].split('  ')
 
-    ## fill matrix
-    #for y in range(0,len(ncfiles)) : 
-        #rawDate = cdo.showdate(input= ncfiles[y]) # ds.variables['time'][:]
-        #strDate = rawDate[0].split('  ')
-
-        #ds=Dataset(ncfiles[y])
-        #data = np.squeeze(ds.variables[var][:])
-        #meanData = np.mean(data,axis=1)
-        #ts = np.mean(meanData,axis=1)
-        #logger.debug('ts array  : %s ' % (len(ts)), 66)
+        ds=Dataset(resouces[y])
+        data = np.squeeze(ds.variables[variable][:])
+        meanData = np.mean(data,axis=1)
+        ts = np.mean(meanData,axis=1)
+        logger.debug('ts array  : %s ' % (len(ts)) )
         
-        #for t in range(0, len(strDate)) : 
-            #x = ddates.get(strDate[t],0)
-            #ma[x,y] = ts[t]
+        for t in range(0, len(strDate)) : 
+            x = ddates.get(strDate[t],0)
+            ma[x,y] = ts[t]
         
-    ## get datetimes
-    #dt = [datetime.strptime(elem, '%Y-%m-%d') for elem in ldates]
-    #mdat = np.ma.masked_array(ma ,np.isnan(ma))
+    # get datetimes
+    dt = [datetime.strptime(elem, '%Y-%m-%d') for elem in ldates]
+    mdat = np.ma.masked_array(ma ,np.isnan(ma))
 
-    ##self.show_status('matrix masked %s ' % mdat , 80)
-    ##logger.debug('matrix %s ', mdat.shape) 
+    #self.show_status('matrix masked %s ' % mdat , 80)
+    #logger.debug('matrix %s ', mdat.shape) 
 
-    #ma_mean = np.mean(mdat,axis=1)
-    #self.show_status('mean  %s '%  len(ma_mean) , 97 )
-    #ma_min = np.min(mdat,axis=1)
-    #ma_max = np.max(mdat,axis=1)
-    ##ma_sub = np.subtract(ma_max, ma_min)
-    ##ma_per75 = np.percentile(mdat,75, axis=0)
-    ##ma_per25 = np.percentile(mdat,25, axis=0)
-    #self.show_status('ma Vaules %s' % len(mdat.data) , 75)
+    ma_mean = np.mean(mdat,axis=1)
+    logger.debug('mean  %s '%  len(ma_mean))
+    ma_min = np.min(mdat,axis=1)
+    ma_max = np.max(mdat,axis=1)
+    #ma_sub = np.subtract(ma_max, ma_min)
+    #ma_per75 = np.percentile(mdat,75, axis=0)
+    #ma_per25 = np.percentile(mdat,25, axis=0)
+    logger.debug('ma Vaules %s' % len(mdat.data))
 
-    ##line(dt, ma_min , color='grey' ,line_width=1)
-    ##line(dt, ma_max , color='grey' , line_width=2 )
-    #line(dt, ma_mean , color='red', line_width=1)
+    #line(dt, ma_min , color='grey' ,line_width=1)
+    #line(dt, ma_max , color='grey' , line_width=2 )
+    fig.line(dt, ma_mean , color='red', line_width=1)
 
-    #x = []
-    #y = []
-    #x = np.append(dt,dt[::-1])
-    #y = np.append(ma_min, ma_max[::-1])
+    x = []
+    y = []
+    x = np.append(dt,dt[::-1])
+    y = np.append(ma_min, ma_max[::-1])
 
-    #patch(x,y, color='grey', alpha=0.8, line_color=None)
+    fig.patch(x,y, color='grey', alpha=0.8, line_color=None)
+    
+    fig.title = "Mean and Uncertainty of  %s " % variable
+    fig.grid
+    
+    
+    save(fig)
+    hold('off')
+  
+    logger.debug('timesseries uncertainty plot done for %s with %s lines.'% (variable, c)) 
+  except Exception as e:
+    logger.exception('bokeh uncertainty plot failed for %s : %s\n' % (variable , e))  
+  return output_html  
 
-    #curplot().title = "Mean and Uncertainty of  %s " % var  
-    #save()
-    #hold('off')
+    
       
   
   

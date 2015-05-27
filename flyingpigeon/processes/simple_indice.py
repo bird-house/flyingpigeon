@@ -71,11 +71,11 @@ class CalcIndice(WPSProcess):
         logger.debug('PYHONPATH = %s', os.environ['PYTHONPATH'])
         logger.debug('PATH = %s', os.environ['PATH'])
 
-        resources = self.getInputValues(identifier='resource')
-        self.show_status('starting: indice=%s, grouping=%s, num_files=%s' % (self.indice.getValue(), self.grouping.getValue(), len(resources)), 0)
+        ncs = self.getInputValues(identifier='resource')
+        self.show_status('starting: indice=%s, grouping=%s, num_files=%s' % (self.indice.getValue(), self.grouping.getValue(), len(ncs)), 0)
 
         result = calc_indice(
-            resources = resources,
+            resource = ncs,
             indice = self.indice.getValue(),
             grouping = self.grouping.getValue(),
             out_dir = self.working_dir,
@@ -87,5 +87,5 @@ class CalcIndice(WPSProcess):
         from os.path import basename
         self.drs_filename.setValue( basename(result) )
 
-        self.show_status('done: indice=%s, num_files=%s' % (self.indice.getValue(), len(resources)), 100)
+        self.show_status('done: indice=%s, num_files=%s' % (self.indice.getValue(), len(ncs)), 100)
 

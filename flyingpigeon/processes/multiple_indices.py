@@ -73,7 +73,7 @@ class CalcMultipleIndices(WPSProcess):
             )
         
     def execute(self):
-        resources = self.getInputValues(identifier='resource')
+        ncs = self.getInputValues(identifier='resource')
         region_list = self.getInputValues(identifier='region')
 
         my_indices = []
@@ -82,11 +82,11 @@ class CalcMultipleIndices(WPSProcess):
             if self.getInputValue(identifier=indice) == True:
                 my_indices.append(indice)
 
-        self.show_status('starting: indice=%s, num_files=%s' % (my_indices, len(resources)), 0)
+        self.show_status('starting: indice=%s, num_files=%s' % (my_indices, len(ncs)), 0)
 
         from os.path import join
         results = calc_indice(
-            resources = resources,
+            resource = ncs,
             indices = my_indices,
             grouping = self.grouping.getValue(),
             out_dir = self.working_dir,
@@ -109,5 +109,5 @@ class CalcMultipleIndices(WPSProcess):
 
         self.status_log.setValue('status.log')
         
-        self.show_status('done: indice=%s, num_files=%s' % (indice_list, len(resources)), 100)
+        self.show_status('done: indice=%s, num_files=%s' % (indice_list, len(ncs)), 100)
 

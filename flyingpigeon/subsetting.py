@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 from os.path import dirname, join
 DIR_MASKS = join(dirname(__file__), 'processes', 'masks')
 
-def masking(resource , mask, prefix=None, dir_output=None):
+def masking(resource, mask, prefix=None, dir_output=None):
   """
   Returns a list of masked netCDF file(s) path(es).  
   :param resource: string path to netCDF resource
@@ -82,3 +82,11 @@ def get_dimension_map(resource):
     dimension_map = None
     
   return dimension_map
+
+# === Functions for Clipping: 
+
+# === Available Polygons
+POLYGONS = ['AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN','FRA',
+                 'GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX','MLT','NLD',
+                 'POL','PRT','ROU','SVK','SVN','SWE','NOR','CHE','ISL','MKD','MNE',
+                 'SRB','MDA','UKR','BIH','ALB','BLR','KOS']
