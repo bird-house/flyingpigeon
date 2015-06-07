@@ -47,7 +47,7 @@ def rl_bootstrap(ts, T=100, nsim=1000):
         
     return RL_bt
 
-def eventdistribution(ts, per=[33,66], nsim=100, rp = [ 5. ,10. ,20., 50. ,100. ,200., 300., 400. ,500., 700, 1000. ]):
+def eventdistribution(ts, per=[33,66], nsim=100, rp = [ 5. ,10. ,20., 50. ,100. ,200., 300., 400. ,500., 700, 1000. ], std_err = True):
     """ eventdistribution(ts, nsim=100, rp = [ 5. ,10. ,20., 50. ,100. ,200., 300., 400. ,500., 700, 1000. ])
     """
     from rpy2.robjects import FloatVector
@@ -58,7 +58,7 @@ def eventdistribution(ts, per=[33,66], nsim=100, rp = [ 5. ,10. ,20., 50. ,100. 
     rpy2.robjects.numpy2ri.activate()
     evd = importr('evd')
     
-    RR = evd.fgev(ts)
+    RR = evd.fgev_norm(ts, std_err = std_err )
     a=RR.rx2('estimate')[0] # RR.fgev$estimate[1]
     b=RR.rx2('estimate')[1] # RR.fgev$estimate[2]
     s=RR.rx2('estimate')[2] # fgev$estimate[3]
