@@ -25,14 +25,12 @@ OUT_DIR = '/home/main/nils/Shapefiles/OcgisShape/'
 EOBSopendub = 'http://opendap.knmi.nl/knmi/thredds/catalog/e-obs_0.22rotated/catalog.html?dataset=e-obs_0.22rotated/rr_0.22deg_rot_v11.0.nc'
  
 EOBS =  HOME+'/data/EOBS/rr_0.44deg_rot_v11.0.nc'
-
  
 #ocgis.env.DIR_SHPCABINET = '/home/main/nils/Shapefiles/DEU_adm/'
 ocgis.env.DIR_SHPCABINET = SHP_DIR
 ocgis.env.OVERWRITE = True  
 sc = ocgis.ShpCabinet()
 print sc.keys()
-
  
 ## there is only one geometry in this file...
 geoms = 'country'
@@ -45,7 +43,6 @@ rd = ocgis.RequestDataset(EOBS, 'rr', dimension_map = dimension_map) # time_rang
 group = ['year']
 #dir_output = tempfile.mkdtemp()
 dir_output = None
-
 
 calc = 'pr=rr/84600'# 
 pr_file = ocgis.OcgOperations(dataset=rd, calc=calc, geom=geoms, prefix=str('pr_geom'), \

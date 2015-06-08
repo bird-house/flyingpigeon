@@ -74,7 +74,7 @@ def get_dimension_map(resource):
     dimension_map = dim_map1
   elif 'CLMcom-CCLM4-8-17' in file_name:
     dimension_map = dim_map1
-  elif '_v11.0.nc'  in file_name: # EOBS Data
+  elif '_v11.0' in file_name: # EOBS Data
     dimension_map = dim_map4
   #elif 'KNMI-RACMO22E' in file_name:   
     #dimension_map = dim_map1

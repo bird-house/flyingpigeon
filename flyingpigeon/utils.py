@@ -75,7 +75,7 @@ def drs_filename(nc_file, skip_timestamp=False, skip_format=False ,
 
     filename = nc_file
     try:
-        if ds.project_id == 'CORDEX':
+        if ds.project_id == 'CORDEX' or ds.project_id == 'EOBS' :
             filename = cordex_pattern.format(
                 variable = variable,
                 domain = ds.CORDEX_domain,
