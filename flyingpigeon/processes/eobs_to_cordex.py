@@ -3,6 +3,8 @@ from malleefowl.process import WPSProcess
 from datetime import datetime, date
 import types
 
+from flyingpigeon.eobs_to_cordex import EOBS_VARIABLES
+
 from cdo import * 
 cdo = Cdo()
 
@@ -30,7 +32,7 @@ class eobs_to_cordex(WPSProcess):
     self.netcdf_file = self.addComplexInput(
       identifier="netcdf_file",
       title="NetCDF",
-      abstract="URL to netCDF file",
+      abstract="URL to netCDF EOBS file (if not set, the original EOBS source will be downloaded)",
       minOccurs=0,
       maxOccurs=100,
       maxmegabites=5000,
@@ -45,7 +47,7 @@ class eobs_to_cordex(WPSProcess):
       type=type(''),
       minOccurs=1,
       maxOccurs=1,
-      allowedValues=['tn', 'tx' , 'tn' , 'rr']
+      allowedValues=EOBS_VARIABLES
       )
     
     self.ncout = self.addComplexOutput(
@@ -63,7 +65,7 @@ class eobs_to_cordex(WPSProcess):
     from malleefowl.download import download
     
     import ocgis
-    from netCDF4 import Dataset
+    
 
     self.show_status('execution started at : %s '  % dt.datetime.now() , 5)
 
@@ -89,82 +91,56 @@ class eobs_to_cordex(WPSProcess):
       var = 'pr'
       unit = 'kg m-2 s-1'
     
-    url_2014 = 'http://www.ecad.eu/download/ensembles/data/months/%s_0.25deg_reg_2014.nc.gz' % (var_eobs)  
-    url = 'http://www.ecad.eu/download/ensembles/data/Grid_0.25deg_reg/%s_0.25deg_reg_v10.0.nc.gz' % (var_eobs)
+#    url_2014 = 'http://www.ecad.eu/download/ensembles/data/months/%s_0.25deg_reg_2014.nc.gz' % (var_eobs)  
+#    url = 'http://www.ecad.eu/download/ensembles/data/Grid_0.25deg_reg/%s_0.25deg_reg_v10.0.nc.gz' % (var_eobs)
+
+    url = 'http://opendap.knmi.nl/knmi/thredds/dodsC/e-obs_0.22rotated/%s_0.22deg_rot_v11.0.nc' % (var_eobs)
+    rd = ocgis.RequestDataset( url, var_eobs, time_region = {'year':[2010]}) # start 1950
     
+    #cordex_format = ocgis.OcgOperations(dataset=rd, calc=calc, prefix=str('cordex_format'), output_format='nc').execute()
+      
     # todo: check if decompressed file exist. 
     
-    self.show_status('downlaoding  EOBS file.gz: %s '  % var_eobs , 5)
-    eobs_2014 = download(url_2014)
-    eobs = download(url)
+    #self.show_status('downlaoding  EOBS file.gz: %s '  % var_eobs , 5)
+    #eobs_2014 = download(url_2014)
+    #eobs = download(url)
    
-    self.show_status('extraction of : %s '  % var_eobs , 5)
-    p, gz_2014 = os.path.split(eobs)
+    #self.show_status('extraction of : %s '  % var_eobs , 5)
+    #p, gz_2014 = os.path.split(eobs)
     
-    cmd = 'gunzip -k %s; gunzip -k %s ' % (eobs_2014, eobs)
-    logger.debug('system call : %s '  % (cmd))
-    os.system(cmd)
+    #cmd = 'gunzip -k %s; gunzip -k %s ' % (eobs_2014, eobs)
+    #logger.debug('system call : %s '  % (cmd))
+    #os.system(cmd)
     
-    nc_2014 = os.path.join(p,'%s_0.25deg_reg_2014.nc' % var_eobs )
-    nc = os.path.join(p,'%s_0.25deg_reg_v10.0.nc' % var_eobs )
+    #nc_2014 = os.path.join(p,'%s_0.25deg_reg_2014.nc' % var_eobs )
+    #nc = os.path.join(p,'%s_0.25deg_reg_v10.0.nc' % var_eobs )
     
-    logger.debug('starting mergetime ')
+    #logger.debug('starting mergetime ')
     
-    p1, nc_merge = tempfile.mkstemp(dir='.', suffix='.nc')
-    cdo.mergetime(input = [nc, nc_2014], output=nc_merge)
+    #p1, nc_merge = tempfile.mkstemp(dir='.', suffix='.nc')
+    #cdo.mergetime(input = [nc, nc_2014], output=nc_merge)
     
-    logger.debug('mergetime done')
+    #logger.debug('mergetime done')
     
     self.show_status('processing with ocgis : %s '  % var_eobs , 5)
-    rd = ocgis.RequestDataset( nc_merge , var_eobs, conform_units_to=unit) # nc, nc,   , nc_2014
-    ocgis.env.OVERWRITE=True
+    if var_eobs != 'rr': 
+      rd = ocgis.RequestDataset( url , var_eobs, conform_units_to=unit) # nc, nc,   , nc_2014
+      ocgis.env.OVERWRITE=True
 
-    geom_file = ocgis.OcgOperations(dataset= rd, output_format='nc', dir_output= '.', add_auxiliary_files=False).execute()
+      cordex_file = ocgis.OcgOperations(dataset= rd, name=var, output_format='nc', dir_output= '.', add_auxiliary_files=False).execute()
     
     logger.debug('geom_file : %s '  % (geom_file))
     
-    p1, tmp1 = tempfile.mkstemp(dir='.', suffix='.nc')
-    p2, tmp2 = tempfile.mkstemp(dir='.', suffix='.nc')
+    #p1, tmp1 = tempfile.mkstemp(dir='.', suffix='.nc')
+    #p2, tmp2 = tempfile.mkstemp(dir='.', suffix='.nc')
     
     ### print(geom_file)
-    cdo.setreftime('1949-12-01,00:00:00,days', input=geom_file, output=tmp1)
-    cdo.setname('tasmax', input=tmp1, output=tmp2)
-    
+    #cdo.setreftime('1949-12-01,00:00:00,days', input=geom_file, output=tmp1)
+    #cdo.setname('tasmax', input=tmp1, output=tmp2)
     
     # set globlal attributes 
-    
-    att_dict = {
-      'Conventions' : "CF-1.4" ,
-      'contact' : "beta Version" ,
-      'experiment' : "Observation run" ,
-      'experiment_id' : "observation" ,
-      'realization' : "1" ,
-      'driving_experiment' : "EOBS,r1i1p1" ,
-      'driving_model_id' : "EOBS" ,
-      'driving_model_ensemble_member' : "r1i1p1" ,
-      'driving_experiment_name' : "observation" ,
-      'institution' : "beta Version" ,
-      'institute_id' : "beta Version" ,
-      'model_id' : "beta Version" ,
-      'rcm_version_id' : "v1" ,
-      #'references' : "http//www.knmi.nl/research/regional_climate" ,
-      'project_id' : "EOBS" ,
-      'CORDEX_domain' : "EOBS-22" ,
-      'product' : "output" ,
-      'frequency' : "day" ,
-      #'knmi_global_comment' : "" ,
-      #'knmi_model_comment' : "RACMO22E baseline physics from ECMWF CY31r1, modifications include HTESSEL CY33r1, patch K-diffusion CY32r3, moist Turbulent Kinetic Energy, satellite inferred Leaf Area Index" ,
-      #'knmi_version_comment' : "v1 reference version for Europe and other midlatitude regions" ,
-      #'knmi_grib_path' : "mos.knmi.nl/climreg/CXEUR12/eCS6-v441-fECEARTH-mei1/GRIB_data" ,
-      'creation_date' : '%s' % dt.datetime.now() ,
-      #'tracking_ID' : "0a1da8e9-9e49-4384-b503-bfd488149626",
-      }
-    
-    ds = Dataset(tmp2, 'w')
-    ds.setncatts(att_dict)
-    ds.close()
 
-    self.ncout.setValue('%s' % (tmp2))
+    self.ncout.setValue('%s' % (cordex_file))
     self.show_status('execution ended at : %s'  %  dt.datetime.now() , 100)
     
  

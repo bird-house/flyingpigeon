@@ -65,6 +65,10 @@ def get_dimension_map(resource):
               'Y': {'variable': 'Actual_latitude', 'dimension': 'y', 'pos': 1},
               'T': {'variable': 'time', 'dimension': 'time', 'pos': 0 }}
 
+  dim_map5 = {'X': {'variable': 'x', 'dimension': 'x', 'pos': 2},
+              'Y': {'variable': 'y', 'dimension': 'y', 'pos': 1},
+              'T': {'variable': 'time', 'dimension': 'time', 'pos': 0 }}
+
   
   if 'CM5A-MR_WRF331F' in file_name: 
     dimension_map = dim_map1
@@ -74,10 +78,10 @@ def get_dimension_map(resource):
     dimension_map = dim_map1
   elif 'CLMcom-CCLM4-8-17' in file_name:
     dimension_map = dim_map1
-  elif '_v11.0.nc'  in file_name: # EOBS Data
+  elif '_v11.0' in file_name: # EOBS Data
     dimension_map = dim_map4
-  #elif 'KNMI-RACMO22E' in file_name:   
-    #dimension_map = dim_map1
+  #elif 'EOBS' in file_name:   
+    #dimension_map = dim_map5
   else:     
     dimension_map = None
     

@@ -13,7 +13,6 @@ def local_path(url):
     url_parts = urlparse.urlparse(url)
     return url_parts.path
 
-
 def calc_grouping(grouping):
     calc_grouping = ['year'] # default year
     if grouping == 'yr':
@@ -75,7 +74,7 @@ def drs_filename(nc_file, skip_timestamp=False, skip_format=False ,
 
     filename = nc_file
     try:
-        if ds.project_id == 'CORDEX':
+        if ds.project_id == 'CORDEX' or ds.project_id == 'EOBS' :
             filename = cordex_pattern.format(
                 variable = variable,
                 domain = ds.CORDEX_domain,

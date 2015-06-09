@@ -21,7 +21,7 @@ _INDICES_ = dict(
     CSU=dict(variable='tasmax', description='Nr of consecutive summer days (tasmax as input files)'),
     FD=dict(variable='tasmin', description='Nr of frost days (tasmin as input files)'),
     CFD=dict(variable='tasmin', description='Nr of consecutive frost days (tasmin as input files)'),
-    TR=dict(variable='tasmin', description='... (tasmin as input files)'),
+    TR=dict(variable='tasmin', description='Tropical nights - number of days where daily minimum temperature > 20 degrees.(tasmin as input files)'),
     ID=dict(variable='tasmax', description='Nr of Ice days (tasmax as input files)'),
     HD17=dict(variable='tas', description='Heating degree days [sum of 17 degrees - mean temperature] (tas as input files)'),
     GD4=dict(variable='tas', description='Growing degree days [sum of TG > 4 degrees] (tas as input files)'),
