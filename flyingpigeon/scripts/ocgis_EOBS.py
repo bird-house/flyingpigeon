@@ -25,6 +25,8 @@ OUT_DIR = '/home/main/nils/Shapefiles/OcgisShape/'
 var_eobs = 'rr'
 EOBSopendub = 'http://opendap.knmi.nl/knmi/thredds/dodsC/e-obs_0.22rotated/%s_0.22deg_rot_v11.0.nc' % (var_eobs)
 
+EOBSopendub = 'http://opendap.knmi.nl/knmi/thredds/catalog/e-obs_0.22rotated/catalog.html?dataset=e-obs_0.22rotated/rr_0.22deg_rot_v11.0.nc'
+ 
 EOBS =  HOME+'/data/EOBS/rr_0.44deg_rot_v11.0.nc'
  
 #ocgis.env.DIR_SHPCABINET = '/home/main/nils/Shapefiles/DEU_adm/'
@@ -43,6 +45,11 @@ print dimension_map
  
 Mean_file = None
 rd = ocgis.RequestDataset(EOBSopendub, 'rr', dimension_map = dimension_map) # time_range=[dt1, dt2]
+dimension_map = sb.get_dimension_map(EOBS)
+ 
+Mean_file = None
+rd = ocgis.RequestDataset(EOBS, 'rr', dimension_map = dimension_map) # time_range=[dt1, dt2]
+
 group = ['year']
 #dir_output = tempfile.mkdtemp()
 dir_output = None
@@ -56,7 +63,12 @@ print(pr_file)
 calc = [{'func' : 'icclim_R10mm', 'name' : 'R10mm'}] #[{'func':'mean','name':'mean'}]
 rd = ocgis.RequestDataset(pr_file, 'pr', dimension_map = dimension_map) 
 
+
 geom_file = ocgis.OcgOperations(dataset=rd, calc=calc, calc_grouping=group, geom=geoms, prefix=str('geom_geom'), output_format='nc', select_ugid=select_ugid, dir_output=dir_output).execute() 
 
 print(geom_file)
 #
+geom_file = ocgis.OcgOperations(dataset=rd, calc=calc, calc_grouping=group, geom=geoms, prefix=str('geom_geom'), \
+  output_format='nc', select_ugid=select_ugid, dir_output=dir_output).execute() 
+
+print(geom_file)
