@@ -142,9 +142,7 @@ class cordexviewer(WPSProcess):
         msg = 'tar file or mkdir failed!: %s ' % (e)
         logger.error(msg)
       
-      
       self.out_fieldmeans.setValue( tarf_fieldmeans )
       self.out_polygons.setValue( tarf_polygons )
-      
       self.show_status('done:', 100) #  indice=%s, num_outfiles=%s' % (indice_list, len(files))
 
