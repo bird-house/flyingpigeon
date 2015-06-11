@@ -62,60 +62,89 @@ class cordexviewer(WPSProcess):
       allowedValues=POLYGONS
       )
       
-    self.output = self.addComplexOutput(
-      identifier="output",
-      title="Indices",
-      abstract="List of calculated indices.",
-      metadata=[],
-      formats=[{"mimeType":"text/json"}],
-      asReference=True
-      )
+    #self.output = self.addComplexOutput(
+      #identifier="output",
+      #title="Indices",
+      #abstract="List of calculated indices.",
+      #metadata=[],
+      #formats=[{"mimeType":"text/json"}],
+      #asReference=True
+      #)
       
-    #self.tarout = self.addComplexOutput(
-      #identifier="tarout",
-      #title="netCDF result files",
-      #abstract="Tar archive containing the result fieldmean files",
-      #formats=[{"mimeType":"application/x-tar"}],
-      #asReference=True,
-      #)    
+    self.out_polygons = self.addComplexOutput(
+      title="polygons",
+      abstract="Tar archive containing the netCDF EU-countries polygons indices  ",
+      formats=[{"mimeType":"application/x-tar"}],
+      asReference=True,
+      identifier="out_polygons",
+      )
+
+    self.out_fieldmeans = self.addComplexOutput(
+      title="fieldmeans",
+      abstract="Tar archive containing the netCDF EU-countries fieldmeans indices ",
+      formats=[{"mimeType":"application/x-tar"}],
+      asReference=True,
+      identifier="out_fieldmeans",
+      )
 
   def execute(self):
+      from os import mkdir
+      from tempfile import  mkstemp
+      import tarfile
     
       ncs = self.getInputValues(identifier='resource')
       indice_list = self.getInputValues(identifier='indice')
       region_list = self.getInputValues(identifier='polygons')
 
       self.show_status('starting: indice=%s, num_files=%s' % (indice_list, len(ncs)), 0)
-
-      results = calc_cordexviewer(
-          resource = ncs,
-          indices = indice_list,
-          regions = region_list,
-          grouping = self.grouping.getValue(),
-         # start_date = self.start_date.getValue(),
-         # end_date = self.end_date.getValue(),
-          out_dir = self.working_dir,
-          monitor=self.show_status,
-          )
-
-      self.show_status("publishing results ...", 99)
       
-      files = [result.strip() for result in results]
+      # === Calculation of indices
+      try:
+        dir_simple_indices = path.abspath(path.curdir+'/dir_simple_indices/')
+        mkdir(dir_simple_indices)
+      except  Exception as e:
+        msg = 'calculation of indice failed!: %s ' % (e)
+        logger.error(msg)
 
-      from malleefowl.publish import publish
-      urls = publish(files)
-
-      import json
-      outfile = self.mktempfile(suffix='.txt')
-      with open(outfile, 'w') as fp:
-          json.dump(obj=urls, fp=fp, indent=4, sort_keys=True)
-          self.output.setValue(outfile)
-
-      outfile = self.mktempfile(suffix='.txt')
-      with open(outfile, 'w') as fp:
-          for status in status_log:
-              fp.write("%s\n" % status)
-          self.status_log.setValue(outfile)
+        
+      # === Calculation of fieldmeans
+      try:  
+        dir_fieldmeans = path.abspath(path.curdir+'/dir_fieldmean/')
+        mkdir(dir_fieldmeans)
+      except  Exception as e:
+        msg = 'calculation of indice failed!: %s ' % (e)
+        logger.error(msg)
       
-      self.show_status('done: indice=%s, num_outfiles=%s' % (indice_list, len(files)), 100)
+      # === create file structure and sort files into
+      
+      # === archivating
+      try: 
+        (fp_tarf_fieldmeans, tarf_fieldmeans) = mkstemp(dir=".", suffix='.tar')
+        (fp_tarf_polygons, tarf_polygons) = mkstemp(dir=".", suffix='.tar')
+        
+        tar_fieldmeans = tarfile.open(tarf_fieldmeans, "w")
+        tar_polygons = tarfile.open(tarf_polygons, "w")
+        logger.debug('tar files initialized')
+        
+        
+        tar_fieldmeans.add(dir_fieldmean, arcname = dir_fieldmean.replace(path.abspath(path.curdir), ""))
+        tar_polygons.add(dir_polygons, arcname = dir_polygons.replace(path.abspath(path.curdir), ""))
+        logger.debug('data to tar files')
+        
+        tar_fieldmeans.close()
+        tar_polygons.close()
+        logger.debug('tar files closed')
+        
+        # create output folders
+       
+        logger.debug('out directories created')
+      except  Exception as e:
+        msg = 'tar file or mkdir failed!: %s ' % (e)
+        logger.error(msg)
+      
+      
+      self.out_fieldmeans.setValue( tarf_fieldmeans )
+      self.out_polygons.setValue( tarf_polygons )
+      
+      self.show_status('done:', 100) #  indice=%s, num_outfiles=%s' % (indice_list, len(files))
 
