@@ -1,6 +1,10 @@
 Flying Pigeon
 =============
 
+.. image:: https://travis-ci.org/bird-house/flyingpigeon.svg?branch=master
+   :alt: Travis Build
+
+
 Flying Pigeon (the bird)
   *The Pigeon find its way home over extremely long distances. [..].* (`Wikipedia <https://en.wikipedia.org/wiki/Pigeon_flying>`_).
 
