@@ -2,7 +2,7 @@ Flying Pigeon
 =============
 
 .. image:: https://travis-ci.org/bird-house/flyingpigeon.svg?branch=master
-   :target: https://travis-ci.org/bird-house/flyingpigeon.svg
+   :target: https://travis-ci.org/bird-house/flyingpigeon
    :alt: Travis Build
 
 
