@@ -47,14 +47,30 @@ def rl_bootstrap(ts, T=100, nsim=1000):
         
     return RL_bt
 
-def eventdistribution(ts, per=[33,66], nsim=100, rp = [ 5. ,10. ,20., 50. ,100. ,200., 300., 400. ,500., 700, 1000. ], std_err = True):
-    """ eventdistribution(ts, nsim=100, rp = [ 5. ,10. ,20., 50. ,100. ,200., 300., 400. ,500., 700, 1000. ])
+def eventdistribution(ts, per=[5,95], nsim=10, rp = [ 10., 100., 1000. ], rp_scale_factor=1,  std_err = True, white_noise=False):
+    """ 
+    returns a matrix with (returnperiod,lower_percentil,return_level, upper_percentil)
+    
+    :param ts: values of timeseries
+    :param per: lower and upper percentile defining the uncertainty
+    :param nsim: Number of returs for bootstrap calculation
+    :param rp: list of return timestepps
+    :param rp_scale_factor: scale factor for rp
+    :param std_err: default = True
+    :param white_noise: add a white noise (random number between 0 to std/10). In case of singular timeseries
+    
     """
     from rpy2.robjects import FloatVector
-    from numpy import vstack, array, percentile
+    from numpy import vstack, array, percentile, std 
+    from random import uniform
     import rpy2.robjects.numpy2ri
     
-    ts = FloatVector(ts)    
+    ts = FloatVector(ts) 
+    if white_noise == True: 
+      s = std(ts)/10
+      ts_white_noise = [n + uniform(0,s) for n in ts]
+      ts = ts_white_noise
+    
     rpy2.robjects.numpy2ri.activate()
     evd = importr('evd')
     
@@ -69,7 +85,7 @@ def eventdistribution(ts, per=[33,66], nsim=100, rp = [ 5. ,10. ,20., 50. ,100. 
     per_low = []
     per_high = []
 
-    for T in rp:
+    for T in rp * rp_scale_factor :
         rl.append(RL(T,a,b,s))
         
         RL_bt = rl_bootstrap(ts,T, nsim=100)
