@@ -80,20 +80,25 @@ def add_statistic(nc_url, var):
     ref_stds = []
     ref_medians = []
     ref_means = []
+    ref_per05s = []
+    ref_per95s = []
 
-    for start in years[:-29]:
+    for start in years[:-30]:
         end = start + 30
         ref_periods.append(start)
         ref_stds.append(hs[str(start):str(end)].std())
         ref_medians.append(hs[str(start):str(end)].median())
         ref_means.append(hs[str(start):str(end)].mean())
+        ref_per05s.append(hs[str(start):str(end)].quantile(0.05))
+        ref_per95s.append(hs[str(start):str(end)].quantile(0.95))
     
-
     nc.createDimension('ref_period', len(ref_periods))
     ref_period = nc.createVariable(varname= 'ref_period', datatype = 'i', dimensions='ref_period')
     ref_median = nc.createVariable(varname= 'ref_median', datatype = 'float', dimensions='ref_period')
     ref_mean = nc.createVariable(varname= 'ref_mean', datatype = 'float', dimensions='ref_period')
     ref_std = nc.createVariable(varname= 'ref_std', datatype = 'float', dimensions='ref_period')
+    ref_per05 = nc.createVariable(varname= 'ref_per05', datatype = 'float', dimensions='ref_period')
+    ref_per95 = nc.createVariable(varname= 'ref_per95', datatype = 'float', dimensions='ref_period')
 
     ref_period_att = {'standard_name':'ref_period',
                   'long_name':'start year of reference period',
@@ -104,18 +109,25 @@ def add_statistic(nc_url, var):
                   'long_name':'mean for reference period'}
     ref_std_att = {'standard_name':'ref_std',
                   'long_name':'standart deviation for reference period'}
-
+    ref_per05_att = {'standard_name':'ref_per05',
+                  'long_name':'5th percentile for reference period'}
+    ref_per95_std_att = {'standard_name':'ref_per95',
+                  'long_name':'95th percentile for reference period'}
 
     ref_period.setncatts(ref_period_att)
     ref_std.setncatts(ref_std_att)
     ref_mean.setncatts(ref_mean_att)
     ref_median.setncatts(ref_median_att)
+    ref_per05.setncatts(ref_per05_att)
+    ref_per95.setncatts(ref_per05_att)
 
     ref_period[:] = ref_periods
     ref_median[:] = ref_medians
     ref_mean[:] = ref_means
     ref_std[:] = ref_stds
-
+    ref_per05[:] = ref_per05s
+    ref_per95[:] = ref_per95s
+    
     nc.close()
     
 def merge(resource, dir_output=None, historical_concatination=False): 
