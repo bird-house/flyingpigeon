@@ -8,7 +8,6 @@ from netCDF4 import  Dataset
 from cdo import *   # python version
 cdo = Cdo()
 
-
 def fldmean(resource, prefix=None, dir_output = None ):
   from os import path # join, basename , curdir
   from os import mkdir
