@@ -85,7 +85,7 @@ def add_statistic(nc_url, var):
 
     for start in years[:-30]:
         end = start + 30
-        ref_periods.append(start)
+        ref_periods.append(start+15)
         ref_stds.append(hs[str(start):str(end)].std())
         ref_medians.append(hs[str(start):str(end)].median())
         ref_means.append(hs[str(start):str(end)].mean())
