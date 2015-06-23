@@ -11,7 +11,7 @@ requires = [
     'cdo',
     'bokeh',
     'ocgis',
-    'matplotlib',
+    'pandas',
     'nose',
     ]
 
