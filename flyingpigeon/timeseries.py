@@ -84,8 +84,8 @@ def add_statistic(nc_url, var):
     ref_per95s = []
 
     for start in years[:-30]:
-        end = start + 30
-        ref_periods.append(start+15)
+        end = start + 29
+        ref_periods.append(start)
         ref_stds.append(hs[str(start):str(end)].std())
         ref_medians.append(hs[str(start):str(end)].median())
         ref_means.append(hs[str(start):str(end)].mean())
@@ -111,7 +111,7 @@ def add_statistic(nc_url, var):
                   'long_name':'standart deviation for reference period'}
     ref_per05_att = {'standard_name':'ref_per05',
                   'long_name':'5th percentile for reference period'}
-    ref_per95_std_att = {'standard_name':'ref_per95',
+    ref_per95_att = {'standard_name':'ref_per95',
                   'long_name':'95th percentile for reference period'}
 
     ref_period.setncatts(ref_period_att)
@@ -119,7 +119,7 @@ def add_statistic(nc_url, var):
     ref_mean.setncatts(ref_mean_att)
     ref_median.setncatts(ref_median_att)
     ref_per05.setncatts(ref_per05_att)
-    ref_per95.setncatts(ref_per05_att)
+    ref_per95.setncatts(ref_per95_att)
 
     ref_period[:] = ref_periods
     ref_median[:] = ref_medians
