@@ -205,8 +205,6 @@ def clip_counties_EUR(urls, variable=None, dimension_map=None, calc=None, calc_g
     #urls = list([urls])
   if variable == None: 
     variable = basename(urls).split('_')[0]
-  #if dimension_map == None: 
-    #dimension_map = utils.get_dimension_map(urls)
     
   try : 
     ugid = ugid_EUR(country)
@@ -215,7 +213,7 @@ def clip_counties_EUR(urls, variable=None, dimension_map=None, calc=None, calc_g
     logger.exception(msg)
     raise CalculationException(msg, e)
   try:
-    rd = ocgis.RequestDataset(urls, variable=variable )#, dimension_map=dimension_map)
+    rd = ocgis.RequestDataset(urls, variable=variable, dimension_map=dimension_map)
     ocgis.env.DIR_OUTPUT = dir_output
     ocgis.env.PREFIX = prefix
     geom_file = ocgis.OcgOperations(dataset=rd, calc=calc, calc_grouping=calc_grouping, 
