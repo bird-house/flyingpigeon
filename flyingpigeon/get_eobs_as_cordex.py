@@ -87,8 +87,6 @@ def get_data(variable,
   dimension_map = sb.get_dimension_map(url)
   time_region = {'year':range(start,end+1)} 
   
-  
-  
   if variable == 'tg':
       var = 'tas'
       unit = 'K'
@@ -108,7 +106,7 @@ def get_data(variable,
                               dimension_map = dimension_map,
                               time_region = time_region)
     
-    calc = 'pr=rr/84600'#
+    calc = 'rr=rr/84600'#
     EOBS_file = ocgis.OcgOperations(dataset=rd, 
                         calc=calc,
                         geom=geoms,
@@ -117,7 +115,6 @@ def get_data(variable,
                         dir_output=dir_output,
                         add_auxiliary_files=False
                         ).execute()
-    print EOBS_file
   else:
     unit = 'K'
     rd = ocgis.RequestDataset(url,
@@ -134,31 +131,49 @@ def get_data(variable,
                         add_auxiliary_files=False
                         ).execute()
     
-    if polygon == None:
-      domain =  att_dict['CORDEX_domain']
-    else: 
-      domain = att_dict['CORDEX_domain'].replace('EUR', polygon)
-    
-    EOBS_filename = '%s_%s_%s_%s_%s_%s_%s_%s_%s-%s.nc' % (var, 
-                                          domain,
-                                          att_dict['driving_model_id'],
-                                          att_dict['experiment_id'],
-                                          att_dict['driving_model_ensemble_member'],
-                                          att_dict['model_id'],
-                                          att_dict['rcm_version_id'],
-                                          att_dict['frequency'], 
-                                          start,
-                                          end)
-    
-    fpath, basename = path.split(EOBS_file)
-    set_attributes(EOBS_file, variable)
-    rename(EOBS_file, path.join(fpath, EOBS_filename))
+  if polygon == None:
+    domain =  att_dict['CORDEX_domain']
+  else: 
+    domain = att_dict['CORDEX_domain'].replace('EUR', polygon)
+  
+  EOBS_filename = '%s_%s_%s_%s_%s_%s_%s_%s_%s-%s.nc' % (var, 
+                                        domain,
+                                        att_dict['driving_model_id'],
+                                        att_dict['experiment_id'],
+                                        att_dict['driving_model_ensemble_member'],
+                                        att_dict['model_id'],
+                                        att_dict['rcm_version_id'],
+                                        att_dict['frequency'], 
+                                        start,
+                                        end)
+  
+  fpath, basename = path.split(EOBS_file)
+  set_attributes(EOBS_file, variable)
+  rename(EOBS_file, path.join(fpath, EOBS_filename))
     
   return path.join(fpath, EOBS_filename)
-  
 
-
+def get_data_worker(variable='tg', polygons=['FRA','DEU'], dir_output=None, start = 1950, end = 2014):
   
+  def worker(variable, polygon, dir_output, start, end, que):
+    EOBS_file = get_data(variable=variable, polygon=polygon, 
+             dir_output=dir_output, start = start, end = end)
+    que.put(EOBS_file)
+    return
   
+  from multiprocessing import Process, Queue
   
-  
+  #if __name__ == '__main__':
+  q = Queue()
+  jobs = []
+  files = []
+  for i, polygon in enumerate(polygons): #for i in range(5):
+    p = Process(target=worker, args=(variable, polygon, dir_output,
+                                      start, end , q))
+    jobs.append(p)
+    p.start()
+    p.join()
+    files.append('%s' %(q.get()))
+    
+  return files
+    
