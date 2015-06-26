@@ -9,7 +9,6 @@ from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 COUNTRY_SHP = '50m_country' # 'world_countries_boundary_file_world_2002'
 
-
 REGION_EUROPE = ['AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN','FRA',
                  'GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX','MLT','NLD',
                  'POL','PRT','ROU','SVK','SVN','SWE','NOR','CHE','ISL','MKD','MNE',
@@ -177,8 +176,15 @@ def clip_continent(urls, variable, dimension_map,  calc=None,  calc_grouping= No
       raise CalculationException(msg, e)
   return  geom_file
 
-def clip_counties_EUR(urls, variable=None, dimension_map=None, calc=None, calc_grouping= None, prefix=None,
-                   country='FRA', output_format='nc', dir_output=None):
+def clip_counties_EUR(urls,
+                      variable=None,
+                      dimension_map=None,
+                      calc=None, 
+                      calc_grouping= None,
+                      prefix=None,
+                      country='FRA',
+                      output_format='nc',
+                      dir_output=None):
   """ returns clipped netCDF file. 
   
   :param urls: str of input url netCDF file
