@@ -339,6 +339,15 @@ def get_dimension_map(resource):
               'Y': {'variable': 'y', 'dimension': 'y', 'pos': 1},
               'T': {'variable': 'time', 'dimension': 'time', 'pos': 0 }}
   
+  dim_map4 = {'X': {'variable': 'x', 'dimension': 'x', 'pos': 2},
+              'Y': {'variable': 'y', 'dimension': 'y', 'pos': 1},
+              'T': {'variable': 'time', 'dimension': 'time', 'pos': 0 }}
+  
+  dim_map5  = {'X': {'variable': 'Actual_longitude', 'dimension': 'x', 'pos': 2},
+                 'Y': {'variable': ' Actual_latitude', 'dimension': 'y', 'pos': 1},
+                 'T': {'variable': 'time', 'dimension': 'time', 'pos': 0 }}
+
+  
   if 'CM5A-MR_WRF331F' in file_name: 
     dimension_map = dim_map1
   elif 'CNRM-CM5_CNRM-ALADIN53' in file_name: 
@@ -347,6 +356,10 @@ def get_dimension_map(resource):
     dimension_map = dim_map1
   elif 'CLMcom-CCLM4-8-17' in file_name:
     dimension_map = dim_map1
+  elif '_EOBS_observation_' in file_name:
+    dimension_map = dim_map5  
+    
+    
   #elif 'KNMI-RACMO22E' in file_name:   
     #dimension_map = dim_map1
   else:     
