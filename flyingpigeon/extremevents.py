@@ -1,5 +1,3 @@
-import rpy2.robjects as robjects
-from rpy2.robjects.packages import importr
 
 def RL(T,a,b,s):
         """Calculation of return levels.
