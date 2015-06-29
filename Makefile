@@ -1,4 +1,4 @@
-VERSION := 0.2.2
+VERSION := 0.2.4
 RELEASE := master
 
 # Application
@@ -56,6 +56,7 @@ help:
 	@echo "\t clean       \t- Deletes all files that are created by running buildout."
 	@echo "\t distclean   \t- Removes *all* files that are not controlled by 'git'.\n\t\t\tWARNING: use it *only* if you know what you do!"
 	@echo "\t sysinstall  \t- Installs system packages from requirements.sh. You can also call 'bash requirements.sh' directly."
+	@echo "\t passwd      \t- Generate password for 'phoenix-password' in custom.cfg."
 	@echo "\t docs        \t- Generates HTML documentation with Sphinx."
 	@echo "\t selfupdate  \t- Updates this Makefile."
 	@echo "\nSupervisor targets:\n"
@@ -139,11 +140,10 @@ conda_config: anaconda
 	@"$(ANACONDA_HOME)/bin/conda" config --set ssl_verify false
 	@"$(ANACONDA_HOME)/bin/conda" config --add channels defaults
 	@"$(ANACONDA_HOME)/bin/conda" config --add channels birdhouse
-	@"$(ANACONDA_HOME)/bin/conda" config --add channels pingucarsti
 
 .PHONY: conda_env
 conda_env: anaconda conda_config
-	@test -d $(PREFIX) || "$(ANACONDA_HOME)/bin/conda" create -m -p $(PREFIX) -c birdhouse --yes python=2.7.8 setuptools=14.3 curl pyopenssl genshi mako
+	@test -d $(PREFIX) || "$(ANACONDA_HOME)/bin/conda" create -m -p $(PREFIX) -c birdhouse --yes python setuptools ipython curl pyopenssl genshi mako
 
 .PHONY: conda_pinned
 conda_pinned: conda_env
@@ -162,7 +162,7 @@ bootstrap: init conda_env conda_pinned bootstrap-buildout.py
 	@test -f bin/buildout || bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);python bootstrap-buildout.py -c custom.cfg --allow-site-packages --setuptools-version 14.3 --version 2.3.1"
 
 .PHONY: sysinstall
-sysinstall: bootstrap.sh requirements.sh
+sysinstall:
 	@echo "\nInstalling system packages for bootstrap ..."
 	@bash bootstrap.sh -i
 	@echo "\nInstalling system packages for your application ..."
@@ -195,6 +195,14 @@ buildclean:
 	@echo "Removing bootstrap.sh ..."
 	@test -e bootstrap.sh && rm -v bootstrap.sh
 
+.PHONY: passwd
+passwd: custom.cfg
+	@echo "Generate Phoenix password ..."
+	@echo "Enter a password with at least 8 characters."
+	@bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV); python -c 'from IPython.lib import passwd; pw = passwd(algorithm=\"sha256\"); lines = [\"phoenix-password = \" + pw + \"\\n\" if line.startswith(\"phoenix-password\") else line for line in open(\"custom.cfg\", \"r\")]; file = open(\"custom.cfg\", \"w\"); file.writelines(lines); file.close()'"
+	@echo ""
+	@echo "Run 'make install restart' to activate this password." 
+
 .PHONY: test
 test:
 	@echo "Running tests (skip slow tests) ..."
@@ -213,7 +221,7 @@ docs:
 	@echo "open your browser: firefox docs/build/html/index.html"
 
 .PHONY: selfupdate
-selfupdate: bootstrap.sh
+selfupdate: bootstrap.sh requirements.sh
 	@wget -q --no-check-certificate -O Makefile "https://raw.githubusercontent.com/bird-house/birdhousebuilder.bootstrap/$(RELEASE)/Makefile"
 
 ## Supervisor targets
