@@ -74,7 +74,7 @@ def eventdistribution(ts, per=[5,95], nsim=10, rp = [ 10., 100., 1000. ], rp_sca
     rpy2.robjects.numpy2ri.activate()
     evd = importr('evd')
     
-    RR = evd.fgev_norm(ts, std_err = std_err )
+    RR = evd.fgev_norm(ts )
     a=RR.rx2('estimate')[0] # RR.fgev$estimate[1]
     b=RR.rx2('estimate')[1] # RR.fgev$estimate[2]
     s=RR.rx2('estimate')[2] # fgev$estimate[3]
