@@ -56,7 +56,9 @@ def set_attributes(resource, variable):
        
   try : 
     ds = Dataset(resource, 'a')
-    ds.renameVariable(variable,'tas')
+    ds.renameDimension('Actual_latitude', 'latitude' )
+    ds.renameDimension('Actual_longitude', 'longitude' )
+    ds.renameVariable(variable, new_variable)
     #ds.setncatts(att_dict)
     ds.close()
   except Exception as e: 
