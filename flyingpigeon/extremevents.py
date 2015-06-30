@@ -64,7 +64,7 @@ def eventdistribution(data, per=[5,95], nsim=1000, rp = [ 10., 30, 100., 300 , 1
     :param white_noise: add a white noise (random number between 0 to std/10). In case of singular timeseries
     """
     from scipy.stats import genextreme as gev
-    from numpy import percentile
+    from numpy import percentile, vstack
 
     if white_noise == True: 
         s = std(data)/10
