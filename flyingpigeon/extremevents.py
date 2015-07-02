@@ -25,8 +25,6 @@ def bootstrap_resample(X, n=None):
     Results
     -------
     returns X_resamples
-    """
-    if n == None:
         n = int(len(X)/1.5)# (66%)
     
     import random
