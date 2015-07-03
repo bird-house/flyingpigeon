@@ -14,7 +14,7 @@ def RL(T,a,b,s):
             zT= a + b * log(yT)
         return(zT)
 
-def bootstrap_resample(X, n=None):
+def resample(X, n=None):
     """ Bootstrap resample an array_like
     Parameters
     ----------
@@ -25,14 +25,15 @@ def bootstrap_resample(X, n=None):
     Results
     -------
     returns X_resamples
-        n = int(len(X)/1.5)# (66%)
     
-    import random
-    X_resample = random.sample(X, n)
-    # X = np.array(X)
-        
-    #resample_i = np.floor(np.random.rand(n)*len(X)).astype(int)
-    #X_resample = X[resample_i]
+    """
+    from random import sample, uniform
+    
+    if n == None:
+      n = int(uniform(1,len(X)))
+
+    X_resample = sample(X, n)
+
     return X_resample
 
 def rl_bootstrap(data, T=100, nsim=1000):
@@ -42,7 +43,7 @@ def rl_bootstrap(data, T=100, nsim=1000):
     
     RL_bt=[]
     for i in range(0,nsim,1):
-        subset = bootstrap_resample(data)
+        subset = resample(data)
         s, a, b = gev.fit(subset)
         RL_bt.append(RL(T,a,b,s))        
     return RL_bt
