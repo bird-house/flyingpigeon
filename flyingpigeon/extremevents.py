@@ -49,7 +49,7 @@ def rl_bootstrap(data, T=100, nsim=1000):
     return RL_bt
 
 
-def eventdistribution(data, per=[5,95], nsim=1000, rp = [ 10., 30, 100., 300 , 1000. ],
+def eventdistribution(data, per=[5,95], nsim=1000, rp = [ 10., 20., 50., 100., 200.,500., 1000. ],
                       rp_scale_factor=1, white_noise=False):
     """ 
     returns a matrix with (returnperiod,lower_percentil,return_level, upper_percentil)
