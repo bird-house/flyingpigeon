@@ -1,4 +1,4 @@
-VERSION := 0.2.4
+VERSION := 0.2.5
 RELEASE := master
 
 # Application
@@ -159,7 +159,7 @@ conda_clean: anaconda conda_config
 .PHONY: bootstrap
 bootstrap: init conda_env conda_pinned bootstrap-buildout.py
 	@echo "Bootstrap buildout ..."
-	@test -f bin/buildout || bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);python bootstrap-buildout.py -c custom.cfg --allow-site-packages --setuptools-version 14.3 --version 2.3.1"
+	@test -f bin/buildout || bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);python bootstrap-buildout.py -c custom.cfg --allow-site-packages --setuptools-version=17.1.1 --buildout-version=2.4.0"
 
 .PHONY: sysinstall
 sysinstall:
