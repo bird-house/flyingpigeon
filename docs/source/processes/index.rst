@@ -5,13 +5,6 @@ WPS Processes
 
 We describe here the WPS processes available in Flyingpigeon. These processes are for the climate impact community.
 
-.. _indices:
-
-ECA simple indices: 
-===================
-
-Indices based on one input variable. The indices are executed by an ocgis call of icclim
-
 
 .. _extremvalues: 
 
@@ -20,6 +13,20 @@ Extremvalues:
 
 Calculation of retun time Values for 1D time series. 
 
+
+.. _getEOBS_inCORDEXformat: 
+
+get EOBS Data in CORDEX format:
+===============================
+
+converts EOBS data files into the CORDEX convetion. (variable names, attributes etc ... )
+
+.. _indices:
+
+ECA simple indices: 
+===================
+
+Indices based on one input variable. The indices are executed by an ocgis call of icclim
 
 
 .. _sdm: 
