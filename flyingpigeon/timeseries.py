@@ -181,6 +181,7 @@ def get_yearmean(resources, variable=None, dir_output = None):
   """
   from flyingpigeon import utils
   import ocgis 
+  ocgis.env.OVERWRITE = True 
  
   if type(resources) == str :
     resources = list([resources])
@@ -188,7 +189,7 @@ def get_yearmean(resources, variable=None, dir_output = None):
   rs = []
   for nc in resources: 
     rs.append(utils.drs_filename(nc, 
-                                 variable=None, 
+                                 variable=variable, 
                                  rename_file=True, 
                                  add_file_path=True))
   ncs = utils.sort_by_filename(rs)

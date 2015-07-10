@@ -153,7 +153,6 @@ class segetalflora(WPSProcess):
                  'ROU','SVK','SVN','SWE','NOR','CHE','ISL','MKD',
                  'MNE','SRB','MDA','UKR','BIH','ALB','BLR','KOS']
 
-    
     # read argments to variables
     #try:  
     ncs = self.getInputValues(identifier='netcdf_file')
@@ -170,7 +169,6 @@ class segetalflora(WPSProcess):
       
     logger.debug('urls for %s ncs found' % (len(ncs)))
     logger.debug('culture type: %s ' % (culture_type))
-
 
 # === main call for segetalflora processing    
     stepps = len(culture_type) * len(climate_type)

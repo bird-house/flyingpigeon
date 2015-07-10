@@ -80,12 +80,9 @@ def get_equation(culture_type='fallow', climate_type=2):
   else:
     equation = None
     logger.exception('No equations determinated')
-  return equation  
+  return equation
 
-
-
-def get_segetalflora(resources, culture_type='fallow', climate_type=2, countries=None, dir_segetalflora=None, 
-                     dir_tas=None ):
+def get_segetalflora(resources, culture_type='fallow', climate_type=2, countries=None, dir_segetalflora=None, dir_tas=None ):
   """ 
   returns a netCDF file containing vaulues of number of segetal flora species
   
@@ -104,15 +101,15 @@ def get_segetalflora(resources, culture_type='fallow', climate_type=2, countries
   
   ocgis.env.OVERWRITE = True
   ocgis.env.DIR_SHPCABINET = path.join(path.dirname(__file__), 'processes', 'shapefiles')
-  geom = 'continent'
-  ugid_europa = [8]
+ # geom = 'continent'
+ # ugid_europa = [8]
     
   logger.debug('dir_outputs created')
   
   tas_yearmean = ts.get_yearmean(resources, variable='tas', dir_output=dir_tas)
-  calc = get_equation(culture_type=culture_type, climate_type=climate_type)
-  
   logger.debug('tas_yearmean list build')
+  
+  calc = get_equation(culture_type=culture_type, climate_type=climate_type)
   ocgis.env.DIR_OUTPUT = dir_segetalflora
   
   sf_files = []
@@ -124,8 +121,7 @@ def get_segetalflora(resources, culture_type='fallow', climate_type=2, countries
       prefix_mask = prefix.replace('EUR-','EURmask-')
       mask = basename.split('_')[1]
       rd = ocgis.RequestDataset(nc , 'tas')
-      sf_tmp = ocgis.OcgOperations(dataset=rd, calc=calc, prefix=prefix, dir_output=dir_segetalflora,
-                                   add_auxiliary_files=False, output_format='nc').execute()
+      sf_tmp = ocgis.OcgOperations(dataset=rd, calc=calc, prefix=prefix, dir_output=dir_segetalflora, add_auxiliary_files=False, output_format='nc').execute()
       
       geom_file = subsetting.masking(sf_tmp, mask=mask, prefix=prefix_mask, dir_output=dir_segetalflora) 
       

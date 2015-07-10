@@ -90,7 +90,6 @@ def get_dimension_map(resource):
 # === Functions for Clipping: 
 
 # === Available Polygons
-POLYGONS = ['AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN','FRA',
-                 'GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX','NLD',
+POLYGONS = ['AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN','FRA', 'GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX','NLD',
                  'POL','PRT','ROU','SVK','SVN','SWE','NOR','CHE','ISL','MKD','MNE',
                  'SRB','MDA','UKR','BIH','ALB','BLR','KOS'] #'MLT',
