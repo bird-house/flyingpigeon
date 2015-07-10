@@ -7,30 +7,46 @@ The `flyingpigeon` package consists of several sub-packages and classes:
 
 Module flyingpigeon.indices 
 ==========================
-.. automodule:: flyingpigeon.indices
+.. autofunction:: flyingpigeon.indices
+
+.. autoclass:: flyingpigeon.indices
     :members:
+    :undoc-members:
 
 Module flyingpigeon.get_eobs_as_cordex
 ========================
-.. automodule:: flyingpigeon.get_eobs_as_cordex
-    :members:        
+.. autofunction:: flyingpigeon.get_eobs_as_cordex
     
 Module flyingpigeon.segetalflora
 ========================
-.. automodule:: flyingpigeon.segetalflora
-    :members:
-
+.. autofunction:: flyingpigeon.segetalflora
+    
 Module flyingpigeon.subsetting
 ========================
-.. automodule:: flyingpigeon.subsetting
-    :members:    
-
+.. autofunction:: flyingpigeon.subsetting
     
 Module flyingpigeon.utils
 ========================
-.. automodule:: flyingpigeon.utils
-    :members:
+.. autofunction:: flyingpigeon.utils
+    
+    
+    
     
 
+    
+    .. _bokeh.plotting:
+
+``bokeh.plotting`` Interface
+============================
+
+.. contents::
+    :local:
+    :depth: 2
+
+.. autofunction:: bokeh.plotting.figure
+
+.. autoclass:: bokeh.plotting.Figure
+    :members:
+    :undoc-members:
     
     
