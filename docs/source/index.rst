@@ -24,7 +24,7 @@ Contents:
    installation
    configuration
    processes/index
-   api/index
+   api/reference 
  
 
 Indices and tables
