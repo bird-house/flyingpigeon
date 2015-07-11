@@ -7,10 +7,10 @@ The flyingpigeon is designed by seperating processes description and functionall
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    
-   processes.rst
-   modules.rst
+   processes
+   modules
    
 
 
