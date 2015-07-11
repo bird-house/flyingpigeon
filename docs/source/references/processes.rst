@@ -1,20 +1,17 @@
-``flyingpigeon`` Interface
+``flyingpigeon`` Processes
 ==========================
 
 Following are the executeable processes in flyingpigeon
 
 .. contents::
     :local:
-    :depth: 1
+    :depth: 2
 
-
- 
- 
  
 .. _flyingpigeon.processes.analogs:
 
 ``flyingpigeon.processes.analogs``
-------------------------
+----------------------------------
 
 .. automodule:: flyingpigeon.processes.analogs
    :members:
@@ -24,7 +21,7 @@ Following are the executeable processes in flyingpigeon
 .. _flyingpigeon.processes.extractpoints:
 
 ``flyingpigeon.processes.extractpoints``
-------------------------
+----------------------------------------
 
 .. automodule:: flyingpigeon.processes.extractpoints
    :members:
@@ -33,7 +30,7 @@ Following are the executeable processes in flyingpigeon
 .. _flyingpigeon.processes.geteobs_incordexformat:
 
 ``flyingpigeon.processes.geteobs_incordexformat``
-------------------------
+-------------------------------------------------
 
 .. automodule:: flyingpigeon.processes.geteobs_incordexformat
    :members:
@@ -42,7 +39,7 @@ Following are the executeable processes in flyingpigeon
 .. _flyingpigeon.processes.indices:
    
 ``flyingpigeon.processes.indices``
-------------------------
+----------------------------------
 
 .. automodule:: flyingpigeon.processes.indices
    :members:
@@ -53,7 +50,7 @@ Following are the executeable processes in flyingpigeon
 .. _flyingpigeon.processes.segetalflora:
    
 ``flyingpigeon.processes.segetalflora``
-------------------------
+---------------------------------------
 
 .. automodule:: flyingpigeon.processes.segetalflora
    :members:
@@ -63,7 +60,7 @@ Following are the executeable processes in flyingpigeon
 .. _flyingpigeon.processes.vbd:
    
 ``flyingpigeon.processes.vbd``
-------------------------
+------------------------------
 
 .. automodule:: flyingpigeon.processes.vbd
    :members:

@@ -5,7 +5,7 @@ __all__ = [
         "ensembles",
 #        "vbd",
         "segetalflora",
-        "get_eobs_as_cordex",
+        "geteobs_incordexformat",
 #       "sdm",
         "indices",
         "simple_indice",
