@@ -23,8 +23,8 @@ Contents:
 
    installation
    configuration
-   processes/index
-   api/reference 
+   descriptions/index
+   references/index 
  
 
 Indices and tables

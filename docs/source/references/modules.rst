@@ -1,7 +1,7 @@
-``flyingpigeon`` Interface
+``flyingpigeon`` Modules
 ==========================
 
-The flyingpigeon is designed by seperating processes description and functionallity. The functionallity is organized in several modules to be used if needed in a specific process. 
+Following are the modules in flyingpigeon
 
 .. contents::
     :local:
