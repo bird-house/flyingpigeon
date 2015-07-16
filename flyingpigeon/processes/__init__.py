@@ -1,16 +1,16 @@
 __all__ = [
         "visualisation",
         "extractpoints",
-#        "analogs",
+        #"analogs",
         "ensembles",
-#        "vbd",
+        #"vbd",
         "segetalflora",
         "geteobs_incordexformat",
-#       "sdm",
-        "indices",
-        "simple_indice",
-        "multiple_indices",
-        "indices_with_clipping",
+        #"sdm",
+        #"indices",
+        "indices_simple",
+        #"multiple_indices",
+        #"indices_with_clipping",
         "country_subsetting",
-        "cordexviewer"
+        #"cordexviewer"
         ]

@@ -11,11 +11,11 @@ class SimpleClipping(WPSProcess):
     def __init__(self):
         WPSProcess.__init__(
             self, 
-            identifier = "simple_clipping",
-            title="Simple Clipping",
+            identifier = "subsetting_countries",
+            title="Subsetting Countries",
             version = "1.0",
             metadata=[],
-            abstract="This process returns only the given region from NetCDF file."
+            abstract="This process returns only the given polygon from input NetCDF files."
             )
 
         self.resource = self.addComplexInput(

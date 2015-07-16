@@ -347,13 +347,13 @@ def countries():
     countries.sort()
     return countries
 
-def countries_longname():
+def countries_longname(country):
     """
     :return: a list of all countries long names.
     """
-    longname = ''
-    for country in countries(): 
-      longname = longname + "%s : %s \n" % (country, _COUNTRIES_[country]['longname'])
+    #longname = ''
+    #for country in countries(): 
+    longname = longname + "%s : %s \n" % (country, _COUNTRIES_[country]['longname'])
     return longname
 
 
@@ -388,9 +388,10 @@ NUTS2 = ['AT11','AT12','AT13','AT21','AT22','AT31','AT32','AT33','AT34',
 'UKJ2','UKJ3','UKJ4','UKK1','UKK2','UKK3','UKK4','UKL1','UKL2','UKM2','UKM5',
 'UKM6','UKN0','UKM3']
 
-COUNTRIES_EU = ['AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN','FRA', 'GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX','NLD',
-                 'POL','PRT','ROU','SVK','SVN','SWE','NOR','CHE','ISL','MKD','MNE',
-                 'SRB','MDA','UKR','BIH','ALB','BLR','KOS'] #'MLT',
+COUNTRIES_EU = ['AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN',
+                'FRA','GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX',
+                'NLD','POL','PRT','ROU','SVK','SVN','SWE','NOR','CHE','ISL',
+                'MKD','MNE','SRB','MDA','UKR','BIH','ALB','BLR','KOS'] #'MLT',
 
 
 def select_ugid(polygon='FRA', geom='50m_country'):

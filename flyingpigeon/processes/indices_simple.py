@@ -3,26 +3,25 @@ from malleefowl.process import WPSProcess
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
-# from flyingpigeon.clipping import REGION_EUROPE
-from flyingpigeon.subsetting import COUNTRIES_EU
-from flyingpigeon.utils import GROUPING
+#from flyingpigeon.clipping import REGION_EUROPE
+
+from flyingpigeon.subsetting import countries, countries_longname
 from flyingpigeon.indices import indices, indice_description
 from flyingpigeon.workflow import calc_indice
+from flyingpigeon.utils import GROUPING
 
 class CalcMultipleIndices(WPSProcess):
-
     def __init__(self):
         WPSProcess.__init__(
             self, 
             identifier = "indices_simple",
-            title="Calculation of ECA&D climate indices",
+            title="Climate indices based on one input variable",
             version = "1.0",
             metadata=[],
-            abstract="This process calculates climate indices based on one climate variable."
+            abstract="This process calculates multiple climate indices for given input netcdf files with the option of polygon subsetting."
             )
 
-       #indice_list = indices()
-
+        indice_list = indices()
         self.resource = self.addComplexInput(
             identifier="resource",
             title="Resouce",
@@ -33,38 +32,41 @@ class CalcMultipleIndices(WPSProcess):
             formats=[{"mimeType":"application/x-netcdf"}],
             )
 
-        self.grouping = self.addLiteralInput(
-            identifier="grouping",
-            title="Time Aggregation",
-            abstract="Select time aggegation",
-            default='year',
-            type=type(''),
-            minOccurs=1,
-            maxOccurs=1,
-            allowedValues=GROUPING
-            )
-        
-        self.region = self.addLiteralInput(
-            identifier="region",
-            title="Region",
-            abstract="European Regions",
-            default='FRA',
-            type=type(''),
-            minOccurs=1,
-            allowedValues=COUNTRIES_EU
-            )
-
-        self.indice = self.addLiteralInput(
-            identifier="indice",
-            title="Indice",
-            abstract=indices_description(),
+        indices_abstract = ['%s : %s'% (indice, indice_description(indice)) for indice in indices()]  
+        self.indices = self.addLiteralInput(
+            identifier="indices",
+            title="Indices",
+            abstract= '\n'.join(indices_abstract),# 'indices',  #'indices', # indices_description(), 
             default='SU',
             type=type(''),
             minOccurs=1,
             maxOccurs=len(indices()),
             allowedValues=indices()
             )
-        
+
+        self.groupings = self.addLiteralInput(
+            identifier="groupings",
+            title="Time Aggregations",
+            abstract="Select time aggegations",
+            default='yr',
+            type=type(''),
+            minOccurs=1,
+            maxOccurs=len(GROUPING),
+            allowedValues=GROUPING # ["year", "month", "sem"]
+            )
+
+        #countries_abstract =  countries_longname()
+        self.polygons = self.addLiteralInput(
+            identifier="polygons",
+            title="Polygons",
+            abstract="Select a country for polygon subsetting" , # countries_abstract, #  '\n'.join(countries_abstract),  # , #countries_longname
+            default='FRA',
+            type=type(''),
+            minOccurs=1,
+            maxOccurs=len(countries()),
+            allowedValues=countries() #REGION_EUROPE #COUNTRIES # 
+            )
+
         # complex output
         # -------------
         self.output = self.addComplexOutput(
@@ -85,9 +87,20 @@ class CalcMultipleIndices(WPSProcess):
             asReference=True
             )
         
+        
+        self.out_indices = self.addComplexOutput(
+            title="out_indices",
+            abstract="Tar archive containing the netCDF indices files ",
+            formats=[{"mimeType":"application/x-tar"}],
+            asReference=True,
+            identifier="out_indices",
+            )
+        
     def execute(self):
+        
         ncs = self.getInputValues(identifier='resource')
-        region_list = self.getInputValues(identifier='region')
+        polygons_list = self.getInputValues(identifier='polygons')
+        groupings_list = self.getInputValues(identifier='groupings')
 
         my_indices = []
         indice_list = indices()
@@ -101,7 +114,7 @@ class CalcMultipleIndices(WPSProcess):
         results = calc_indice(
             resource = ncs,
             indices = my_indices,
-            grouping = self.grouping.getValue(),
+            grouping = grouping_list,  # self.grouping.getValue(),
             out_dir = self.working_dir,
             status_log = join(self.working_dir, 'status.log'),
             monitor=self.show_status,

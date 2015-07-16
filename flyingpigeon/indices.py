@@ -78,76 +78,127 @@ def indice_variable(indice):
         logger.error('unknown indice %s', indice)
     return variable
 
-def calc_indice(resource=[], indice="TG", grouping="yr", out_dir=None):
+def calc_indice_simple(resource=[], indices="SU", polygons='FRA',  groupings="yr", out_dir=None, dimension_map = None):
     """
-    Calculates given indice for variable and grouping.
+    Calculates given indices for suitable files in the appopriate time grouping and polygon.
 
-    :param resource: list of filenames (netcdf)
+    :param resource: list of filenames in drs convention (netcdf)
+    :param indices: list of indices (default ='SU')
+    :param polygons: list of polgons (default ='FRA')
+    :param grouping: indices time aggregation (default='yr')
     :param out_dir: output directory for result file (netcdf)
+    :param dimension_map: optional dimension map if different to standard (default=None)
 
-    :return: netcdf files with calculated indices
+    :return: list of netcdf files with calculated indices. Files are saved into out_dir
     """
+    
+    if type(resource) != list: 
+      resource = list([resource])
+    if type(indices) != list: 
+      indices = list([indices])
+    if type(polygons) != list:
+      polygons = list([polygons])
+    if type(groupings) != list:
+      groupings = list([groupings])
 
-    from utils import aggregations, calc_grouping
-
+    from flyingpigeon.utils import calc_grouping, sort_by_filename # aggregations, 
+    from flyingpigeon.subsetting import select_ugid
     output = None
-    calc = [{'func' : 'icclim_' + indice, 'name' : indice}]
-    try:
-        aggs = aggregations(resource)
-        if len(aggs) > 1:
-            logger.warning('more than one experiment group selected: %s', aggs.keys())
-        if len(aggs) == 0:
-            raise CalculationException('no valid input data found!')
-        agg_name = aggs.keys()[0]
-        logger.debug('aggregations = %s', agg_name)
-        
-        outputs = []
-        for agg_name in aggs.keys(): 
-            agg = aggs[agg_name]
-            nc_files = aggs[agg_name]['files']
-            variable = aggs[agg_name]['variable']
-            # run ocgis if variabel fitts to aggregation
-            if variable == indice_variable(indice): # calculate only if indice is calculateable with files.
-              try:
-                logger.debug('%s variable is fitting to Aggregarion %s' % (variable,agg_name))
-                
-                from os.path import basename
-                for year in range(agg['start_year'], agg['end_year']+1):
-                    
-                    _,prefix = tempfile.mkstemp(prefix=indice + agg_name.strip(variable)+ '_' + str(year), dir=out_dir)
-                    prefix = basename(prefix)
-                    try:
-                        rd = RequestDataset(uri=nc_files, variable=variable, time_region = {'year':[year]})
-                        ops = OcgOperations(
-                            dataset=rd,
-                            calc=calc,
-                            calc_grouping=calc_grouping(grouping),
-                            prefix=prefix,
-                            output_format='nc',
-                            dir_output=out_dir,
-                            add_auxiliary_files=False)
-                        outputs.append( ops.execute() )
-                    except Exception as e:
-                      logger.exception('could not calc indice %s for year %s: %s', indice, year, e)
+    
+    experiments = sort_by_filename(resource)
+    outputs = []
+    
+    for key in experiments:
+      try: 
+        ncs = experiments[key]
+        for indice in indices:
+          try: 
+            calc = [{'func' : 'icclim_' + indice, 'name' : indice}]
+            for polygon in polygons:
+              try: 
+                geom = '50m_country'
+                ugid = select_ugid(polygon=polygon, geom=geom)
+                for grouping in groupings:
+                  try:
+                    prefix = key.replace('_day_', grouping)
+                    calc_group = calc_grouping(grouping)
+                    rd = RequestDataset(uri=ncs, dimension_map=dimension_map)
+                    ops = OcgOperations(
+                                    dataset=rd,
+                                    calc=calc,
+                                    geom=geom,
+                                    select_ugid= ugid, 
+                                    calc_grouping=calc_group,
+                                    prefix=prefix,
+                                    output_format='nc',
+                                    dir_output=out_dir,
+                                    add_auxiliary_files=False)
+                    outputs.append( ops.execute())
+                  except Exception as e:
+                    logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s', indice, key, polygon, grouping, e )  
               except Exception as e:
-                logger.exception('could not calc indice %s for aggregation %s: %s', indice, agg_name, e )        
-            else:
-              logger.exception('Indice %s not possible for Experiment %s with variable %s : %s' % (indice, agg_name, variable))
+                logger.exception('could not calc indice %s for key %s and polygon%s : %s', indice, key, polygon, e )  
+          except Exception as e:
+            logger.exception('could not calc indice %s for key %s: %s', indice, key, e )        
+      except Exception as e:
+        logger.exception('could not calc key %s: %s', key, e)
 
-        # merge by time
-        from os.path import join
-        output = join(out_dir, "%s.nc" % agg_name.replace(variable, indice, 1))
-        if len(outputs) > 1:
-            cdo = Cdo()
-            out = cdo.mergetime(input=' '.join(outputs), output=output)
-        elif len(outputs) == 1:
-            from os import rename
-            rename(outputs[0], output)
-        else:
-            raise CalculationException("no outputs produced for any year, aggregation=%s.", agg_name)
-    except:
-        msg = 'Could not calc indice %s' % indice
-        logger.exception(msg)
-        raise CalculationException(msg)
-    return output
+    #try:
+        #aggs = aggregations(resource)
+        #if len(aggs) > 1:
+            #logger.warning('more than one experiment group selected: %s', aggs.keys())
+        #if len(aggs) == 0:
+            #raise CalculationException('no valid input data found!')
+        #agg_name = aggs.keys()[0]
+        #logger.debug('aggregations = %s', agg_name)
+        
+        #outputs = []
+        #for agg_name in aggs.keys(): 
+            #agg = aggs[agg_name]
+            #nc_files = aggs[agg_name]['files']
+            #variable = aggs[agg_name]['variable']
+            ## run ocgis if variabel fitts to aggregation
+            #if variable == indice_variable(indice): # calculate only if indice is calculateable with files.
+              #try:
+                #logger.debug('%s variable is fitting to Aggregarion %s' % (variable,agg_name))
+                
+                #from os.path import basename
+                #for year in range(agg['start_year'], agg['end_year']+1):
+                    
+                    #_,prefix = tempfile.mkstemp(prefix=indice + agg_name.strip(variable)+ '_' + str(year), dir=out_dir)
+                    #prefix = basename(prefix)
+                    #try:
+                        #rd = RequestDataset(uri=nc_files, variable=variable, time_region = {'year':[year]})
+                        #ops = OcgOperations(
+                            #dataset=rd,
+                            #calc=calc,
+                            #calc_grouping=calc_grouping(grouping),
+                            #prefix=prefix,
+                            #output_format='nc',
+                            #dir_output=out_dir,
+                            #add_auxiliary_files=False)
+                        #outputs.append( ops.execute() )
+                    #except Exception as e:
+                      #logger.exception('could not calc indice %s for year %s: %s', indice, year, e)
+              #except Exception as e:
+                #logger.exception('could not calc indice %s for aggregation %s: %s', indice, agg_name, e )        
+            #else:
+              #logger.exception('Indice %s not possible for Experiment %s with variable %s : %s' % (indice, agg_name, variable))
+
+        ## merge by time
+        #from os.path import join
+        #output = join(out_dir, "%s.nc" % agg_name.replace(variable, indice, 1))
+        #if len(outputs) > 1:
+            #cdo = Cdo()
+            #out = cdo.mergetime(input=' '.join(outputs), output=output)
+        #elif len(outputs) == 1:
+            #from os import rename
+            #rename(outputs[0], output)
+        #else:
+            #raise CalculationException("no outputs produced for any year, aggregation=%s.", agg_name)
+    #except:
+        #msg = 'Could not calc indice %s' % indice
+        #logger.exception(msg)
+        #raise CalculationException(msg)
+    return outputs
 
