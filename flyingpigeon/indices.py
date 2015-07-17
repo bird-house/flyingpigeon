@@ -1,4 +1,4 @@
-from ocgis import OcgOperations, RequestDataset
+from ocgis import OcgOperations, RequestDataset , env
 from cdo import Cdo
 import tempfile
 
@@ -149,4 +149,106 @@ def calc_indice_simple(resource=[], indices="SU", polygons='FRA',  groupings="yr
         logger.exception('could not calc key %s: %s', key, e)
 
     return outputs
+
+
+
+
+
+def multipro_indice_simple(resource=[], indices="SU", polygons='FRA',  groupings="yr", out_dir=None, dimension_map = None, variable=None):
+    """
+    Calculates given indices for suitable files in the appopriate time grouping and polygon.
+
+    :param resource: list of filenames in drs convention (netcdf)
+    :param indices: list of indices (default ='SU'). Indices must be calcualteable with the input resouce variable
+    :param polygons: list of polgons (default ='FRA')
+    :param grouping: indices time aggregation (default='yr')
+    :param out_dir: output directory for result file (netcdf)
+    :param dimension_map: optional dimension map if different to standard (default=None)
+
+    :return: list of netcdf files with calculated indices. Files are saved into out_dir
+    """
+    
+    from flyingpigeon.utils import calc_grouping, sort_by_filename # aggregations, 
+    from flyingpigeon.subsetting import select_ugid
+    import multiprocessing
+
+    
+    
+    if type(resource) != list: 
+      resource = list([resource])
+    if type(indices) != list: 
+      indices = list([indices])
+    if type(polygons) != list:
+      polygons = list([polygons])
+    if type(groupings) != list:
+      groupings = list([groupings])
+
+
+    def indice_simple_worker(w_ncs, w_dimension_map, w_variable, w_calc, w_calc_group, w_geom, w_ugid, w_prefix, w_out_dir):
+        """mulitporcessing worker function for indices_simple"""
+        from datetime import datetime
+        
+        print '%s start processing for %s' % ( datetime.strftime(datetime.now(),format='%Y.%m.%d %H:%M:%S' ), w_prefix)
+        rd = RequestDataset(uri=w_ncs, variable=w_variable, dimension_map=w_dimension_map)
+        ops = OcgOperations(dataset=rd,
+                            calc=w_calc,
+                            geom=w_geom,
+                            select_ugid= w_ugid, 
+                            calc_grouping=w_calc_group,
+                            prefix=w_prefix,
+                            output_format='nc',
+                            dir_output=w_out_dir,
+                            add_auxiliary_files=False)
+        output= ops.execute()
+        print '%s exit processing for %s' % (datetime.strftime(datetime.now(),format='%Y.%m.%d %H:%M:%S' ), w_prefix)
+        return 
+
+    
+    env.OVERWRITE = True
+    output = None
+    
+    experiments = sort_by_filename(resource)
+    outputs = []
+    
+    for key in experiments:
+      try: 
+        ncs = experiments[key]
+        
+        for indice in indices:
+          try: 
+            calc = [{'func' : 'icclim_' + indice, 'name' : indice}]
+            for polygon in polygons:
+              try:
+                if len(polygon) == 4: 
+                  geom = 'NUTS2'
+                elif len(polygon) == 3:
+                  geom = '50m_country'
+                else: 
+                  logger.error('unknown polygon %s', polygon)
+                ugid = select_ugid(polygon=polygon, geom=geom)
+                for grouping in groupings:
+                  try:
+                    if variable == None: 
+                      variable = key.split('_')[0]
+                    prefix = key.replace('day', grouping).replace('EUR', polygon).replace(variable,indice)
+                    
+                    calc_group = calc_grouping(grouping)
+                    
+                    jobs = []
+                    p = multiprocessing.Process(target=indice_simple_worker, 
+                                                args=(ncs, dimension_map, variable, calc, calc_group, geom, ugid, prefix, out_dir, ))
+                    jobs.append(p)
+                    p.start()
+                    #outputs.append( )
+                    
+                  except Exception as e:
+                    logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s', indice, key, polygon, grouping, e )  
+              except Exception as e:
+                logger.exception('could not calc indice %s for key %s and polygon%s : %s', indice, key, polygon, e )  
+          except Exception as e:
+            logger.exception('could not calc indice %s for key %s: %s', indice, key, e )        
+      except Exception as e:
+        logger.exception('could not calc key %s: %s', key, e)
+
+    return jobs # outputs
 
