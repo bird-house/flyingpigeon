@@ -15,7 +15,7 @@ class SimpleClipping(WPSProcess):
             title="Simple Clipping",
             version = "1.0",
             metadata=[],
-            abstract="This process returns only the given region from NetCDF file."
+            abstract="This process returns only the given regions from NetCDF files."
             )
 
         self.resource = self.addComplexInput(

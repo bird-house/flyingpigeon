@@ -347,17 +347,17 @@ def countries():
     countries.sort()
     return countries
 
-def countries_longname():
+def countries_longname(country):
     """
     :return: a list of all countries long names.
     """
-    longname = ''
-    for country in countries(): 
-      longname = longname + "%s : %s \n" % (country, _COUNTRIES_[country]['longname'])
+    #longname = ''
+    #for country in countries(): 
+    longname = longname + "%s : %s \n" % (country, _COUNTRIES_[country]['longname'])
     return longname
 
 
-NUTS_2 = ['AT11','AT12','AT13','AT21','AT22','AT31','AT32','AT33','AT34',
+NUTS2 = ['AT11','AT12','AT13','AT21','AT22','AT31','AT32','AT33','AT34',
 'BE10','BE21','BE22','BE23','BE24','BE25','BE31','BE32','BE33','BE34','BE35',
 'BG31','BG32','BG33','BG34','BG41','BG42','CH01','CH02','CH03','CH04','CH05',
 'CH06','CH07','CY00','CZ01','CZ02','CZ03','CZ04','CZ05','CZ06','CZ07','CZ08',
@@ -388,6 +388,37 @@ NUTS_2 = ['AT11','AT12','AT13','AT21','AT22','AT31','AT32','AT33','AT34',
 'UKJ2','UKJ3','UKJ4','UKK1','UKK2','UKK3','UKK4','UKL1','UKL2','UKM2','UKM5',
 'UKM6','UKN0','UKM3']
 
-COUNTRIES_EU = ['AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN','FRA', 'GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX','NLD',
-                 'POL','PRT','ROU','SVK','SVN','SWE','NOR','CHE','ISL','MKD','MNE',
-                 'SRB','MDA','UKR','BIH','ALB','BLR','KOS'] #'MLT',
+COUNTRIES_EU = ['AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN',
+                'FRA','GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX',
+                'NLD','POL','PRT','ROU','SVK','SVN','SWE','NOR','CHE','ISL',
+                'MKD','MNE','SRB','MDA','UKR','BIH','ALB','BLR','KOS'] #'MLT',
+
+
+def select_ugid(polygon='FRA', geom='50m_country'):
+    """
+    returns geometry id of given polygon in a given shapefile.
+    
+    :param polygon: ISO abreviation for the region polygon 
+    :param geom: available shapefile possible entries: '50m_country', 'NUTS2'
+    """
+    from ocgis.util.shp_cabinet import ShpCabinetIterator
+    from ocgis import env
+    
+    env.DIR_SHPCABINET = join(dirname(__file__), 'processes', 'shapefiles')
+    
+    sc_iter = ShpCabinetIterator(geom)
+    result = []
+    
+    if geom == '50m_country':
+      for row in sc_iter:
+          if row['properties']['adm0_a3'] == polygon:
+              result.append(row['properties']['UGID'])
+              
+    if geom == 'NUTS2':
+      for row in sc_iter:
+          if row['properties']['NUTS_ID'] == polygon:
+              result.append(row['properties']['UGID'])
+            
+           
+            
+    return result

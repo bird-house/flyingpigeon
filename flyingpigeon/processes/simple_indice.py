@@ -4,6 +4,8 @@ from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
 from flyingpigeon.indices import indices, indices_description, calc_indice
+from flyingpigeon.subsetting import countries, countries_longname # COUNTRIES
+from flyingpigeon.utils import GROUPING
 
 class CalcIndice(WPSProcess):
     """This process calculates a climate indice for the given input netcdf files."""
@@ -35,8 +37,8 @@ class CalcIndice(WPSProcess):
             default='year',
             type=type(''),
             minOccurs=1,
-            maxOccurs=1,
-            allowedValues=["yr", "mon", "sem", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON" ]
+            maxOccurs=len(GROUPING),
+            allowedValues=GROUPING
             )
 
         self.indice = self.addLiteralInput(
@@ -46,9 +48,20 @@ class CalcIndice(WPSProcess):
             default='SU',
             type=type(''),
             minOccurs=1,
-            maxOccurs=1,
+            maxOccurs=len(indices()),
             allowedValues=indices()
             )
+        
+        self.region = self.addLiteralInput(
+            identifier="region",
+            title="Region",
+            abstract="Select a country for polygon subsetting", #countries_longname
+            default='FRA',
+            type=type(''),
+            minOccurs=1,
+            maxOccurs=len(countries()),
+            allowedValues=countries() #REGION_EUROPE #COUNTRIES # 
+             )
       
         # complex output
         # -------------

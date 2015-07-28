@@ -1,4 +1,4 @@
-from ocgis import OcgOperations, RequestDataset
+from ocgis import OcgOperations, RequestDataset , env
 from cdo import Cdo
 import tempfile
 
@@ -78,76 +78,184 @@ def indice_variable(indice):
         logger.error('unknown indice %s', indice)
     return variable
 
-def calc_indice(resource=[], indice="TG", grouping="yr", out_dir=None):
+def calc_indice_simple(resource=[], indices="SU", polygons='FRA',  groupings="yr", out_dir=None, dimension_map = None):
     """
-    Calculates given indice for variable and grouping.
+    Calculates given indices for suitable files in the appopriate time grouping and polygon.
 
-    :param resource: list of filenames (netcdf)
+    :param resource: list of filenames in drs convention (netcdf)
+    :param indices: list of indices (default ='SU')
+    :param polygons: list of polgons (default ='FRA')
+    :param grouping: indices time aggregation (default='yr')
     :param out_dir: output directory for result file (netcdf)
+    :param dimension_map: optional dimension map if different to standard (default=None)
 
-    :return: netcdf files with calculated indices
+    :return: list of netcdf files with calculated indices. Files are saved into out_dir
     """
+    
+    if type(resource) != list: 
+      resource = list([resource])
+    if type(indices) != list: 
+      indices = list([indices])
+    if type(polygons) != list:
+      polygons = list([polygons])
+    if type(groupings) != list:
+      groupings = list([groupings])
 
-    from utils import aggregations, calc_grouping
-
+    from flyingpigeon.utils import calc_grouping, sort_by_filename # aggregations, 
+    from flyingpigeon.subsetting import select_ugid
     output = None
-    calc = [{'func' : 'icclim_' + indice, 'name' : indice}]
-    try:
-        aggs = aggregations(resource)
-        if len(aggs) > 1:
-            logger.warning('more than one experiment group selected: %s', aggs.keys())
-        if len(aggs) == 0:
-            raise CalculationException('no valid input data found!')
-        agg_name = aggs.keys()[0]
-        logger.debug('aggregations = %s', agg_name)
-        
-        outputs = []
-        for agg_name in aggs.keys(): 
-            agg = aggs[agg_name]
-            nc_files = aggs[agg_name]['files']
-            variable = aggs[agg_name]['variable']
-            # run ocgis if variabel fitts to aggregation
-            if variable == indice_variable(indice): # calculate only if indice is calculateable with files.
+    
+    experiments = sort_by_filename(resource)
+    outputs = []
+    
+    for key in experiments:
+      try: 
+        ncs = experiments[key]
+        for indice in indices:
+          try: 
+            calc = [{'func' : 'icclim_' + indice, 'name' : indice}]
+            for polygon in polygons:
               try:
-                logger.debug('%s variable is fitting to Aggregarion %s' % (variable,agg_name))
-                
-                from os.path import basename
-                for year in range(agg['start_year'], agg['end_year']+1):
-                    
-                    _,prefix = tempfile.mkstemp(prefix=indice + agg_name.strip(variable)+ '_' + str(year), dir=out_dir)
-                    prefix = basename(prefix)
-                    try:
-                        rd = RequestDataset(uri=nc_files, variable=variable, time_region = {'year':[year]})
-                        ops = OcgOperations(
-                            dataset=rd,
-                            calc=calc,
-                            calc_grouping=calc_grouping(grouping),
-                            prefix=prefix,
-                            output_format='nc',
-                            dir_output=out_dir,
-                            add_auxiliary_files=False)
-                        outputs.append( ops.execute() )
-                    except Exception as e:
-                      logger.exception('could not calc indice %s for year %s: %s', indice, year, e)
+                if len(polygon) == 4: 
+                  geom = 'NUTS2'
+                elif len(polygon) == 3:
+                  geom = '50m_country'
+                else: 
+                  logger.error('unknown polygon %s', polygon)
+                ugid = select_ugid(polygon=polygon, geom=geom)
+                for grouping in groupings:
+                  try:
+                    prefix = key.replace('_day_', grouping)
+                    calc_group = calc_grouping(grouping)
+                    rd = RequestDataset(uri=ncs, dimension_map=dimension_map)
+                    ops = OcgOperations(
+                                    dataset=rd,
+                                    calc=calc,
+                                    geom=geom,
+                                    select_ugid= ugid, 
+                                    calc_grouping=calc_group,
+                                    prefix=prefix,
+                                    output_format='nc',
+                                    dir_output=out_dir,
+                                    add_auxiliary_files=False)
+                    outputs.append( ops.execute())
+                  except Exception as e:
+                    logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s', indice, key, polygon, grouping, e )  
               except Exception as e:
-                logger.exception('could not calc indice %s for aggregation %s: %s', indice, agg_name, e )        
-            else:
-              logger.exception('Indice %s not possible for Experiment %s with variable %s : %s' % (indice, agg_name, variable))
+                logger.exception('could not calc indice %s for key %s and polygon%s : %s', indice, key, polygon, e )  
+          except Exception as e:
+            logger.exception('could not calc indice %s for key %s: %s', indice, key, e )        
+      except Exception as e:
+        logger.exception('could not calc key %s: %s', key, e)
 
-        # merge by time
-        from os.path import join
-        output = join(out_dir, "%s.nc" % agg_name.replace(variable, indice, 1))
-        if len(outputs) > 1:
-            cdo = Cdo()
-            out = cdo.mergetime(input=' '.join(outputs), output=output)
-        elif len(outputs) == 1:
-            from os import rename
-            rename(outputs[0], output)
-        else:
-            raise CalculationException("no outputs produced for any year, aggregation=%s.", agg_name)
-    except:
-        msg = 'Could not calc indice %s' % indice
-        logger.exception(msg)
-        raise CalculationException(msg)
-    return output
+    return outputs
 
+
+
+
+
+def multipro_indice_simple(resource=[], indices="SU", polygons='FRA',  groupings="yr", out_dir=None, dimension_map = None, variable=None):
+    """
+    Calculates given indices for suitable files in the appopriate time grouping and polygon.
+
+    :param resource: list of filenames in drs convention (netcdf)
+    :param indices: list of indices (default ='SU'). Indices must be calcualteable with the input resouce variable
+    :param polygons: list of polgons (default ='FRA')
+    :param grouping: indices time aggregation (default='yr')
+    :param out_dir: output directory for result file (netcdf)
+    :param dimension_map: optional dimension map if different to standard (default=None)
+
+    :return: list of netcdf files with calculated indices. Files are saved into out_dir
+    """
+    
+    from flyingpigeon.utils import calc_grouping, sort_by_filename # aggregations, 
+    from flyingpigeon.subsetting import select_ugid
+    import multiprocessing
+    ncpu = multiprocessing.cpu_count()
+
+    
+    if type(resource) != list: 
+      resource = list([resource])
+    if type(indices) != list: 
+      indices = list([indices])
+    if type(polygons) != list:
+      polygons = list([polygons])
+    if type(groupings) != list:
+      groupings = list([groupings])
+      
+    experiments = sort_by_filename(resource)  
+
+    def indice_simple_worker(w_ncs, w_dimension_map, w_variable, w_calc, w_calc_group, w_geom, w_ugid, w_prefix, w_out_dir):
+        """mulitporcessing worker function for indices_simple"""
+        
+        from datetime import datetime
+        try: 
+          print '%s start processing for %s' % ( datetime.strftime(datetime.now(),format='%Y.%m.%d %H:%M:%S' ), w_prefix)
+          rd = RequestDataset(uri=w_ncs, variable=w_variable, dimension_map=w_dimension_map)
+          ops = OcgOperations(dataset=rd,
+                              calc=w_calc,
+                              geom=w_geom,
+                              select_ugid= w_ugid, 
+                              calc_grouping=w_calc_group,
+                              prefix=w_prefix,
+                              output_format='nc',
+                              dir_output=w_out_dir,
+                              add_auxiliary_files=False)
+          output= ops.execute()
+          print '%s exit processing for %s' % (datetime.strftime(datetime.now(),format='%Y.%m.%d %H:%M:%S' ), w_prefix)
+        except Exception as e:
+          logger.exception('indices_simple_worker failed: %s', e)
+      
+
+    env.OVERWRITE = True
+    output = None
+    
+    outputs = []
+    
+    if __name__ == 'flyingpigeon.indices':
+        print 'flyingpigeon.indices runnning'
+        pool = multiprocessing.Pool(ncpu) #use all available cores, otherwise specify the number you want as an argument
+        for key in experiments:
+          try: 
+            ncs = experiments[key]
+            
+            for indice in indices:
+              try: 
+                calc = [{'func' : 'icclim_' + indice, 'name' : indice}]
+                for polygon in polygons:
+                  try:
+                    if len(polygon) == 4: 
+                      geom = 'NUTS2'
+                    elif len(polygon) == 3:
+                      geom = '50m_country'
+                    else: 
+                      logger.error('unknown polygon %s', polygon)
+                    ugid = select_ugid(polygon=polygon, geom=geom)
+                    for grouping in groupings:
+                      try:
+                        if variable == None: 
+                          variable = key.split('_')[0]
+                        prefix = key.replace('day', grouping).replace('EUR', polygon).replace(variable,indice)
+                        calc_group = calc_grouping(grouping)
+                        #for i in xrange(0, 512):
+                          # f, args=(i,))
+                        
+                        jobs = []
+                        p = pool.apply_async(indice_simple_worker,
+                                            args=(ncs, dimension_map, variable, calc, calc_group, geom, ugid, prefix, out_dir, ))
+                        jobs.append(p)
+                        #p.start()
+                        #outputs.append( )
+                        
+                      except Exception as e:
+                        logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s', indice, key, polygon, grouping, e )  
+                  except Exception as e:
+                    logger.exception('could not calc indice %s for key %s and polygon%s : %s', indice, key, polygon, e )  
+              except Exception as e:
+                logger.exception('could not calc indice %s for key %s: %s', indice, key, e )        
+          except Exception as e:
+            logger.exception('could not calc key %s: %s', key, e)
+
+        pool.close()
+        pool.join()
+    return jobs # outputs
