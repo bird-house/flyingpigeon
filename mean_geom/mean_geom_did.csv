@@ -1,0 +1,2 @@
+DID,VARIABLE,ALIAS,URI,STANDARD_NAME,UNITS,LONG_NAME
+1,tas,tas,/home/estimr2/EUROCORDEX/MESAN/tas_EUR-05_SMHI-HIRLAM_reanalysis_v1d1-v1d2_SMHI-MESAN_v1_day_19890101-19891231.nc,air_temperature,K,Near-Surface Air Temperature

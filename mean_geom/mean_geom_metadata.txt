@@ -1,0 +1,154 @@
+OpenClimateGIS v1.1.0n Metadata File
+  Generated (UTC): 2015-07-29 10:04:33.605462
+
+This is OpenClimateGIS-related metadata. Data-level metadata may be found in the file named: mean_geom_source_metadata.txt
+
+== Potential Header Names with Definitions ==
+
+  ALIAS :: If not assigned, this will be the same as the variable name.
+  CALC_ALIAS :: User-supplied name for a calculation.
+  CALC_KEY :: The unique key name assigned to a calculation.
+  CID :: Unique identifier for a calculation name.
+  DAY :: Day extracted from time string.
+  DID :: Dataset identifier see *_did.csv file for additional information on dataset
+    requests.
+  GID :: Geometry identifier assigned by OpenClimateGIS to a dataset geometry. In
+    the case of "aggregate=True" this is equivalent to "UGID".
+  LEVEL :: Level name.
+  LID :: Level identifier unique within a variable.
+  MONTH :: Month extracted from time string.
+  NAME :: Name of the requested variable.
+  TID :: Unique time identifier.
+  TIME :: Time string.
+  UGID :: User geometry identifier pulled from a provided set of selection
+    geometries. Reduces to "1" for the case of no provided geometry.
+  URI :: Path to input data at execution time.
+  VALUE :: Value associated with a variable or calculation.
+  VID :: Unique variable identifier.
+  YEAR :: Year extracted from time string.
+
+== Argument Definitions and Content Descriptions ==
+
+* abstraction="None"
+Highest order geometry available used for spatial output.
+
+* add_auxiliary_files=True
+Auxiliary metadata files added. A new directory was created.
+
+* aggregate=False
+Selected geometries are not aggregated (unioned).
+
+* agg_selection=False
+Selection geometries left as is.
+
+* allow_empty=False
+Empty returns NOT allowed. If a selection geometry has no intersecting geometries from the target dataset, an exception is raised.
+
+* backend="ocg"
+OpenClimateGIS backend used for processing.
+
+* calc=[{'meta_attrs': None, 'name': 'mean', 'func': 'mean', 'kwds': OrderedDict()}]
+The following computations were applied:
+mean: Compute mean value of the set.
+
+* calc_grouping=('year',)
+Temporal aggregation determined by the following group(s): ('year',)
+
+* calc_raw=False
+Aggregated values will be used during the calculation.
+
+* calc_sample_size=False
+Statistical sample size not calculated.
+
+* callback=None
+No callback function provided.
+
+* conform_units_to=None
+Units were not conformed.
+
+* dataset=
+    URI: /home/estimr2/EUROCORDEX/MESAN/tas_EUR-05_SMHI-HIRLAM_reanalysis_v1d1-v1d2_SMHI-MESAN_v1_day_19890101-19891231.nc
+    Variable: tas
+    Alias: tas
+    Time Range: None
+    Time Region/Selection: None
+    Level Range: None
+    Overloaded Parameters:
+      PROJ4 String: {'lonc': 0, 'ellps': 'WGS84', 'y_0': 0, 'no_defs': True, 'proj': 'omerc', 'x_0': 0, 'units': 'm', 'alpha': 0, 'k': 1, 'gamma': 0, 'lat_0': 0}
+      Time Units: None
+      Time Calendar: None
+
+* dir_output="/home/users/nhempel/birdhouse/flyingpigeon"
+At execution time, data was originally written to this processor-local location: /home/users/nhempel/birdhouse/flyingpigeon
+
+* file_only=False
+Actual data written to file.
+
+* format_time=True
+Time values converted to datetime stamps.
+
+* geom="provinces_simple10_UGID"
+The selection geometry "provinces_simple10_UGID" was used for subsetting.
+
+* geom_select_sql_where=None
+No SQL where statement provided.
+
+* geom_select_uid=(1169,)
+The following UGID values were used to select from the input geometries: (1169,).
+
+* geom_uid=None
+No geometry unique identifier provided.
+
+* headers=None
+The following headers were used for file creation: None
+
+* interpolate_spatial_bounds=False
+If no bounds are present on the coordinate variables, no attempt will be made to interpolate boundary polygons.
+
+* level_range=None
+No level subset.
+
+* melted=False
+Flat tabular iteration requested.
+
+* optimizations=None
+No optimizations were used.
+
+* output_crs={'ellps': 'WGS84', 'no_defs': True, 'proj': 'longlat', 'towgs84': '0,0,0,0,0,0,0'}
+The PROJ.4 definition of the coordinate reference system is: "+proj=longlat +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +no_defs "
+
+* output_format="nc"
+The output format is "nc".
+
+* prefix="mean_geom"
+Data output given the following prefix: mean_geom.
+
+* regrid_destination=None
+Input data was not regridded.
+
+* regrid_options={'value_mask': None, 'with_corners': 'choose'}
+{'value_mask': None, 'with_corners': 'choose'}
+
+* search_radius_mult=2.0
+If point geometries were used for selection, a modifier of 2.0 times the data resolution was used to spatially select data.
+
+* select_nearest=False
+All geometries returned regardless of distance.
+
+* slice=None
+No slice passed.
+
+* snippet=False
+All time points returned.
+
+* spatial_operation="intersects"
+Geometries touching AND overlapping returned.
+
+* time_range=None
+No time range subset.
+
+* time_region=None
+No time region subset.
+
+* vector_wrap=False
+Geographic coordinates match the target dataset coordinate wrapping and may be in the range 0 to 360.
