@@ -28,8 +28,7 @@ The depolyed WPS service is available on http://localhost:8093/wps?service=WPS&v
 Check the log files for errors::
 
    $ cd ~/.conda/envs/birdhouse
-   $ tail -f  var/log/pywps/flyingpigeon.log
-   $ tail -f  var/log/pywps/flyingpigeon_trace.log
+   $ tail -f  var/log/supervisor/flyingpigeon.log
 
 For other install options run ``make help`` and read the documention for the `Makefile <http://birdhousebuilderbootstrap.readthedocs.org/en/latest/>`_.
 
