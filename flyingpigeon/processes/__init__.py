@@ -2,7 +2,6 @@ __all__ = [
         "visualisation",
         "extractpoints",
         #"analogs",
-        "ensembles",
         #"vbd",
         "segetalflora",
         "geteobs_incordexformat",
