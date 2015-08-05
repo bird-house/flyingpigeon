@@ -33,7 +33,7 @@ RUN bash bootstrap.sh -u && make clean install
 WORKDIR /home/phoenix/.conda/envs/birdhouse
 
 # all currently used ports in birdhouse
-EXPOSE 8080 8081 8082 8090 8091 8092 8093 8094 9001
+EXPOSE 8080 8081 8082 8090 8091 8092 8093 8094 9001 9002
 
 CMD ["bin/supervisord", "-n", "-c", "etc/supervisor/supervisord.conf"]
 
