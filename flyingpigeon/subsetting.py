@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 from os.path import dirname, join
 DIR_MASKS = join(dirname(__file__), 'processes', 'masks')
+DIR_SHP = join(dirname(__file__), 'processes', 'shapefiles')
 
 def masking(resource, mask, prefix=None, dir_output=None):
   """
@@ -89,12 +90,87 @@ def get_dimension_map(resource):
 
 # === Functions for Clipping: 
 
+
+def select_ugid(polygon='FRA', geom='50m_country'):
+    """
+    returns geometry id of given polygon in a given shapefile.
+    :param polygon: ISO abreviation for the region polygon 
+    :param geom: available shapefile possible entries: '50m_country', 'NUTS2'
+    """
+    from ocgis.util.shp_cabinet import ShpCabinetIterator
+    from ocgis import env
+    
+    env.DIR_SHPCABINET = DIR_SHP
+    
+    sc_iter = ShpCabinetIterator(geom)
+    result = []
+    
+    if geom == '50m_country':
+      for row in sc_iter:
+          if row['properties']['adm0_a3'] == polygon:
+              result.append(row['properties']['UGID'])
+              
+    if geom == 'NUTS2':
+      for row in sc_iter:
+          if row['properties']['NUTS_ID'] == polygon:
+              result.append(row['properties']['UGID'])
+
+    if geom == 'extremoscope':
+      for row in sc_iter:
+          if row['properties']['HASC_1'] == polygon:
+              result.append(row['properties']['UGID'])
+            
+    return result
+
+def countries():
+    """
+    :return: a list of all countries codes.
+    """
+    countries = _COUNTRIES_.keys()
+    countries.sort()
+    return countries
+
+def countries_longname(country):
+    """
+    :return: a list of all countries long names.
+    """
+    #longname = ''
+    #for country in countries(): 
+    longname = longname + "%s : %s \n" % (country, _COUNTRIES_[country]['longname'])
+    return longname
+
+
+def get_shp_column_values(geom='extremoscope', columnname='HASC_1'): 
+  """ returns a list of all entries the shapefile columnname
+  :param geom: name of the shapefile
+  :param columnname: Column name to be intereted
+  """
+  from ocgis.util.shp_cabinet import ShpCabinetIterator
+  import ocgis
+  
+  ocgis.env.DIR_SHPCABINET = DIR_SHP
+  
+  sci = ShpCabinetIterator(geom)
+  
+  vals = []
+  for row in sci: 
+    vals.append(row['properties'][columnname])
+  
+  return vals
+  
 # === Available Polygons
 POLYGONS = ['AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN','FRA', 'GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX','NLD',
                  'POL','PRT','ROU','SVK','SVN','SWE','NOR','CHE','ISL','MKD','MNE',
                  'SRB','MDA','UKR','BIH','ALB','BLR','KOS'] #'MLT',
 
+COUNTRIES_EU = ['AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN',
+                'FRA','GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX',
+                'NLD','POL','PRT','ROU','SVK','SVN','SWE','NOR','CHE','ISL',
+                'MKD','MNE','SRB','MDA','UKR','BIH','ALB','BLR','KOS'] #'MLT',
 
+_POLYGONS_EXTREMOSCOPE_ = get_shp_column_values(geom='extremoscope', columnname='HASC_1')
+  
+  
 _COUNTRIES_ =  dict(
   ABW=dict(longname='Aruba'),
   AFG=dict(longname='Afghanistan'),
@@ -338,24 +414,7 @@ _COUNTRIES_ =  dict(
   ZMB=dict(longname='Zambia'),
   ZWE=dict(longname='Zimbabwe')
 )
-
-def countries():
-    """
-    :return: a list of all countries codes.
-    """
-    countries = _COUNTRIES_.keys()
-    countries.sort()
-    return countries
-
-def countries_longname(country):
-    """
-    :return: a list of all countries long names.
-    """
-    #longname = ''
-    #for country in countries(): 
-    longname = longname + "%s : %s \n" % (country, _COUNTRIES_[country]['longname'])
-    return longname
-
+  
 
 NUTS2 = ['AT11','AT12','AT13','AT21','AT22','AT31','AT32','AT33','AT34',
 'BE10','BE21','BE22','BE23','BE24','BE25','BE31','BE32','BE33','BE34','BE35',
@@ -388,37 +447,3 @@ NUTS2 = ['AT11','AT12','AT13','AT21','AT22','AT31','AT32','AT33','AT34',
 'UKJ2','UKJ3','UKJ4','UKK1','UKK2','UKK3','UKK4','UKL1','UKL2','UKM2','UKM5',
 'UKM6','UKN0','UKM3']
 
-COUNTRIES_EU = ['AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN',
-                'FRA','GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX',
-                'NLD','POL','PRT','ROU','SVK','SVN','SWE','NOR','CHE','ISL',
-                'MKD','MNE','SRB','MDA','UKR','BIH','ALB','BLR','KOS'] #'MLT',
-
-
-def select_ugid(polygon='FRA', geom='50m_country'):
-    """
-    returns geometry id of given polygon in a given shapefile.
-    
-    :param polygon: ISO abreviation for the region polygon 
-    :param geom: available shapefile possible entries: '50m_country', 'NUTS2'
-    """
-    from ocgis.util.shp_cabinet import ShpCabinetIterator
-    from ocgis import env
-    
-    env.DIR_SHPCABINET = join(dirname(__file__), 'processes', 'shapefiles')
-    
-    sc_iter = ShpCabinetIterator(geom)
-    result = []
-    
-    if geom == '50m_country':
-      for row in sc_iter:
-          if row['properties']['adm0_a3'] == polygon:
-              result.append(row['properties']['UGID'])
-              
-    if geom == 'NUTS2':
-      for row in sc_iter:
-          if row['properties']['NUTS_ID'] == polygon:
-              result.append(row['properties']['UGID'])
-            
-           
-            
-    return result
