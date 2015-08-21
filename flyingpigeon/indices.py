@@ -78,11 +78,14 @@ def indice_variable(indice):
         logger.error('unknown indice %s', indice)
     return variable
 
-def calc_indice_simple(resource=[], indices="SU", polygons='FRA',  groupings="yr", out_dir=None, dimension_map = None):
+def calc_indice_simple(resource=[], variable=None, prefix=None,
+  indices="SU", polygons='FRA',  groupings="yr", 
+  out_dir=None, dimension_map = None):
     """
     Calculates given indices for suitable files in the appopriate time grouping and polygon.
 
     :param resource: list of filenames in drs convention (netcdf)
+    :param variable: variable name to be selected in the in netcdf file (default=None)
     :param indices: list of indices (default ='SU')
     :param polygons: list of polgons (default ='FRA')
     :param grouping: indices time aggregation (default='yr')
@@ -120,14 +123,16 @@ def calc_indice_simple(resource=[], indices="SU", polygons='FRA',  groupings="yr
                   geom = 'NUTS2'
                 elif len(polygon) == 3:
                   geom = '50m_country'
+                elif  len(polygon) == 5 and polygon[2] == '.': 
+                  geom = 'extremoscope'
                 else: 
                   logger.error('unknown polygon %s', polygon)
                 ugid = select_ugid(polygon=polygon, geom=geom)
                 for grouping in groupings:
                   try:
-                    prefix = key.replace('_day_', grouping)
+                    #prefix = key.replace('_day_', grouping)
                     calc_group = calc_grouping(grouping)
-                    rd = RequestDataset(uri=ncs, dimension_map=dimension_map)
+                    rd = RequestDataset(uri=ncs, variable=variable, dimension_map=dimension_map)
                     ops = OcgOperations(
                                     dataset=rd,
                                     calc=calc,
