@@ -92,7 +92,7 @@ def add_statistic(nc_url, var):
         ref_per05s.append(hs[str(start):str(end)].quantile(0.05))
         ref_per95s.append(hs[str(start):str(end)].quantile(0.95))
     
-    nc.createDimension('ref_period', len(ref_periods))
+    nc.createDimension('ref_period', size=len(ref_periods))
     ref_period = nc.createVariable(varname= 'ref_period', datatype = 'i', dimensions='ref_period')
     ref_median = nc.createVariable(varname= 'ref_median', datatype = 'float', dimensions='ref_period')
     ref_mean = nc.createVariable(varname= 'ref_mean', datatype = 'float', dimensions='ref_period')

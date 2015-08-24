@@ -94,7 +94,14 @@ def calc_indice_simple(resource=[], variable=None, prefix=None,
 
     :return: list of netcdf files with calculated indices. Files are saved into out_dir
     """
-    
+
+    from os.path import join, dirname
+
+
+    DIR_SHP = join(dirname(__file__),'flyingpigeon', 'processes', 'shapefiles')
+    env.DIR_SHPCABINET = DIR_SHP
+    env.OVERWRITE = True
+
     if type(resource) != list: 
       resource = list([resource])
     if type(indices) != list: 
@@ -143,7 +150,7 @@ def calc_indice_simple(resource=[], variable=None, prefix=None,
                                     output_format='nc',
                                     dir_output=out_dir,
                                     add_auxiliary_files=False)
-                    outputs.append( ops.execute())
+                    outputs.append( ops.execute() )
                   except Exception as e:
                     logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s', indice, key, polygon, grouping, e )  
               except Exception as e:
@@ -154,9 +161,6 @@ def calc_indice_simple(resource=[], variable=None, prefix=None,
         logger.exception('could not calc key %s: %s', key, e)
 
     return outputs
-
-
-
 
 
 def multipro_indice_simple(resource=[], indices="SU", polygons='FRA',  groupings="yr", out_dir=None, dimension_map = None, variable=None):
@@ -178,7 +182,6 @@ def multipro_indice_simple(resource=[], indices="SU", polygons='FRA',  groupings
     import multiprocessing
     ncpu = multiprocessing.cpu_count()
 
-    
     if type(resource) != list: 
       resource = list([resource])
     if type(indices) != list: 
@@ -210,11 +213,8 @@ def multipro_indice_simple(resource=[], indices="SU", polygons='FRA',  groupings
           print '%s exit processing for %s' % (datetime.strftime(datetime.now(),format='%Y.%m.%d %H:%M:%S' ), w_prefix)
         except Exception as e:
           logger.exception('indices_simple_worker failed: %s', e)
-      
-
     env.OVERWRITE = True
     output = None
-    
     outputs = []
     
     if __name__ == 'flyingpigeon.indices':
