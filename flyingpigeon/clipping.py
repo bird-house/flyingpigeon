@@ -136,8 +136,6 @@ def normalize(resource, grouping='year', region='AUT', start_date="1971-01-01", 
         raise CalculationException(msg)
     return output
 
-  
-
 def clip_continent(urls, variable, dimension_map,  calc=None,  calc_grouping= None, prefix=None, 
                    continent='Europe', output_format='nc', dir_output='.'):
   """ returns clipped netCDF file 

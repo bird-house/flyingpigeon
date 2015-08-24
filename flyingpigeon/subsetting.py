@@ -1,7 +1,7 @@
 # import ocgis
 
 from .exceptions import CalculationException
-from .utils import drs_filename, calc_grouping
+from .utils import drs_filename, calc_grouping , sort_by_filename
 
 from malleefowl import wpslogging as logging
 #import logging
@@ -9,6 +9,7 @@ from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
 from os.path import dirname, join
+
 DIR_MASKS = join(dirname(__file__), 'processes', 'masks')
 DIR_SHP = join(dirname(__file__), 'processes', 'shapefiles')
 
@@ -36,9 +37,73 @@ def masking(resource, mask, prefix=None, dir_output=None):
 # try:
   call = "cdo div '%s' '%s' '%s'" % ( resource , nc_mask , resource_masked)
   system(call)
-  
   return resource_masked
 
+def get_geom(polygon):
+  if len(polygon) == 4: 
+    geom = 'NUTS2'
+  elif polygon in _COUNTRIES_: # (polygon) == 3:
+    geom = '50m_country'
+  elif polygon in _POLYGONS_EXTREMOSCOPE_: #len(polygon) == 5 and polygon[2] == '.': 
+    geom = 'extremoscope'
+  elif polygon in _CONTINENTS_: 
+    geom = 'continent'
+  else: 
+    logger.error('unknown polygon %s', polygon)
+  return geom  
+
+def clipping(resource=[], variable=None, dimension_map=None, calc=None,  calc_grouping= None, prefix=None, polygons='Europe', output_format='nc', dir_output=None):
+  """ returns list of clipped netCDF files
+  possible entries: 
+  :param resource: list of input netCDF files
+  :param variable: variable (string) to be used in netCDF
+  :param dimesion_map: specify a dimension map input netCDF has unconventional dimension
+  :param calc: ocgis calculation argument
+  :param calc_grouping: ocgis calculation grouping 
+  :param prefix: prfix for output file name
+  :param polygons: list of polygons to be used. if more than 1 in the list, a appropriate mosaik will be clipped
+  :param output_format: output_format (default='nc')
+  :param dir_output: specify a output location
+  """
+  from ocgis import OcgOperations, RequestDataset , env
+  env.DIR_SHPCABINET = DIR_SHP
+  env.OVERWRITE = True
+  
+  if type(resource) != list: 
+    resource = list([resource])
+  if type(polygons) != list:
+    polygons = list([polygons])
+  
+  try:
+    geoms = []
+    for polygon in polygons: 
+      geoms.append(get_geom(polygon))
+    if len(geoms) > 1: 
+      logger.error('polygons belong to differnt shapefiles! mosaik is not possible %s', geoms)
+    else: 
+      geom = geoms[0]
+      print 'geom: %s' % (geom)
+  except Exception as e:
+    logger.error('geom identification failed %s', e)
+  
+  ugids = select_ugid(polygons=polygons, geom=geom)
+  print 'ugids: %s' % (ugids)
+  ncs = sort_by_filename(resource)
+  geom_files = []
+  
+  for key in ncs: 
+    try:    
+      rd = RequestDataset(ncs[key], variable=variable, dimension_map=dimension_map)
+      env.DIR_OUTPUT = dir_output
+      env.PREFIX = prefix    
+      ops = OcgOperations(dataset=rd, calc=calc, calc_grouping=calc_grouping,
+                                      output_format=output_format, select_ugid=ugids, geom=geom, add_auxiliary_files=False)
+      geom_files.append( ops.execute() )
+    except Exception as e:
+        msg = 'ocgis calculations failed for %s ' % (key)
+        logger.exception(msg)
+        raise CalculationException(msg, e)
+  return  geom_files
 
 def get_dimension_map(resource): 
   """ returns the dimension map for a file, required for ocgis processing. 
@@ -91,35 +156,45 @@ def get_dimension_map(resource):
 # === Functions for Clipping: 
 
 
-def select_ugid(polygon='FRA', geom='50m_country'):
+def select_ugid(polygons='FRA', geom='50m_country'):
     """
     returns geometry id of given polygon in a given shapefile.
-    :param polygon: ISO abreviation for the region polygon 
+    :param polygons: string or list of the region polygons 
     :param geom: available shapefile possible entries: '50m_country', 'NUTS2'
     """
     from ocgis.util.shp_cabinet import ShpCabinetIterator
     from ocgis import env
     
-    env.DIR_SHPCABINET = DIR_SHP
+    if type(polygons) != list:
+      polygons = list([polygons])
     
+    env.DIR_SHPCABINET = DIR_SHP
     sc_iter = ShpCabinetIterator(geom)
     result = []
     
     if geom == '50m_country':
       for row in sc_iter:
+        for polygon in polygons:
           if row['properties']['adm0_a3'] == polygon:
-              result.append(row['properties']['UGID'])
+            result.append(row['properties']['UGID'])
               
     if geom == 'NUTS2':
       for row in sc_iter:
+        for polygon in polygons:
           if row['properties']['NUTS_ID'] == polygon:
-              result.append(row['properties']['UGID'])
+            result.append(row['properties']['UGID'])
 
     if geom == 'extremoscope':
       for row in sc_iter:
+        for polygon in polygons:
           if row['properties']['HASC_1'] == polygon:
-              result.append(row['properties']['UGID'])
-            
+            result.append(row['properties']['UGID'])
+              
+    if geom == 'continent':
+      for row in sc_iter:
+        for polygon in polygons:
+          if row['properties']['CONTINENT'] == polygon:
+            result.append(row['properties']['UGID'])    
     return result
 
 def countries():
@@ -155,10 +230,12 @@ def get_shp_column_values(geom='extremoscope', columnname='HASC_1'):
   vals = []
   for row in sci: 
     vals.append(row['properties'][columnname])
-  
   return vals
   
+  
 # === Available Polygons
+_CONTINENTS_ = ['Africa', 'Asia', 'Australia','North America', 'Oceania','South America', 'Antarctica', 'Europe']
+
 POLYGONS = ['AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN','FRA', 'GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX','NLD',
                  'POL','PRT','ROU','SVK','SVN','SWE','NOR','CHE','ISL','MKD','MNE',
                  'SRB','MDA','UKR','BIH','ALB','BLR','KOS'] #'MLT',
