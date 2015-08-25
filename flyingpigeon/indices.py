@@ -134,7 +134,7 @@ def calc_indice_simple(resource=[], variable=None, prefix=None,
                   geom = 'extremoscope'
                 else: 
                   logger.error('unknown polygon %s', polygon)
-                ugid = select_ugid(polygon=polygon, geom=geom)
+                ugid = select_ugid(polygons=polygon, geom=geom)
                 for grouping in groupings:
                   try:
                     #prefix = key.replace('_day_', grouping)
@@ -213,6 +213,7 @@ def multipro_indice_simple(resource=[], indices="SU", polygons='FRA',  groupings
           print '%s exit processing for %s' % (datetime.strftime(datetime.now(),format='%Y.%m.%d %H:%M:%S' ), w_prefix)
         except Exception as e:
           logger.exception('indices_simple_worker failed: %s', e)
+    
     env.OVERWRITE = True
     output = None
     outputs = []
