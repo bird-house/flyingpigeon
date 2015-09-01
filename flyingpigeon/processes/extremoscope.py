@@ -6,18 +6,17 @@ logger = logging.getLogger(__name__)
 from flyingpigeon.subsetting import POLYGONS
 from flyingpigeon.indices import indices, indices_description 
 from flyingpigeon.utils import GROUPING
-from flyingpigeon.workflow import calc_cordexviewer
 
 
-class cordexviewer(WPSProcess):
-  """This process calculates the relative humidity"""
+class extremoscop(WPSProcess):
+  """This process calculates data for Extremoscope viewer"""
   def __init__(self):
     WPSProcess.__init__(self, 
-      identifier = "cordexviewer",
-      title="Cordex Viewer",
+      identifier = "extremoscop",
+      title="Extremoscop Viewer",
       version = "0.1",
       metadata=[],
-      abstract="Preparing icclim indices for Cordex-Viewer (fieldmeans over country polygons)",
+      abstract="Preparing icclim indices for the Extremoscope -Viewer (fieldmeans over regions polygons)",
       )
 
     self.resource = self.addComplexInput(
@@ -48,7 +47,7 @@ class cordexviewer(WPSProcess):
       default='year',
       type=type(''),
       minOccurs=1,
-      maxOccurs=9,
+      maxOccurs=10,
       allowedValues=GROUPING 
       )
 
@@ -71,23 +70,16 @@ class cordexviewer(WPSProcess):
       #asReference=True
       #)
       
-    self.out_polygons = self.addComplexOutput(
-      title="polygons",
-      abstract="Tar archive containing the netCDF EU-countries polygons indices  ",
+    self.tarout = self.addComplexOutput(
+      identifier="tarout",
+      title="netCDF result files",
+      abstract="Tar archive containing folder structure with the result fieldmean files",
       formats=[{"mimeType":"application/x-tar"}],
       asReference=True,
-      identifier="out_polygons",
-      )
-
-    self.out_fieldmeans = self.addComplexOutput(
-      title="fieldmeans",
-      abstract="Tar archive containing the netCDF EU-countries fieldmeans indices ",
-      formats=[{"mimeType":"application/x-tar"}],
-      asReference=True,
-      identifier="out_fieldmeans",
-      )
+      )    
 
   def execute(self):
+    
       from os import mkdir
       from tempfile import  mkstemp
       import tarfile
@@ -145,4 +137,5 @@ class cordexviewer(WPSProcess):
       self.out_fieldmeans.setValue( tarf_fieldmeans )
       self.out_polygons.setValue( tarf_polygons )
       self.show_status('done:', 100) #  indice=%s, num_outfiles=%s' % (indice_list, len(files))
+
 

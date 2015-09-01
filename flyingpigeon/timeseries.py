@@ -246,4 +246,56 @@ def get_variable(nc_file, variable=None):
     ds = Dataset(nc_file)
     values = squeeze(ds.variables[var]).tolist()
     
-    return values  
+    return values
+
+
+def normalize(resource, grouping='year', region='AUT', start_date="1971-01-01", end_date="2010-12-31", out_dir=None):
+    """
+    noramlize netcdf file for region and timeperiod
+
+    :param resource: netcdf filename
+    :param start_date: string with start date
+    :param end_date: string with end date
+    :param out_dir: output directory for result file (netcdf)
+
+    :return: normalized netcdf file
+    """
+    rd = ocgis.RequestDataset(resource)
+    variable = rd.variable
+    from dateutil import parser as date_parser
+    time_range=[ date_parser.parse(start_date) , date_parser.parse(end_date) ]
+    calc = [{'func':'mean','name':'ref_' + variable }] 
+
+    filename = drs_filename(resource)
+    filename = filename.replace("EUR", region)
+    from os.path import join
+    output = join(out_dir, filename)
+    prefix = "ref_%s" % filename
+    prefix = prefix.replace('.nc', '')
+    
+    try: 
+        reference = ocgis.OcgOperations(
+            dataset=rd,
+            geom=COUNTRY_SHP,
+            dir_output=out_dir,
+            output_format="nc",
+            select_ugid=select_ugid(region),
+            prefix=prefix,
+            add_auxiliary_files=False,
+            calc=calc,
+            calc_grouping=calc_grouping(grouping),
+            time_range=time_range  ).execute()
+
+        from tempfile import mkstemp
+        from cdo import Cdo   
+        cdo = Cdo()
+        _,out_resource = mkstemp(prefix="out_resource_", dir=out_dir)
+        cdo.fldmean(input = resource , output = out_resource)
+        _,out_ref = mkstemp(prefix="out_ref_", dir=out_dir)
+        cdo.fldmean(input = reference , output = out_ref )
+        cdo.sub(input = "%s %s" % (out_resource, out_ref) , output = output)
+    except:
+        msg = 'normalize failed for file : %s ' % filename
+        logger.exception(msg)
+        raise CalculationException(msg)
+    return output    

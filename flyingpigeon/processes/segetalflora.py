@@ -4,7 +4,7 @@ import subprocess
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
-from flyingpigeon.clipping import REGION_EUROPE
+from flyingpigeon.subset import _COUNTRIES_ #REGION_EUROPE
 
 class segetalflora(WPSProcess):
   """This process calculates the relative humidity"""
@@ -57,7 +57,7 @@ class segetalflora(WPSProcess):
       type=type(''),
       minOccurs=0,
       maxOccurs=25,
-      allowedValues=REGION_EUROPE
+      allowedValues=_COUNTRIES_ 
       )
 
 
