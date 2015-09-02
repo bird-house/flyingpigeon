@@ -7,7 +7,6 @@ from malleefowl import wpslogging as logging
 #import logging
 logger = logging.getLogger(__name__)
 
-
 _INDICES_ = dict(
     TG=dict(variable='tas', description='Mean of mean temperatur (tas as input files)'),
     TX=dict(variable='tasmax', description='Mean of max temperatur (tasmax as input files)'),
