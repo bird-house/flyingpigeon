@@ -4,7 +4,7 @@ from ocgis.util.shp_process import ShpProcess
 from ocgis.util.shp_cabinet import ShpCabinetIterator
 import ocgis
  
-from flyingpigeon import subsetting as sb   
+from flyingpigeon import subset as sb   
  
 ## requires commit: 
 #https://github.com/NCPP/ocgis/commit/ecbecafce6b0ac2a7c207e797d3bccaf4e983b67

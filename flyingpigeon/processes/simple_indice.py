@@ -4,7 +4,7 @@ from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
 from flyingpigeon.indices import indices, indices_description, calc_indice
-from flyingpigeon.subsetting import countries, countries_longname # COUNTRIES
+from flyingpigeon.subset import countries, countries_longname # COUNTRIES
 from flyingpigeon.utils import GROUPING
 
 class CalcIndice(WPSProcess):
@@ -55,7 +55,7 @@ class CalcIndice(WPSProcess):
         self.region = self.addLiteralInput(
             identifier="region",
             title="Region",
-            abstract="Select a country for polygon subsetting", #countries_longname
+            abstract="Select a country for polygon subset", #countries_longname
             default='FRA',
             type=type(''),
             minOccurs=1,

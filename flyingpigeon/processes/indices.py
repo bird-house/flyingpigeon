@@ -39,8 +39,8 @@ class icclimWorker(WPSProcess):
 
     self.domain = self.addLiteralInput(
       identifier="domain",
-      title="Country subsetting",
-      abstract="Select a domain for Country polygon subsetting",
+      title="Country subset",
+      abstract="Select a domain for Country polygon subset",
       default='None',
       type=type(''),
       minOccurs=0,

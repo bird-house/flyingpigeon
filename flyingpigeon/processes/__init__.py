@@ -10,6 +10,6 @@ __all__ = [
         "indices_simple",
         #"multiple_indices",
         #"indices_with_clipping",
-        "country_subsetting",
+        "country_subset",
         #"cordexviewer"
         ]

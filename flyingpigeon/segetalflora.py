@@ -96,7 +96,7 @@ def get_segetalflora(resources, culture_type='fallow', climate_type=2, countries
   from os import path , mkdir, listdir
   from flyingpigeon import timeseries as ts
   from flyingpigeon import clipping
-  from flyingpigeon import subsetting
+  from flyingpigeon import subset
   from flyingpigeon import utils
   
   ocgis.env.OVERWRITE = True
@@ -123,7 +123,7 @@ def get_segetalflora(resources, culture_type='fallow', climate_type=2, countries
       rd = ocgis.RequestDataset(nc , 'tas')
       sf_tmp = ocgis.OcgOperations(dataset=rd, calc=calc, prefix=prefix, dir_output=dir_segetalflora, add_auxiliary_files=False, output_format='nc').execute()
       
-      geom_file = subsetting.masking(sf_tmp, mask=mask, prefix=prefix_mask, dir_output=dir_segetalflora) 
+      geom_file = subset.masking(sf_tmp, mask=mask, prefix=prefix_mask, dir_output=dir_segetalflora) 
       
       sf_files.append(geom_file[0])
       logger.debug('segetalflora Europa processed : %s' % (prefix))

@@ -4,15 +4,15 @@ from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
 from flyingpigeon.clipping import REGION_EUROPE, calc_region_clipping
-from flyingpigeon.subsetting import countries, countries_longname # COUNTRIES
+from flyingpigeon.subset import countries, countries_longname # COUNTRIES
 
 class SimpleClipping(WPSProcess):
 
     def __init__(self):
         WPSProcess.__init__(
             self, 
-            identifier = "subsetting_countries",
-            title="Subsetting Countries",
+            identifier = "subset_countries",
+            title="subset Countries",
             version = "1.0",
             metadata=[],
             abstract="This process returns only the given polygon from input NetCDF files."
@@ -31,7 +31,7 @@ class SimpleClipping(WPSProcess):
         self.region = self.addLiteralInput(
             identifier="region",
             title="Region",
-            abstract="Select a country for polygon subsetting", #countries_longname
+            abstract="Select a country for polygon subset", #countries_longname
             default='FRA',
             type=type(''),
             minOccurs=1,

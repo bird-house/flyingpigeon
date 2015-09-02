@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 
 #from flyingpigeon.clipping import REGION_EUROPE
 
-from flyingpigeon.subsetting import countries, countries_longname
+from flyingpigeon.subset import countries, countries_longname
 from flyingpigeon.indices import indices, indice_description
 from flyingpigeon.workflow import calc_indice
 from flyingpigeon.utils import GROUPING
@@ -18,7 +18,7 @@ class CalcMultipleIndices(WPSProcess):
             title="Climate indices based on one input variable",
             version = "1.0",
             metadata=[],
-            abstract="This process calculates multiple climate indices for given input netcdf files with the option of polygon subsetting."
+            abstract="This process calculates multiple climate indices for given input netcdf files with the option of polygon subset."
             )
 
         indice_list = indices()
@@ -59,7 +59,7 @@ class CalcMultipleIndices(WPSProcess):
         self.polygons = self.addLiteralInput(
             identifier="polygons",
             title="Polygons",
-            abstract="Select a country for polygon subsetting" , # countries_abstract, #  '\n'.join(countries_abstract),  # , #countries_longname
+            abstract="Select a country for polygon subset" , # countries_abstract, #  '\n'.join(countries_abstract),  # , #countries_longname
             default='FRA',
             type=type(''),
             minOccurs=1,

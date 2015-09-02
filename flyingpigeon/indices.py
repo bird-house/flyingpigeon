@@ -112,7 +112,7 @@ def calc_indice_simple(resource=[], variable=None, prefix=None,
       groupings = list([groupings])
 
     from flyingpigeon.utils import calc_grouping, sort_by_filename # aggregations, 
-    from flyingpigeon.subsetting import select_ugid
+    from flyingpigeon.subset import select_ugid
     output = None
     
     experiments = sort_by_filename(resource)
@@ -178,7 +178,7 @@ def multipro_indice_simple(resource=[], indices="SU", polygons='FRA',  groupings
     """
     
     from flyingpigeon.utils import calc_grouping, sort_by_filename # aggregations, 
-    from flyingpigeon.subsetting import select_ugid
+    from flyingpigeon.subset import select_ugid
     import multiprocessing
     ncpu = multiprocessing.cpu_count()
 
