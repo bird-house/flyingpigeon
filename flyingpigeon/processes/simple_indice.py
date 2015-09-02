@@ -3,23 +3,23 @@ from malleefowl.process import WPSProcess
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
-from flyingpigeon.indices import indices, indices_description, calc_indice_simple
-from flyingpigeon.subsetting import countries, countries_longname # COUNTRIES
+from flyingpigeon.indices import indices, indices_description, calc_indice
+from flyingpigeon.subset import countries, countries_longname # COUNTRIES
 from flyingpigeon.utils import GROUPING
 
 class CalcIndice(WPSProcess):
     """This process calculates a climate indice for the given input netcdf files."""
+
     def __init__(self):
         WPSProcess.__init__(
             self, 
             identifier = "simple_indice",
             title="Calculation of climate indice (simple)",
-            version = "0.1",
+            version = "1.0",
             metadata=[],
             abstract="This process calculates a climate indice for the given input netcdf files."
             )
 
-<<<<<<< HEAD
         self.resource = self.addComplexInput(
             identifier="resource",
             title="Resouce",
@@ -29,28 +29,6 @@ class CalcIndice(WPSProcess):
             maxmegabites=5000,
             formats=[{"mimeType":"application/x-netcdf"}],
             )
-=======
-    self.domain = self.addLiteralInput(
-      identifier="domain",
-      title="Country subset",
-      abstract="Select a domain for Country polygon subset",
-      default='None',
-      type=type(''),
-      minOccurs=0,
-      maxOccurs=1,
-      allowedValues=["None", "EUR"] # sem
-      )
-    
-    self.anomalies = self.addLiteralInput(
-      identifier="anomalies",
-      title="Anomalies",
-      abstract="Fieldmean of country subset as timeserie of anomalies [ref period (1971-2000) must be available]",
-      type=type(False),
-      default=False,
-      minOccurs=0,
-      maxOccurs=1,
-      )
->>>>>>> f64fae462f0dc061398aadb98763545e0be23b47
 
         self.grouping = self.addLiteralInput(
             identifier="grouping",
@@ -77,7 +55,7 @@ class CalcIndice(WPSProcess):
         self.region = self.addLiteralInput(
             identifier="region",
             title="Region",
-            abstract="Select a country for polygon subsetting", #countries_longname
+            abstract="Select a country for polygon subset", #countries_longname
             default='FRA',
             type=type(''),
             minOccurs=1,

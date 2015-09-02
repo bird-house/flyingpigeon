@@ -9,4 +9,13 @@ __all__ = [
         #"analogs",
         #"vbd",
         #"sdm",
+<<<<<<< HEAD
+=======
+        #"indices",
+        "indices_simple",
+        #"multiple_indices",
+        #"indices_with_clipping",
+        "country_subset",
+        #"cordexviewer"
+>>>>>>> f64fae462f0dc061398aadb98763545e0be23b47
         ]

@@ -4,7 +4,7 @@ import datetime
 import ocgis 
 from ocgis.util.shp_process import ShpProcess
 from ocgis.util.shp_cabinet import ShpCabinetIterator
-from flyingpigeon import subsetting as sb 
+from flyingpigeon import subset as sb 
 
 from cdo import *   # python version
 cdo = Cdo()

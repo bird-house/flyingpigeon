@@ -3,7 +3,7 @@ import subprocess
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
-from flyingpigeon.subsetting import POLYGONS
+from flyingpigeon.subset import POLYGONS
 from flyingpigeon.indices import indices, indices_description 
 from flyingpigeon.utils import GROUPING
 
@@ -54,7 +54,7 @@ class extremoscop(WPSProcess):
     self.polygons = self.addLiteralInput(
       identifier="polygons",
       title="Polygons",
-      abstract="Regions polygons for subsetting",
+      abstract="Regions polygons for subset",
       default='FRA',
       type=type(''),
       minOccurs=1,

@@ -4,7 +4,7 @@ from datetime import datetime, date
 import types
 
 from flyingpigeon.get_eobs_as_cordex import EOBS_VARIABLES
-from flyingpigeon.subsetting import POLYGONS
+from flyingpigeon.subset import POLYGONS
 
 from cdo import * 
 cdo = Cdo()

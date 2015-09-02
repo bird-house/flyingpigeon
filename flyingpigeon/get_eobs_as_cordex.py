@@ -75,7 +75,7 @@ def get_data(variable,
   import ocgis
   from os import rename, path, makedirs
   from flyingpigeon import utils
-  from flyingpigeon import subsetting as sb
+  from flyingpigeon import subset as sb
   from flyingpigeon import clipping
 
   try: 
