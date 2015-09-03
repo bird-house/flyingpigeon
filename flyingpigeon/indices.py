@@ -38,6 +38,31 @@ _INDICES_ = dict(
     SD50cm=dict(variable='prsn', description='Nr of days with snow >= 50 cm (prsn as input files)'),
 )
 
+
+_INDICESper_ = dict(
+
+TG10p=dict(variable='tas', description='10percetile')
+TX10p=dict(variable='tasmax', description='10percetile')
+TN10p=dict(variable='tasmin', description='10percetile')
+TG90p=dict(variable='tas', description='90percetile')
+TX90p=dict(variable='tasmax', description='90percetile')
+TN90p=dict(variable='tasmin', description='90percetile')
+WSDI=dict(variable='tasmax', description='Warm-spell duration index (days)')
+CSDI=dict(variable='tasmin', description='Cold-spell duration index (days)')
+R75p=dict(variable='pr', description= 'Days with RR > 75th percentile of daily amounts (moderate wet days) (days)')
+R75pTOT=dict(variable='pr', description= 'Precipitation fraction due to moderate wet days (>75th percentile) (%)')
+R95p=dict(variable='pr', description= 'Days with RR > 95th percentile of daily amounts (very wet days) (days)')
+R95pTOT=dict(variable='pr', description= 'Precipitation fraction due to very wet days (>95th percentile) (%)')
+R99p=dict(variable='pr', description= 'Days with RR > 99th percentile of daily amounts (extremely wet days)(days)')
+R99pTOT=dict(variable='pr', description= 'recipitation fraction due to extremely wet days (>99th percentile)(%)')
+)
+
+_INDICEScomp_ = dict(
+CD=dict(variable=['tas','pr'], description='Days with TG < 25th percentile of daily mean temperature and RR < 25th percentile of daily precipitation sum (cold/dry days)')
+CW=dict(variable=['tas','pr'], description='Days with TG < 25th percentile of daily mean temperature and RR > 75th percentile of daily precipitation sum (cold/wet days)')
+WD=dict(variable=['tas','pr'], description='days with TG > 75th percentile of daily mean temperature and RR < 25th percentile of daily precipitation sum (warm/dry days)')
+WW=dict(variable=['tas','pr'], description='Days with TG > 75th percentile of daily mean temperature and RR > 75th percentile of daily precipitation sum (warm/wet days))
+
 def indices():
     """
     :return: a list of all climate indices.
