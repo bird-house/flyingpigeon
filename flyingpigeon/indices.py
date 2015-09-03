@@ -38,15 +38,13 @@ _INDICES_ = dict(
     SD50cm=dict(variable='prsn', description='Nr of days with snow >= 50 cm (prsn as input files)'),
 )
 
-
 _INDICESper_ = dict(
-
-TG10p=dict(variable='tas', description='10percetile')
-TX10p=dict(variable='tasmax', description='10percetile')
-TN10p=dict(variable='tasmin', description='10percetile')
-TG90p=dict(variable='tas', description='90percetile')
-TX90p=dict(variable='tasmax', description='90percetile')
-TN90p=dict(variable='tasmin', description='90percetile')
+TG10p=dict(variable='tas', description='Days with TG < 10th percentile of daily mean temperature (cold days) (days)')
+TX10p=dict(variable='tasmax', description='Days with TX < 10th percentile of daily maximum temperature (cold day-times) (days')
+TN10p=dict(variable='tasmin', description='Days with TN < 10th percentile of daily minimum temperature (cold nights) (days)')
+TG90p=dict(variable='tas', description='Days with TG > 90th percentile of daily mean temperature (warm days) (days)')
+TX90p=dict(variable='tasmax', description='Days with TX > 90th percentile of daily maximum temperature (warm day-times) (days)')
+TN90p=dict(variable='tasmin', description='Days with TN > 90th percentile of daily minimum temperature (warm nights) (days)')
 WSDI=dict(variable='tasmax', description='Warm-spell duration index (days)')
 CSDI=dict(variable='tasmin', description='Cold-spell duration index (days)')
 R75p=dict(variable='pr', description= 'Days with RR > 75th percentile of daily amounts (moderate wet days) (days)')
