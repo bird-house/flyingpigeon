@@ -36,30 +36,31 @@ _INDICES_ = dict(
     SD1=dict(variable='prsn', description='Nr of days with snow >= 1cm  (prsn as input files)'),
     SD5cm=dict(variable='prsn', description='Nr of days with snow >= 5cm (prsn as input files)'),
     SD50cm=dict(variable='prsn', description='Nr of days with snow >= 50 cm (prsn as input files)'),
-)
+    )
 
 _INDICESper_ = dict(
-TG10p=dict(variable='tas', description='Days with TG < 10th percentile of daily mean temperature (cold days) (days)')
-TX10p=dict(variable='tasmax', description='Days with TX < 10th percentile of daily maximum temperature (cold day-times) (days')
-TN10p=dict(variable='tasmin', description='Days with TN < 10th percentile of daily minimum temperature (cold nights) (days)')
-TG90p=dict(variable='tas', description='Days with TG > 90th percentile of daily mean temperature (warm days) (days)')
-TX90p=dict(variable='tasmax', description='Days with TX > 90th percentile of daily maximum temperature (warm day-times) (days)')
-TN90p=dict(variable='tasmin', description='Days with TN > 90th percentile of daily minimum temperature (warm nights) (days)')
-WSDI=dict(variable='tasmax', description='Warm-spell duration index (days)')
-CSDI=dict(variable='tasmin', description='Cold-spell duration index (days)')
-R75p=dict(variable='pr', description= 'Days with RR > 75th percentile of daily amounts (moderate wet days) (days)')
-R75pTOT=dict(variable='pr', description= 'Precipitation fraction due to moderate wet days (>75th percentile) (%)')
-R95p=dict(variable='pr', description= 'Days with RR > 95th percentile of daily amounts (very wet days) (days)')
-R95pTOT=dict(variable='pr', description= 'Precipitation fraction due to very wet days (>95th percentile) (%)')
-R99p=dict(variable='pr', description= 'Days with RR > 99th percentile of daily amounts (extremely wet days)(days)')
-R99pTOT=dict(variable='pr', description= 'recipitation fraction due to extremely wet days (>99th percentile)(%)')
-)
+    TG10p=dict(variable='tas', description='Days with TG < 10th percentile of daily mean temperature (cold days) (days)'),
+    TX10p=dict(variable='tasmax', description='Days with TX < 10th percentile of daily maximum temperature (cold day-times) (days)'),
+    TN10p=dict(variable='tasmin', description='Days with TN < 10th percentile of daily minimum temperature (cold nights) (days)'),
+    TG90p=dict(variable='tas', description='Days with TG > 90th percentile of daily mean temperature (warm days) (days)'),
+    TX90p=dict(variable='tasmax', description='Days with TX > 90th percentile of daily maximum temperature (warm day-times) (days)'),
+    TN90p=dict(variable='tasmin', description='Days with TN > 90th percentile of daily minimum temperature (warm nights) (days)'),
+    WSDI=dict(variable='tasmax', description='Warm-spell duration index (days)'),
+    CSDI=dict(variable='tasmin', description='Cold-spell duration index (days)'),
+    R75p=dict(variable='pr', description= 'Days with RR > 75th percentile of daily amounts (moderate wet days) (days)'),
+    R75pTOT=dict(variable='pr', description= 'Precipitation fraction due to moderate wet days (>75th percentile) (%)'),
+    R95p=dict(variable='pr', description= 'Days with RR > 95th percentile of daily amounts (very wet days) (days)'),
+    R95pTOT=dict(variable='pr', description= 'Precipitation fraction due to very wet days (>95th percentile) (%)'),
+    R99p=dict(variable='pr', description= 'Days with RR > 99th percentile of daily amounts (extremely wet days)(days)'),
+    R99pTOT=dict(variable='pr', description= 'recipitation fraction due to extremely wet days (>99th percentile)(%)'),
+    )   
 
 _INDICEScomp_ = dict(
-CD=dict(variable=['tas','pr'], description='Days with TG < 25th percentile of daily mean temperature and RR < 25th percentile of daily precipitation sum (cold/dry days)')
-CW=dict(variable=['tas','pr'], description='Days with TG < 25th percentile of daily mean temperature and RR > 75th percentile of daily precipitation sum (cold/wet days)')
-WD=dict(variable=['tas','pr'], description='days with TG > 75th percentile of daily mean temperature and RR < 25th percentile of daily precipitation sum (warm/dry days)')
-WW=dict(variable=['tas','pr'], description='Days with TG > 75th percentile of daily mean temperature and RR > 75th percentile of daily precipitation sum (warm/wet days))
+    CD=dict(variable=['tas','pr'], description='Days with TG < 25th percentile of daily mean temperature and RR < 25th percentile of daily precipitation sum (cold/dry days)'),
+    CW=dict(variable=['tas','pr'], description='Days with TG < 25th percentile of daily mean temperature and RR > 75th percentile of daily precipitation sum (cold/wet days)'),
+    WD=dict(variable=['tas','pr'], description='days with TG > 75th percentile of daily mean temperature and RR < 25th percentile of daily precipitation sum (warm/dry days)'),
+    WW=dict(variable=['tas','pr'], description='Days with TG > 75th percentile of daily mean temperature and RR > 75th percentile of daily precipitation sum (warm/wet days)'),
+    )
 
 def indices():
     """
@@ -182,3 +183,128 @@ def calc_indice_simple(resource=[], variable=None, prefix=None,
       except Exception as e:
         logger.exception('could not calc key %s: %s', key, e)
     return outputs
+
+def calc_indice_percentil(resource=[], variable=None, time_range_ref=None, prefix=None,
+  indices="R95p", polygons='FRA',  groupings="yr", 
+  out_dir=None, dimension_map = None):
+    """
+    Calculates given indices (percentile based ones) for suitable files in the appopriate time grouping and polygon.
+
+    :param resource: list of filenames in drs convention (netcdf)
+    :param variable: variable name to be selected in the in netcdf file (default=None)
+    :param time_range_ref: list with two datetime objectes defining start and end of the reverence period. 
+    If time_range_ref=None (default) 01.01.1961-31.12.1990 will be used. 
+    :param indices: list of indices (default ='SU')
+    :param polygons: list of polgons (default ='FRA')
+    :param grouping: indices time aggregation (default='yr')
+    :param out_dir: output directory for result file (netcdf)
+    :param dimension_map: optional dimension map if different to standard (default=None)
+
+    :return: list of netcdf files with calculated indices. Files are saved into out_dir
+    """
+
+    from os.path import join, dirname
+    import datetime as dt
+    from flyingpigeon.utils import calc_grouping, sort_by_filename # aggregations, 
+    from flyingpigeon.subset import select_ugid
+
+    from ocgis.calc.library.index.dynamic_kernel_percentile import DynamicDailyKernelPercentileThreshold
+
+    DIR_SHP = join(dirname(__file__),'flyingpigeon', 'processes', 'shapefiles')
+    env.DIR_SHPCABINET = DIR_SHP
+    env.OVERWRITE = True
+
+    # if type(resource) != list: 
+    #   resource = list([resource])
+    # if type(indices) != list: 
+    #   indices = list([indices])
+    # if type(polygons) != list:
+    #   polygons = list([polygons])
+    # if type(groupings) != list:
+    #   groupings = list([groupings])
+
+    if time_range_ref==None:
+        dt1_ref = dt.datetime(1961, 01, 01)
+        dt2_ref = dt.datetime(1990, 12, 31)
+        time_range_ref = [dt1_ref, dt2_ref]
+
+    experiments = sort_by_filename(resource)
+    outputs = []
+
+    #for polygon in polygons:
+    polygon = polygons
+    if len(polygon) == 4: 
+      geom = 'NUTS2'
+    elif len(polygon) == 3:
+      geom = '50m_country'
+    elif  len(polygon) == 5 and polygon[2] == '.': 
+      geom = 'extremoscope'
+    else: 
+      logger.error('unknown polygon %s', polygon)
+    ugid = select_ugid(polygons=polygon, geom=geom)
+
+    ncs = resource    
+    # get netCDF fiels to be calculated:
+    # time_range_indice = [dt1, dt2] # we will calculate the indice for 10 years
+    rd = RequestDataset(uri=ncs, variable=variable)
+    basis_indice = rd.get()
+
+    # get reference:
+    rd_ref = RequestDataset(uri=ncs, variable=variable, time_range=time_range_ref)
+    basis_ref = rd_ref.get()
+
+    # calculation of percentil based indice:
+    values_ref = basis_ref.variables[variable].value
+    temporal = basis_ref.temporal.value_datetime
+    percentile = 95
+    width = 5 # 5-day window
+    daily_percentile = DynamicDailyKernelPercentileThreshold.get_daily_percentile(values_ref,temporal,percentile,width)
+    
+    calc_grouping = calc_group = calc_grouping(grouping) # ['year', 'month'] # or other
+    kwds = {'percentile':percentile,'width':width,'operation':'lt','daily_percentile':daily_percentile} # operation: lt = "less then", beacause we count the number of days < 10th percentile  calc = [{'func':'dynamic_kernel_percentile_threshold','name':'TG10p','kwds':kwds}]
+    ops = OcgOperations(dataset=rd,calc_grouping=calc_grouping,calc=calc, output_format='nc', prefix='indiceTG10p_1980_1989', add_auxiliary_files=False)
+    outputs.append( ops.execute() )
+
+    # for key in experiments:
+    #   try: 
+    #     ncs = experiments[key]
+    #     for indice in indices:
+    #       try: 
+    #         calc = [{'func' : 'icclim_' + indice, 'name' : indice}]
+    #         for polygon in polygons:
+    #           try:
+    #             if len(polygon) == 4: 
+    #               geom = 'NUTS2'
+    #             elif len(polygon) == 3:
+    #               geom = '50m_country'
+    #             elif  len(polygon) == 5 and polygon[2] == '.': 
+    #               geom = 'extremoscope'
+    #             else: 
+    #               logger.error('unknown polygon %s', polygon)
+    #             ugid = select_ugid(polygons=polygon, geom=geom)
+    #             for grouping in groupings:
+    #               try:
+    #                 #prefix = key.replace('_day_', grouping)
+    #                 calc_group = calc_grouping(grouping)
+    #                 rd = RequestDataset(uri=ncs, variable=variable, dimension_map=dimension_map)
+    #                 ops = OcgOperations(
+    #                                 dataset=rd,
+    #                                 calc=calc,
+    #                                 geom=geom,
+    #                                 select_ugid= ugid, 
+    #                                 calc_grouping=calc_group,
+    #                                 prefix=prefix,
+    #                                 output_format='nc',
+    #                                 dir_output=out_dir,
+    #                                 add_auxiliary_files=False)
+    #                 outputs.append( ops.execute() )
+    #               except Exception as e:
+    #                 logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s', indice, key, polygon, grouping, e )  
+    #           except Exception as e:
+    #             logger.exception('could not calc indice %s for key %s and polygon%s : %s', indice, key, polygon, e )  
+    #       except Exception as e:
+    #         logger.exception('could not calc indice %s for key %s: %s', indice, key, e )        
+    #   except Exception as e:
+    #     logger.exception('could not calc key %s: %s', key, e)
+    return outputs
+
