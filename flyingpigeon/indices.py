@@ -3,9 +3,28 @@ from cdo import Cdo
 import tempfile
 
 from .exceptions import CalculationException
-from malleefowl import wpslogging as logging
-#import logging
+
+#from malleefowl import wpslogging as logging
+import os
+import logging
 logger = logging.getLogger(__name__)
+
+
+logfile = os.path.basename(__file__).replace('.py','.log') #  'several_nodes.log' # 
+fh = logging.FileHandler(os.path.join('/home/estimr2/nhempelmann/data/test/'+ logfile))
+fh.setLevel(logging.DEBUG)
+# create console handler with a higher log level
+ch = logging.StreamHandler()
+ch.setLevel(logging.ERROR)
+# create formatter and add it to the handlers
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+ch.setFormatter(formatter)
+fh.setFormatter(formatter)
+# add the handlers to logger
+logger.addHandler(ch)
+logger.addHandler(fh)
+
+
 
 _INDICES_ = dict(
     TG=dict(variable='tas', description='Mean of mean temperatur (tas as input files)'),
@@ -214,14 +233,14 @@ def calc_indice_percentil(resource=[], variable=None, time_range_ref=None, prefi
     env.DIR_SHPCABINET = DIR_SHP
     env.OVERWRITE = True
 
-    # if type(resource) != list: 
-    #   resource = list([resource])
-    # if type(indices) != list: 
-    #   indices = list([indices])
-    # if type(polygons) != list:
-    #   polygons = list([polygons])
-    # if type(groupings) != list:
-    #   groupings = list([groupings])
+    if type(resource) != list: 
+      resource = list([resource])
+    if type(indices) != list: 
+      indices = list([indices])
+    if type(polygons) != list:
+      polygons = list([polygons])
+    if type(groupings) != list:
+      groupings = list([groupings])
 
     if time_range_ref==None:
         dt1_ref = dt.datetime(1961, 01, 01)
@@ -229,82 +248,50 @@ def calc_indice_percentil(resource=[], variable=None, time_range_ref=None, prefi
         time_range_ref = [dt1_ref, dt2_ref]
 
     experiments = sort_by_filename(resource)
-    outputs = []
+    outputs = []    
 
-    #for polygon in polygons:
-    polygon = polygons
-    if len(polygon) == 4: 
-      geom = 'NUTS2'
-    elif len(polygon) == 3:
-      geom = '50m_country'
-    elif  len(polygon) == 5 and polygon[2] == '.': 
-      geom = 'extremoscope'
-    else: 
-      logger.error('unknown polygon %s', polygon)
-    ugid = select_ugid(polygons=polygon, geom=geom)
-
-    ncs = resource    
-    # get netCDF fiels to be calculated:
-    # time_range_indice = [dt1, dt2] # we will calculate the indice for 10 years
-    rd = RequestDataset(uri=ncs, variable=variable)
-    basis_indice = rd.get()
-
-    # get reference:
-    rd_ref = RequestDataset(uri=ncs, variable=variable, time_range=time_range_ref)
-    basis_ref = rd_ref.get()
-
-    # calculation of percentil based indice:
-    values_ref = basis_ref.variables[variable].value
-    temporal = basis_ref.temporal.value_datetime
-    percentile = 95
-    width = 5 # 5-day window
-    daily_percentile = DynamicDailyKernelPercentileThreshold.get_daily_percentile(values_ref,temporal,percentile,width)
-    
-    calc_grouping = calc_group = calc_grouping(grouping) # ['year', 'month'] # or other
-    kwds = {'percentile':percentile,'width':width,'operation':'lt','daily_percentile':daily_percentile} # operation: lt = "less then", beacause we count the number of days < 10th percentile  calc = [{'func':'dynamic_kernel_percentile_threshold','name':'TG10p','kwds':kwds}]
-    ops = OcgOperations(dataset=rd,calc_grouping=calc_grouping,calc=calc, output_format='nc', prefix='indiceTG10p_1980_1989', add_auxiliary_files=False)
-    outputs.append( ops.execute() )
-
-    # for key in experiments:
-    #   try: 
-    #     ncs = experiments[key]
-    #     for indice in indices:
-    #       try: 
-    #         calc = [{'func' : 'icclim_' + indice, 'name' : indice}]
-    #         for polygon in polygons:
-    #           try:
-    #             if len(polygon) == 4: 
-    #               geom = 'NUTS2'
-    #             elif len(polygon) == 3:
-    #               geom = '50m_country'
-    #             elif  len(polygon) == 5 and polygon[2] == '.': 
-    #               geom = 'extremoscope'
-    #             else: 
-    #               logger.error('unknown polygon %s', polygon)
-    #             ugid = select_ugid(polygons=polygon, geom=geom)
-    #             for grouping in groupings:
-    #               try:
-    #                 #prefix = key.replace('_day_', grouping)
-    #                 calc_group = calc_grouping(grouping)
-    #                 rd = RequestDataset(uri=ncs, variable=variable, dimension_map=dimension_map)
-    #                 ops = OcgOperations(
-    #                                 dataset=rd,
-    #                                 calc=calc,
-    #                                 geom=geom,
-    #                                 select_ugid= ugid, 
-    #                                 calc_grouping=calc_group,
-    #                                 prefix=prefix,
-    #                                 output_format='nc',
-    #                                 dir_output=out_dir,
-    #                                 add_auxiliary_files=False)
-    #                 outputs.append( ops.execute() )
-    #               except Exception as e:
-    #                 logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s', indice, key, polygon, grouping, e )  
-    #           except Exception as e:
-    #             logger.exception('could not calc indice %s for key %s and polygon%s : %s', indice, key, polygon, e )  
-    #       except Exception as e:
-    #         logger.exception('could not calc indice %s for key %s: %s', indice, key, e )        
-    #   except Exception as e:
-    #     logger.exception('could not calc key %s: %s', key, e)
+    for key in experiments:
+      try: 
+        ncs = experiments[key]
+        for indice in indices:
+          try: 
+            for polygon in polygons:
+              try:
+                if len(polygon) == 4: 
+                  geom = 'NUTS2'
+                elif len(polygon) == 3:
+                  geom = '50m_country'
+                elif  len(polygon) == 5 and polygon[2] == '.': 
+                  geom = 'extremoscope'
+                else: 
+                  logger.error('unknown polygon %s', polygon)
+                ugid = select_ugid(polygons=polygon, geom=geom)
+                for grouping in groupings:
+                  try:
+                    rd = RequestDataset(uri=ncs, variable=variable, time_range=time_range_ref)
+                    basis_indice = rd.get()
+                    # get reference:
+                    rd_ref = RequestDataset(uri=ncs, variable=variable, time_range=time_range_ref)
+                    basis_ref = rd_ref.get()
+                    # calculation of percentil based indice:
+                    values_ref = basis_ref.variables[variable].value
+                    print values_ref
+                    temporal = basis_ref.temporal.value_datetime
+                    percentile = 95
+                    width = 5 # 5-day window
+                    daily_percentile = DynamicDailyKernelPercentileThreshold.get_daily_percentile(values_ref,temporal,percentile,width)
+                    indice = indices
+                    calc_group =  calc_grouping(grouping) # ['year', 'month'] # or other
+                    kwds = {'percentile':percentile,'width':width, 'operation':'lt', 'daily_percentile':daily_percentile} # operation: lt = "less then", beacause we count the number of days < 10th percentile  calc = [{'func':'dynamic_kernel_percentile_threshold','name':'TG10p','kwds':kwds}]
+                    calc = [{'func':'dynamic_kernel_percentile_threshold','name':indice,'kwds':kwds}]
+                    ops = OcgOperations(dataset=rd,calc_grouping=calc_group,calc=calc, output_format='nc', prefix='indiceTG10p_test', add_auxiliary_files=False)
+                    outputs.append( ops.execute() )
+                  except Exception as e:
+                    logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s', indice, key, polygon, grouping, e )  
+              except Exception as e:
+                logger.exception('could not calc indice %s for key %s and polygon%s : %s', indice, key, polygon, e )  
+          except Exception as e:
+            logger.exception('could not calc indice %s for key %s: %s', indice, key, e )        
+      except Exception as e:
+        logger.exception('could not calc key %s: %s', key, e)
     return outputs
-
