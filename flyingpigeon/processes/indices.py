@@ -19,7 +19,6 @@ class CalcIndice(WPSProcess):
             abstract="This process calculates a climate indice for the given input netcdf files."
             )
 
-<<<<<<< HEAD
         self.resource = self.addComplexInput(
             identifier="resource",
             title="Resouce",
@@ -29,29 +28,7 @@ class CalcIndice(WPSProcess):
             maxmegabites=5000,
             formats=[{"mimeType":"application/x-netcdf"}],
             )
-=======
-    self.domain = self.addLiteralInput(
-      identifier="domain",
-      title="Country subset",
-      abstract="Select a domain for Country polygon subset",
-      default='None',
-      type=type(''),
-      minOccurs=0,
-      maxOccurs=1,
-      allowedValues=["None", "EUR"] # sem
-      )
     
-    self.anomalies = self.addLiteralInput(
-      identifier="anomalies",
-      title="Anomalies",
-      abstract="Fieldmean of country subset as timeserie of anomalies [ref period (1971-2000) must be available]",
-      type=type(False),
-      default=False,
-      minOccurs=0,
-      maxOccurs=1,
-      )
->>>>>>> f64fae462f0dc061398aadb98763545e0be23b47
-
         self.grouping = self.addLiteralInput(
             identifier="grouping",
             title="Grouping",
