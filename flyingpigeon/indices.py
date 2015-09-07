@@ -1,5 +1,4 @@
 from ocgis import OcgOperations, RequestDataset , env
-from cdo import Cdo
 import tempfile
 
 from .exceptions import CalculationException
@@ -8,7 +7,6 @@ from .exceptions import CalculationException
 import os
 import logging
 logger = logging.getLogger(__name__)
-
 
 logfile = os.path.basename(__file__).replace('.py','.log') #  'several_nodes.log' # 
 fh = logging.FileHandler(os.path.join('/home/estimr2/nhempelmann/data/test/'+ logfile))

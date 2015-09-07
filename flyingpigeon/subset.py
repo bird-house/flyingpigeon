@@ -82,12 +82,12 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  calc_gr
       logger.error('polygons belong to differnt shapefiles! mosaik is not possible %s', geoms)
     else: 
       geom = geoms[0]
-      print 'geom: %s' % (geom)
+      #print 'geom: %s' % (geom)
   except Exception as e:
     logger.error('geom identification failed %s', e)
   
   ugids = select_ugid(polygons=polygons, geom=geom)
-  print 'ugids: %s' % (ugids)
+  #print 'ugids: %s' % (ugids)
   ncs = sort_by_filename(resource)
   geom_files = []
   
@@ -155,8 +155,49 @@ def get_dimension_map(resource):
 
 # === Functions for Clipping: 
 
+def get_ugid(polygons='FRA', geom='50m_country'):
+    """
+    returns geometry id of given polygon in a given shapefile.
+    :param polygons: string or list of the region polygons 
+    :param geom: available shapefile possible entries: '50m_country', 'NUTS2'
+    """
+    from ocgis.util.shp_cabinet import ShpCabinetIterator
+    from ocgis import env
+    
+    if type(polygons) != list:
+      polygons = list([polygons])
+    
+    env.DIR_SHPCABINET = DIR_SHP
+    sc_iter = ShpCabinetIterator(geom)
+    result = []
+    
+    if geom == '50m_country':
+      for row in sc_iter:
+        for polygon in polygons:
+          if row['properties']['adm0_a3'] == polygon:
+            result.append(row['properties']['UGID'])
+              
+    if geom == 'NUTS2':
+      for row in sc_iter:
+        for polygon in polygons:
+          if row['properties']['NUTS_ID'] == polygon:
+            result.append(row['properties']['UGID'])
 
-def select_ugid(polygons='FRA', geom='50m_country'):
+    if geom == 'extremoscope':
+      for row in sc_iter:
+        for polygon in polygons:
+          if row['properties']['HASC_1'] == polygon:
+            result.append(row['properties']['UGID'])
+              
+    if geom == 'continent':
+      for row in sc_iter:
+        for polygon in polygons:
+          if row['properties']['CONTINENT'] == polygon:
+            result.append(row['properties']['UGID'])    
+    return result
+
+
+def select_ugid(polygons='FRA', geom='50m_country'): # to be del!! use get_ugid
     """
     returns geometry id of given polygon in a given shapefile.
     :param polygons: string or list of the region polygons 

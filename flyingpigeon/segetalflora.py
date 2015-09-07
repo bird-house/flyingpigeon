@@ -2,12 +2,12 @@ from malleefowl import wpslogging as logging
 #import logging
 logger = logging.getLogger(__name__)
 
+from os import path , mkdir, listdir
 import ocgis
 
 def get_equation(culture_type='fallow', climate_type=2):
   """ 
-  returns the equation as basis to calculate the segetal flora 
-  
+  returns the equation as basis to calculate the segetal flora
   :param culture_type: Type of culture. possible values are
                        'fallow', 'intensiv', 'extensive' (default:'fallow')
   :param climate_type: Type of climate: number 1 to 7 or 'all' (default: 2)
@@ -82,68 +82,106 @@ def get_equation(culture_type='fallow', climate_type=2):
     logger.exception('No equations determinated')
   return equation
 
-def get_segetalflora(resources, culture_type='fallow', climate_type=2, countries=None, dir_segetalflora=None, dir_tas=None ):
-  """ 
-  returns a netCDF file containing vaulues of number of segetal flora species
-  
-  :param resources: dictionary of sorted tas mean input file(s)
+
+def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate_type=2, region=None): 
+  """productive worker for segetalflora jobs
+  :param resources: list of tas netCDF files. (any time aggregation is possible)
   :param culture_type: Type of culture. possible values are
                        'fallow', 'intensiv', 'extensive' (default:'fallow')
   :param climate_type: Type of climate: number 1 to 7 or 'all' (default: 2)
-  
+  :param region: Region for subset. If 'None' (default) the values will be calculated for Europe
   """
-  from tempfile import mkstemp 
-  from os import path , mkdir, listdir
-  from flyingpigeon import timeseries as ts
-  from flyingpigeon import clipping
-  from flyingpigeon import subset
-  from flyingpigeon import utils
+  from flyingpigeon.subset import clipping
+  from flyingpigeon.utils import calc_grouping, sort_by_filename 
+  import os
+  from ocgis import RequestDataset , OcgOperations
   
-  ocgis.env.OVERWRITE = True
-  ocgis.env.DIR_SHPCABINET = path.join(path.dirname(__file__), 'processes', 'shapefiles')
- # geom = 'continent'
- # ugid_europa = [8]
+  from cdo import Cdo
+  cdo = Cdo()
+  
+  os.chdir(dir_output)
+  
+  #outputs = []
+  
+  if region == None: 
+    region = 'Europe'
     
-  logger.debug('dir_outputs created')
+  if not type(culture_type) == list:
+    culture_type = list([culture_type])
+  if not type(climate_type) == list:
+    climate_type = list([climate_type])
+    
   
-  tas_yearmean = ts.get_yearmean(resources, variable='tas', dir_output=dir_tas)
-  logger.debug('tas_yearmean list build')
+  ncs = sort_by_filename(resource)
+  print '%s experiments found' % (len(ncs))
   
-  calc = get_equation(culture_type=culture_type, climate_type=climate_type)
-  ocgis.env.DIR_OUTPUT = dir_segetalflora
+  # generate outfolder structure: 
   
-  sf_files = []
+  dir_netCDF = 'netCDF'
+  dir_ascii =  'ascii'
+  dir_netCDF_tas = dir_netCDF+'/tas'
+  dir_ascii_tas = dir_ascii+'/tas'
   
-  for nc in tas_yearmean:
+  if not os.path.exists(dir_netCDF):
+    os.makedirs(dir_netCDF)
+  if not os.path.exists(dir_ascii):
+    os.makedirs(dir_ascii)  
+  if not os.path.exists(dir_netCDF_tas):
+    os.makedirs(dir_netCDF_tas)
+  if not os.path.exists(dir_ascii_tas):
+    os.makedirs(dir_ascii_tas)
+
+  tas_files = []
+  
+  for key in ncs.keys():
     try:
-      basename = utils.drs_filename(nc, variable='tas', rename_file=False, add_file_path=False) 
-      prefix = basename.replace('tas_', 'sf%s%s_'%(culture_type, climate_type)).strip('.nc') 
-      prefix_mask = prefix.replace('EUR-','EURmask-')
-      mask = basename.split('_')[1]
-      rd = ocgis.RequestDataset(nc , 'tas')
-      sf_tmp = ocgis.OcgOperations(dataset=rd, calc=calc, prefix=prefix, dir_output=dir_segetalflora, add_auxiliary_files=False, output_format='nc').execute()
-      
-      geom_file = subset.masking(sf_tmp, mask=mask, prefix=prefix_mask, dir_output=dir_segetalflora) 
-      
-      sf_files.append(geom_file[0])
-      logger.debug('segetalflora Europa processed : %s' % (prefix))
+      print 'process %s' % (key)
+      calc =  [{'func':'mean','name':'tas'}]
+      calc_group = calc_grouping('yr')
+      prefix = key.replace(key.split('_')[7],'yr')
+      tas_files.append(prefix)
+      nc_tas = clipping(resource=ncs[key], variable='tas', calc=calc,  calc_grouping= calc_group, prefix=prefix, polygons='Europe', output_format='nc', dir_output=dir_netCDF_tas)[0]
+      print 'clipping done for %s' % (key)
     except Exception as e:
-      msg = 'segetalflora failed %s : %s\n' %( nc, e) 
-      logger.exception(msg)
-      
-    if countries != None:
-      try:
-        if type(countries) == str:
-          countries = list([countries])
-        for country in countries:
-          prefix_coutry = prefix.replace('EUR-','%s-' % (country))
-          nc_country = clipping.clip_counties_EUR(nc, variable='tas', 
-                                                calc=calc,  prefix=prefix_coutry, country=country, output_format='nc', dir_output=dir_segetalflora)
-          sf_files.append(nc_country)
-          logger.debug('segetalflora Country %s processed : %s' % (country, prefix_coutry))
-      except Exception as e:
-        msg = 'segetalflora Country failed %s : %s\n' %( nc, e) 
-        logger.exception(msg)
-    logger.debug('%s segetalflora files processed:' % (len(sf_files)))   
-              
-  return sf_files
+      print 'clipping failed for %s: %s' % (key, e)
+    try:    
+      asc_tas = os.path.join(dir_ascii_tas,prefix + '.asc')
+      cmd = 'cdo outputtab,name,date,lon,lat,value %s > %s' % (nc_tas, asc_tas)
+      os.system(cmd)
+      print ('tanslation to ascii done')
+    except Exception as e: 
+      print 'translation to ascii failed %s: %s' % (key, e)
+    
+  outputs = []  
+  for name in tas_files:
+    for cult in culture_type: 
+      for climat in climate_type:
+        try: 
+          calc = get_equation(culture_type=cult, climate_type=climat)
+          var = 'sf%s%s' %(cult, climat)
+          prefix = name.replace('tas',var)
+          outputs.append(prefix)
+          infile = os.path.join(dir_netCDF_tas,name+'.nc')
+          print infile
+          dir_sf = os.path.join(dir_netCDF,var)
+          if not os.path.exists(dir_sf):
+            os.makedirs(dir_sf)
+            
+          rd = RequestDataset(infile, variable='tas')
+          op = OcgOperations(dataset=rd, calc=calc, prefix=prefix, output_format='nc', dir_output=dir_sf, add_auxiliary_files=False)
+          nc_sf = op.execute()
+          print 'segetalflora done for %s' % (prefix)
+        except Exception as e: 
+          print 'netCDF segetalflora failed: %s' % (e)
+        
+        try:
+          dir_ascii_sf = os.path.join(dir_ascii,var)
+          asc_sf = os.path.join(dir_ascii_sf,prefix + '.asc')
+          if not os.path.exists(dir_ascii_sf):
+            os.makedirs(dir_ascii_sf)
+          cmd = 'cdo outputtab,name,date,lon,lat,value %s > %s' % (nc_sf, asc_sf)
+          os.system(cmd)
+          print 'ascii written'
+        except Exception as e: 
+          print 'failed for ascii file: %s' % (e)    
+  return outputs
