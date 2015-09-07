@@ -3,6 +3,10 @@ import tempfile
 
 from .exceptions import CalculationException
 
+from flyingpigeon.utils import calc_grouping, sort_by_filename # aggregations, 
+from flyingpigeon.subset import get_ugid, get_geom
+
+
 #from malleefowl import wpslogging as logging
 import os
 import logging
@@ -166,15 +170,10 @@ def calc_indice_simple(resource=[], variable=None, prefix=None,
             calc = [{'func' : 'icclim_' + indice, 'name' : indice}]
             for polygon in polygons:
               try:
-                if len(polygon) == 4: 
-                  geom = 'NUTS2'
-                elif len(polygon) == 3:
-                  geom = '50m_country'
-                elif  len(polygon) == 5 and polygon[2] == '.': 
-                  geom = 'extremoscope'
-                else: 
-                  logger.error('unknown polygon %s', polygon)
-                ugid = select_ugid(polygons=polygon, geom=geom)
+                
+                geom = get_geom(polygon=polygon)
+                ugid = get_ugid(polygons=polygon, geom=geom)
+                
                 for grouping in groupings:
                   try:
                     #prefix = key.replace('_day_', grouping)
@@ -222,9 +221,7 @@ def calc_indice_percentil(resource=[], variable=None, time_range_ref=None, prefi
 
     from os.path import join, dirname
     import datetime as dt
-    from flyingpigeon.utils import calc_grouping, sort_by_filename # aggregations, 
-    from flyingpigeon.subset import select_ugid
-
+ 
     from ocgis.calc.library.index.dynamic_kernel_percentile import DynamicDailyKernelPercentileThreshold
 
     DIR_SHP = join(dirname(__file__),'flyingpigeon', 'processes', 'shapefiles')
@@ -255,15 +252,10 @@ def calc_indice_percentil(resource=[], variable=None, time_range_ref=None, prefi
           try: 
             for polygon in polygons:
               try:
-                if len(polygon) == 4: 
-                  geom = 'NUTS2'
-                elif len(polygon) == 3:
-                  geom = '50m_country'
-                elif  len(polygon) == 5 and polygon[2] == '.': 
-                  geom = 'extremoscope'
-                else: 
-                  logger.error('unknown polygon %s', polygon)
-                ugid = select_ugid(polygons=polygon, geom=geom)
+
+                geom = get_geom(polygon=polygon)
+                ugid = get_ugid(polygons=polygon, geom=geom)
+                
                 for grouping in groupings:
                   try:
                     rd = RequestDataset(uri=ncs, variable=variable, time_range=time_range_ref)
