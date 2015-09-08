@@ -82,6 +82,13 @@ def get_equation(culture_type='fallow', climate_type=2):
     logger.exception('No equations determinated')
   return equation
 
+def remove_rows(infile, outfile , indicator='1e+20'): 
+  with open(infile,"r") as input:
+    with open(outfile,"w") as output: 
+        for line in input:
+            if not indicator in line: #!="nickname_to_delete"+"\n":
+                output.write(line)
+  return outfile                
 
 def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate_type=2, region=None): 
   """productive worker for segetalflora jobs
@@ -94,6 +101,8 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
   from flyingpigeon.subset import clipping
   from flyingpigeon.utils import calc_grouping, sort_by_filename 
   import os
+  from os import remove
+  from tempfile import mkstemp
   from ocgis import RequestDataset , OcgOperations
   
   from cdo import Cdo
@@ -144,11 +153,15 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
       print 'clipping done for %s' % (key)
     except Exception as e:
       print 'clipping failed for %s: %s' % (key, e)
-    try:    
+    try:
+      f, tmp = mkstemp(suffix='.asc',  dir=dir_output)
       asc_tas = os.path.join(dir_ascii_tas,prefix + '.asc')
-      cmd = 'cdo outputtab,name,date,lon,lat,value %s > %s' % (nc_tas, asc_tas)
+      cmd = 'cdo outputtab,name,date,lon,lat,value %s > %s' % (nc_tas, tmp)
       os.system(cmd)
       print ('tanslation to ascii done')
+      remove_rows(tmp, asc_tas)
+      remove(tmp)
+      print ('rows with missing Values removed')
     except Exception as e: 
       print 'translation to ascii failed %s: %s' % (key, e)
     
@@ -175,13 +188,21 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
           print 'netCDF segetalflora failed: %s' % (e)
         
         try:
+          
+          f, tmp = mkstemp(suffix='.asc',  dir=dir_output)
+          
           dir_ascii_sf = os.path.join(dir_ascii,var)
-          asc_sf = os.path.join(dir_ascii_sf,prefix + '.asc')
           if not os.path.exists(dir_ascii_sf):
             os.makedirs(dir_ascii_sf)
-          cmd = 'cdo outputtab,name,date,lon,lat,value %s > %s' % (nc_sf, asc_sf)
+          asc_sf = os.path.join(dir_ascii_sf,prefix + '.asc')
+          
+          cmd = 'cdo outputtab,name,date,lon,lat,value %s > %s' % (nc_tas, tmp)
           os.system(cmd)
-          print 'ascii written'
+          print ('tanslation to ascii done')
+          remove_rows(tmp, asc_sf)
+          remove(tmp)
+          print ('rows with missing Values removed')
+          
         except Exception as e: 
           print 'failed for ascii file: %s' % (e)    
   return outputs
