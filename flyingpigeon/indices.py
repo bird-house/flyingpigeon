@@ -1,11 +1,10 @@
-from ocgis import OcgOperations, RequestDataset , env
+
 import tempfile
 
 from .exceptions import CalculationException
 
 from flyingpigeon.utils import calc_grouping, sort_by_filename # aggregations, 
 from flyingpigeon.subset import get_ugid, get_geom
-
 
 #from malleefowl import wpslogging as logging
 import os
@@ -142,9 +141,9 @@ def calc_indice_simple(resource=[], variable=None, prefix=None,
     from os.path import join, dirname
 
 
-    DIR_SHP = join(dirname(__file__),'flyingpigeon', 'processes', 'shapefiles')
-    env.DIR_SHPCABINET = DIR_SHP
-    env.OVERWRITE = True
+    #DIR_SHP = join(dirname(__file__),'flyingpigeon', 'processes', 'shapefiles')
+    #env.DIR_SHPCABINET = DIR_SHP
+    #env.OVERWRITE = True
 
     if type(resource) != list: 
       resource = list([resource])
@@ -155,8 +154,12 @@ def calc_indice_simple(resource=[], variable=None, prefix=None,
     if type(groupings) != list:
       groupings = list([groupings])
 
-    from flyingpigeon.utils import calc_grouping, sort_by_filename # aggregations, 
-    from flyingpigeon.subset import select_ugid
+    
+    from flyingpigeon.subset import clipping
+
+    #from flyingpigeon.subset import select_ugid
+    #from ocgis.util.large_array import compute
+    tile_dim = 25
     output = None
     
     experiments = sort_by_filename(resource)
@@ -171,25 +174,33 @@ def calc_indice_simple(resource=[], variable=None, prefix=None,
             for polygon in polygons:
               try:
                 
-                geom = get_geom(polygon=polygon)
-                ugid = get_ugid(polygons=polygon, geom=geom)
+                #geom = get_geom(polygon=polygon)
+                #ugid = get_ugid(polygons=polygon, geom=geom)
                 
                 for grouping in groupings:
                   try:
-                    #prefix = key.replace('_day_', grouping)
                     calc_group = calc_grouping(grouping)
-                    rd = RequestDataset(uri=ncs, variable=variable, dimension_map=dimension_map)
-                    ops = OcgOperations(
-                                    dataset=rd,
-                                    calc=calc,
-                                    geom=geom,
-                                    select_ugid= ugid, 
-                                    calc_grouping=calc_group,
-                                    prefix=prefix,
-                                    output_format='nc',
-                                    dir_output=out_dir,
-                                    add_auxiliary_files=False)
-                    outputs.append( ops.execute() )
+                    tmp = clipping(resource=ncs, variable=variable, 
+                       dimension_map=dimension_map, 
+                       calc=calc,  
+                       calc_grouping= calc_group, 
+                       prefix=prefix, 
+                       polygons=polygons, 
+                       dir_output=out_dir)[0]
+                    
+                    # rd = RequestDataset(uri=ncs, variable=variable, dimension_map=dimension_map)
+                    # ops = OcgOperations(
+                    #                 dataset=rd,
+                    #                 calc=calc,
+                    #                 geom=geom,
+                    #                 select_ugid= ugid, 
+                    #                 calc_grouping=calc_group,
+                    #                 prefix=prefix,
+                    #                 output_format='nc',
+                    #                 dir_output=out_dir,
+                    #                 add_auxiliary_files=False)
+                    # tmp = compute(ops, tile_dimension=tile_dim, verbose=True)
+                    outputs.append( tmp ) 
                   except Exception as e:
                     logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s', indice, key, polygon, grouping, e )  
               except Exception as e:
@@ -221,6 +232,7 @@ def calc_indice_percentil(resource=[], variable=None, time_range_ref=None, prefi
 
     from os.path import join, dirname
     import datetime as dt
+    from ocgis import OcgOperations, RequestDataset , env
  
     from ocgis.calc.library.index.dynamic_kernel_percentile import DynamicDailyKernelPercentileThreshold
 
