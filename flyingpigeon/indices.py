@@ -184,8 +184,7 @@ def calc_indice_simple(resource=[], variable=None, prefix=None,
                        calc_grouping= calc_group, 
                        prefix=prefix, 
                        polygons=polygons, 
-                       dir_output=out_dir)[0]
-                    
+                       dir_output=out_dir)
                     # rd = RequestDataset(uri=ncs, variable=variable, dimension_map=dimension_map)
                     # ops = OcgOperations(
                     #                 dataset=rd,

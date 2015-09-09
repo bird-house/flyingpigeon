@@ -116,7 +116,8 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  calc_gr
       element_in_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
       element_in_mb = element_in_kb*0.001
       tile_dim = sqrt(limit_memory_mb/(element_in_mb*nb_time_coordinates_rd))
-      geom_file = compute(ops, tile_dimension=tile_dim, verbose=True)
+#      tile_dim = 25
+      geom_file = compute(ops, tile_dimension=int(tile_dim), verbose=True)
       geom_files.append( geom_file  )
     except Exception as e:
         msg = 'ocgis calculations failed for %s ' % (key)
