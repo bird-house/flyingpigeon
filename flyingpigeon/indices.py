@@ -25,8 +25,6 @@ fh.setFormatter(formatter)
 logger.addHandler(ch)
 logger.addHandler(fh)
 
-
-
 _INDICES_ = dict(
     TG=dict(variable='tas', description='Mean of mean temperatur (tas as input files)'),
     TX=dict(variable='tasmax', description='Mean of max temperatur (tasmax as input files)'),

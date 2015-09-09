@@ -120,8 +120,13 @@ def drs_filename(nc_file, skip_timestamp=False, skip_format=False ,
     return filename
 
 def get_variable(nc_file):
+    """
+    returns the variable name (str)
+    :param nc_file: NetCDF file
+    """
     rd = ocgis.RequestDataset(nc_file)
     return rd.variable
+
 
 def get_timestamps(nc_file):
     """

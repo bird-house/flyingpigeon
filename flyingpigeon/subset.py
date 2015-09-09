@@ -1,13 +1,12 @@
 # import ocgis
 
 from .exceptions import CalculationException
-from .utils import drs_filename, calc_grouping , sort_by_filename
+from .utils import drs_filename, get_variable, calc_grouping , sort_by_filename
 
 from malleefowl import wpslogging as logging
 #import logging
 
 logger = logging.getLogger(__name__)
-
 from os.path import dirname, join
 
 DIR_MASKS = join(dirname(__file__), 'processes', 'masks')
@@ -52,7 +51,7 @@ def get_geom(polygon):
     logger.error('unknown polygon %s', polygon)
   return geom  
 
-def clipping(resource=[], variable=None, dimension_map=None, calc=None,  calc_grouping= None, prefix=None, polygons='Europe', output_format='nc', dir_output=None):
+def clipping(resource=[], variable=None, dimension_map=None, calc=None,  calc_grouping= None, prefix=None, polygons='Europe', dir_output=None):
   """ returns list of clipped netCDF files
   possible entries: 
   :param resource: list of input netCDF files
@@ -66,13 +65,21 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  calc_gr
   :param dir_output: specify a output location
   """
   from ocgis import OcgOperations, RequestDataset , env
+  from ocgis.util.large_array import compute
+  from numpy import sqrt
   env.DIR_SHPCABINET = DIR_SHP
   env.OVERWRITE = True
-  
+
+  limit_memory_mb = 475.0 # to reduce the load of the memory, calculation is perfored in chunks
+
+
   if type(resource) != list: 
     resource = list([resource])
   if type(polygons) != list:
     polygons = list([polygons])
+
+  if variable == None:
+    logger.error('No varable name for netCDF input files set')  
   
   try:
     geoms = []
@@ -96,9 +103,21 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  calc_gr
       rd = RequestDataset(ncs[key], variable=variable, dimension_map=dimension_map)
       env.DIR_OUTPUT = dir_output
       env.PREFIX = prefix    
-      ops = OcgOperations(dataset=rd, calc=calc, calc_grouping=calc_grouping,
-                                      output_format=output_format, select_ugid=ugids, geom=geom, add_auxiliary_files=False)
-      geom_files.append( ops.execute() )
+      ops = OcgOperations(dataset=rd, 
+        calc=calc, 
+        calc_grouping=calc_grouping,
+        output_format='nc', # necessary for chunked execution  
+        select_ugid=ugids, 
+        geom=geom, 
+        add_auxiliary_files=False)
+      # calcultion of chunk size
+      size = ops.get_base_request_size()
+      nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
+      element_in_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
+      element_in_mb = element_in_kb*0.001
+      tile_dim = sqrt(limit_memory_mb/(element_in_mb*nb_time_coordinates_rd))
+      geom_file = compute(ops, tile_dimension=tile_dim, verbose=True)
+      geom_files.append( geom_file  )
     except Exception as e:
         msg = 'ocgis calculations failed for %s ' % (key)
         logger.exception(msg)
