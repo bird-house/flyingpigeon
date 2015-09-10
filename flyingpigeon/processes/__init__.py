@@ -2,7 +2,7 @@ __all__ = [
         "visualisation",
         "extractpoints",
         "segetalflora",
-        "indices",
+        "indices_simple",
         "subset",
         "get_eobs_as_cordex",        
         #"extremoscope",
