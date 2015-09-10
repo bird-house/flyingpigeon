@@ -12,11 +12,11 @@ class CalcIndice(WPSProcess):
     def __init__(self):
         WPSProcess.__init__(
             self, 
-            identifier = "simple_indice",
-            title="Calculation of climate indice (simple)",
+            identifier = "indices_single",
+            title="Calculation of climate indice (single variable)",
             version = "0.1",
             metadata=[],
-            abstract="This process calculates a climate indice for the given input netcdf files."
+            abstract="This process calculates climate indices based on one single variable."
             )
 
         self.resource = self.addComplexInput(
