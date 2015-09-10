@@ -3,7 +3,7 @@ from malleefowl.process import WPSProcess
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
-from flyingpigeon.subset import countries, countries_longname, clipping , _COUNTRIES_ 
+from flyingpigeon.subset import clipping, countries, countries_longname
 
 
 class SimpleClipping(WPSProcess):
@@ -12,10 +12,10 @@ class SimpleClipping(WPSProcess):
         WPSProcess.__init__(
             self, 
             identifier = "subset_countries",
-            title="Subset Polygons",
+            title="Subset netCDF files",
             version = "0.1",
             metadata=[],
-            abstract="This process returns only the given polygon from input NetCDF files."
+            abstract="This process returns only the given polygon from input netCDF files."
             )
 
         self.resource = self.addComplexInput(
@@ -27,17 +27,19 @@ class SimpleClipping(WPSProcess):
             maxmegabites=5000,
             formats=[{"mimeType":"application/x-netcdf"}],
             )
-
+        # self.region = self.addLiteralInput(
+        #     identifier="region",
+        #     )
         self.region = self.addLiteralInput(
             identifier="region",
             title="Region",
-            abstract="Select a country for polygon subset", #countries_longname
+            abstract= countries_longname(), 
             default='FRA',
             type=type(''),
             minOccurs=1,
-            maxOccurs=1,
-            allowedValues=_COUNTRIES_() #REGION_EUROPE #COUNTRIES # 
-             )
+            maxOccurs=len(countries()),
+            allowedValues=countries() #REGION_EUROPE #COUNTRIES # 
+            )
       
         # complex output
         # -------------
@@ -55,8 +57,8 @@ class SimpleClipping(WPSProcess):
 
         self.show_status('starting: region=%s, num_files=%s' % (self.region.getValue(), len(resources)), 0)
 
-        result = calc_region_clipping(
-            resource = resources[0],
+        result = clipping(
+            resource = resources,
             region = self.region.getValue(),
             out_dir = self.working_dir,
             )

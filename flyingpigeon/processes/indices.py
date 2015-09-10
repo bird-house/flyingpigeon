@@ -4,7 +4,7 @@ from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
 from flyingpigeon.indices import indices, indices_description, calc_indice_simple
-from flyingpigeon.subsetting import countries, countries_longname # COUNTRIES
+from flyingpigeon.subset import countries, countries_longname
 from flyingpigeon.utils import GROUPING
 
 class CalcIndice(WPSProcess):
@@ -54,12 +54,12 @@ class CalcIndice(WPSProcess):
         self.region = self.addLiteralInput(
             identifier="region",
             title="Region",
-            abstract="Select a country for polygon subsetting", #countries_longname
+            abstract=countries_longname(),
             default='FRA',
             type=type(''),
             minOccurs=1,
             maxOccurs=len(countries()),
-            allowedValues=countries() #REGION_EUROPE #COUNTRIES # 
+            allowedValues=countries() 
              )
       
         # complex output
@@ -73,12 +73,13 @@ class CalcIndice(WPSProcess):
             asReference=True
             )
 
-        self.drs_filename = self.addLiteralOutput(
-            identifier = "drs_filename",
-            title = "DRS Filename",
-            type = type(''))
+        # self.drs_filename = self.addLiteralOutput(
+        #     identifier = "drs_filename",
+        #     title = "DRS Filename",
+        #     type = type(''))
         
     def execute(self):
+        
         import os
         logger.debug('PYHONPATH = %s', os.environ['PYTHONPATH'])
         logger.debug('PATH = %s', os.environ['PATH'])
@@ -86,7 +87,7 @@ class CalcIndice(WPSProcess):
         ncs = self.getInputValues(identifier='resource')
         self.show_status('starting: indice=%s, grouping=%s, num_files=%s' % (self.indice.getValue(), self.grouping.getValue(), len(ncs)), 0)
 
-        result = calc_indice(
+        results = calc_indice_simple(
             resource = ncs,
             indice = self.indice.getValue(),
             grouping = self.grouping.getValue(),
@@ -95,9 +96,11 @@ class CalcIndice(WPSProcess):
         
         self.show_status('result %s' % result, 90)
 
-        self.output.setValue( result )
-        from os.path import basename
-        self.drs_filename.setValue( basename(result) )
+        self.output.setValue( results )        
+
+        # from os.path import basename
+        # for result in results: 
+        #     self.drs_filename.setValue( basename(result) )
 
         self.show_status('done: indice=%s, num_files=%s' % (self.indice.getValue(), len(ncs)), 100)
 

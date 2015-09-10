@@ -12,6 +12,23 @@ from os.path import dirname, join
 DIR_MASKS = join(dirname(__file__), 'processes', 'masks')
 DIR_SHP = join(dirname(__file__), 'processes', 'shapefiles')
 
+def countries():
+    """
+    :return: a list of all countries codes.
+    """
+    countries = _COUNTRIES_.keys()
+    countries.sort()
+    return countries
+
+def countries_longname():
+    """
+    :return: the longname of all countries.
+    """
+    longname = ''
+    for country in countries(): 
+      longname = longname + "%s : %s \n" % (country, _COUNTRIES_[country]['longname'])
+    return longname
+
 def masking(resource, mask, prefix=None, dir_output=None):
   """
   Returns a list of masked netCDF file(s) path(es).  
@@ -217,24 +234,6 @@ def get_ugid(polygons='FRA', geom='50m_country'):
     return result
 
 
-def countries():
-    """
-    :return: a list of all countries codes.
-    """
-    countries = _COUNTRIES_.keys()
-    countries.sort()
-    return countries
-
-def countries_longname(country):
-    """
-    :return: a list of all countries long names.
-    """
-    #longname = ''
-    #for country in countries(): 
-    longname = longname + "%s : %s \n" % (country, _COUNTRIES_[country]['longname'])
-    return longname
-
-
 def get_shp_column_values(geom='extremoscope', columnname='HASC_1'): 
   """ returns a list of all entries the shapefile columnname
   :param geom: name of the shapefile
@@ -251,9 +250,9 @@ def get_shp_column_values(geom='extremoscope', columnname='HASC_1'):
   for row in sci: 
     vals.append(row['properties'][columnname])
   return vals
-  
 
-# === Available Polygons
+
+  # === Available Polygons
 _CONTINENTS_ = get_shp_column_values(geom='continents', columnname='CONTINENT') 
 
 _POLYGONS_EXTREMOSCOPE_ = get_shp_column_values(geom='extremoscope', columnname='HASC_1')
@@ -268,4 +267,4 @@ for c , key in enumerate(ADM0_A3):
 _COUNTRIES_Europe_ = {}
 for c , key in enumerate(ADM0_A3):
   if CONTINENT[c] == 'Europe':
-    _COUNTRIES_EU_[key] = dict(longname=NAMELONG[c])
+    _COUNTRIES_Europe_[key] = dict(longname=NAMELONG[c])

@@ -4,7 +4,7 @@ from datetime import datetime, date
 import types
 
 from flyingpigeon.get_eobs_as_cordex import EOBS_VARIABLES
-from flyingpigeon.subset import POLYGONS
+from flyingpigeon.subset import countries, countries_longname 
 
 from cdo import * 
 cdo = Cdo()
@@ -54,12 +54,12 @@ class eobs_to_cordex(WPSProcess):
     self.countries = self.addLiteralInput(
       identifier="countries",
       title="Countries",
-      abstract="Administrative european countries",
+      abstract=countries_longname(), # "Administrative european countries",
       default='FRA',
       type=type(''),
       minOccurs=1,
       maxOccurs=40,
-      allowedValues=POLYGONS
+      allowedValues=countries()
       )
     
     self.start = self.addLiteralInput(

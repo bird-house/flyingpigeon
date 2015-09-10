@@ -3,7 +3,7 @@ import subprocess
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
-from flyingpigeon.subset import POLYGONS
+from flyingpigeon.subset import _COUNTRIES_ 
 from flyingpigeon.indices import indices, indices_description 
 from flyingpigeon.utils import GROUPING
 
@@ -58,7 +58,7 @@ class extremoscop(WPSProcess):
       default='FRA',
       type=type(''),
       minOccurs=1,
-      allowedValues=POLYGONS
+      allowedValues=_COUNTRIES_()
       )
       
     #self.output = self.addComplexOutput(
