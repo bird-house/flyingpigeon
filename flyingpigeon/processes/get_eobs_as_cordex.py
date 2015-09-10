@@ -1,13 +1,9 @@
 from malleefowl import wpslogging as logging
 from malleefowl.process import WPSProcess
-from datetime import datetime, date
 import types
 
 from flyingpigeon.get_eobs_as_cordex import EOBS_VARIABLES
 from flyingpigeon.subset import countries, countries_longname 
-
-from cdo import * 
-cdo = Cdo()
 
 # initialise
 logger = logging.getLogger(__name__)
@@ -111,7 +107,7 @@ class eobs_to_cordex(WPSProcess):
     import datetime as dt
     
     from malleefowl.download import download
-    from flyingpigeon import get_eobs_as_cordex
+    from flyingpigeon.get_eobs_as_cordex import get_data_worker
    
     self.show_status('execution started at : %s '  % dt.datetime.now() , 5)
 
