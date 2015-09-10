@@ -259,9 +259,9 @@ _CONTINENTS_ = get_shp_column_values(geom='continents', columnname='CONTINENT')
 _POLYGONS_EXTREMOSCOPE_ = get_shp_column_values(geom='extremoscope', columnname='HASC_1')
 
 _COUNTRIES_ = {}
-ADM0_A3 = subset.get_shp_column_values(geom='countries', columnname='ADM0_A3')
-NAMELONG = subset.get_shp_column_values(geom='countries', columnname='NAME_LONG')
-CONTINENT = subset.get_shp_column_values(geom='countries', columnname='CONTINENT')
+ADM0_A3 = get_shp_column_values(geom='countries', columnname='ADM0_A3')
+NAMELONG = get_shp_column_values(geom='countries', columnname='NAME_LONG')
+CONTINENT = get_shp_column_values(geom='countries', columnname='CONTINENT')
 for c , key in enumerate(ADM0_A3): 
   _COUNTRIES_[key] = dict(longname=NAMELONG[c])
 
