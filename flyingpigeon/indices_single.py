@@ -6,24 +6,24 @@ from .exceptions import CalculationException
 from flyingpigeon.utils import calc_grouping, sort_by_filename # aggregations, 
 from flyingpigeon.subset import get_ugid, get_geom
 
-#from malleefowl import wpslogging as logging
+from malleefowl import wpslogging as logging
 import os
-import logging
+#import logging
 logger = logging.getLogger(__name__)
 
-logfile = os.path.basename(__file__).replace('.py','.log') #  'several_nodes.log' # 
-fh = logging.FileHandler(os.path.join('/home/estimr2/nhempelmann/data/test/'+ logfile))
-fh.setLevel(logging.DEBUG)
+#logfile = os.path.basename(__file__).replace('.py','.log') #  'several_nodes.log' # 
+#fh = logging.FileHandler(os.path.join('/home/estimr2/nhempelmann/data/test/'+ logfile))
+#fh.setLevel(logging.DEBUG)
 # create console handler with a higher log level
-ch = logging.StreamHandler()
-ch.setLevel(logging.ERROR)
+#ch = logging.StreamHandler()
+#ch.setLevel(logging.ERROR)
 # create formatter and add it to the handlers
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-ch.setFormatter(formatter)
-fh.setFormatter(formatter)
+#formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+#ch.setFormatter(formatter)
+#fh.setFormatter(formatter)
 # add the handlers to logger
-logger.addHandler(ch)
-logger.addHandler(fh)
+#logger.addHandler(ch)
+#logger.addHandler(fh)
 
 _INDICES_ = dict(
     TG=dict(variable='tas', description='Mean of mean temperatur (tas as input files)'),
@@ -119,7 +119,7 @@ def indice_variable(indice):
         logger.error('unknown indice %s', indice)
     return variable
 
-def calc_indice_simple(resource=[], variable=None, prefix=None,
+def calc_indice_single(resource=[], variable=None, prefix=None,
   indices="SU", polygons='FRA',  groupings="yr", 
   out_dir=None, dimension_map = None):
     """

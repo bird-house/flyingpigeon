@@ -3,7 +3,7 @@ from malleefowl.process import WPSProcess
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
-from flyingpigeon.indices_simple import indices, indices_description, calc_indice_simple
+from flyingpigeon.indices_single import indices, indices_description, calc_indice_single
 from flyingpigeon.subset import countries, countries_longname
 from flyingpigeon.utils import GROUPING
 
@@ -87,7 +87,7 @@ class CalcIndice(WPSProcess):
         ncs = self.getInputValues(identifier='resource')
         self.show_status('starting: indice=%s, grouping=%s, num_files=%s' % (self.indice.getValue(), self.grouping.getValue(), len(ncs)), 0)
 
-        results = calc_indice_simple(
+        results = calc_indice_single(
             resource = ncs,
             indice = self.indice.getValue(),
             grouping = self.grouping.getValue(),
