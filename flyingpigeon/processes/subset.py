@@ -3,8 +3,7 @@ from malleefowl.process import WPSProcess
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
-#from flyingpigeon.clipping import REGION_EUROPE, calc_region_clipping
-from flyingpigeon.subset import countries, countries_longname, clipping # COUNTRIE
+from flyingpigeon.subset import countries, countries_longname, clipping , _COUNTRIES_ 
 
 
 class SimpleClipping(WPSProcess):
@@ -37,7 +36,7 @@ class SimpleClipping(WPSProcess):
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
-            allowedValues=countries() #REGION_EUROPE #COUNTRIES # 
+            allowedValues=_COUNTRIES_() #REGION_EUROPE #COUNTRIES # 
              )
       
         # complex output
