@@ -100,7 +100,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  calc_gr
   except Exception as e:
     logger.error('geom identification failed %s', e)
   
-  ugids = select_ugid(polygons=polygons, geom=geom)
+  ugids = get_ugid(polygons=polygons, geom=geom)
   #print 'ugids: %s' % (ugids)
   ncs = sort_by_filename(resource)
   geom_files = []
@@ -117,14 +117,15 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  calc_gr
         select_ugid=ugids, 
         geom=geom, 
         add_auxiliary_files=False)
+      geom_file = ops.execute()
+      
       # calcultion of chunk size
-      size = ops.get_base_request_size()
-      nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
-      element_in_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
-      element_in_mb = element_in_kb*0.001
-      tile_dim = sqrt(limit_memory_mb/(element_in_mb*nb_time_coordinates_rd))
-#      tile_dim = 25
-      geom_file = compute(ops, tile_dimension=int(tile_dim), verbose=True)
+      # size = ops.get_base_request_size()
+      # nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
+      # element_in_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
+      # element_in_mb = element_in_kb*0.001
+      # tile_dim = sqrt(limit_memory_mb/(element_in_mb*nb_time_coordinates_rd))
+      #geom_file = compute(ops, tile_dimension=int(tile_dim), verbose=True)
       geom_files.append( geom_file  )
     except Exception as e:
         msg = 'ocgis calculations failed for %s ' % (key)
@@ -181,39 +182,22 @@ def get_dimension_map(resource):
   return dimension_map
 
 
-# def get_shp_column_values(geom, columnname): 
-#   """ returns a list of all entries the shapefile columnname
-#   :param geom: name of the shapefile
-#   :param columnname: Column name to be intereted
-#   """
-#   from ocgis.util.shp_cabinet import ShpCabinetIterator
-#   import ocgis
+def get_shp_column_values(geom, columnname): 
+  """ returns a list of all entries the shapefile columnname
+  :param geom: name of the shapefile
+  :param columnname: Column name to be intereted
+  """
+  from ocgis import env, ShpCabinetIterator
+  #import ocgis
   
-#   ocgis.env.DIR_SHPCABINET = DIR_SHP
-#   sci = ShpCabinetIterator(geom)
+  env.DIR_SHPCABINET = DIR_SHP
+  sci = ShpCabinetIterator(geom)
   
-#   vals = []
-#   for row in sci: 
-#     vals.append(row['properties'][columnname])
-#   return vals
+  vals = []
+  for row in sci: 
+    vals.append(row['properties'][columnname])
+  return vals
 
-
-  # === Available Polygons
-# _CONTINENTS_ = get_shp_column_values(geom='continents', columnname='CONTINENT') 
-
-# _POLYGONS_EXTREMOSCOPE_ = get_shp_column_values(geom='extremoscope', columnname='HASC_1')
-
-# _COUNTRIES_ = {}
-# ADM0_A3 = get_shp_column_values(geom='countries', columnname='ADM0_A3')
-# NAMELONG = get_shp_column_values(geom='countries', columnname='NAME_LONG')
-# CONTINENT = get_shp_column_values(geom='countries', columnname='CONTINENT')
-# for c , key in enumerate(ADM0_A3): 
-#   _COUNTRIES_[key] = dict(longname=NAMELONG[c])
-
-# _COUNTRIES_Europe_ = {}
-# for c , key in enumerate(ADM0_A3):
-#   if CONTINENT[c] == 'Europe':
-#     _COUNTRIES_Europe_[key] = dict(longname=NAMELONG[c])
 
 # === Functions for Clipping:
 def get_ugid(polygons='FRA', geom='50m_country'):
@@ -222,8 +206,8 @@ def get_ugid(polygons='FRA', geom='50m_country'):
     :param polygons: string or list of the region polygons 
     :param geom: available shapefile possible entries: '50m_country', 'NUTS2'
     """
-    from ocgis.util.shp_cabinet import ShpCabinetIterator
-    from ocgis import env
+    from ocgis import env, ShpCabinetIterator
+    #from ocgis import env
     
     if type(polygons) != list:
       polygons = list([polygons])
@@ -238,11 +222,11 @@ def get_ugid(polygons='FRA', geom='50m_country'):
           if row['properties']['ADM0_A3'] == polygon:
             result.append(row['properties']['UGID'])
               
-    elif geom == 'NUTS2':
-      for row in sc_iter:
-        for polygon in polygons:
-          if row['properties']['NUTS_ID'] == polygon:
-            result.append(row['properties']['UGID'])
+    # elif geom == 'NUTS2':
+    #   for row in sc_iter:
+    #     for polygon in polygons:
+    #       if row['properties']['NUTS_ID'] == polygon:
+    #         result.append(row['properties']['UGID'])
 
     elif geom == 'extremoscope':
       for row in sc_iter:
@@ -262,15 +246,33 @@ def get_ugid(polygons='FRA', geom='50m_country'):
 
     return result
 
-# def get_geom(polygon):
+def get_geom(polygon):
 
-#   if polygon in _COUNTRIES_: # (polygon) == 3:
-#     geom = 'countries'
-#   elif polygon in _POLYGONS_EXTREMOSCOPE_: #len(polygon) == 5 and polygon[2] == '.': 
-#     geom = 'extremoscope'
-#   elif polygon in _CONTINENTS_: 
-#     geom = 'continents'
-#   else:
-#     logger.error('polygon: %s not found in geoms' % polygon) 
+  if polygon in _COUNTRIES_: # (polygon) == 3:
+    geom = 'countries'
+  elif polygon in _POLYGONS_EXTREMOSCOPE_: #len(polygon) == 5 and polygon[2] == '.': 
+    geom = 'extremoscope'
+  elif polygon in _CONTINENTS_: 
+    geom = 'continents'
+  else:
+    logger.error('polygon: %s not found in geoms' % polygon) 
 
-#   return geom  
+  return geom  
+
+# === Available Polygons
+_CONTINENTS_ = get_shp_column_values(geom='continents', columnname='CONTINENT') 
+
+_COUNTRIES_ = {}
+_COUNTRIES_Europe_ = {}
+_POLYGONS_EXTREMOSCOPE_ = get_shp_column_values(geom='extremoscope', columnname='HASC_1')
+
+# === popultate poligon dictionaties 
+ADM0_A3 = get_shp_column_values(geom='countries', columnname='ADM0_A3')
+NAMELONG = get_shp_column_values(geom='countries', columnname='NAME_LONG')
+CONTINENT = get_shp_column_values(geom='countries', columnname='CONTINENT')
+for c , key in enumerate(ADM0_A3): 
+  _COUNTRIES_[key] = dict(longname=NAMELONG[c])
+
+for c , key in enumerate(ADM0_A3):
+  if CONTINENT[c] == 'Europe':
+    _COUNTRIES_Europe_[key] = dict(longname=NAMELONG[c])
