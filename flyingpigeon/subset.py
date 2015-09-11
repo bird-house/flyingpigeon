@@ -181,39 +181,39 @@ def get_dimension_map(resource):
   return dimension_map
 
 
-def get_shp_column_values(geom, columnname): 
-  """ returns a list of all entries the shapefile columnname
-  :param geom: name of the shapefile
-  :param columnname: Column name to be intereted
-  """
-  from ocgis.util.shp_cabinet import ShpCabinetIterator
-  import ocgis
+# def get_shp_column_values(geom, columnname): 
+#   """ returns a list of all entries the shapefile columnname
+#   :param geom: name of the shapefile
+#   :param columnname: Column name to be intereted
+#   """
+#   from ocgis.util.shp_cabinet import ShpCabinetIterator
+#   import ocgis
   
-  ocgis.env.DIR_SHPCABINET = DIR_SHP
-  sci = ShpCabinetIterator(geom)
+#   ocgis.env.DIR_SHPCABINET = DIR_SHP
+#   sci = ShpCabinetIterator(geom)
   
-  vals = []
-  for row in sci: 
-    vals.append(row['properties'][columnname])
-  return vals
+#   vals = []
+#   for row in sci: 
+#     vals.append(row['properties'][columnname])
+#   return vals
 
 
   # === Available Polygons
-_CONTINENTS_ = get_shp_column_values(geom='continents', columnname='CONTINENT') 
+# _CONTINENTS_ = get_shp_column_values(geom='continents', columnname='CONTINENT') 
 
-_POLYGONS_EXTREMOSCOPE_ = get_shp_column_values(geom='extremoscope', columnname='HASC_1')
+# _POLYGONS_EXTREMOSCOPE_ = get_shp_column_values(geom='extremoscope', columnname='HASC_1')
 
-_COUNTRIES_ = {}
-ADM0_A3 = get_shp_column_values(geom='countries', columnname='ADM0_A3')
-NAMELONG = get_shp_column_values(geom='countries', columnname='NAME_LONG')
-CONTINENT = get_shp_column_values(geom='countries', columnname='CONTINENT')
-for c , key in enumerate(ADM0_A3): 
-  _COUNTRIES_[key] = dict(longname=NAMELONG[c])
+# _COUNTRIES_ = {}
+# ADM0_A3 = get_shp_column_values(geom='countries', columnname='ADM0_A3')
+# NAMELONG = get_shp_column_values(geom='countries', columnname='NAME_LONG')
+# CONTINENT = get_shp_column_values(geom='countries', columnname='CONTINENT')
+# for c , key in enumerate(ADM0_A3): 
+#   _COUNTRIES_[key] = dict(longname=NAMELONG[c])
 
-_COUNTRIES_Europe_ = {}
-for c , key in enumerate(ADM0_A3):
-  if CONTINENT[c] == 'Europe':
-    _COUNTRIES_Europe_[key] = dict(longname=NAMELONG[c])
+# _COUNTRIES_Europe_ = {}
+# for c , key in enumerate(ADM0_A3):
+#   if CONTINENT[c] == 'Europe':
+#     _COUNTRIES_Europe_[key] = dict(longname=NAMELONG[c])
 
 # === Functions for Clipping:
 def get_ugid(polygons='FRA', geom='50m_country'):
@@ -262,15 +262,15 @@ def get_ugid(polygons='FRA', geom='50m_country'):
 
     return result
 
-def get_geom(polygon):
+# def get_geom(polygon):
 
-  if polygon in _COUNTRIES_: # (polygon) == 3:
-    geom = 'countries'
-  elif polygon in _POLYGONS_EXTREMOSCOPE_: #len(polygon) == 5 and polygon[2] == '.': 
-    geom = 'extremoscope'
-  elif polygon in _CONTINENTS_: 
-    geom = 'continents'
-  else:
-    logger.error('polygon: %s not found in geoms', % polygon) 
+#   if polygon in _COUNTRIES_: # (polygon) == 3:
+#     geom = 'countries'
+#   elif polygon in _POLYGONS_EXTREMOSCOPE_: #len(polygon) == 5 and polygon[2] == '.': 
+#     geom = 'extremoscope'
+#   elif polygon in _CONTINENTS_: 
+#     geom = 'continents'
+#   else:
+#     logger.error('polygon: %s not found in geoms' % polygon) 
 
-  return geom  
+#   return geom  
