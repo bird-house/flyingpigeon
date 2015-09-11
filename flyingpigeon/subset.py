@@ -12,6 +12,7 @@ from os.path import dirname, join
 DIR_MASKS = join(dirname(__file__), 'processes', 'masks')
 DIR_SHP = join(dirname(__file__), 'processes', 'shapefiles')
 
+
 def countries():
     """
     :return: a list of all countries codes.
@@ -55,18 +56,7 @@ def masking(resource, mask, prefix=None, dir_output=None):
   system(call)
   return resource_masked
 
-def get_geom(polygon):
-  if len(polygon) == 4: 
-    geom = 'NUTS2'
-  elif polygon in _COUNTRIES_: # (polygon) == 3:
-    geom = '50m_country'
-  elif polygon in _POLYGONS_EXTREMOSCOPE_: #len(polygon) == 5 and polygon[2] == '.': 
-    geom = 'extremoscope'
-  elif polygon in _CONTINENTS_: 
-    geom = 'continent'
-  else: 
-    logger.error('unknown polygon %s', polygon)
-  return geom  
+
 
 def clipping(resource=[], variable=None, dimension_map=None, calc=None,  calc_grouping= None, prefix=None, polygons='Europe', dir_output=None):
   """ returns list of clipped netCDF files
@@ -190,51 +180,8 @@ def get_dimension_map(resource):
     
   return dimension_map
 
-# === Functions for Clipping: 
 
-def get_ugid(polygons='FRA', geom='50m_country'):
-    """
-    returns geometry id of given polygon in a given shapefile.
-    :param polygons: string or list of the region polygons 
-    :param geom: available shapefile possible entries: '50m_country', 'NUTS2'
-    """
-    from ocgis.util.shp_cabinet import ShpCabinetIterator
-    from ocgis import env
-    
-    if type(polygons) != list:
-      polygons = list([polygons])
-    
-    env.DIR_SHPCABINET = DIR_SHP
-    sc_iter = ShpCabinetIterator(geom)
-    result = []
-    
-    if geom == 'countries':
-      for row in sc_iter:
-        for polygon in polygons:
-          if row['properties']['ADM0_A3'] == polygon:
-            result.append(row['properties']['UGID'])
-              
-    if geom == 'NUTS2':
-      for row in sc_iter:
-        for polygon in polygons:
-          if row['properties']['NUTS_ID'] == polygon:
-            result.append(row['properties']['UGID'])
-
-    if geom == 'extremoscope':
-      for row in sc_iter:
-        for polygon in polygons:
-          if row['properties']['HASC_1'] == polygon:
-            result.append(row['properties']['UGID'])
-              
-    if geom == 'continent':
-      for row in sc_iter:
-        for polygon in polygons:
-          if row['properties']['CONTINENT'] == polygon:
-            result.append(row['properties']['UGID'])    
-    return result
-
-
-def get_shp_column_values(geom='extremoscope', columnname='HASC_1'): 
+def get_shp_column_values(geom, columnname): 
   """ returns a list of all entries the shapefile columnname
   :param geom: name of the shapefile
   :param columnname: Column name to be intereted
@@ -243,7 +190,6 @@ def get_shp_column_values(geom='extremoscope', columnname='HASC_1'):
   import ocgis
   
   ocgis.env.DIR_SHPCABINET = DIR_SHP
-  
   sci = ShpCabinetIterator(geom)
   
   vals = []
@@ -268,3 +214,63 @@ _COUNTRIES_Europe_ = {}
 for c , key in enumerate(ADM0_A3):
   if CONTINENT[c] == 'Europe':
     _COUNTRIES_Europe_[key] = dict(longname=NAMELONG[c])
+
+# === Functions for Clipping:
+def get_ugid(polygons='FRA', geom='50m_country'):
+    """
+    returns geometry id of given polygon in a given shapefile.
+    :param polygons: string or list of the region polygons 
+    :param geom: available shapefile possible entries: '50m_country', 'NUTS2'
+    """
+    from ocgis.util.shp_cabinet import ShpCabinetIterator
+    from ocgis import env
+    
+    if type(polygons) != list:
+      polygons = list([polygons])
+    
+    env.DIR_SHPCABINET = DIR_SHP
+    sc_iter = ShpCabinetIterator(geom)
+    result = []
+    
+    if geom == 'countries':
+      for row in sc_iter:
+        for polygon in polygons:
+          if row['properties']['ADM0_A3'] == polygon:
+            result.append(row['properties']['UGID'])
+              
+    elif geom == 'NUTS2':
+      for row in sc_iter:
+        for polygon in polygons:
+          if row['properties']['NUTS_ID'] == polygon:
+            result.append(row['properties']['UGID'])
+
+    elif geom == 'extremoscope':
+      for row in sc_iter:
+        for polygon in polygons:
+          if row['properties']['HASC_1'] == polygon:
+            result.append(row['properties']['UGID'])
+              
+    elif geom == 'continents':
+      for row in sc_iter:
+        for polygon in polygons:
+          if row['properties']['CONTINENT'] == polygon:
+            result.append(row['properties']['UGID'])    
+    else:
+      from ocgis import ShpCabinet
+      sc = ShpCabinet(DIR_SHP)
+      logger.error('geom: %s not found in ShapeCabinet. Available geoms are: %s ', geom, sc) 
+
+    return result
+
+def get_geom(polygon):
+
+  if polygon in _COUNTRIES_: # (polygon) == 3:
+    geom = 'countries'
+  elif polygon in _POLYGONS_EXTREMOSCOPE_: #len(polygon) == 5 and polygon[2] == '.': 
+    geom = 'extremoscope'
+  elif polygon in _CONTINENTS_: 
+    geom = 'continents'
+  else:
+    logger.error('polygon: %s not found in geoms', % polygon) 
+
+  return geom  
