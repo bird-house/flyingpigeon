@@ -120,7 +120,6 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
   if not type(climate_type) == list:
     climate_type = list([climate_type])
     
-  
   ncs = sort_by_filename(resource)
   print '%s experiments found' % (len(ncs))
   
@@ -144,24 +143,29 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
   
   for key in ncs.keys():
     try:
+      
       print 'process %s' % (key)
       calc =  [{'func':'mean','name':'tas'}]
       calc_group = calc_grouping('yr')
       prefix = key.replace(key.split('_')[7],'yr')
-      tas_files.append(prefix)
-      nc_tas = clipping(resource=ncs[key], variable='tas', calc=calc,  calc_grouping= calc_group, prefix=prefix, polygons='Europe', output_format='nc', dir_output=dir_netCDF_tas)[0]
-      print 'clipping done for %s' % (key)
+      if not os.path.exists(os.path.join(dir_netCDF_tas,prefix+'.nc')):
+        nc_tas = clipping(resource=ncs[key], variable='tas', calc=calc,  calc_grouping= calc_group, prefix=prefix, polygons='Europe', output_format='nc', dir_output=dir_netCDF_tas)[0]
+        print 'clipping done for %s' % (key)
+      else :
+        print 'allready done for %s' % (key)
+      tas_files.append(prefix)   
     except Exception as e:
       print 'clipping failed for %s: %s' % (key, e)
     try:
-      f, tmp = mkstemp(suffix='.asc',  dir=dir_output)
+      f, tmp = mkstemp()
       asc_tas = os.path.join(dir_ascii_tas,prefix + '.asc')
-      cmd = 'cdo outputtab,name,date,lon,lat,value %s > %s' % (nc_tas, tmp)
-      os.system(cmd)
-      print ('tanslation to ascii done')
-      remove_rows(tmp, asc_tas)
-      remove(tmp)
-      print ('rows with missing Values removed')
+      if not os.path.exists(asc_tas):
+        cmd = 'cdo outputtab,name,date,lon,lat,value %s > %s' % (nc_tas, tmp)
+        os.system(cmd)
+        print ('tanslation to ascii done')
+        remove_rows(tmp, asc_tas)
+        remove(tmp)
+        print ('rows with missing Values removed')
     except Exception as e: 
       print 'translation to ascii failed %s: %s' % (key, e)
     
@@ -169,40 +173,48 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
   for name in tas_files:
     for cult in culture_type: 
       for climat in climate_type:
+        calc = get_equation(culture_type=cult, climate_type=climat)
+#        print calc
         try: 
-          calc = get_equation(culture_type=cult, climate_type=climat)
-          var = 'sf%s%s' %(cult, climat)
-          prefix = name.replace('tas',var)
-          outputs.append(prefix)
-          infile = os.path.join(dir_netCDF_tas,name+'.nc')
-          print infile
-          dir_sf = os.path.join(dir_netCDF,var)
-          if not os.path.exists(dir_sf):
-            os.makedirs(dir_sf)
-            
-          rd = RequestDataset(infile, variable='tas')
-          op = OcgOperations(dataset=rd, calc=calc, prefix=prefix, output_format='nc', dir_output=dir_sf, add_auxiliary_files=False)
-          nc_sf = op.execute()
-          print 'segetalflora done for %s' % (prefix)
+          if type(calc) != None:
+            try:  
+              var = 'sf%s%s' %(cult, climat)
+              prefix = name.replace('tas',var)
+              outputs.append(prefix)
+              infile = os.path.join(dir_netCDF_tas,name+'.nc')
+              dir_sf = os.path.join(dir_netCDF,var)
+              if not os.path.exists(dir_sf):
+                os.makedirs(dir_sf)
+              if os.path.exists(os.path.join(dir_sf, prefix + '.nc')):
+                nc_sf = os.path.join(dir_sf, prefix + '.nc')
+                print 'netCDF file allredy exists'
+              else:
+                rd = RequestDataset(infile, variable='tas')
+                op = OcgOperations(dataset=rd, calc=calc, prefix=prefix, output_format='nc', dir_output=dir_sf, add_auxiliary_files=False)
+                nc_sf = op.execute()
+                print 'segetalflora done for %s' % (prefix)
+            #except Exception as e:
+              #print 'failed for netCDF file: %s' % (e)
+          
+            #try:
+              f, tmp = mkstemp()
+              dir_ascii_sf = os.path.join(dir_ascii,var)
+              if not os.path.exists(dir_ascii_sf):
+                os.makedirs(dir_ascii_sf)
+              asc_sf = os.path.join(dir_ascii_sf,prefix + '.asc')
+              if not os.path.exists(asc_sf):
+                cmd = 'cdo outputtab,name,date,lon,lat,value %s > %s' % (nc_sf, tmp)
+                os.system(cmd)
+                print ('tanslation to ascii done')
+                remove_rows(tmp, asc_sf)
+                remove(tmp)
+                print ('rows with missing Values removed')
+              else:
+                print 'ascii file allready exists'
+            except Exception as e: 
+              print 'failed for ascii file: %s' % (e)
+          else: 
+            print 'NO EQUATION found'
         except Exception as e: 
-          print 'netCDF segetalflora failed: %s' % (e)
-        
-        try:
-          
-          f, tmp = mkstemp(suffix='.asc',  dir=dir_output)
-          
-          dir_ascii_sf = os.path.join(dir_ascii,var)
-          if not os.path.exists(dir_ascii_sf):
-            os.makedirs(dir_ascii_sf)
-          asc_sf = os.path.join(dir_ascii_sf,prefix + '.asc')
-          
-          cmd = 'cdo outputtab,name,date,lon,lat,value %s > %s' % (nc_tas, tmp)
-          os.system(cmd)
-          print ('tanslation to ascii done')
-          remove_rows(tmp, asc_sf)
-          remove(tmp)
-          print ('rows with missing Values removed')
-          
-        except Exception as e: 
-          print 'failed for ascii file: %s' % (e)    
+            print 'Segetal flora failed: %s' % (e)  
   return outputs
