@@ -57,7 +57,6 @@ def masking(resource, mask, prefix=None, dir_output=None):
   return resource_masked
 
 
-
 def clipping(resource=[], variable=None, dimension_map=None, calc=None,  calc_grouping= None, prefix=None, polygons='Europe', dir_output=None):
   """ returns list of clipped netCDF files
   possible entries: 
@@ -73,6 +72,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  calc_gr
   """
   from ocgis import OcgOperations, RequestDataset , env
   from ocgis.util.large_array import compute
+  from flyingpigeon.utils import get_variable
   from numpy import sqrt
   env.DIR_SHPCABINET = DIR_SHP
   env.OVERWRITE = True
@@ -84,9 +84,6 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  calc_gr
     resource = list([resource])
   if type(polygons) != list:
     polygons = list([polygons])
-
-  if variable == None:
-    logger.error('No varable name for netCDF input files set')  
   
   try:
     geoms = []
@@ -105,7 +102,10 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  calc_gr
   ncs = sort_by_filename(resource)
   geom_files = []
   
-  for key in ncs: 
+  for key in ncs:
+    if variable == None:
+      variable = get_variable(ncs[key])
+      logger.info('variable %s detected in resource' % (variable))  
     try:    
       rd = RequestDataset(ncs[key], variable=variable, dimension_map=dimension_map)
       env.DIR_OUTPUT = dir_output
@@ -125,7 +125,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  calc_gr
       # element_in_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
       # element_in_mb = element_in_kb*0.001
       # tile_dim = sqrt(limit_memory_mb/(element_in_mb*nb_time_coordinates_rd))
-      #geom_file = compute(ops, tile_dimension=int(tile_dim), verbose=True)
+      # geom_file = compute(ops, tile_dimension=int(tile_dim), verbose=True)
       geom_files.append( geom_file  )
     except Exception as e:
         msg = 'ocgis calculations failed for %s ' % (key)
