@@ -7,7 +7,7 @@ from malleefowl import wpslogging as logging
 #import logging
 
 logger = logging.getLogger(__name__)
-from os.path import dirname, join
+from os.path import dirname, join, getsize
 
 DIR_MASKS = join(dirname(__file__), 'processes', 'masks')
 DIR_SHP = join(dirname(__file__), 'processes', 'shapefiles')
@@ -120,7 +120,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  calc_gr
       # swith beween chunking and 'en block' computation  
       fsize = 0 
       for nc in ncs[key]: 
-        fsize = fsize + os.path.getsize(nc)
+        fsize = fsize + getsize(nc)
       if fsize / 1000000 <= 300:          
         geom_file = ops.execute()
         geom_files.append( geom_file )
