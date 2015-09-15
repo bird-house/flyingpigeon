@@ -117,20 +117,26 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  calc_gr
         select_ugid=ugids, 
         geom=geom, 
         add_auxiliary_files=False)
-      geom_file = ops.execute()
-      
-      # calcultion of chunk size
-      # size = ops.get_base_request_size()
-      # nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
-      # element_in_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
-      # element_in_mb = element_in_kb*0.001
-      # tile_dim = sqrt(limit_memory_mb/(element_in_mb*nb_time_coordinates_rd))
-      # geom_file = compute(ops, tile_dimension=int(tile_dim), verbose=True)
-      geom_files.append( geom_file  )
+      # swith beween chunking and 'en block' computation  
+      fsize = 0 
+      for nc in ncs[key]: 
+        fsize = fsize + os.path.getsize(nc)
+      if fsize / 1000000 <= 300:          
+        geom_file = ops.execute()
+        geom_files.append( geom_file )
+      else: 
+        # calcultion of chunk size
+        size = ops.get_base_request_size()
+        nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
+        element_in_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
+        element_in_mb = element_in_kb*0.001
+        tile_dim = sqrt(limit_memory_mb/(element_in_mb*nb_time_coordinates_rd))
+        geom_file = compute(ops, tile_dimension=int(tile_dim), verbose=True)
+        geom_files.append( geom_file )
     except Exception as e:
-        msg = 'ocgis calculations failed for %s ' % (key)
-        logger.exception(msg)
-        raise CalculationException(msg, e)
+      msg = 'ocgis calculations failed for %s ' % (key)
+      logger.exception(msg)
+      raise CalculationException(msg, e)
   return  geom_files
 
 def get_dimension_map(resource): 
