@@ -17,7 +17,10 @@ except:
 
 # load test data
 from os.path import join, dirname
-__testdata_filename__ = join(dirname(__file__), 'testdata.json')
+try:
+    __testdata_filename__ = join(dirname(__file__), 'testdata.json')
+except:
+    pass
 
 try:
     from os.path import join
@@ -28,5 +31,6 @@ try:
         for key in TESTDATA.keys():
             TESTDATA[key] = str(TESTDATA[key]) 
 except:
-    logger.exception('could not read testdata! %s', __testdata_filename__ )
+    #logger.exception('could not read testdata! %s', __testdata_filename__ )
+    pass
 
