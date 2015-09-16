@@ -120,7 +120,7 @@ def indice_variable(indice):
     return variable
 
 def calc_indice_single(resource=[], variable=None, prefix=None,
-  indices="SU", polygons='FRA',  groupings="yr", 
+  indices="SU", polygons=None,  groupings="yr", 
   out_dir=None, dimension_map = None):
     """
     Calculates given indices for suitable files in the appopriate time grouping and polygon.
@@ -147,17 +147,14 @@ def calc_indice_single(resource=[], variable=None, prefix=None,
       resource = list([resource])
     if type(indices) != list: 
       indices = list([indices])
-    if type(polygons) != list:
+    if type(polygons) != list and polygons != None:
       polygons = list([polygons])
     if type(groupings) != list:
       groupings = list([groupings])
-
     
     from flyingpigeon.subset import clipping
-
     #from flyingpigeon.subset import select_ugid
-    #from ocgis.util.large_array import compute
-    tile_dim = 25
+    #    tile_dim = 25
     output = None
     
     experiments = sort_by_filename(resource)
@@ -169,39 +166,60 @@ def calc_indice_single(resource=[], variable=None, prefix=None,
         for indice in indices:
           try: 
             calc = [{'func' : 'icclim_' + indice, 'name' : indice}]
-            for polygon in polygons:
+            for grouping in groupings:
               try:
-                
-                #geom = get_geom(polygon=polygon)
-                #ugid = get_ugid(polygons=polygon, geom=geom)
-                
-                for grouping in groupings:
-                  try:
-                    calc_group = calc_grouping(grouping)
-                    tmp = clipping(resource=ncs, variable=variable, 
-                       dimension_map=dimension_map, 
-                       calc=calc,  
-                       calc_grouping= calc_group, 
-                       prefix=prefix, 
-                       polygons=polygons, 
-                       dir_output=out_dir)
-                    # rd = RequestDataset(uri=ncs, variable=variable, dimension_map=dimension_map)
-                    # ops = OcgOperations(
-                    #                 dataset=rd,
-                    #                 calc=calc,
-                    #                 geom=geom,
-                    #                 select_ugid= ugid, 
-                    #                 calc_grouping=calc_group,
-                    #                 prefix=prefix,
-                    #                 output_format='nc',
-                    #                 dir_output=out_dir,
-                    #                 add_auxiliary_files=False)
-                    # tmp = compute(ops, tile_dimension=tile_dim, verbose=True)
-                    outputs.append( tmp ) 
-                  except Exception as e:
-                    logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s', indice, key, polygon, grouping, e )  
+                calc_group = calc_grouping(grouping)
+                if polygons == None:
+                  try:  
+                    from ocgis import RequestDataset , OcgOperations
+                    from ocgis.util.large_array import compute
+                    from os.path import getsize
+                    from numpy import sqrt
+                    rd = RequestDataset(uri=ncs, variable=variable, dimension_map=dimension_map)
+                    ops = OcgOperations(
+                      dataset=rd,
+                      calc=calc,
+                      calc_grouping=calc_group,
+                      prefix=prefix,
+                      output_format='nc',
+                      dir_output=out_dir,
+                      add_auxiliary_files=False)
+                    # swith beween chunking and 'en block' computation  
+                    fsize = 0 
+                    limit_memory_mb = 475
+                    for nc in ncs: 
+                      fsize = fsize + getsize(nc)
+                    if fsize / 1000000 <= 500:          
+                      tmp = ops.execute()
+                      outputs.append( tmp )
+                    else: 
+                    # calcultion of chunk size
+                      size = ops.get_base_request_size()
+                      nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
+                      element_in_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
+                      element_in_mb = element_in_kb*0.001
+                      tile_dim = sqrt(limit_memory_mb/(element_in_mb*nb_time_coordinates_rd))
+                      geom_file = compute(ops, tile_dimension=int(tile_dim), verbose=True)
+                      geom_files.append( geom_file )
+                      tmp = compute(ops, tile_dimension=tile_dim, verbose=True)
+                      outputs.append(tmp)
+                  except Exception as e: 
+                    logger.exception('could not calc indice %s for domain in %s: %s', indice, key, e )   
+                else: 
+                  for polygon in polygons:
+                    try:
+                      tmp = clipping(resource=ncs, variable=variable, 
+                        dimension_map=dimension_map, 
+                        calc=calc,  
+                        calc_grouping= calc_group, 
+                        prefix=prefix, 
+                        polygons=polygons, 
+                        dir_output=out_dir)
+                      outputs.append( tmp ) 
+                    except Exception as e:
+                      logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s', indice, key, polygon, grouping, e )  
               except Exception as e:
-                logger.exception('could not calc indice %s for key %s and polygon%s : %s', indice, key, polygon, e )  
+                logger.exception('could not calc indice %s for key %s and calc_grouping %s : %s', indice, key, polygon, e )  
           except Exception as e:
             logger.exception('could not calc indice %s for key %s: %s', indice, key, e )        
       except Exception as e:

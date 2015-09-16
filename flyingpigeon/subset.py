@@ -76,9 +76,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  calc_gr
   from numpy import sqrt
   env.DIR_SHPCABINET = DIR_SHP
   env.OVERWRITE = True
-
   limit_memory_mb = 475.0 # to reduce the load of the memory, calculation is perfored in chunks
-
 
   if type(resource) != list: 
     resource = list([resource])
@@ -121,7 +119,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  calc_gr
       fsize = 0 
       for nc in ncs[key]: 
         fsize = fsize + getsize(nc)
-      if fsize / 1000000 <= 300:          
+      if fsize / 1000000 <= 500:          
         geom_file = ops.execute()
         geom_files.append( geom_file )
       else: 
