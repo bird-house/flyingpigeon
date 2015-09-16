@@ -5,7 +5,6 @@ sudo: required
 install:
   - make
 script:
-  - export GDAL_DATA=/home/travis/.conda/envs/birdhouse/share/gdal
-  - make test
+  - export GDAL_DATA=/home/travis/.conda/envs/birdhouse/share/gdal; make test
 #after_success:
 # - coveralls
