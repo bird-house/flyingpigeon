@@ -206,7 +206,7 @@ passwd: custom.cfg
 .PHONY: test
 test:
 	@echo "Running tests (skip slow tests) ..."
-	bin/nosetests -a '!slow' unit_tests
+	bin/nosetests -A 'not slow and not online and not testdata' unit_tests
 
 .PHONY: testall
 testall:

@@ -16,7 +16,7 @@ EOT
 install_pkgs() {
     if [ -f /etc/debian_version ] ; then
         echo "Install Debian/Ubuntu packages for Birdhouse build ..."
-        sudo apt-get update && sudo apt-get -y install python wget curl build-essential
+        sudo apt-get update && sudo apt-get -y install python wget curl build-essential unzip
         sudo apt-get -y install vim-common # anaconda needs xxd
     elif [ -f /etc/redhat-release ] ; then
         echo "Install CentOS packages for Birdhouse build ..."
@@ -29,6 +29,7 @@ install_pkgs() {
         sudo yum install -y make
         sudo yum install -y tar
         sudo yum install -y bzip2
+        sudo yum install -y unzip
         sudo yum install -y vim-common  # anaconda needs xxd
     elif [ `uname -s` = "Darwin" ] ; then
         echo "Install Homebrew packages for Birdhouse build ..."
