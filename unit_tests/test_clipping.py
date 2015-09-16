@@ -20,21 +20,22 @@ class ClippingTestCase(TestCase):
         
         # TODO: ocgis does not like file:// urls
         # tas
-        cls.tas_historical_2001_nc = local_path(
-            TESTDATA["tas_EUR-11_ICHEC-EC-EARTH_historical_r1i1p1_KNMI-RACMO22E_v1_mon_200101-200512.nc"])
-        cls.tas_rcp45_2006_nc = local_path(
-            TESTDATA['tas_EUR-11_ICHEC-EC-EARTH_rcp45_r1i1p1_KNMI-RACMO22E_v1_mon_200601-201012.nc'])
-        # cmip5 ...
-        cls.cmip5_historical_1850_nc = local_path(
-            TESTDATA['cct_Amon_MPI-ESM-LR_historical_r1i1p1_185001-200512.nc'])
-        # pr cordex ...
-        cls.pr_rcp85_2011_nc = local_path(
-            TESTDATA['pr_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20110101-20151231.nc'])
-        # tasmax eur-44 day
-        cls.tasmax_eur44_day_2021_nc = local_path(
-            TESTDATA['tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20210101-20251231.nc'])
+        ## cls.tas_historical_2001_nc = local_path(
+        ##     TESTDATA["tas_EUR-11_ICHEC-EC-EARTH_historical_r1i1p1_KNMI-RACMO22E_v1_mon_200101-200512.nc"])
+        ## cls.tas_rcp45_2006_nc = local_path(
+        ##     TESTDATA['tas_EUR-11_ICHEC-EC-EARTH_rcp45_r1i1p1_KNMI-RACMO22E_v1_mon_200601-201012.nc'])
+        ## # cmip5 ...
+        ## cls.cmip5_historical_1850_nc = local_path(
+        ##     TESTDATA['cct_Amon_MPI-ESM-LR_historical_r1i1p1_185001-200512.nc'])
+        ## # pr cordex ...
+        ## cls.pr_rcp85_2011_nc = local_path(
+        ##     TESTDATA['pr_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20110101-20151231.nc'])
+        ## # tasmax eur-44 day
+        ## cls.tasmax_eur44_day_2021_nc = local_path(
+        ##     TESTDATA['tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_CLMcom-CCLM4-8-17_v1_day_20210101-20251231.nc'])
 
     def test_select_ugid(self):
+        raise SkipTest
         from flyingpigeon.clipping import select_ugid
         nose.tools.ok_(select_ugid('AUT') == [17], select_ugid('AUT'))
         nose.tools.ok_(select_ugid('FIN') == [70], select_ugid('FIN'))
@@ -87,7 +88,7 @@ class ClippingTestCase(TestCase):
         nose.tools.ok_('tasmax' in ds.variables, ds.variables.keys())
 
     def test_proj_cordex_1(self):
-        #raise SkipTest
+        raise SkipTest
         import subprocess
         import shlex
         cmd = 'proj -f "%.6f" -m 57.2957795130823 +proj=ob_tran +o_proj=latlon +o_lon_p=-162.0 +o_lat_p=39.25 +lon_0=180'
