@@ -1,10 +1,15 @@
 language: python
+branches:
+  only:
+    - develop
+    - master
 python:
   - "2.7"
-sudo: required
+sudo: false
 install:
-  - make
+  - make install
 script:
-  - export GDAL_DATA=/home/travis/.conda/envs/birdhouse/share/gdal; make test
+  - export GDAL_DATA=/home/travis/.conda/envs/birdhouse/share/gdal 
+  - make test
 #after_success:
 # - coveralls

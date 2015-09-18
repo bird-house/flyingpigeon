@@ -9,7 +9,7 @@ TESTDATA = {}
 # TODO: set GDAL_DATA in a save way
 import os
 from os.path import join
-os.environ['GDAL_DATA'] = join(os.environ['HOME'], 'anaconda', 'share', 'gdal')
+#os.environ['GDAL_DATA'] = join(os.environ['HOME'], 'anaconda', 'share', 'gdal')
 try:
     import ocgis
 except:
