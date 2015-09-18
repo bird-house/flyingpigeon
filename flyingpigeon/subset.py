@@ -57,7 +57,8 @@ def masking(resource, mask, prefix=None, dir_output=None):
   return resource_masked
 
 
-def clipping(resource=[], variable=None, dimension_map=None, calc=None,  calc_grouping= None, prefix=None, polygons='Europe', dir_output=None):
+def clipping(resource=[], variable=None, dimension_map=None, calc=None,  
+  calc_grouping= None, prefix=None, polygons='Europe', dir_output=None):
   """ returns list of clipped netCDF files
   possible entries: 
   :param resource: list of input netCDF files
