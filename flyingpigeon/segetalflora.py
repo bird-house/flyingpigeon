@@ -149,7 +149,7 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
       calc_group = calc_grouping('yr')
       prefix = key.replace(key.split('_')[7],'yr')
       if not os.path.exists(os.path.join(dir_netCDF_tas,prefix+'.nc')):
-        nc_tas = clipping(resource=ncs[key], variable='tas', calc=calc,  calc_grouping= calc_group, prefix=prefix, polygons='Europe', output_format='nc', dir_output=dir_netCDF_tas)[0]
+        nc_tas = clipping(resource=ncs[key], variable='tas', calc=calc,  calc_grouping= calc_group, prefix=prefix, polygons='Europe', dir_output=dir_netCDF_tas)[0]
         print 'clipping done for %s' % (key)
       else :
         print 'allready done for %s' % (key)
@@ -157,7 +157,7 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
     except Exception as e:
       print 'clipping failed for %s: %s' % (key, e)
     try:
-      f, tmp = mkstemp()
+      f, tmp = mkstemp(dir=dir_output)
       asc_tas = os.path.join(dir_ascii_tas,prefix + '.asc')
       if not os.path.exists(asc_tas):
         cmd = 'cdo outputtab,name,date,lon,lat,value %s > %s' % (nc_tas, tmp)
@@ -168,6 +168,8 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
         print ('rows with missing Values removed')
     except Exception as e: 
       print 'translation to ascii failed %s: %s' % (key, e)
+      if os.path.exists(tmp):
+        remove(tmp)
     
   outputs = []  
   for name in tas_files:
@@ -197,12 +199,12 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
               #print 'failed for netCDF file: %s' % (e)
           
             #try:
-              f, tmp = mkstemp()
               dir_ascii_sf = os.path.join(dir_ascii,var)
               if not os.path.exists(dir_ascii_sf):
                 os.makedirs(dir_ascii_sf)
               asc_sf = os.path.join(dir_ascii_sf,prefix + '.asc')
               if not os.path.exists(asc_sf):
+                f, tmp = mkstemp(dir=dir_output)
                 cmd = 'cdo outputtab,name,date,lon,lat,value %s > %s' % (nc_sf, tmp)
                 os.system(cmd)
                 print ('tanslation to ascii done')
@@ -213,6 +215,8 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
                 print 'ascii file allready exists'
             except Exception as e: 
               print 'failed for ascii file: %s' % (e)
+              if os.path.exists(tmp):
+                remove(tmp)
           else: 
             print 'NO EQUATION found'
         except Exception as e: 
