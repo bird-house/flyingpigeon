@@ -108,6 +108,8 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
   from cdo import Cdo
   cdo = Cdo()
   
+  if not os.path.exists(dir_output):
+    os.makedirs(dir_output)
   os.chdir(dir_output)
   
   #outputs = []
@@ -143,7 +145,6 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
   
   for key in ncs.keys():
     try:
-      
       print 'process %s' % (key)
       calc =  [{'func':'mean','name':'tas'}]
       calc_group = calc_grouping('yr')
@@ -153,7 +154,10 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
         print 'clipping done for %s' % (key)
       else :
         print 'allready done for %s' % (key)
-      tas_files.append(prefix)   
+      if os.path.exists(os.path.join(dir_netCDF_tas,prefix+'.nc')):
+        tas_files.append(prefix)
+      else: 
+        print 'clipping failed for %s: No output file exists' % (key)
     except Exception as e:
       print 'clipping failed for %s: %s' % (key, e)
     try:
