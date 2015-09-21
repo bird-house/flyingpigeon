@@ -215,7 +215,8 @@ def calc_indice_single(resource=[], variable=None, prefix=None,
                         prefix=prefix, 
                         polygons=polygons, 
                         dir_output=out_dir)
-                      outputs.append( tmp ) 
+                      for t in tmp: 
+                        outputs.append( t ) 
                     except Exception as e:
                       logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s', indice, key, polygon, grouping, e )  
               except Exception as e:
