@@ -1,4 +1,4 @@
-VERSION := 0.2.7
+VERSION := 0.2.8
 RELEASE := master
 
 # Application
@@ -14,6 +14,9 @@ ANACONDA_HOME ?= $(HOME)/anaconda
 CONDA_ENV := birdhouse
 CONDA_ENVS_DIR ?= $(HOME)/.conda/envs
 PREFIX := $(CONDA_ENVS_DIR)/$(CONDA_ENV)
+
+# Configuration used by update-config
+HOSTNAME ?= localhost
 
 # choose anaconda installer depending on your OS
 ANACONDA_URL = http://repo.continuum.io/miniconda
@@ -172,6 +175,16 @@ sysinstall:
 install: bootstrap
 	@echo "Installing application with buildout ..."
 	bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);bin/buildout -c custom.cfg"
+
+.PHONY: update
+update:
+	@echo "Update application with buildout ..."
+	bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);bin/buildout -o -c custom.cfg"
+
+.PHONY: update-config
+update-config:
+	@echo "Update application with buildout ..."
+	bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);bin/buildout settings:hostname=$(HOSTNAME) -o"
 
 .PHONY: build
 build: install
