@@ -1,39 +1,42 @@
-FROM ubuntu:14.04
-MAINTAINER Flyingpigeon WPS Application
+FROM birdhouse/bird-base:latest
+MAINTAINER https://github.com/bird-house
+
+LABEL Description="Flyingpigeon WPS Application" Vendor="Birdhouse" Version="0.2.0"
 
 
-# Add user phoenix
-RUN useradd -d /home/phoenix -m phoenix
+# Set current home
+ENV HOME /root
 
-# Add bootstrap and application requirements
-ADD ./bootstrap.sh /tmp/bootstrap.sh
-ADD ./requirements.sh /tmp/requirements.sh
+# Add application sources
+ADD . /opt/birdhouse
 
-WORKDIR /tmp
+# cd into application
+WORKDIR /opt/birdhouse
 
 # Install system dependencies
 RUN bash bootstrap.sh -i && bash requirements.sh
 
-# Add application sources
-ADD . /home/phoenix/src
+# Set conda enviroment
+ENV ANACONDA_HOME /opt/conda
+ENV CONDA_ENVS_DIR /opt/conda/envs
 
-# Change permissions for user phoenix
-RUN chown -R phoenix /home/phoenix/src
+# Run install
+RUN make clean install 
 
-# cd into application
-WORKDIR /home/phoenix/src
+# Volume for data, cache, logfiles, ...
+RUN chown -R www-data $CONDA_ENVS_DIR/birdhouse
+RUN mv $CONDA_ENVS_DIR/birdhouse/var /data && ln -s /data $CONDA_ENVS_DIR/birdhouse/var
+VOLUME /data
 
-# Remaining tasks run as user phoenix
-USER phoenix
+# Configure hostname and user for services 
+ENV HOSTNAME localhost
 
-# Update makefile and run install
-RUN bash bootstrap.sh -u && make clean install 
+# Ports used in birdhouse
+EXPOSE 8090 9001 8094 28094
 
-# cd into conda birdhouse environment
-WORKDIR /home/phoenix/.conda/envs/birdhouse
+# Start supervisor in foreground
+ENV DAEMON_OPTS --nodaemon --user www-data
 
-# all currently used ports in birdhouse
-EXPOSE 8080 8081 8082 8090 8091 8092 8093 8094 9001 9002
-
-CMD ["bin/supervisord", "-n", "-c", "etc/supervisor/supervisord.conf"]
+# Update config and start supervisor ...
+CMD ["make", "update-config", "start"]
 
