@@ -1,0 +1,9 @@
+flyingpigeon:
+  image: birdhouse/flyingpigeon
+  ports:
+    - "38093:38093"
+    - "8093:8093"
+  environment:
+    HOSTNAME: localhost
+    OUTPUT_PORT: 38093
+
