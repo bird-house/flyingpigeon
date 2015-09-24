@@ -173,7 +173,7 @@ def uncertainty(resouces , variable=None, title=None, dir_out=None):
     
     
     save(fig)
-    hold('off')
+    #hold('off')
   
     logger.debug('timesseries uncertainty plot done for %s with %s lines.'% (variable, c)) 
   except Exception as e:
