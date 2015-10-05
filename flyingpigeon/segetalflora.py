@@ -212,7 +212,8 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
       calc_group = calc_grouping('yr')
       prefix = key.replace(key.split('_')[7],'yr')
       if not os.path.exists(os.path.join(dir_netCDF_tas,prefix+'.nc')):
-        nc_tas = clipping(resource=ncs[key], variable='tas', calc=calc, dimension_map=dimension_map,  calc_grouping= calc_group, prefix=prefix, polygons='Europe', dir_output=dir_netCDF_tas)[0]
+        nc_tas = clipping(resource=ncs[key], variable='tas', calc=calc, dimension_map=dimension_map, 
+          calc_grouping= calc_group, prefix=prefix, polygons='Europe', dir_output=dir_netCDF_tas)[0]
         print 'clipping done for %s' % (key)
         if os.path.exists(os.path.join(dir_netCDF_tas,prefix+'.nc')):
           tas_files.append(prefix)
@@ -234,6 +235,9 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
         remove(tmp)
         print ('rows with missing Values removed')
         plot_ascii(asc_tas)
+      else:
+        print 'ascii file allready exists'
+        plot_ascii(asc_tas)  
     except Exception as e: 
       print 'translation to ascii failed %s: %s' % (key, e)
       if os.path.exists(tmp):
@@ -281,6 +285,7 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
                 plot_ascii(asc_sf)
               else:
                 print 'ascii file allready exists'
+                plot_ascii(asc_sf)
             except Exception as e: 
               print 'failed for ascii file: %s %s ' % (name, e)
               if os.path.exists(tmp):
