@@ -167,7 +167,6 @@ def get_dimension_map(resource):
   dim_map5 = {'X': {'variable': 'x', 'dimension': 'x', 'pos': 2},
               'Y': {'variable': 'y', 'dimension': 'y', 'pos': 1},
               'T': {'variable': 'time', 'dimension': 'time', 'pos': 0 }}
-
   
   if 'CM5A-MR_WRF331F' in file_name: 
     dimension_map = dim_map1
