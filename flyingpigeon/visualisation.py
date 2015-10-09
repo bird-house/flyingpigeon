@@ -50,8 +50,11 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
           dt =  utils.get_time(nc) # [datetime.strptime(elem, '%Y-%m-%d') for elem in strDate[0]]
           ds=Dataset(nc)
           data = np.squeeze(ds.variables[variable][:])
-          meanData = np.mean(data,axis=1)
-          ts = np.mean(meanData,axis=1)
+          if len(data.shape) == 3: 
+            meanData = np.mean(data,axis=1)
+            ts = np.mean(meanData,axis=1)
+          else: 
+            ts = data
           fig.line( dt,ts )
         except Exception as e:
           logger.exception('bokeh lineplot failed for %s: %s\n' % (nc, e))
@@ -133,8 +136,11 @@ def uncertainty(resouces , variable=None, title=None, dir_out=None):
 
         ds=Dataset(resouces[y])
         data = np.squeeze(ds.variables[variable][:])
-        meanData = np.mean(data,axis=1)
-        ts = np.mean(meanData,axis=1)
+        if len(data.shape) == 3: 
+          meanData = np.mean(data,axis=1)
+          ts = np.mean(meanData,axis=1)
+        else: 
+          ts = data
         logger.debug('ts array  : %s ' % (len(ts)) )
         
         for t in range(0, len(strDate)) : 
