@@ -42,7 +42,7 @@ class VisualisationProcess(WPSProcess):
             identifier="variable",
             title="Variable",
             abstract="Variable to be expected in the input files",
-            default="tas",
+            default=None,
             type=type(''),
             minOccurs=0,
             maxOccurs=1,
