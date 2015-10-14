@@ -5,8 +5,7 @@ Following are the modules in flyingpigeon
 
 .. contents::
     :local:
-    :depth: 1
-
+    :depth: 2
 
      
 .. _flyingpigeon.base:
@@ -18,15 +17,6 @@ Following are the modules in flyingpigeon
    :members:
    :undoc-members:
  
- 
-.. _flyingpigeon.clipping:
-
-``flyingpigeon.clipping``
-------------------------
-
-.. automodule:: flyingpigeon.clipping
-   :members:
-   :undoc-members:
    
 .. _flyingpigeon.exceptions:
 
@@ -57,12 +47,12 @@ Following are the modules in flyingpigeon
    :undoc-members:
    
     
-.. _flyingpigeon.indices:
+.. _flyingpigeon.indices_single:
 
-``flyingpigeon.indices``
+``flyingpigeon.indices_single``
 ------------------------
 
-.. automodule:: flyingpigeon.indices
+.. automodule:: flyingpigeon.indices_single
    :members:
    :undoc-members:
     
@@ -82,12 +72,17 @@ Following are the modules in flyingpigeon
 ``flyingpigeon.subsetting``
 ------------------------
 
-.. automodule:: flyingpigeon.subsetting
+.. _flyingpigeon.subset:
+
+``flyingpigeon.subset``
+------------------------
+
+.. automodule:: flyingpigeon.subset
    :members:
    :undoc-members:
 
 
-.. _flyingpigeon.timeseries:
+.. automodule:: _flyingpigeon.timeseries:
 
 ``flyingpigeon.timeseries``
 ------------------------
@@ -95,7 +90,6 @@ Following are the modules in flyingpigeon
 .. automodule:: flyingpigeon.timeseries
    :members:
    :undoc-members:
-   
    
 .. _flyingpigeon.utils:
 
@@ -105,8 +99,6 @@ Following are the modules in flyingpigeon
 .. automodule:: flyingpigeon.utils
    :members:
    :undoc-members:
-
-   
  
 .. _flyingpigeon.visualisation:
 
@@ -116,4 +108,3 @@ Following are the modules in flyingpigeon
 .. automodule:: flyingpigeon.visualisation
    :members:
    :undoc-members:
- 
