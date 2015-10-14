@@ -7,10 +7,16 @@ Following are the modules in flyingpigeon
     :local:
     :depth: 2
 
+    
+.. autosummary::
+   :toctree: ../../flyingpigeon
+
+   sphinx.environment.BuildEnvironment
+   sphinx.util.relative_uri    
      
 .. _flyingpigeon.base:
 
-``flyingpigeon.base``
+``../flyingpigeon.base``
 ------------------------
 
 .. automodule:: flyingpigeon.base
