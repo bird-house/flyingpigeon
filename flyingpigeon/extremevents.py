@@ -1,3 +1,5 @@
+from os.path import exists
+
 def RL(T,a,b,s):
     """Calculation of return levels.
     RL(T,a,b,s)

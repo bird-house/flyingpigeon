@@ -20,11 +20,9 @@ import os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
 
-syspath = os.path.abspath(os.path.join(os.path.dirname(__file__)+'./../../../malleefowl/'))
-print syspath
-sys.path.insert(0, syspath )
-
-
+sys.path.insert(0, os.path.abspath(os.path.join(os.environ['HOME']+'birdhouse/malleefowl/')) )
+sys.path.insert(0, os.path.abspath(os.path.join(os.environ['HOME']+'birdhouse/flyingpigeon/')))
+sys.path.insert(0, os.environ['PYTHONPATH'])
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -187,7 +185,6 @@ html_theme = 'default'
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'Flyingpigeondoc'
-
 
 # -- Options for LaTeX output ---------------------------------------------
 
