@@ -1,4 +1,3 @@
-""" processes for visualisation """
 from malleefowl import wpslogging as logging
 #import logging
 logger = logging.getLogger(__name__)
@@ -11,15 +10,14 @@ import numpy as np
 
 from bokeh.plotting import figure, output_file, save 
 
-
 def spaghetti(resouces, variable=None, title=None, dir_out=None):
-  """
-  retunes an html file containing the appropriate spaghetti plot. 
-  
-  :param resouces: list of files containing the same variable 
-  :param variable: variable to be visualised, if None (default) variable will be detected
-  :param title: sting to be used as title
-  """
+    """
+    retunes an html file containing the appropriate spaghetti plot. 
+    
+    :param resouces: list of files containing the same variable 
+    :param variable: variable to be visualised, if None (default) variable will be detected
+    :param title: sting to be used as title
+    """
   
   logger.debug('Start visualisation spagetti plot')
   
