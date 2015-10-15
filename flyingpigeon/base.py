@@ -31,7 +31,6 @@ def get_status_logger(filename="status.log"):
     return status_logger
 
 class BasePE(GenericPE):
-    
     def __init__(self, out_dir='.', monitor=None):
         GenericPE.__init__(self)
         self.out_dir = out_dir

@@ -1,5 +1,4 @@
 from malleefowl import wpslogging as logging
-#import logging
 logger = logging.getLogger(__name__)
 
 from os import path , mkdir, listdir
