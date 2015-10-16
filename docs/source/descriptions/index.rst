@@ -46,6 +46,28 @@ The appraoch is to be performed in two steps:
 * future projection based on the statistical training
 
 
+.. _subset: 
+
+Subset
+------
+
+generates a polygon subset of input netCDF files 
+
+
+Based on an ocgis call, several predfined polygons ( world counties ) can be used to generate an appropriate subset of input netCDF files. 
+The option 'MOSAIK' as an checkbox allows you to decide in case of multiple polygon selection, if the polygons are stiched together to one polygon (e.g. shape of Germany and France as one polygon) or calculated as seperte output files. 
+
+For optimisation of processing the subset, the appropriate shapefile are prepared with the following stepps: 
+
+
+.. toctree::
+   :maxdepth: 1
+
+   shapefilepreparation
+
+
+
+
 .. _vbd: 
 
 Vector borne diseases
