@@ -5,6 +5,12 @@ Pour agrandir le « scope » du Extremoscope de la France en Europe, nous obteno
 
 Ouvre le répertoire gdb
 
+
+.. image:: ../pics/screenshot-from-2015-08-06-18-01-09.png
+   :alt: alternate text
+   :align: center
+
+
 Pour ouvrir gadm26_levels.gdb avec qgis, suivre les étapes ci-dessous:
 
 Add Vector Layer ->
