@@ -21,13 +21,11 @@ Following are the modules in flyingpigeon
    :members:
    :undoc-members:
    
-   
 .. _flyingpigeon.indices_single
 ``indices_single``
 ------------------------
 .. automodule:: flyingpigeon.indices_single
    :members:
-   :undoc-members:
    
 .. _flyingpigeon.modelUncertainty
 ``modelUncertainty``
