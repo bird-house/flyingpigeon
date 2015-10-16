@@ -1,8 +1,15 @@
+from malleefowl import wpslogging as logging
+logger = logging.getLogger(__name__)
+
 from os.path import exists
 
 def RL(T,a,b,s):
     """Calculation of return levels.
-    RL(T,a,b,s)
+    
+    :param T: number of timestepps 
+    :param a:
+    :param b:
+    :param s:
     """
     T = float(T)
     from math import log 
@@ -21,8 +28,7 @@ def resample(X, n=None):
     
     :param X: array_like data to resample
     :param n: int, optional length of resampled array, equal to len(X) if n==None Results 
-    ------
-    returns X_resample"""
+    """
     
     from random import sample, uniform
     
@@ -38,7 +44,8 @@ def rl_bootstrap(data, T=100, nsim=1000):
     
     :param data: list of input data
     :param T: timestep period
-    :param nsim: number of recalcualtions"""
+    :param nsim: number of recalcualtions
+    """
     
     from scipy.stats import genextreme as gev
     
@@ -60,7 +67,8 @@ def eventdistribution(data, per=[5,95], nsim=1000, rp = [ 10., 20., 50., 100., 2
     :param rp: list of return timestepps
     :param rp_scale_factor: scale factor for rp
     :param std_err: default = True
-    :param white_noise: add a white noise (random number between 0 to std/10). In case of singular timeseries"""
+    :param white_noise: add a white noise (random number between 0 to std/10). In case of singular timeseries
+    """
     
     from scipy.stats import genextreme as gev
     from numpy import percentile, vstack

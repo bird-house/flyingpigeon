@@ -20,9 +20,13 @@ import os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.environ['HOME']+'birdhouse/malleefowl/')) )
-sys.path.insert(0, os.path.abspath(os.path.join(os.environ['HOME']+'birdhouse/flyingpigeon/')))
-sys.path.insert(0, os.environ['PYTHONPATH'])
+#sys.path.insert(0, os.path.abspath(os.path.join(os.environ['HOME']+'birdhouse/malleefowl/')) )
+#sys.path.insert(0, os.path.abspath(os.path.join(os.environ['HOME']+'birdhouse/flyingpigeon/')))
+
+site_packages = '.conda/envs/birdhouse/lib/python2.7/site-packages/'
+sys.path.insert(0,os.path.abspath(os.path.join(os.environ['HOME'], site_packages)))
+
+#sys.path.insert(0, os.environ['PYTHONPATH'])
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.

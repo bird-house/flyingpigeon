@@ -5,11 +5,10 @@ Following are the executeable processes in flyingpigeon
 
 .. contents::
     :local:
-    :depth: 2
+    :depth: 10
  
-
 .. _flyingpigeon.processes.indices_single:   
-``indices single variable``
+``indices_single``
 ----------------------------------
 .. automodule:: flyingpigeon.processes.indices_single
    :members:
