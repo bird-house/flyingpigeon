@@ -7,11 +7,10 @@ from malleefowl import wpslogging as logging
 #import logging
 
 logger = logging.getLogger(__name__)
-from os.path import dirname, join, getsize
+from os.path import dirname, join, getsize, abspath
 
-DIR_MASKS = join(dirname(__file__), 'processes', 'masks')
-DIR_SHP = join(dirname(__file__), 'processes', 'shapefiles')
-
+DIR_MASKS = join(abspath(dirname(__file__)), 'processes', 'masks')
+DIR_SHP = join(abspath(dirname(__file__)), 'processes', 'shapefiles')
 
 def countries():
     """
