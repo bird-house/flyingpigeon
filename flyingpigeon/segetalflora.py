@@ -168,6 +168,7 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
   
   if not os.path.exists(dir_output):
     os.makedirs(dir_output)
+  
   os.chdir(dir_output)
   #outputs = []
   
@@ -181,6 +182,7 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
     
   ncs = sort_by_filename(resource)
   print '%s experiments found' % (len(ncs))
+  print 'keys: %s ' % (ncs.keys())
   
   # generate outfolder structure: 
   
@@ -200,10 +202,6 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
 
   tas_files = []
   
-  dimension_map = {'X': {'variable': 'lon', 'dimension': 'rlon', 'pos': 2},
-                   'Y': {'variable': 'lat', 'dimension': 'rlat', 'pos': 1},
-                   'T': {'variable': 'time', 'dimension': 'time', 'pos': 0 }}
-  
   for key in ncs.keys():
     try:
       print 'process %s' % (key)
@@ -211,7 +209,7 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
       calc_group = calc_grouping('yr')
       prefix = key.replace(key.split('_')[7],'yr')
       if not os.path.exists(os.path.join(dir_netCDF_tas,prefix+'.nc')):
-        nc_tas = clipping(resource=ncs[key], variable='tas', calc=calc, dimension_map=dimension_map,  
+        nc_tas = clipping(resource=ncs[key], variable='tas', calc=calc, dimension_map=None,  
           calc_grouping= calc_group, prefix=prefix, polygons='Europe', dir_output=dir_netCDF_tas)[0]
         print 'clipping done for %s' % (key)
         if os.path.exists(os.path.join(dir_netCDF_tas,prefix+'.nc')):
@@ -219,24 +217,27 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
         else: 
           print 'clipping failed for %s: No output file exists' % (key)
       else :
-        print 'allready done for %s' % (key)
-        nc_tas = os.path.exists(os.path.join(dir_netCDF_tas,prefix+'.nc'))
+        print 'netCDF file allready exists %s' % (key)
+        nc_tas = os.path.join(dir_netCDF_tas,prefix+'.nc')
     except Exception as e:
       print 'clipping failed for %s: %s' % (key, e)
     try:
       asc_tas = os.path.join(dir_ascii_tas,prefix + '.asc')
       if not os.path.exists(asc_tas):
-        f, tmp = mkstemp(dir=dir_output)
+        f, tmp = mkstemp(dir=os.curdir, suffix='.asc')
+        tmp = tmp.replace(os.path.abspath(os.curdir),'.')
+
+        #cdo.outputtab('name,date,lon,lat,value', input = nc_tas , output = tmp)
         cmd = 'cdo outputtab,name,date,lon,lat,value %s > %s' % (nc_tas, tmp)
+        print cmd
         os.system(cmd)
         print ('tanslation to ascii done')
         remove_rows(tmp, asc_tas)
         remove(tmp)
         print ('rows with missing Values removed')
-        plot_ascii(asc_tas)
       else: 
         print ('tas ascii allready exists')
-        plot_ascii(asc_tas)  
+      plot_ascii(asc_tas)  
     except Exception as e: 
       print 'translation to ascii failed %s: %s' % (key, e)
       if os.path.exists(tmp):
@@ -276,17 +277,18 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
                 os.makedirs(dir_ascii_sf)
               asc_sf = os.path.join(dir_ascii_sf,prefix + '.asc')
               if not os.path.exists(asc_sf):
-                f, tmp = mkstemp(dir=dir_output)
+                f, tmp = mkstemp(dir=os.curdir, suffix='.asc')
+                tmp = tmp.replace(os.path.abspath(os.curdir),'.')
+                #cdo.outputtab('name,date,lon,lat,value', input = nc_sf , output = tmp)
                 cmd = 'cdo outputtab,name,date,lon,lat,value %s > %s' % (nc_sf, tmp)
                 os.system(cmd)
                 print ('tanslation to ascii done')
                 remove_rows(tmp, asc_sf)
                 remove(tmp)
                 print ('rows with missing Values removed')
-                plot_ascii(asc_sf)
               else:
                 print 'ascii file allready exists'
-                plot_ascii(asc_sf)
+              plot_ascii(asc_sf)
             except Exception as e: 
               print 'failed for ascii file: %s %s ' % (name, e)
               if os.path.exists(tmp):
