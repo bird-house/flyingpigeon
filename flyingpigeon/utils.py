@@ -128,6 +128,16 @@ def get_variable(nc_file):
     return rd.variable
 
 
+def get_domain(nc_file):
+    """
+    returns the variable name (str)
+    :param nc_file: NetCDF file
+    """
+    rd = ocgis.RequestDataset(nc_file)
+    return rd.variable
+
+
+
 def get_timestamps(nc_file):
     """
     returns from/to timestamp of given netcdf file.

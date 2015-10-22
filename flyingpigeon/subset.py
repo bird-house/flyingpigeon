@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 from os.path import dirname, join, getsize, abspath
 
 DIR_MASKS = join(abspath(dirname(__file__)), 'processes', 'masks')
+
 DIR_SHP = join(abspath(dirname(__file__)), 'processes', 'shapefiles')
 
 def countries():
@@ -57,7 +58,7 @@ def masking(resource, mask, prefix=None, dir_output=None):
 
 
 def clipping(resource=[], variable=None, dimension_map=None, calc=None,  
-  calc_grouping= None, prefix=None, polygons='Europe', dir_output=None):
+  calc_grouping= None, prefix=None, polygons=None, mosaik=False, dir_output=None):
   """ returns list of clipped netCDF files
   possible entries: 
   :param resource: list of input netCDF files
@@ -65,77 +66,85 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
   :param dimesion_map: specify a dimension map input netCDF has unconventional dimension
   :param calc: ocgis calculation argument
   :param calc_grouping: ocgis calculation grouping 
-  :param prefix: prfix for output file name
+  :param prefix: perfix for output file name
   :param polygons: list of polygons to be used. if more than 1 in the list, a appropriate mosaik will be clipped
   :param output_format: output_format (default='nc')
   :param dir_output: specify a output location
   """
-  from ocgis import OcgOperations, RequestDataset , env
-  from ocgis.util.large_array import compute
-  from flyingpigeon.utils import get_variable
-  from numpy import sqrt
-  env.DIR_SHPCABINET = DIR_SHP
-  env.OVERWRITE = True
-  limit_memory_mb = 475.0 # to reduce the load of the memory, calculation is perfored in chunks
+  #from ocgis import OcgOperations, RequestDataset , env
+  #from ocgis.util.large_array import compute
+  from flyingpigeon.utils import get_variable, drs_filename
+  from flyingpigeon.ocgis_module import call
+  #from numpy import sqrt
+  #env.DIR_SHPCABINET = DIR_SHP
+  #env.OVERWRITE = True
+  #limit_memory_mb = 475.0 # to reduce the load of the memory, calculation is perfored in chunks
 
   if type(resource) != list: 
     resource = list([resource])
   if type(polygons) != list:
     polygons = list([polygons])
   
-  try:
-    geoms = []
-    for polygon in polygons: 
-      geoms.append(get_geom(polygon))
-    if len(geoms) > 1: 
-      logger.error('polygons belong to differnt shapefiles! mosaik is not possible %s', geoms)
-    else: 
-      geom = geoms[0]
-      #print 'geom: %s' % (geom)
-  except Exception as e:
-    logger.error('geom identification failed %s', e)
-  
-  ugids = get_ugid(polygons=polygons, geom=geom)
-  #print 'ugids: %s' % (ugids)
+  geoms = set()
   ncs = sort_by_filename(resource)
   geom_files = []
-  
-  for key in ncs:
-    if variable == None:
-      variable = get_variable(ncs[key])
-      logger.info('variable %s detected in resource' % (variable))  
-    try:    
-      rd = RequestDataset(ncs[key], variable=variable, dimension_map=dimension_map)
-      env.DIR_OUTPUT = dir_output
-      env.PREFIX = prefix    
-      ops = OcgOperations(dataset=rd, 
-        calc=calc, 
-        calc_grouping=calc_grouping,
-        output_format='nc', # necessary for chunked execution  
-        select_ugid=ugids, 
-        geom=geom, 
-        add_auxiliary_files=False)
-      # swith beween chunking and 'en block' computation  
-      fsize = 0 
-      for nc in ncs[key]: 
-        fsize = fsize + getsize(nc)
-      if fsize / 1000000 <= 500:          
-        geom_file = ops.execute()
-        geom_files.append( geom_file )
+
+  if mosaik == True :
+    try:
+      nameadd = '_'
+      for polygon in polygons: 
+        geoms.add(get_geom(polygon))
+        nameadd = nameadd + polygon 
+      if len(geoms) > 1: 
+        logger.error('polygons belong to differnt shapefiles! mosaik is not possible %s', geoms)
       else: 
-        # calcultion of chunk size
-        size = ops.get_base_request_size()
-        nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
-        element_in_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
-        element_in_mb = element_in_kb*0.001
-        tile_dim = sqrt(limit_memory_mb/(element_in_mb*nb_time_coordinates_rd))
-        geom_file = compute(ops, tile_dimension=int(tile_dim), verbose=True)
-        geom_files.append( geom_file )
+        geom = geoms.pop()
+    
+      ugids = get_ugid(polygons=polygons, geom=geom)
+      
+      for key in  ncs.keys() :
+        if variable == None:
+          variable = get_variable(ncs[key])
+          logger.info('variable %s detected in resource' % (variable))  
+        try:
+          
+          prefix = key + nameadd
+          geom_file = call(resource=ncs[key], variable=variable, 
+            prefix=prefix, geom=geom, select_ugid=ugids, dir_output=dir_output)    
+          
+          geom_files.append( geom_file )
+        except Exception as e:
+          msg = 'ocgis calculations failed for %s ' % (key)
+          logger.exception(msg)
+          raise CalculationException(msg, e)
     except Exception as e:
-      msg = 'ocgis calculations failed for %s ' % (key)
-      logger.exception(msg)
-      raise CalculationException(msg, e)
+        logger.error('geom identification failed %s', e)
+  else: 
+    try:
+      for polygon in polygons: 
+        geom = get_geom(polygon)
+        ugid = get_ugid(polygons=polygon, geom=geom)
+        for key in  ncs.keys() :
+          if variable == None:
+            variable = get_variable(ncs[key])
+            logger.info('variable %s detected in resource' % (variable))  
+          try:
+            prefix = key + '_' + polygon
+            geom_file = call(resource=ncs[key], variable=variable, 
+              prefix=prefix, geom=geom, select_ugid=ugid, dir_output=dir_output)    
+            
+            geom_files.append( geom_file )
+          except Exception as e:
+            msg = 'ocgis calculations failed for %s ' % (key)
+            logger.exception(msg)
+            raise CalculationException(msg, e)
+    except Exception as e:
+        logger.error('geom identification failed %s', e) 
+
   return  geom_files
+
+
+
 
 def get_dimension_map(resource): 
   """ returns the dimension map for a file, required for ocgis processing. 
@@ -225,12 +234,6 @@ def get_ugid(polygons='FRA', geom='50m_country'):
           if row['properties']['ADM0_A3'] == polygon:
             result.append(row['properties']['UGID'])
               
-    # elif geom == 'NUTS2':
-    #   for row in sc_iter:
-    #     for polygon in polygons:
-    #       if row['properties']['NUTS_ID'] == polygon:
-    #         result.append(row['properties']['UGID'])
-
     elif geom == 'extremoscope':
       for row in sc_iter:
         for polygon in polygons:
