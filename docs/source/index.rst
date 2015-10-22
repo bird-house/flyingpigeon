@@ -3,6 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+
+
 .. _introduction:
 
 Introduction
@@ -14,7 +16,7 @@ Flying Pigeon (the bird)
 Flying Pigeon (the bike)
   *Flying Pigeon is a Chinese bicycle company [..]. The Flying Pigeon is the most popular vehicle ever.* (`Wikipedia <https://en.wikipedia.org/wiki/Flying_Pigeon>`_)
 
-Flyingpigeon is a Python package with a collection of algorithms for the climate community available as a Web Processing Service (WPS).
+Flyingpigeon is a Python package with a collection of algorithms for the climate community available as a Web Processing Service (WPS) as a compartment of the `birdhouse <http://birdhouse.readthedocs.org/en/latest/index.html>`_ 
 
 Contents:
 
