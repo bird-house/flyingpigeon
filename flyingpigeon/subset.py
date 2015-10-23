@@ -1,16 +1,11 @@
-# import ocgis
-
 from .exceptions import CalculationException
 from .utils import drs_filename, get_variable, calc_grouping , sort_by_filename
-
 from malleefowl import wpslogging as logging
-#import logging
 
 logger = logging.getLogger(__name__)
 from os.path import dirname, join, getsize, abspath
 
 DIR_MASKS = join(abspath(dirname(__file__)), 'processes', 'masks')
-
 DIR_SHP = join(abspath(dirname(__file__)), 'processes', 'shapefiles')
 
 def countries():
@@ -71,15 +66,10 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
   :param output_format: output_format (default='nc')
   :param dir_output: specify a output location
   """
-  #from ocgis import OcgOperations, RequestDataset , env
-  #from ocgis.util.large_array import compute
+  
   from flyingpigeon.utils import get_variable, drs_filename
   from flyingpigeon.ocgis_module import call
-  #from numpy import sqrt
-  #env.DIR_SHPCABINET = DIR_SHP
-  #env.OVERWRITE = True
-  #limit_memory_mb = 475.0 # to reduce the load of the memory, calculation is perfored in chunks
-
+  
   if type(resource) != list: 
     resource = list([resource])
   if type(polygons) != list:
@@ -268,14 +258,16 @@ def get_geom(polygon):
 # === Available Polygons
 _CONTINENTS_ = get_shp_column_values(geom='continents', columnname='CONTINENT') 
 
+
 _COUNTRIES_ = {}
 _COUNTRIES_Europe_ = {}
 _POLYGONS_EXTREMOSCOPE_ = get_shp_column_values(geom='extremoscope', columnname='HASC_1')
 
-# === popultate poligon dictionaties 
+# === popultate polygons dictionaties 
 ADM0_A3 = get_shp_column_values(geom='countries', columnname='ADM0_A3')
 NAMELONG = get_shp_column_values(geom='countries', columnname='NAME_LONG')
 CONTINENT = get_shp_column_values(geom='countries', columnname='CONTINENT')
+
 for c , key in enumerate(ADM0_A3): 
   _COUNTRIES_[key] = dict(longname=NAMELONG[c])
 

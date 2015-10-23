@@ -1,6 +1,5 @@
 
 import tempfile
-
 from .exceptions import CalculationException
 
 from flyingpigeon.utils import calc_grouping, sort_by_filename # aggregations, 
@@ -8,6 +7,7 @@ from flyingpigeon.subset import get_ugid, get_geom
 
 from malleefowl import wpslogging as logging
 import os
+
 #import logging
 logger = logging.getLogger(__name__)
 
@@ -120,8 +120,8 @@ def indice_variable(indice):
     return variable
 
 def calc_indice_single(resource=[], variable=None, prefix=None,
-  indices="SU", polygons=None,  groupings="yr", 
-  out_dir=None, dimension_map = None):
+  indices=None, polygons=None,  groupings=None, 
+  dir_output=None, dimension_map = None):
     """
     Calculates given indices for suitable files in the appopriate time grouping and polygon.
 
@@ -137,7 +137,7 @@ def calc_indice_single(resource=[], variable=None, prefix=None,
     """
 
     from os.path import join, dirname
-
+    from flyingpigeon import ocgis_module
 
     #DIR_SHP = join(dirname(__file__),'flyingpigeon', 'processes', 'shapefiles')
     #env.DIR_SHPCABINET = DIR_SHP
@@ -161,62 +161,50 @@ def calc_indice_single(resource=[], variable=None, prefix=None,
     outputs = []
     
     for key in experiments:
+      variable = key.split('_')[0]
       try: 
         ncs = experiments[key]
         for indice in indices:
+          logger.info('indice: %s' % indice)
           try: 
             calc = [{'func' : 'icclim_' + indice, 'name' : indice}]
+            logger.info('calc: %s' % calc)
             for grouping in groupings:
+              logger.info('grouping: %s' % grouping)
               try:
                 calc_group = calc_grouping(grouping)
+                logger.info('calc_group: %s' % calc_group)
                 if polygons == None:
                   try:  
-                    from ocgis import RequestDataset , OcgOperations
-                    from ocgis.util.large_array import compute
-                    from os.path import getsize
-                    from numpy import sqrt
-                    rd = RequestDataset(uri=ncs, variable=variable, dimension_map=dimension_map)
-                    ops = OcgOperations(
-                      dataset=rd,
-                      calc=calc,
-                      calc_grouping=calc_group,
-                      prefix=prefix,
-                      output_format='nc',
-                      dir_output=out_dir,
-                      add_auxiliary_files=False)
-                    # swith beween chunking and 'en block' computation  
-                    fsize = 0 
-                    limit_memory_mb = 475
-                    for nc in ncs: 
-                      fsize = fsize + getsize(nc)
-                    if fsize / 1000000 <= 500:          
-                      tmp = ops.execute()
-                      outputs.append( tmp )
-                    else: 
-                    # calcultion of chunk size
-                      size = ops.get_base_request_size()
-                      nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
-                      element_in_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
-                      element_in_mb = element_in_kb*0.001
-                      tile_dim = sqrt(limit_memory_mb/(element_in_mb*nb_time_coordinates_rd))
-                      geom_file = compute(ops, tile_dimension=int(tile_dim), verbose=True)
-                      geom_files.append( geom_file )
-                      tmp = compute(ops, tile_dimension=tile_dim, verbose=True)
-                      outputs.append(tmp)
+                    prefix = key.replace(variable, indice).replace('_day_','_%s_' % grouping )
+                    tmp = ocgis_module.call(resource=ncs,
+                     variable=variable,
+                     dimension_map=None, 
+                     calc=calc,
+                     calc_grouping= calc_group, 
+                     prefix=key, 
+                     #geom=None,
+                     #select_ugid=None,
+                     dir_output=None,
+                     output_format='nc')
+                    
+                    outputs.extend( [tmp] )
+
                   except Exception as e: 
                     logger.exception('could not calc indice %s for domain in %s: %s', indice, key, e )   
                 else: 
                   for polygon in polygons:
                     try:
+                      domain = key.split('_')[1].split('-')[0]
+                      prefix = key.replace(variable, indice).replace('_day_','_%s_' % grouping ).replace(domain,polygon)
                       tmp = clipping(resource=ncs, variable=variable, 
                         dimension_map=dimension_map, 
                         calc=calc,  
                         calc_grouping= calc_group, 
                         prefix=prefix, 
                         polygons=polygons, 
-                        dir_output=out_dir)
-                      for t in tmp: 
-                        outputs.append( t ) 
+                        dir_output=dir_output)
+                      outputs.extend( tmp ) 
                     except Exception as e:
                       logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s', indice, key, polygon, grouping, e )  
               except Exception as e:
@@ -227,89 +215,89 @@ def calc_indice_single(resource=[], variable=None, prefix=None,
         logger.exception('could not calc key %s: %s', key, e)
     return outputs
 
-def calc_indice_percentil(resource=[], variable=None, time_range_ref=None, prefix=None,
-  indices="R95p", polygons='FRA',  groupings="yr", 
-  out_dir=None, dimension_map = None):
-    """
-    Calculates given indices (percentile based ones) for suitable files in the appopriate time grouping and polygon.
+# def calc_indice_percentil(resource=[], variable=None, time_range_ref=None, prefix=None,
+#   indices="R95p", polygons='FRA',  groupings="yr", 
+#   dir_output=None, dimension_map = None):
+#     """
+#     Calculates given indices (percentile based ones) for suitable files in the appopriate time grouping and polygon.
 
-    :param resource: list of filenames in drs convention (netcdf)
-    :param variable: variable name to be selected in the in netcdf file (default=None)
-    :param time_range_ref: list with two datetime objectes defining start and end of the reverence period. 
-    If time_range_ref=None (default) 01.01.1961-31.12.1990 will be used. 
-    :param indices: list of indices (default ='SU')
-    :param polygons: list of polgons (default ='FRA')
-    :param grouping: indices time aggregation (default='yr')
-    :param out_dir: output directory for result file (netcdf)
-    :param dimension_map: optional dimension map if different to standard (default=None)
+#     :param resource: list of filenames in drs convention (netcdf)
+#     :param variable: variable name to be selected in the in netcdf file (default=None)
+#     :param time_range_ref: list with two datetime objectes defining start and end of the reverence period. 
+#     If time_range_ref=None (default) 01.01.1961-31.12.1990 will be used. 
+#     :param indices: list of indices (default ='SU')
+#     :param polygons: list of polgons (default ='FRA')
+#     :param grouping: indices time aggregation (default='yr')
+#     :param out_dir: output directory for result file (netcdf)
+#     :param dimension_map: optional dimension map if different to standard (default=None)
 
-    :return: list of netcdf files with calculated indices. Files are saved into out_dir
-    """
+#     :return: list of netcdf files with calculated indices. Files are saved into out_dir
+#     """
 
-    from os.path import join, dirname
-    import datetime as dt
-    from ocgis import OcgOperations, RequestDataset , env
+#     from os.path import join, dirname
+#     import datetime as dt
+#     from ocgis import OcgOperations, RequestDataset , env
  
-    from ocgis.calc.library.index.dynamic_kernel_percentile import DynamicDailyKernelPercentileThreshold
+#     from ocgis.calc.library.index.dynamic_kernel_percentile import DynamicDailyKernelPercentileThreshold
 
-    DIR_SHP = join(dirname(__file__),'flyingpigeon', 'processes', 'shapefiles')
-    env.DIR_SHPCABINET = DIR_SHP
-    env.OVERWRITE = True
+#     DIR_SHP = join(dirname(__file__),'flyingpigeon', 'processes', 'shapefiles')
+#     env.DIR_SHPCABINET = DIR_SHP
+#     env.OVERWRITE = True
 
-    if type(resource) != list: 
-      resource = list([resource])
-    if type(indices) != list: 
-      indices = list([indices])
-    if type(polygons) != list:
-      polygons = list([polygons])
-    if type(groupings) != list:
-      groupings = list([groupings])
+#     if type(resource) != list: 
+#       resource = list([resource])
+#     if type(indices) != list: 
+#       indices = list([indices])
+#     if type(polygons) != list:
+#       polygons = list([polygons])
+#     if type(groupings) != list:
+#       groupings = list([groupings])
 
-    if time_range_ref==None:
-        dt1_ref = dt.datetime(1961, 01, 01)
-        dt2_ref = dt.datetime(1990, 12, 31)
-        time_range_ref = [dt1_ref, dt2_ref]
+#     if time_range_ref==None:
+#         dt1_ref = dt.datetime(1961, 01, 01)
+#         dt2_ref = dt.datetime(1990, 12, 31)
+#         time_range_ref = [dt1_ref, dt2_ref]
 
-    experiments = sort_by_filename(resource)
-    outputs = []    
+#     experiments = sort_by_filename(resource)
+#     outputs = []    
 
-    for key in experiments:
-      try: 
-        ncs = experiments[key]
-        for indice in indices:
-          try: 
-            for polygon in polygons:
-              try:
+#     for key in experiments:
+#       try: 
+#         ncs = experiments[key]
+#         for indice in indices:
+#           try: 
+#             for polygon in polygons:
+#               try:
 
-                geom = get_geom(polygon=polygon)
-                ugid = get_ugid(polygons=polygon, geom=geom)
+#                 geom = get_geom(polygon=polygon)
+#                 ugid = get_ugid(polygons=polygon, geom=geom)
                 
-                for grouping in groupings:
-                  try:
-                    rd = RequestDataset(uri=ncs, variable=variable, time_range=time_range_ref)
-                    basis_indice = rd.get()
-                    # get reference:
-                    rd_ref = RequestDataset(uri=ncs, variable=variable, time_range=time_range_ref)
-                    basis_ref = rd_ref.get()
-                    # calculation of percentil based indice:
-                    values_ref = basis_ref.variables[variable].value
-                    print values_ref
-                    temporal = basis_ref.temporal.value_datetime
-                    percentile = 95
-                    width = 5 # 5-day window
-                    daily_percentile = DynamicDailyKernelPercentileThreshold.get_daily_percentile(values_ref,temporal,percentile,width)
-                    indice = indices
-                    calc_group =  calc_grouping(grouping) # ['year', 'month'] # or other
-                    kwds = {'percentile':percentile,'width':width, 'operation':'lt', 'daily_percentile':daily_percentile} # operation: lt = "less then", beacause we count the number of days < 10th percentile  calc = [{'func':'dynamic_kernel_percentile_threshold','name':'TG10p','kwds':kwds}]
-                    calc = [{'func':'dynamic_kernel_percentile_threshold','name':indice,'kwds':kwds}]
-                    ops = OcgOperations(dataset=rd,calc_grouping=calc_group,calc=calc, output_format='nc', prefix='indiceTG10p_test', add_auxiliary_files=False)
-                    outputs.append( ops.execute() )
-                  except Exception as e:
-                    logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s', indice, key, polygon, grouping, e )  
-              except Exception as e:
-                logger.exception('could not calc indice %s for key %s and polygon%s : %s', indice, key, polygon, e )  
-          except Exception as e:
-            logger.exception('could not calc indice %s for key %s: %s', indice, key, e )        
-      except Exception as e:
-        logger.exception('could not calc key %s: %s', key, e)
-    return outputs
+#                 for grouping in groupings:
+#                   try:
+#                     rd = RequestDataset(uri=ncs, variable=variable, time_range=time_range_ref)
+#                     basis_indice = rd.get()
+#                     # get reference:
+#                     rd_ref = RequestDataset(uri=ncs, variable=variable, time_range=time_range_ref)
+#                     basis_ref = rd_ref.get()
+#                     # calculation of percentil based indice:
+#                     values_ref = basis_ref.variables[variable].value
+#                     print values_ref
+#                     temporal = basis_ref.temporal.value_datetime
+#                     percentile = 95
+#                     width = 5 # 5-day window
+#                     daily_percentile = DynamicDailyKernelPercentileThreshold.get_daily_percentile(values_ref,temporal,percentile,width)
+#                     indice = indices
+#                     calc_group =  calc_grouping(grouping) # ['year', 'month'] # or other
+#                     kwds = {'percentile':percentile,'width':width, 'operation':'lt', 'daily_percentile':daily_percentile} # operation: lt = "less then", beacause we count the number of days < 10th percentile  calc = [{'func':'dynamic_kernel_percentile_threshold','name':'TG10p','kwds':kwds}]
+#                     calc = [{'func':'dynamic_kernel_percentile_threshold','name':indice,'kwds':kwds}]
+#                     ops = OcgOperations(dataset=rd,calc_grouping=calc_group,calc=calc, output_format='nc', prefix='indiceTG10p_test', add_auxiliary_files=False)
+#                     outputs.append( ops.execute() )
+#                   except Exception as e:
+#                     logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s', indice, key, polygon, grouping, e )  
+#               except Exception as e:
+#                 logger.exception('could not calc indice %s for key %s and polygon%s : %s', indice, key, polygon, e )  
+#           except Exception as e:
+#             logger.exception('could not calc indice %s for key %s: %s', indice, key, e )        
+#       except Exception as e:
+#         logger.exception('could not calc key %s: %s', key, e)
+#     return outputs
