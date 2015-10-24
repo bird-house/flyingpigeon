@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 from netCDF4 import Dataset
 import numpy as np
 
-from bokeh.plotting import *
+#from bokeh.plotting import *
 from malleefowl.process import WPSProcess
 
 class VisualisationProcess(WPSProcess):
