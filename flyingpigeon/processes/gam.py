@@ -149,17 +149,18 @@ class gam(WPSProcess):
       # call to icclim
       
       from flyingpigeon import tools
-      
-      indices_dic = { ('outdir':os.curdir() , ('nc_files': nc_files ), ('TG':self.TG.getValue()) ,('TX': self.TX.getValue()),
-          ('TN':self.TN.getValue()),('RR': self.RR.getValue()),('SU':self.SU.getValue()) }
+
+      # TODO: check syntax
+      indices_dic = { 'outdir':os.curdir() , 'nc_files': nc_files , 'TG':self.TG.getValue() ,'TX': self.TX.getValue(),
+          'TN':self.TN.getValue(),'RR': self.RR.getValue(), 'SU':self.SU.getValue() }
       
       indices_out, indices_log = tools.indices( indices_dic )
       
       # calculation of indice avg for reverence period 
       
-      time_frame= 
-      cal = 
-      cal_group = 
+      time_frame= None
+      cal = None
+      cal_group = None
       # ocgis execute : 
       indices_ref = []
       indices_names = []
@@ -180,5 +181,3 @@ class gam(WPSProcess):
       cmd=["R --no-save --args %s %s %s %s %s %s < %s/sdm.r " % (rworkspace, self.paData.getValue(), indices_ref, indices_names, kappa, workdir)]
       
       self.output.setValue( rwork )
-      
-
