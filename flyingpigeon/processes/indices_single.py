@@ -44,7 +44,7 @@ class IndiceSingle(WPSProcess):
             identifier="indices",
             title="Indice",
             abstract=indices_description(),
-            #default='SU',
+            default='SU',
             type=type(''),
             minOccurs=1,
             maxOccurs=len(indices()),
