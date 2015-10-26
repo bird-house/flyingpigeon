@@ -44,7 +44,7 @@ class IndiceSingle(WPSProcess):
             identifier="indices",
             title="Indice",
             abstract=indices_description(),
-            default='SU',
+            #default='SU',
             type=type(''),
             minOccurs=1,
             maxOccurs=len(indices()),
@@ -55,11 +55,11 @@ class IndiceSingle(WPSProcess):
             identifier="polygons",
             title="Country subset",
             abstract= countries_longname(), 
-            default='FRA',
+            #default='FRA',
             type=type(''),
             minOccurs=0,
             maxOccurs=len(countries()),
-            allowedValues=countries() 
+            allowedValues=countries()
             )
 
         # complex output
@@ -83,23 +83,23 @@ class IndiceSingle(WPSProcess):
         logger.debug('PATH = %s', os.environ['PATH'])
 
         ncs       = self.getInputValues(identifier='resource')
-        indices   = self.getInputValues(identifier='indices')
+        indices   = self.indices.getValue()
         polygons  = self.polygons.getValue() 
-        groupings = self.getInputValues(identifier='groupings')
+        groupings = self.groupings.getValue() # getInputValues(identifier='groupings')
 
         polygons = self.polygons.getValue()
-        if len(polygons)>1: 
-            polygons = None
+        # if len(polygons)==0: 
+        #     polygons = None
 
-        self.show_status('starting: indices=%s, groupings=%s, num_files=%s' % (indices, 
-            groupings, len(ncs)), 0)
+        self.show_status('starting: indices=%s, groupings=%s, countries=%s, num_files=%s' % (indices, 
+            groupings, polygons, len(ncs)), 0)
 
         results = calc_indice_single(
             resource = ncs,
             indices = indices,
             polygons= polygons,
             groupings = groupings,
-            dir_output = self.working_dir,
+            dir_output = path.curdir,
             )
         
         self.show_status('result %s' % results, 90)
@@ -107,8 +107,9 @@ class IndiceSingle(WPSProcess):
             (fp_tarf, tarf) = mkstemp(dir=".", suffix='.tar')
             tar = tarfile.open(tarf, "w")
 
-            for result in results: 
-                tar.add( result , arcname = result.replace(path.abspath(path.curdir), ""))
+            for result in results:
+                p , f = path.split(result) 
+                tar.add( result , arcname = result.replace(p, ""))
             tar.close()
 
             logger.info('Tar file prepared')

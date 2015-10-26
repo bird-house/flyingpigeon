@@ -74,6 +74,9 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
     resource = list([resource])
   if type(polygons) != list:
     polygons = list([polygons])
+  if prefix != None:
+    if type(prefix) != list:
+      prefix = list([prefix])
   
   geoms = set()
   ncs = sort_by_filename(resource)
@@ -98,8 +101,12 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
           logger.info('variable %s detected in resource' % (variable))  
         try:
           
-          prefix = key + nameadd
-          geom_file = call(resource=ncs[key], variable=variable, 
+          if prefix == None:
+            prefix = key + nameadd
+          else:
+            prefix = prefix[0]
+            
+          geom_file = call(resource=ncs[key], variable=variable, calc=calc, calc_grouping=calc_grouping ,
             prefix=prefix, geom=geom, select_ugid=ugids, dir_output=dir_output)    
           
           geom_files.append( geom_file )
@@ -111,7 +118,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
         logger.error('geom identification failed %s', e)
   else: 
     try:
-      for polygon in polygons: 
+      for i, polygon in enumerate(polygons): 
         geom = get_geom(polygon)
         ugid = get_ugid(polygons=polygon, geom=geom)
         for key in  ncs.keys() :
@@ -119,10 +126,12 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
             variable = get_variable(ncs[key])
             logger.info('variable %s detected in resource' % (variable))  
           try:
-            prefix = key + '_' + polygon
-            geom_file = call(resource=ncs[key], variable=variable, 
-              prefix=prefix, geom=geom, select_ugid=ugid, dir_output=dir_output)    
-            
+            if prefix == None: 
+              prefix = key + '_' + polygon
+            else:
+              prefix = prefix[i]
+            geom_file = call(resource=ncs[key], variable=variable,  calc=calc, calc_grouping=calc_grouping,
+              prefix=prefix, geom=geom, select_ugid=ugid, dir_output=dir_output)
             geom_files.append( geom_file )
           except Exception as e:
             msg = 'ocgis calculations failed for %s ' % (key)

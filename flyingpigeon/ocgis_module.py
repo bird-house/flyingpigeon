@@ -3,12 +3,12 @@ logger = logging.getLogger(__name__)
 
 from os.path import join, abspath, dirname, getsize
 
-
 DIR_SHP = join(abspath(dirname(__file__)), 'processes', 'shapefiles')
 
-
 def call(resource=[], variable=None, dimension_map=None, calc=None,  
-  calc_grouping= None, prefix=None, geom=None, select_ugid=None, dir_output=None, output_format='nc'): 
+  calc_grouping= None, prefix=None, 
+  geom=None, select_ugid=None, 
+  dir_output=None, output_format='nc'): 
   logger.info('Start ocgis module call function')
   from ocgis import OcgOperations, RequestDataset , env
   from ocgis.util.large_array import compute
@@ -37,7 +37,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         calc_grouping=calc_grouping,
         output_format=output_format, # 'nc' is necessary for chunked execution  
         select_ugid=select_ugid, 
-        geom=geom, 
+        geom=geom,
         add_auxiliary_files=False)
 
   if fsize / 1000000 <= 500:          

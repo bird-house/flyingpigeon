@@ -182,14 +182,12 @@ def calc_indice_single(resource=[], variable=None, prefix=None,
                      dimension_map=None, 
                      calc=calc,
                      calc_grouping= calc_group, 
-                     prefix=key, 
+                     prefix=prefix, 
                      #geom=None,
                      #select_ugid=None,
                      dir_output=None,
                      output_format='nc')
-                    
                     outputs.extend( [tmp] )
-
                   except Exception as e: 
                     logger.exception('could not calc indice %s for domain in %s: %s', indice, key, e )   
                 else: 
@@ -197,13 +195,16 @@ def calc_indice_single(resource=[], variable=None, prefix=None,
                     try:
                       domain = key.split('_')[1].split('-')[0]
                       prefix = key.replace(variable, indice).replace('_day_','_%s_' % grouping ).replace(domain,polygon)
-                      tmp = clipping(resource=ncs, variable=variable, 
-                        dimension_map=dimension_map, 
+                      tmp = clipping(resource=ncs, 
+                        variable=variable, 
+                        dimension_map=None, 
                         calc=calc,  
                         calc_grouping= calc_group, 
-                        prefix=prefix, 
-                        polygons=polygons, 
-                        dir_output=dir_output)
+                        prefix=prefix,
+                        polygons=polygon, 
+                        mosaik=False, 
+                        dir_output=None)
+                    
                       outputs.extend( tmp ) 
                     except Exception as e:
                       logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s', indice, key, polygon, grouping, e )  
