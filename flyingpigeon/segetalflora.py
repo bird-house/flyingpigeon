@@ -148,7 +148,7 @@ def plot_ascii(infile):
   except Exception as e:
     print 'plotting failed for file %s : %s' % (basename , e)
 
-def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate_type=2, region=None): 
+def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate_type=2, region=None, dimension_map=None): 
   """productive worker for segetalflora jobs
   :param resources: list of tas netCDF files. (any time aggregation is possible)
   :param culture_type: Type of culture. possible values are
@@ -209,7 +209,7 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
       calc_group = calc_grouping('yr')
       prefix = key.replace(key.split('_')[7],'yr')
       if not os.path.exists(os.path.join(dir_netCDF_tas,prefix+'.nc')):
-        nc_tas = clipping(resource=ncs[key], variable='tas', calc=calc, dimension_map=None,  
+        nc_tas = clipping(resource=ncs[key], variable='tas', calc=calc, dimension_map=dimension_map,  
           calc_grouping= calc_group, prefix=prefix, polygons='Europe', dir_output=dir_netCDF_tas)[0]
         print 'clipping done for %s' % (key)
         if os.path.exists(os.path.join(dir_netCDF_tas,prefix+'.nc')):
@@ -266,7 +266,7 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
               else:
                 rd = RequestDataset(name, variable='tas')
                 op = OcgOperations(dataset=rd, calc=calc, prefix=prefix, output_format='nc', 
-                  dir_output=dir_sf,
+                  dir_output=dir_sf,dimension_map=dimension_map,
                  add_auxiliary_files=False)
                 nc_sf = op.execute()
                 print 'segetalflora done for %s' % (prefix)

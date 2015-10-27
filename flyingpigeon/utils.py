@@ -374,9 +374,6 @@ def get_dimension_map(resource):
               'Y': {'variable': 'y', 'dimension': 'y', 'pos': 1},
               'T': {'variable': 'time', 'dimension': 'time', 'pos': 0 }}
   
-  dim_map4 = {'X': {'variable': 'x', 'dimension': 'x', 'pos': 2},
-              'Y': {'variable': 'y', 'dimension': 'y', 'pos': 1},
-              'T': {'variable': 'time', 'dimension': 'time', 'pos': 0 }}
   
   dim_map5  = {'X': {'variable': 'Actual_longitude', 'dimension': 'x', 'pos': 2},
                  'Y': {'variable': ' Actual_latitude', 'dimension': 'y', 'pos': 1},
