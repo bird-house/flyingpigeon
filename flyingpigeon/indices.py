@@ -277,30 +277,41 @@ def calc_indice_unconventional(resource=[], variable=None, prefix=None,
                       ugid = None
                     else: 
                       prefix = key.replace(variable, indice).replace('_day_','_%s_' % grouping ).replace(domain,polygon)
-                      geom = subset.get_geom(polygon=polygon)
-                      ugid = subset.get_ugid(polygons=polygon, geom=geom)
+                      geom = get_geom(polygon=polygon)
+                      ugid = get_ugid(polygons=polygon, geom=geom)
                     if indice == 'TGx':
                       calc=[{'func': 'max', 'name': 'TGx'}]
                       tmp = ocgis_module.call(resource=ncs,
-                                              variable=variable, dimension_map=dimension_map, calc=calc, calc_grouping= calc_group, prefix=prefix, dir_output=dir_output, geom=geom, select_ugid = ugid, output_format='nc')
+                                              variable=variable, dimension_map=dimension_map, 
+                                              calc=calc, calc_grouping= calc_group, prefix=prefix,
+                                               dir_output=dir_output, geom=geom, select_ugid = ugid,
+                                                output_format='nc')
                     elif indice == 'TGn':
                       calc=[{'func': 'min', 'name': 'TGn'}]
                       tmp = ocgis_module.call(resource=ncs,
-                                              variable=variable, dimension_map=dimension_map, calc=calc, calc_grouping= calc_group, prefix=prefix, dir_output=dir_output, output_format='nc')
+                                              variable=variable, dimension_map=dimension_map, 
+                                              calc=calc, calc_grouping= calc_group, prefix=prefix,
+                                               dir_output=dir_output, geom=geom, select_ugid = ugid, 
+                                               output_format='nc')
                     elif indice == 'TGx5day':
                       calc = [{'func': 'moving_window', 'name': 'TGx5day', 'kwds': {'k': 5, 'operation': 'max', 'mode': 'valid' }}]
                       tmp2 = ocgis_module.call(resource=ncs,
-                                              variable=variable, dimension_map=dimension_map, calc=calc, prefix=None, dir_output=None, output_format='nc')
+                                              variable=variable, dimension_map=dimension_map, 
+                                              calc=calc, calc_grouping= calc_group, prefix=None,
+                                               dir_output=None, geom=geom, select_ugid = ugid, 
+                                               output_format='nc')
                       calc=[{'func': 'max', 'name': 'TGx5day'}]
                       tmp = tmp2 = ocgis_module.call(resource=tmp2,
-                                              variable=indice, dimension_map=dimension_map, calc=calc, calc_grouping= calc_group, prefix=prefix, dir_output=dir_output, output_format='nc')
-                    elif indice == 'TGn5day':
-                      calc = [{'func': 'moving_window', 'name': 'TGn5day', 'kwds': {'k': 5, 'operation': 'min', 'mode': 'valid' }}]
-                      tmp2 = ocgis_module.call(resource=ncs,
-                                              variable=variable, dimension_map=dimension_map, calc=calc, prefix=None, dir_output=None, output_format='nc')
-                      calc=[{'func': 'min', 'name': 'TGn5day'}]
-                      tmp = tmp2 = ocgis_module.call(resource=tmp2,
-                                              variable=indice, dimension_map=dimension_map, calc=calc, calc_grouping= calc_group, prefix=prefix, dir_output=dir_output, output_format='nc')
+                                              variable=indice, dimension_map=dimension_map, 
+                                              calc=calc, calc_grouping= calc_group, prefix=prefix,
+                                              dir_output=dir_output, output_format='nc')
+                    # elif indice == 'TGn5day':
+                    #   calc = [{'func': 'moving_window', 'name': 'TGn5day', 'kwds': {'k': 5, 'operation': 'min', 'mode': 'valid' }}]
+                    #   tmp2 = ocgis_module.call(resource=ncs,
+                    #                           variable=variable, dimension_map=dimension_map, calc=calc, prefix=None, dir_output=None, output_format='nc')
+                    #   calc=[{'func': 'min', 'name': 'TGn5day'}]
+                    #   tmp = tmp2 = ocgis_module.call(resource=tmp2,
+                    #                           variable=indice, dimension_map=dimension_map, calc=calc, calc_grouping= calc_group, prefix=prefix, dir_output=dir_output, output_format='nc')
                     else: 
                       logger.error('Indice %s is not a known inidce' % (indice))
                     outputs.append(tmp)
