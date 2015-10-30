@@ -211,7 +211,7 @@ def get_shp_column_values(geom, columnname):
 
 
 # === Functions for Clipping:
-def get_ugid(polygons='FRA', geom='50m_country'):
+def get_ugid(polygons=None, geom=None):
     """
     returns geometry id of given polygon in a given shapefile.
     :param polygons: string or list of the region polygons 
@@ -220,47 +220,56 @@ def get_ugid(polygons='FRA', geom='50m_country'):
     from ocgis import env, ShpCabinetIterator
     #from ocgis import env
     
-    if type(polygons) != list:
-      polygons = list([polygons])
-    
-    env.DIR_SHPCABINET = DIR_SHP
-    sc_iter = ShpCabinetIterator(geom)
-    result = []
-    
-    if geom == 'countries':
-      for row in sc_iter:
-        for polygon in polygons:
-          if row['properties']['ADM0_A3'] == polygon:
-            result.append(row['properties']['UGID'])
-              
-    elif geom == 'extremoscope':
-      for row in sc_iter:
-        for polygon in polygons:
-          if row['properties']['HASC_1'] == polygon:
-            result.append(row['properties']['UGID'])
-              
-    elif geom == 'continents':
-      for row in sc_iter:
-        for polygon in polygons:
-          if row['properties']['CONTINENT'] == polygon:
-            result.append(row['properties']['UGID'])    
-    else:
-      from ocgis import ShpCabinet
-      sc = ShpCabinet(DIR_SHP)
-      logger.error('geom: %s not found in ShapeCabinet. Available geoms are: %s ', geom, sc) 
+    if polygons == None: 
+      result = None
+    else: 
+      if type(polygons) != list:
+        polygons = list([polygons])
+      
+      env.DIR_SHPCABINET = DIR_SHP
+      sc_iter = ShpCabinetIterator(geom)
+      result = []
+      
+      if geom == 'countries':
+        for row in sc_iter:
+          for polygon in polygons:
+            if row['properties']['ADM0_A3'] == polygon:
+              result.append(row['properties']['UGID'])
+                
+      elif geom == 'extremoscope':
+        for row in sc_iter:
+          for polygon in polygons:
+            if row['properties']['HASC_1'] == polygon:
+              result.append(row['properties']['UGID'])
+                
+      elif geom == 'continents':
+        for row in sc_iter:
+          for polygon in polygons:
+            if row['properties']['CONTINENT'] == polygon:
+              result.append(row['properties']['UGID'])    
+      else:
+        from ocgis import ShpCabinet
+        sc = ShpCabinet(DIR_SHP)
+        logger.error('geom: %s not found in ShapeCabinet. Available geoms are: %s ', geom, sc) 
 
     return result
 
-def get_geom(polygon):
-
-  if polygon in _COUNTRIES_: # (polygon) == 3:
-    geom = 'countries'
-  elif polygon in _POLYGONS_EXTREMOSCOPE_: #len(polygon) == 5 and polygon[2] == '.': 
-    geom = 'extremoscope'
-  elif polygon in _CONTINENTS_: 
-    geom = 'continents'
+def get_geom(polygon=None):
+  """ retuns the approriate shapefile (geom) for one given polygon abbreviation
+  
+  :param polygon: polygon shortname"""
+  
+  if polygon == None:
+    geom = None
   else:
-    logger.error('polygon: %s not found in geoms' % polygon) 
+    if polygon in _COUNTRIES_: # (polygon) == 3:
+      geom = 'countries'
+    elif polygon in _POLYGONS_EXTREMOSCOPE_: #len(polygon) == 5 and polygon[2] == '.': 
+      geom = 'extremoscope'
+    elif polygon in _CONTINENTS_: 
+      geom = 'continents'
+    else:
+      logger.error('polygon: %s not found in geoms' % polygon) 
 
   return geom  
 

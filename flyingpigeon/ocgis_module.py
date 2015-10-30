@@ -23,7 +23,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     resource = list([resource])
 
   # check memory load 
-  limit_memory_mb = 475.0 # to reduce the load of the memory, calculation is perfored in chunks
+  limit_memory_mb = 1000 #475.0 # to reduce the load of the memory, calculation is perfored in chunks
   fsize = 0 
   for nc in resource: 
     fsize = fsize + getsize(nc)

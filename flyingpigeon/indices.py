@@ -1,4 +1,3 @@
-
 import tempfile
 from .exceptions import CalculationException
 
@@ -80,6 +79,13 @@ _INDICEScomp_ = dict(
     WW=dict(variable=['tas','pr'], description='Days with TG > 75th percentile of daily mean temperature and RR > 75th percentile of daily precipitation sum (warm/wet days)'),
     )
 
+_INDICESunconventional_ = dict(
+    TGx=dict(variable=['tas'], description='Max of daily mean temperature'),
+    TGx5day=dict(variable=['tas'], description='max of 5-day running average of daily mean temperature'),
+    TGn=dict(variable=['tas'], description='Min of daily mean temperature'),
+    TGn5day=dict(variable=['tas'], description='Min of 5-day running average of daily mean temperature'),
+    )
+
 def indices():
     """
     :return: a list of all climate indices.
@@ -119,9 +125,7 @@ def indice_variable(indice):
         logger.error('unknown indice %s', indice)
     return variable
 
-def calc_indice_single(resource=[], variable=None, prefix=None,
-  indices=None, polygons=None,  groupings=None, 
-  dir_output=None, dimension_map = None):
+def calc_indice_single(resource=[], variable=None, prefix=None,indices=None, polygons=None, groupings=None, dir_output=None, dimension_map = None):
     """
     Calculates given indices for suitable files in the appopriate time grouping and polygon.
 
@@ -135,7 +139,6 @@ def calc_indice_single(resource=[], variable=None, prefix=None,
 
     :return: list of netcdf files with calculated indices. Files are saved into out_dir
     """
-
     from os.path import join, dirname
     from flyingpigeon import ocgis_module
 
@@ -215,6 +218,102 @@ def calc_indice_single(resource=[], variable=None, prefix=None,
       except Exception as e:
         logger.exception('could not calc key %s: %s', key, e)
     return outputs
+
+def calc_indice_unconventional(resource=[], variable=None, prefix=None,
+  indices=None, polygons=None,  groupings=None, 
+  dir_output=None, dimension_map = None):
+    """
+    Calculates given indices for suitable files in the appopriate time grouping and polygon.
+
+    :param resource: list of filenames in drs convention (netcdf)
+    :param variable: variable name to be selected in the in netcdf file (default=None)
+    :param indices: list of indices (default ='TGx')
+    :param polygons: list of polgons (default =None)
+    :param grouping: indices time aggregation (default='yr')
+    :param out_dir: output directory for result file (netcdf)
+    :param dimension_map: optional dimension map if different to standard (default=None)
+
+    :return: list of netcdf files with calculated indices. Files are saved into dir_output
+    """
+    
+    from os.path import join, dirname
+    from flyingpigeon import ocgis_module
+    from flyingpigeon.subset import get_ugid, get_geom
+
+    if type(resource) != list: 
+      resource = list([resource])
+    if type(indices) != list: 
+      indices = list([indices])
+    if type(polygons) != list and polygons != None:
+      polygons = list([polygons])
+    elif polygons == None:
+      polygons = [None]
+    else: 
+      logger.error('Polygons not found')
+    if type(groupings) != list:
+      groupings = list([groupings])
+    
+    experiments = sort_by_filename(resource)
+    outputs = []
+    
+    for key in experiments:
+      variable = key.split('_')[0]
+      try: 
+        ncs = experiments[key]
+        for indice in indices:
+          logger.info('indice: %s' % indice)
+          try: 
+            for grouping in groupings:
+              logger.info('grouping: %s' % grouping)
+              try:
+                calc_group = calc_grouping(grouping)
+                logger.info('calc_group: %s' % calc_group)
+                for polygon in polygons:  
+                  try:
+                    domain = key.split('_')[1].split('-')[0]
+                    if polygon == None:
+                      prefix = key.replace(variable, indice).replace('_day_','_%s_' % grouping )
+                      geom = None
+                      ugid = None
+                    else: 
+                      prefix = key.replace(variable, indice).replace('_day_','_%s_' % grouping ).replace(domain,polygon)
+                      geom = subset.get_geom(polygon=polygon)
+                      ugid = subset.get_ugid(polygons=polygon, geom=geom)
+                    if indice == 'TGx':
+                      calc=[{'func': 'max', 'name': 'TGx'}]
+                      tmp = ocgis_module.call(resource=ncs,
+                                              variable=variable, dimension_map=dimension_map, calc=calc, calc_grouping= calc_group, prefix=prefix, dir_output=dir_output, geom=geom, select_ugid = ugid, output_format='nc')
+                    elif indice == 'TGn':
+                      calc=[{'func': 'min', 'name': 'TGn'}]
+                      tmp = ocgis_module.call(resource=ncs,
+                                              variable=variable, dimension_map=dimension_map, calc=calc, calc_grouping= calc_group, prefix=prefix, dir_output=dir_output, output_format='nc')
+                    elif indice == 'TGx5day':
+                      calc = [{'func': 'moving_window', 'name': 'TGx5day', 'kwds': {'k': 5, 'operation': 'max', 'mode': 'valid' }}]
+                      tmp2 = ocgis_module.call(resource=ncs,
+                                              variable=variable, dimension_map=dimension_map, calc=calc, prefix=None, dir_output=None, output_format='nc')
+                      calc=[{'func': 'max', 'name': 'TGx5day'}]
+                      tmp = tmp2 = ocgis_module.call(resource=tmp2,
+                                              variable=indice, dimension_map=dimension_map, calc=calc, calc_grouping= calc_group, prefix=prefix, dir_output=dir_output, output_format='nc')
+                    elif indice == 'TGn5day':
+                      calc = [{'func': 'moving_window', 'name': 'TGn5day', 'kwds': {'k': 5, 'operation': 'min', 'mode': 'valid' }}]
+                      tmp2 = ocgis_module.call(resource=ncs,
+                                              variable=variable, dimension_map=dimension_map, calc=calc, prefix=None, dir_output=None, output_format='nc')
+                      calc=[{'func': 'min', 'name': 'TGn5day'}]
+                      tmp = tmp2 = ocgis_module.call(resource=tmp2,
+                                              variable=indice, dimension_map=dimension_map, calc=calc, calc_grouping= calc_group, prefix=prefix, dir_output=dir_output, output_format='nc')
+                    else: 
+                      logger.error('Indice %s is not a known inidce' % (indice))
+                    outputs.append(tmp)
+                  except Exception as e:
+                    logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s', indice, key, polygon, grouping, e )  
+              except Exception as e:
+                logger.exception('could not calc indice %s for key %s and calc_grouping %s : %s', indice, key, polygon, e )  
+          except Exception as e:
+            logger.exception('could not calc indice %s for key %s: %s', indice, key, e )        
+      except Exception as e:
+        logger.exception('could not calc key %s: %s', key, e)
+    return outputs
+
 
 # def calc_indice_percentil(resource=[], variable=None, time_range_ref=None, prefix=None,
 #   indices="R95p", polygons='FRA',  groupings="yr", 
