@@ -264,10 +264,9 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
                 nc_sf = os.path.join(dir_sf, prefix + '.nc')
                 print 'netCDF file allready exists: %s %s ' % (dir_sf, prefix) 
               else:
-                rd = RequestDataset(name, variable='tas')
+                rd = RequestDataset(name, variable='tas', dimension_map=dimension_map,)
                 op = OcgOperations(dataset=rd, calc=calc, prefix=prefix, output_format='nc', 
-                  dir_output=dir_sf,dimension_map=dimension_map,
-                 add_auxiliary_files=False)
+                  dir_output=dir_sf, add_auxiliary_files=False)
                 nc_sf = op.execute()
                 print 'segetalflora done for %s' % (prefix)
                 outputs.append(prefix)
