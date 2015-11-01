@@ -125,7 +125,8 @@ def indice_variable(indice):
         logger.error('unknown indice %s', indice)
     return variable
 
-def calc_indice_single(resource=[], variable=None, prefix=None,indices=None, polygons=None, groupings=None, dir_output=None, dimension_map = None):
+def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
+    polygons=None, groupings=None, dir_output=None, dimension_map = None):
     """
     Calculates given indices for suitable files in the appopriate time grouping and polygon.
 
@@ -182,13 +183,13 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None, pol
                     prefix = key.replace(variable, indice).replace('_day_','_%s_' % grouping )
                     tmp = ocgis_module.call(resource=ncs,
                      variable=variable,
-                     dimension_map=None, 
+                     dimension_map=dimension_map, 
                      calc=calc,
                      calc_grouping= calc_group, 
                      prefix=prefix, 
                      #geom=None,
                      #select_ugid=None,
-                     dir_output=None,
+                     dir_output=dir_output,
                      output_format='nc')
                     outputs.extend( [tmp] )
                   except Exception as e: 
@@ -200,14 +201,13 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None, pol
                       prefix = key.replace(variable, indice).replace('_day_','_%s_' % grouping ).replace(domain,polygon)
                       tmp = clipping(resource=ncs, 
                         variable=variable, 
-                        dimension_map=None, 
+                        dimension_map=dimension_map, 
                         calc=calc,  
                         calc_grouping= calc_group, 
                         prefix=prefix,
                         polygons=polygon, 
                         mosaik=False, 
-                        dir_output=None)
-                    
+                        dir_output=dir_output)
                       outputs.extend( tmp ) 
                     except Exception as e:
                       logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s', indice, key, polygon, grouping, e )  
