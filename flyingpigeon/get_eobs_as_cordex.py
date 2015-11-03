@@ -37,8 +37,10 @@ att_dict = {
 #def set_varname(resource, varname): 
 
 def get_url(variable):
-  try: 
-    url = 'http://opendap.knmi.nl/knmi/thredds/dodsC/e-obs_0.22rotated/%s_0.22deg_rot_v11.0.nc' % (variable)
+  try:     
+    #http://opendap.knmi.nl/knmi/thredds/dodsC/e-obs_0.22rotated/rr_0.22deg_rot_v12.0.nc
+    #http://opendap.knmi.nl/knmi/thredds/dodsC/e-obs_0.22rotated/rr_0.22deg_rot_v12.0.nc.html
+    url = 'http://opendap.knmi.nl/knmi/thredds/dodsC/e-obs_0.22rotated/%s_0.22deg_rot_v12.0.nc' % (variable)
   except Exception as e: 
     logger.error('could not create EOBS url for variable %s', variable)
   return url  
@@ -66,34 +68,38 @@ def set_attributes(resource, variable):
     
   return resource
   
-def get_data(variable, 
-             polygon=None, 
+def get_data(variable,
+             resource = None,  
+             polygons=None, 
              dir_output=None, 
              start = 1950,
              end = 2014):
   
-  import ocgis
+  #import ocgis
+  #from flyingpigeon import clipping
+
   from os import rename, path, makedirs
   from flyingpigeon import utils
   from flyingpigeon import subset as sb
-  from flyingpigeon import clipping
-
+  from flyingpigeon import ocgis_module as om
+  
   try: 
-    ocgis.env.OVERWRITE=True
-    ocgis.env.DIR_SHPCABINET = path.join(path.dirname(__file__), 'processes', 'shapefiles')
-    geoms = '50m_country'
-    # sci = ShpCabinetIterator(geoms)
+   # ocgis.env.OVERWRITE=True
+   # ocgis.env.DIR_SHPCABINET = path.join(path.dirname(__file__), 'processes', 'shapefiles')
+   # geoms = sb.get_geom()
+   # sci = ShpCabinetIterator(geoms)
     
     if dir_output != None and path.exists(dir_output) == False: 
       makedirs(dir_output)
     
-    if polygon != None:
-      ugid = clipping.select_ugid(polygon)
+    if polygons != None:
+      ugid = sb.get_ugid(polygons)
     else:
       ugid = None
-  
-    url = get_url(variable)
-    dimension_map = sb.get_dimension_map(url)
+      
+    if resource == None:
+      resource = get_url(variable)
+    dimension_map = sb.get_dimension_map(resource)
     time_region = {'year':range(start,end+1)} 
 
     if variable == 'tg':
@@ -108,47 +114,47 @@ def get_data(variable,
     elif variable == 'rr':
         var = 'pr'
         unit = 'kg m-2 s-1'
-
+    prefix = path.split(url)[1].replace(variable,var)    
+    
+    logger.info('processing variable %s' % (var))
   except Exception as e: 
-    logger.error('could not set processing environment')      
+    logger.error('could not set processing environment: %s ' % (e))      
 
-      
   if variable == 'rr':
     try: 
-      rd = ocgis.RequestDataset(url, 
-                              variable,
-                              dimension_map = dimension_map,
-                              time_region = time_region)
-    
-      calc = 'rr=rr/84600'#
-      EOBS_file = ocgis.OcgOperations(dataset=rd, 
-                        calc=calc,
-                        geom=geoms,
-                        select_ugid=ugid, 
-                        output_format='nc',
-                        dir_output=dir_output,
-                        add_auxiliary_files=False
-                        ).execute()
+      
+      calc = 'rr=rr/84600'
+      
+      EOBS_file = om.call(resource=url, variable=variable, 
+                          dimension_map=dimension_map, calc=calc, prefix=prefix, 
+                          geom=None, select_ugid=None, 
+                          dir_output=dir_output, time_region = time_region)
+          
     except Exception as e: 
       logger.error('ocgis failed for rr with url : %s' %(url))      
-
 
   else:
     try:
       unit = 'K'
-      rd = ocgis.RequestDataset(url,
-                  variable,
-                  conform_units_to=unit,
-                  dimension_map = dimension_map,
-                  time_region = time_region)
+      
+      EOBS_file = om.call(resource=url, variable=variable, 
+                          dimension_map=dimension_map, conform_units_to=unit , prefix=prefix, 
+                          geom=None, select_ugid=None, 
+                          dir_output=dir_output, time_region = time_region)
+      
+      #rd = ocgis.RequestDataset(url,
+                  #variable,
+                  #conform_units_to=unit,
+                  #dimension_map = dimension_map,
+                  #time_region = time_region)
     
-      EOBS_file = ocgis.OcgOperations(dataset=rd, 
-                        geom=geoms,
-                        select_ugid=ugid,
-                        output_format='nc',
-                        dir_output=dir_output,
-                        add_auxiliary_files=False
-                        ).execute()
+      #EOBS_file = ocgis.OcgOperations(dataset=rd, 
+                        #geom=geoms,
+                        #select_ugid=ugid,
+                        #output_format='nc',
+                        #dir_output=dir_output,
+                        #add_auxiliary_files=False
+                        #).execute()
     except Exception as e: 
       logger.error('ocgis failed for tg, tx or tn with url : %s' %(url))      
 
@@ -177,29 +183,29 @@ def get_data(variable,
     logger.error('attributes not set for : %s' %(EOBS_file))
   return path.join(fpath, EOBS_filename)
 
-def get_data_worker(variable='tg', polygons=['FRA','DEU'], dir_output=None, start = 1950, end = 2014):
+#def get_data(variables='tg', polygons=None, dir_output=None, start = 1950, end = 2014):
   
-  def worker(variable, polygon, dir_output, start, end, que):
-    try: 
-      EOBS_file = get_data(variable=variable, polygon=polygon, 
-             dir_output=dir_output, start = start, end = end)
-      que.put(EOBS_file)
-    except Exception as e: 
-      logger.error('get Data module failed for: %s' %(variable))  
-    return
+  #def worker(variable, polygon, dir_output, start, end, que):
+    #try: 
+      #EOBS_file = get_data(variable=variable, polygon=polygon, 
+             #dir_output=dir_output, start = start, end = end)
+      #que.put(EOBS_file)
+    #except Exception as e: 
+      #logger.error('get Data module failed for: %s' %(variable))  
+    #return
   
-  from multiprocessing import Process, Queue
+  #from multiprocessing import Process, Queue
   
-  #if __name__ == '__main__':
-  q = Queue()
-  jobs = []
-  files = []
-  for i, polygon in enumerate(polygons): #for i in range(5):
-    p = Process(target=worker, args=(variable, polygon, dir_output,
-                                      start, end , q))
-    jobs.append(p)
-    p.start()
-    p.join()
-    files.append('%s' %(q.get()))
+  ##if __name__ == '__main__':
+  #q = Queue()
+  #jobs = []
+  #files = []
+  #for i, polygon in enumerate(polygons): #for i in range(5):
+    #p = Process(target=worker, args=(variable, polygon, dir_output,
+                                      #start, end , q))
+    #jobs.append(p)
+    #p.start()
+    #p.join()
+    #files.append('%s' %(q.get()))
     
-  return files
+  #return files

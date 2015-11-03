@@ -6,8 +6,8 @@ from os.path import join, abspath, dirname, getsize
 DIR_SHP = join(abspath(dirname(__file__)), 'processes', 'shapefiles')
 
 def call(resource=[], variable=None, dimension_map=None, calc=None,  
-  calc_grouping= None, prefix=None, 
-  geom=None, select_ugid=None, 
+  calc_grouping= None, conform_units_to=None, prefix=None, 
+  geom=None, select_ugid=None, time_region=None,
   dir_output=None, output_format='nc'): 
   logger.info('Start ocgis module call function')
   from ocgis import OcgOperations, RequestDataset , env
@@ -18,20 +18,21 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   env.DIR_SHPCABINET = DIR_SHP
   env.OVERWRITE = True
   env.DIR_OUTPUT = dir_output
-
+  env.PREFIX = prefix
+  
   if type(resource) != list: 
     resource = list([resource])
 
   # check memory load 
-  limit_memory_mb = 1000 #475.0 # to reduce the load of the memory, calculation is perfored in chunks
+  limit_memory_mb = 475.0 # # to reduce the load of the memory, calculation is perfored in chunks
   fsize = 0 
   for nc in resource: 
     fsize = fsize + getsize(nc)
   
   # execute ocgis 
   logger.info('Execute ocgis module call function')
-  rd = RequestDataset(resource, variable=variable, dimension_map=dimension_map)
-  env.PREFIX = prefix    
+  rd = RequestDataset(resource, variable=variable, dimension_map=dimension_map, conform_units_to=conform_units_to, time_region=time_region)
+  
   ops = OcgOperations(dataset=rd, 
         calc=calc, 
         calc_grouping=calc_grouping,
@@ -40,7 +41,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         geom=geom,
         add_auxiliary_files=False)
 
-  if fsize / 1000000 <= 500:          
+  if fsize / 1000000 <= limit_memory_mb :          
     geom_file = ops.execute()
 
   else: 
