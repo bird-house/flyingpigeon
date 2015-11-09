@@ -133,14 +133,116 @@ def add_statistic(nc_url, var):
     try: 
       ref_period[:] = ref_periods
       ref_median[:] = ref_medians
-      ref_mean[:] = ref_means
-      ref_std[:] = ref_stds
-      ref_per05[:] = ref_per05s
-      ref_per95[:] = ref_per95s
+      ref_mean[:]   = ref_means
+      ref_std[:]    = ref_stds
+      ref_per05[:]  = ref_per05s
+      ref_per95[:]  = ref_per95s
     except Exception as e:
       logger.exception('add attribution failed : %s\n' % (e))
       
     nc.close()
+
+
+def get_ensemble_statistic_files(resource, dir_output=None):
+  """
+  returns  a list of pathes for the ensemble statistic files for yearly resloved input files
+  (mean, median, 33percentil and 66percentil)
+
+  :param resources: list of pathes, for ensemble members
+  :param dir_output: path to output directory
+
+  :return mean, median, 33percentil, 66percentil: output fiel pathes 
+  """
+
+  import tempfile
+  from shutil import rmtree
+  from os import curdir, path, makedirs, listdir
+  from flyingpigeon.utils import get_timestamps
+
+  if type (resource) == str :
+    resource = list([resource])
+
+  # calculate the running mean for each member
+  tmp = tempfile.mkdtemp(dir=curdir)
+
+  for i , member in enumerate (resource):
+    # logger.info('%s 30 yesr mean' % member)
+    try: 
+      prefix = path.split(member)[1]
+      outfile = path.join(tmp,prefix)
+      cdo.runmean('30', input = member, output = outfile)
+
+      if i == 0: 
+        start , end = get_timestamps(outfile)
+      else: 
+        s , e = get_timestamps(outfile)
+        if s > start: 
+          start = s 
+        if e < end: 
+          end = e
+      
+    except Exception as e:
+      logger.error('failed to calculate runmean for %s,: %s ' % ( member,e ))
+  
+  logger.info('Ensemble members year: %s - %s ' % ( start,end ))
+  tmp2 = tempfile.mkdtemp(dir=curdir)
+
+  try: 
+    members = [path.join(tmp,nc) for nc in listdir(tmp)]
+    s = int(start[0:4])
+    e = int(end[0:4])
+    for member in members:
+      prefix = path.split(member)[1]
+      outfile = path.join(tmp2, prefix)
+      cdo.selyear('%s/%s' % (s,e), input=member, output=outfile)
+  except Exception as e:
+    logger.error('failed to calculate ensmean %s ' % (e))
+
+  if dir_output == None:
+    dir_output = tempfile.mkdtemp(dir=curdir)
+  else:
+    if not path.exists(dir_output): 
+      makedirs(dir_output)
+
+  try: 
+    members = [path.join(tmp2,nc) for nc in listdir(tmp2)]
+    mean_name = 'mean_%s-%s.nc' % (s,e)
+    nc_mean = path.join(dir_output, mean_name)
+    cdo.ensmean(input=members, output=nc_mean)
+    
+    median_name = 'median_%s-%s.nc' % (s,e)
+    nc_median = path.join(dir_output, median_name)
+    cdo.enspctl('50', input=members, output=nc_median)
+
+    per33_name = 'per33_%s-%s.nc' % (s,e)
+    nc_per33 = path.join(dir_output, per33_name)
+    cdo.enspctl('33', input=members, output=nc_per33)
+
+    per66_name = 'per66_%s-%s.nc' % (s,e)
+    nc_per66 = path.join(dir_output, per66_name)
+    cdo.enspctl('66', input=members, output=nc_per66)
+
+
+    per90_name = 'per90_%s-%s.nc' % (s,e)
+    nc_per90 = path.join(dir_output, per90_name)
+    cdo.enspctl('90', input=members, output=nc_per90)
+
+    per10_name = 'per10_%s-%s.nc' % (s,e)
+    nc_per10 = path.join(dir_output, per10_name)
+    cdo.enspctl('10', input=members, output=nc_per10)
+
+
+  except Exception as e:
+    logger.error('failed to calculate ensmean %s ' % (e))
+   
+  rmtree(tmp, ignore_errors=True)
+  rmtree(tmp2, ignore_errors=True)
+
+  outfiles = [nc_mean, nc_median, nc_per10, nc_per33, nc_per66, nc_per90]
+
+  return outfiles# 
+
+
     
 def merge(resource, dir_output=None, historical_concatination=False): 
   """

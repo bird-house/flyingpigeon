@@ -60,7 +60,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
     element_in_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
     element_in_mb = element_in_kb*0.001
-    tile_dim = sqrt(limit_memory_mb/(element_in_mb*nb_time_coordinates_rd))
+    tile_dim = sqrt(limit_memory/(element_in_mb*nb_time_coordinates_rd))
     
     geom_file = compute(ops, tile_dimension=int(tile_dim), verbose=True)        
   
