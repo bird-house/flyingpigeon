@@ -8,6 +8,8 @@ from netCDF4 import  Dataset
 from cdo import *   # python version
 cdo = Cdo()
 
+cdo.forceOutput = True 
+
 def fldmean(resource, prefix=None, dir_output = None ):
   from os import path # join, basename , curdir
   from os import mkdir
@@ -180,11 +182,10 @@ def get_ensemble_statistic_files(resource, dir_output=None):
           start = s 
         if e < end: 
           end = e
-      
+      logger.info('Ensemble members year: %s - %s ' % ( start,end ))
     except Exception as e:
       logger.error('failed to calculate runmean for %s,: %s ' % ( member,e ))
   
-  logger.info('Ensemble members year: %s - %s ' % ( start,end ))
   tmp2 = tempfile.mkdtemp(dir=curdir)
 
   try: 
@@ -204,41 +205,49 @@ def get_ensemble_statistic_files(resource, dir_output=None):
     if not path.exists(dir_output): 
       makedirs(dir_output)
 
+  outfiles = []
   try: 
     members = [path.join(tmp2,nc) for nc in listdir(tmp2)]
     mean_name = 'mean_%s-%s.nc' % (s,e)
     nc_mean = path.join(dir_output, mean_name)
     cdo.ensmean(input=members, output=nc_mean)
+    outfiles.append(nc_mean)
     
     median_name = 'median_%s-%s.nc' % (s,e)
     nc_median = path.join(dir_output, median_name)
     cdo.enspctl('50', input=members, output=nc_median)
+    outfiles.append(nc_median)
+
+    per10_name = 'per10_%s-%s.nc' % (s,e)
+    nc_per10 = path.join(dir_output, per10_name)
+    cdo.enspctl('10', input=members, output=nc_per10)
+    outfiles.append(nc_per10)
 
     per33_name = 'per33_%s-%s.nc' % (s,e)
     nc_per33 = path.join(dir_output, per33_name)
     cdo.enspctl('33', input=members, output=nc_per33)
+    outfiles.append(nc_per10)
 
     per66_name = 'per66_%s-%s.nc' % (s,e)
     nc_per66 = path.join(dir_output, per66_name)
     cdo.enspctl('66', input=members, output=nc_per66)
+    outfiles.append(nc_per66)
 
 
     per90_name = 'per90_%s-%s.nc' % (s,e)
     nc_per90 = path.join(dir_output, per90_name)
     cdo.enspctl('90', input=members, output=nc_per90)
-
-    per10_name = 'per10_%s-%s.nc' % (s,e)
-    nc_per10 = path.join(dir_output, per10_name)
-    cdo.enspctl('10', input=members, output=nc_per10)
-
-
+    outfiles.append(nc_per90)
+    
   except Exception as e:
-    logger.error('failed to calculate ensmean %s ' % (e))
-   
-  rmtree(tmp, ignore_errors=True)
-  rmtree(tmp2, ignore_errors=True)
+    logger.error('failed to calculate ensstat %s ' % (e))
 
-  outfiles = [nc_mean, nc_median, nc_per10, nc_per33, nc_per66, nc_per90]
+  
+  try:  
+    rmtree(tmp, ignore_errors=True)
+    rmtree(tmp2, ignore_errors=True)
+  except Exception as e: 
+    logger.error('failed to remove tmp or tmp2 %s ' % (e))
 
   return outfiles# 
 
