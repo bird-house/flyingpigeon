@@ -140,7 +140,7 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
 
     :return: list of netcdf files with calculated indices. Files are saved into out_dir
     """
-    from os.path import join, dirname
+    from os.path import join, dirname, exists
     from flyingpigeon import ocgis_module
     from flyingpigeon.subset import clipping
 
