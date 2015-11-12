@@ -61,7 +61,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     logger.info('ocgis module call as compute(ops) ')
     
     limit_memory = mem_mb / 2  # 475.0 #MB # to avoid MemoryError the, calculation is perfored in chunks by big data_input 
-    logger.info('file_size = %s ; free_memory: %s ; nr_cpus: %s ; limit_memory: %s ' % (fsize, f.user_free, limit_memory ))
+    logger.info('input (MB) = %s ; free_memory (MB): %s ' % (fsize_mb , mem_mb ))
     size = ops.get_base_request_size()
     nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
     element_in_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])

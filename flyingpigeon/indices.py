@@ -142,6 +142,7 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
     """
     from os.path import join, dirname
     from flyingpigeon import ocgis_module
+    from flyingpigeon.subset import clipping
 
     #DIR_SHP = join(dirname(__file__),'flyingpigeon', 'processes', 'shapefiles')
     #env.DIR_SHPCABINET = DIR_SHP
@@ -156,11 +157,17 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
     if type(groupings) != list:
       groupings = list([groupings])
     
-    from flyingpigeon.subset import clipping
+    if dir_output != None:
+      if not exists(dir_output): 
+        makedirs(dir_output)
+    
+
+
     #from flyingpigeon.subset import select_ugid
     #    tile_dim = 25
     output = None
-    
+
+
     experiments = sort_by_filename(resource)
     outputs = []
     
@@ -236,7 +243,7 @@ def calc_indice_unconventional(resource=[], variable=None, prefix=None,
     :return: list of netcdf files with calculated indices. Files are saved into dir_output
     """
     
-    from os.path import join, dirname
+    from os.path import join, dirname, exists
     from os import remove
     from tempfile import mktemp
     from flyingpigeon import ocgis_module
@@ -255,8 +262,15 @@ def calc_indice_unconventional(resource=[], variable=None, prefix=None,
     if type(groupings) != list:
       groupings = list([groupings])
     
+    if dir_output != None:
+      if not exists(dir_output): 
+        makedirs(dir_output)
+    
     experiments = sort_by_filename(resource)
     outputs = []
+
+    # print('environment for calc_indice_unconventional set')
+    logger.info('environment for calc_indice_unconventional set')
     
     for key in experiments:
       variable = key.split('_')[0]
@@ -274,11 +288,13 @@ def calc_indice_unconventional(resource=[], variable=None, prefix=None,
                   try:
                     domain = key.split('_')[1].split('-')[0]
                     if polygon == None:
-                      prefix = key.replace(variable, indice).replace('_day_','_%s_' % grouping )
+                      if prefix == None: 
+                        prefix = key.replace(variable, indice).replace('_day_','_%s_' % grouping )
                       geom = None
                       ugid = None
-                    else: 
-                      prefix = key.replace(variable, indice).replace('_day_','_%s_' % grouping ).replace(domain,polygon)
+                    else:
+                      if prefix == None: 
+                        prefix = key.replace(variable, indice).replace('_day_','_%s_' % grouping ).replace(domain,polygon)
                       geom = get_geom(polygon=polygon)
                       ugid = get_ugid(polygons=polygon, geom=geom)
                     if indice == 'TGx':
@@ -333,91 +349,3 @@ def calc_indice_unconventional(resource=[], variable=None, prefix=None,
       except Exception as e:
         logger.exception('could not calc key %s: %s', key, e)
     return outputs
-
-
-# def calc_indice_percentil(resource=[], variable=None, time_range_ref=None, prefix=None,
-#   indices="R95p", polygons='FRA',  groupings="yr", 
-#   dir_output=None, dimension_map = None):
-#     """
-#     Calculates given indices (percentile based ones) for suitable files in the appopriate time grouping and polygon.
-
-#     :param resource: list of filenames in drs convention (netcdf)
-#     :param variable: variable name to be selected in the in netcdf file (default=None)
-#     :param time_range_ref: list with two datetime objectes defining start and end of the reverence period. 
-#     If time_range_ref=None (default) 01.01.1961-31.12.1990 will be used. 
-#     :param indices: list of indices (default ='SU')
-#     :param polygons: list of polgons (default ='FRA')
-#     :param grouping: indices time aggregation (default='yr')
-#     :param out_dir: output directory for result file (netcdf)
-#     :param dimension_map: optional dimension map if different to standard (default=None)
-
-#     :return: list of netcdf files with calculated indices. Files are saved into out_dir
-#     """
-
-#     from os.path import join, dirname
-#     import datetime as dt
-#     from ocgis import OcgOperations, RequestDataset , env
- 
-#     from ocgis.calc.library.index.dynamic_kernel_percentile import DynamicDailyKernelPercentileThreshold
-
-#     DIR_SHP = join(dirname(__file__),'flyingpigeon', 'processes', 'shapefiles')
-#     env.DIR_SHPCABINET = DIR_SHP
-#     env.OVERWRITE = True
-
-#     if type(resource) != list: 
-#       resource = list([resource])
-#     if type(indices) != list: 
-#       indices = list([indices])
-#     if type(polygons) != list:
-#       polygons = list([polygons])
-#     if type(groupings) != list:
-#       groupings = list([groupings])
-
-#     if time_range_ref==None:
-#         dt1_ref = dt.datetime(1961, 01, 01)
-#         dt2_ref = dt.datetime(1990, 12, 31)
-#         time_range_ref = [dt1_ref, dt2_ref]
-
-#     experiments = sort_by_filename(resource)
-#     outputs = []    
-
-#     for key in experiments:
-#       try: 
-#         ncs = experiments[key]
-#         for indice in indices:
-#           try: 
-#             for polygon in polygons:
-#               try:
-
-#                 geom = get_geom(polygon=polygon)
-#                 ugid = get_ugid(polygons=polygon, geom=geom)
-                
-#                 for grouping in groupings:
-#                   try:
-#                     rd = RequestDataset(uri=ncs, variable=variable, time_range=time_range_ref)
-#                     basis_indice = rd.get()
-#                     # get reference:
-#                     rd_ref = RequestDataset(uri=ncs, variable=variable, time_range=time_range_ref)
-#                     basis_ref = rd_ref.get()
-#                     # calculation of percentil based indice:
-#                     values_ref = basis_ref.variables[variable].value
-#                     print values_ref
-#                     temporal = basis_ref.temporal.value_datetime
-#                     percentile = 95
-#                     width = 5 # 5-day window
-#                     daily_percentile = DynamicDailyKernelPercentileThreshold.get_daily_percentile(values_ref,temporal,percentile,width)
-#                     indice = indices
-#                     calc_group =  calc_grouping(grouping) # ['year', 'month'] # or other
-#                     kwds = {'percentile':percentile,'width':width, 'operation':'lt', 'daily_percentile':daily_percentile} # operation: lt = "less then", beacause we count the number of days < 10th percentile  calc = [{'func':'dynamic_kernel_percentile_threshold','name':'TG10p','kwds':kwds}]
-#                     calc = [{'func':'dynamic_kernel_percentile_threshold','name':indice,'kwds':kwds}]
-#                     ops = OcgOperations(dataset=rd,calc_grouping=calc_group,calc=calc, output_format='nc', prefix='indiceTG10p_test', add_auxiliary_files=False)
-#                     outputs.append( ops.execute() )
-#                   except Exception as e:
-#                     logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s', indice, key, polygon, grouping, e )  
-#               except Exception as e:
-#                 logger.exception('could not calc indice %s for key %s and polygon%s : %s', indice, key, polygon, e )  
-#           except Exception as e:
-#             logger.exception('could not calc indice %s for key %s: %s', indice, key, e )        
-#       except Exception as e:
-#         logger.exception('could not calc key %s: %s', key, e)
-#     return outputs
