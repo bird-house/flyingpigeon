@@ -245,7 +245,7 @@ def calc_indice_unconventional(resource=[], variable=None, prefix=None,
     
     from os.path import join, dirname, exists
     from os import remove
-    from tempfile import mktemp
+    import uuid
     from flyingpigeon import ocgis_module
     from flyingpigeon.subset import get_ugid, get_geom
 
@@ -315,7 +315,7 @@ def calc_indice_unconventional(resource=[], variable=None, prefix=None,
                       calc = [{'func': 'moving_window', 'name': 'TGx5day', 'kwds': {'k': 5, 'operation': 'mean', 'mode': 'same' }}]
                       tmp2 = ocgis_module.call(resource=ncs,
                                               variable=variable, dimension_map=dimension_map, 
-                                              calc=calc, calc_grouping=None , prefix=mktemp(dir='.'),
+                                              calc=calc, calc_grouping=None , prefix=str(uuid.uuid4()),
                                                dir_output=None, geom=geom, select_ugid = ugid, 
                                                output_format='nc')
                       calc=[{'func': 'max', 'name': 'TGx5day'}]
@@ -328,7 +328,7 @@ def calc_indice_unconventional(resource=[], variable=None, prefix=None,
                       calc = [{'func': 'moving_window', 'name': 'TGn5day', 'kwds': {'k': 5, 'operation': 'mean', 'mode': 'same' }}]
                       tmp2 = ocgis_module.call(resource=ncs,
                                               variable=variable, dimension_map=dimension_map, 
-                                              calc=calc, calc_grouping=None , prefix=mktemp(dir='.'),
+                                              calc=calc, calc_grouping=None , prefix=str(uuid.uuid4()),
                                                dir_output=None, geom=geom, select_ugid = ugid, 
                                                output_format='nc')
                       calc=[{'func': 'min', 'name': 'TGn5day'}]
