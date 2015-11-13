@@ -46,6 +46,9 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   mem_mb = mem_kb / 1024.
 
   mem_limit = mem_mb / 2. # set limit to half of the free memory
+  if mem_limit >= 1024 * 4: 
+    mem_limit = 1024 * 4
+    # 475.0 MB for openDAP 
   
   data_kb = ops.get_base_request_size()['total']
   data_mb = data_kb / 1024.
@@ -58,7 +61,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   #size = ops.get_base_request_size()
   #
   #data_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
-
+  logger.info('input (MB) = %s ; free_memory (MB): %s ' % (data_mb , mem_mb ))
   if data_mb <= mem_limit :  # input is smaler than the half of free memory size
     logger.info('ocgis module call as ops.execute()')
     try: 
@@ -68,11 +71,10 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
 
   else: 
     # calcultion of chunk size
-    logger.info('ocgis module call as compute(ops) ')
-    logger.info('input (MB) = %s ; free_memory (MB): %s ' % (fsize_mb , mem_mb ))
+    try:
+      logger.info('ocgis module call as compute(ops) ')
+      
 
-    # 475.0 #MB # to avoid MemoryError the, calculation is perfored in chunks by big data_input 
-    try: 
       timesteps_nr = size['variables'][variable]['temporal']['shape'][0]
       tile_dim = sqrt(mem_limit / data_mb * timesteps_nr)
 
