@@ -161,8 +161,6 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
       if not exists(dir_output): 
         makedirs(dir_output)
     
-
-
     #from flyingpigeon.subset import select_ugid
     #    tile_dim = 25
     output = None
@@ -186,26 +184,26 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
                 calc_group = calc_grouping(grouping)
                 logger.info('calc_group: %s' % calc_group)
                 if polygons == None:
-                  try:  
-                    prefix = key.replace(variable, indice).replace('_day_','_%s_' % grouping )
+                  try:
+                    if prefix == None:   
+                      prefix = key.replace(variable, indice).replace('_day_','_%s_' % grouping )
                     tmp = ocgis_module.call(resource=ncs,
                      variable=variable,
                      dimension_map=dimension_map, 
                      calc=calc,
                      calc_grouping= calc_group, 
                      prefix=prefix, 
-                     #geom=None,
-                     #select_ugid=None,
                      dir_output=dir_output,
                      output_format='nc')
                     outputs.extend( [tmp] )
                   except Exception as e: 
-                    logger.exception('could not calc indice %s for domain in %s: %s', indice, key, e )   
+                    logger.exception('could not calc indice %s for domain in %s: %s' %( indice, key, e) )   
                 else: 
                   for polygon in polygons:
                     try:
                       domain = key.split('_')[1].split('-')[0]
-                      prefix = key.replace(variable, indice).replace('_day_','_%s_' % grouping ).replace(domain,polygon)
+                      if prefix == None: 
+                        prefix = key.replace(variable, indice).replace('_day_','_%s_' % grouping ).replace(domain,polygon)
                       tmp = clipping(resource=ncs, 
                         variable=variable, 
                         dimension_map=dimension_map, 
@@ -215,15 +213,16 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
                         polygons=polygon, 
                         mosaik=False, 
                         dir_output=dir_output)
-                      outputs.extend( tmp ) 
+                      outputs.extend( tmp )
                     except Exception as e:
-                      logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s', indice, key, polygon, grouping, e )  
+                      logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s' % ( indice, key, polygon, grouping, e ))  
+                logger.info('indice file calcualted %s ' % (tmp))      
               except Exception as e:
-                logger.exception('could not calc indice %s for key %s and calc_grouping %s : %s', indice, key, polygon, e )  
+                logger.exception('could not calc indice %s for key %s and calc_grouping %s : %s' %  (indice, key, polygon, e))  
           except Exception as e:
-            logger.exception('could not calc indice %s for key %s: %s', indice, key, e )        
+            logger.exception('could not calc indice %s for key %s: %s' % ( indice, key, e ))        
       except Exception as e:
-        logger.exception('could not calc key %s: %s', key, e)
+        logger.exception('could not calc key %s: %s' %  (key, e))
     return outputs
 
 def calc_indice_unconventional(resource=[], variable=None, prefix=None,
@@ -340,12 +339,13 @@ def calc_indice_unconventional(resource=[], variable=None, prefix=None,
                     else: 
                       logger.error('Indice %s is not a known inidce' % (indice))
                     outputs.append(tmp)
+                    logger.info('indice file calcualted %s ' % (tmp))
                   except Exception as e:
-                    logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s', indice, key, polygon, grouping, e )  
+                    logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s' %  (indice, key, polygon, grouping, e ))
               except Exception as e:
-                logger.exception('could not calc indice %s for key %s and calc_grouping %s : %s', indice, key, polygon, e )  
+                logger.exception('could not calc indice %s for key %s and calc_grouping %s : %s' % ( indice, key, polygon, e ))
           except Exception as e:
-            logger.exception('could not calc indice %s for key %s: %s', indice, key, e )        
+            logger.exception('could not calc indice %s for key %s: %s'%  (indice, key, e ))
       except Exception as e:
-        logger.exception('could not calc key %s: %s', key, e)
+        logger.exception('could not calc key %s: %s' % (key, e))
     return outputs
