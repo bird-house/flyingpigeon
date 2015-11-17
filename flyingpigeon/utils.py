@@ -1,5 +1,5 @@
 import ocgis
-from netCDF4 import Dataset
+from netCDF4 import Dataset, num2date
 
 from malleefowl import wpslogging as logging
 #import logging
@@ -112,8 +112,7 @@ def drs_filename(nc_file, skip_timestamp=False, skip_format=False ,
         # rename the file
         if rename_file==True:
           if path.exists(path.join(nc_file)):
-            rename(nc_file, path.join(pf, filename ))
-          
+            rename(nc_file, path.join(pf, filename ))      
     except:
         logger.exception('Could not generate DRS filename for %s', nc_file)
     
@@ -143,15 +142,14 @@ def get_timestamps(nc_file):
     returns from/to timestamp of given netcdf file.
     
     :param nc_file: NetCDF file
-    returns tuple (from_timestamp, to_timestamp)
+    :returns tuple: (from_timestamp, to_timestamp)
     """
-    ds = Dataset(nc_file)
-    time_list = ds.variables['time']
-    from datetime import datetime, timedelta
-    reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
+    start = get_time(nc_file)[0]
+    end = get_time(nc_file)[-1]
     
-    from_timestamp = datetime.strftime(reftime + timedelta(days=time_list[0]), '%Y%m%d') 
-    to_timestamp = datetime.strftime(reftime + timedelta(days=time_list[-1]), '%Y%m%d')
+    from_timestamp = start.strftime().split(' ')[0].replace('-','')
+    to_timestamp = end.strftime().split(' ')[0].replace('-','')
+
     return (from_timestamp, to_timestamp)
 
 def get_time(nc_file):
@@ -159,14 +157,23 @@ def get_time(nc_file):
     returns all timestamps of given netcdf file as datetime list.
     
     :param nc_file: NetCDF file
+    :return format: netcdftime._datetime.datetime
     """
     ds = Dataset(nc_file)
-    time_list = ds.variables['time']
-    from datetime import datetime, timedelta
-    reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
-    ts = [reftime + timedelta(days= t) for t in time_list]
+    time = ds.variables['time']
+
+    timestamps = num2date(time[:], time.units, time.calendar)
+     
+    #calendar = time_list.calendar
+    #units = time_list.units
+    #from datetime import datetime, timedelta
+    #if units == 'days since 1949-12-01 00:00:00':
+    #  reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
+    #else: 
+    #  logger.error('time units are not CMIP conform')
+    #ts = [reftime + timedelta(days= t) for t in time_list]
     
-    return ts
+    return timestamps
   
 
 def check_timestepps(resource): 

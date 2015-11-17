@@ -276,10 +276,8 @@ def get_geom(polygon=None):
 # === Available Polygons
 _CONTINENTS_ = get_shp_column_values(geom='continents', columnname='CONTINENT') 
 
-
 _COUNTRIES_ = {}
 _COUNTRIES_Europe_ = {}
-_POLYGONS_EXTREMOSCOPE_ = get_shp_column_values(geom='extremoscope', columnname='HASC_1')
 
 # === popultate polygons dictionaties 
 ADM0_A3 = get_shp_column_values(geom='countries', columnname='ADM0_A3')
@@ -292,3 +290,13 @@ for c , key in enumerate(ADM0_A3):
 for c , key in enumerate(ADM0_A3):
   if CONTINENT[c] == 'Europe':
     _COUNTRIES_Europe_[key] = dict(longname=NAMELONG[c])
+
+_EUREGIONS_ = {}
+
+HASC_1 = get_shp_column_values(geom='extremoscope', columnname='HASC_1')
+NAME_1 = get_shp_column_values(geom='extremoscope', columnname='NAME_1')
+
+_POLYGONS_EXTREMOSCOPE_ = HASC_1
+
+for c , key in enumerate(HASC_1): 
+  _EUREGIONS_[key] = dict(longname=NAME_1[c])

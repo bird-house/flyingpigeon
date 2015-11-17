@@ -58,10 +58,10 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   #   fsize_mb = fsize / 1024. # in MB 
   #   #fsize_gib = fsize / 1024.**3 # in GB 
 
-  #size = ops.get_base_request_size()
+  #
   #
   #data_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
-  logger.info('input (MB) = %s ; free_memory (MB): %s ' % (data_mb , mem_mb ))
+  logger.info('input (GB) = %s ; memory_limit (GB): %s ' % (data_mb / 1024 , mem_limit / 1024 ))
   if data_mb <= mem_limit :  # input is smaler than the half of free memory size
     logger.info('ocgis module call as ops.execute()')
     try: 
@@ -74,7 +74,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     try:
       logger.info('ocgis module call as compute(ops) ')
       
-
+      size = ops.get_base_request_size()
       timesteps_nr = size['variables'][variable]['temporal']['shape'][0]
       tile_dim = sqrt(mem_limit / data_mb * timesteps_nr)
 

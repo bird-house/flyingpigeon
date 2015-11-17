@@ -300,41 +300,41 @@ def calc_indice_unconventional(resource=[], variable=None, prefix=None,
                       calc=[{'func': 'max', 'name': 'TGx'}]
                       tmp = ocgis_module.call(resource=ncs,
                                               variable=variable, dimension_map=dimension_map, 
-                                              calc=calc, calc_grouping= calc_group, prefix=prefix,
-                                               dir_output=dir_output, geom=geom, select_ugid = ugid,
-                                                output_format='nc')
+                                              calc=calc, calc_grouping=calc_group, prefix=prefix,
+                                              dir_output=dir_output, geom=geom, select_ugid=ugid)
                     elif indice == 'TGn':
                       calc=[{'func': 'min', 'name': 'TGn'}]
                       tmp = ocgis_module.call(resource=ncs,
                                               variable=variable, dimension_map=dimension_map, 
                                               calc=calc, calc_grouping= calc_group, prefix=prefix,
-                                               dir_output=dir_output, geom=geom, select_ugid = ugid, 
-                                               output_format='nc')
+                                               dir_output=dir_output, geom=geom, select_ugid = ugid)
                     elif indice == 'TGx5day':
                       calc = [{'func': 'moving_window', 'name': 'TGx5day', 'kwds': {'k': 5, 'operation': 'mean', 'mode': 'same' }}]
                       tmp2 = ocgis_module.call(resource=ncs,
                                               variable=variable, dimension_map=dimension_map, 
-                                              calc=calc, calc_grouping=None , prefix=str(uuid.uuid4()),
-                                               dir_output=None, geom=geom, select_ugid = ugid, 
-                                               output_format='nc')
+                                              calc=calc, prefix=str(uuid.uuid4()),
+                                              geom=geom, select_ugid = ugid)
                       calc=[{'func': 'max', 'name': 'TGx5day'}]
+                      logger.info('moving window calculated : %s' % tmp2)
                       tmp = ocgis_module.call(resource=tmp2,
                                               variable=indice, dimension_map=dimension_map, 
-                                              calc=calc, calc_grouping= calc_group, prefix=prefix,
-                                              dir_output=dir_output, output_format='nc')
+                                              calc=calc, calc_grouping=calc_group, prefix=prefix,
+                                              dir_output=dir_output)
                       remove(tmp2)
                     elif indice == 'TGn5day':
                       calc = [{'func': 'moving_window', 'name': 'TGn5day', 'kwds': {'k': 5, 'operation': 'mean', 'mode': 'same' }}]
                       tmp2 = ocgis_module.call(resource=ncs,
                                               variable=variable, dimension_map=dimension_map, 
-                                              calc=calc, calc_grouping=None , prefix=str(uuid.uuid4()),
-                                               dir_output=None, geom=geom, select_ugid = ugid, 
-                                               output_format='nc')
+                                              calc=calc, prefix=str(uuid.uuid4()),
+                                              geom=geom, select_ugid = ugid)
                       calc=[{'func': 'min', 'name': 'TGn5day'}]
+                      
+                      logger.info('moving window calculated : %s' % tmp2)
+                      
                       tmp = ocgis_module.call(resource=tmp2,
                                               variable=indice, dimension_map=dimension_map, 
-                                              calc=calc, calc_grouping= calc_group, prefix=prefix,
-                                              dir_output=dir_output, output_format='nc')
+                                              calc=calc, calc_grouping=calc_group, prefix=prefix,
+                                              dir_output=dir_output)
                       remove(tmp2)
                     else: 
                       logger.error('Indice %s is not a known inidce' % (indice))
