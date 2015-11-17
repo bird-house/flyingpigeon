@@ -53,7 +53,7 @@ def drs_filename(nc_file, skip_timestamp=False, skip_format=False ,
     :param nc_file: netcdf file
     :param skip_timestamp: if True then from/to timestamp is not added to the filename
                            (default: False)
-    :param variable : apprpriate variable for filename, if not set (default), variable will 
+    :param variable: apprpriate variable for filename, if not set (default), variable will 
                       be determinated. for files with more than one data variables 
                       the variable parameter has to be defined (default: )
                       example: variable='tas'
