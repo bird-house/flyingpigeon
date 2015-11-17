@@ -147,8 +147,8 @@ def get_timestamps(nc_file):
     start = get_time(nc_file)[0]
     end = get_time(nc_file)[-1]
     
-    from_timestamp = start.strftime().split(' ')[0].replace('-','')
-    to_timestamp = end.strftime().split(' ')[0].replace('-','')
+    from_timestamp = start.strftime(format = '%Y%m%d')
+    to_timestamp = end.strftime(format = '%Y%m%d')
 
     return (from_timestamp, to_timestamp)
 
