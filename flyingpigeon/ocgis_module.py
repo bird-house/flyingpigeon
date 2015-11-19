@@ -59,7 +59,6 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   data_kb = ops.get_base_request_size()['total']
   data_mb = data_kb / 1024.
 
-
   #data_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
   logger.info('input (GB) = %s ; memory_limit (GB): %s ' % (data_mb / 1024. , mem_limit / 1024. ))
   if data_mb <= mem_limit :  # input is smaler than the half of free memory size
@@ -68,18 +67,18 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
       geom_file = ops.execute()
     except Exception as e: 
       logger.error('failed to execute ocgis operation: %s' % e)  
+  else:
+  #   limit_opendap_mb = 475.0 # we reduce the limit on about 25 Mbytes (don't ask me why :) )
+    size = ops.get_base_request_size()
+    nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
+    element_in_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
+    element_in_mb = element_in_kb / 1024.
 
-  else: 
+    tile_dim = sqrt(mem_limit/(element_in_mb*nb_time_coordinates_rd)) # maximum chunk size 
     # calcultion of chunk size
+    
     try:
-      logger.info('ocgis module call as compute(ops) ')
-      
-      size = ops.get_base_request_size()
-      timesteps_nr = size['variables'][variable]['temporal']['shape'][0]
-      tile_dim = sqrt(mem_limit / data_mb * timesteps_nr)
-
-      logger.info('tile_dim %s ' % tile_dim)
-
+      logger.info('tile_dim = : %s' % tile_dim)
       geom_file = compute(ops, tile_dimension=int(tile_dim) , verbose=True)
     except Exception as e: 
       logger.error('failed to compute ocgis operation: %s' % e)  
