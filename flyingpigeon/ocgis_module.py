@@ -5,6 +5,9 @@ from os.path import join, abspath, dirname, getsize
 
 DIR_SHP = join(abspath(dirname(__file__)), 'processes', 'shapefiles')
 
+
+
+
 def call(resource=[], variable=None, dimension_map=None, calc=None,  
   calc_grouping= None, conform_units_to=None, prefix=None, 
   geom=None, select_ugid=None, time_region=None,
@@ -18,6 +21,8 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   env.OVERWRITE = True
   env.DIR_OUTPUT = dir_output
   env.PREFIX = prefix
+
+  output_format_options={'data_model': 'NETCDF4_CLASSIC'}
   
   if type(resource) != list: 
     resource = list([resource])
@@ -29,7 +34,8 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     dimension_map=dimension_map, conform_units_to=conform_units_to, 
     time_region=time_region)
   
-  ops = OcgOperations(dataset=rd, 
+  ops = OcgOperations(dataset=rd,
+        output_format_options=output_format_options,
         calc=calc, 
         calc_grouping=calc_grouping,
         output_format=output_format, # 'nc' is necessary for chunked execution  
@@ -46,22 +52,16 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   mem_mb = mem_kb / 1024.
 
   mem_limit = mem_mb / 2. # set limit to half of the free memory
-  if mem_limit >= 1024 * 4: 
-    mem_limit = 1024 * 4
+  if mem_limit >= 1024. * 4: 
+    mem_limit = 1024. * 4
     # 475.0 MB for openDAP 
   
   data_kb = ops.get_base_request_size()['total']
   data_mb = data_kb / 1024.
 
-  # for nc in resource: 
-  #   fsize = fsize + getsize(nc) # in bytes
-  #   fsize_mb = fsize / 1024. # in MB 
-  #   #fsize_gib = fsize / 1024.**3 # in GB 
 
-  #
-  #
   #data_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
-  logger.info('input (GB) = %s ; memory_limit (GB): %s ' % (data_mb / 1024 , mem_limit / 1024 ))
+  logger.info('input (GB) = %s ; memory_limit (GB): %s ' % (data_mb / 1024. , mem_limit / 1024. ))
   if data_mb <= mem_limit :  # input is smaler than the half of free memory size
     logger.info('ocgis module call as ops.execute()')
     try: 
@@ -80,7 +80,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
 
       logger.info('tile_dim %s ' % tile_dim)
 
-      geom_file = compute(ops, tile_dimension=int(25) , verbose=True)
+      geom_file = compute(ops, tile_dimension=int(tile_dim) , verbose=True)
     except Exception as e: 
       logger.error('failed to compute ocgis operation: %s' % e)  
   

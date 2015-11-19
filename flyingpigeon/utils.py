@@ -9,42 +9,49 @@ GROUPING = ["yr", "mon", "sem", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON" ]
 
 
 def local_path(url):
-    from urllib2 import urlparse
-    url_parts = urlparse.urlparse(url)
-    return url_parts.path
+  from urllib2 import urlparse
+  url_parts = urlparse.urlparse(url)
+  return url_parts.path
 
 def calc_grouping(grouping):
-    calc_grouping = ['year'] # default year
-    if grouping == 'yr':
-        calc_grouping = ['year']
-    elif grouping == 'sem':
-        calc_grouping = [ [12,1,2], [3,4,5], [6,7,8], [9,10,11], 'unique'] 
-    elif grouping == 'ONDJFM':
-        calc_grouping = [ [10,11,12,1,2,3], 'unique'] 
-    elif grouping == 'AMJJAS':
-        calc_grouping = [ [4,5,6,7,8,9], 'unique'] 
-    elif grouping == 'DJF':
-        calc_grouping = [[12,1,2], 'unique']    
-    elif grouping == 'MAM':
-        calc_grouping = [[3,4,5], 'unique']    
-    elif grouping == 'JJA':
-        calc_grouping = [[6,7,8], 'unique']    
-    elif grouping == 'SON':
-        calc_grouping = [[9,10,11], 'unique']
-    elif grouping == 'mon':
-        calc_grouping = ['year', 'month']
-    elif grouping in ['year', 'month']:
-        calc_grouping = [grouping]
-    else:
-        msg = 'Unknown calculation grouping: %s' % grouping
-        logger.error(msg)
-        raise Exception(msg)
-    return calc_grouping
+  """
+  translate time grouping abreviation (e.g 'JJA') into the apprpriate ocgis calc_grouping syntax
+
+  :param grouping: time  group abreviation allowed values: "yr", "mon", "sem", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON"
+  :return: calc_grouping
+  """
+  calc_grouping = ['year'] # default year
+  if grouping == 'yr':
+      calc_grouping = ['year']
+  elif grouping == 'sem':
+      calc_grouping = [ [12,1,2], [3,4,5], [6,7,8], [9,10,11], 'unique'] 
+  elif grouping == 'ONDJFM':
+      calc_grouping = [ [10,11,12,1,2,3], 'unique'] 
+  elif grouping == 'AMJJAS':
+      calc_grouping = [ [4,5,6,7,8,9], 'unique'] 
+  elif grouping == 'DJF':
+      calc_grouping = [[12,1,2], 'unique']    
+  elif grouping == 'MAM':
+      calc_grouping = [[3,4,5], 'unique']    
+  elif grouping == 'JJA':
+      calc_grouping = [[6,7,8], 'unique']    
+  elif grouping == 'SON':
+      calc_grouping = [[9,10,11], 'unique']
+  elif grouping == 'mon':
+      calc_grouping = ['year', 'month']
+  elif grouping in ['year', 'month']:
+      calc_grouping = [grouping]
+  else:
+      msg = 'Unknown calculation grouping: %s' % grouping
+      logger.error(msg)
+      raise Exception(msg)
+  return calc_grouping
 
 def drs_filename(nc_file, skip_timestamp=False, skip_format=False , 
                  variable=None, rename_file=False, add_file_path=False  ):
     """
-    generates filename according to the data reference syntax (DRS).
+    generates filename according to the data reference syntax (DRS) 
+    based on the metadata in the nc_file.
     
     http://cmip-pcmdi.llnl.gov/cmip5/docs/cmip5_data_reference_syntax.pdf
     https://pypi.python.org/pypi/drslib
@@ -59,7 +66,6 @@ def drs_filename(nc_file, skip_timestamp=False, skip_format=False ,
                       example: variable='tas'
     :param rename_file: rename the file. (default: False)                   
     :return: DRS filename
-    
     """
     from os import path, rename
     
@@ -128,12 +134,27 @@ def get_variable(nc_file):
 
 
 def get_domain(nc_file):
-    """
-    returns the variable name (str)
-    :param nc_file: NetCDF file
-    """
-    rd = ocgis.RequestDataset(nc_file)
-    return rd.variable
+  """
+  returns the domain
+  :param nc_file: NetCDF file
+  :return: domain
+  """
+  ds = Dataset(nc_file)
+
+  try:
+    if 'CMIP' in ds.project_id or 'EUCLEIA' in ds.project_id :
+      domain = None
+      logger.debug('nc_file belongs to an global experiment project')
+    elif 'CORDEX' in ds.project_id: 
+      domain = ds.CORDEX_domain
+      logger.info('nc_file belongs to CORDEX')
+    else: 
+      logger.error('No known project_id found in meta data')
+
+  except Exception as e :
+      logger.error('Could not specify domain for %s: %s' % (nc_file, e) )
+
+  return domain
 
 
 

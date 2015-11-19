@@ -170,7 +170,9 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
     outputs = []
     
     for key in experiments:
-      variable = key.split('_')[0]
+      if variable == None: 
+        variable = get_variable(experiments[key][0])
+        #variable = key.split('_')[0]
       try: 
         ncs = experiments[key]
         for indice in indices:
@@ -272,7 +274,8 @@ def calc_indice_unconventional(resource=[], variable=None, prefix=None,
     logger.info('environment for calc_indice_unconventional set')
     
     for key in experiments:
-      variable = key.split('_')[0]
+      if variable == None:
+        variable = get_variable(experiments[key][0])
       try: 
         ncs = experiments[key]
         for indice in indices:
