@@ -38,7 +38,7 @@ def calc_grouping(grouping):
   elif grouping == 'SON':
       calc_grouping = [[9,10,11], 'unique']
   elif grouping == 'day':
-    calc_grouping = ['year', 'month', 'day']
+    calc_grouping = ['day']
   elif grouping == 'mon':
       calc_grouping = ['year', 'month']
   elif grouping in ['year', 'month']:
@@ -157,6 +157,22 @@ def get_domain(nc_file):
       logger.error('Could not specify domain for %s: %s' % (nc_file, e) )
 
   return domain
+
+def get_frequency(nc_file):
+  """
+  returns the frequency
+  :param nc_file: NetCDF file
+  :return: frequency
+  """
+  ds = Dataset(nc_file)
+
+  try:
+    frequency = ds.frequency
+    logger.info('frequency written in the meta data:  %s ' % (frequency))
+  except Exception as e :
+      logger.error('Could not specify frequency for %s: %s' % (nc_file, e) )
+
+  return frequency
 
 
 

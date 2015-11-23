@@ -5,9 +5,6 @@ from os.path import join, abspath, dirname, getsize
 
 DIR_SHP = join(abspath(dirname(__file__)), 'processes', 'shapefiles')
 
-
-
-
 def call(resource=[], variable=None, dimension_map=None, calc=None,  
   calc_grouping= None, conform_units_to=None, prefix=None, 
   geom=None, select_ugid=None, time_region=None,
@@ -30,11 +27,12 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   # execute ocgis 
   logger.info('Execute ocgis module call function')
   
-  rd = RequestDataset(resource, variable=variable, 
-    dimension_map=dimension_map, conform_units_to=conform_units_to, 
-    time_region=time_region)
-  
-  ops = OcgOperations(dataset=rd,
+  try: 
+    rd = RequestDataset(resource, variable=variable, 
+      dimension_map=dimension_map, conform_units_to=conform_units_to, 
+      time_region=time_region)
+    
+    ops = OcgOperations(dataset=rd,
         output_format_options=output_format_options,
         calc=calc, 
         calc_grouping=calc_grouping,
@@ -42,6 +40,9 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         select_ugid=select_ugid, 
         geom=geom,
         add_auxiliary_files=False)
+    logger.info('OcgOperations set')
+  except Exception as e: 
+    logger.error('failed to setup OcgOperations: %s' % (e))  
   
   # check memory load
   from numpy import sqrt 
@@ -59,8 +60,12 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   data_kb = ops.get_base_request_size()['total']
   data_mb = data_kb / 1024.
 
+  if variable == None: 
+    variable = rd.variable
+    logger.info('%s as variable dedected' % (variable))
+
   #data_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
-  logger.info('input (GB) = %s ; memory_limit (GB): %s ' % (data_mb / 1024. , mem_limit / 1024. ))
+  logger.info('data_mb  = %s ; memory_limit = %s ' % (data_mb  , mem_limit  ))
   if data_mb <= mem_limit :  # input is smaler than the half of free memory size
     logger.info('ocgis module call as ops.execute()')
     try: 
@@ -68,7 +73,6 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     except Exception as e: 
       logger.error('failed to execute ocgis operation: %s' % e)  
   else:
-  #   limit_opendap_mb = 475.0 # we reduce the limit on about 25 Mbytes (don't ask me why :) )
     size = ops.get_base_request_size()
     nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
     element_in_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
