@@ -79,7 +79,8 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     
     try:
       logger.info('tile_dim = : %s' % tile_dim)
-      geom_file = compute(ops, tile_dimension=int(tile_dim) , verbose=True)
+
+      geom_file = compute(ops, tile_dimension=int(50) , verbose=True)
     except Exception as e: 
       logger.error('failed to compute ocgis operation: %s' % e)  
   

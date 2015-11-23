@@ -5,7 +5,7 @@ from malleefowl import wpslogging as logging
 #import logging
 logger = logging.getLogger(__name__)
 
-GROUPING = ["yr", "mon", "sem", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON" ]
+GROUPING = [ "day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON" ]
 
 
 def local_path(url):
@@ -37,6 +37,8 @@ def calc_grouping(grouping):
       calc_grouping = [[6,7,8], 'unique']    
   elif grouping == 'SON':
       calc_grouping = [[9,10,11], 'unique']
+  elif grouping == 'day':
+    calc_grouping = ['year', 'month', 'day']
   elif grouping == 'mon':
       calc_grouping = ['year', 'month']
   elif grouping in ['year', 'month']:
