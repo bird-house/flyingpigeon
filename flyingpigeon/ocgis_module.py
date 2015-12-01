@@ -19,7 +19,8 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   env.DIR_OUTPUT = dir_output
   env.PREFIX = prefix
 
-  output_format_options={'data_model': 'NETCDF4_CLASSIC'}
+  output_format_options={'data_model': 'NETCDF4_CLASSIC', 
+                         'variable_kwargs': {'zlib': True, 'complevel': 5}}
   
   if type(resource) != list: 
     resource = list([resource])
@@ -34,6 +35,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     
     ops = OcgOperations(dataset=rd,
         output_format_options=output_format_options,
+        #options=options,
         calc=calc, 
         calc_grouping=calc_grouping,
         output_format=output_format, # 'nc' is necessary for chunked execution  

@@ -38,7 +38,7 @@ def calc_grouping(grouping):
   elif grouping == 'SON':
       calc_grouping = [[9,10,11], 'unique']
   elif grouping == 'day':
-    calc_grouping = ['day']
+    calc_grouping = ['year', 'month', 'day']
   elif grouping == 'mon':
       calc_grouping = ['year', 'month']
   elif grouping in ['year', 'month']:
