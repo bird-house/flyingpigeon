@@ -305,12 +305,12 @@ def sort_by_filename(resource, historical_concatination = False ):
     for key in ndic:
       if historical_concatination == False:
         for n in resource:
-          if key in n: 
+          if '%s_' % key in n: 
             ndic[key].append(path.join(p,n))
       elif historical_concatination == True:
         historical = key.replace('rcp26','historical').replace('rcp45','historical').replace('rcp65','historical').replace('rcp85','historical')
         for n in resource:
-          if key in n or historical in n: 
+          if '%s_' % key in n or '%s_' % historical in n: 
             ndic[key].append(path.join(p,n))
       else:
         logger.error('append filespathes to dictionary for key %s failed' % (key))

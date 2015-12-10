@@ -7,7 +7,7 @@ DIR_SHP = join(abspath(dirname(__file__)), 'processes', 'shapefiles')
 
 def call(resource=[], variable=None, dimension_map=None, calc=None,  
   calc_grouping= None, conform_units_to=None, prefix=None, 
-  geom=None, select_ugid=None, time_region=None,
+  geom=None, output_format_options=False, select_ugid=None, time_region=None,
   dir_output=None, output_format='nc'): 
   logger.info('Start ocgis module call function')
   from ocgis import OcgOperations, RequestDataset , env
@@ -19,8 +19,13 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   env.DIR_OUTPUT = dir_output
   env.PREFIX = prefix
 
-  output_format_options={'data_model': 'NETCDF4_CLASSIC', 
+  if output_format_options == False: 
+    output_format_options = None
+  elif output_format_options == True:
+    output_format_options={'data_model': 'NETCDF4_CLASSIC', 
                          'variable_kwargs': {'zlib': True, 'complevel': 5}}
+  else:
+    logger.info('output_format_options are set to %s ' % ( output_format_options ))
   
   if type(resource) != list: 
     resource = list([resource])
