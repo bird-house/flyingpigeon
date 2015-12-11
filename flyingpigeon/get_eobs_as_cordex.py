@@ -21,7 +21,7 @@ att_dict = {
       'institution' : "beta-Version" ,
       'institute_id' : "beta-Version" ,
       'model_id' : "beta-Version" ,
-      'rcm_version_id' : "v11.0" ,
+      'rcm_version_id' : "v12" ,
       #'references' : "http//www.knmi.nl/research/regional_climate" ,
       'project_id' : "EOBS" ,
       'CORDEX_domain' : "EUR-22" ,
@@ -41,6 +41,7 @@ def get_url(variable):
     #http://opendap.knmi.nl/knmi/thredds/dodsC/e-obs_0.22rotated/rr_0.22deg_rot_v12.0.nc
     #http://opendap.knmi.nl/knmi/thredds/dodsC/e-obs_0.22rotated/rr_0.22deg_rot_v12.0.nc.html
     url = 'http://opendap.knmi.nl/knmi/thredds/dodsC/e-obs_0.22rotated/%s_0.22deg_rot_v12.0.nc' % (variable)
+    logger.info('URL: %s', url)
   except Exception as e: 
     logger.error('could not create EOBS url for variable %s', variable)
   return url  
@@ -61,7 +62,7 @@ def set_attributes(resource, variable):
     ds.renameDimension('Actual_latitude', 'latitude' )
     ds.renameDimension('Actual_longitude', 'longitude' )
     ds.renameVariable(variable, new_variable)
-    #ds.setncatts(att_dict)
+    # ds.setncatts(att_dict)
     ds.close()
   except Exception as e: 
     logger.error('could not set attributes in resouce %s', resource)    
@@ -93,13 +94,19 @@ def get_data(variable,
       makedirs(dir_output)
     
     if polygons != None:
-      ugid = sb.get_ugid(polygons)
+      geom = sb.get_geom(polygon=polygons[0:1])
+      ugid = sb.get_ugid(polygons=polygons, geom= geom)
     else:
       ugid = None
+      geom = None
       
     if resource == None:
       resource = get_url(variable)
-    dimension_map = sb.get_dimension_map(resource)
+
+    dimension_map = {'X': {'variable': 'Actual_longitude', 'dimension': 'x', 'pos': 2},
+              'Y': {'variable': 'Actual_latitude', 'dimension': 'y', 'pos': 1},
+              'T': {'variable': 'time', 'dimension': 'time', 'pos': 0 }}
+
     time_region = {'year':range(start,end+1)} 
 
     if variable == 'tg':
@@ -114,7 +121,7 @@ def get_data(variable,
     elif variable == 'rr':
         var = 'pr'
         unit = 'kg m-2 s-1'
-    prefix = path.split(url)[1].replace(variable,var)    
+    prefix = path.split(resource)[1].replace(variable,var).replace('.nc', '')    
     
     logger.info('processing variable %s' % (var))
   except Exception as e: 
@@ -125,44 +132,30 @@ def get_data(variable,
       
       calc = 'rr=rr/84600'
       
-      EOBS_file = om.call(resource=url, variable=variable, 
+      EOBS_file = om.call(resource=resource, variable=variable, memory_limit=450,
                           dimension_map=dimension_map, calc=calc, prefix=prefix, 
-                          geom=None, select_ugid=None, 
+                          geom=geom, select_ugid=ugid, 
                           dir_output=dir_output, time_region = time_region)
           
     except Exception as e: 
-      logger.error('ocgis failed for rr with url : %s' %(url))      
+      logger.error('ocgis failed for rr with url : %s' %(resource))      
 
   else:
     try:
       unit = 'K'
-      
-      EOBS_file = om.call(resource=url, variable=variable, 
+      EOBS_file = om.call(resource=resource, variable=variable, memory_limit=450,
                           dimension_map=dimension_map, conform_units_to=unit , prefix=prefix, 
-                          geom=None, select_ugid=None, 
+                          geom=geom, select_ugid=ugid,
                           dir_output=dir_output, time_region = time_region)
       
-      #rd = ocgis.RequestDataset(url,
-                  #variable,
-                  #conform_units_to=unit,
-                  #dimension_map = dimension_map,
-                  #time_region = time_region)
-    
-      #EOBS_file = ocgis.OcgOperations(dataset=rd, 
-                        #geom=geoms,
-                        #select_ugid=ugid,
-                        #output_format='nc',
-                        #dir_output=dir_output,
-                        #add_auxiliary_files=False
-                        #).execute()
     except Exception as e: 
-      logger.error('ocgis failed for tg, tx or tn with url : %s' %(url))      
+      logger.error('ocgis failed for tg, tx or tn: %s' % e)   
 
   try: 
-    if polygon == None:
+    if polygons == None:
       domain =  att_dict['CORDEX_domain']
     else: 
-      domain = att_dict['CORDEX_domain'].replace('EUR', polygon)
+      domain = att_dict['CORDEX_domain'].replace('EUR', polygons)
     
     EOBS_filename = '%s_%s_%s_%s_%s_%s_%s_%s_%s-%s.nc' % (var, 
                                         domain,
@@ -171,7 +164,7 @@ def get_data(variable,
                                         att_dict['driving_model_ensemble_member'],
                                         att_dict['model_id'],
                                         att_dict['rcm_version_id'],
-                                        att_dict['frequency'], 
+                                        att_dict['frequency'],
                                         start,
                                         end)
   
@@ -180,32 +173,5 @@ def get_data(variable,
     rename(EOBS_file, path.join(fpath, EOBS_filename))
       
   except Exception as e: 
-    logger.error('attributes not set for : %s' %(EOBS_file))
+    logger.error('attributes not set for : %s: %s ' %(EOBS_file, e))
   return path.join(fpath, EOBS_filename)
-
-#def get_data(variables='tg', polygons=None, dir_output=None, start = 1950, end = 2014):
-  
-  #def worker(variable, polygon, dir_output, start, end, que):
-    #try: 
-      #EOBS_file = get_data(variable=variable, polygon=polygon, 
-             #dir_output=dir_output, start = start, end = end)
-      #que.put(EOBS_file)
-    #except Exception as e: 
-      #logger.error('get Data module failed for: %s' %(variable))  
-    #return
-  
-  #from multiprocessing import Process, Queue
-  
-  ##if __name__ == '__main__':
-  #q = Queue()
-  #jobs = []
-  #files = []
-  #for i, polygon in enumerate(polygons): #for i in range(5):
-    #p = Process(target=worker, args=(variable, polygon, dir_output,
-                                      #start, end , q))
-    #jobs.append(p)
-    #p.start()
-    #p.join()
-    #files.append('%s' %(q.get()))
-    
-  #return files
