@@ -133,21 +133,18 @@ def get_data(variable,
       calc = 'rr=rr/84600'
       
       EOBS_file = om.call(resource=resource, variable=variable, memory_limit=450,
-                          dimension_map=dimension_map, calc=calc, prefix=prefix, 
+                          dimension_map=dimension_map, prefix=prefix, calc=calc,
                           geom=geom, select_ugid=ugid, 
                           dir_output=dir_output, time_region = time_region)
-          
     except Exception as e: 
-      logger.error('ocgis failed for rr with url : %s' %(resource))      
-
+      logger.error('ocgis failed for rr with url : %s' %(resource))
   else:
     try:
       unit = 'K'
       EOBS_file = om.call(resource=resource, variable=variable, memory_limit=450,
                           dimension_map=dimension_map, conform_units_to=unit , prefix=prefix, 
                           geom=geom, select_ugid=ugid,
-                          dir_output=dir_output, time_region = time_region)
-      
+                          dir_output=dir_output, time_region = time_region)  
     except Exception as e: 
       logger.error('ocgis failed for tg, tx or tn: %s' % e)   
 
