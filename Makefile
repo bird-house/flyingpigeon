@@ -1,4 +1,4 @@
-VERSION := 0.2.10
+VERSION := 0.2.11
 RELEASE := master
 
 # Application
@@ -268,10 +268,6 @@ status:
 
 ## Docker targets
 
-.dockerignore:
-	@echo "Update .dockerignore ..."
-	@curl "https://raw.githubusercontent.com/bird-house/birdhousebuilder.bootstrap/master/dot_dockerignore" --silent --insecure --output .dockerignore 
-
 .PHONY: Dockerfile
 Dockerfile: bootstrap
 	@echo "Update Dockerfile ..."
@@ -283,7 +279,7 @@ dockerrmi:
 	docker rmi $(DOCKER_IMAGE)
 
 .PHONY: dockerbuild
-dockerbuild: Dockerfile .dockerignore
+dockerbuild: Dockerfile
 	@echo "Building docker image ..."
 	docker build --rm -t $(DOCKER_IMAGE) .
 

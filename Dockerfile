@@ -13,11 +13,12 @@ ENV OUTPUT_PORT 8090
 # Set current home
 ENV HOME /root
 
-# Load sources from github
-RUN mkdir -p /opt/birdhouse && curl -ksL https://github.com/bird-house/flyingpigeon/archive/master.tar.gz | tar -xzC /opt/birdhouse --strip-components=1
+# Copy application sources
+COPY . /opt/birdhouse
 
 # cd into application
 WORKDIR /opt/birdhouse
+
 
 
 # Install system dependencies
@@ -42,6 +43,6 @@ EXPOSE 9001 8093 28093 $OUTPUT_PORT
 # Start supervisor in foreground
 ENV DAEMON_OPTS --nodaemon --user $USER
 
-# Update config and start supervisor ...
+# Start service ...
 CMD ["make", "update-config", "start"]
 
