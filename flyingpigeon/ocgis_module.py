@@ -7,7 +7,7 @@ DIR_SHP = join(abspath(dirname(__file__)), 'processes', 'shapefiles')
 
 def call(resource=[], variable=None, dimension_map=None, calc=None,  
   calc_grouping= None, conform_units_to=None, memory_limit=None,  prefix=None, 
-  geom=None, output_format_options=False, select_ugid=None, time_region=None,
+  geom=None, output_format_options=False, select_ugid=None, time_region=None,time_range=None,
   dir_output=None, output_format='nc'):
   '''
   ocgis operation call
@@ -23,7 +23,8 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   :param geom: name of shapefile stored in birdhouse shape cabinet
   :param output_format_options: output options for netCDF e.g compression level()
   :param select_ugid: ugid for appropriate poligons 
-  :param time_region: 
+  :param time_region:
+  :param time_range: sequence of two datetime.datetime objects to mark start and end point 
   :param dir_output:
   :param output_format:
   :return: output file path
@@ -111,8 +112,18 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     tile_dim = sqrt(mem_limit/(element_in_mb*nb_time_coordinates_rd)) # maximum chunk size 
     # calcultion of chunk size
     try:
-      logger.info('tile_dim = : %s' % tile_dim)
-      geom_file = compute(ops, tile_dimension=int(50) , verbose=True)
+      logger.info('tile_dim = %s; calc = %s ' % (tile_dim, calc))
+      if calc == None:
+        calc = '%s=%s*1' % (variable, variable)
+        logger.info('calc set to = %s ' %  calc)
+        ops = OcgOperations(dataset=rd,
+          output_format_options=output_format_options,
+          calc=calc, 
+          output_format=output_format, # 'nc' is necessary for chunked execution  
+          select_ugid=select_ugid, 
+          geom=geom,
+          add_auxiliary_files=False)
+      geom_file = compute(ops, tile_dimension=int(tile_dim) , verbose=True)
     except Exception as e: 
       logger.error('failed to compute ocgis operation: %s' % e)  
   

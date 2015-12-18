@@ -66,8 +66,6 @@ def set_attributes(resource, variable):
     
   return resource
 
-
-
 def func_june_july(value, bounds=None):
     months = [6, 7]
     indices = []
