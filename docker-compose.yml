@@ -6,4 +6,7 @@ flyingpigeon:
   environment:
     HOSTNAME: localhost
     OUTPUT_PORT: 38093
-
+  volumes:
+    - data:/data
+  volume_driver: local
+ 
