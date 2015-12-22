@@ -1,4 +1,4 @@
-VERSION := 0.2.12
+VERSION := 0.2.13
 RELEASE := master
 
 # Application
@@ -19,8 +19,6 @@ PREFIX := $(CONDA_ENVS_DIR)/$(CONDA_ENV)
 HOSTNAME ?= localhost
 USER ?= www-data
 OUTPUT_PORT ?= 8090
-PHOENIX_PASSWORD ?= ""
-WPS_URL ?= http://malleefowl:8094/wps
 
 # choose anaconda installer depending on your OS
 ANACONDA_URL = http://repo.continuum.io/miniconda
@@ -191,7 +189,7 @@ update:
 .PHONY: update-config
 update-config:
 	@echo "Update application config with buildout ..."
-	bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);bin/buildout settings:hostname=$(HOSTNAME) settings:output-port=$(OUTPUT_PORT) settings:phoenix-password=$(PHOENIX_PASSWORD) settings:wps-url=$(WPS_URL) -o"
+	bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);bin/buildout settings:hostname=$(HOSTNAME) settings:output-port=$(OUTPUT_PORT) -o"
 	chown -R $(USER) $(PREFIX)/var/.
 
 .PHONY: build
@@ -264,7 +262,7 @@ restart:
 .PHONY: status
 status:
 	@echo "Supervisor status ..."
-	$(PREFIX)/bin/supervisorctl status
+	$(PREFIX)/bin/supervisorctl -c ${PREFIX}/etc/supervisor/supervisord.conf status
 
 
 ## Docker targets
