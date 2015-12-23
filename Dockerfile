@@ -5,9 +5,9 @@ MAINTAINER https://github.com/bird-house
 LABEL Description="Flyingpigeon WPS Application" Vendor="Birdhouse" Version="0.2.0"
 
 # Configure hostname and user for services 
+ENV OUTPUT_PORT 38093
 ENV HOSTNAME localhost
 ENV USER www-data
-ENV OUTPUT_PORT 8090
 
 
 # Set current home
@@ -20,6 +20,8 @@ COPY . /opt/birdhouse
 WORKDIR /opt/birdhouse
 
 
+# Provide custom.cfg with settings for docker image
+COPY .docker.cfg custom.cfg
 
 # Install system dependencies
 RUN bash bootstrap.sh -i && bash requirements.sh
@@ -33,15 +35,16 @@ RUN make clean install
 
 # Volume for data, cache, logfiles, ...
 RUN chown -R $USER $CONDA_ENVS_DIR/birdhouse
-RUN mkdir /data && mv $CONDA_ENVS_DIR/birdhouse/var/lib /data && ln -s /data/lib $CONDA_ENVS_DIR/birdhouse/var
+RUN mkdir -p $CONDA_ENVS_DIR/birdhouse/var/lib && mv $CONDA_ENVS_DIR/birdhouse/var/lib /data && ln -s /data $CONDA_ENVS_DIR/birdhouse/var/lib
+RUN chown -R $USER /data
 VOLUME /data
 
 # Ports used in birdhouse
-EXPOSE 8093 28093 $OUTPUT_PORT
+EXPOSE 9001 8093 28093 $OUTPUT_PORT
 
 # Start supervisor in foreground
 ENV DAEMON_OPTS --nodaemon --user $USER
 
 # Start service ...
-CMD ["make", "update-config", "start"]
+CMD ["make", "update-config", "update-user", "start"]
 
