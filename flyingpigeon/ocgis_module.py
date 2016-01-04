@@ -7,7 +7,7 @@ DIR_SHP = join(abspath(dirname(__file__)), 'processes', 'shapefiles')
 
 def call(resource=[], variable=None, dimension_map=None, calc=None,  
   calc_grouping= None, conform_units_to=None, memory_limit=None,  prefix=None, 
-  geom=None, output_format_options=False, select_ugid=None, time_region=None,time_range=None,
+  geom=None, output_format_options=True, select_ugid=None, time_region=None, time_range=None,
   dir_output=None, output_format='nc'):
   '''
   ocgis operation call
@@ -43,8 +43,8 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   if output_format_options == False: 
     output_format_options = None
   elif output_format_options == True:
-    output_format_options={'data_model': 'NETCDF4_CLASSIC', 
-                         'variable_kwargs': {'zlib': True, 'complevel': 5}}
+    output_format_options={'data_model': 'NETCDF4', # NETCDF4_CLASSIC
+                         'variable_kwargs': {'zlib': True, 'complevel': 9}}
   else:
     logger.info('output_format_options are set to %s ' % ( output_format_options ))
   
