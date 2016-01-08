@@ -7,7 +7,7 @@ DIR_SHP = join(abspath(dirname(__file__)), 'processes', 'shapefiles')
 
 def call(resource=[], variable=None, dimension_map=None, calc=None,  
   calc_grouping= None, conform_units_to=None, memory_limit=None,  prefix=None, 
-  geom=None, output_format_options=True, select_ugid=None, time_region=None, time_range=None,
+  geom=None, output_format_options=False, select_ugid=None, time_region=None, time_range=None,
   dir_output=None, output_format='nc'):
   '''
   ocgis operation call
