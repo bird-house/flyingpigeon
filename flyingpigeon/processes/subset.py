@@ -76,7 +76,7 @@ class Clipping(WPSProcess):
             resource = urls,
             polygons = self.region.getValue(),
             mosaik = mosaik,
-            dir_output = self.working_dir,
+            dir_output = path.abspath(path.curdir), #self.working_dir,
             )
 
         # prepare tar file 
