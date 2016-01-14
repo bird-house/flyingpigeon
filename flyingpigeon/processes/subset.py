@@ -32,7 +32,7 @@ class Clipping(WPSProcess):
         self.region = self.addLiteralInput(
             identifier="region",
             title="Region",
-            #abstract= countries_longname(), 
+            #abstract= countries_longname(), # need to handle special non-ascii char in countries.
             default='FRA',
             type=type(''),
             minOccurs=1,
