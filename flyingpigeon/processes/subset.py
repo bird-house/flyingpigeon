@@ -1,4 +1,6 @@
-from malleefowl.process import WPSProcess
+from pywps.Process import WPSProcess
+
+from malleefowl.process import show_status, getInputValues
 
 from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
@@ -14,7 +16,9 @@ class Clipping(WPSProcess):
             title="Subset netCDF files",
             version = "0.1",
             metadata=[],
-            abstract="This process returns only the given polygon from input netCDF files."
+            abstract="This process returns only the given polygon from input netCDF files.",
+            statusSupported=True,
+            storeSupported=True
             )
 
         self.resource = self.addComplexInput(
@@ -67,10 +71,11 @@ class Clipping(WPSProcess):
         from tempfile import mkstemp
         from os import path
 
-        urls = self.getInputValues(identifier='resource')
-        mosaik = self.getInputValues(identifier='mosaik')
+        urls = getInputValues(self, identifier='resource')
+        logger.debug('urls = %s', urls)
+        mosaik = self.mosaik.getValue()
 
-        self.show_status('starting: region=%s, num_files=%s' % (self.region.getValue(), len(urls)), 0)
+        show_status(self, 'starting: region=%s, num_files=%s' % (self.region.getValue(), len(urls)), 0)
 
         results = clipping(
             resource = urls,
@@ -93,4 +98,4 @@ class Clipping(WPSProcess):
             logger.error('Tar file preparation failed %s' % e)
 
         self.output.setValue( tarf )
-        self.show_status('done: region=%s, num_files=%s' % (self.region.getValue(), len(urls)), 100)
+        show_status(self, 'done: region=%s, num_files=%s' % (self.region.getValue(), len(urls)), 100)
