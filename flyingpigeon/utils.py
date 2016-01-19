@@ -184,18 +184,18 @@ def get_timestamps(nc_file):
     :returns tuple: (from_timestamp, to_timestamp)
     """
     
-    import validators as val
+    #import validators as val
     
-    if val.url(nc_file) == True: 
-      from ocgis import RequestDataset
-      rd = RequestDataset(nc_file)
-      dct = rd.inspect_as_dct()
+    ## if val.url(nc_file) == True: 
+    ##   from ocgis import RequestDataset
+    ##   rd = RequestDataset(nc_file)
+    ##   dct = rd.inspect_as_dct()
       
-      start = dct['derived']['Start Date'].split(' ')[0]
-      end = dct['derived']['End Date'].split(' ')[0]
-    else:
-      start = get_time(nc_file)[0]
-      end = get_time(nc_file)[-1]
+    ##   start = dct['derived']['Start Date'].split(' ')[0]
+    ##   end = dct['derived']['End Date'].split(' ')[0]
+    ## else:
+    start = get_time(nc_file)[0]
+    end = get_time(nc_file)[-1]
     
     from_timestamp = start.strftime(format = '%Y%m%d')
     to_timestamp = end.strftime(format = '%Y%m%d')
