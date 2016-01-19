@@ -28,34 +28,34 @@ class modelUncertainty(WPSProcess):
         self.start = self.addLiteralInput(
           identifier="start",
           title="Start Year",
-          abstract="Beginn of the analysed period (if not set, the first consistend year of the ensemble will be taken)",
+          abstract="Beginn of the analysed period (e.g 1971; if not set, the first consistend year of the ensemble will be taken)",
           type=type("1"),
           #default='1950',
           minOccurs=0,
           maxOccurs=1,
-          allowedValues=range(1900,2200)
+          #allowedValues=range(1900,2200)
           )
   
         self.end = self.addLiteralInput(
           identifier="end",
           title="End Year",
-          abstract="End of the analysed period (if not set, the last consistend year of the ensemble will be taken)",
+          abstract="End of the analysed period (e.g. 2050 if not set, the last consistend year of the ensemble will be taken)",
           type=type("1"),
           #default='1950',
           minOccurs=0,
           maxOccurs=1,
-          allowedValues=range(1900,2200)
+          #allowedValues=range(1900,2200)
           )
         
         self.timeslice = self.addLiteralInput(
           identifier="timeslice",
           title="Time slice",
-          abstract="Time slice (in years) for robustness reference)",
+          abstract="Time slice (in years) for robustness reference (default=10))",
           type=type("1"),
           default='10',
           minOccurs=0,
           maxOccurs=1,
-          allowedValues=range(1,50)
+          #allowedValues=range(1,50)
           )
         
         # output 
