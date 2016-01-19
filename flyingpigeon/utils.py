@@ -183,8 +183,19 @@ def get_timestamps(nc_file):
     :param nc_file: NetCDF file
     :returns tuple: (from_timestamp, to_timestamp)
     """
-    start = get_time(nc_file)[0]
-    end = get_time(nc_file)[-1]
+    
+    import validators as val
+    
+    if val.url(nc_file) == True: 
+      from ocgis import RequestDataset
+      rd = RequestDataset(nc_file)
+      dct = rd.inspect_as_dct()
+      
+      start = dct['derived']['Start Date'].split(' ')[0]
+      end = dct['derived']['End Date'].split(' ')[0]
+    else:
+      start = get_time(nc_file)[0]
+      end = get_time(nc_file)[-1]
     
     from_timestamp = start.strftime(format = '%Y%m%d')
     to_timestamp = end.strftime(format = '%Y%m%d')
@@ -198,6 +209,7 @@ def get_time(nc_file):
     :param nc_file: NetCDF file
     :return format: netcdftime._datetime.datetime
     """
+     
     ds = Dataset(nc_file)
     time = ds.variables['time']
 
@@ -284,10 +296,11 @@ def sort_by_filename(resource, historical_concatination = False ):
   from os  import path
   # from numpy import squeeze
   
-  logger.debug('sort_by_filename module: len(resource) = %s ' % len(resource))  
   ndic = {}
   tmp_dic = {}
-  if type(resource) == list:
+  if type(resource) == list and len(resource) > 1:
+    logger.debug('sort_by_filename module: len(resource) = %s ' % len(resource))  
+  
     # collect the different experiment names
     for nc in resource:
       logger.debug('file: %s' % nc)
