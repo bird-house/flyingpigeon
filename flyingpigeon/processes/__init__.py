@@ -5,7 +5,7 @@ __all__ = [
         "indices_single",
         "subset",
         "get_eobs_as_cordex",
-        "modelUncertainty",
+        "ensembleRobustness",
         #"extremoscope",
         #"analogs",
         #"vbd",
