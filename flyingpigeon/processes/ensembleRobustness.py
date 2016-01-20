@@ -11,7 +11,7 @@ class modelUncertainty(WPSProcess):
             title="Calculation of the robustness of an ensemle",
             version = "0.1",
             metadata= [ {"title": "LSCE" , "href": "http://www.lsce.ipsl.fr/"} ],
-            abstract="Calculates the ensemble mean and uncertainty mask",
+            abstract="Calculates the robustness as the ratio of noise to signal in an ensemle of timeseries",
             )
         
         # input arguments    
@@ -60,8 +60,8 @@ class modelUncertainty(WPSProcess):
         
         # output 
         
-        self.output_robustness = self.addComplexOutput(
-            identifier="output_robustness",
+        self.output_erob = self.addComplexOutput(
+            identifier="output_erob",
             title="robustness mask",
             abstract="netCDF file containing calculated reobustness mask",
             formats=[{"mimeType":"application/netcdf"}],
@@ -86,9 +86,9 @@ class modelUncertainty(WPSProcess):
         end = self.getInputValues(identifier='end')
         timeslice = self.getInputValues(identifier='timeslice')
         
-        nc_mean, nc_erob  = erob(resource=ncfiles, start=None, end=None, timeslice=10)
+        signal, nc_erob  = erob.worker(resource=ncfiles, start=None, end=None, timeslice=10)
         
-        self.output_mean.setValue( nc_mean )
+        self.output_signal.setValue( signal )
         self.output_erob.setValue( nc_erob )
             
         self.show_status('uncertainty process done', 99)       

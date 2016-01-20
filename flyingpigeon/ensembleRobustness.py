@@ -8,21 +8,21 @@ def worker(resource=[], start=None, end=None, timeslice=10 ):
   """
   
   #validation of arguments
-  from flyingpigeon import utils 
-  try:
-    # 
-    yr_min = set()
-    yr_max = set()
-    ensemble = utils.sort_by_filename(resource, historical_concatination=True)
-    if start == None or end == None:
-      for key in ensemble.keys():
-        yr_min.update(key.split('_')[-1].split('-')[0][0:4])
-        yr_max.update(key.split('_')[-1].split('-')[1][0:4])
-      start = int(max(yr_min)
-      end = int(min(yr_max)
-    logger.info('start and end set to %s - %s '% (start, end))            
-  except Exception as e:
-    logger.error('failed to validate arguments: %s' % e )
+  # from flyingpigeon import utils 
+  # try:
+  #   # 
+  #   yr_min = set()
+  #   yr_max = set()
+  #   ensemble = utils.sort_by_filename(resource, historical_concatination=True)
+  #   if start == None or end == None:
+  #     for key in ensemble.keys():
+  #       yr_min.update(key.split('_')[-1].split('-')[0][0:4])
+  #       yr_max.update(key.split('_')[-1].split('-')[1][0:4])
+  #     start = int(max(yr_min))
+  #     end = int(min(yr_max))
+  #   logger.info('start and end set to %s - %s '% (start, end))            
+  # except Exception as e:
+  #   logger.error('failed to validate arguments: %s' % e )
   
   
   from cdo import Cdo
@@ -42,6 +42,30 @@ def worker(resource=[], start=None, end=None, timeslice=10 ):
   except Exception as e: 
     logger.error('ensemble std failed: %s ' % e )
   
+
+  
+  # get the get the signal as difference from the beginning (mean over 10 years) and end  (mean over 10 years) of the period:
+  try:
+    selyearstart = cdo.selyear('1960/1970', input = nc_ensmean, output = 'selyearstart.nc' ) 
+    selyearend = cdo.selyear('2003/2013', input = nc_ensmean, output = 'selyearend.nc' )
+    meanyearst = cdo.timmean(input = selyearstart, output= 'meanyearst.nc')
+    meanyearend = cdo.timmean(input = selyearend, output= 'meanyearend.nc')
+    signal = cdo.sub(input=[meanyearend, meanyearst], output = 'signal.nc')
+  except Exception as e:
+    logger.error('calculation of signal failed: %s ' % e )
+
+
+
+  # get the intermodel standard deviation (mean over whole period)
+
+  #  cdo timmean ensstd.nc ims.nc
+
+  # get the values over or above 1 as value of robustness
+  # cdo div ims.nc magnitude.nc robustness.nc
+
+
+
+
   # mean + sigma as a mask 
   # sigma1 = cdo.fldstd(input = nc_ensmean, output = 'nc_sigma1.nc')
   # mask 
@@ -96,11 +120,11 @@ def worker(resource=[], start=None, end=None, timeslice=10 ):
   ## merge to on result netCDF
   ## cdo.merge(input=[file1, file2], output='result.nc')
 
-  result = nc_ensmean    #ensemble mean
-  result2 = nc_ensstd    #ensemble std
-  result3 = nc_absdelta  #magnitude of model change  
-  result4 = nc_binmask   #absdelta > std
+  #result = nc_ensmean    #ensemble mean
+  #result2 = nc_ensstd    #ensemble std
+  #result3 = nc_absdelta  #magnitude of model change  
+  #result4 = nc_binmask   #absdelta > std
   
-  return nc_ensmean, nc_ensstd 
+  return signal , nc_ensstd 
   
   

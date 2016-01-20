@@ -296,54 +296,61 @@ def sort_by_filename(resource, historical_concatination = False ):
   from os  import path
   # from numpy import squeeze
   
+  logger.debug('sort_by_filename module: resource = %s ' % len(resource))
+
   ndic = {}
   tmp_dic = {}
-  if type(resource) == list and len(resource) > 1:
-    logger.debug('sort_by_filename module: len(resource) = %s ' % len(resource))  
-  
-    # collect the different experiment names
-    for nc in resource:
-      logger.debug('file: %s' % nc)
-      p, f = path.split(path.abspath(nc)) 
-      n = f.split('_')
-      bn = '_'.join(n[0:-1]) # skipping the date information in the filename
-      if historical_concatination == False: 
-        ndic[bn] = [] # iniciate an approriate key with empty list in the dictionary
-      elif historical_concatination == True:
-        if n[3] != 'historical':
-          ndic[bn] = []
-      else:
-        logger.error('determine key names failed for ' % (nc))
-    # populate the dictionario with filed to appropriate experiment names
-    for key in ndic:
-      if historical_concatination == False:
-        for n in resource:
-          if '%s_' % key in n: 
-            ndic[key].append(path.join(p,n))
-      elif historical_concatination == True:
-        historical = key.replace('rcp26','historical').replace('rcp45','historical').replace('rcp65','historical').replace('rcp85','historical')
-        for n in resource:
-          if '%s_' % key in n or '%s_' % historical in n: 
-            ndic[key].append(path.join(p,n))
-      else:
-        logger.error('append filespathes to dictionary for key %s failed' % (key))
-      ndic[key].sort()
-    
-    # add date information to the key:
-    for key in ndic: 
-      ndic[key].sort()
-      start = get_timestamps(ndic[key][0])[0]
-      end = get_timestamps(ndic[key][-1])[1]
-      newkey = key+'_'+start+'-'+end
-      tmp_dic[newkey] = ndic[key]
-    #ndic = tmp_ndic
+  try: 
+    if type(resource) == list:
+      logger.debug('sort_by_filename module: len(resource) = %s ' % len(resource))  
+      try:  #if len(resource) > 1:
+        # collect the different experiment names
+        for nc in resource:
+          logger.debug('file: %s' % nc)
+          p, f = path.split(path.abspath(nc)) 
+          n = f.split('_')
+          bn = '_'.join(n[0:-1]) # skipping the date information in the filename
+          if historical_concatination == False: 
+            ndic[bn] = [] # iniciate an approriate key with empty list in the dictionary
+          elif historical_concatination == True:
+            if n[3] != 'historical':
+              ndic[bn] = []
+          else:
+            logger.error('determine key names failed for ' % (nc))
+        # populate the dictionario with filed to appropriate experiment names
+        for key in ndic:
+          if historical_concatination == False:
+            for n in resource:
+              if '%s_' % key in n: 
+                ndic[key].append(path.join(p,n))
+          elif historical_concatination == True:
+            historical = key.replace('rcp26','historical').replace('rcp45','historical').replace('rcp65','historical').replace('rcp85','historical')
+            for n in resource:
+              if '%s_' % key in n or '%s_' % historical in n: 
+                ndic[key].append(path.join(p,n))
+          else:
+            logger.error('append filespathes to dictionary for key %s failed' % (key))
+          ndic[key].sort()
+        
+        # add date information to the key:
+        for key in ndic: 
+          ndic[key].sort()
+          start = get_timestamps(ndic[key][0])[0]
+          end = get_timestamps(ndic[key][-1])[1]
+          newkey = key+'_'+start+'-'+end
+          tmp_dic[newkey] = ndic[key]
+      except Exception as e: 
+        logger.error('failed to sort the list of resources %s' % e)
 
-  elif type(resource) == str:
-    p, f = path.split(path.abspath(resource))
-    tmp_dic[f.replace('.nc','')] = resource
-  else:      
-    logger.error('sort_by_filename module failed: resource is not str or list')
-  logger.debug('sort_by_filename module done: len(ndic) = %s ' % len(ndic))  
+    elif type(resource) == str:
+      p, f = path.split(path.abspath(resource))
+      tmp_dic[f.replace('.nc','')] = resource
+    else:      
+      logger.error('sort_by_filename module failed: resource is not str or list')
+    logger.debug('sort_by_filename module done: len(ndic) = %s ' % len(ndic))  
+  except Exception as e: 
+    logger.error('failed to sort files by filename: %e' % e)
+
   return tmp_dic # rndic
 
 def has_variable(resource, variable):
