@@ -1,10 +1,10 @@
-from malleefowl.process import WPSProcess
+from pywps.Process import WPSProcess
+
 import subprocess
 
-from malleefowl import wpslogging as logging
-logger = logging.getLogger(__name__)
+from flyingpigeon.subset import countries #REGION_EUROPE
 
-from flyingpigeon.subset import _COUNTRIES_ #REGION_EUROPE
+import logging
 
 class segetalflora(WPSProcess):
   """This process calculates the relative humidity"""
@@ -12,9 +12,11 @@ class segetalflora(WPSProcess):
     WPSProcess.__init__(self, 
       identifier = "segetalflora",
       title="Segetal Flora",
-      version = "0.1",
+      version = "0.2",
       metadata=[{"title": "Institut Pierre Simon Laplace", "href": "https://www.ipsl.fr/en/"}],
       abstract="Species biodiversity of segetal flora. Imput files: variable:tas , domain: EUR-11 or EUR-44",
+      statusSupported=True,
+      storeSupported=True
       )
 
     self.netcdf_file = self.addComplexInput(
@@ -57,7 +59,7 @@ class segetalflora(WPSProcess):
       type=type(''),
       minOccurs=0,
       maxOccurs=25,
-      allowedValues=_COUNTRIES_ 
+      allowedValues=countries() 
       )
 
 
@@ -114,8 +116,8 @@ class segetalflora(WPSProcess):
     
     from flyingpigeon import segetalflora as sf
     
-    logger.debug('starting segetalflora process execution')
-    self.show_status('starting calcualtion segetalflora', 5)
+    logging.debug('starting segetalflora process execution')
+    self.status.set('starting calcualtion segetalflora', 5)
     
     ## prepare environment
     # create the tar files
@@ -130,7 +132,7 @@ class segetalflora(WPSProcess):
       tar_fieldmeans = tarfile.open(tarf_fieldmeans, "w")
       tar_plots = tarfile.open(tarf_plots, "w")
       
-      logger.debug('tar files initialized')
+      logging.debug('tar files initialized')
       
       # create output folders
       dir_tas = path.abspath(path.curdir+'/dir_tas/')
@@ -142,10 +144,10 @@ class segetalflora(WPSProcess):
       mkdir(dir_segetalflora)
       mkdir(dir_fieldmean)
       mkdir(dir_plots)
-      logger.debug('out directories created')
+      logging.debug('out directories created')
     except  Exception as e:
       msg = 'tar file or mkdir failed!: %s ' % (e)
-      logger.error(msg)
+      logging.error(msg)
       
     countries = ['AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP',
                  'EST','FIN','FRA','GBR','GRC','HUN','HRV','IRL',
@@ -167,8 +169,8 @@ class segetalflora(WPSProcess):
     if type(countries) != list:
       countries = list([countries])
       
-    logger.debug('urls for %s ncs found' % (len(ncs)))
-    logger.debug('culture type: %s ' % (culture_type))
+    logging.debug('urls for %s ncs found' % (len(ncs)))
+    logging.debug('culture type: %s ' % (culture_type))
 
 # === main call for segetalflora processing    
     stepps = len(culture_type) * len(climate_type)
@@ -177,34 +179,34 @@ class segetalflora(WPSProcess):
       for b, clim in enumerate(climate_type):
         start = (a + 1) * (b + 1) 
         per = (start / stepps) * 95
-        self.show_status('%s/%s processing for %s climate type: %s' %(start, stepps, culture_type, climate_type), per)
+        self.status.set('%s/%s processing for %s climate type: %s' %(start, stepps, culture_type, climate_type), per)
         try:
           sf_files =  sf.get_segetalflora(ncs, culture_type=cult,
                                           climate_type=clim,
                                           countries=countries, 
                                           dir_tas=dir_tas,
                                           dir_segetalflora=dir_segetalflora)
-          self.show_status("processing of %s segetalflora files done " % (len(sf_files)) , 95)
+          self.status.set("processing of %s segetalflora files done " % (len(sf_files)) , 95)
         except Exception as e:
           msg = 'segetalflora calculation failed %s %s : %s\n' %( climate_type, culture_type, e) 
-          logger.exception(msg)
+          logging.exception(msg)
         
 # === fieldmeans         
     from flyingpigeon import timeseries as ts
-    self.show_status('processing fieldmeans' , 97)
+    self.status.set('processing fieldmeans' , 97)
     try:
       ncs = [path.join(dir_segetalflora,nc) for nc in listdir(dir_segetalflora)]
       ncs_fld = ts.fldmean(ncs, dir_output=dir_fieldmean)
-      logger.debug('%s fieldmeans processed' % (len(ncs_fld)))
+      logging.debug('%s fieldmeans processed' % (len(ncs_fld)))
     except Exception as e:
-      logger.exception('fieldmeans failed: %s\n' % (e))
+      logging.exception('fieldmeans failed: %s\n' % (e))
     
 
 # === visualisation 
     from flyingpigeon import visualisation as vs
     from os import rename
     
-    self.show_status('processing visualisation' , 98)
+    self.status.set('processing visualisation' , 98)
     
     # sort files for plotting
     try:
@@ -214,9 +216,9 @@ class segetalflora(WPSProcess):
       for nc in ncs: 
         set_var = set_var.union([nc.split('_')[0]])
         set_contry = set_contry.union([nc.split('_')[1]])
-      logger.debug('%s files to plots sorted' % (len(ncs)))
+      logging.debug('%s files to plots sorted' % (len(ncs)))
     except Exception as e:
-      logger.exception('files sorting failed: %s\n' % (e))
+      logging.exception('files sorting failed: %s\n' % (e))
       
     # plot sorted files 
     try:
@@ -231,12 +233,12 @@ class segetalflora(WPSProcess):
           newname = path.dirname(p)+'/%s_%s_birdhouse_output.html' %(v,c)
           rename(p,newname)
           plots.append(newname)
-          logger.debug('plot created and renamed for %s %s' % (v, c )) 
+          logging.debug('plot created and renamed for %s %s' % (v, c )) 
     except Exception as e:
-      logger.exception('ploting failed: %s\n' % (e))
+      logging.exception('ploting failed: %s\n' % (e))
 
 # === tar file archiving 
-    self.show_status('files to tar archives', 99)
+    self.status.set('files to tar archives', 99)
     tar_tas.add(dir_tas, arcname = dir_tas.replace(path.abspath(path.curdir), ""))
     tar_segetalflora.add(dir_segetalflora, arcname = dir_segetalflora.replace(path.abspath(path.curdir), ""))
     tar_fieldmeans.add(dir_fieldmean, arcname = dir_fieldmean.replace(path.abspath(path.curdir), ""))
@@ -246,7 +248,7 @@ class segetalflora(WPSProcess):
     tar_fieldmeans.close()
     tar_segetalflora.close()
     tar_plots.close()
-    logger.debug('tar ncfiles closed')
+    logging.debug('tar ncfiles closed')
     
 
 # === set output parameter   
@@ -254,4 +256,4 @@ class segetalflora(WPSProcess):
     self.out_segetalflora.setValue( tarf_segetalflora )
     self.out_tas.setValue( tarf_tas )
     self.out_plots.setValue( tarf_plots )
-    self.show_status("processing done", 100)
+    self.status.set("processing done", 100)
