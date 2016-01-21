@@ -1,7 +1,4 @@
-from malleefowl.process import WPSProcess
-
-from malleefowl import wpslogging as logging
-logger = logging.getLogger(__name__)
+from pywps.Process import WPSProcess
 
 class modelUncertainty(WPSProcess):
     def __init__(self):
@@ -12,6 +9,8 @@ class modelUncertainty(WPSProcess):
             version = "0.1",
             metadata= [ {"title": "LSCE" , "href": "http://www.lsce.ipsl.fr/"} ],
             abstract="Calculates the robustness as the ratio of noise to signal in an ensemle of timeseries",
+            statusSupported=True,
+            storeSupported=True
             )
         
         # input arguments    
@@ -86,7 +85,7 @@ class modelUncertainty(WPSProcess):
             )         
 
     def execute(self):
-        self.show_status('starting uncertainty process', 0)
+        self.status.set('starting uncertainty process', 0)
     
         from flyingpigeon import ensembleRobustness as erob
         
@@ -101,4 +100,4 @@ class modelUncertainty(WPSProcess):
         self.output_high.setValue( high_agreement_mask )
         self.output_low.setValue( low_agreement_mask )
         
-        self.show_status('uncertainty process done', 99)       
+        self.status.set('uncertainty process done', 99)       
