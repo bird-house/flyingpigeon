@@ -1,12 +1,10 @@
-from malleefowl import wpslogging as logging
-from malleefowl.process import WPSProcess
+from pywps.process import WPSProcess
 import types
 
 from flyingpigeon.get_eobs_as_cordex import EOBS_VARIABLES
 from flyingpigeon.subset import countries, countries_longname 
 
-# initialise
-logger = logging.getLogger(__name__)
+import logging
 
 class eobs_to_cordex(WPSProcess):
   
@@ -15,15 +13,13 @@ class eobs_to_cordex(WPSProcess):
     WPSProcess.__init__(self, 
       identifier = "eobs_to_cordex",
       title="EOBS to CORDEX",
-      version = "0.1",
+      version = "0.2",
       metadata= [
               {"title": "Institut Pierre Simon Laplace", "href": "https://www.ipsl.fr/en/"}
               ],
       abstract="downloades EOBS data in adaped CORDEX format",
-      #extra_metadata={
-          #'esgfilter': 'variable:tas,variable:evspsbl,variable:hurs,variable:pr',  #institute:MPI-M, ,time_frequency:day
-          #'esgquery': 'variable:tas AND variable:evspsbl AND variable:hurs AND variable:pr' # institute:MPI-M AND time_frequency:day 
-          #},
+      statusSupported=True,
+      storeSupported=True
       )
 
     self.netcdf_file = self.addComplexInput(
@@ -107,7 +103,7 @@ class eobs_to_cordex(WPSProcess):
     
     from flyingpigeon.get_eobs_as_cordex import get_data
    
-    self.show_status('execution started at : %s '  % dt.datetime.now() , 5)
+    self.status.set('execution started at : %s '  % dt.datetime.now() , 5)
 
     variable = self.getInputValues(identifier='var_eobs')
     resource = self.getInputValues(identifier='netcdf_file')
@@ -123,7 +119,7 @@ class eobs_to_cordex(WPSProcess):
     
     #(id_tarout, f_tarout) = tempfile.mkstemp(dir=".", suffix='.tar')
     #tarout_file = tarfile.open(f_tarout, "w")
-    #self.show_status('environment set :' , 5)
+    #self.status.set('environment set :' , 5)
     
     #files = []
     #for var_eobs in var_eobs_list: 
@@ -135,8 +131,8 @@ class eobs_to_cordex(WPSProcess):
         #tarout_file.add(f) #, arcname = anomalies_dir.replace(os.curdir, ""))
       #except Exception as e:
         #msg = 'add Tar faild  : %s ' % (e)
-        #logger.error(msg)
+        #logging.error(msg)
         
     self.ncout.setValue('%s' % (cordex_file))
-    self.show_status('execution ended at : %s'  %  dt.datetime.now() , 100)
+    self.status.set('execution ended at : %s'  %  dt.datetime.now() , 100)
     
