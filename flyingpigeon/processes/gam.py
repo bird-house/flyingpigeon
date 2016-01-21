@@ -3,10 +3,8 @@ Processes for rel_hum
 Author: Nils Hempelmann (nils.hempelmann@hzg)
 """
 
-from malleefowl.process import WPSProcess
-from malleefowl import wpslogging as logging
-import malleefowl.process 
-logger = logging.getLogger(__name__)
+from pywps.Process import WPSProcess
+
 
 class gam(WPSProcess):
     
@@ -20,6 +18,8 @@ class gam(WPSProcess):
                 {"title":"GAM"},
                 ],
             abstract="Species destribution model based on PA - Data",
+            statusSupported=True,
+            storeSupported=True
             )
 
 
