@@ -1,12 +1,8 @@
 from pywps.Process import WPSProcess
 
-from malleefowl.process import show_status, getInputValues
-
-from malleefowl import wpslogging as logging
-logger = logging.getLogger(__name__)
+import logging
 
 from flyingpigeon.subset import countries, countries_longname
-
 
 class Clipping(WPSProcess):
     def __init__(self):
@@ -72,10 +68,10 @@ class Clipping(WPSProcess):
         from os import path
 
         urls = getInputValues(self, identifier='resource')
-        logger.debug('urls = %s', urls)
+        logging.debug('urls = %s', urls)
         mosaik = self.mosaik.getValue()
 
-        show_status(self, 'starting: region=%s, num_files=%s' % (self.region.getValue(), len(urls)), 0)
+        self.status.set(self, 'starting: region=%s, num_files=%s' % (self.region.getValue(), len(urls)), 0)
 
         results = clipping(
             resource = urls,
@@ -93,9 +89,9 @@ class Clipping(WPSProcess):
                 tar.add( result , arcname = result.replace(path.abspath(path.curdir), ""))
             tar.close()
 
-            logger.info('Tar file prepared')
+            logging.info('Tar file prepared')
         except Exception as e:
-            logger.error('Tar file preparation failed %s' % e)
+            logging.exception('Tar file preparation failed %s' % e)
 
         self.output.setValue( tarf )
-        show_status(self, 'done: region=%s, num_files=%s' % (self.region.getValue(), len(urls)), 100)
+        self.status.set(self, 'done: region=%s, num_files=%s' % (self.region.getValue(), len(urls)), 100)
