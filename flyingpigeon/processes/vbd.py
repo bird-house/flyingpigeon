@@ -1,11 +1,10 @@
-
 from datetime import datetime, date
 import tempfile
 import subprocess
 
-from malleefowl.process import WPSProcess
-from malleefowl import wpslogging as logging
-logger = logging.getLogger(__name__)
+from pywps.Process import WPSProcess
+
+import logging
 
 class vbd(WPSProcess):
     """
@@ -22,10 +21,8 @@ class vbd(WPSProcess):
                     {"title": "Climate Service Center", "href": "http://www.climate-service-center.de/"}
                     ],
             abstract="Collection of models to calculate variables related to vector born diseases",
-            ## extra_metadata={
-            ##       'esgfilter': 'variable:tas, variable:pr, variable:huss, variable:ps,variable:evspsblpot, domain:AFR-44, domain:AFR-44i',  
-            ##       'esgquery': ' time_frequency:day' 
-            ##       },
+            statusSupported=True,
+            storeSupported=True
             )
             
         self.netcdf_file = self.addComplexInput(
@@ -77,7 +74,7 @@ class vbd(WPSProcess):
         from ocgis.util.shp_cabinet import ShpCabinetIterator
         import ocgis
 
-        self.show_status('starting anopholes ...', 0)
+        self.status.set('starting anopholes ...', 0)
 
         nc_files = self.getInputValues(identifier='netcdf_file')
         
@@ -88,7 +85,7 @@ class vbd(WPSProcess):
         geoms = 'continent'
         select_ugid = [1] # UGID for Africa
         
-        self.show_status('got ShapeCabinet selected ugid : %s ...'% (select_ugid),  12)
+        self.status.set('got ShapeCabinet selected ugid : %s ...'% (select_ugid),  12)
         
 
         # guess var names of files
@@ -105,12 +102,12 @@ class vbd(WPSProcess):
             elif "evspsblpot" in ds.variables.keys():
                 file_evspsblpot = nc_file                          # Dataset(nc_file , 'r')   
             else:
-                raise self.show_status('input netcdf file  %s has not variable tas|hurs|pr|evspsblpot:  \n %s '  % (nc, e ) , 15)
+                raise self.status.set('input netcdf file  %s has not variable tas|hurs|pr|evspsblpot:  \n %s '  % (nc, e ) , 15)
 
-        self.show_status('sort files to appropriate variable names done' , 15)
+        self.status.set('sort files to appropriate variable names done' , 15)
         
         #file_land_sea_mask = self.land_sea_mask.getValue()
-        #logger.debug('get landseamask ... done')
+        #logging.debug('get landseamask ... done')
         
         # build the n4 out variable based on pr
         rd = ocgis.RequestDataset(file_pr, 'pr') # time_range=[dt1, dt2]
@@ -122,10 +119,10 @@ class vbd(WPSProcess):
             prefix=os.path.splitext(os.path.basename(file_n4))[0]
             ops = ocgis.OcgOperations(dataset=rd,  geom=geoms, prefix=prefix, output_format='nc',select_ugid=select_ugid)
             file_n4 = ops.execute()
-            self.show_status('created N4 outfile : %s ...'% (file_n4),  15)
+            self.status.set('created N4 outfile : %s ...'% (file_n4),  15)
         except Exception as e: 
-            self.show_status('"Something awful happened! Africa polygon subset failed for %s' % (file_n4, e),  15)
-            logger.exception("Something awful happened! Africa polygon subset failed for %s" % (file_n4), e )
+            self.status.set('"Something awful happened! Africa polygon subset failed for %s' % (file_n4, e),  15)
+            logging.exception("Something awful happened! Africa polygon subset failed for %s" % (file_n4), e )
         
         nc_tas = Dataset(file_tas,'r')
         nc_pr = Dataset(file_pr,'r')
@@ -136,7 +133,7 @@ class vbd(WPSProcess):
         
         #nc_land_sea_mask = Dataset(file_land_sea_mask,'r')
         
-        logger.debug('open all files ... done')
+        logging.debug('open all files ... done')
         
         #change attributes und variable name here 
         # att.put.nc(nc_n4, "n4", "units", "NC_FLOAT", -9e+33)
@@ -149,11 +146,11 @@ class vbd(WPSProcess):
         evspsblpot = np.squeeze(nc_evspsblpot.variables["evspsblpot"])
         
         
-        logger.debug('read in all variables ... done')
+        logging.debug('read in all variables ... done')
         
         var_n4 = nc_n4.variables["pr"]
         n4 = np.zeros(pr.shape, dtype='f')
-        logger.debug('opended n4 file ... done')
+        logging.debug('opended n4 file ... done')
         
         # define some constatnts:
         Increase_Ta = 0
@@ -180,7 +177,7 @@ class vbd(WPSProcess):
         #else:
         b = 0.88
 
-        logger.debug('configuration  ... done; start main loop, now!')
+        logging.debug('configuration  ... done; start main loop, now!')
 
         for x in range(0,tas.shape[1],1): #tas.shape[1]
             for y in range(0,tas.shape[2],1): #tas.shape[2]
@@ -299,15 +296,15 @@ class vbd(WPSProcess):
 
                 
             process = (((x+1) * tas.shape[2] + y ) / ((tas.shape[1] * tas.shape[2]) / 100 ))
-            logger.debug('Calculation process: %d  % \r ' % (process))                
+            logging.debug('Calculation process: %d  % \r ' % (process))                
                     #except Exception as e:
-                        #logger.warn('Gridbox not calculated. Error= %s ' % (e))
+                        #logging.warn('Gridbox not calculated. Error= %s ' % (e))
                 #else:
             #        n4[:,x,y] =  float('NaN')
         
         # var_n4.assignValue(np.zeros(var_n4.shape))
 
-        self.show_status("anopheles done", 90)
+        self.status.set("anopheles done", 100)
         self.output.setValue( file_n4 )
         
   
