@@ -1,7 +1,6 @@
-from malleefowl.process import WPSProcess
+from pywps.Process import WPSProcess
 
-from malleefowl import wpslogging as logging
-logger = logging.getLogger(__name__)
+import logging
 
 from flyingpigeon.indices import indices, indices_description, calc_indice_single
 from flyingpigeon.subset import countries, countries_longname
@@ -79,8 +78,8 @@ class IndiceSingle(WPSProcess):
         from tempfile import mkstemp
         from os import path
         
-        logger.debug('PYHONPATH = %s', os.environ['PYTHONPATH'])
-        logger.debug('PATH = %s', os.environ['PATH'])
+        logging.debug('PYHONPATH = %s', os.environ['PYTHONPATH'])
+        logging.debug('PATH = %s', os.environ['PATH'])
 
         ncs       = self.getInputValues(identifier='resource')
         indices   = self.indices.getValue()
@@ -91,7 +90,7 @@ class IndiceSingle(WPSProcess):
         # if len(polygons)==0: 
         #     polygons = None
 
-        self.show_status('starting: indices=%s, groupings=%s, countries=%s, num_files=%s' % (indices, 
+        self.status.set('starting: indices=%s, groupings=%s, countries=%s, num_files=%s' % (indices, 
             groupings, polygons, len(ncs)), 0)
 
         results = calc_indice_single(
@@ -102,7 +101,7 @@ class IndiceSingle(WPSProcess):
             dir_output = path.curdir,
             )
         
-        self.show_status('result %s' % results, 90)
+        self.status.set('result %s' % results, 90)
         try: 
             (fp_tarf, tarf) = mkstemp(dir=".", suffix='.tar')
             tar = tarfile.open(tarf, "w")
@@ -112,9 +111,9 @@ class IndiceSingle(WPSProcess):
                 tar.add( result , arcname = result.replace(p, ""))
             tar.close()
 
-            logger.info('Tar file prepared')
+            logging.info('Tar file prepared')
         except Exception as e:
-            logger.error('Tar file preparation failed %s' % e)
+            logging.error('Tar file preparation failed %s' % e)
 
         self.output.setValue( tarf )
-        self.show_status('done: indice=%s, num_files=%s' % (indices, len(ncs)), 100)
+        self.status.set('done: indice=%s, num_files=%s' % (indices, len(ncs)), 100)
