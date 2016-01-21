@@ -1,15 +1,11 @@
 from datetime import datetime, date
 import tempfile
 import subprocess
-
-from malleefowl import wpslogging as logging
-logger = logging.getLogger(__name__)
-
 from netCDF4 import Dataset
 import numpy as np
 
 #from bokeh.plotting import *
-from malleefowl.process import WPSProcess
+from pywps.Process import WPSProcess
 
 class VisualisationProcess(WPSProcess):
     def __init__(self):
@@ -17,15 +13,13 @@ class VisualisationProcess(WPSProcess):
         WPSProcess.__init__(self, 
             identifier = "visualisation",
             title="Visualisation of netcdf files",
-            version = "0.1",
+            version = "0.2",
             metadata= [
                     {"title": "Climate Service Center", "href": "http://www.climate-service-center.de/"}
                     ],
             abstract="Just testing a nice script to visualise some variables",
-            #extra_metadata={
-                #'esgfilter': 'variable:tas,variable:evspsbl,variable:hurs,variable:pr',  #institute:MPI-M, ,time_frequency:day
-                #'esgquery': 'variable:tas AND variable:evspsbl AND variable:hurs AND variable:pr' # institute:MPI-M AND time_frequency:day 
-                #},
+            statusSupported=True,
+            storeSupported=True
             )
 
         self.resource = self.addComplexInput(
@@ -65,23 +59,21 @@ class VisualisationProcess(WPSProcess):
             )         
             
     def execute(self):
-        
         from flyingpigeon import visualisation as vs
         
         ncfiles = self.getInputValues(identifier='resource')
         var = self.variableIn.getValue()
 
-        self.show_status('Spagetti plot for %s %s files' % (len(ncfiles), var), 7)
+        self.status.set('Spagetti plot for %s %s files' % (len(ncfiles), var), 7)
         
-        plotout_spagetti_file    = vs.spaghetti(ncfiles , variable=var, title=var, dir_out=None)
+        plotout_spagetti_file = vs.spaghetti(ncfiles , variable=var, title=var, dir_out=None)
         
-        self.show_status('Uncertainty plot for %s %s files' % (len(ncfiles), var), 7)
+        self.status.set('Uncertainty plot for %s %s files' % (len(ncfiles), var), 7)
         
         plotout_uncertainty_file = vs.uncertainty(ncfiles , variable=var, title=var, dir_out=None)
-        
         
         self.plotout_spagetti.setValue( plotout_spagetti_file )
         self.plotout_uncertainty.setValue( plotout_uncertainty_file )
         
-        self.show_status('visualisation done', 99)
+        self.status.set('visualisation done', 100)
 
