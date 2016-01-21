@@ -13,9 +13,11 @@ class IndiceSingle(WPSProcess):
             self, 
             identifier = "indices_single",
             title="Calculation of climate indice (single variable)",
-            version = "0.1",
+            version = "0.2",
             metadata=[],
-            abstract="This process calculates climate indices based on one single variable."
+            abstract="This process calculates climate indices based on one single variable.",
+            statusSupported=True,
+            storeSupported=True
             )
 
         self.resource = self.addComplexInput(
