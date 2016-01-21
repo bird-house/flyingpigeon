@@ -1,10 +1,18 @@
-from malleefowl import wpslogging as logging
-from malleefowl.process import WPSProcess
 from datetime import datetime, date
 import types
+import tempfile
+import tarfile
+import ocgis 
+from ocgis import RequestDataset
+import datetime as dt
+#from subprocess import call
+import os
 
-# initialise
-logger = logging.getLogger(__name__)
+from malleefowl.download import download
+
+from pywps.Process import WPSProcess
+
+import logging
 
 class analogs(WPSProcess):
   
@@ -13,15 +21,13 @@ class analogs(WPSProcess):
     WPSProcess.__init__(self, 
       identifier = "analogs",
       title="Days with analog pressure pattern",
-      version = "0.1",
+      version = "0.2",
       metadata= [
               {"title": "Institut Pierre Simon Laplace", "href": "https://www.ipsl.fr/en/"}
               ],
       abstract="Search for days with analog pressure pattern",
-      #extra_metadata={
-          #'esgfilter': 'variable:tas,variable:evspsbl,variable:hurs,variable:pr',  #institute:MPI-M, ,time_frequency:day
-          #'esgquery': 'variable:tas AND variable:evspsbl AND variable:hurs AND variable:pr' # institute:MPI-M AND time_frequency:day 
-          #},
+      statusSupported=True,
+      storeSupported=True
       )
 
     self.netcdf_file = self.addComplexInput(
@@ -128,17 +134,8 @@ class analogs(WPSProcess):
       asReference=True,
       )
 
-  def execute(self):
-
-    import tempfile
-    import tarfile
-    import ocgis 
-    from ocgis import RequestDataset
-    import datetime as dt
-    #from subprocess import call
-    import os
-    
-    self.show_status('execution started at : %s '  % dt.datetime.now() , 5)
+  def execute(self): 
+    self.status.set('execution started at : %s '  % dt.datetime.now() , 5)
 
     refSt = self.getInputValues(identifier='refSt')
     refEn = self.getInputValues(identifier='refEn')
@@ -150,15 +147,12 @@ class analogs(WPSProcess):
     dateSt = dt.datetime.strptime(dateSt[0],'%Y-%m-%d')
     dateEn = dt.datetime.strptime(dateEn[0],'%Y-%m-%d')
     
-    # self.show_status( dateEn  , 15)
-    
     start = min(refSt, refEn, dateSt, dateEn )
     end = max(refSt, refEn, dateSt, dateEn )
     uris = []
     (fp_tar, tarout_file) = tempfile.mkstemp(dir=".", suffix='.tar')
     tar = tarfile.open(tarout_file, "w")
 
-    from malleefowl.download import download
     for y in range(start.year , end.year +1 , 1): 
       url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.%i.nc' % (y)
       (fp_tf, tf ) = tempfile.mkstemp(dir=".", suffix=".nc")
@@ -172,24 +166,24 @@ class analogs(WPSProcess):
       self.cmd(cdo_cmd, stdout=True)
       #os.system(cdo_cmd)
       uris.append(tf2)
-      self.show_status('NCEP file year: %i  downloaded'  % (y) , 7)
+      self.status.set('NCEP file year: %i  downloaded'  % (y) , 7)
       
     us = ocgis.util.helpers.get_sorted_uris_by_time_dimension(uris, variable=None)  # for time sorting
     fname = str('slp_NOA_NCEP_%i_%i' % (start.year , end.year))
-    self.show_status('download done for : %s '  % (fname) , 10)
+    self.status.set('download done for : %s '  % (fname) , 10)
 
     # ocgis specifications:
     # try: 
     # if (self.getInputValues(identifier='region') == 'NOA'):
     #geom = [-80, 22.5, 50, 70.0 ] # [min x, min y, max x, max y].
     
-    ocgis.env.DIR_OUTPUT = self.working_dir
+    ocgis.env.DIR_OUTPUT = os.curdir
     rds = RequestDataset(us, 'slp')
     ops = ocgis.OcgOperations(dataset=rds, prefix=fname,  output_format='nc', allow_empty=True, add_auxiliary_files=False)
     ret = ops.execute()
     fpath = '%s' % (ret)
-    # tar.add(fpath , arcname = fpath.replace(self.working_dir, ""))
-    self.show_status('ocgis subset succeded for file : %s '  % (ret) , 15)
+    # tar.add(fpath , arcname = fpath.replace(os.curdir, ""))
+    self.status.set('ocgis subset succeded for file : %s '  % (ret) , 15)
     
     ### run R file 
     pf = str(os.path.dirname(os.path.abspath(__file__)))
@@ -205,12 +199,12 @@ class analogs(WPSProcess):
     (fp_Rlog, Rlog) = tempfile.mkstemp(dir="./RoutDir/", suffix='.log')
     Rcmd = 'R --vanilla --args %s %s %s %i %i %s %s <  %s > %s ' % (ret, dateSt.date(), dateEn.date(), refSt.year, refEn.year, Rsource, curdir, Rskript, Rlog )
     #Rcmd = ['R', '--vanilla', '--args', ret, str(dateSt.date()), str(dateEn.date()), str(refSt.year), str(refEn.year), Rsource, curdir,'<', Rskript,'>', Rlog]
-    logger.debug('system call : %s '  % (Rcmd))
+    logging.debug('system call : %s '  % (Rcmd))
     
     # Call the R skript
     os.system(str(Rcmd))
     #self.cmd(Rcmd, stdout=False)
-    tar.add(RoutDir) # , arcname = fpath.replace(self.working_dir, ""))
+    tar.add(RoutDir) # , arcname = fpath.replace(os.curdir, ""))
     ##except Exception as e: 
       ##self.show_status('failed for file : %s '  % ( e ) , 15)
     tar.close()
@@ -218,4 +212,4 @@ class analogs(WPSProcess):
     self.ncout.setValue(ret)
     self.Rlogout.setValue( Rlog )
     self.tarout.setValue(tarout_file)
-    self.show_status('execution ended at : %s'  %  dt.datetime.now() , 100)
+    self.status.set('execution ended at : %s'  %  dt.datetime.now() , 100)
