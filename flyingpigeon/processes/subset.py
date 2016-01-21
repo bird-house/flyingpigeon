@@ -67,7 +67,7 @@ class Clipping(WPSProcess):
         from tempfile import mkstemp
         from os import path
 
-        urls = getInputValues(self, identifier='resource')
+        urls = self.getInputValues(identifier='resource')
         logging.debug('urls = %s', urls)
         mosaik = self.mosaik.getValue()
 
