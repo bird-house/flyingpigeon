@@ -60,18 +60,27 @@ class modelUncertainty(WPSProcess):
         
         # output 
         
-        self.output_erob = self.addComplexOutput(
-            identifier="output_erob",
-            title="robustness mask",
-            abstract="netCDF file containing calculated reobustness mask",
+        self.output_high = self.addComplexOutput(
+            identifier="output_high",
+            title="Mask for areas with high agreement",
+            abstract="netCDF file containing calculated robustness mask",
+            formats=[{"mimeType":"application/netcdf"}],
+            asReference=True,
+            )         
+        
+        self.output_low = self.addComplexOutput(
+            identifier="output_low",
+            title="Mask for areas with low agreement",
+            abstract="netCDF file containing calculated robustness mask",
             formats=[{"mimeType":"application/netcdf"}],
             asReference=True,
             )         
 
-        self.output_mean = self.addComplexOutput(
-            identifier="output_mean",
-            title="ensemble mean",
-            abstract="netCDF file containing calculated mean over the timeperiod and ensemble members",
+
+        self.output_signal = self.addComplexOutput(
+            identifier="output_signal",
+            title="Signal",
+            abstract="netCDF file containing calculated change of mean over the timeperiod and ensemble members",
             formats=[{"mimeType":"application/netcdf"}],
             asReference=True,
             )         
@@ -86,9 +95,10 @@ class modelUncertainty(WPSProcess):
         end = self.getInputValues(identifier='end')
         timeslice = self.getInputValues(identifier='timeslice')
         
-        signal, nc_erob  = erob.worker(resource=ncfiles, start=None, end=None, timeslice=10)
+        signal , low_agreement_mask , high_agreement_mask = erob.worker(resource=ncfiles, start=None, end=None, timeslice=10)
         
         self.output_signal.setValue( signal )
-        self.output_erob.setValue( nc_erob )
-            
+        self.output_high.setValue( high_agreement_mask )
+        self.output_low.setValue( low_agreement_mask )
+        
         self.show_status('uncertainty process done', 99)       

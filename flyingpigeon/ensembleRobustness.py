@@ -36,38 +36,43 @@ def worker(resource=[], start=None, end=None, timeslice=10 ):
     logger.error('ensemble mean failed: %s ' % e )
   
   try: 
-    # ensemble mean 
-    nc_ensstd = cdo.ensstd(input = resource , output = 'nc_ensstd.nc')
-    logger.info('ensemble std calculation done')
+    # ensemble std 
+    nc_ensstd  = cdo.ensstd(input = resource , output = 'nc_ensstd.nc')
+    logger.info('ensemble std and calculation done')
   except Exception as e: 
-    logger.error('ensemble std failed: %s ' % e )
+    logger.error('ensemble std or failed: %s ' % e )
   
   # get the get the signal as difference from the beginning (mean over 10 years) and end  (mean over 10 years) of the period:
   try:
-    selyearstart = cdo.selyear('1960/1970', input = nc_ensmean, output = 'selyearstart.nc' ) 
-    selyearend = cdo.selyear('2003/2013', input = nc_ensmean, output = 'selyearend.nc' )
+    selyearstart = cdo.selyear('1960/1980', input = nc_ensmean, output = 'selyearstart.nc' ) 
+    selyearend = cdo.selyear('1993/2013', input = nc_ensmean, output = 'selyearend.nc' )
     meanyearst = cdo.timmean(input = selyearstart, output= 'meanyearst.nc')
     meanyearend = cdo.timmean(input = selyearend, output= 'meanyearend.nc')
-    signal = cdo.sub(input=[meanyearend, meanyearst], output = 'signal.nc')
+    signal = cdo.sub(input=[meanyearst, meanyearend], output = 'signal.nc')
+    logger.info('Signal calculation done')
   except Exception as e:
     logger.error('calculation of signal failed: %s ' % e )
 
   # get the intermodel standard deviation (mean over whole period)
   try:
-
-    ims = cdo.timmean(input = nc_ensstd, output = 'ims.nc')
-
+    std_selyear = cdo.selyear('1993/2013', input=nc_ensstd, output='std_selyear.nc')
+    std = cdo.timmean(input = std_selyear, output = 'std.nc')
+    std2 = cdo.mulc('2', input = std, output = 'std2.nc')
+    logger.info('calculation of internal model std for time period done')
   except Exception as e:
     logger.error('calculation of internal model std failed: %s ' % e ) 
 
   try:
-    ratio = cdo.div(input=[ims, signal], output='ratio.nc')
+    high_agreement_mask = cdo.gt(input=[signal, std2], output= 'large_change_with_high_model_agreement.nc')
+    low_agreement_mask = cdo.lt(input=[signal, std], output= 'small_signal_or_low_agreement_of_models.nc')
+    #ratio = cdo.div(input=[ims, signal], output='ratio.nc')
+    logger.info('high and low mask done')
   except Exception as e:
     logger.error('calculation ofrobustness mask failed: %s ' % e ) 
   
-  try:
-    mask = cdo.gtc('1',  input=ratio, output='mask.nc')
-  except Exception as e:
-    logger.error('calculation ofrobustness mask failed: %s ' % e ) 
+  #try:
+    #mask = cdo.gtc('1',  input=ratio, output='mask.nc')
+  #except Exception as e:
+    #logger.error('calculation ofrobustness mask failed: %s ' % e ) 
 
-  return signal , mask
+  return signal , low_agreement_mask , high_agreement_mask 
