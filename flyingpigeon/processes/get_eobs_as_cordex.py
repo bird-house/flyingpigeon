@@ -1,4 +1,4 @@
-from pywps.process import WPSProcess
+from pywps.Process import WPSProcess
 import types
 
 from flyingpigeon.get_eobs_as_cordex import EOBS_VARIABLES
