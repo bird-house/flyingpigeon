@@ -63,7 +63,7 @@ class modelUncertainty(WPSProcess):
             identifier="output_high",
             title="Mask for areas with high agreement",
             abstract="netCDF file containing calculated robustness mask",
-            formats=[{"mimeType":"application/netcdf"}],
+            formats=[{"mimeType":"application/x-netcdf"}],
             asReference=True,
             )         
         
@@ -71,7 +71,7 @@ class modelUncertainty(WPSProcess):
             identifier="output_low",
             title="Mask for areas with low agreement",
             abstract="netCDF file containing calculated robustness mask",
-            formats=[{"mimeType":"application/netcdf"}],
+            formats=[{"mimeType":"application/x-netcdf"}],
             asReference=True,
             )         
 
@@ -80,24 +80,40 @@ class modelUncertainty(WPSProcess):
             identifier="output_signal",
             title="Signal",
             abstract="netCDF file containing calculated change of mean over the timeperiod and ensemble members",
-            formats=[{"mimeType":"application/netcdf"}],
+            formats=[{"mimeType":"application/x-netcdf"}],
             asReference=True,
-            )         
+            ) 
+
+        # self.output_graphic = self.addComplexOutput(
+        #     identifier="output_graphic",
+        #     title="Graphic",
+        #     abstract="PNG graphic file showing the signal difference with high and low ensemble agreement marked out",
+        #     formats=[{"mimeType":"image/png"}],
+        #     asReference=True,
+        #     )  
 
     def execute(self):
-        self.status.set('starting uncertainty process', 0)
-    
-        from flyingpigeon import ensembleRobustness as erob
-        
-        ncfiles = self.getInputValues(identifier='resource')
-        start = self.getInputValues(identifier='start')
-        end = self.getInputValues(identifier='end')
-        timeslice = self.getInputValues(identifier='timeslice')
-        
-        signal , low_agreement_mask , high_agreement_mask = erob.worker(resource=ncfiles, start=None, end=None, timeslice=10)
-        
-        self.output_signal.setValue( signal )
-        self.output_high.setValue( high_agreement_mask )
-        self.output_low.setValue( low_agreement_mask )
-        
-        self.status.set('uncertainty process done', 99)       
+      from malleefowl import wpslogging as logging
+      logger = logging.getLogger(__name__)
+
+      self.status.set('starting uncertainty process', 0)
+  
+      from flyingpigeon import ensembleRobustness as erob
+      
+      ncfiles = self.getInputValues(identifier='resource')
+      start = self.getInputValues(identifier='start')
+      end = self.getInputValues(identifier='end')
+      timeslice = self.getInputValues(identifier='timeslice')
+
+      #
+
+      logger.info('type of argument %s %s ' % (type(start), start))
+      
+      signal , low_agreement_mask , high_agreement_mask  = erob.worker(resource=ncfiles, start=1960, end=2013, timeslice=20)
+      
+      self.output_signal.setValue( signal )
+      self.output_high.setValue( high_agreement_mask )
+      self.output_low.setValue( low_agreement_mask )
+      # self.output_graphic.setValue( graphic )
+      
+      self.status.set('uncertainty process done', 99)

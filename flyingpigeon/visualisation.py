@@ -184,8 +184,82 @@ def uncertainty(resouces , variable=None, title=None, dir_out=None):
     logger.exception('bokeh uncertainty plot failed for %s : %s\n' % (variable , e))  
   return output_html  
 
-    
-      
+def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, variable, cmap='seismic', title='Modelagreement of Signal'):
+  """
+  generating a graphic for the output of the ensembleRobustness process for a lat/long file. 
+
+  :param signal: netCDF file containing the signal differnce over time
+  :param highagreement: 
+  :param lowagreement: 
+  :param variable:
+  :param cmap: default='seismic',
+  :param title: default='Modelagreement of Signal'
+  """
+  from mpl_toolkits.basemap import Basemap
+  import matplotlib.pyplot as plt
+  
+  try: 
+    fig = plt.figure(figsize=(20,10), dpi=80, facecolor='w', edgecolor='k') # settings of the graphic
+
+    map = Basemap(projection='mill',lon_0=30) 
+    map.drawcoastlines(linewidth=1)
+    map.drawmapboundary(fill_color='aqua')
+    # draw lat/lon grid lines every 30 degrees.
+    #map.drawmeridians(np.arange(0,360,30))
+    #map.drawparallels(np.arange(-90,90,30))
+    logger.info('basemap is prepared')
+  except Exception as e:
+    logger.error('failed to set up basemap %s' % e)
+
+
+
+  f = Dataset(signal, 'r')
+  mh = Dataset(highagreement, 'r')
+  ml = Dataset(lowagreement,'r')
+
+  var = 'variable'
+
+  lats = f.variables['lat'][:]
+  lons = f.variables['lon']
+  signal = np.squeeze(f.variables[variable])
+  mask_h = np.squeeze(mh.variables[variable])
+  mask_l = np.squeeze(ml.variables[variable])
+  #CONVERT LON/LAT TO X/Y MAP COORDINATES
+  lons, lats = np.meshgrid(lons, lats)
+  xpts,ypts = map(lons, lats)
+
+  # # get rid of your Nulls
+
+  mask_l[mask_l==0]=np.nan
+  mask_h[mask_h==0]=np.nan
+
+  #Cflx[Cflx==0]=np.nan # is setting 0 to nan 
+
+  #MIN/MAX C flux
+  minval=np.nanmin(signal) # 
+  maxval=np.nanmax(signal) # The maximum value of an array along a given axis, ignoring any NaN
+  
+  level = round((maxval-minval)/255,1)
+  # print minval , maxval
+
+  # contour data over the map.
+  cs = map.contourf(xpts,ypts, signal, cmap=cmap, levels=np.arange(int(minval), int(maxval), level)) # GnBu seimic winter_r
+  cl = map.contourf(xpts,ypts, mask_l, colors='none', hatches=['////']) # plt.get_cmap(
+  ch = map.contourf(xpts,ypts, mask_h, colors='none', hatches=['....'])
+
+  plt.clim(minval,maxval)
+  plt.title('%s with Agreement' % var)
+  plt.colorbar(cs) 
+
+  plt.annotate('// = low model ensemble agreement', (0,0), (0, -10), xycoords='axes fraction', textcoords='offset points', va='top')
+  plt.annotate('.  = high model ensemble agreement', (0,0), (0, -20), xycoords='axes fraction', textcoords='offset points', va='top')
+
+  graphic = 'modelAgreement.png'
+
+  plt.save(graphic)
+
+  return graphic
+
   
   
   
