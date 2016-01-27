@@ -48,7 +48,7 @@ class analogs(WPSProcess):
       type=type(''),
       minOccurs=1,
       maxOccurs=1,
-      allowedValues=['NCEP', 'Dummy', 'Dummy']
+      allowedValues=['NCEP']
       )
        
     self.region = self.addLiteralInput(
@@ -59,7 +59,7 @@ class analogs(WPSProcess):
       type=type(''),
       minOccurs=1,
       maxOccurs=1,
-      allowedValues=['NA', 'Dummy', 'Dummy']
+      allowedValues=['NA']
       )       
 
     #self.bbox = self.addLiteralOutput(
@@ -110,6 +110,9 @@ class analogs(WPSProcess):
       maxOccurs=1,
       )
     
+
+
+    # define the outputs
     self.ncout = self.addComplexOutput(
       identifier="ncout",
       title="netCDF inputfile",
@@ -118,18 +121,18 @@ class analogs(WPSProcess):
       asReference=True,
       )
 
-    self.tarout = self.addComplexOutput(
-      identifier="tarout",
-      title="Result tar file",
-      abstract="Tar archive containing files with the analog dates",
-      formats=[{"mimeType":"application/x-tar"}],
-      asReference=True,
-      )
+    # self.tarout = self.addComplexOutput(
+    #   identifier="tarout",
+    #   title="Result tar file",
+    #   abstract="Tar archive containing files with the analog dates",
+    #   formats=[{"mimeType":"application/x-tar"}],
+    #   asReference=True,
+    #   )
 
-    self.Rlogout = self.addComplexOutput(
-      identifier="Rlogout",
-      title="R-logfile",
-      abstract="Logfile for the R process",
+    self.config = self.addComplexOutput(
+      identifier="config",
+      title="Config File",
+      abstract="Config file used for the Fortran process",
       formats=[{"mimeType":"text/plain"}],
       asReference=True,
       )
