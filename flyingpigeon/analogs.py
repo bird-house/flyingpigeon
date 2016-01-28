@@ -2,8 +2,8 @@ from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
 
-def get_configfile(timewin=1, varname='slp', seacyc=True, cycsmooth=91, nanalog=20, seasonwin=30, 
-  distfun='rms', calccor=True, silent=False): 
+def get_configfile(files, timewin=1, varname='slp', seacyc=True, cycsmooth=91, nanalog=20, seasonwin=30, 
+  distfun='rms', calccor=True, silent=False, ): 
   """
   Generating the config file for fortran calculation
 
@@ -19,6 +19,7 @@ def get_configfile(timewin=1, varname='slp', seacyc=True, cycsmooth=91, nanalog=
   calccor=str(calccor)
   silent=str(silent)
 
+
   # write stuff to configuration file
   config_file = open("config_%s.txt" % (date_stamp), "w")
   
@@ -26,9 +27,9 @@ def get_configfile(timewin=1, varname='slp', seacyc=True, cycsmooth=91, nanalog=
   config_file.write('!Created : %s \n' % (dt.strftime(dt.now(), format='%Y-%m-%d %H:%M:%S')))
   config_file.write('!Version : 0.1 \n')
   config_file.write('&FILES \n')
-  config_file.write(' my_files%archivefile = /path/to/file/file.nc \n')
-  config_file.write(' my_files%simulationfile = /path/to/file/file.nc \n')
-  config_file.write(' my_files%outputfile = /path/to/file/file.nc \n')
+  config_file.write(' my_files%archivefile = "{file}" \n'.format(file=files[0]) ) 
+  config_file.write(' my_files%simulationfile = "{file}" \n'.format(file=files[1]) )
+  config_file.write(' my_files%outputfile = "{file}" \n'.format(file=files[2]) )
   config_file.write('/ \n')
   config_file.write('&PARAM \n')
   config_file.write(' my_params%timewin = {timewin} \n'.format(timewin=timewin))

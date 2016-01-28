@@ -30,9 +30,9 @@ class analogs(WPSProcess):
       storeSupported=True
       )
 
-    self.netcdf_file = self.addComplexInput(
-      identifier="netcdf_file",
-      title="NetCDF",
+    self.resource = self.addComplexInput(
+      identifier="resource",
+      title="Resource",
       abstract="URL to netCDF file",
       minOccurs=0,
       maxOccurs=1000,
@@ -109,7 +109,44 @@ class analogs(WPSProcess):
       minOccurs=1,
       maxOccurs=1,
       )
-    
+
+    self.timewin = self.addLiteralInput(
+      identifier="timewin",
+      title="Time window",
+      abstract="Nr of days following the analog day",
+      default=1,
+      type=type(1),
+      minOccurs=0,
+      maxOccurs=1,
+      )
+
+    self.variable = self.addLiteralInput(
+      identifier="variable",
+      title="Variable",
+      abstract="Variable name in resource",
+      default='slp',
+      type=type(''),
+      minOccurs=0,
+      maxOccurs=1,
+      )
+
+    # self.seacyc = self.addLiteralInput(
+    #   identifier="seacyc",
+    #   title="Seasonal Cycle",
+    #   abstract="normalized by the Seasonal Cycle",
+    #   default=True,
+    #   type=type(boolean),
+    #   minOccurs=0,
+    #   maxOccurs=1,
+    #   )
+
+      # #seacyc=True, 
+      # cycsmooth=91, 
+      # nanalog=20, 
+      # seasonwin=30, 
+      # distfun='rms', 
+      # calccor=True,
+      # silent=False)
 
 
     # define the outputs
@@ -139,7 +176,7 @@ class analogs(WPSProcess):
       )
 
   def execute(self): 
-    from flyingpigeon import analogs
+    from flyingpigeon.analogs import get_configfile
 
     self.status.set('execution started at : %s '  % dt.datetime.now() , 5)
 
@@ -152,12 +189,29 @@ class analogs(WPSProcess):
     refEn = dt.datetime.strptime(refEn[0],'%Y-%m-%d')
     dateSt = dt.datetime.strptime(dateSt[0],'%Y-%m-%d')
     dateEn = dt.datetime.strptime(dateEn[0],'%Y-%m-%d')
+
+    timewin = 1 #int(self.getInputValues(identifier='timewin')[0])
     
     start = min(refSt, refEn, dateSt, dateEn )
     end = max(refSt, refEn, dateSt, dateEn )
 
-    
-    config_file = analogs.get_configfile()
+    archive = '/pfad/to/archive/file.nc'
+    simulation = '/pfad/to/simulation/file.nc'
+    output = '/pfad/to/output/file.nc'
+
+
+    files=[archive, simulation, output ] 
+
+    config_file = get_configfile(files=files, 
+      timewin=timewin, 
+      varname='slp', 
+      seacyc=True, 
+      cycsmooth=91, 
+      nanalog=20, 
+      seasonwin=30, 
+      distfun='rms', 
+      calccor=True,
+      silent=False)
 
 
     #self.ncout.setValue(ret)
