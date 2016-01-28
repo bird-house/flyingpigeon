@@ -2,7 +2,8 @@ from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
 
-def get_configfile(): 
+def get_configfile(timewin=1, varname='slp', seacyc=True, cycsmooth=91, nanalog=20, seasonwin=30, 
+  distfun='rms', calccor=True, silent=False): 
   """
   Generating the config file for fortran calculation
 
@@ -12,6 +13,11 @@ def get_configfile():
   
   date_stamp = dt.strftime(dt.now(), format='%Y%m%d_%H%M%S')
   logger.info('start configuraion file preparation at: %s' %(date_stamp))
+
+  # convert True/False to Fortran syntax
+  seacyc=str(seacyc)
+  calccor=str(calccor)
+  silent=str(silent)
 
   # write stuff to configuration file
   config_file = open("config_%s.txt" % (date_stamp), "w")
@@ -25,15 +31,15 @@ def get_configfile():
   config_file.write(' my_files%outputfile = /path/to/file/file.nc \n')
   config_file.write('/ \n')
   config_file.write('&PARAM \n')
-  config_file.write(' my_params%timewin = {i} \n'.format(i=1))
-  config_file.write(' my_params%varname = "slp" \n')
-  config_file.write(' my_params%seacyc = .TRUE. \n')
-  config_file.write(' my_params%cycsmooth = 91 \n')
-  config_file.write(' my_params%nanalog = 20 \n')
-  config_file.write(' my_params%seasonwin = 30 \n')
-  config_file.write(' my_params%distfun = "rms" \n')
-  config_file.write(' my_params%calccor = .TRUE. \n')
-  config_file.write(' my_params%silent = .FALSE.\n')
+  config_file.write(' my_params%timewin = {timewin} \n'.format(timewin=timewin))
+  config_file.write(' my_params%varname = "{varname}" \n'.format(varname=varname))
+  config_file.write(' my_params%seacyc = .{seacyc}. \n'.format(seacyc=seacyc.upper()))
+  config_file.write(' my_params%cycsmooth = {cycsmooth} \n'.format(cycsmooth=cycsmooth))
+  config_file.write(' my_params%nanalog = {nanalog} \n'.format(nanalog=nanalog))
+  config_file.write(' my_params%seasonwin = {seasonwin} \n'.format(seasonwin=seasonwin))
+  config_file.write(' my_params%distfun = "{distfun}" \n'.format(distfun=distfun))
+  config_file.write(' my_params%calccor = .{calccor}. \n'.format(calccor=calccor.upper()))
+  config_file.write(' my_params%silent = .{silent}.\n'.format(silent=silent.upper()))
   config_file.write('/\n')
   config_file.close()
 
