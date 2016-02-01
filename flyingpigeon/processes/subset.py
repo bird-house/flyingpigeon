@@ -26,9 +26,7 @@ class Clipping(WPSProcess):
             maxmegabites=5000,
             formats=[{"mimeType":"application/x-netcdf"}],
             )
-        # self.region = self.addLiteralInput(
-        #     identifier="region",
-        #     )
+       
         self.region = self.addLiteralInput(
             identifier="region",
             title="Region",
@@ -50,8 +48,6 @@ class Clipping(WPSProcess):
             minOccurs=0,
             maxOccurs=1,
             )
-        # complex output
-        # -------------
         
         self.output = self.addComplexOutput(
               title="Subsets",
@@ -68,14 +64,20 @@ class Clipping(WPSProcess):
         from os import path
 
         urls = self.getInputValues(identifier='resource')
-        logging.debug('urls = %s', urls)
         mosaik = self.mosaik.getValue()
+        regions = self.region.getValue()
 
-        self.status.set(self, 'starting: region=%s, num_files=%s' % (self.region.getValue(), len(urls)), 0)
+        logging.debug('urls = %s', urls)
+        logging.debug('regions = %s', regions)
+        logging.debug('mosaik = %s', mosaik)
+    
+        # self.status.set(self, 'Arguments set for subset process'  , 0)
+
+        logging.debug('starting: regions=%s, num_files=%s' % (len(regions), len(urls)))
 
         results = clipping(
             resource = urls,
-            polygons = self.region.getValue(),
+            polygons = regions, # self.region.getValue(),
             mosaik = mosaik,
             dir_output = path.abspath(path.curdir), #self.working_dir,
             )
@@ -94,4 +96,4 @@ class Clipping(WPSProcess):
             logging.exception('Tar file preparation failed %s' % e)
 
         self.output.setValue( tarf )
-        self.status.set(self, 'done: region=%s, num_files=%s' % (self.region.getValue(), len(urls)), 100)
+        # self.status.set(self, 'done: region=%s, num_files=%s' % (self.region.getValue(), len(urls)), 100)
