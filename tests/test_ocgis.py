@@ -6,12 +6,8 @@ from nose.plugins.attrib import attr
 from ocgis import RequestDataset, OcgOperations
 from ocgis.util.large_array import compute
 
-from __init__ import TESTDATA, SERVICE
-
 import tempfile
 from netCDF4 import Dataset
-
-from flyingpigeon.utils import local_path
 
 def test_ocgis_import():
     from ocgis import constants
@@ -26,27 +22,23 @@ class OCGISTestCase(TestCase):
     def setUpClass(cls):
         cls.output_format = 'nc'
 
-        # TODO: ocgis does not like file:// urls
-        from urllib2 import urlparse
         # tas
-        cls.tas_nc = local_path(
-            TESTDATA['tas_EUR-11_ICHEC-EC-EARTH_rcp45_r1i1p1_KNMI-RACMO22E_v1_mon_200601-201012.nc'])
+        cls.tas_nc = "" #TESTDATA['tas_EUR-11_ICHEC-EC-EARTH_rcp45_r1i1p1_KNMI-RACMO22E_v1_mon_200601-201012.nc'])
         # tasmax
-        cls.tasmax_nc = local_path(
-            TESTDATA['tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_20010101-20051231.nc'])
+        cls.tasmax_nc = "" #TESTDATA['tasmax_WAS-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_MPI-CSC-REMO2009_v1_day_20010101-20051231.nc'])
         # eur-11, day
-        cls.tasmax_eur11_day_2006_nc = local_path(
-            TESTDATA['tasmax_EUR-11_ICHEC-EC-EARTH_rcp85_r1i1p1_KNMI-RACMO22E_v1_day_20060101-20101231.nc'])
+        cls.tasmax_eur11_day_2006_nc = "" #TESTDATA['tasmax_EUR-11_ICHEC-EC-EARTH_rcp85_r1i1p1_KNMI-RACMO22E_v1_day_20060101-20101231.nc'])
 
     @attr('testdata')
     def test_ocgis_inspect(self):
+        raise SkipTest
         rd = RequestDataset(self.tas_nc, 'tas')
         rd.inspect()
 
     @attr('testdata')
     @attr('slow')
     def test_ocgis_su_tasmax(self):
-        #raise SkipTest
+        raise SkipTest
         out_dir = tempfile.mkdtemp()
         prefix = 'tasmax_su'
         
@@ -71,7 +63,7 @@ class OCGISTestCase(TestCase):
     @attr('testdata')
     @attr('slow')
     def test_ocgis_eur11_day(self):
-        #raise SkipTest
+        raise SkipTest
         out_dir = tempfile.mkdtemp()
         
         calc = [{'func':'icclim_SU','name':'SU'}]

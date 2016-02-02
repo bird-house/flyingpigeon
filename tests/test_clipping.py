@@ -3,14 +3,9 @@ from unittest import TestCase
 from nose import SkipTest
 from nose.plugins.attrib import attr
 
-from __init__ import TESTDATA, SERVICE
-
 import tempfile
 from netCDF4 import Dataset
 from os.path import basename
-
-#from flyingpigeon import clipping
-from flyingpigeon.utils import local_path
 
 class ClippingTestCase(TestCase):
 

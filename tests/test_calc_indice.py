@@ -3,14 +3,9 @@ from unittest import TestCase
 from nose import SkipTest
 from nose.plugins.attrib import attr
 
-from __init__ import TESTDATA, SERVICE
-
 import tempfile
 from netCDF4 import Dataset
 from os.path import basename
-
-#from flyingpigeon import indices
-from flyingpigeon.utils import local_path
 
 class IndicesCalculatorTestCase(TestCase):
 
@@ -43,7 +38,7 @@ class IndicesCalculatorTestCase(TestCase):
         nose.tools.ok_( 'TG' in indices.indices(), indices.indices() )
 
     def test_indices_description(self):
-	raise SkipTest
+        raise SkipTest
         nose.tools.ok_( 'TG: ' in indices.indices_description(), indices.indices_description() )
 
     @attr('testdata')
