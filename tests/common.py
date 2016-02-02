@@ -20,8 +20,11 @@ TESTDATA = {
 class WpsTestClient(object):
     def __init__(self):
         pywps_path = os.path.dirname(pywps.__file__)
-        os.environ['PYWPS_CFG'] = os.path.abspath(os.path.join(pywps_path, '..', '..', '..', '..', 'etc', 'pywps', 'flyingpigeon.cfg'))
+        home_path = os.path.abspath(os.path.join(pywps_path, '..', '..', '..', '..'))
+        os.environ['PYWPS_CFG'] = os.path.join(home_path, 'etc', 'pywps', 'flyingpigeon.cfg')
         os.environ['REQUEST_METHOD'] = pywps.METHOD_GET
+        os.environ['PATH'] = "{0}:{1}".format(os.path.join(home_path, 'bin'), os.environ['PATH'])
+        os.environ['GDAL_DATA'] = os.path.join(home_path, 'share', 'gdal')
         self.wps = pywps.Pywps(os.environ)
    
     def get(self, *args, **kwargs):
