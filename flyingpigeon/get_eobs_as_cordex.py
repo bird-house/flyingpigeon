@@ -1,6 +1,4 @@
-from .exceptions import CalculationException
-
-from malleefowl import wpslogging as logging
+import logging
 logger = logging.getLogger(__name__)
 
 import datetime as dt
@@ -76,9 +74,6 @@ def get_data(variable,
              start = 1950,
              end = 2014):
   
-  #import ocgis
-  #from flyingpigeon import clipping
-
   from os import rename, path, makedirs
   from flyingpigeon import utils
   from flyingpigeon import subset as sb
@@ -107,7 +102,7 @@ def get_data(variable,
               'Y': {'variable': 'Actual_latitude', 'dimension': 'y', 'pos': 1},
               'T': {'variable': 'time', 'dimension': 'time', 'pos': 0 }}
 
-    time_region = {'year':range(start,end+1)} 
+    time_region = {'year': range(start,end+1)} 
 
     if variable == 'tg':
         var = 'tas'
@@ -125,7 +120,8 @@ def get_data(variable,
     
     logger.info('processing variable %s' % (var))
   except Exception as e: 
-    logger.error('could not set processing environment: %s ' % (e))      
+    logger.exception('could not set processing environment')
+    raise      
 
   if variable == 'rr':
     try: 
@@ -146,7 +142,7 @@ def get_data(variable,
                           geom=geom, select_ugid=ugid,
                           dir_output=dir_output, time_region = time_region)  
     except Exception as e: 
-      logger.error('ocgis failed for tg, tx or tn: %s' % e)   
+      logger.exception('ocgis failed for tg, tx or tn')   
 
   try: 
     if polygons == None:
@@ -170,5 +166,5 @@ def get_data(variable,
     rename(EOBS_file, path.join(fpath, EOBS_filename))
       
   except Exception as e: 
-    logger.error('attributes not set for : %s: %s ' %(EOBS_file, e))
+    logger.exception('attributes not set for : %s' % EOBS_file)
   return path.join(fpath, EOBS_filename)

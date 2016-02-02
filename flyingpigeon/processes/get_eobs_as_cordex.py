@@ -6,18 +6,18 @@ from flyingpigeon.subset import countries, countries_longname
 
 import logging
 
-class eobs_to_cordex(WPSProcess):
+class EobsToCordexProcess(WPSProcess):
   
   def __init__(self):
     # definition of this process
     WPSProcess.__init__(self, 
       identifier = "eobs_to_cordex",
       title="EOBS to CORDEX",
-      version = "0.2",
+      version = "0.3",
       metadata= [
               {"title": "Institut Pierre Simon Laplace", "href": "https://www.ipsl.fr/en/"}
               ],
-      abstract="downloades EOBS data in adaped CORDEX format",
+      abstract="downloads EOBS data in adaped CORDEX format",
       statusSupported=True,
       storeSupported=True
       )
@@ -58,8 +58,8 @@ class eobs_to_cordex(WPSProcess):
       identifier="start",
       title="Starting Year",
       abstract="EOBS provides data since 1950",
-      type=type("1"),
-      default='1950',
+      type=type(1),
+      default=1950,
       minOccurs=0,
       maxOccurs=1,
       allowedValues=range(1950,2015)
@@ -69,8 +69,8 @@ class eobs_to_cordex(WPSProcess):
       identifier="end",
       title="End Year",
       abstract="Currently up to 2014 processable",
-      type=type("1"),
-      default='2014',
+      type=type(1),
+      default=2014,
       minOccurs=0,
       maxOccurs=1,
       allowedValues=range(1950,2015)
@@ -103,12 +103,12 @@ class eobs_to_cordex(WPSProcess):
     
     from flyingpigeon.get_eobs_as_cordex import get_data
    
-    self.status.set('execution started at : %s '  % dt.datetime.now() , 5)
+    self.status.set('execution started at : %s '  % dt.datetime.now() , 0)
 
     variable = self.getInputValues(identifier='var_eobs')
     resource = self.getInputValues(identifier='netcdf_file')
-    start = self.getInputValues(identifier='start')
-    end = self.getInputValues(identifier='end')
+    start = self.getInputValue(identifier='start')
+    end = self.getInputValue(identifier='end')
     
     #polygons = self.getInputValues(identifier='polygons')
     
