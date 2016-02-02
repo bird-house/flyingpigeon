@@ -1,9 +1,9 @@
-from malleefowl import wpslogging as logging
-logger = logging.getLogger(__name__)
-
 from os.path import join, abspath, dirname, getsize
 
 DIR_SHP = join(abspath(dirname(__file__)), 'processes', 'shapefiles')
+
+import logging
+logger = logging.getLogger(__name__)
 
 def call(resource=[], variable=None, dimension_map=None, calc=None,  
   calc_grouping= None, conform_units_to=None, memory_limit=None,  prefix=None, 
@@ -70,7 +70,8 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         add_auxiliary_files=False)
     logger.info('OcgOperations set')
   except Exception as e: 
-    logger.error('failed to setup OcgOperations: %s' % (e))  
+    logger.exception('failed to setup OcgOperations')
+    raise  
   
   # check memory load
   from numpy import sqrt 
@@ -102,7 +103,8 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     try: 
       geom_file = ops.execute()
     except Exception as e: 
-      logger.error('failed to execute ocgis operation: %s' % e)  
+      logger.exception('failed to execute ocgis operation')
+      raise  
   else:
     size = ops.get_base_request_size()
     nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
@@ -125,7 +127,8 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
           add_auxiliary_files=False)
       geom_file = compute(ops, tile_dimension=int(tile_dim) , verbose=True)
     except Exception as e: 
-      logger.error('failed to compute ocgis operation: %s' % e)  
+      logger.exception('failed to compute ocgis operation')
+      raise  
   
   logger.info('Succeeded with ocgis module call function')
   return geom_file

@@ -1,20 +1,19 @@
 from pywps.Process import WPSProcess
 
-import logging
-
 from flyingpigeon.indices import indices, indices_description, calc_indice_single
 from flyingpigeon.subset import countries, countries_longname
 from flyingpigeon.utils import GROUPING
 
-class IndiceSingle(WPSProcess):
+import logging
+
+class SingleIndicesProcess(WPSProcess):
     """This process calculates a climate indice for the given input netcdf files."""
     def __init__(self):
         WPSProcess.__init__(
             self, 
             identifier = "indices_single",
             title="Calculation of climate indice (single variable)",
-            version = "0.2",
-            metadata=[],
+            version = "0.3",
             abstract="This process calculates climate indices based on one single variable.",
             statusSupported=True,
             storeSupported=True
@@ -80,9 +79,6 @@ class IndiceSingle(WPSProcess):
         from tempfile import mkstemp
         from os import path
         
-        logging.debug('PYHONPATH = %s', os.environ['PYTHONPATH'])
-        logging.debug('PATH = %s', os.environ['PATH'])
-
         ncs       = self.getInputValues(identifier='resource')
         indices   = self.indices.getValue()
         polygons  = self.polygons.getValue() 

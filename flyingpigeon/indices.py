@@ -1,6 +1,6 @@
 import os
 
-from flyingpigeon.utils import calc_grouping, sort_by_filename # aggregations, 
+from flyingpigeon.utils import calc_grouping, sort_by_filename, get_variable # aggregations, 
 from flyingpigeon.subset import get_ugid, get_geom
 
 import logging
@@ -181,7 +181,7 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
                      output_format='nc')
                     outputs.extend( [tmp] )
                   except Exception as e: 
-                    logger.exception('could not calc indice %s for domain in %s: %s' %( indice, key, e) )   
+                    logger.exception('could not calc indice %s for domain in %s' %( indice, key) )   
                 else: 
                   for polygon in polygons:
                     try:
@@ -199,14 +199,14 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
                         dir_output=dir_output)
                       outputs.extend( tmp )
                     except Exception as e:
-                      logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s' % ( indice, key, polygon, grouping, e ))  
+                      logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s' % ( indice, key, polygon, grouping))  
                 logger.info('indice file calcualted %s ' % (tmp))      
               except Exception as e:
-                logger.exception('could not calc indice %s for key %s and calc_grouping %s : %s' %  (indice, key, polygon, e))  
+                logger.exception('could not calc indice %s for key %s and calc_grouping %s' %  (indice, key, polygon))  
           except Exception as e:
-            logger.exception('could not calc indice %s for key %s: %s' % ( indice, key, e ))        
+            logger.exception('could not calc indice %s for key %s' % ( indice, key))        
       except Exception as e:
-        logger.exception('could not calc key %s: %s' %  (key, e))
+        logger.exception('could not calc key %s' % key)
     return outputs
 
 def calc_indice_unconventional(resource=[], variable=None, prefix=None,
