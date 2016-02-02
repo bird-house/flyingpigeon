@@ -1,5 +1,5 @@
 __all__ = [
-        "visualisation",
+        "wps_visualisation",
         "extractpoints",
         "segetalflora",
         "indices_single",
