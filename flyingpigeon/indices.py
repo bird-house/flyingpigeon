@@ -1,28 +1,10 @@
-import tempfile
-from .exceptions import CalculationException
+import os
 
 from flyingpigeon.utils import calc_grouping, sort_by_filename # aggregations, 
 from flyingpigeon.subset import get_ugid, get_geom
 
-from malleefowl import wpslogging as logging
-import os
-
-#import logging
+import logging
 logger = logging.getLogger(__name__)
-
-#logfile = os.path.basename(__file__).replace('.py','.log') #  'several_nodes.log' # 
-#fh = logging.FileHandler(os.path.join('/home/estimr2/nhempelmann/data/test/'+ logfile))
-#fh.setLevel(logging.DEBUG)
-# create console handler with a higher log level
-#ch = logging.StreamHandler()
-#ch.setLevel(logging.ERROR)
-# create formatter and add it to the handlers
-#formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-#ch.setFormatter(formatter)
-#fh.setFormatter(formatter)
-# add the handlers to logger
-#logger.addHandler(ch)
-#logger.addHandler(fh)
 
 _INDICES_ = dict(
     TG=dict(variable='tas', description='Mean of mean temperatur (tas as input files)'),
