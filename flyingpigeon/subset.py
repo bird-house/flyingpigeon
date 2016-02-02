@@ -1,9 +1,8 @@
-from .exceptions import CalculationException
-from .utils import drs_filename, get_variable, calc_grouping , sort_by_filename
-from malleefowl import wpslogging as logging
-
-logger = logging.getLogger(__name__)
 from os.path import dirname, join, getsize, abspath
+from flyingpigeon.utils import drs_filename, get_variable, calc_grouping , sort_by_filename
+
+import logging
+logger = logging.getLogger(__name__)
 
 DIR_MASKS = join(abspath(dirname(__file__)), 'processes', 'masks')
 DIR_SHP = join(abspath(dirname(__file__)), 'processes', 'shapefiles')
@@ -113,9 +112,10 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
         except Exception as e:
           msg = 'ocgis calculations failed for %s ' % (key)
           logger.exception(msg)
-          raise CalculationException(msg, e)
+          raise
     except Exception as e:
-        logger.error('geom identification failed %s', e)
+        logger.exception('geom identification failed')
+        raise
   else: 
     try:
       for i, polygon in enumerate(polygons): 
@@ -136,9 +136,10 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
           except Exception as e:
             msg = 'ocgis calculations failed for %s ' % (key)
             logger.exception(msg)
-            raise CalculationException(msg, e)
+            raise
     except Exception as e:
-        logger.error('geom identification failed %s', e) 
+        logger.exception('geom identification failed')
+        raise 
 
   return  geom_files
 

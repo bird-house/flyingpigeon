@@ -1,8 +1,13 @@
+import os
+import tarfile
+from tempfile import mkstemp
+
+from flyingpigeon.subset import clipping
+from flyingpigeon.subset import countries, countries_longname
+        
 from pywps.Process import WPSProcess
 
 import logging
-
-from flyingpigeon.subset import countries, countries_longname
 
 class Clipping(WPSProcess):
     def __init__(self):
@@ -10,8 +15,7 @@ class Clipping(WPSProcess):
             self, 
             identifier = "subset_countries",
             title="Subset netCDF files",
-            version = "0.1",
-            metadata=[],
+            version = "0.2",
             abstract="This process returns only the given polygon from input netCDF files.",
             statusSupported=True,
             storeSupported=True
@@ -58,11 +62,6 @@ class Clipping(WPSProcess):
               )
 
     def execute(self):
-        from flyingpigeon.subset import clipping
-        import tarfile
-        from tempfile import mkstemp
-        from os import path
-
         urls = self.getInputValues(identifier='resource')
         mosaik = self.mosaik.getValue()
         regions = self.region.getValue()
@@ -79,21 +78,22 @@ class Clipping(WPSProcess):
             resource = urls,
             polygons = regions, # self.region.getValue(),
             mosaik = mosaik,
-            dir_output = path.abspath(path.curdir), #self.working_dir,
+            dir_output = os.path.abspath(os.curdir),
             )
 
         # prepare tar file 
         try: 
-            (fp_tarf, tarf) = mkstemp(dir=".", suffix='.tar')
+            (fp_tarf, tarf) = mkstemp(dir=os.curdir, suffix='.tar')
             tar = tarfile.open(tarf, "w")
 
             for result in results: 
-                tar.add( result , arcname = result.replace(path.abspath(path.curdir), ""))
+                tar.add( result , arcname = result.replace(os.path.abspath(os.path.curdir), ""))
             tar.close()
 
             logging.info('Tar file prepared')
         except Exception as e:
-            logging.exception('Tar file preparation failed %s' % e)
+            logging.exception('Tar file preparation failed')
+            raise
 
         self.output.setValue( tarf )
-        # self.status.set(self, 'done: region=%s, num_files=%s' % (self.region.getValue(), len(urls)), 100)
+        self.status.set('done', 100)

@@ -1,8 +1,7 @@
 import ocgis
 from netCDF4 import Dataset, num2date
 
-from malleefowl import wpslogging as logging
-#import logging
+import logging
 logger = logging.getLogger(__name__)
 
 GROUPING = [ "day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON" ]
@@ -290,11 +289,10 @@ def sort_by_time(resource):
         sorted_list = resource
     return sorted_list
 
-def sort_by_filename(resource, historical_concatination = False ):
+def sort_by_filename(resource, historical_concatination = False):
   """ Sort a list of files with Cordex conform file names. 
   returns a dictionary with name:list_of_sorted_files"""
   from os  import path
-  # from numpy import squeeze
   
   logger.debug('sort_by_filename module: resource = %s ' % len(resource))
 
@@ -340,7 +338,8 @@ def sort_by_filename(resource, historical_concatination = False ):
           newkey = key+'_'+start+'-'+end
           tmp_dic[newkey] = ndic[key]
       except Exception as e: 
-        logger.error('failed to sort the list of resources %s' % e)
+        logger.exception('failed to sort the list of resources')
+        raise
 
     elif type(resource) == str:
       p, f = path.split(path.abspath(resource))
@@ -349,7 +348,8 @@ def sort_by_filename(resource, historical_concatination = False ):
       logger.error('sort_by_filename module failed: resource is not str or list')
     logger.debug('sort_by_filename module done: len(ndic) = %s ' % len(ndic))  
   except Exception as e: 
-    logger.error('failed to sort files by filename: %e' % e)
+    logger.exception('failed to sort files by filename')
+    raise
 
   return tmp_dic # rndic
 
@@ -360,6 +360,7 @@ def has_variable(resource, variable):
         success = rd.variable == variable
     except:
         logger.exception('has_variable failed.')
+        raise
     return success
 
 def filename_creator(nc_files, var=None):
