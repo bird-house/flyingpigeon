@@ -4,7 +4,7 @@ __all__ = [
         "segetalflora",
         "indices_single",
         "wps_subset",
-        "get_eobs_as_cordex",
+        "wps_eobs_to_cordex",
         "ensembleRobustness",
         #"extremoscope",
         "wps_analogs",
