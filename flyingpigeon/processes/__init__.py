@@ -2,7 +2,7 @@ __all__ = [
         "wps_visualisation",
         "extractpoints",
         "segetalflora",
-        "indices_single",
+        "wps_indices",
         "wps_subset",
         "wps_eobs_to_cordex",
         "ensembleRobustness",
