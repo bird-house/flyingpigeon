@@ -1,10 +1,5 @@
-from datetime import datetime, date
-import tempfile
-import subprocess
-from netCDF4 import Dataset
-import numpy as np
+from flyingpigeon import visualisation as vs
 
-#from bokeh.plotting import *
 from pywps.Process import WPSProcess
 
 class VisualisationProcess(WPSProcess):
@@ -13,7 +8,7 @@ class VisualisationProcess(WPSProcess):
         WPSProcess.__init__(self, 
             identifier = "visualisation",
             title="Visualisation of netcdf files",
-            version = "0.2",
+            version = "0.3",
             metadata= [
                     {"title": "Climate Service Center", "href": "http://www.climate-service-center.de/"}
                     ],
@@ -59,8 +54,6 @@ class VisualisationProcess(WPSProcess):
             )         
             
     def execute(self):
-        from flyingpigeon import visualisation as vs
-        
         ncfiles = self.getInputValues(identifier='resource')
         var = self.variableIn.getValue()
 

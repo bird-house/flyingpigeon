@@ -1,14 +1,15 @@
-from malleefowl import wpslogging as logging
-#import logging
-logger = logging.getLogger(__name__)
-
-from flyingpigeon import utils
+import os
 from tempfile import mkstemp
 from netCDF4 import Dataset
 from datetime import datetime, date 
 import numpy as np
 
-from bokeh.plotting import figure, output_file, save 
+from bokeh.plotting import figure, output_file, save
+
+from flyingpigeon import utils
+
+import logging
+logger = logging.getLogger(__name__)
 
 def spaghetti(resouces, variable=None, title=None, dir_out=None):
   """
@@ -29,7 +30,7 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
   if title == None:
     title = "Field mean of %s " % variable
   if dir_out == None: 
-    dir_out = '.'
+    dir_out = os.curdir
 
   # === prepare bokeh
   try: 
@@ -72,7 +73,8 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
     
     logger.debug('timesseries spagetti plot done for %s with %s lines.'% (variable, c)) 
   except Exception as e:
-    logger.exception('bokeh spagetti plot failed for %s : %s\n' % (variable , e))  
+    logger.exception('bokeh spagetti plot failed for %s : %s\n' % (variable , e))
+    raise  
   return output_html  
 
 def uncertainty(resouces , variable=None, title=None, dir_out=None): 
@@ -112,7 +114,7 @@ def uncertainty(resouces , variable=None, title=None, dir_out=None):
 
         logger.debug('looping files : %s ' % (nc))
         # get timestapms
-        rawDate = cdo.showdate(input= nc) # ds.variables['time'][:]
+        rawDate = cdo.showdate(input=[nc]) # ds.variables['time'][:]
         strDate = rawDate[0].split('  ')
         logger.debug('len strDate : %s ' % (len(strDate)))
         dates =  dates.union(strDate) #dates.union( utils.get_time(nc))
@@ -129,7 +131,7 @@ def uncertainty(resouces , variable=None, title=None, dir_out=None):
 
     # fill matrix
     for y in range(0,len(resouces)) : 
-        rawDate = cdo.showdate(input= resouces[y]) # ds.variables['time'][:]
+        rawDate = cdo.showdate(input=[resouces[y]]) # ds.variables['time'][:]
         strDate = rawDate[0].split('  ')
 
         ds=Dataset(resouces[y])
@@ -179,9 +181,10 @@ def uncertainty(resouces , variable=None, title=None, dir_out=None):
     save(fig)
     #hold('off')
   
-    logger.debug('timesseries uncertainty plot done for %s with %s lines.'% (variable, c)) 
+    logger.debug('timesseries uncertainty plot done for %s'% variable) 
   except Exception as e:
-    logger.exception('bokeh uncertainty plot failed for %s : %s\n' % (variable , e))  
+    logger.exception('bokeh uncertainty plot failed for %s' % variable)
+    raise  
   return output_html  
 
 def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, variable, cmap='seismic', title='Modelagreement of Signal'):
@@ -209,7 +212,8 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
     #map.drawparallels(np.arange(-90,90,30))
     logger.info('basemap is prepared')
   except Exception as e:
-    logger.error('failed to set up basemap %s' % e)
+    logger.exception('failed to set up basemap %s' % e)
+    raise
 
 
 
