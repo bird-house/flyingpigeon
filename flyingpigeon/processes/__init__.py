@@ -3,7 +3,7 @@ __all__ = [
         "extractpoints",
         "segetalflora",
         "indices_single",
-        "subset",
+        "wps_subset",
         "get_eobs_as_cordex",
         "ensembleRobustness",
         #"extremoscope",
