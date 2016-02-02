@@ -5,16 +5,15 @@ import tarfile
 import ocgis 
 from ocgis import RequestDataset
 import datetime as dt
-#from subprocess import call
 import os
 
-from malleefowl.download import download
-
+from flyingpigeon import analogs
+ 
 from pywps.Process import WPSProcess
 
 import logging
 
-class analogs(WPSProcess):
+class AnalogsProcess(WPSProcess):
   
   def __init__(self):
     # definition of this process
@@ -176,8 +175,6 @@ class analogs(WPSProcess):
       )
 
   def execute(self): 
-    from flyingpigeon.analogs import get_configfile
-
     self.status.set('execution started at : %s '  % dt.datetime.now() , 5)
 
     refSt = self.getInputValues(identifier='refSt')
@@ -202,7 +199,7 @@ class analogs(WPSProcess):
 
     files=[archive, simulation, output ] 
 
-    config_file = get_configfile(files=files, 
+    config_file = analogs.get_configfile(files=files, 
       timewin=timewin, 
       varname='slp', 
       seacyc=True, 

@@ -1,5 +1,4 @@
 import nose.tools
-from nose import SkipTest
 from nose.plugins.attrib import attr
 
 from tests.common import WpsTestClient, assert_response_success

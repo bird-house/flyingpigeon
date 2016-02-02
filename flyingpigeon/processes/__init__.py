@@ -7,7 +7,7 @@ __all__ = [
         "get_eobs_as_cordex",
         "ensembleRobustness",
         #"extremoscope",
-        "analogs",
+        "wps_analogs",
         #"vbd",
         #"sdm",
         ]

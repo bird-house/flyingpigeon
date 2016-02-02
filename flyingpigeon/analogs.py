@@ -1,4 +1,4 @@
-from malleefowl import wpslogging as logging
+import logging
 logger = logging.getLogger(__name__)
 
 
