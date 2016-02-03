@@ -13,11 +13,10 @@ import logging
 class EobsToCordexProcess(WPSProcess):
   
   def __init__(self):
-    # definition of this process
     WPSProcess.__init__(self, 
       identifier = "eobs_to_cordex",
       title="EOBS to CORDEX",
-      version = "0.3",
+      version = "0.4",
       metadata= [
               {"title": "Institut Pierre Simon Laplace", "href": "https://www.ipsl.fr/en/"}
               ],
