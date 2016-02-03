@@ -5,7 +5,7 @@ from flyingpigeon import config
 import logging
 logger = logging.getLogger(__name__)
 
-DIR_MASKS = join(abspath(dirname(__file__)), 'processes', 'masks')
+DIR_MASKS = config.masks_dir()
 DIR_SHP = config.shapefiles_dir()
 
 def countries():
