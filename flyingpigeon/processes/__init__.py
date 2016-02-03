@@ -7,7 +7,7 @@ __all__ = [
         "wps_eobs_to_cordex",
         "wps_ensemble_robustness",
         #"wps_extremoscope",
-        "wps_analogs",
+        #"wps_analogs",
         #"wps_time_aggregation",
         #"wps_vbd",
         #"wps_gam",
