@@ -3,6 +3,9 @@ from unittest import TestCase
 from nose import SkipTest
 from nose.plugins.attrib import attr
 
+from tests.common import prepare_env
+prepare_env()
+
 import os
 import tempfile
 from netCDF4 import Dataset
@@ -14,7 +17,7 @@ class IndicesCalculatorTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.out_dir = tempfile.mkdtemp()
-
+        
     def test_indices(self):
         nose.tools.ok_( 'TG' in indices.indices(), indices.indices() )
 

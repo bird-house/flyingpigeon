@@ -19,6 +19,12 @@ TESTDATA = {
     'noaa_slp_1956_nc': "http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.1956.nc",
     'eurocordex_nc_1': "http://webportals.ipsl.jussieu.fr/thredds/fileServer/ATLAS/Flux/LandModels/yearlymean/fco2_CLM4CN_Sep2013-ext3_1980-2010_yearlymean_XYT.nc"
     }
+
+def prepare_env():
+    pywps_path = os.path.dirname(pywps.__file__)
+    home_path = os.path.abspath(os.path.join(pywps_path, '..', '..', '..', '..'))
+    os.environ['PATH'] = "{0}:{1}".format(os.path.join(home_path, 'bin'), os.environ['PATH'])
+    os.environ['GDAL_DATA'] = os.path.join(home_path, 'share', 'gdal')
     
 class WpsTestClient(object):
     def __init__(self):
