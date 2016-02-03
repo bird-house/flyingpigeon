@@ -8,7 +8,8 @@ __all__ = [
         "wps_ensemble_robustness",
         #"wps_extremoscope",
         "wps_analogs",
+        #"wps_time_aggregation",
         #"wps_vbd",
         #"wps_gam",
-        #"sdm",
+        #"wps_sdm",
         ]

@@ -1,17 +1,19 @@
-from malleefowl.process import WPSProcess
+from flyingpigeon.timeAggregation import aggregatTime
 
-from malleefowl import wpslogging as logging
-logger = logging.getLogger(__name__)
+from pywps.Process import WPSProcess
 
-class timeAggregation(WPSProcess):
+import logging
+
+class TimeAggregationProcess(WPSProcess):
     def __init__(self):
-        # definition of this process
         WPSProcess.__init__(self, 
-            identifier = "timeAggregation",
+            identifier = "time_aggregation",
             title="aggregate the time frequency",
-            version = "0.1",
+            version = "0.2",
             metadata= [ {"title": "LSCE" , "href": "http://www.lsce.ipsl.fr/"} ],
             abstract="Calculates the mean over a given time frequence for one input data experiment",
+            statusSupported=True,
+            storeSupported=True
             )
 
         # input arguments    
@@ -33,7 +35,7 @@ class timeAggregation(WPSProcess):
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
-            allowedValues=GROUPING
+            #allowedValues=GROUPING
             )
 
         self.calculation = self.addLiteralInput(
@@ -57,16 +59,14 @@ class timeAggregation(WPSProcess):
             )         
 
     def execute(self):
-        self.show_status('starting uncertainty process', 0)
-    
-        from flyingpigeon.timeAggregation import aggregatTime
-        
+        self.status.set('starting uncertainty process', 0)
+            
         ncfiles = self.getInputValues(identifier='resource')
-        grouping = self.getInputValues(identifier='grouping')
-        calc = self.getInputValues(identifier='calculation')
+        grouping = self.grouping.getValue()
+        calc = self.calculation.getValue()
         
-        result = aggregatTime( resource=ncfiles, calc=calc, grouping=grouping )
+        result = aggregatTime( resource=ncfiles, calculation=calc, grouping=grouping )
         
         self.output.setValue( result )
             
-        self.show_status('time frequency reduction done', 99)       
+        self.status.set('time frequency reduction done', 100)       

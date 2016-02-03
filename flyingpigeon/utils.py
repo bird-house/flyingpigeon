@@ -169,9 +169,10 @@ def get_frequency(nc_file):
     frequency = ds.frequency
     logger.info('frequency written in the meta data:  %s ' % (frequency))
   except Exception as e :
-      logger.error('Could not specify frequency for %s: %s' % (nc_file, e) )
-
-  return frequency
+      logger.exception('Could not specify frequency for %s' % nc_file)
+      raise
+  else:
+    return frequency
 
 
 
