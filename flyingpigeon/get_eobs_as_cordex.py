@@ -4,7 +4,7 @@ logger = logging.getLogger(__name__)
 import datetime as dt
 import tempfile
 
-EOBS_VARIABLES = ['tn', 'tx' , 'tn', 'rr'] #, 'pp'
+EOBS_VARIABLES = ['tg', 'tx' , 'tn', 'rr'] #, 'pp'
 
 att_dict = {
       'Conventions' : "CF-1.4" ,

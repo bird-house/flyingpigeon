@@ -1,8 +1,12 @@
-from pywps.Process import WPSProcess
-import types
+import os
+import datetime as dt
+from malleefowl.download import download
 
+from flyingpigeon.get_eobs_as_cordex import get_data
 from flyingpigeon.get_eobs_as_cordex import EOBS_VARIABLES
 from flyingpigeon.subset import countries, countries_longname 
+
+from pywps.Process import WPSProcess
 
 import logging
 
@@ -93,29 +97,21 @@ class EobsToCordexProcess(WPSProcess):
       )
     
   def execute(self):
-    import os
-    #import tarfile
-    #import tempfile
-    
-    import datetime as dt
-    
-    from malleefowl.download import download
-    
-    from flyingpigeon.get_eobs_as_cordex import get_data
+   
    
     self.status.set('execution started at : %s '  % dt.datetime.now() , 0)
 
-    variable = self.getInputValues(identifier='var_eobs')
-    resource = self.getInputValues(identifier='netcdf_file')
-    start = self.getInputValue(identifier='start')
-    end = self.getInputValue(identifier='end')
+    variable = self.var_eobs.getValue()
+    resource = self.netcdf_file.getValue()
+    start = self.start.getValue()
+    end = self.end.getValue()
     
     #polygons = self.getInputValues(identifier='polygons')
     
     #if len(polygons) == 0: 
     polygons=None
     
-    cordex_file = get_data(resource =resource, variable =variable, polygons=polygons, dir_output=os.curdir, start = start, end = end)
+    cordex_file = get_data(resource=resource, variable=variable, polygons=polygons, dir_output=os.curdir, start=start, end=end)
     
     #(id_tarout, f_tarout) = tempfile.mkstemp(dir=".", suffix='.tar')
     #tarout_file = tarfile.open(f_tarout, "w")

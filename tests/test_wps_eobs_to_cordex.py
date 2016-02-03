@@ -6,9 +6,9 @@ from tests.common import WpsTestClient, assert_response_success, TESTDATA
 
 @attr('online')
 def test_wps_eobs_to_cordex():
-    raise SkipTest
+    #raise SkipTest
     wps = WpsTestClient()
-    datainputs = "[netcdf_file={0};var_eobs=tx]".format(TESTDATA['eurocordex_nc_1'])
+    datainputs = "[var_eobs=tg;start=1950;end=1951]".format(TESTDATA['eurocordex_nc_1'])
     resp = wps.get(service='wps', request='execute', version='1.0.0', identifier='eobs_to_cordex',
                    datainputs=datainputs)
     assert_response_success(resp)
