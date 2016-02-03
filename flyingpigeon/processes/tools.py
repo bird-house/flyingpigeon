@@ -6,7 +6,7 @@ from netCDF4 import Dataset
 import os 
 from datetime import datetime, timedelta
 
-from malleefowl import wpslogging as logging
+import logging
 logger = logging.getLogger(__name__)
 
 def dummy_monitor(message, status):

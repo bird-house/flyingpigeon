@@ -17,7 +17,8 @@ TESTDATA = {
     'noaa_catalog_1': "http://www.esrl.noaa.gov/psd/thredds/catalog/Datasets/ncep.reanalysis.dailyavgs/surface/catalog.xml?dataset=Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.1948.nc",
     'noaa_slp_1955_nc': "http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.1955.nc",
     'noaa_slp_1956_nc': "http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.1956.nc",
-    'eurocordex_nc_1': "http://webportals.ipsl.jussieu.fr/thredds/fileServer/ATLAS/Flux/LandModels/yearlymean/fco2_CLM4CN_Sep2013-ext3_1980-2010_yearlymean_XYT.nc"
+    'eurocordex_nc_1': "http://webportals.ipsl.jussieu.fr/thredds/fileServer/ATLAS/Flux/LandModels/yearlymean/fco2_CLM4CN_Sep2013-ext3_1980-2010_yearlymean_XYT.nc",
+    'eurocordex_nc_2': "http://webportals.ipsl.jussieu.fr/thredds/fileServer/EUROCORDEX/extremoscope_FRA/polygons/TG/yr/rcp45/1/TG_rcp45_CNRM-CM5_CNRM-ALADIN53_1971-2100.nc"
     }
 
 def prepare_env():

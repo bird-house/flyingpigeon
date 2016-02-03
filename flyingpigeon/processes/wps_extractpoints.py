@@ -1,16 +1,25 @@
-from malleefowl import wpslogging as logging
-from malleefowl.process import WPSProcess
+import ocgis
+from shapely.geometry import Point
+import tempfile
+import tarfile
+import os 
+    
+import tools
+    
+import pandas as pd 
+from pandas import DataFrame, read_csv
+import numpy as np
 
-# initialise
-logger = logging.getLogger(__name__)
+from pywps.Process import WPSProcess
 
-class extractpointsProcess(WPSProcess):
+import logging
+
+class ExtractPointsProcess(WPSProcess):
   def __init__(self):
-    # definition of this process
     WPSProcess.__init__(self, 
       identifier = "extractpoints",
       title="Extract Coordinate Points",
-      version = "0.1",
+      version = "0.2",
       metadata= [
               {"title": "Institut Pierre Simon Laplace", "href": "https://www.ipsl.fr/en/"}
               ],
@@ -66,22 +75,6 @@ class extractpointsProcess(WPSProcess):
       )
           
   def execute(self):
-    import ocgis
-    from shapely.geometry import Point
-    
-    import tempfile
-    import tarfile
-    import os 
-    import subprocess
-    
-    import tools
-    
-    import pandas as pd 
-    from pandas import DataFrame, read_csv
-    import numpy as np
-    
-    logger.debug('Initialise extractpoints ... done')
-
     # get the vaulues of WPS delivered arguments
     ncs = self.getInputValues(identifier='netcdf_file')
     coords = self.coords.getValue()
@@ -90,7 +83,7 @@ class extractpointsProcess(WPSProcess):
     ncs_rn = tools.fn_creator(ncs)
     nc_exp = tools.fn_sorter(ncs_rn) # dictionary {experiment:[files]}
     
-    logger.debug('working dir initialised  %s ' % out_dir )
+    logging.debug('working dir initialised  %s ' % out_dir )
     
     geom = []
     for ugid, p in enumerate(coords, start=1):
@@ -112,14 +105,14 @@ class extractpointsProcess(WPSProcess):
 
     for key in nc_exp:
       
-      logger.debug('start calculation for %s ' % key )
+      logging.debug('start calculation for %s ' % key )
       ncs = nc_exp[key]
       ncs.sort()
       
       
       var = key.split('_')[0]
       rd = ocgis.RequestDataset(ncs, var) # time_range=[dt1, dt2]
-      logger.debug('calculation of experimtent %s with variable %s'% (key,var))
+      logging.debug('calculation of experimtent %s with variable %s'% (key,var))
 
       if  (self.type_nc.getValue() == True ): 
         try:
