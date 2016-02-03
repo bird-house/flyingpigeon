@@ -4,7 +4,7 @@ from flyingpigeon import ensembleRobustness as erob
 
 import logging
 
-class modelUncertainty(WPSProcess):
+class EnsembleRobustnessProcess(WPSProcess):
     def __init__(self):
         # definition of this process
         WPSProcess.__init__(self, 
