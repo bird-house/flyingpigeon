@@ -3,7 +3,6 @@ from nose.plugins.attrib import attr
 
 from tests.common import WpsTestClient, assert_response_success, TESTDATA
 
-@attr('online')
 def test_wps_extractpoints():
     wps = WpsTestClient()
     datainputs = "[netcdf_file={0};coords=2.356138,48.846450]".format(TESTDATA['cmip5_tasmax_nc'])
