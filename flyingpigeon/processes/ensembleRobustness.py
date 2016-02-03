@@ -1,12 +1,16 @@
 from pywps.Process import WPSProcess
 
+from flyingpigeon import ensembleRobustness as erob
+
+import logging
+
 class modelUncertainty(WPSProcess):
     def __init__(self):
         # definition of this process
         WPSProcess.__init__(self, 
             identifier = "ensembleRobustness",
             title="Calculation of the robustness of an ensemle",
-            version = "0.1",
+            version = "0.2",
             metadata= [ {"title": "LSCE" , "href": "http://www.lsce.ipsl.fr/"} ],
             abstract="Calculates the robustness as the ratio of noise to signal in an ensemle of timeseries",
             statusSupported=True,
@@ -28,7 +32,7 @@ class modelUncertainty(WPSProcess):
           identifier="start",
           title="Start Year",
           abstract="Beginn of the analysed period (e.g 1971; if not set, the first consistend year of the ensemble will be taken)",
-          type=type("1"),
+          type=type(1950),
           #default='1950',
           minOccurs=0,
           maxOccurs=1,
@@ -39,7 +43,7 @@ class modelUncertainty(WPSProcess):
           identifier="end",
           title="End Year",
           abstract="End of the analysed period (e.g. 2050 if not set, the last consistend year of the ensemble will be taken)",
-          type=type("1"),
+          type=type(2050),
           #default='1950',
           minOccurs=0,
           maxOccurs=1,
@@ -50,8 +54,8 @@ class modelUncertainty(WPSProcess):
           identifier="timeslice",
           title="Time slice",
           abstract="Time slice (in years) for robustness reference (default=10))",
-          type=type("1"),
-          default='10',
+          type=type(10),
+          default=10,
           minOccurs=0,
           maxOccurs=1,
           #allowedValues=range(1,50)
@@ -93,27 +97,20 @@ class modelUncertainty(WPSProcess):
         #     )  
 
     def execute(self):
-      from malleefowl import wpslogging as logging
-      logger = logging.getLogger(__name__)
-
       self.status.set('starting uncertainty process', 0)
   
-      from flyingpigeon import ensembleRobustness as erob
-      
       ncfiles = self.getInputValues(identifier='resource')
-      start = self.getInputValues(identifier='start')
-      end = self.getInputValues(identifier='end')
-      timeslice = self.getInputValues(identifier='timeslice')
+      start = self.start.getValue()
+      end = self.end.getValue()
+      timeslice = self.timeslice.getValue()
 
-      #
-
-      logger.info('type of argument %s %s ' % (type(start), start))
+      logging.debug('type of argument %s %s ' % (type(start), start))
       
-      signal , low_agreement_mask , high_agreement_mask  = erob.worker(resource=ncfiles, start=1960, end=2013, timeslice=20)
+      signal, low_agreement_mask, high_agreement_mask = erob.worker(resource=ncfiles, start=start, end=end, timeslice=timeslice)
       
       self.output_signal.setValue( signal )
       self.output_high.setValue( high_agreement_mask )
       self.output_low.setValue( low_agreement_mask )
       # self.output_graphic.setValue( graphic )
       
-      self.status.set('uncertainty process done', 99)
+      self.status.set('uncertainty process done', 100)
