@@ -459,7 +459,7 @@ def cv_creator(icclim, polygons, domain, anomalies, monitor=dummy_monitor ):
   from ocgis.util.helpers import get_sorted_uris_by_time_dimension
   import shutil
   
-  from cdo import *   
+  from cdo import Cdo   
   cdo = Cdo()
   try: 
     logger.debug('starting cv_creator')
