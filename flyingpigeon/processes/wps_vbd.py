@@ -10,6 +10,7 @@ from ocgis.util.shp_process import ShpProcess
 #from ocgis.util.shp_cabinet import ShpCabinetIterator
 import ocgis
 
+from flyingpigeon import config
 
 from pywps.Process import WPSProcess
 
@@ -76,7 +77,7 @@ class VBDProcess(WPSProcess):
 
         nc_files = self.getInputValues(identifier='netcdf_file')
         
-        ocgis.env.DIR_SHPCABINET = os.path.join(os.path.dirname(__file__),'shapefiles')
+        ocgis.env.DIR_SHPCABINET = config.shapefiles_dir()
         ocgis.env.DIR_OUTPUT = os.curdir
         ocgis.env.OVERWRITE = True  
         sc = ocgis.ShpCabinet()

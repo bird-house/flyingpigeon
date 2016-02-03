@@ -1,11 +1,12 @@
 from os.path import dirname, join, getsize, abspath
 from flyingpigeon.utils import drs_filename, get_variable, calc_grouping , sort_by_filename
+from flyingpigeon import config
 
 import logging
 logger = logging.getLogger(__name__)
 
 DIR_MASKS = join(abspath(dirname(__file__)), 'processes', 'masks')
-DIR_SHP = join(abspath(dirname(__file__)), 'processes', 'shapefiles')
+DIR_SHP = config.shapefiles_dir()
 
 def countries():
     """

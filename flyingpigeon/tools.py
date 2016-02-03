@@ -6,6 +6,8 @@ from netCDF4 import Dataset
 import os 
 from datetime import datetime, timedelta
 
+from flyingpigeon import config
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -470,7 +472,7 @@ def cv_creator(icclim, polygons, domain, anomalies, monitor=dummy_monitor ):
     output_crs = None
     
     p_dir, p = os.path.split(os.path.abspath(__file__)) 
-    SHP_DIR =  os.path.join(p_dir + '/shapefiles/' )
+    SHP_DIR = config.shapefiles_dir()
     logger.debug('SHP_DIR: %s' % SHP_DIR )
     europa = ['AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP','EST','FIN','FRA','GBR','GRC','HUN','HRV','IRL','ITA','LVA','LTU','LUX','MLT','NLD','POL','PRT','ROU','SVK','SVN','SWE','NOR','CHE','ISL','MKD','MNE','SRB','MDA','UKR','BIH','ALB','BLR','KOS']
     geoms = '50m_country' # 'world_countries_boundary_file_world_2002'

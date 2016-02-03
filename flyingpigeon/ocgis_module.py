@@ -1,6 +1,7 @@
+from flyingpigeon import config
 from os.path import join, abspath, dirname, getsize
 
-DIR_SHP = join(abspath(dirname(__file__)), 'processes', 'shapefiles')
+DIR_SHP = config.shapefiles_dir()
 
 import logging
 logger = logging.getLogger(__name__)

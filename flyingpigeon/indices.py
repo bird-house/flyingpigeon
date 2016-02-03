@@ -2,6 +2,7 @@ import os
 
 from flyingpigeon.utils import calc_grouping, sort_by_filename, get_variable # aggregations, 
 from flyingpigeon.subset import get_ugid, get_geom
+from flyingpigeon import config
 
 import logging
 logger = logging.getLogger(__name__)
@@ -126,7 +127,7 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
     from flyingpigeon import ocgis_module
     from flyingpigeon.subset import clipping
 
-    #DIR_SHP = join(dirname(__file__),'flyingpigeon', 'processes', 'shapefiles')
+    #DIR_SHP = config.shapefiles_dir()
     #env.DIR_SHPCABINET = DIR_SHP
     #env.OVERWRITE = True
 
