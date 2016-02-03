@@ -1,6 +1,5 @@
 import os
 import tarfile
-from tempfile import mkstemp
 
 from flyingpigeon.subset import clipping
 from flyingpigeon.subset import countries, countries_longname
@@ -9,13 +8,13 @@ from pywps.Process import WPSProcess
 
 import logging
 
-class Clipping(WPSProcess):
+class ClippingProcess(WPSProcess):
     def __init__(self):
         WPSProcess.__init__(
             self, 
             identifier = "subset_countries",
             title="Subset netCDF files",
-            version = "0.2",
+            version = "0.3",
             abstract="This process returns only the given polygon from input netCDF files.",
             statusSupported=True,
             storeSupported=True
@@ -54,12 +53,12 @@ class Clipping(WPSProcess):
             )
         
         self.output = self.addComplexOutput(
-              title="Subsets",
-              abstract="Tar archive containing the netCDF files",
-              formats=[{"mimeType":"application/x-tar"}],
-              asReference=True,
-              identifier="output",
-              )
+            title="Subsets",
+            abstract="Tar archive containing the netCDF files",
+            formats=[{"mimeType":"application/x-tar"}],
+            asReference=True,
+            identifier="output",
+            )
 
     def execute(self):
         urls = self.getInputValues(identifier='resource')
@@ -70,20 +69,23 @@ class Clipping(WPSProcess):
         logging.debug('regions = %s', regions)
         logging.debug('mosaik = %s', mosaik)
     
-        # self.status.set(self, 'Arguments set for subset process'  , 0)
+        self.status.set('Arguments set for subset process', 0)
 
         logging.debug('starting: regions=%s, num_files=%s' % (len(regions), len(urls)))
 
-        results = clipping(
-            resource = urls,
-            polygons = regions, # self.region.getValue(),
-            mosaik = mosaik,
-            dir_output = os.path.abspath(os.curdir),
-            )
-
+        try:
+            results = clipping(
+                resource = urls,
+                polygons = regions, # self.region.getValue(),
+                mosaik = mosaik,
+                dir_output = os.path.abspath(os.curdir),
+                )
+        except Exception as e:
+            logging.exception('clipping failed')
+            self.status.set('clipping failed')
         # prepare tar file 
         try: 
-            (fp_tarf, tarf) = mkstemp(dir=os.curdir, suffix='.tar')
+            tarf = 'out.tar'
             tar = tarfile.open(tarf, "w")
 
             for result in results: 
