@@ -146,7 +146,8 @@ def plot_ascii(infile):
     print ('ascii plotted')
     # fig.close()
   except Exception as e:
-    print 'plotting failed for file %s : %s' % (basename , e)
+    logger.exception('plotting failed for file %s' % basename)
+    raise
 
 def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate_type=2, region=None, dimension_map=None): 
   """productive worker for segetalflora jobs

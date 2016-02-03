@@ -1,18 +1,16 @@
 from pywps.Process import WPSProcess
 
-import subprocess
-
 from flyingpigeon.subset import countries #REGION_EUROPE
 
 import logging
 
-class segetalflora(WPSProcess):
+class SegetalfloraProcess(WPSProcess):
   """This process calculates the relative humidity"""
   def __init__(self):
     WPSProcess.__init__(self, 
       identifier = "segetalflora",
       title="Segetal Flora",
-      version = "0.2",
+      version = "0.3",
       metadata=[{"title": "Institut Pierre Simon Laplace", "href": "https://www.ipsl.fr/en/"}],
       abstract="Species biodiversity of segetal flora. Imput files: variable:tas , domain: EUR-11 or EUR-44",
       statusSupported=True,
@@ -146,8 +144,8 @@ class segetalflora(WPSProcess):
       mkdir(dir_plots)
       logging.debug('out directories created')
     except  Exception as e:
-      msg = 'tar file or mkdir failed!: %s ' % (e)
-      logging.error(msg)
+      logging.exception('tar file or mkdir failed!')
+      raise
       
     countries = ['AUT','BEL','BGR','CYP','CZE','DEU','DNK','ESP',
                  'EST','FIN','FRA','GBR','GRC','HUN','HRV','IRL',
@@ -183,13 +181,13 @@ class segetalflora(WPSProcess):
         try:
           sf_files =  sf.get_segetalflora(ncs, culture_type=cult,
                                           climate_type=clim,
-                                          countries=countries, 
-                                          dir_tas=dir_tas,
+                                          #countries=countries, 
+                                          dir_output=dir_tas,
                                           dir_segetalflora=dir_segetalflora)
           self.status.set("processing of %s segetalflora files done " % (len(sf_files)) , 95)
         except Exception as e:
-          msg = 'segetalflora calculation failed %s %s : %s\n' %( climate_type, culture_type, e) 
-          logging.exception(msg)
+          logging.exception('segetalflora calculation failed %s %s' % ( climate_type, culture_type))
+          raise
         
 # === fieldmeans         
     from flyingpigeon import timeseries as ts
@@ -199,7 +197,8 @@ class segetalflora(WPSProcess):
       ncs_fld = ts.fldmean(ncs, dir_output=dir_fieldmean)
       logging.debug('%s fieldmeans processed' % (len(ncs_fld)))
     except Exception as e:
-      logging.exception('fieldmeans failed: %s\n' % (e))
+      logging.exception('fieldmeans failed')
+      raise
     
 
 # === visualisation 
@@ -218,7 +217,8 @@ class segetalflora(WPSProcess):
         set_contry = set_contry.union([nc.split('_')[1]])
       logging.debug('%s files to plots sorted' % (len(ncs)))
     except Exception as e:
-      logging.exception('files sorting failed: %s\n' % (e))
+      logging.exception('files sorting failed')
+      raise
       
     # plot sorted files 
     try:
@@ -235,7 +235,8 @@ class segetalflora(WPSProcess):
           plots.append(newname)
           logging.debug('plot created and renamed for %s %s' % (v, c )) 
     except Exception as e:
-      logging.exception('ploting failed: %s\n' % (e))
+      logging.exception('ploting failed')
+      raise
 
 # === tar file archiving 
     self.status.set('files to tar archives', 99)
