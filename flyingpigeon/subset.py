@@ -1,4 +1,7 @@
-from os.path import dirname, join, getsize, abspath
+from cdo import Cdo
+from tempfile import mkstemp
+import os
+
 from flyingpigeon.utils import drs_filename, get_variable, calc_grouping , sort_by_filename
 from flyingpigeon import config
 
@@ -33,22 +36,19 @@ def masking(resource, mask, prefix=None, dir_output=None):
   :param prefix:  prefix for filename. If prefix is not set, a filename will be created
   :param dir_output: directory for output file. If dir_output is not set, a tempdir will be created
   """
-  from cdo import Cdo
   cdo = Cdo()
-  from tempfile import mkstemp
-  from os import system, path 
   
   if dir_output == None: 
-    dir_output = path.curdir
-  nc_mask = path.join(DIR_MASKS, mask + '.nc')
+    dir_output = os.curdir
+  nc_mask = os.path.join(DIR_MASKS, mask + '.nc')
   
   if prefix == None: 
     p1 , resource_masked = mkstemp(dir = dir_output, suffix='.nc')
   else: 
-    resource_masked = path.join(dir_output, prefix + '.nc')
+    resource_masked = os.path.join(dir_output, prefix + '.nc')
 # try:
   call = "cdo div '%s' '%s' '%s'" % ( resource , nc_mask , resource_masked)
-  system(call)
+  os.system(call)
   return resource_masked
 
 
@@ -154,8 +154,7 @@ def get_dimension_map(resource):
   :param resource: str input file path
   """
 
-  from os.path import basename
-  file_name = basename(resource)
+  file_name = os.path.basename(resource)
   
   dim_map1 = {'X': {'variable': 'lon', 'dimension': 'x', 'pos': 2},
               'Y': {'variable': 'lat', 'dimension': 'y', 'pos': 1},
