@@ -199,10 +199,10 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
                         dir_output=dir_output)
                       outputs.extend( tmp )
                     except Exception as e:
-                      logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s' % ( indice, key, polygon, grouping))  
-                logger.info('indice file calcualted %s ' % (tmp))      
+                      logger.exception('could not calc indice %s for key %s and grouping %s' % ( indice, key, grouping))  
+                logger.info('indice file calculated')      
               except Exception as e:
-                logger.exception('could not calc indice %s for key %s and calc_grouping %s' %  (indice, key, polygon))  
+                logger.exception('could not calc indice %s for key %s and grouping %s' %  (indice, key, grouping))  
           except Exception as e:
             logger.exception('could not calc indice %s for key %s' % ( indice, key))        
       except Exception as e:

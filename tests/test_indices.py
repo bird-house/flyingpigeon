@@ -3,7 +3,7 @@ from unittest import TestCase
 from nose import SkipTest
 from nose.plugins.attrib import attr
 
-from tests.common import prepare_env
+from tests.common import prepare_env, TESTDATA
 prepare_env()
 
 import os
@@ -11,12 +11,13 @@ import tempfile
 from netCDF4 import Dataset
 
 from flyingpigeon import indices
+from flyingpigeon.utils import local_path
 
 class IndicesCalculatorTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.out_dir = tempfile.mkdtemp()
+        pass
         
     def test_indices(self):
         nose.tools.ok_( 'TG' in indices.indices(), indices.indices() )
@@ -24,14 +25,13 @@ class IndicesCalculatorTestCase(TestCase):
     def test_indices_description(self):
         nose.tools.ok_( 'TG: ' in indices.indices_description(), indices.indices_description() )
 
-    @attr('testdata')
-    @attr('slow')
     def test_indice_su_tasmax(self):
         raise SkipTest
-
+        out_dir = tempfile.mkdtemp()
         # SU expects tasmax
-        output = indices.calc_indice(
-            [self.tasmax_historical_1991_nc], indice='TG', grouping='year', out_dir=self.out_dir)
+        output = indices.calc_indice_single(
+            [local_path(TESTDATA['cordex_tasmax_nc'])],
+            indices=['SU'], groupings='year', dir_output=out_dir)
 
         nose.tools.ok_(
             os.path.basename(output) == 'TG_EUR-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day.nc',
