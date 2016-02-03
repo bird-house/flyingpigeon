@@ -40,13 +40,15 @@ class UtilsTestCase(TestCase):
 
 
     def test_drs_filename(self):
-        # skip timestamp 
-        ## filename = utils.drs_filename(self.tas_historical_2001_nc, skip_timestamp=True)
-        ## nose.tools.ok_(
-        ##     filename == "tas_EUR-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day.nc",
-        ##     filename)
+        # cordex
+        filename = utils.drs_filename(utils.local_path(TESTDATA['cordex_tasmax_nc']))
+        nose.tools.ok_(filename == "tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon_20060215-20061216.nc", filename)
 
-        ## cmip5
+        # cordex ... skip timestamp
+        filename = utils.drs_filename(utils.local_path(TESTDATA['cordex_tasmax_nc']), skip_timestamp=True)
+        nose.tools.ok_(filename == "tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon.nc", filename)
+        
+        # cmip5
         filename = utils.drs_filename(utils.local_path(TESTDATA['cmip5_tasmax_nc']))
         nose.tools.ok_(filename == "tasmax_MPI-ESM-MR_RCP4.5_r1i1p1_20060116-20061216.nc", filename)
 
