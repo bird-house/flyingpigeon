@@ -3,17 +3,28 @@ Processes for rel_hum
 Author: Nils Hempelmann (nils.hempelmann@hzg)
 """
 
+from datetime import datetime, date
+
+from netCDF4 import Dataset
+import os 
+import numpy as np
+from cdo import Cdo
+import datetime
+import string
+
+from flyingpigeon import tools
+
 from pywps.Process import WPSProcess
 
 
-class gam(WPSProcess):
+class GAMProcess(WPSProcess):
     
     def __init__(self):
         WPSProcess.__init__(
             self,
             identifier = "gam",
             title = "Species destribution model",
-            version = "0.1",
+            version = "0.2",
             metadata=[
                 {"title":"GAM"},
                 ],
@@ -26,8 +37,8 @@ class gam(WPSProcess):
         # Literal Input Data
         # ------------------
 
-        self.netcdf_file = self.addComplexInput(
-            identifier="netcdf_file",
+        self.dataset = self.addComplexInput(
+            identifier="dataset",
             title="NetCDF File",
             abstract="NetCDF File",
             minOccurs=1,
@@ -64,78 +75,64 @@ class gam(WPSProcess):
             title="TG",
             abstract="Mean of mean temperatur (tas files as input files)",
             type=type(1),
-            default="3",
+            default=3,
             minOccurs=0,
-            maxOccurs=0,
+            maxOccurs=1,
             )
             
         self.TX = self.addLiteralInput(
             identifier="TX",
             title="TX",
             abstract="mean of max temperatur (tasmax files as input files)",
-            default="0",
+            default=0,
             type=type(1),
             minOccurs=0,
-            maxOccurs=0,
+            maxOccurs=1,
             )
             
         self.TN = self.addLiteralInput(
             identifier="TN",
             title="TN",
             abstract="Mean over min temperatur (tasmin files as input files)",
-            default="0",
+            default=0,
             type=type(1),
             minOccurs=0,
-            maxOccurs=0,
+            maxOccurs=1,
             )
         
         self.RR = self.addLiteralInput(
             identifier="RR",
             title="RR",
             abstract="precipitation sum (pr files as input files) ",
-            default="0",
+            default=0,
             type=type(1),
             minOccurs=0,
-            maxOccurs=0,
+            maxOccurs=1,
             )
             
         self.SU = self.addLiteralInput(
             identifier="SU",
             title="SU",
             abstract="Nr of summer days (tasmax files as input files)",
-            default="0",
+            default=0,
             type=type(1),
             minOccurs=0,
-            maxOccurs=0,
+            maxOccurs=1,
             )
   
         self.output = self.addComplexOutput(
             identifier="output",
             title="Indices Output tar",
             abstract="Indices Output file",
-            metadata=[],
             formats=[{"mimeType":"application/x-tar"}],
             asReference=True,
             )
         
     def execute(self):
-      
-      import subprocess
-      from datetime import datetime, date
-
-
-      from netCDF4 import Dataset
-      # from os import os.curdir, os.path, system
-      import os 
-      import numpy as np
-      from cdo import *
-      import datetime
-      import string
-      
       cdo = Cdo()
       
       # get the appropriate files
-      nc_files = self.get_nc_files()
+      nc_files = self.getInputValues(identifier='dataset')
 
       #for nc_file in nc_files: 
           #ds = Dataset(nc_file)
@@ -148,11 +145,14 @@ class gam(WPSProcess):
 
       # call to icclim
       
-      from flyingpigeon import tools
-
       # TODO: check syntax
-      indices_dic = { 'outdir':os.curdir() , 'nc_files': nc_files , 'TG':self.TG.getValue() ,'TX': self.TX.getValue(),
-          'TN':self.TN.getValue(),'RR': self.RR.getValue(), 'SU':self.SU.getValue() }
+      indices_dic = { 'outdir': os.curdir, 'nc_files': nc_files,
+                      'TG': self.TG.getValue(),
+                      'TX': self.TX.getValue(),
+                      'TN': self.TN.getValue(),
+                      'RR': self.RR.getValue(),
+                      'SU': self.SU.getValue()
+                      }
       
       indices_out, indices_log = tools.indices( indices_dic )
       

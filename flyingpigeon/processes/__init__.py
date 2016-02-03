@@ -9,6 +9,6 @@ __all__ = [
         #"wps_extremoscope",
         "wps_analogs",
         #"wps_vbd",
-        "wps_gam",
+        #"wps_gam",
         #"sdm",
         ]
