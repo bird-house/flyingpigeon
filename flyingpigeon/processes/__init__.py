@@ -6,7 +6,7 @@ __all__ = [
         "wps_subset",
         "wps_eobs_to_cordex",
         "wps_ensemble_robustness",
-        #"extremoscope",
+        "wps_extremoscope",
         "wps_analogs",
         #"vbd",
         #"sdm",
