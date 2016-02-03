@@ -1,36 +1,44 @@
 from datetime import datetime, date
 import tempfile
-import subprocess
+from netCDF4 import Dataset
+import os
+import numpy as np
+from cdo import Cdo
+import datetime 
+#from math import *
+from ocgis.util.shp_process import ShpProcess
+#from ocgis.util.shp_cabinet import ShpCabinetIterator
+import ocgis
+
 
 from pywps.Process import WPSProcess
 
 import logging
 
-class vbd(WPSProcess):
+class VBDProcess(WPSProcess):
     """
     Process for Anopheles Gambiae population dynamics 
     """
 
     def __init__(self):
-        # definition of this process
         WPSProcess.__init__(self, 
             identifier = "vbd",
             title="Vector born diseases",
-            version = "0.1",
+            version = "0.2",
             metadata= [
-                    {"title": "Climate Service Center", "href": "http://www.climate-service-center.de/"}
-                    ],
+                {"title": "Climate Service Center", "href": "http://www.climate-service-center.de/"}
+                ],
             abstract="Collection of models to calculate variables related to vector born diseases",
             statusSupported=True,
             storeSupported=True
             )
-            
+
         self.netcdf_file = self.addComplexInput(
             identifier="netcdf_file",
             title="NetCDF File",
             abstract="NetCDF File",
             minOccurs=1,
-            maxOccurs=100,
+            maxOccurs=1000,
             maxmegabites=5000,
             formats=[{"mimeType":"application/x-netcdf"}],
             )
@@ -64,21 +72,11 @@ class vbd(WPSProcess):
             )         
             
     def execute(self):
-        from netCDF4 import Dataset
-        from os import curdir, path
-        import numpy as np
-        from cdo import *
-        import datetime 
-        from math import *
-        from ocgis.util.shp_process import ShpProcess
-        from ocgis.util.shp_cabinet import ShpCabinetIterator
-        import ocgis
-
         self.status.set('starting anopholes ...', 0)
 
         nc_files = self.getInputValues(identifier='netcdf_file')
         
-        ocgis.env.DIR_SHPCABINET = path.join(path.dirname(__file__),'shapefiles')
+        ocgis.env.DIR_SHPCABINET = os.path.join(os.path.dirname(__file__),'shapefiles')
         ocgis.env.DIR_OUTPUT = os.curdir
         ocgis.env.OVERWRITE = True  
         sc = ocgis.ShpCabinet()
@@ -102,7 +100,7 @@ class vbd(WPSProcess):
             elif "evspsblpot" in ds.variables.keys():
                 file_evspsblpot = nc_file                          # Dataset(nc_file , 'r')   
             else:
-                raise self.status.set('input netcdf file  %s has not variable tas|hurs|pr|evspsblpot:  \n %s '  % (nc, e ) , 15)
+                raise Exception('input netcdf file has not variable tas|hurs|pr|evspsblpot')
 
         self.status.set('sort files to appropriate variable names done' , 15)
         

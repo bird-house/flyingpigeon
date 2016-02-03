@@ -23,6 +23,8 @@ class ExtractPointsProcess(WPSProcess):
               {"title": "Institut Pierre Simon Laplace", "href": "https://www.ipsl.fr/en/"}
               ],
       abstract="Extract Timeseries for specified coordinates from grid data",
+      statusSupported=True,
+      storeSupported=True
       )
 
     self.netcdf_file = self.addComplexInput(

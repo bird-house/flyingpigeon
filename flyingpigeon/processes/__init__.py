@@ -8,6 +8,6 @@ __all__ = [
         "wps_ensemble_robustness",
         #"wps_extremoscope",
         "wps_analogs",
-        #"vbd",
+        #"wps_vbd",
         #"sdm",
         ]
