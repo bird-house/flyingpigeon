@@ -76,21 +76,23 @@ class ExtractPointsProcess(WPSProcess):
       )
           
   def execute(self):
-    # get the vaulues of WPS delivered arguments
+    # get the values of WPS delivered arguments
     ncs = self.getInputValues(identifier='netcdf_file')
-    coords = self.coords.getValue()
-    os.mkdir(os.path.curdir+'/out_dir/')
-    out_dir = os.path.curdir+'/out_dir/' 
+    coords = self.getInputValues(identifier='coords')
+    logging.debug("coords %s", coords)
+
+    out_dir = os.path.join(os.path.curdir, 'out_dir') 
+    os.mkdir(out_dir)
+    logging.debug('working dir initialised  %s ' % out_dir )
+    
     ncs_rn = tools.fn_creator(ncs)
     nc_exp = tools.fn_sorter(ncs_rn) # dictionary {experiment:[files]}
     
-    logging.debug('working dir initialised  %s ' % out_dir )
-    
     geom = []
     for ugid, p in enumerate(coords, start=1):
-        self.status.set('processing point : %s'  % (p) , 20)
+        self.status.set('processing point : {0}'.format(p), 20)
         p = p.split(',')
-        self.status.set('splited x and y coord : %s'  % (p) , 20)
+        self.status.set('splited x and y coord : {0}'.format(p), 20)
         point = Point(float(p[0]), float(p[1]))
         geom.append({'geom': point, 'properties': {'UGID': ugid}})
   
@@ -174,7 +176,7 @@ class ExtractPointsProcess(WPSProcess):
       tar.add(out_dir, arcname = out_dir.replace(os.curdir , ""))
       self.status.set('ocgis folder tared with : %i '  % (len(os.listdir(out_dir))) , 15)
     else:
-      self.status.set('ocgis folder contains NO files !!!')
+      raise Exception('ocgis folder contains NO files!')
       
     tar.close()
     
