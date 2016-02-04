@@ -5,7 +5,7 @@ from tests.common import WpsTestClient, assert_response_success, TESTDATA
 
 def test_wps_extractpoints():
     wps = WpsTestClient()
-    datainputs = "[netcdf_file={0};coords=2.356138,48.846450]".format(TESTDATA['cmip5_tasmax_nc'])
+    datainputs = "[netcdf_file={0};coords=2.356138,48.846450;type_nc=True;type_csv=True]".format(TESTDATA['cmip5_tasmax_nc'])
     resp = wps.get(service='wps', request='execute', version='1.0.0', identifier='extractpoints',
                    datainputs=datainputs)
     assert_response_success(resp)
