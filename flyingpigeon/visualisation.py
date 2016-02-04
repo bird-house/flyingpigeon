@@ -187,7 +187,7 @@ def uncertainty(resouces , variable=None, title=None, dir_out=None):
     raise  
   return output_html  
 
-def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, variable, cmap='seismic', title='Modelagreement of Signal'):
+def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, variable, cmap='seismic', title=None):
   """
   generating a graphic for the output of the ensembleRobustness process for a lat/long file. 
 
@@ -198,71 +198,142 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
   :param cmap: default='seismic',
   :param title: default='Modelagreement of Signal'
   """
-  from mpl_toolkits.basemap import Basemap
-  import matplotlib.pyplot as plt
-  
+
   try: 
-    fig = plt.figure(figsize=(20,10), dpi=80, facecolor='w', edgecolor='k') # settings of the graphic
+    import matplotlib.pyplot as plt
+    from cartopy import config
+    import cartopy.crs as ccrs
+    logger.info('libraries loaded')
+  except Exception as e: 
+    logger.error('failed to load libraries: %s' % e)
 
-    map = Basemap(projection='mill',lon_0=30) 
-    map.drawcoastlines(linewidth=1)
-    map.drawmapboundary(fill_color='aqua')
-    # draw lat/lon grid lines every 30 degrees.
-    #map.drawmeridians(np.arange(0,360,30))
-    #map.drawparallels(np.arange(-90,90,30))
-    logger.info('basemap is prepared')
-  except Exception as e:
-    logger.exception('failed to set up basemap %s' % e)
-    raise
+  try: 
+   # get the path of the file. It can be found in the repo data directory.
+   
+    ds_signal = Dataset(signal)
+    ds_lagree = Dataset(low_agreement_mask)
+    ds_hagree = Dataset(high_agreement_mask)
+
+    var_signal = np.squeeze(ds_signal.variables[variable])
+    mask_l = np.squeeze(ds_lagree.variables[variable])
+    mask_h = np.squeeze(ds_hagree.variables[variable])
+
+    logger.info('data loaded')
+    
+    lats = np.squeeze(ds_signal.variables['lat'])
+    lons = np.squeeze(ds_signal.variables['lon'])
+
+    logger.info('lat long loaded')
+
+    minval = round(np.nanmin(var_signal))
+    maxval = round(np.nanmax(var_signal)+.5)
+
+    limit = np.max(np.fabs([minval , maxval ]))
+    levels = np.linspace(limit *-1 , limit, num=255, endpoint=True)
+    logger.info('limit and levels for colorbar done: %s ' % (limit ))
+    
+    logger.info('prepared data for plotting')
+  except Exception as e: 
+    logger.error('failed to get data for plotting: %s' % e) 
+
+  try:
+    fig = plt.figure(figsize=(20,10), dpi=600, facecolor='w', edgecolor='k') 
+    
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    ax.coastlines()
+
+    cs = plt.contourf(lons, lats, var_signal, 60, transform=ccrs.PlateCarree(), cmap=cmap, levels=levels)
+    cl = plt.contourf(lons, lats, mask_l, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['////']) # plt.get_cmap(
+    ch = plt.contourf(lons, lats, mask_h, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['....'])
+
+    plt.clim(minval,maxval)
+    
+    if title == None: 
+      plt.title('%s with Agreement' % variable)
+    else: 
+      plt.title(title)
+      
+    plt.colorbar(cs) 
+
+    plt.annotate('// = low model ensemble agreement', (0,0), (0, -10), xycoords='axes fraction', textcoords='offset points', va='top')
+    plt.annotate('..  = high model ensemble agreement', (0,0), (0, -20), xycoords='axes fraction', textcoords='offset points', va='top')
 
 
+    graphic = 'modelAgreement.png'
 
-  f = Dataset(signal, 'r')
-  mh = Dataset(highagreement, 'r')
-  ml = Dataset(lowagreement,'r')
-
-  var = 'variable'
-
-  lats = f.variables['lat'][:]
-  lons = f.variables['lon']
-  signal = np.squeeze(f.variables[variable])
-  mask_h = np.squeeze(mh.variables[variable])
-  mask_l = np.squeeze(ml.variables[variable])
-  #CONVERT LON/LAT TO X/Y MAP COORDINATES
-  lons, lats = np.meshgrid(lons, lats)
-  xpts,ypts = map(lons, lats)
-
-  # # get rid of your Nulls
-
-  mask_l[mask_l==0]=np.nan
-  mask_h[mask_h==0]=np.nan
-
-  #Cflx[Cflx==0]=np.nan # is setting 0 to nan 
-
-  #MIN/MAX C flux
-  minval=np.nanmin(signal) # 
-  maxval=np.nanmax(signal) # The maximum value of an array along a given axis, ignoring any NaN
-  
-  level = round((maxval-minval)/255,1)
-  # print minval , maxval
-
-  # contour data over the map.
-  cs = map.contourf(xpts,ypts, signal, cmap=cmap, levels=np.arange(int(minval), int(maxval), level)) # GnBu seimic winter_r
-  cl = map.contourf(xpts,ypts, mask_l, colors='none', hatches=['////']) # plt.get_cmap(
-  ch = map.contourf(xpts,ypts, mask_h, colors='none', hatches=['....'])
-
-  plt.clim(minval,maxval)
-  plt.title('%s with Agreement' % var)
-  plt.colorbar(cs) 
-
-  plt.annotate('// = low model ensemble agreement', (0,0), (0, -10), xycoords='axes fraction', textcoords='offset points', va='top')
-  plt.annotate('.  = high model ensemble agreement', (0,0), (0, -20), xycoords='axes fraction', textcoords='offset points', va='top')
-
-  graphic = 'modelAgreement.png'
-
-  plt.save(graphic)
+    fig.savefig(graphic)
+    logger.info('Plot created and figure saved')
+  except Exception as e: 
+    logger.error(' failed to plot graphic: %s ' % e)
 
   return graphic
+
+  # 
+  # # from mpl_toolkits.basemap import Basemap
+  # # import matplotlib.pyplot as plt
+  
+  # try: 
+  #   fig = plt.figure(figsize=(20,10), dpi=80, facecolor='w', edgecolor='k') # settings of the graphic
+
+  #   map = Basemap(projection='mill',lon_0=30) 
+  #   map.drawcoastlines(linewidth=1)
+  #   map.drawmapboundary(fill_color='aqua')
+  #   # draw lat/lon grid lines every 30 degrees.
+  #   #map.drawmeridians(np.arange(0,360,30))
+  #   #map.drawparallels(np.arange(-90,90,30))
+  #   logger.info('basemap is prepared')
+  # except Exception as e:
+  #   logger.exception('failed to set up basemap %s' % e)
+  #   raise
+
+
+
+  # f = Dataset(signal, 'r')
+  # mh = Dataset(highagreement, 'r')
+  # ml = Dataset(lowagreement,'r')
+
+  # var = 'variable'
+
+  # lats = f.variables['lat'][:]
+  # lons = f.variables['lon']
+  # signal = np.squeeze(f.variables[variable])
+  # mask_h = np.squeeze(mh.variables[variable])
+  # mask_l = np.squeeze(ml.variables[variable])
+  # #CONVERT LON/LAT TO X/Y MAP COORDINATES
+  # lons, lats = np.meshgrid(lons, lats)
+  # xpts,ypts = map(lons, lats)
+
+  # # # get rid of your Nulls
+
+  # mask_l[mask_l==0]=np.nan
+  # mask_h[mask_h==0]=np.nan
+
+  # #Cflx[Cflx==0]=np.nan # is setting 0 to nan 
+
+  # #MIN/MAX C flux
+  # minval=np.nanmin(signal) # 
+  # maxval=np.nanmax(signal) # The maximum value of an array along a given axis, ignoring any NaN
+  
+  # level = round((maxval-minval)/255,1)
+  # # print minval , maxval
+
+  # # contour data over the map.
+  # cs = map.contourf(xpts,ypts, signal, cmap=cmap, levels=np.arange(int(minval), int(maxval), level)) # GnBu seimic winter_r
+  # cl = map.contourf(xpts,ypts, mask_l, colors='none', hatches=['////']) # plt.get_cmap(
+  # ch = map.contourf(xpts,ypts, mask_h, colors='none', hatches=['....'])
+
+  # plt.clim(minval,maxval)
+  # plt.title('%s with Agreement' % var)
+  # plt.colorbar(cs) 
+
+  # plt.annotate('// = low model ensemble agreement', (0,0), (0, -10), xycoords='axes fraction', textcoords='offset points', va='top')
+  # plt.annotate('.  = high model ensemble agreement', (0,0), (0, -20), xycoords='axes fraction', textcoords='offset points', va='top')
+
+  # graphic = 'modelAgreement.png'
+
+  # plt.save(graphic)
+
+  # return graphic
 
   
   
