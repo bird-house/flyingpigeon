@@ -218,6 +218,9 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
     mask_l = np.squeeze(ds_lagree.variables[variable])
     mask_h = np.squeeze(ds_hagree.variables[variable])
 
+    mask_l[mask_l==0]=np.nan
+    mask_h[mask_h==0]=np.nan
+
     logger.info('data loaded')
     
     lats = np.squeeze(ds_signal.variables['lat'])
@@ -246,7 +249,7 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
     cl = plt.contourf(lons, lats, mask_l, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['////']) # plt.get_cmap(
     ch = plt.contourf(lons, lats, mask_h, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['....'])
 
-    plt.clim(minval,maxval)
+    # plt.clim(minval,maxval)
     
     if title == None: 
       plt.title('%s with Agreement' % variable)
