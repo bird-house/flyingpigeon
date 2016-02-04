@@ -33,7 +33,7 @@ class EnsembleRobustnessProcess(WPSProcess):
           title="Start Year",
           abstract="Beginn of the analysed period (e.g 1971; if not set, the first consistend year of the ensemble will be taken)",
           type=type(1950),
-          #default='1950',
+          default='1971',
           minOccurs=0,
           maxOccurs=1,
           #allowedValues=range(1900,2200)
@@ -44,7 +44,7 @@ class EnsembleRobustnessProcess(WPSProcess):
           title="End Year",
           abstract="End of the analysed period (e.g. 2050 if not set, the last consistend year of the ensemble will be taken)",
           type=type(2050),
-          #default='1950',
+          default='2005',
           minOccurs=0,
           maxOccurs=1,
           #allowedValues=range(1900,2200)
@@ -88,13 +88,13 @@ class EnsembleRobustnessProcess(WPSProcess):
             asReference=True,
             ) 
 
-        # self.output_graphic = self.addComplexOutput(
-        #     identifier="output_graphic",
-        #     title="Graphic",
-        #     abstract="PNG graphic file showing the signal difference with high and low ensemble agreement marked out",
-        #     formats=[{"mimeType":"image/png"}],
-        #     asReference=True,
-        #     )  
+        self.output_graphic = self.addComplexOutput(
+            identifier="output_graphic",
+            title="Graphic",
+            abstract="PNG graphic file showing the signal difference with high and low ensemble agreement marked out",
+            formats=[{"mimeType":"image/png"}],
+            asReference=True,
+            )  
 
     def execute(self):
       self.status.set('starting uncertainty process', 0)
@@ -106,11 +106,11 @@ class EnsembleRobustnessProcess(WPSProcess):
 
       logging.debug('type of argument %s %s ' % (type(start), start))
       
-      signal, low_agreement_mask, high_agreement_mask = erob.worker(resource=ncfiles, start=start, end=end, timeslice=timeslice)
+      signal, low_agreement_mask, high_agreement_mask , graphic = erob.worker(resource=ncfiles, start=start, end=end, timeslice=timeslice)
       
       self.output_signal.setValue( signal )
       self.output_high.setValue( high_agreement_mask )
       self.output_low.setValue( low_agreement_mask )
-      # self.output_graphic.setValue( graphic )
+      self.output_graphic.setValue( graphic )
       
       self.status.set('uncertainty process done', 100)

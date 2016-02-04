@@ -24,10 +24,11 @@ def worker(resource=[], start=None, end=None, timeslice=20 ):
   # except Exception as e:
   #   logger.error('failed to validate arguments: %s' % e )
   
-  start1 = start
-  start2 = start + timeslice - 1 
-  end1 = end - timeslice + 1
-  end2 = end
+  start1 = int(start)
+  start2 = start1 + int(timeslice) - 1 
+  
+  end2 = int(end)
+  end1 = end2 - int(timeslice) + 1
 
   from cdo import Cdo
   cdo = Cdo()
@@ -56,7 +57,7 @@ def worker(resource=[], start=None, end=None, timeslice=20 ):
     selyearend = cdo.selyear('%s/%s' % (end1,end2), input = nc_ensmean, output = 'selyearend.nc' )
     meanyearst = cdo.timmean(input = selyearstart, output= 'meanyearst.nc')
     meanyearend = cdo.timmean(input = selyearend, output= 'meanyearend.nc')
-    signal = cdo.sub(input=[meanyearst, meanyearend], output = 'signal.nc')
+    signal = cdo.sub(input=[meanyearend, meanyearst], output = 'signal.nc')
     logger.info('Signal calculation done')
   except Exception as e:
     logger.exception('calculation of signal failed')
@@ -80,15 +81,15 @@ def worker(resource=[], start=None, end=None, timeslice=20 ):
     logger.exception('calculation ofrobustness mask failed')
     raise 
   
-  # try: 
-  #   from flyingpigeon.visualisation import map_ensembleRobustness
-  #   from flyingpigeon.utils import get_variable
-  #   variable = get_variable(signal)
-  #   graphic = map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, 
-  #             variable=variable, 
-  #             cmap='seismic', 
-  #             title='Change of %s %s-%s to %s-%s' % (variable, start1, start2, end1, end2))
-  # except Exception as e:
-  #   logger.error('graphic generation failed: %s ' % e )
+  try: 
+    from flyingpigeon.visualisation import map_ensembleRobustness
+    from flyingpigeon.utils import get_variable
+    variable = get_variable(signal)
+    graphic = map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, 
+              variable=variable, 
+              cmap='seismic', 
+              title='Change of %s %s-%s to %s-%s' % (variable, start1, start2, end1, end2))
+  except Exception as e:
+    logger.error('graphic generation failed: %s ' % e )
 
-  return signal , low_agreement_mask , high_agreement_mask #, graphic
+  return signal , low_agreement_mask , high_agreement_mask , graphic
