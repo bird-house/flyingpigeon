@@ -218,8 +218,8 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
     mask_l = np.squeeze(ds_lagree.variables[variable])
     mask_h = np.squeeze(ds_hagree.variables[variable])
 
-    mask_l[mask_l==0]=np.nan
-    mask_h[mask_h==0]=np.nan
+    mask_l[mask_l==1]=np.nan
+    mask_h[mask_h==1]=np.nan
 
     logger.info('data loaded')
     
@@ -246,8 +246,8 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
     ax.coastlines()
 
     cs = plt.contourf(lons, lats, var_signal, 60, transform=ccrs.PlateCarree(), cmap=cmap, levels=levels)
-    cl = plt.contourf(lons, lats, mask_l, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['////']) # plt.get_cmap(
-    ch = plt.contourf(lons, lats, mask_h, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['....'])
+    cl = plt.contourf(lons, lats, mask_l, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['///']) # plt.get_cmap(
+    ch = plt.contourf(lons, lats, mask_h, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['...'])
 
     # plt.clim(minval,maxval)
     
