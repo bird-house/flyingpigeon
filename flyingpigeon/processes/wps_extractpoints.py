@@ -104,7 +104,7 @@ class ExtractPointsProcess(WPSProcess):
     
     csvfiles = []
     
-    self.status.set('coordinates : %s ' % ( coords), 7)
+    self.status.set('coordinates : %s ' % ( coords), 30)
 
     for key in nc_exp:
       
@@ -119,13 +119,15 @@ class ExtractPointsProcess(WPSProcess):
 
       if  (self.type_nc.getValue() == True ): 
         try:
-          self.status.set('processing experiment: %s '  % (key) , 15)
+          self.status.set('processing experiment: {0}'.format(key), 40)
           # (fp_csv, nc_temp) = tempfile.mkstemp(dir=".", suffix=".nc") 
           # rd = ocgis.RequestDataset(uri=nc)
           ops = ocgis.OcgOperations(dataset=rd, geom=geom, prefix=key, select_nearest=False, output_format='nc', add_auxiliary_files=False)
           ret = ops.execute()
-        except Exception as e: 
-          self.status.set('failed for experiment : %s  \n %s '  % (key, e ) , 15)
+        except Exception as e:
+          msg = 'failed for experiment: {0}'.format(key) 
+          logging.exception(msg)
+          self.status.set(msg, 40)
 
       if  (self.type_csv.getValue() == True ): 
         try: 
@@ -133,48 +135,50 @@ class ExtractPointsProcess(WPSProcess):
           
           # csvout_file = tempfile.mktemp(suffix='.csv')
           
-          self.show_status('processing files: %s, CSVfile :'  % (key) , 15)
+          self.status.set('processing files: %s, CSVfile :'  % (key) , 50)
           coordsFrame = DataFrame()
           coordsFrame.index.name = 'date'
           
           for p in coords :
-            self.show_status('processing point : %s'  % (p) , 20)
+            self.status.set('processing point : %s'  % (p) , 60)
             p = p.split(',')
-            self.status.set('splited x and y coord : %s'  % (p) , 20)
+            self.status.set('splited x and y coord : %s'  % (p) , 60)
             point = Point(float(p[0]), float(p[1]))
             
             #rd = ocgis.RequestDataset(uri=nc)
             ops = ocgis.OcgOperations(dataset=rd, geom=point, select_nearest=True, output_format='numpy')
             ret = ops.execute()
             
-            self.status.set('file : %s.csv successfully ocgis procesed.'  % ( key ) , 15)
+            self.status.set('file : %s.csv successfully ocgis procesed.'  % ( key ) , 70)
             
             # pandas conversion 
             field_dict = ret[1]
             field  = field_dict[rd.variable]
-            self.show_status('values in ocgis array', 15)
+            self.status.set('values in ocgis array', 75)
             var = field.variables[rd.variable]
             
             var_value = np.squeeze(var.value.data)
-            self.show_status('values in numpy array', 15)
+            self.status.set('values in numpy array', 80)
             col_name = 'Point_%s_%s' % (point.x , point.y)
             pointFrame = DataFrame(columns = [col_name] , index = field.temporal.value_datetime )
             
-            self.status.set('pandas Dataframe initialised ', 15)
+            self.status.set('pandas Dataframe initialised ', 85)
             
             pointFrame[col_name] = var_value
             pointFrame.index.name = 'date'
             coordsFrame = pd.concat([coordsFrame,pointFrame], axis=1, ignore_index=False) #coordsFrame.append(pointFrame)
           coordsFrame.to_csv(csv_temp)
           os.rename(csv_temp , os.path.join(out_dir, key+'.csv')) 
-          self.status.set('file : %s successfully pandas procesed: '  % (key+'.csv') , 15)
+          self.status.set('file : %s successfully pandas procesed: '  % (key+'.csv') , 90)
             
-        except Exception as e: 
-          self.status.set('failed for file : %s  \n %s '  % (key+'.csv', e ) , 15)
+        except Exception as e:
+          msg = 'failed for file: {0}.csv'.format(key)
+          logging.exception(msg)  
+          self.status.set(msg, 90)
     
     if (len(os.listdir(out_dir)) > 0):
       tar.add(out_dir, arcname = out_dir.replace(os.curdir , ""))
-      self.status.set('ocgis folder tared with : %i '  % (len(os.listdir(out_dir))) , 15)
+      self.status.set('ocgis folder tared with : %i '  % (len(os.listdir(out_dir))) , 95)
     else:
       raise Exception('ocgis folder contains NO files!')
       
