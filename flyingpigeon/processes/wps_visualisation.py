@@ -30,7 +30,7 @@ class VisualisationProcess(WPSProcess):
         self.variableIn = self.addLiteralInput(
             identifier="variable",
             title="Variable",
-            abstract="Variable to be expected in the input files",
+            abstract="Variable to be expected in the input files (Variable will be detected if not set, )",
             default=None,
             type=type(''),
             minOccurs=0,

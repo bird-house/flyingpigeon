@@ -61,6 +61,17 @@ class EnsembleRobustnessProcess(WPSProcess):
           #allowedValues=range(1,50)
           )
         
+        
+        self.variableIn = self.addLiteralInput(
+            identifier="variable",
+            title="Variable",
+            abstract="Variable to be expected in the input files (Variable will be detected if not set, )",
+            default=None,
+            type=type(''),
+            minOccurs=0,
+            maxOccurs=1,
+            )
+        
         # output 
         
         self.output_high = self.addComplexOutput(
@@ -103,10 +114,11 @@ class EnsembleRobustnessProcess(WPSProcess):
       start = self.start.getValue()
       end = self.end.getValue()
       timeslice = self.timeslice.getValue()
-
+      variable = self.variableIn.getValue()
+      
       logging.debug('type of argument %s %s ' % (type(start), start))
       
-      signal, low_agreement_mask, high_agreement_mask , graphic = erob.worker(resource=ncfiles, start=start, end=end, timeslice=timeslice)
+      signal, low_agreement_mask, high_agreement_mask, graphic  = erob.worker(resource=ncfiles, start=start, end=end, timeslice=timeslice, variable=variable)#
       
       self.output_signal.setValue( signal )
       self.output_high.setValue( high_agreement_mask )

@@ -1,7 +1,7 @@
 import logging
 logger = logging.getLogger(__name__)
 
-def worker(resource=[], start=None, end=None, timeslice=20 ):
+def worker(resource=[], start=None, end=None, timeslice=20, variable=None ):
   """retuns the result
   
   :param resource: list of pathes to netCDF files
@@ -84,7 +84,12 @@ def worker(resource=[], start=None, end=None, timeslice=20 ):
   try: 
     from flyingpigeon.visualisation import map_ensembleRobustness
     from flyingpigeon.utils import get_variable
-    variable = get_variable(signal)
+    
+    if variable == None: 
+      variable = get_variable(signal)
+    
+    logger.info('variable to be plotted: %s' % variable)
+    
     graphic = map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, 
               variable=variable, 
               cmap='seismic', 
@@ -92,4 +97,4 @@ def worker(resource=[], start=None, end=None, timeslice=20 ):
   except Exception as e:
     logger.error('graphic generation failed: %s ' % e )
 
-  return signal , low_agreement_mask , high_agreement_mask , graphic
+  return signal, low_agreement_mask, high_agreement_mask, graphic
