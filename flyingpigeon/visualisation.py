@@ -11,6 +11,19 @@ from flyingpigeon import utils
 import logging
 logger = logging.getLogger(__name__)
 
+from matplotlib.colors import Normalize
+class MidpointNormalize(Normalize):
+  def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
+    self.midpoint = midpoint
+    Normalize.__init__(self, vmin, vmax, clip)
+
+  def __call__(self, value, clip=None):
+    # I'm ignoring masked values and all kinds of edge cases to make a
+    # simple example...
+    x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
+    return np.ma.masked_array(np.interp(value, x, y))
+
+
 def spaghetti(resouces, variable=None, title=None, dir_out=None):
   """
   retunes an html file containing the appropriate spaghetti plot. 
@@ -249,7 +262,9 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
     ax = plt.axes(projection=ccrs.PlateCarree())
     ax.coastlines()
 
-    cs = plt.contourf(lons, lats, var_signal, 60, transform=ccrs.PlateCarree(), cmap=cmap, levels=levels)
+    norm = MidpointNormalize(midpoint=0)
+
+    cs = plt.contourf(lons, lats, var_signal, 60, norm=norm, transform=ccrs.PlateCarree(), cmap=cmap, interpolation='none') # , levels=levels)
     cl = plt.contourf(lons, lats, mask_l, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['//']) # plt.get_cmap(
     ch = plt.contourf(lons, lats, mask_h, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['.'])
 

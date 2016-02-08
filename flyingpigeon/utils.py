@@ -183,17 +183,7 @@ def get_timestamps(nc_file):
     :param nc_file: NetCDF file
     :returns tuple: (from_timestamp, to_timestamp)
     """
-    
-    #import validators as val
-    
-    ## if val.url(nc_file) == True: 
-    ##   from ocgis import RequestDataset
-    ##   rd = RequestDataset(nc_file)
-    ##   dct = rd.inspect_as_dct()
-      
-    ##   start = dct['derived']['Start Date'].split(' ')[0]
-    ##   end = dct['derived']['End Date'].split(' ')[0]
-    ## else:
+
     start = get_time(nc_file)[0]
     end = get_time(nc_file)[-1]
     
@@ -215,15 +205,6 @@ def get_time(nc_file):
 
     timestamps = num2date(time[:], time.units, time.calendar)
      
-    #calendar = time_list.calendar
-    #units = time_list.units
-    #from datetime import datetime, timedelta
-    #if units == 'days since 1949-12-01 00:00:00':
-    #  reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
-    #else: 
-    #  logger.error('time units are not CMIP conform')
-    #ts = [reftime + timedelta(days= t) for t in time_list]
-    
     return timestamps
   
 

@@ -8,7 +8,6 @@ def worker(resource=[], start=None, end=None, timeslice=20, variable=None ):
   """
   from cdo import Cdo
   cdo = Cdo()
-  
   cdo.forceOutput = True 
   
   try: 
@@ -23,28 +22,47 @@ def worker(resource=[], start=None, end=None, timeslice=20, variable=None ):
   except Exception as e: 
     logger.error('failed to sort and merge the input files')
   
-  #validation of arguments
-  # from flyingpigeon import utils 
-  # try:
-  #   # 
-  #   yr_min = set()
-  #   yr_max = set()
-  #   ensemble = utils.sort_by_filename(resource, historical_concatination=True)
-  #   if start == None or end == None:
-  #     for key in ensemble.keys():
-  #       yr_min.update(key.split('_')[-1].split('-')[0][0:4])
-  #       yr_max.update(key.split('_')[-1].split('-')[1][0:4])
-  #     start = int(max(yr_min))
-  #     end = int(min(yr_max))
-  #   logger.info('start and end set to %s - %s '% (start, end))            
-  # except Exception as e:
-  #   logger.error('failed to validate arguments: %s' % e )
-  
-  start1 = int(start)
-  start2 = start1 + int(timeslice) - 1 
-  
-  end2 = int(end)
-  end1 = end2 - int(timeslice) + 1
+
+  # configure reference and compare period
+  try: 
+    from flyingpigeon.utils import get_time
+
+    if start == None:
+      st_set = set()
+      en_set = set()
+      for f in files: 
+        times = get_time(f)
+        st_set.update([times[0].year])
+        if end == None: 
+          en_set.update([times[-1].year])
+      start = max(st_set)
+      if end == None:
+        end = min(en_set)
+    logger.info('Start and End: %s - %s ' % (start, end))      
+  except Exception as e:
+    logger.error('failed to detect start and end times of the ensemble: %s' % e)
+
+
+  # set the periodes: 
+  try: 
+    start = int(start)
+    end = int(end)
+
+    if timeslice == None: 
+      timeslice = int((end - start) / 3)
+      if timeslice == 0: 
+        timeslice = 1
+    else: 
+      timeslice = int(timeslice)
+
+    start1 = start
+    start2 = start1 + timeslice - 1 
+    
+    end1 = end - timeslice + 1
+    end2 = end
+
+  except Exception as e:
+    logger.error('failed to set the periodes: %s' % e)
 
   
   try: 
@@ -63,7 +81,7 @@ def worker(resource=[], start=None, end=None, timeslice=20, variable=None ):
     logger.exception('ensemble std or failed')
     raise
   
-  # get the get the signal as difference from the beginning (mean over 10 years) and end  (mean over 10 years) of the period:
+  # get the get the signal as difference from the beginning (first years) and end period (last years), :
   try:
     selyearstart = cdo.selyear('%s/%s' % (start1,start2), input = nc_ensmean, output = 'selyearstart.nc' ) 
     selyearend = cdo.selyear('%s/%s' % (end1,end2), input = nc_ensmean, output = 'selyearend.nc' )
@@ -90,7 +108,7 @@ def worker(resource=[], start=None, end=None, timeslice=20, variable=None ):
     #ratio = cdo.div(input=[ims, signal], output='ratio.nc')
     logger.info('high and low mask done')
   except Exception as e:
-    logger.exception('calculation ofrobustness mask failed')
+    logger.exception('calculation of robustness mask failed')
     raise 
   
   try: 
@@ -105,7 +123,7 @@ def worker(resource=[], start=None, end=None, timeslice=20, variable=None ):
     graphic = map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, 
               variable=variable, 
               cmap='seismic', 
-              title='Change of %s %s-%s to %s-%s' % (variable, start1, start2, end1, end2))
+              title='Change of %s (difference of mean %s-%s to %s-%s)' % (variable, end1, end2, start1, start2))
   except Exception as e:
     logger.error('graphic generation failed: %s ' % e )
 
