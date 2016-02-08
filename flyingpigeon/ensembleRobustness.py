@@ -1,11 +1,27 @@
 import logging
 logger = logging.getLogger(__name__)
 
-def worker(resource=[], start=None, end=None, timeslice=20 ):
+def worker(resource=[], start=None, end=None, timeslice=20, variable=None ):
   """retuns the result
   
   :param resource: list of pathes to netCDF files
   """
+  from cdo import Cdo
+  cdo = Cdo()
+  
+  cdo.forceOutput = True 
+  
+  try: 
+    # preparing the resource
+    from flyingpigeon.utils import sort_by_filename
+#    from flyingpigeon.ocgis_module import call
+    
+    file_dic = sort_by_filename(resource)
+    files = []
+    for key in file_dic.keys(): 
+      files.append(cdo.mergetime(input=file_dic[key], output=key+'.nc' ))
+  except Exception as e: 
+    logger.error('failed to sort and merge the input files')
   
   #validation of arguments
   # from flyingpigeon import utils 
@@ -30,14 +46,10 @@ def worker(resource=[], start=None, end=None, timeslice=20 ):
   end2 = int(end)
   end1 = end2 - int(timeslice) + 1
 
-  from cdo import Cdo
-  cdo = Cdo()
   
-  cdo.forceOutput = True 
-
   try: 
     # ensemble mean 
-    nc_ensmean = cdo.ensmean(input = resource , output = 'nc_ensmean.nc')
+    nc_ensmean = cdo.ensmean(input = files , output = 'nc_ensmean.nc')
     logger.info('ensemble mean calculation done')
   except Exception as e: 
     logger.exception('ensemble mean failed')
@@ -45,7 +57,7 @@ def worker(resource=[], start=None, end=None, timeslice=20 ):
   
   try: 
     # ensemble std 
-    nc_ensstd  = cdo.ensstd(input = resource , output = 'nc_ensstd.nc')
+    nc_ensstd  = cdo.ensstd(input = files , output = 'nc_ensstd.nc')
     logger.info('ensemble std and calculation done')
   except Exception as e: 
     logger.exception('ensemble std or failed')
@@ -84,7 +96,12 @@ def worker(resource=[], start=None, end=None, timeslice=20 ):
   try: 
     from flyingpigeon.visualisation import map_ensembleRobustness
     from flyingpigeon.utils import get_variable
-    variable = get_variable(signal)
+    
+    if variable == None: 
+      variable = get_variable(signal)
+    
+    logger.info('variable to be plotted: %s' % variable)
+    
     graphic = map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, 
               variable=variable, 
               cmap='seismic', 
@@ -92,4 +109,4 @@ def worker(resource=[], start=None, end=None, timeslice=20 ):
   except Exception as e:
     logger.error('graphic generation failed: %s ' % e )
 
-  return signal , low_agreement_mask , high_agreement_mask , graphic
+  return signal, low_agreement_mask, high_agreement_mask, graphic
