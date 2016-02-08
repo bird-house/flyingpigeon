@@ -33,7 +33,7 @@ class EnsembleRobustnessProcess(WPSProcess):
           title="Start Year",
           abstract="Beginn of the analysed period (e.g 1971; if not set, the first consistend year of the ensemble will be taken)",
           type=type(1950),
-          default='1971',
+          #default=None,
           minOccurs=0,
           maxOccurs=1,
           #allowedValues=range(1900,2200)
@@ -44,10 +44,9 @@ class EnsembleRobustnessProcess(WPSProcess):
           title="End Year",
           abstract="End of the analysed period (e.g. 2050 if not set, the last consistend year of the ensemble will be taken)",
           type=type(2050),
-          default='2005',
+          #default=None,
           minOccurs=0,
           maxOccurs=1,
-          #allowedValues=range(1900,2200)
           )
         
         self.timeslice = self.addLiteralInput(
@@ -55,7 +54,7 @@ class EnsembleRobustnessProcess(WPSProcess):
           title="Time slice",
           abstract="Time slice (in years) for robustness reference (default=10))",
           type=type(10),
-          default=10,
+          # default=10,
           minOccurs=0,
           maxOccurs=1,
           #allowedValues=range(1,50)
@@ -63,14 +62,14 @@ class EnsembleRobustnessProcess(WPSProcess):
         
         
         self.variableIn = self.addLiteralInput(
-            identifier="variable",
-            title="Variable",
-            abstract="Variable to be expected in the input files (Variable will be detected if not set, )",
-            default=None,
-            type=type(''),
-            minOccurs=0,
-            maxOccurs=1,
-            )
+          identifier="variable",
+          title="Variable",
+          abstract="Variable to be expected in the input files (Variable will be detected if not set, )",
+          #default=None,
+          type=type(''),
+          minOccurs=0,
+          maxOccurs=1,
+          )
         
         # output 
         
@@ -115,11 +114,14 @@ class EnsembleRobustnessProcess(WPSProcess):
       end = self.end.getValue()
       timeslice = self.timeslice.getValue()
       variable = self.variableIn.getValue()
+
+      self.status.set('arguments readed', 5)    
       
-      logging.debug('type of argument %s %s ' % (type(start), start))
-      
+
       signal, low_agreement_mask, high_agreement_mask, graphic  = erob.worker(resource=ncfiles, start=start, end=end, timeslice=timeslice, variable=variable)#
       
+      self.status.set('process worker done', 95)
+
       self.output_signal.setValue( signal )
       self.output_high.setValue( high_agreement_mask )
       self.output_low.setValue( low_agreement_mask )
