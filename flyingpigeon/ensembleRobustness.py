@@ -1,7 +1,7 @@
 import logging
 logger = logging.getLogger(__name__)
 
-def worker(resource=[], start=None, end=None, timeslice=20, variable=None, title=None ):
+def worker(resource=[], start=None, end=None, timeslice=20, variable=None, title=None, cmap='seismic' ):
   """retuns the result
   
   :param resource: list of pathes to netCDF files
@@ -10,8 +10,9 @@ def worker(resource=[], start=None, end=None, timeslice=20, variable=None, title
   :param timeslice: period lenght for mean calculation of reference and comparison period
   :param variable: variable name to be detected in the netCDF file. If not set (not recommended) the variable name will be detected
   :param title: str to be used as title for the signal mal
+  :param cmap: define the color sceem for signal map plotting 
 
-  =None, end=None, timeslice=20, variable=None, title=None 
+  :return: signal.nc, low_agreement_mask.nc, high_agreement_mask.nc, graphic.png
   """
   from cdo import Cdo
   cdo = Cdo()
@@ -124,14 +125,17 @@ def worker(resource=[], start=None, end=None, timeslice=20, variable=None, title
     
     if variable == None: 
       variable = get_variable(signal)
+
+    if title == None: 
+      title='Change of %s (difference of mean %s-%s to %s-%s)' % (variable, end1, end2, start1, start2)  
     
     logger.info('variable to be plotted: %s' % variable)
     
     graphic = map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, 
               variable=variable, 
-              cmap='seismic', 
-              title='Change of %s (difference of mean %s-%s to %s-%s)' % (variable, end1, end2, start1, start2))
+              cmap=cmap,
+              title = title)
+
   except Exception as e:
     logger.error('graphic generation failed: %s ' % e )
-
   return signal, low_agreement_mask, high_agreement_mask, graphic

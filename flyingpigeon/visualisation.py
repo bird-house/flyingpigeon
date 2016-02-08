@@ -246,9 +246,9 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
     minval = round(np.nanmin(var_signal))
     maxval = round(np.nanmax(var_signal)+.5)
 
-    limit = np.max(np.fabs([minval , maxval ]))
-    levels = np.linspace(limit *-1 , limit, num=255, endpoint=True)
-    logger.info('limit and levels for colorbar done: %s ' % (limit ))
+    # limit = np.max(np.fabs([minval , maxval ]))
+    # levels = np.linspace(limit *-1 , limit, num=255, endpoint=True)
+    # logger.info('limit and levels for colorbar done: %s ' % (limit ))
     
     logger.info('prepared data for plotting')
   except Exception as e: 
@@ -266,7 +266,7 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
     cl = plt.contourf(lons, lats, mask_l, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['//']) # plt.get_cmap(
     ch = plt.contourf(lons, lats, mask_h, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['.'])
 
-    # plt.clim(minval,maxval)
+    plt.clim(minval,maxval)
     
     if title == None: 
       plt.title('%s with Agreement' % variable)
