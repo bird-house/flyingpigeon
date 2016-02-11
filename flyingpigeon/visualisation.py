@@ -4,8 +4,6 @@ from netCDF4 import Dataset
 from datetime import datetime, date 
 import numpy as np
 
-from bokeh.plotting import figure, output_file, save
-
 from flyingpigeon import utils
 
 import logging
@@ -29,8 +27,13 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
   :param resouces: list of files containing the same variable 
   :param variable: variable to be visualised, if None (default) variable will be detected
   :param title: sting to be used as title
+  :param dir_out: directory for output files
   """
-  
+
+  import matplotlib.pyplot as plt
+
+  fig = plt.figure(figsize=(20,10), dpi=600, facecolor='w', edgecolor='k')
+
   logger.debug('Start visualisation spagetti plot')
   
   # === prepare invironment
@@ -45,48 +48,54 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
 
   # === prepare bokeh
   try: 
-    o1 , output_html = mkstemp(dir=dir_out, suffix='.html')
+    o1 , output_png = mkstemp(dir=dir_out, suffix='.png')
     
     #output_file(output_html)
     #bplt.save()
     
-    fig = figure(x_axis_type = "datetime", tools="pan,wheel_zoom,box_zoom,reset,previewsave")
-    logger.debug('output_file.html created')
-    output_file(output_html, title=variable, autosave=True,)
+    #fig = figure(x_axis_type = "datetime", tools="pan,wheel_zoom,box_zoom,reset,previewsave")
+    #logger.debug('output_file.html created')
+    #output_file(output_html, title=variable, autosave=True,)
     #bplt.hold()
+    
     for c , nc in enumerate(resouces):
-        # get timestapms
-        try: 
-          dt =  utils.get_time(nc) # [datetime.strptime(elem, '%Y-%m-%d') for elem in strDate[0]]
-          ds=Dataset(nc)
-          data = np.squeeze(ds.variables[variable][:])
-          if len(data.shape) == 3: 
-            meanData = np.mean(data,axis=1)
-            ts = np.mean(meanData,axis=1)
-          else: 
-            ts = data
-          fig.line( dt,ts )
-        except Exception as e:
-          logger.exception('bokeh lineplot failed for %s: %s\n' % (nc, e))
+      # get timestapms
+      try: 
+        d =  utils.get_time(nc) # [datetime.strptime(elem, '%Y-%m-%d') for elem in strDate[0]]
+        
+        dt = [datetime.strptime(str(i), '%Y-%m-%d %H:%M:%S') for i in d ]
+        ds=Dataset(nc)
+        data = np.squeeze(ds.variables[variable][:])
+        if len(data.shape) == 3: 
+          meanData = np.mean(data,axis=1)
+          ts = np.mean(meanData,axis=1)
+        else: 
+          ts = data
+        plt.plot( dt,ts )
+        #fig.line( dt,ts )
+      except Exception as e:
+        logger.exception('bokeh lineplot failed for %s: %s\n' % (nc, e))
 
-        # plot into current figure
-        # , legend= nc 
+      # plot into current figure
+      # , legend= nc 
     
     #fig.legend()[0].orientation = "bottom_left"
     # fig.legend().orientation = "bottom_left"
-    fig.title = title
-    fig.grid# .grid_line_alpha=0.3
+    plt.title(title)
+    plt.grid()# .grid_line_alpha=0.3
 
-    window_size = 30
-    window = np.ones(window_size)/float(window_size)
-    save(fig)
+    #window_size = 30
+    #window = np.ones(window_size)/float(window_size)
+    fig.savefig(output_png)
     #bplt.hold('off')
+    
+    plt.close()
     
     logger.debug('timesseries spagetti plot done for %s with %s lines.'% (variable, c)) 
   except Exception as e:
-    logger.exception('bokeh spagetti plot failed for %s : %s\n' % (variable , e))
+    logger.exception('matplotlib spagetti plot failed for %s : %s\n' % (variable , e))
     raise  
-  return output_html  
+  return output_png 
 
 def uncertainty(resouces , variable=None, title=None, dir_out=None): 
   """
@@ -97,6 +106,8 @@ def uncertainty(resouces , variable=None, title=None, dir_out=None):
   :param title: sting to be used as title
   """
   logger.debug('Start visualisation uncertainty plot')
+
+  from bokeh.plotting import figure, output_file, save
 
   import cdo 
   cdo = cdo.Cdo()
@@ -190,6 +201,8 @@ def uncertainty(resouces , variable=None, title=None, dir_out=None):
     
     
     save(fig)
+
+
     #hold('off')
   
     logger.debug('timesseries uncertainty plot done for %s'% variable) 
@@ -229,8 +242,8 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
     mask_l = np.squeeze(ds_lagree.variables[variable])
     mask_h = np.squeeze(ds_hagree.variables[variable])
 
-    mask_l[mask_l==1]=np.nan
-    mask_h[mask_h==1]=np.nan
+    mask_l[mask_l==0]=np.nan
+    mask_h[mask_h==0]=np.nan
 
     logger.info('data loaded')
     
@@ -262,8 +275,8 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
 
     norm = MidpointNormalize(midpoint=0)
 
-    cs = plt.contourf(lons, lats, var_signal, 60, norm=norm, transform=ccrs.PlateCarree(), cmap=cmap, interpolation='none') # , levels=levels)
-    cl = plt.contourf(lons, lats, mask_l, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['//']) # plt.get_cmap(
+    cs = plt.contourf(lons, lats, var_signal, 60, norm=norm, transform=ccrs.PlateCarree(), cmap=cmap, interpolation='none')
+    cl = plt.contourf(lons, lats, mask_l, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['//']) 
     ch = plt.contourf(lons, lats, mask_h, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['.'])
 
     plt.clim(minval,maxval)
@@ -277,10 +290,14 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
 
     plt.annotate('// = low model ensemble agreement', (0,0), (0, -10), xycoords='axes fraction', textcoords='offset points', va='top')
     plt.annotate('..  = high model ensemble agreement', (0,0), (0, -20), xycoords='axes fraction', textcoords='offset points', va='top')
+    
 
     graphic = 'modelAgreement.png'
 
     fig.savefig(graphic)
+
+    plt.close()
+    
     logger.info('Plot created and figure saved')
   except Exception as e: 
     logger.error(' failed to plot graphic: %s ' % e)

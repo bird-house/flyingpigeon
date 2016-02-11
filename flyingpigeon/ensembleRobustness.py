@@ -103,17 +103,19 @@ def worker(resource=[], start=None, end=None, timeslice=20, variable=None, title
   
   # get the intermodel standard deviation (mean over whole period)
   try:
-    std_selyear = cdo.selyear('%s/%s' % (end1,end2), input=nc_ensstd, output='std_selyear.nc')
-    std = cdo.timmean(input = std_selyear, output = 'std.nc')
+    #std_selyear = cdo.selyear('%s/%s' % (end1,end2), input=nc_ensstd, output='std_selyear.nc')
+    #std = cdo.timmean(input = std_selyear, output = 'std.nc')
+    
+    std = cdo.timmean(input = nc_ensstd, output = 'std.nc')
     std2 = cdo.mulc('2', input = std, output = 'std2.nc')
     logger.info('calculation of internal model std for time period done')
   except Exception as e:
     logger.exception('calculation of internal model std failed') 
     raise
   try:
-    high_agreement_mask = cdo.gt(input=[std2, signal], output= 'large_change_with_high_model_agreement.nc')
-    low_agreement_mask = cdo.lt(input=[std, signal], output= 'small_signal_or_low_agreement_of_models.nc')
-    #ratio = cdo.div(input=[ims, signal], output='ratio.nc')
+    absolut = cdo.abs(input=signal, output='absolut_signal.nc')
+    high_agreement_mask = cdo.gt(input=[absolut,std2],  output= 'large_change_with_high_model_agreement.nc')
+    low_agreement_mask = cdo.lt(input=[absolut,std], output= 'small_signal_or_low_agreement_of_models.nc')
     logger.info('high and low mask done')
   except Exception as e:
     logger.exception('calculation of robustness mask failed')
