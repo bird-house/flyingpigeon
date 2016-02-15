@@ -85,9 +85,12 @@ class ClippingProcess(WPSProcess):
         urls = self.getInputValues(identifier='resource')
         mosaik = self.mosaik.getValue()
         regions = self.region.getValue()
-        dimension_map = literal_eval(self.dimension_map.getValue())
         variable = self.variable.getValue()
-        
+
+        dimension_map = self.dimension_map.getValue()
+        if dimension_map != None: 
+            dimension_map = literal_eval(dimension_map)
+
 
         logging.debug('urls = %s', urls)
         logging.debug('regions = %s', regions)

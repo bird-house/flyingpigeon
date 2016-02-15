@@ -26,14 +26,17 @@ def worker(resource=[], start=None, end=None, timeslice=20,
     file_dic = sort_by_filename(resource, historical_concatination = True)
     logger.info('file names sorted experimets: %s' % len(file_dic.keys()))
   except Exception as e: 
-    logger.error('failed to sort and merge the input files')
+    logger.error('failed to sort the input files')
 
   try:
     mergefiles = []
-    for key in file_dic.keys(): 
-      mergefiles.append(cdo.mergetime(input=file_dic[key], output=key+'_mergetime.nc'))
+    for key in file_dic.keys():
+      if len(file_dic[key]) > 1:
+        mergefiles.append(cdo.mergetime(input=file_dic[key], output=key+'_mergetime.nc'))
+      else:
+        mergefiles.append(file_dic[key][0])
 #      files.append(cdo.selyear('%s/%s' % (start1,end2), input = tmpfile , output =  key+'.nc' )) #python version
-    logger.info('datasets merged')
+    logger.info('datasets merged %s ' % mergefiles)
   except Exception as e: 
     logger.error('seltime and mergetime failed: %s' % e )    
   
