@@ -78,8 +78,8 @@ def worker(resource=[], start=None, end=None, timeslice=20, variable=None, title
     files = []
     for key in file_dic.keys(): 
       tmpfile = ''
-      tmpfile = cdo.mergetime(input=file_dic[key], output=key+'_mergetime.nc'))
-      files.append(cdo.selyear('%s/%s' % (start1,end2), input = tmpfile , output =  key+'_mergetime.nc' ) #python version
+      tmpfile = cdo.mergetime(input=file_dic[key], output=key+'_mergetime.nc')
+      files.append(cdo.selyear('%s/%s' % (start1,end2), input = tmpfile , output =  key+'.nc' )) #python version
 
       logger.info('datasets merged and start end times selected')
   except Exception as e: 
