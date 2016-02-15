@@ -25,6 +25,15 @@ def worker(resource=[], start=None, end=None, timeslice=20, variable=None, title
     file_dic = sort_by_filename(resource)
   except Exception as e: 
     logger.error('failed to sort and merge the input files')
+
+  try:
+    mergefiles = []
+    for key in file_dic.keys(): 
+      mergefiles.append(cdo.mergetime(input=file_dic[key], output=key+'_mergetime.nc'))
+#      files.append(cdo.selyear('%s/%s' % (start1,end2), input = tmpfile , output =  key+'.nc' )) #python version
+      logger.info('datasets merged')
+  except Exception as e: 
+    logger.error('seltime and mergetime failed: %s' % e )    
   
   try: 
     text_src = open('infiles.txt', 'a')
@@ -37,11 +46,10 @@ def worker(resource=[], start=None, end=None, timeslice=20, variable=None, title
   # configure reference and compare period
   try: 
     from flyingpigeon.utils import get_time
-
     if start == None:
       st_set = set()
       en_set = set()
-      for f in files: 
+      for f in mergefiles: 
         times = get_time(f)
         st_set.update([times[0].year])
         if end == None: 
@@ -76,11 +84,8 @@ def worker(resource=[], start=None, end=None, timeslice=20, variable=None, title
 
   try:
     files = []
-    for key in file_dic.keys(): 
-      tmpfile = ''
-      tmpfile = cdo.mergetime(input=file_dic[key], output=key+'_mergetime.nc')
-      files.append(cdo.selyear('%s/%s' % (start1,end2), input = tmpfile , output =  key+'.nc' )) #python version
-
+    for i, mf in enumerate(mergefiles):
+      files.append(cdo.selyear('%s/%s' % (start1,end2), input = mf , output =  'file_%s_.nc' % i )) #python version
       logger.info('datasets merged and start end times selected')
   except Exception as e: 
     logger.error('seltime and mergetime failed: %s' % e )    
