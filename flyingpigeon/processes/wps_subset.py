@@ -40,7 +40,8 @@ class ClippingProcess(WPSProcess):
             maxOccurs=len(countries()),
             allowedValues=countries() #REGION_EUROPE #COUNTRIES # 
             )
-      
+
+
         self.dimension_map = self.addLiteralInput(
             identifier="dimension_map",
             title="Dimension Map",
@@ -48,6 +49,16 @@ class ClippingProcess(WPSProcess):
             type=type(''),
             minOccurs=0,
             maxOccurs=1
+            )
+
+        self.variable = self.addLiteralInput(
+            identifier="variable",
+            title="Variable",
+            abstract="Variable to be expected in the input files (Variable will be detected if not set, )",
+            default=None,
+            type=type(''),
+            minOccurs=0,
+            maxOccurs=1,
             )
 
         self.mosaik = self.addLiteralInput(
@@ -60,7 +71,6 @@ class ClippingProcess(WPSProcess):
             maxOccurs=1,
             )
 
-        
         self.output = self.addComplexOutput(
             title="Subsets",
             abstract="Tar archive containing the netCDF files",
@@ -70,14 +80,19 @@ class ClippingProcess(WPSProcess):
             )
 
     def execute(self):
+        from ast import literal_eval
+
         urls = self.getInputValues(identifier='resource')
         mosaik = self.mosaik.getValue()
         regions = self.region.getValue()
-        dimension_map = self.dimension_map.getValue()
+        dimension_map = literal_eval(self.dimension_map.getValue())
+        variable = self.variable.getValue()
+        
 
         logging.debug('urls = %s', urls)
         logging.debug('regions = %s', regions)
         logging.debug('mosaik = %s', mosaik)
+        logging.debug('dimension_map = %s', dimension_map)
     
         self.status.set('Arguments set for subset process', 0)
 
@@ -88,6 +103,7 @@ class ClippingProcess(WPSProcess):
                 resource = urls,
                 polygons = regions, # self.region.getValue(),
                 mosaik = mosaik,
+                variable = variable, 
                 dir_output = os.path.abspath(os.curdir),
                 dimension_map=dimension_map,
                 )

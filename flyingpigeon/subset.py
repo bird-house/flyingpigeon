@@ -115,8 +115,8 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
           logger.exception(msg)
           raise
     except Exception as e:
-        logger.exception('geom identification failed')
-        raise
+      logger.exception('geom identification failed %s ' % e)
+      raise
   else: 
     try:
       for i, polygon in enumerate(polygons): 
