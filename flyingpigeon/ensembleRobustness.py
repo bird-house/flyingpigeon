@@ -22,7 +22,7 @@ def worker(resource=[], start=None, end=None, timeslice=20, variable=None, title
     # preparing the resource
     from flyingpigeon.utils import sort_by_filename
 #    from flyingpigeon.ocgis_module import call
-    file_dic = sort_by_filename(resource)
+    file_dic = sort_by_filename(resource, historical_concatination = True)
   except Exception as e: 
     logger.error('failed to sort and merge the input files')
 
@@ -31,7 +31,7 @@ def worker(resource=[], start=None, end=None, timeslice=20, variable=None, title
     for key in file_dic.keys(): 
       mergefiles.append(cdo.mergetime(input=file_dic[key], output=key+'_mergetime.nc'))
 #      files.append(cdo.selyear('%s/%s' % (start1,end2), input = tmpfile , output =  key+'.nc' )) #python version
-      logger.info('datasets merged')
+    logger.info('datasets merged')
   except Exception as e: 
     logger.error('seltime and mergetime failed: %s' % e )    
   
@@ -65,20 +65,17 @@ def worker(resource=[], start=None, end=None, timeslice=20, variable=None, title
   try: 
     start = int(start)
     end = int(end)
-
     if timeslice == None: 
       timeslice = int((end - start) / 3)
       if timeslice == 0: 
         timeslice = 1
     else: 
       timeslice = int(timeslice)
-
     start1 = start
     start2 = start1 + timeslice - 1 
-    
     end1 = end - timeslice + 1
     end2 = end
-
+    logger.info('timeslice and periodes set')
   except Exception as e:
     logger.error('failed to set the periodes: %s' % e)
 
@@ -86,11 +83,10 @@ def worker(resource=[], start=None, end=None, timeslice=20, variable=None, title
     files = []
     for i, mf in enumerate(mergefiles):
       files.append(cdo.selyear('%s/%s' % (start1,end2), input = mf , output =  'file_%s_.nc' % i )) #python version
-      logger.info('datasets merged and start end times selected')
+    logger.info('timeseries selected from defined start to end year')
   except Exception as e: 
     logger.error('seltime and mergetime failed: %s' % e )    
 
-  
   try: 
     # ensemble mean 
     nc_ensmean = cdo.ensmean(input = files , output = 'nc_ensmean.nc')
