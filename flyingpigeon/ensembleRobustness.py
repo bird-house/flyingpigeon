@@ -1,7 +1,8 @@
 import logging
 logger = logging.getLogger(__name__)
 
-def worker(resource=[], start=None, end=None, timeslice=20, variable=None, title=None, cmap='seismic' ):
+def worker(resource=[], start=None, end=None, timeslice=20, 
+  variable=None, title=None, cmap='seismic' ):
   """retuns the result
   
   :param resource: list of pathes to netCDF files
@@ -57,7 +58,9 @@ def worker(resource=[], start=None, end=None, timeslice=20, variable=None, title
       start = max(st_set)
       if end == None:
         end = min(en_set)
-    logger.info('Start and End: %s - %s ' % (start, end))      
+    logger.info('Start and End: %s - %s ' % (start, end))
+    if start >= end: 
+      logger.error('ensemble is inconsistent!!! start year is later than end year')
   except Exception as e:
     logger.error('failed to detect start and end times of the ensemble: %s' % e)
 
