@@ -13,7 +13,7 @@ def worker(resource=[], start=None, end=None, timeslice=20,
   :param title: str to be used as title for the signal mal
   :param cmap: define the color sceem for signal map plotting 
 
-  :return: signal.nc, low_agreement_mask.nc, high_agreement_mask.nc, graphic.png
+  :return: signal.nc, low_agreement_mask.nc, high_agreement_mask.nc, graphic.png, text.txt
   """
   from cdo import Cdo
   cdo = Cdo()
@@ -24,6 +24,7 @@ def worker(resource=[], start=None, end=None, timeslice=20,
     from flyingpigeon.utils import sort_by_filename
 #    from flyingpigeon.ocgis_module import call
     file_dic = sort_by_filename(resource, historical_concatination = True)
+    logger.info('file names sorted experimets: %s' % len(file_dic.keys()))
   except Exception as e: 
     logger.error('failed to sort and merge the input files')
 

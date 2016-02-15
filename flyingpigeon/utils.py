@@ -6,7 +6,6 @@ logger = logging.getLogger(__name__)
 
 GROUPING = [ "day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON" ]
 
-
 def local_path(url):
   from urllib2 import urlparse
   url_parts = urlparse.urlparse(url)
@@ -208,15 +207,15 @@ def get_time(nc_file):
     return timestamps
   
 
-def check_timestepps(resource): 
-  """ returns a list of consistent files. 
-  :parm resource: list of netCDF file pathes to be checked
-  """
-  try: 
-    resource_qc = resource
-  except Exception as e: 
-    logger.error('failed to check the consistentcy of timestepps %s ' % e)
-  return resource_qc
+# def check_timestepps(resource): 
+#   """ returns a list of consistent files. 
+#   :parm resource: list of netCDF file pathes to be checked
+#   """
+#   try: 
+#     resource_qc = resource
+#   except Exception as e: 
+#     logger.error('failed to check the consistentcy of timestepps %s ' % e)
+#   return resource_qc
     
 def aggregations(nc_files):
     """
@@ -257,7 +256,6 @@ def aggregations(nc_files):
         aggregations[key]['end_year'] = int(end[0:4])
         aggregations[key]['variable'] = get_variable(aggregations[key]['files'][0])
         aggregations[key]['filename'] = "%s_%s-%s.nc" % (key, start, end)
-    
     return aggregations
 
 def sort_by_time(resource):
@@ -276,13 +274,13 @@ def sort_by_filename(resource, historical_concatination = False):
   returns a dictionary with name:list_of_sorted_files"""
   from os  import path
   
-  logger.debug('sort_by_filename module: resource = %s ' % len(resource))
+  logger.debug('sort_by_filename module start sorting %s files' % len(resource))
 
   ndic = {}
   tmp_dic = {}
   try: 
     if type(resource) == list:
-      logger.debug('sort_by_filename module: len(resource) = %s ' % len(resource))  
+      logger.debug('resource is list')  
       try:  #if len(resource) > 1:
         # collect the different experiment names
         for nc in resource:
@@ -293,10 +291,11 @@ def sort_by_filename(resource, historical_concatination = False):
           if historical_concatination == False: 
             ndic[bn] = [] # iniciate an approriate key with empty list in the dictionary
           elif historical_concatination == True:
-            if n[3] != 'historical':
-              ndic[bn] = []
+            bn = bn.replace('rcp26','historical').replace('rcp45','historical').replace('rcp65','historical').replace('rcp85','historical')
+            ndic[bn] = []
           else:
             logger.error('determine key names failed for ' % (nc))
+
         # populate the dictionario with filed to appropriate experiment names
         for key in ndic:
           if historical_concatination == False:

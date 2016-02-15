@@ -34,13 +34,21 @@ class ClippingProcess(WPSProcess):
             identifier="region",
             title="Region",
             #abstract= countries_longname(), # need to handle special non-ascii char in countries.
-            default='FRA',
+            default='DEU',
             type=type(''),
             minOccurs=1,
             maxOccurs=len(countries()),
             allowedValues=countries() #REGION_EUROPE #COUNTRIES # 
             )
       
+        self.dimension_map = self.addLiteralInput(
+            identifier="dimension_map",
+            title="Dimension Map",
+            abstract= 'if not ordered in lon/lat a dimension map has to be provided'
+            type=type(''),
+            minOccurs=0,
+            maxOccurs=1
+            )
 
         self.mosaik = self.addLiteralInput(
             identifier="mosaik",
@@ -51,6 +59,7 @@ class ClippingProcess(WPSProcess):
             minOccurs=0,
             maxOccurs=1,
             )
+
         
         self.output = self.addComplexOutput(
             title="Subsets",
@@ -64,6 +73,7 @@ class ClippingProcess(WPSProcess):
         urls = self.getInputValues(identifier='resource')
         mosaik = self.mosaik.getValue()
         regions = self.region.getValue()
+        dimension_map = self.dimension_map.getValue()
 
         logging.debug('urls = %s', urls)
         logging.debug('regions = %s', regions)
@@ -79,7 +89,9 @@ class ClippingProcess(WPSProcess):
                 polygons = regions, # self.region.getValue(),
                 mosaik = mosaik,
                 dir_output = os.path.abspath(os.curdir),
+                dimension_map=dimension_map,
                 )
+            
         except Exception as e:
             logging.exception('clipping failed')
             self.status.set('clipping failed')

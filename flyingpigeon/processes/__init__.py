@@ -1,7 +1,7 @@
 __all__ = [
         "wps_visualisation",
         "wps_extractpoints",
-        #"wps_segetalflora",
+        "wps_segetalflora",
         "wps_indices",
         "wps_subset",
         "wps_eobs_to_cordex",
