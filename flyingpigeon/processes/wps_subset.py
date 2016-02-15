@@ -44,7 +44,7 @@ class ClippingProcess(WPSProcess):
         self.dimension_map = self.addLiteralInput(
             identifier="dimension_map",
             title="Dimension Map",
-            abstract= 'if not ordered in lon/lat a dimension map has to be provided'
+            abstract= 'if not ordered in lon/lat a dimension map has to be provided',
             type=type(''),
             minOccurs=0,
             maxOccurs=1
@@ -91,7 +91,7 @@ class ClippingProcess(WPSProcess):
                 dir_output = os.path.abspath(os.curdir),
                 dimension_map=dimension_map,
                 )
-            
+
         except Exception as e:
             logging.exception('clipping failed')
             self.status.set('clipping failed')
