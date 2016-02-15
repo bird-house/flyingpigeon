@@ -30,7 +30,14 @@ def worker(resource=[], start=None, end=None, timeslice=20, variable=None, title
   except Exception as e: 
     logger.error('failed to sort and merge the input files')
   
-
+  try: 
+    text_src = open('infiles.txt', 'a')
+    for key in file_dic.keys():
+      text_src.write(key + '\n')
+    text_src.close()
+  except Exception as e:
+    logger.error('failed to write source textfile: %s' % e)
+    
   # configure reference and compare period
   try: 
     from flyingpigeon.utils import get_time
@@ -140,4 +147,4 @@ def worker(resource=[], start=None, end=None, timeslice=20, variable=None, title
 
   except Exception as e:
     logger.error('graphic generation failed: %s ' % e )
-  return signal, low_agreement_mask, high_agreement_mask, graphic
+  return signal, low_agreement_mask, high_agreement_mask, graphic, text_src

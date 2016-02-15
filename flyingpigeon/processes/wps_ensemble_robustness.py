@@ -104,7 +104,15 @@ class EnsembleRobustnessProcess(WPSProcess):
             abstract="PNG graphic file showing the signal difference with high and low ensemble agreement marked out",
             formats=[{"mimeType":"image/png"}],
             asReference=True,
-            )  
+            )
+
+        self.output_text = self.addComplexOutput(
+            identifier="output_text",
+            title="Sourcefiles",
+            abstract="test file with a list of the used input data sets",
+            formats=[{"mimeType":"text/plain"}],
+            asReference=True,
+            )
 
     def execute(self):
       self.status.set('starting uncertainty process', 0)
@@ -118,7 +126,7 @@ class EnsembleRobustnessProcess(WPSProcess):
       self.status.set('arguments readed', 5)    
       
 
-      signal, low_agreement_mask, high_agreement_mask, graphic  = erob.worker(resource=ncfiles, start=start, end=end, timeslice=timeslice, variable=variable)#
+      signal, low_agreement_mask, high_agreement_mask, graphic, text_src  = erob.worker(resource=ncfiles, start=start, end=end, timeslice=timeslice, variable=variable)#
       
       self.status.set('process worker done', 95)
 
@@ -126,5 +134,6 @@ class EnsembleRobustnessProcess(WPSProcess):
       self.output_high.setValue( high_agreement_mask )
       self.output_low.setValue( low_agreement_mask )
       self.output_graphic.setValue( graphic )
+      self.output_text.setValue( text_src )
       
       self.status.set('uncertainty process done', 100)
