@@ -22,11 +22,7 @@ def worker(resource=[], start=None, end=None, timeslice=20, variable=None, title
     # preparing the resource
     from flyingpigeon.utils import sort_by_filename
 #    from flyingpigeon.ocgis_module import call
-    
     file_dic = sort_by_filename(resource)
-    files = []
-    for key in file_dic.keys(): 
-      files.append(cdo.mergetime(input=file_dic[key], output=key+'.nc' ))
   except Exception as e: 
     logger.error('failed to sort and merge the input files')
   
@@ -57,7 +53,6 @@ def worker(resource=[], start=None, end=None, timeslice=20, variable=None, title
   except Exception as e:
     logger.error('failed to detect start and end times of the ensemble: %s' % e)
 
-
   # set the periodes: 
   try: 
     start = int(start)
@@ -78,6 +73,17 @@ def worker(resource=[], start=None, end=None, timeslice=20, variable=None, title
 
   except Exception as e:
     logger.error('failed to set the periodes: %s' % e)
+
+  try:
+    files = []
+    for key in file_dic.keys(): 
+      tmpfile = ''
+      tmpfile = cdo.mergetime(input=file_dic[key], output=key+'_mergetime.nc'))
+      files.append(cdo.selyear('%s/%s' % (start1,end2), input = tmpfile , output =  key+'_mergetime.nc' ) #python version
+
+      logger.info('datasets merged and start end times selected')
+  except Exception as e: 
+    logger.error('seltime and mergetime failed: %s' % e )    
 
   
   try: 
