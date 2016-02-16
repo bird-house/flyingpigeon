@@ -162,7 +162,7 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
   import os
   from os import remove
   from tempfile import mkstemp
-  from ocgis import RequestDataset , OcgOperations
+  from ocgis import Request , OcgOperations
   
   from cdo import Cdo
   cdo = Cdo()
