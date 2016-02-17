@@ -288,29 +288,42 @@ def sort_by_filename(resource, historical_concatination = False):
           p, f = path.split(path.abspath(nc)) 
           n = f.split('_')
           bn = '_'.join(n[0:-1]) # skipping the date information in the filename
-          if historical_concatination == False: 
-            ndic[bn] = [] # iniciate an approriate key with empty list in the dictionary
-          elif historical_concatination == True:
-            bn = bn.replace('rcp26','historical').replace('rcp45','historical').replace('rcp65','historical').replace('rcp85','historical')
-            ndic[bn] = []
-          else:
-            logger.error('determine key names failed for ' % (nc))
+          ndic[bn] = [] # dictionary containing all datasets names
+        logger.info('found %s  datasets' % len(ndic.kess()))
+      except Exception as e: 
+        logger.error('failed to find names of datasets: %s ' % e)
 
-        # populate the dictionario with filed to appropriate experiment names
+      try: 
+        if historical_concatination == True:
+          # select only necessary names
+          if '_rcp' in ndic.keys(): 
+            for key in ndic.keys(): 
+              if 'historical' in key: 
+                ndic.pop(key)
+            logger.info('historical data set names removed from dictionary')
+          else: 
+            logger.info('no rcp data set names found in dictionary')
+      except Exception as e:
+        logger.error('failed to pop historical data set names: %s ' % e )  
+      try:  
         for key in ndic:
           if historical_concatination == False:
             for n in resource:
               if '%s_' % key in n: 
                 ndic[key].append(path.join(p,n))
+          
           elif historical_concatination == True:
-            historical = key.replace('rcp26','historical').replace('rcp45','historical').replace('rcp65','historical').replace('rcp85','historical')
+            key_hist = key.replace('rcp26','historical').replace('rcp45','historical').replace('rcp65','historical').replace('rcp85','historical')
             for n in resource:
-              if '%s_' % key in n or '%s_' % historical in n: 
+              if '%s_' % key in n or '%s_' % key_hist in n: 
                 ndic[key].append(path.join(p,n))
           else:
             logger.error('append filespathes to dictionary for key %s failed' % (key))
           ndic[key].sort()
-        
+      except Exception as e:
+        logger.error('failed to populate the dictionary with approriate files') 
+
+      try:
         # add date information to the key:
         for key in ndic: 
           ndic[key].sort()
@@ -319,7 +332,7 @@ def sort_by_filename(resource, historical_concatination = False):
           newkey = key+'_'+start+'-'+end
           tmp_dic[newkey] = ndic[key]
       except Exception as e: 
-        logger.exception('failed to sort the list of resources')
+        logger.exception('failed to sort the list of resources and add dates to keyname')
         raise
 
     elif type(resource) == str:
