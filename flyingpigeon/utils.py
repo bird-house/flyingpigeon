@@ -289,7 +289,7 @@ def sort_by_filename(resource, historical_concatination = False):
           n = f.split('_')
           bn = '_'.join(n[0:-1]) # skipping the date information in the filename
           ndic[bn] = [] # dictionary containing all datasets names
-        logger.info('found %s  datasets' % len(ndic.kess()))
+        logger.info('found %s  datasets' % len(ndic.keys()))
       except Exception as e: 
         logger.error('failed to find names of datasets: %s ' % e)
 
