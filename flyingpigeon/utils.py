@@ -296,7 +296,7 @@ def sort_by_filename(resource, historical_concatination = False):
       try: 
         if historical_concatination == True:
           # select only necessary names
-          if '_rcp' in ndic.keys(): 
+          if any("_rcp" in s for s in ndic.keys()): 
             for key in ndic.keys(): 
               if 'historical' in key: 
                 ndic.pop(key)
