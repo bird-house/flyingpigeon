@@ -8,5 +8,4 @@ __all__ = [
         "wps_ensemble_robustness",
         "wps_analogs",
         "wps_fetch",
-        #"wps_get_resources"
         ]

@@ -1,5 +1,4 @@
 from pywps.Process import WPSProcess
-
 import logging
 
 class GetResourceProcess(WPSProcess):
@@ -25,8 +24,8 @@ class GetResourceProcess(WPSProcess):
             formats=[{"mimeType":"application/x-netcdf"}],
             )
 
-        self.pathfile = self.addComplexOutput(
-          identifier="pathfile",
+        self.output = self.addComplexOutput(
+          identifier="output",
           title="Pathes File",
           abstract="File containing the local pathes to downloades files",
           formats=[{"mimeType":"text/plain"}],
@@ -40,16 +39,16 @@ class GetResourceProcess(WPSProcess):
             from os.path import realpath
 
             self.status.set('starting write path files process', 0)
-            urls = self.getInputValues(identifier='resource')
+#            urls = self.getInputValues(identifier='resource')
 
-            if type(urls) == str: 
-                urls = [urls]
-            
-            # logger.info('urls: %s ' % urls)
+            # if type(urls) == str: 
+            #     urls = [urls]
+
+            logger.info('got list of URLS ')
 
             try: 
-                pid , pathfile = mkstemp(suffix='.txt', prefix='pathes_', dir='.', text=True)
-                pf = open(pathfile, mode='w')
+                pid , textfile = mkstemp(suffix='.txt', prefix='pathes_', dir='.', text=True)
+                pf = open(textfile, mode='w')
 
                 logger.info('created the filepathes.txt file ')
                 pf.write('###############################################\n')
@@ -57,18 +56,18 @@ class GetResourceProcess(WPSProcess):
                 pf.write('Following files are stored to your local discs: \n')
                 pf.write('\n')
 
-                try: 
-                  for url in urls: 
-                    pathes.write('%s \n' % realpath(url))
-                except Exception as e: 
-                  logger.error('failed to write path to file')
+                # try: 
+                #   for url in urls: 
+                #     pathes.write('%s \n' % realpath(url))
+                # except Exception as e: 
+                #   logger.error('failed to write path to file')
 
-                textfile = pathes.name
-                pathes.close()
+                # textfile = pathes.name
+                pf.close()
 
                 self.status.set('text file written', 90)
             except Exception as e: 
                 logger.error('failed to write file pathes ')
 
-            self.pathfile.setValue( pathfile )
+            self.output.setValue( textfile )
             self.status.set('End of wps_get_resources process', 100)

@@ -1,7 +1,4 @@
 from pywps.Process import WPSProcess
-
-from flyingpigeon import ensembleRobustness as erob
-
 import logging
 
 class EnsembleRobustnessProcess(WPSProcess):
@@ -115,6 +112,7 @@ class EnsembleRobustnessProcess(WPSProcess):
             )
 
     def execute(self):
+      from flyingpigeon import ensembleRobustness as erob
       self.status.set('starting uncertainty process', 0)
   
       ncfiles = self.getInputValues(identifier='resource')
