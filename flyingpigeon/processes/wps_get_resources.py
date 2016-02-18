@@ -36,7 +36,8 @@ class GetResourceProcess(WPSProcess):
         def execute(self):
 
             from flyingpigeon import get_resources
-            from tempfile import mkstemp 
+            from tempfile import mkstemp
+            from os.path import realpath
 
             self.status.set('starting write path files process', 0)
             urls = self.getInputValues(identifier='resource')
@@ -53,11 +54,11 @@ class GetResourceProcess(WPSProcess):
                 pf.write('Following files are stored to your local discs: \n')
                 pf.write('\n')
 
-                # try: 
-                #   for url in urls: 
-                #     pathes.write('%s \n' % url)
-                # except Exception as e: 
-                #   logger.error('failed to write path to file')
+                try: 
+                  for url in urls: 
+                    pathes.write('%s \n' % realpath(url))
+                except Exception as e: 
+                  logger.error('failed to write path to file')
 
                 textfile = pathes.name
                 pathes.close()
