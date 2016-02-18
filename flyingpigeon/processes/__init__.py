@@ -7,4 +7,5 @@ __all__ = [
         "wps_eobs_to_cordex",
         "wps_ensemble_robustness",
         "wps_analogs",
+        "wps_get_resources"
         ]
