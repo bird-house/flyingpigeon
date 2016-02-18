@@ -41,6 +41,9 @@ class GetResourceProcess(WPSProcess):
 
             self.status.set('starting write path files process', 0)
             urls = self.getInputValues(identifier='resource')
+
+            if type(urls) == str: 
+                urls = [urls]
             
             # logger.info('urls: %s ' % urls)
 
