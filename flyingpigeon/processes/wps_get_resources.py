@@ -27,7 +27,7 @@ class GetResourceProcess(WPSProcess):
         self.output_text = self.addComplexOutput(
             identifier="output_text",
             title="Sourcefiles",
-            abstract="test file with a list of the used input data sets",
+            abstract="text file with a list of the used input data sets",
             formats=[{"mimeType":"text/plain"}],
             asReference=True,
             )
@@ -35,24 +35,24 @@ class GetResourceProcess(WPSProcess):
 
         def execute(self):
 
+            from flyingpigeon import get_resources
+
             self.status.set('starting write path files process', 0)
 
             urls = self.getInputValues(identifier='resource')
 
+            logger.info('urls: %s ' % urls)
+
             self.status.set('Path for %s fiels ' % len(urls), 20)
 
-            pathes = open("config_%s.txt" % (date_stamp), "w")
-            pathes.write('###############################################\n')
-            pathes.write('###############################################\n')
-            pathes.write('Following files are stored to your local discs: \n')
-            pathes.write('\n')
-            for url in urls: 
-                pathes.write('%s \n' % url)
-            
-            pathes.close()
+            try: 
+               resource_txt = get_resources.write_file(urls)
+            except Exception as e: 
+                logger.error('failed to write file pathes ')
+                
 
             self.status.set('text file written', 90)
 
-            self.output_text.setValue( pathes )
+            self.output_text.setValue( resource_txt )
 
             self.status.set('End of wps_get_resources process', 100)
