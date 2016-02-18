@@ -206,16 +206,6 @@ def get_time(nc_file):
      
     return timestamps
   
-
-# def check_timestepps(resource): 
-#   """ returns a list of consistent files. 
-#   :parm resource: list of netCDF file pathes to be checked
-#   """
-#   try: 
-#     resource_qc = resource
-#   except Exception as e: 
-#     logger.error('failed to check the consistentcy of timestepps %s ' % e)
-#   return resource_qc
     
 def aggregations(nc_files):
     """
