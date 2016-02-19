@@ -225,7 +225,8 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
 
   try: 
     import matplotlib.pyplot as plt
-    from cartopy import config, util
+    from cartopy import config
+    from cartopy.util import add_cyclic_point
     import cartopy.crs as ccrs
     logger.info('libraries loaded')
   except Exception as e: 
@@ -247,17 +248,26 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
 
     logger.info('data loaded')
     
-    if 'rlon' in ds_signal.variables:
-      lons = np.squeeze(ds_signal.variables['rlon'][:])
-      lats = np.squeeze(ds_signal.variables['rlat'][:])
-      logger.info('rlat rlon loaded')
-    elif 'lon' in ds_signal.variables:
-      lons = np.squeeze(ds_signal.variables['lon'][:])
-      lats = np.squeeze(ds_signal.variables['lat'][:])
-      # var_signal, lons = util.add_cyclic_point(var_signal, coord=lons, axis=-1)
-      logger.info('lat lon loaded')
-    else: 
-      logger.error('variables for lat and lon not found') 
+    # if 'rlon' in ds_signal.variables:
+    #   lons = np.squeeze(ds_signal.variables['rlon'][:])
+    #   lats = np.squeeze(ds_signal.variables['rlat'][:])
+    #   logger.info('rlat rlon loaded')
+
+    # elif 'lon' in ds_signal.variables:
+    lons = np.squeeze(ds_signal.variables['lon'][:])
+    lats = np.squeeze(ds_signal.variables['lat'][:])
+    # var_signal, lons = util.add_cyclic_point(var_signal, coord=lons, axis=-1)
+          
+    cyclic_var, cyclic_lons = add_cyclic_point(var_signal, coord=lons)
+    mask_l, cyclic_lons = add_cyclic_point(mask_l, coord=lons)
+    mask_h, cyclic_lons = add_cyclic_point(mask_h, coord=lons)
+
+    lons = cyclic_lons.data
+    var_signal = cyclic_var
+
+    logger.info('lat lon loaded')
+    # else: 
+    #   logger.error('variables for lat and lon not found') 
 
     minval = round(np.nanmin(var_signal))
     maxval = round(np.nanmax(var_signal)+.5)
@@ -269,15 +279,13 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
   try:
     fig = plt.figure(figsize=(20,10), dpi=600, facecolor='w', edgecolor='k') 
     
-    projection = ccrs.PlateCarree()
-    
-    ax = plt.axes(projection=projection)
+    ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
     
     norm = MidpointNormalize(midpoint=0)
 
-    cs = plt.contourf(lons, lats, var_signal, 60, norm=norm, transform=projection, cmap=cmap, interpolation='nearest')
-    cl = plt.contourf(lons, lats, mask_l, 60, transform=projection, colors='none', hatches=['//']) 
-    ch = plt.contourf(lons, lats, mask_h, 60, transform=projection, colors='none', hatches=['.'])
+    cs = plt.contourf(lons, lats, var_signal, 60, norm=norm, transform=ccrs.PlateCarree(), cmap=cmap, interpolation='nearest')
+    cl = plt.contourf(lons, lats, mask_l, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['//']) 
+    ch = plt.contourf(lons, lats, mask_h, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['.'])
 
     # plt.clim(minval,maxval)
     ax.coastlines()

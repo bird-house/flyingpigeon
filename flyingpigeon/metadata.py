@@ -40,7 +40,7 @@ def get_frequency(resource):
   """
   returns the frequency of the time stamps
   :param resource: NetCDF file
-  :return: time_frequency
+  :return: frequency
   """
   from netCDF4 import num2date
   from numpy import mean
@@ -63,21 +63,21 @@ def get_frequency(resource):
   fqz = mean(diffs)
 
   if (350 < fqz < 370):
-    time_frequency = 'yr'
+    frequency = 'yr'
   if (80 < fqz < 100):
-    time_frequency = 'sem'
+    frequency = 'sem'
   if (25 < fqz < 35):
-    time_frequency = 'mon'
+    frequency = 'mon'
   if (0.8 < fqz < 1.2):
-    time_frequency = 'day'
+    frequency = 'day'
   if (0.4 < fqz < 0.6):
-    time_frequency = '12h'
+    frequency = '12h'
   if (0.22 < fqz < 0.27):
-    time_frequency = '6h'
+    frequency = '6h'
   if (0.013 < fqz < 0.014):
-    time_frequency = '3h'
+    frequency = '3h'
 
-  return time_frequency
+  return frequency
 
 def get_extent(resource):
   """
@@ -87,15 +87,19 @@ def get_extent(resource):
   """
 
   ds = Dataset(resource)
+  
+  lats = ds.variables['lat']
+  lons = ds.variables['lon']
 
-  # try:
-  #   frequency = ds.frequency
-  #   logger.info('frequency written in the meta data:  %s ' % (frequency))
-  # except Exception as e :
-  #     logger.exception('Could not specify frequency for %s' % nc_file)
-  #     raise
-  # else:
-  return min_lat, max_lat, min_lon, max_lon
+  if len(lats.shape) == 1:
+    min_lat = min(lats) 
+    max_lat = max(lats)
+    min_lon = min(lons) 
+    max_lon = max(lons)
+  else: 
+    logger.error('latitude variable not found!!')  
+
+  return lats, lons #min_lat, max_lat, min_lon, max_lon
 
 
 
