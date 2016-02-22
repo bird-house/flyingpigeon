@@ -277,10 +277,8 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
     logger.error('failed to get data for plotting: %s' % e) 
 
   try:
-    fig = plt.figure(figsize=(20,10), dpi=600, facecolor='w', edgecolor='k') 
-    
+    fig = plt.figure(figsize=(20,10), dpi=600, facecolor='w', edgecolor='k')
     ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
-    
     norm = MidpointNormalize(midpoint=0)
 
     cs = plt.contourf(lons, lats, var_signal, 60, norm=norm, transform=ccrs.PlateCarree(), cmap=cmap, interpolation='nearest')
@@ -289,7 +287,7 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
 
     # plt.clim(minval,maxval)
     ax.coastlines()
-
+    ax.set_global()
     
     if title == None: 
       plt.title('%s with Agreement' % variable)

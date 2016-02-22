@@ -9,16 +9,26 @@ def set_basic_md(resource):
   :param resource: netCDF file where basic meta data should be set
   """
   import sys
-
+  from datetime import datetime as dt 
+  
   py_version = sys.version
-
+  creation_date = dt.strftime( dt.now(), format='%Y-%m-%dT%H:%M:%S')
+  
   md_basic = {
      'activity': 'birdhouse project',
+     'software':'flyingpigeon v 0.1', 
+     'software_project': 'birdhouse',
+     'software_reference':'https://github.com/bird-house/',
+     'software_platform': 'PYTHON %s' % py_version,
      'contact':'ehbrecht@dkrz.de',
-     'software':'flyingpigeon v 0.1',
-     'contact_2':'nils.hempelmann@lsce.ipsl.fr', 
-     'software_platform': py_version,
-     'software_project': 'birdhouse'}
+     'contact_mail_2':'nils.hempelmann@lsce.ipsl.fr',
+     'creation_date': creation_date ,
+     }
+  
+  ds = Dataset(resource, mode='a')
+  ds.setncatts(md_basic)
+  ds.close()
+  
   return(resource)
 
 def set_dynamic_md(resource):
@@ -26,15 +36,149 @@ def set_dynamic_md(resource):
   Dynamic meta data like time frequency, spatial extend, start end time etc.
   :param resource: netCDF file where basic meta data should be set
   """
-  time_frequency = get_frequency(resource)
+  from flyingpigeon.utils import get_timestamps, get_time
+  frequency = get_frequency(resource)
+  
+  time_coverage_start, time_coverage_end = get_timestamps(resource)
+  time_number_steps = len(get_time(resource))
+  
+  # max_lat, min_lat, max_lon, min_lat = get_extent(resource)
 
+  ds = Dataset(resource, mode='a')
+  
+  try:
+    driving_experiment = ds.driving_experiment
+    ds.delncattr('driving_experiment')
+  except Exception as e: 
+    logger.error(e)
+    driving_experiment = ''
+
+  try:
+    driving_experiment_name = ds.driving_experiment_name
+    ds.delncattr('driving_experiment_name')
+  except Exception as e: 
+    logger.error(e)
+    driving_experiment_name = ''
+
+  try:
+    driving_model_ensemble_member = ds.driving_model_ensemble_member
+    ds.delncattr('driving_model_ensemble_member')
+  except Exception as e: 
+    logger.error(e)
+    driving_model_ensemble_member = ''    
+    
+  try:
+    experiment = ds.experiment
+    ds.delncattr('experiment')
+  except Exception as e: 
+    logger.error(e)
+    experiment = ''
+
+    
+  try:
+    experiment_id = ds.experiment_id
+    ds.delncattr('experiment_id')
+  except Exception as e: 
+    logger.error(e)
+    experiment_id = ''
+  
+  try:
+    project_id = ds.project_id
+    ds.delncattr('project_id')
+  except Exception as e: 
+    logger.error(e)
+    project_id = ''
+    
+  try:
+    institution_id = ds.institution_id
+    ds.delncattr('institution_id')
+  except Exception as e: 
+    logger.error(e)
+    institution_id = ''
+ 
+  try:
+    model_version_id = ds.model_version_id
+    ds.delncattr('model_version_id')
+  except Exception as e: 
+    logger.error(e)
+    model_version_id = ''
+    
+  try:
+    driving_model_id = ds.driving_model_id
+    ds.delncattr('driving_model_id')
+  except Exception as e: 
+    logger.error(e)
+    driving_model_id = ''
+
+  try:
+    driving_ensemble_member = ds.driving_ensemble_member
+    ds.delncattr('driving_ensemble_member')
+  except Exception as e: 
+    logger.error(e)
+    driving_ensemble_member = '' 
+    
+  try:
+    driving_model_id = ds.driving_model_id
+    ds.delncattr('driving_model_id')
+  except Exception as e: 
+    logger.error(e)
+    driving_model_id = ''
+  try:
+    model_id = ds.model_id
+    ds.delncattr('model_id')
+  except Exception as e: 
+    logger.error(e)
+    driving_model_id = ''    
+    
+    
+  try:
+    driving_experiment_id = ds.driving_experiment_id
+    ds.delncattr('driving_experiment_id')
+  except Exception as e: 
+    logger.error(e)
+    driving_experiment_id = ''
+    
+  try:
+    domain = ds.CORDEX_domain
+  except Exception as e: 
+    logger.error(e)
+    domain = ''
+ 
   md_dynamic = {
-     'activity': 'birdhouse project',
-     'software': 'flyingpigeon v 0.1',
-     'software_platform': py_version,
-     'software_project': 'birdhouse'}
+    'in_var_driving_experiment' :driving_experiment,
+    'in_var_driving_experiment_name': driving_experiment_name,
+    'in_var_driving_model_ensemble_member' : driving_model_ensemble_member,
+    'in_var_experiment': experiment,
+    'in_var_experiment_id': experiment_id,    
+     'in_var_project_id': project_id,  
+     'in_var_institution_id':institution_id,  
+     'in_var_model_version_id': model_version_id, 
+      'in_var_driving_model_id': driving_model_id,
+      'in_var_model_id': model_id,
+      'in_var_driving_ensemble_member':driving_ensemble_member, 
+      'in_var_driving_experiment_id': driving_experiment_id, 
+      'in_var_domain': domain, 
+      'frequency': frequency,
+      'time_coverage_start': time_coverage_start,
+      'time_coverage_end':time_coverage_end,
+      'time_number_steps':time_number_steps,
+      'time_number_gaps': '',
+      'cdm_datatype':'' ,
+      'domain':'%s_subest' % domain ,
+      'geospatial_increment':'',
+      'geospatial_lat_min':'' ,
+      'geospatial_lat_max':'' ,
+      'geospatial_lon_min':'' ,
+      'geospatial_lon_max':'' ,
+     }
+  
+  try:
+    ds.setncatts(md_dynamic)
+    ds.close()
+  except Exception as e:
+    logger.error(e)
+    
   return(resource)
-
 
 def get_frequency(resource):
   """
@@ -98,36 +242,74 @@ def get_extent(resource):
     max_lon = max(lons)
   else: 
     logger.error('latitude variable not found!!')  
-
+  
+  ds.close()
+  
   return lats, lons #min_lat, max_lat, min_lon, max_lon
-
-
 
 
 def set_metadata_segetalflora(resource):
   """
   :param resources: imput files 
   """
-  from netCDF4 import Dataset
+  # gather the set_metadata
   
-  dic_segetalflora = dic_basis
-  dic_segetalflora['keywords'] = 'Segetalflora'
-  ds = Dataset(resource, mode='a')
-  ds.setncatts(dic_segetalflora)
-  ds.close()
- 
-  return resource
-
-
-
-def set_metadata(resources):
+  dic_segetalflora = {
+    'keywords' : 'Segetalflora', 
+    'tier': '2',
+    'in_var' : 'tas',
+    'description':'Number of european segetalflora species', 
+    'method':'regression equation',
+    'institution':'Julius Kuehn-Institut (JKI) Federal Research Centre for Cultivated Plants', 
+    'institution_url':'www.jki.bund.de',
+    'institute_id' : "JKI",
+    'contact_mail_3':'Joerg.Hoffmann@jki.bund.de',
+    'version' : '1.0',
+     }
+  try:
+    set_basic_md(resource)
+  except Exception as e: 
+    logger.error(e)
   
-  if type(resources) == str:
-    resources = [resources]
-    
-  for resource in resources:
-    ds = Dateset
-    ds.attncatts(dic_segetalflora)
+  try:
+    set_dynamic_md(resource)
+  except Exception as e: 
+    logger.error(e)
+  
+  #set the segetalflora specific metadata
+  try:
+    ds = Dataset(resource, mode='a')
+    ds.setncatts(dic_segetalflora)
     ds.close()
+  except Exception as e: 
+    logger.error(e)
     
-  return resources
+    # set the variable attributes: 
+  from flyingpigeon.utils import get_variable
+  var = get_variable(resource)
+
+  if 'all' in var: 
+    climat_type = 'all'
+  else: 
+    climat_type = var[-1]
+
+  culture_type = var.strip('sf').strip(climat_type)  
+
+  ds = Dataset(resource, mode='a')
+  sf = ds.variables[var]
+  sf.setncattr('units',1)
+  sf.setncattr('standard_name', 'sf_%s_%s' % (culture_type, climat_type))  
+  sf.setncattr('long_name', 'Segetal flora %s land use for climate type %s' % (culture_type, climat_type))
+  
+  # sort the attributes: 
+  att = ds.ncattrs()
+  att.sort()
+  
+  for a in att: 
+    entry = ds.getncattr(a)
+    ds.setncattr(a,entry)
+  
+  history = '%s , Segetalflora Impact Model V1.0' % (ds.history) 
+  ds.setncattr('history',history)
+  ds.close()
+  return resource

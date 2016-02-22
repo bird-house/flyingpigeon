@@ -130,6 +130,7 @@ def get_variable(nc_file):
     :param nc_file: NetCDF file
     """
     rd = ocgis.RequestDataset(nc_file)
+    
     return rd.variable
 
 
@@ -171,9 +172,8 @@ def get_frequency(nc_file):
       logger.exception('Could not specify frequency for %s' % nc_file)
       raise
   else:
+    ds.close()
     return frequency
-
-
 
 def get_timestamps(nc_file):
     """
@@ -186,8 +186,8 @@ def get_timestamps(nc_file):
     start = get_time(nc_file)[0]
     end = get_time(nc_file)[-1]
     
-    from_timestamp = start.strftime(format = '%Y%m%d')
-    to_timestamp = end.strftime(format = '%Y%m%d')
+    from_timestamp = '%s%s%s'  % (start.year, str(start.month).zfill(2) ,str(start.day).zfill(2)) 
+    to_timestamp = '%s%s%s'  %   (end.year,  str(start.month).zfill(2) ,str(start.day).zfill(2)) 
 
     return (from_timestamp, to_timestamp)
 
@@ -203,7 +203,8 @@ def get_time(nc_file):
     time = ds.variables['time']
 
     timestamps = num2date(time[:], time.units, time.calendar)
-     
+    ds.close()
+    
     return timestamps
   
     
