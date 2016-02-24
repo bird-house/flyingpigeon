@@ -497,10 +497,10 @@ def unroate_pole(resource, write_to_file=True):
     
     lon.standard_name = "longitude" ;
     lon.long_name = "longitude coordinate" ;
-    lon.units = 'degrees east'
+    lon.units = 'degrees_east'
     lat.standard_name = "latitude" ;
     lat.long_name = "latitude coordinate" ;
-    lat.units = 'degrees north'
+    lat.units = 'degrees_north'
     
     lat[:] = lats
     lon[:] = lons

@@ -73,6 +73,12 @@ def set_dynamic_md(resource):
   except Exception as e: 
     logger.error(e)
     experiment = ''
+  try:
+    tracking_id = ds.tracking_id
+    ds.delncattr('tracking_id')
+  except Exception as e: 
+    logger.error(e)
+    tracking_id = ''    
     
   try:
     experiment_id = ds.experiment_id
@@ -165,24 +171,30 @@ def set_dynamic_md(resource):
       'in_var_contact': contact,
       'in_var_institution_id':institution_id,  
       'in_var_model_version_id': model_version_id, 
-        'in_var_driving_model_id': driving_model_id,
-        'in_var_model_id': model_id,
-        'in_var_driving_ensemble_member':driving_ensemble_member, 
-        'in_var_driving_experiment_id': driving_experiment_id, 
-        'in_var_domain': domain, 
-        'frequency': frequency,
-        'time_coverage_start': time_coverage_start,
-        'time_coverage_end':time_coverage_end,
-        'time_number_steps':time_number_steps,
-        #'time_number_gaps': '',
-        #'cdm_datatype':'' ,
-        'domain':'%s_subset' % domain ,
-        'geospatial_increment': geospatial_increment,
-        'geospatial_lat_min':min_lat ,
-        'geospatial_lat_max':max_lat ,
-        'geospatial_lon_min':min_lon ,
-        'geospatial_lon_max':max_lon ,
+      'in_var_driving_model_id': driving_model_id,
+      'in_var_model_id': model_id,
+      'in_var_driving_ensemble_member':driving_ensemble_member, 
+      'in_var_driving_experiment_id': driving_experiment_id, 
+      'in_var_domain': domain, 
+      'in_var_tracking_id' : tracking_id,
+      'frequency': frequency,
+      'time_coverage_start': time_coverage_start,
+      'time_coverage_end':time_coverage_end,
+      'time_number_steps':time_number_steps,
+      #'time_number_gaps': '',
+      #'cdm_datatype':'' ,
+      'domain':'%s_subset' % domain ,
+      'geospatial_increment': geospatial_increment,
+      'geospatial_lat_min':min_lat ,
+      'geospatial_lat_max':max_lat ,
+      'geospatial_lon_min':min_lon ,
+      'geospatial_lon_max':max_lon ,
       }
+    
+    #:product = "output" ;
+    #:rcm_version_id = "v1" ;
+    #:references = "http://www.smhi.se/en/Research/Research-departments/climate-research-rossby-centre" ;
+                
     
   except Exception as e: 
     logger.error('failed to populate dynamic metadata dictionay')
