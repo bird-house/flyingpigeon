@@ -20,7 +20,7 @@ def set_basic_md(resource):
      'software_project': 'birdhouse',
      'software_reference':'https://github.com/bird-house/',
      'software_platform': 'PYTHON %s' % py_version,
-     'contact':'ehbrecht@dkrz.de',
+     'contact_mail_1':'ehbrecht@dkrz.de',
      'contact_mail_2':'nils.hempelmann@lsce.ipsl.fr',
      'creation_date': creation_date ,
      }
@@ -43,7 +43,7 @@ def set_dynamic_md(resource):
   time_number_steps = len(get_time(resource))
   
   # max_lat, min_lat, max_lon, min_lat = get_extent(resource)
-
+  
   ds = Dataset(resource, mode='a')
   
   try:
@@ -73,7 +73,6 @@ def set_dynamic_md(resource):
   except Exception as e: 
     logger.error(e)
     experiment = ''
-
     
   try:
     experiment_id = ds.experiment_id
@@ -123,14 +122,21 @@ def set_dynamic_md(resource):
   except Exception as e: 
     logger.error(e)
     driving_model_id = ''
+  
   try:
     model_id = ds.model_id
     ds.delncattr('model_id')
   except Exception as e: 
     logger.error(e)
-    driving_model_id = ''    
+    driving_model_id =''
     
     
+  try:
+    contact = ds.in_var_contact
+    ds.delncattr('contact')
+  except Exception as e: 
+    logger.error(e)
+    contact = ''
   try:
     driving_experiment_id = ds.driving_experiment_id
     ds.delncattr('driving_experiment_id')
@@ -143,36 +149,46 @@ def set_dynamic_md(resource):
   except Exception as e: 
     logger.error(e)
     domain = ''
- 
-  md_dynamic = {
-    'in_var_driving_experiment' :driving_experiment,
-    'in_var_driving_experiment_name': driving_experiment_name,
-    'in_var_driving_model_ensemble_member' : driving_model_ensemble_member,
-    'in_var_experiment': experiment,
-    'in_var_experiment_id': experiment_id,    
-     'in_var_project_id': project_id,  
-     'in_var_institution_id':institution_id,  
-     'in_var_model_version_id': model_version_id, 
-      'in_var_driving_model_id': driving_model_id,
-      'in_var_model_id': model_id,
-      'in_var_driving_ensemble_member':driving_ensemble_member, 
-      'in_var_driving_experiment_id': driving_experiment_id, 
-      'in_var_domain': domain, 
-      'frequency': frequency,
-      'time_coverage_start': time_coverage_start,
-      'time_coverage_end':time_coverage_end,
-      'time_number_steps':time_number_steps,
-      'time_number_gaps': '',
-      'cdm_datatype':'' ,
-      'domain':'%s_subest' % domain ,
-      'geospatial_increment':'',
-      'geospatial_lat_min':'' ,
-      'geospatial_lat_max':'' ,
-      'geospatial_lon_min':'' ,
-      'geospatial_lon_max':'' ,
-     }
+  ds.close()
   
+  min_lat, max_lat, min_lon, max_lon = get_extent(resource)
+  geospatial_increment = get_geospatial_increment(resource)
+  
+  try: 
+    md_dynamic = {
+      'in_var_driving_experiment' :driving_experiment,
+      'in_var_driving_experiment_name': driving_experiment_name,
+      'in_var_driving_model_ensemble_member' : driving_model_ensemble_member,
+      'in_var_experiment': experiment,
+      'in_var_experiment_id': experiment_id,    
+      'in_var_project_id': project_id,
+      'in_var_contact': contact,
+      'in_var_institution_id':institution_id,  
+      'in_var_model_version_id': model_version_id, 
+        'in_var_driving_model_id': driving_model_id,
+        'in_var_model_id': model_id,
+        'in_var_driving_ensemble_member':driving_ensemble_member, 
+        'in_var_driving_experiment_id': driving_experiment_id, 
+        'in_var_domain': domain, 
+        'frequency': frequency,
+        'time_coverage_start': time_coverage_start,
+        'time_coverage_end':time_coverage_end,
+        'time_number_steps':time_number_steps,
+        #'time_number_gaps': '',
+        #'cdm_datatype':'' ,
+        'domain':'%s_subset' % domain ,
+        'geospatial_increment': geospatial_increment,
+        'geospatial_lat_min':min_lat ,
+        'geospatial_lat_max':max_lat ,
+        'geospatial_lon_min':min_lon ,
+        'geospatial_lon_max':max_lon ,
+      }
+    
+  except Exception as e: 
+    logger.error('failed to populate dynamic metadata dictionay')
+    
   try:
+    ds = Dataset(resource, mode='a')
     ds.setncatts(md_dynamic)
     ds.close()
   except Exception as e:
@@ -231,21 +247,32 @@ def get_extent(resource):
   """
 
   ds = Dataset(resource)
-  
-  lats = ds.variables['lat']
-  lons = ds.variables['lon']
-
-  if len(lats.shape) == 1:
-    min_lat = min(lats) 
-    max_lat = max(lats)
-    min_lon = min(lons) 
-    max_lon = max(lons)
+  if 'lat' in ds.variables:
+    lats = ds.variables['lat']
+    lons = ds.variables['lon']
+    ds.close()
   else: 
-    logger.error('latitude variable not found!!')  
+    ds.close()
+    from flyingpigeon import utils 
+    lats, lons = utils.unroate_pole(resource)
+
+  min_lat = lats[:].min() 
+  max_lat = lats[:].max()
+  min_lon = lons[:].min() 
+  max_lon = lons[:].max()
   
+  return min_lat, max_lat, min_lon, max_lon
+
+def get_geospatial_increment(resource):
+  ds = Dataset(resource)
+  if 'rlat' in ds.variables: 
+    x = ds.variables['rlon']
+  if 'x'  in ds.variables: 
+    x = ds.variables['x']
+  
+  geospatial_increment = round((x[1] - x[0]),2)
   ds.close()
-  
-  return lats, lons #min_lat, max_lat, min_lon, max_lon
+  return geospatial_increment 
 
 
 def set_metadata_segetalflora(resource):
@@ -283,33 +310,38 @@ def set_metadata_segetalflora(resource):
     ds.close()
   except Exception as e: 
     logger.error(e)
-    
     # set the variable attributes: 
   from flyingpigeon.utils import get_variable
-  var = get_variable(resource)
-
-  if 'all' in var: 
-    climat_type = 'all'
-  else: 
-    climat_type = var[-1]
-
-  culture_type = var.strip('sf').strip(climat_type)  
-
-  ds = Dataset(resource, mode='a')
-  sf = ds.variables[var]
-  sf.setncattr('units',1)
-  sf.setncattr('standard_name', 'sf_%s_%s' % (culture_type, climat_type))  
-  sf.setncattr('long_name', 'Segetal flora %s land use for climate type %s' % (culture_type, climat_type))
   
+  try:
+    ds = Dataset(resource, mode='a')
+    var = get_variable(resource)
+    if 'all' in var: 
+      climat_type = 'all'
+    else: 
+      climat_type = var[-1]
+
+    culture_type = var.strip('sf').strip(climat_type)  
+    
+    sf = ds.variables[var]
+    sf.setncattr('units',1)
+    sf.setncattr('standard_name', 'sf_%s_%s' % (culture_type, climat_type))  
+    sf.setncattr('long_name', 'Segetal flora %s land use for climate type %s' % (culture_type, climat_type))
+    ds.close()
+  except Exception as e: 
+    logger.error('failed to set sf attributes %s ' % e)
   # sort the attributes: 
-  att = ds.ncattrs()
-  att.sort()
+  try:
+    ds = Dataset(resource, mode='a')
+    att = ds.ncattrs()
+    att.sort()
+    for a in att: 
+      entry = ds.getncattr(a)
+      ds.setncattr(a,entry)
+    history = '%s , Segetalflora Impact Model V1.0' % (ds.history) 
+    ds.setncattr('history',history)
+    ds.close()
+  except Exception as e: 
+    logger.error('failed to sort attributes %s ' % e)
   
-  for a in att: 
-    entry = ds.getncattr(a)
-    ds.setncattr(a,entry)
-  
-  history = '%s , Segetalflora Impact Model V1.0' % (ds.history) 
-  ds.setncattr('history',history)
-  ds.close()
   return resource

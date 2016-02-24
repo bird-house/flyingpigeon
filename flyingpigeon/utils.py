@@ -101,6 +101,8 @@ def drs_filename(nc_file, skip_timestamp=False, skip_format=False ,
         else:
             raise Exception('unknown project %s' % ds.project_id)
 
+        ds.close()
+
         # add from/to timestamp if not skipped
         if skip_timestamp == False:
             from_timestamp, to_timestamp = get_timestamps(nc_file)
@@ -203,6 +205,7 @@ def get_time(nc_file):
     time = ds.variables['time']
 
     timestamps = num2date(time[:], time.units, time.calendar)
+    
     ds.close()
     
     return timestamps
@@ -450,6 +453,60 @@ def get_dimension_map(resource):
     dimension_map = None
   return dimension_map
 
+def unroate_pole(resource, write_to_file=True): 
+  from numpy import reshape, repeat
+  from iris.analysis import cartography  as ct
+  
+  ds = Dataset(resource, mode='a')
+  
+  try:
+    if 'rotated_latitude_longitude' in ds.variables:
+      rp = ds.variables['rotated_latitude_longitude']
+    elif 'rotated_pole' in ds.variables:   
+      rp = ds.variables['rotated_pole']
+    else: 
+      logger.error('rotated pole variable not found')
+    pole_lat = rp.grid_north_pole_latitude
+    pole_lon = rp.grid_north_pole_longitude
+  except Exception as e: 
+    logger.error('failed to find rotated_pole coorinates: %s' % e)
+  try:   
+    if 'rlat' in ds.variables: 
+      rlats = ds.variables['rlat']
+      rlons = ds.variables['rlon']
+      
+    if 'x' in ds.variables:
+      rlats = ds.variables['y']
+      rlons = ds.variables['x'] 
+  except Exception as e: 
+    logger.error('failed to read in rotated coordiates %s '% e)
+    
+  try:   
+    rlons_i = reshape(rlons,(1,len(rlons)))
+    rlats_i = reshape(rlats,(len(rlats),1))
+    grid_rlats = repeat(rlats_i, (len(rlons)), axis=1)
+    grid_rlons = repeat(rlons_i, (len(rlats)), axis=0)
+  except Exception as e: 
+    logger.error('failed to repeat coordinates %s'% e)
+  
+  lons, lats = ct.unrotate_pole(grid_rlons, grid_rlats, pole_lon, pole_lat)
+  
+  if write_to_file == True: 
+    lat = ds.createVariable('lat','f8',('rlat','rlon'))
+    lon = ds.createVariable('lon','f8',('rlat','rlon'))    
+    
+    lon.standard_name = "longitude" ;
+    lon.long_name = "longitude coordinate" ;
+    lon.units = 'degrees east'
+    lat.standard_name = "latitude" ;
+    lat.long_name = "latitude coordinate" ;
+    lat.units = 'degrees north'
+    
+    lat[:] = lats
+    lon[:] = lons
+  
+  ds.close()
+  return lats, lons
 
 class FreeMemory(object):
   """
