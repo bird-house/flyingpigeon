@@ -138,7 +138,7 @@ def set_dynamic_md(resource):
     
     
   try:
-    contact = ds.in_var_contact
+    contact = ds.contact
     ds.delncattr('contact')
   except Exception as e: 
     logger.error(e)
@@ -297,7 +297,7 @@ def set_metadata_segetalflora(resource):
     'keywords' : 'Segetalflora', 
     'tier': '2',
     'in_var' : 'tas',
-    'description':'Number of european segetalflora species', 
+    'description':'Number of European segetalflora species', 
     'method':'regression equation',
     'institution':'Julius Kuehn-Institut (JKI) Federal Research Centre for Cultivated Plants', 
     'institution_url':'www.jki.bund.de',
@@ -305,6 +305,18 @@ def set_metadata_segetalflora(resource):
     'contact_mail_3':'Joerg.Hoffmann@jki.bund.de',
     'version' : '1.0',
      }
+  
+  dic_climatetype = {
+    '1' : 'cold northern species group', 
+    '2' : 'warm northern species group',
+    '3' : 'moderate warm-toned species group',
+    '4' : 'moderate warm-toned to mediterranean species group',
+    '5' : 'mediterranean species group',
+    '6' : 'climate indiffernet species',
+    '7' : 'climate undefinable species',
+    'all' : 'species of all climate types'
+      }
+  
   try:
     set_basic_md(resource)
   except Exception as e: 
@@ -337,8 +349,8 @@ def set_metadata_segetalflora(resource):
     
     sf = ds.variables[var]
     sf.setncattr('units',1)
-    sf.setncattr('standard_name', 'sf_%s_%s' % (culture_type, climat_type))  
-    sf.setncattr('long_name', 'Segetal flora %s land use for climate type %s' % (culture_type, climat_type))
+    sf.setncattr('standard_name', 'sf%s%s' % (culture_type, climat_type))  
+    sf.setncattr('long_name', 'Segetal flora %s land use for %s' % (culture_type, dic_climatetype['%s' % climat_type]))
     ds.close()
   except Exception as e: 
     logger.error('failed to set sf attributes %s ' % e)

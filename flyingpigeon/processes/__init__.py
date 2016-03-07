@@ -1,5 +1,6 @@
 __all__ = [
         "wps_visualisation",
+        "wps_sdm",
         #"wps_extractpoints",
         "wps_segetalflora",
         "wps_indices",
