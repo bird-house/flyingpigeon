@@ -42,7 +42,7 @@ class GAMProcess(WPSProcess):
         self.gbif = self.addLiteralInput(
             identifier="gbif",
             title="GBIF zip file",
-            abstract="GBIF zip file containing a CSV files with tree locations",
+            abstract="GBIF zip url containing a CSV files with tree locations (e.g.: http://api.gbif.org/v1/occurrence/download/request/0013848-160118175350007.zip)",
             type=type(''),
             minOccurs=1,
             maxOccurs=1,

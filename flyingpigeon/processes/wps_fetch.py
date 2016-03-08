@@ -1,8 +1,8 @@
 import os
 
 from pywps.Process import WPSProcess
-
 import logging
+
 logger = logging.getLogger(__name__)
 
 class FetchProcess(WPSProcess):
