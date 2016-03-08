@@ -34,8 +34,8 @@ class GAMProcess(WPSProcess):
             title="NetCDF File",
             abstract="NetCDF File",
             minOccurs=1,
-            maxOccurs=100,
-            maxmegabites=5000,
+            maxOccurs=500,
+            maxmegabites=50000,
             formats=[{"mimeType":"application/x-netcdf"}],
             )
 
@@ -49,19 +49,28 @@ class GAMProcess(WPSProcess):
             #maxmegabites=50,
             #formats=[{"mimeType":"application/zip"}],
             )
+        
+        self.indices = self.addLiteralInput(
+            identifier="indices",
+            title="Indices",
+            abstract="Climate indices related to growth condition of tree species",
+            default="TG_678",
+            type=type(''),
+            minOccurs=1,
+            maxOccurs=3,
+            allowedValues=['TG_678', 'TN_1', 'RR_678']
+            )
 
-
-
-        #self.period_in = self.addLiteralInput(
-            #identifier="period",
-            #title="Select period",
-            #abstract="Select between reference or projection period",
-            #default="reference",
-            #type=type(''),
-            #minOccurs=1,
-            #maxOccurs=1,
-            #allowedValues=['reference','projection']
-            #)
+        self.period = self.addLiteralInput(
+            identifier="period",
+            title="Reference period",
+            abstract="Reference period for climate condition",
+            default="1971/2000",
+            type=type(''),
+            minOccurs=1,
+            maxOccurs=1,
+            allowedValues=['1951/1980', '1961/1990', '1971/2000','1981/2010']
+            )
         
   
         self.out_csv = self.addComplexOutput(
@@ -90,17 +99,17 @@ class GAMProcess(WPSProcess):
         
     def execute(self):
       
-     
       from flyingpigeon import sdm
 
-      #cdo = Cdo()
-      
       # get the appropriate files
       logger.info('Start process')
       
       logger.info('read in the arguments')
       nc_files = self.getInputValues(identifier='resources')
       gbif = self.getInputValues(identifier='gbif')
+      period = self.getInputValues(identifier='period')
+      
+      indices = self.getInputValues(identifier='indices')
       
       logger.info('extract csv file from url: %s ' % (gbif))
       
