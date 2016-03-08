@@ -79,6 +79,14 @@ class GAMProcess(WPSProcess):
             formats=[{"mimeType":"image/png"}],
             asReference=True,
             )
+
+        self.PA_graphic = self.addComplexOutput(
+            identifier="PA_graphic",
+            title="Graphic of PA mask",
+            abstract="PNG graphic file showing PA mask generated based on netCDF spatial increment",
+            formats=[{"mimeType":"image/png"}],
+            asReference=True,
+            )
         
     def execute(self):
       
@@ -120,8 +128,49 @@ class GAMProcess(WPSProcess):
       fig.savefig(graphic)
       plt.close()
       
+      from scipy import spatial
+      import numpy as np
+      from netCDF4 import Dataset
+      from flyingpigeon import config
+      
+      DIR_MASKS = config.masks_dir()
+      
+      
+      nc = DIR_MASKS + '/sftlf_EUR-11_ECMWF-ERAINT_evaluation_r1i1p1_KNMI-RACMO22E_v1_fx.nc'
+
+      ds = Dataset(nc, mode='r')
+
+      lats = ds.variables['lat']
+      lons = ds.variables['lon']
+
+      domain = lats.shape
+      
+      lats1D = np.array(lats).ravel()
+      lons1D = np.array(lons).ravel()
+      
+      tree = spatial.KDTree(zip(lons1D,lats1D))
+      
+      #tree.data
+      l, i = tree.query(latlon)
+      
+      fig = plt.figure(figsize=(20,10), dpi=600, facecolor='w', edgecolor='k')
+
+      PA = np.zeros(len(lats1D)) 
+      PA[i] = 1
+
+      ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
+      ax.coastlines()
+      cs = plt.scatter(np.array(lons).ravel(), np.array(lats).ravel(), c=PA, lw=0,  transform=ccrs.PlateCarree())
+
+      png_PA_mask = 'PA_mask.png'
+      fig.savefig(png_PA_mask)
+      plt.close()      
+      
+      
+      
       self.out_csv.setValue( csv_file )
       self.output_graphic.setValue( graphic )
+      self.PA_graphic.setValue( png_PA_mask )
 
 
 

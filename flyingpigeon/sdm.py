@@ -28,15 +28,18 @@ def get_latlon( csv_file ):
   
   latlon = empty([l,2], dtype=float, order='C')
   
+  c = 0
   for i in range(0,l):
     try:
-      
       latlon[i][0] = float(columns['decimallongitude'][i])
       latlon[i][1] = float(columns['decimallatitude'][i])
     except Exception as e: 
-      print 'failed for %s ' % i
+      c = c +1 
+  logger.info('failed to read in PA coordinates for %s rows ' % c)
   
   nz = (latlon == 0).sum(1)
   ll = latlon[nz == 0, :]    
+  
+  logger.info('read in PA coordinates for %s rows ' % len(ll[:,0]))
   
   return ll 
