@@ -72,7 +72,10 @@ class GAMProcess(WPSProcess):
             allowedValues=['1951/1980', '1961/1990', '1971/2000','1981/2010']
             )
         
-  
+        ###########
+        ### OUTPUTS
+        ###########
+        
         self.out_csv = self.addComplexOutput(
             identifier="out_csv",
             title="Tree species table",
@@ -96,21 +99,32 @@ class GAMProcess(WPSProcess):
             formats=[{"mimeType":"image/png"}],
             asReference=True,
             )
+         
+        self.output_indices = self.addComplexOutput(
+            identifier="output_indices",
+            title="Climate indices for growth condition of reference period",
+            abstract="netCDF file containing calculated climate indices",
+            formats=[{"mimeType":"application/x-netcdf"}],
+            asReference=True,
+            )         
+        
+        
         
     def execute(self):
+      #############################
+      ### get presents absence Data
+      ############################
       
       from flyingpigeon import sdm
-
       # get the appropriate files
       logger.info('Start process')
       
       logger.info('read in the arguments')
-      nc_files = self.getInputValues(identifier='resources')
+      resources = self.getInputValues(identifier='resources')
       gbif = self.getInputValues(identifier='gbif')
       period = self.getInputValues(identifier='period')
       
       indices = self.getInputValues(identifier='indices')
-      
       logger.info('extract csv file from url: %s ' % (gbif))
       
       csv_file = sdm.get_csv(gbif[0]) 
@@ -144,29 +158,20 @@ class GAMProcess(WPSProcess):
       
       DIR_MASKS = config.masks_dir()
       
-      
       nc = DIR_MASKS + '/sftlf_EUR-11_ECMWF-ERAINT_evaluation_r1i1p1_KNMI-RACMO22E_v1_fx.nc'
 
       ds = Dataset(nc, mode='r')
-
       lats = ds.variables['lat']
       lons = ds.variables['lon']
-
       domain = lats.shape
       
       lats1D = np.array(lats).ravel()
       lons1D = np.array(lons).ravel()
-      
-      tree = spatial.KDTree(zip(lons1D,lats1D))
-      
-      #tree.data
+      tree = spatial.KDTree(zip(lats1D,lons1D))
       l, i = tree.query(latlon)
-      
       fig = plt.figure(figsize=(20,10), dpi=600, facecolor='w', edgecolor='k')
-
       PA = np.zeros(len(lats1D)) 
       PA[i] = 1
-
       ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
       ax.coastlines()
       cs = plt.scatter(np.array(lons).ravel(), np.array(lats).ravel(), c=PA, lw=0,  transform=ccrs.PlateCarree())
@@ -175,11 +180,16 @@ class GAMProcess(WPSProcess):
       fig.savefig(png_PA_mask)
       plt.close()      
       
+      #################################
+      ### calculate the climate inidces
+      #################################
       
+      nc_indices = sdm.get_refindices(resources=resources, indices=indices, period=period) 
       
       self.out_csv.setValue( csv_file )
       self.output_graphic.setValue( graphic )
       self.PA_graphic.setValue( png_PA_mask )
+      self.output_indices.setValue( nc_indices )
 
 
 
