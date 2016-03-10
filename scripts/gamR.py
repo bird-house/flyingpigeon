@@ -51,23 +51,25 @@ for i in [1,2]:
   raw_input("Press Enter to continue...")
   grdevices.dev_off()
   
-  
 
-x1 = np.random.normal(20, 10, [200,200]) 
-x2 = x1 / 2 + np.random.normal(2, 1, [200,200]) 
+from netCDF4 import Dataset
 
-x1 = ro.r.matrix(x1, nrow=nr, ncol=nc, dimnames=[x,y])
-x2 = ro.r.matrix(x2, nrow=nr, ncol=nc, dimnames=[x,y])
-#ro.r.assign("x1", x1)
-#ro.r.assign("x2", x2)
+nc = '/home/nils/.conda/envs/birdhouse/etc/pywps/TN_1_EUR-11_ICHEC-EC-EARTH_historical_r1i1p1_KNMI-RACMO22E_v1_day_19960101-20000101.nc'
+
+ds = Dataset(nc, mode='r')
+TN_1 = ds.variables['TN_1']  
+
+dims = np.squeeze(TN_1).shape
+x1 = np.ravel(TN_1) - 255 
+
+x2 = x1 / 2 + np.random.normal(2, 1, len(x1)) 
 
 d2 = { 'x1': x1,'x2': x2}
 
 df = ro.DataFrame(d2)
-rstack = utils.stack(df)
+# rstack = utils.stack(df)
 
 p = mgcv.predict_gam(trained_model, newdata=df, type="response", progress="text", na_rm=True)
-
-#p <- predict(gam_model, newdata=df, type="response", progress="text", na.rm=TRUE)
-#species = stats.predict(object=rstack, model=trained_model, progress="text", na_rm=True, type="response")
   
+p2d = np.array(p)
+p2d.resize(dims)
