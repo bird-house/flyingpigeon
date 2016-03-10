@@ -1,5 +1,5 @@
 import numpy as np
-import numpy.random as R
+#import numpy.random as R
 import matplotlib.pyplot as plt
   
 #from statsmodels.sandbox.gam import AdditiveModel
