@@ -30,7 +30,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   :param output_format:
   :return: output file path
   '''
-
+  print 'start ocgis module'
   logger.info('Start ocgis module call function')
   from ocgis import OcgOperations, RequestDataset , env
   from ocgis.util.large_array import compute

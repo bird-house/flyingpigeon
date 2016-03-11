@@ -4,7 +4,7 @@ from netCDF4 import Dataset, num2date
 import logging
 logger = logging.getLogger(__name__)
 
-GROUPING = [ "day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON" ]
+GROUPING = [ "day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON" ,"JAN" ]
 
 def local_path(url):
   from urllib2 import urlparse
@@ -39,6 +39,10 @@ def calc_grouping(grouping):
     calc_grouping = ['year', 'month', 'day']
   elif grouping == 'mon':
       calc_grouping = ['year', 'month']
+  
+  elif grouping == 'Jan':
+      calc_grouping = [[1], 'unique']
+  
   elif grouping in ['year', 'month']:
       calc_grouping = [grouping]
   else:

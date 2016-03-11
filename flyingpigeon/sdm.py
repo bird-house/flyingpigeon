@@ -81,27 +81,98 @@ def get_PAmask(points, domain='EUR-11'):
   PAmask[sftlf<=50] = np.nan
   return PAmask
 
-def get_refindices(resources, indices, period):
-  
-  from flyingpigeon.utils import sort_by_filename 
+def get_indices(resources, indices):
+  from flyingpigeon.utils import sort_by_filename, calc_grouping
   from flyingpigeon.ocgis_module import call
+  from flyingpigeon.indices import indice_variable
   
   ncs = sort_by_filename(resources, historical_concatination=True)
-  nc_indices = []
-  
+  ncs_indices = []
+  logger.info('resources sorted found %s datasets' % len(ncs.keys()) ) 
   for key in ncs.keys():
     for indice in indices:
       try: 
-        , month = indice.split('_')
-        
-        time_region = {'month':[6,7,8]}
-        
-        calc = [{'func' : 'icclim_' + icclim, 'name' : indice}]
-        variable='tas'
-        nc = call(resource=ncs[key], variable=variable, calc=calc, calc_grouping=['all'], prefix=key.replace(variable, name), time_region=time_region, time_range=None, output_format='nc')
-        nc_indices = nc # nc_indices.append(nc)
-        logger.info('Successful calculated indice %s %s' % (key, indice))
+        name , month = indice.split('_')
+        variable=key.split('_')[0]
+        #print name 
+        if variable == indice_variable(name):
+          
+          logger.info('calculating indice %s ' % indice)
+          grouping = calc_grouping(month)
+          calc = [{'func' : 'icclim_' + name, 'name' : name}]
+          prefix=key.replace(variable, name).replace('_day_','_%s_' % month)
+           
+          nc = call(resource=ncs[key], variable=variable, calc=calc, calc_grouping=grouping, prefix=prefix, memory_limit=500 )
+          ncs_indices.append(nc)
+          logger.info('Successful calculated indice %s %s' % (key, indice))
       except Exception as e: 
-        logger.error('failed to calculate indice %s %s %s ' % (key, indice, e))
-        
-  return nc_indices
+        print e# logger.error('failed to calculate indice %s %s %s ' % (key, indice, e))    
+  return ncs_indices
+
+def sort_indices(ncs_indices):
+  """
+  groups the defining growing conditions indices per dataset
+  :param ncs_indices: list of climate indices
+  :return dictionary: {'dataset' = [filepathlist]}
+  """
+  from os.path import basename 
+  indices_dic = {}
+
+  for indice in ncs_indices: 
+    f = basename(indice).strip('.nc')
+    name = '_'.join(f.split('_')[1:-2])
+    indices_dic[name] = []
+      
+  for key in indices_dic.keys():
+    for path in ncs_indices: 
+      if key in path:
+        indices_dic[key].append(path)
+ 
+  return indices_dic
+
+def get_reference(ncs_indices, refperiod='1998-2000'):
+  """
+  calculates the netCDF files containing the mean climatology for statistical GAM training
+  :param ncs_indices: list of climate indices defining the growing conditions of tree species
+  :param refperiod: time period for statistic training 
+  :return present: present conditions
+  """
+  from datetime import datetime as dt
+  from flyingpigeon.ocgis_module import call
+  from flyingpigeon.utils import get_variable
+  from os.path import basename
+  
+  if not refperiod == 'all':
+    s, e = refperiod.split('-')
+    start = dt.strptime(s+'-01-01', '%Y-%m-%d')
+    end = dt.strptime(e+'-12-31', '%Y-%m-%d')
+    time_range=[start, end]
+  else:
+    time_range=None
+    
+  ref_indices = []
+  for nc_indice in ncs_indices: 
+    variable = get_variable(nc_indice)
+    f = basename(nc_indice).strip('.nc')
+    prefix = '%s_ref-%s' % ('_'.join(f.split('_')[0:-1]), refperiod) 
+    
+    ref_indices.append(call(resource=nc_indice, variable=variable,prefix=prefix, calc=[{'func':'mean','name': variable}],calc_grouping=['all'],time_range=time_range))
+  
+  return ncs_reference
+
+
+def get_gam(ncs_reference, PApoints):
+  
+  from netCDF4 import Dataset
+  from os.path import basename
+  from flyingpigeon.utils import get_variable
+  
+  dic = {PA : PApoints}
+  for i , nc in enumerate(ncs_reference):
+    var = get_variable(nc)
+    ds = Dataset(nc)
+    vals = ds.variables[var]
+    dic[var] = vals
+    
+  return dic
+
