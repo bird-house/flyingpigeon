@@ -44,7 +44,7 @@ def get_latlon( csv_file ):
   
   return ll
 
-def get_PApoints(coordinates, domain='EUR-11'):
+def get_PApoints(coordinates=[], domain='EUR-11'):
   """
   generates a matrix with 1/0 values over land areas. (nan for water regions)
   
@@ -72,7 +72,7 @@ def get_PApoints(coordinates, domain='EUR-11'):
   lats1D = np.array(lats).ravel()
   lons1D = np.array(lons).ravel()
   tree = spatial.KDTree(zip(lats1D,lons1D))
-  l, i = tree.query(points)
+  l, i = tree.query(coordinates)
   
   PA = np.zeros(len(lats1D)) 
   PA[i] = 1
@@ -165,9 +165,9 @@ def get_gam(ncs_reference, PAmask):
   
   from netCDF4 import Dataset
   from os.path import basename
-  from numpy import squeeze, ravel, isnan, nan
-  from flyingpigeon.utils import get_variable
+  from numpy import squeeze, ravel, isnan, nan, array, reshape
   
+  from flyingpigeon.utils import get_variable
   from rpy2.robjects.packages import importr
   import rpy2.robjects as ro
 
@@ -178,8 +178,10 @@ def get_gam(ncs_reference, PAmask):
   stats = importr("stats")
   
   data = {'PA': ro.FloatVector(ravel(PAmask))}
+  domain = PAmask.shape
   
   form = 'PA ~ '
+  ncs_reference.sort()
   
   for i , nc in enumerate(ncs_reference):
     var = get_variable(nc)
@@ -188,7 +190,7 @@ def get_gam(ncs_reference, PAmask):
     vals = squeeze(ds.variables[var])
     vals[isnan(PAmask)] = nan 
     indice = '%s_%s' % (var, agg)
-    data[indice] = ro.FloatVector(ravel(vals))
+    data[str(indice)] = ro.FloatVector(ravel(vals))
     if i == 0:
       form = form + 's(%s, k=3)' % indice 
     else: 
@@ -197,7 +199,59 @@ def get_gam(ncs_reference, PAmask):
   dataf = ro.DataFrame(data)
   eq = ro.Formula(str(form))
   
-  gam_model = mgcv.gam(base.eval(eq), data=dataf, family=stats.binomial(), scale=-1)
+  gam_model = mgcv.gam(base.eval(eq), data=dataf, family=stats.binomial(), scale=-1, na_action=stats.na_exclude)
   
-  return gam_model
+  grdevices = importr('grDevices')
+  
+  output_info = "info.pdf"
+  grdevices.pdf(file=output_info)
+  # plotting code here
 
+  for i in range(1,len(ncs_reference)+1):    
+  #ylim = ro.IntVector([-6,6])
+    mgcv.plot_gam(gam_model, shade='T', col='black',select=i,ylab='Predicted Probability',rug=False , cex_lab = 1.4, cex_axis = 1.4, ) #ylim=ylim,  trans=base.eval(trans),
+    
+  grdevices.dev_off()
+  
+  predict_gam = mgcv.predict_gam(gam_model, type="response", progress="text", na_action=stats.na_exclude) #, 
+  
+  prediction = array(predict_gam).reshape(domain)
+    
+  return gam_model, prediction, output_info
+
+
+def get_prediction(gam_model, ncs_indices ):
+  from netCDF4 import Dataset
+  from os.path import basename
+  from numpy import squeeze, ravel, array, reshape, zeros
+  
+  from flyingpigeon.utils import get_variable
+  
+  from rpy2.robjects.packages import importr
+  import rpy2.robjects as ro
+
+  import rpy2.robjects.numpy2ri
+  rpy2.robjects.numpy2ri.activate()
+  mgcv = importr("mgcv")
+  stats = importr("stats")
+
+  ncs_indices.sort()
+  
+  data = {}
+  
+  for i , nc in enumerate(ncs_indices):
+    var = get_variable(nc)
+    agg = basename(nc).split('_')[-2]
+    ds = Dataset(nc)
+    vals = squeeze(ds.variables[var])
+    if i == 0:
+      dims = vals.shape
+    indice = '%s_%s' % (var, agg)
+    data[str(indice)] = ro.FloatVector(ravel(vals))
+  
+  dataf = ro.DataFrame(data)
+  predict_gam = mgcv.predict_gam(gam_model, newdata=dataf, type="response", progress="text", newdata_guaranteed = True) #, na_action=`na.pass`
+  
+  prediction = array(predict_gam).reshape(dims)
+  
+  return prediction

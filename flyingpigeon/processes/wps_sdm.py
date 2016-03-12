@@ -251,9 +251,9 @@ class GAMProcess(WPSProcess):
           # put it into the tarfiles
         except Exception as e: 
           logger.debug('failed to calculate ncs_reference %s ' % e)
-        
+
         try:
-          gam_model = sdm.get_gam(ncs_reference=ncs_reference, PApoints)
+          gam_model, predict_gam, gam_info = sdm.get_gam(ncs_references,PApoints)
           logger.info('GAM sucessfully trained')
         except Exception as e: 
           logger.debug('failed to train GAM %s ' % e)
