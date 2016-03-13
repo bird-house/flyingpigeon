@@ -44,7 +44,7 @@ def get_latlon( csv_file ):
   
   return ll
 
-def get_PApoints(coordinates=[], domain='EUR-11'):
+def get_PAmask(coordinates=[], domain='EUR-11'):
   """
   generates a matrix with 1/0 values over land areas. (nan for water regions)
   
@@ -102,7 +102,7 @@ def get_indices(resources, indices):
           calc = [{'func' : 'icclim_' + name, 'name' : name}]
           prefix=key.replace(variable, name).replace('_day_','_%s_' % month)
            
-          nc = call(resource=ncs[key], variable=variable, calc=calc, calc_grouping=grouping, prefix=prefix, memory_limit=500 )
+          nc = call(resource=ncs[key], variable=variable, calc=calc, calc_grouping=grouping, prefix=prefix ) #memory_limit=500
           ncs_indices.append(nc)
           logger.info('Successful calculated indice %s %s' % (key, indice))
       except Exception as e: 
@@ -220,10 +220,17 @@ def get_gam(ncs_reference, PAmask):
   return gam_model, prediction, output_info
 
 
-def get_prediction(gam_model, ncs_indices ):
+def get_prediction(gam_model, ncs_indices ):#, mask=None
+  """
+  predict the probabillity based on the gam_model and the given climate indice datasets
+  
+  :param gam_model: fitted gam (output from sdm.get_gam)
+  :pram nsc_indices: list of netCDF files containing climate indices of one dataset
+  :param mask: 2D array of True/False to exclude areas (e.g ocean) for prediction
+  """
   from netCDF4 import Dataset
   from os.path import basename
-  from numpy import squeeze, ravel, array, reshape, zeros
+  from numpy import squeeze, ravel, array, reshape#, zeros, broadcast_arrays, nan
   
   from flyingpigeon.utils import get_variable
   
@@ -246,6 +253,9 @@ def get_prediction(gam_model, ncs_indices ):
     vals = squeeze(ds.variables[var])
     if i == 0:
       dims = vals.shape
+    #if mask != None: 
+      #mask = broadcast_arrays(vals, mask)[1]
+      #vals[mask==False] = nan
     indice = '%s_%s' % (var, agg)
     data[str(indice)] = ro.FloatVector(ravel(vals))
   
@@ -255,3 +265,32 @@ def get_prediction(gam_model, ncs_indices ):
   prediction = array(predict_gam).reshape(dims)
   
   return prediction
+
+
+def write_to_file(nc_indice, data):
+  from netCDF4 import Dataset
+  from shutil import copy
+  from os.path import split, join
+  from flyingpigeon.utils import get_variable
+  from flyingpigeon.metadata import get_frequency 
+
+  #path, nc_indice = split(indice_file)
+
+  var = get_variable(nc_indice)
+  fq = get_frequency(nc_indice)
+  agg = nc_indice.split('_')[-2]
+
+  nc = nc_indice.replace(var,'tree').replace(agg,fq)
+  copy(nc_indice, nc)
+  
+  ds = Dataset(nc, mode= 'a')
+  vals = ds.variables[var]
+  
+  ds.renameVariable(var,'tree') 
+  
+  vals[:,:,:] = data[:,:,:]
+  vals.long_name = 'Favourabilliy for tree species'
+  vals.standard_name = 'tree'
+  vals.units = '0-1'
+  ds.close()                  
+  return nc                

@@ -58,7 +58,7 @@ class GAMProcess(WPSProcess):
             type=type(''),
             minOccurs=1,
             maxOccurs=3,
-            allowedValues=['TG_JJA', 'TNn_Jan', 'RR1day_JJA']
+            allowedValues=['TG_JJA', 'TNn_Jan', 'PRCPTOT_JJA']
             )
 
         self.period = self.addLiteralInput(
@@ -153,19 +153,19 @@ class GAMProcess(WPSProcess):
         indices = self.getInputValues(identifier='indices')
         logger.info('extract csv file from url: %s ' % (gbif))
       except Exception as e: 
-        logger.error('failed to read in the arguments %s ' % e)
+        logger.debug('failed to read in the arguments %s ' % e)
       
       try:
         csv_file = sdm.get_csv(gbif[0])
         logger.info('extract csv file with tree observations')
       except Exception as e: 
-        logger.error('failed to extract csv file from url %s' % e)
+        logger.debug('failed to extract csv file from url %s' % e)
       
       try: 
         latlon = sdm.get_latlon(csv_file)
         logger.info('read in latlon coordinates of tree observations')
       except Exception as e: 
-        logger.error('failed to extract the latlon points %s' % e)
+        logger.debug('failed to extract the latlon points %s' % e)
       
       try: 
         import matplotlib.pyplot as plt
@@ -174,7 +174,7 @@ class GAMProcess(WPSProcess):
         import cartopy.crs as ccrs
         logger.info('libraries loaded')
       except Exception as e: 
-        logger.error('failed to load libraries: %s' % e)
+        logger.debug('failed to load libraries: %s' % e)
       
       try: 
         fig = plt.figure(figsize=(20,10), dpi=600, facecolor='w', edgecolor='k')
@@ -187,14 +187,14 @@ class GAMProcess(WPSProcess):
         plt.close()
         logger.info('Points of tree observation plotted')
       except Exception as e: 
-        logger.error('plotting points failed %s' % e)
+        logger.debug('plotting points failed %s' % e)
       
       try:
         logger.info('generating the PA mask')
         PAmask = sdm.get_PAmask(points=latlon)
         logger.info('PA mask sucessfully generated')
       except Exception as e: 
-        logger.error('failed to generate the PA mask %s' % e )
+        logger.debug('failed to generate the PA mask %s' % e )
       
       try: 
         fig = plt.figure(figsize=(20,10), dpi=300, facecolor='w', edgecolor='k')
@@ -204,7 +204,7 @@ class GAMProcess(WPSProcess):
         plt.close()
         logger.info('PA mask plotted')
       except Exception as e: 
-        logger.error('failed to plot the PA mask %s' % e)
+        logger.debug('failed to plot the PA mask %s' % e)
       
       #################################
       ### calculate the climate inidces
@@ -216,7 +216,7 @@ class GAMProcess(WPSProcess):
         ncs_indices = sdm.get_indices(resources=resources, indices=indices)
         logger.info('indice calculation done')
       except Exception as e: 
-        logger.error('failed to calculate indices %s' % e)
+        logger.debug('failed to calculate indices %s' % e)
       
       #################################
       ### mashine learning gam 
@@ -227,7 +227,7 @@ class GAMProcess(WPSProcess):
         indices_dic = sdm.sort_indices(indices)
         logger.info('indice files sorted')
       except Exception as e: 
-        logger.error('failed to sort indices %s' % e)
+        logger.debug('failed to sort indices %s' % e)
 
       try:
         import tarfile
@@ -241,36 +241,56 @@ class GAMProcess(WPSProcess):
         
         logger.info('tar files prepared')
       except Exception as e: 
-        logger.error('tar file preparation failed: %s' % e)
+        logger.debug('tar file preparation failed: %s' % e)
 
       for key in indices_dic.keys():
         try:
           ncs_indices = indices_dic[key]
-          ncs_reference = sdm.get_reference(ncs_indices=ncs_indices, refperiod=refperiod)
-          logger.info('prediction done for %s ' % key)
-          # put it into the tarfiles
+          ncs_reference = sdm.get_reference(ncs_indices=ncs_indices, refperiod=period)
+          
+          for nc_indice in ncs_indices: 
+            tar_indices.add(nc_indice, 
+                          arcname = result.replace(os.path.abspath(os.path.curdir), ""))
+        
+          for nc_reference in ncs_reference: 
+            tar_present.add(nc_reference, 
+                arcname = result.replace(os.path.abspath(os.path.curdir), ""))
+          
+          logger.info('reference climate condition calculated %s ' % key)
         except Exception as e: 
           logger.debug('failed to calculate ncs_reference %s ' % e)
 
         try:
           gam_model, predict_gam, gam_info = sdm.get_gam(ncs_references,PApoints)
+          tar_info.add(gam_info, 
+                          arcname = result.replace(os.path.abspath(os.path.curdir), ""))
           logger.info('GAM sucessfully trained')
         except Exception as e: 
           logger.debug('failed to train GAM %s ' % e)
-        
+
         try:
-          tar_present.add(present, 
-                          arcname = result.replace(os.path.abspath(os.path.curdir), "")) 
-          tar_prediction.add(prediction, 
-                          arcname = result.replace(os.path.abspath(os.path.curdir), ""))
-          tar_info.add(gam_info, 
-                          arcname = result.replace(os.path.abspath(os.path.curdir), ""))
-          for indice in indices: 
-            tar_indices.add(indice, 
+          prediction = sdm.get_prediction(gam_model, ncs_indices)
+          logger.info('prediction done')
+        except Exception as e: 
+          logger.debug('failed to predict %s ' % e)
+          
+        try:
+          from numpy import invert, isnan, nan, broadcast_arrays, array, zeros, linspace, meshgrid
+          mask = invert(isnan(PApoints))
+          mask = broadcast_arrays(prediction, mask)[1]
+          prediction[mask==False] = nan
+          logger.info('land sea mask for predicted data')
+        except Exception as e: 
+          logger.debug('failed to mask predicted data')
+
+        try: 
+          species_file = sdm.write_to_file(ncs_indices[0], prediction)
+          logger.info('Favourabillity written to file')
+          tar_prediction.add(species_file, 
                           arcname = result.replace(os.path.abspath(os.path.curdir), ""))
         except Exception as e:
-          logger.error('failed to calculate prediction %s' % e)
-      
+          logger.debug('failed to write species file %s ' % e)
+
       try:
         tar_present.close()
         tar_prediction.close()
@@ -278,7 +298,7 @@ class GAMProcess(WPSProcess):
         tar_indices.close()
         logger.info('tar files closed')
       except Exception as e:
-        logger.error('tar file closing failed %s' % e)
+        logger.debug('tar file closing failed %s' % e)
         
       self.output_csv.setValue( csv_file )
       self.output_gbif.setValue( tree_presents )
