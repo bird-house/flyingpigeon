@@ -2,7 +2,7 @@
 FROM birdhouse/bird-base:latest
 MAINTAINER https://github.com/bird-house
 
-LABEL Description="Flyingpigeon WPS Application" Vendor="Birdhouse" Version="0.2.0"
+LABEL Description="Flyingpigeon WPS Application" Vendor="Birdhouse" Version="0.2.5"
 
 # Configure hostname and user for services 
 ENV OUTPUT_PORT 38093

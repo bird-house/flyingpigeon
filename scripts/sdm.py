@@ -11,6 +11,8 @@ csv = '/home/nils/Downloads/0013848-160118175350007.csv'
 latlon = sdm.get_latlon(csv)
 
 PApoints = sdm.get_PApoints(coordinates=latlon)
+
+
 gam_model, predict_ref, gam_info = sdm.get_gam(ncs_references,PApoints)
 prediction = sdm.get_prediction(gam_model, ncs_indices)
 

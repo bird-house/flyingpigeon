@@ -191,7 +191,7 @@ class GAMProcess(WPSProcess):
       
       try:
         logger.info('generating the PA mask')
-        PAmask = sdm.get_PAmask(points=latlon)
+        PAmask = sdm.get_PAmask(coordinates=latlon)
         logger.info('PA mask sucessfully generated')
       except Exception as e: 
         logger.debug('failed to generate the PA mask %s' % e )
@@ -224,7 +224,7 @@ class GAMProcess(WPSProcess):
       
       try: 
         # sort indices
-        indices_dic = sdm.sort_indices(indices)
+        indices_dic = sdm.sort_indices(ncs_indices)
         logger.info('indice files sorted')
       except Exception as e: 
         logger.debug('failed to sort indices %s' % e)
