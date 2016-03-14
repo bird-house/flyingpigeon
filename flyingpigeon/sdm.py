@@ -102,7 +102,7 @@ def get_indices(resources, indices):
           calc = [{'func' : 'icclim_' + name, 'name' : name}]
           prefix=key.replace(variable, name).replace('_day_','_%s_' % month)
            
-          nc = call(resource=ncs[key], variable=variable, calc=calc, calc_grouping=grouping, prefix=prefix ) #memory_limit=500
+          nc = call(resource=ncs[key], variable=variable, calc=calc, calc_grouping=grouping, prefix=prefix , memory_limit=500) #memory_limit=500
           ncs_indices.append(nc)
           logger.info('Successful calculated indice %s %s' % (key, indice))
       except Exception as e: 
