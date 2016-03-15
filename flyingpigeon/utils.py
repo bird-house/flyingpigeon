@@ -47,7 +47,7 @@ def calc_grouping(grouping):
       calc_grouping = [grouping]
   else:
       msg = 'Unknown calculation grouping: %s' % grouping
-      logger.error(msg)
+      logger.debug(msg)
       raise Exception(msg)
   return calc_grouping
 
@@ -156,10 +156,10 @@ def get_domain(nc_file):
       domain = ds.CORDEX_domain
       logger.info('nc_file belongs to CORDEX')
     else: 
-      logger.error('No known project_id found in meta data')
+      logger.debug('No known project_id found in meta data')
 
   except Exception as e :
-      logger.error('Could not specify domain for %s: %s' % (nc_file, e) )
+      logger.debug('Could not specify domain for %s: %s' % (nc_file, e) )
 
   return domain
 
@@ -278,7 +278,7 @@ def sort_by_filename(resource, historical_concatination = False):
   tmp_dic = {}
   try: 
     if type(resource) == list:
-      logger.debug('resource is list')  
+      logger.debug('resource is list with %s files' % len(resource))  
       try:  #if len(resource) > 1:
         # collect the different experiment names
         for nc in resource:
@@ -287,11 +287,12 @@ def sort_by_filename(resource, historical_concatination = False):
           n = f.split('_')
           bn = '_'.join(n[0:-1]) # skipping the date information in the filename
           ndic[bn] = [] # dictionary containing all datasets names
-        logger.info('found %s  datasets' % len(ndic.keys()))
+        logger.info('found %s datasets' % len(ndic.keys()))
       except Exception as e: 
-        logger.error('failed to find names of datasets: %s ' % e)
-
-      try: 
+        logger.debug('failed to find names of datasets: %s ' % e)
+      
+      logger.info('check for historical / rcp datasets')
+      try:
         if historical_concatination == True:
           # select only necessary names
           if any("_rcp" in s for s in ndic.keys()): 
@@ -300,26 +301,31 @@ def sort_by_filename(resource, historical_concatination = False):
                 ndic.pop(key)
             logger.info('historical data set names removed from dictionary')
           else: 
-            logger.info('no rcp data set names found in dictionary')
+            logger.info('no rcp dataset names found in dictionary')
       except Exception as e:
-        logger.error('failed to pop historical data set names: %s ' % e )  
+        logger.debug('failed to pop historical data set names: %s ' % e )  
+      
+      logger.info('start sorting the files')
       try:  
         for key in ndic:
-          if historical_concatination == False:
-            for n in resource:
-              if '%s_' % key in n: 
-                ndic[key].append(path.join(p,n))
-          
-          elif historical_concatination == True:
-            key_hist = key.replace('rcp26','historical').replace('rcp45','historical').replace('rcp65','historical').replace('rcp85','historical')
-            for n in resource:
-              if '%s_' % key in n or '%s_' % key_hist in n: 
-                ndic[key].append(path.join(p,n))
-          else:
-            logger.error('append filespathes to dictionary for key %s failed' % (key))
-          ndic[key].sort()
+          try:
+            if historical_concatination == False:
+              for n in resource:
+                if '%s_' % key in n: 
+                  ndic[key].append(path.join(p,n))
+
+            elif historical_concatination == True:
+              key_hist = key.replace('rcp26','historical').replace('rcp45','historical').replace('rcp65','historical').replace('rcp85','historical')
+              for n in resource:
+                if '%s_' % key in n or '%s_' % key_hist in n: 
+                  ndic[key].append(path.join(p,n))
+            else:
+              logger.debug('append filespathes to dictionary for key %s failed' % (key))
+            ndic[key].sort()
+          except Exception as e: 
+            logger.debug('failed for %s : %s' % (key, e))  
       except Exception as e:
-        logger.error('failed to populate the dictionary with approriate files') 
+        logger.debug('failed to populate the dictionary with approriate files: %s' % e) 
 
       try:
         # add date information to the key:
@@ -330,17 +336,17 @@ def sort_by_filename(resource, historical_concatination = False):
           newkey = key+'_'+start+'-'+end
           tmp_dic[newkey] = ndic[key]
       except Exception as e: 
-        logger.exception('failed to sort the list of resources and add dates to keyname')
+        logger.debug('failed to sort the list of resources and add dates to keyname %s' % e)
         raise
 
     elif type(resource) == str:
       p, f = path.split(path.abspath(resource))
       tmp_dic[f.replace('.nc','')] = resource
     else:      
-      logger.error('sort_by_filename module failed: resource is not str or list')
+      logger.debug('sort_by_filename module failed: resource is not str or list')
     logger.debug('sort_by_filename module done: len(ndic) = %s ' % len(ndic))  
   except Exception as e: 
-    logger.exception('failed to sort files by filename')
+    logger.debug('failed to sort files by filename')
     raise
 
   return tmp_dic # rndic
@@ -469,11 +475,11 @@ def unroate_pole(resource, write_to_file=True):
     elif 'rotated_pole' in ds.variables:   
       rp = ds.variables['rotated_pole']
     else: 
-      logger.error('rotated pole variable not found')
+      logger.debug('rotated pole variable not found')
     pole_lat = rp.grid_north_pole_latitude
     pole_lon = rp.grid_north_pole_longitude
   except Exception as e: 
-    logger.error('failed to find rotated_pole coorinates: %s' % e)
+    logger.debug('failed to find rotated_pole coorinates: %s' % e)
   try:   
     if 'rlat' in ds.variables: 
       rlats = ds.variables['rlat']
@@ -483,7 +489,7 @@ def unroate_pole(resource, write_to_file=True):
       rlats = ds.variables['y']
       rlons = ds.variables['x'] 
   except Exception as e: 
-    logger.error('failed to read in rotated coordiates %s '% e)
+    logger.debug('failed to read in rotated coordiates %s '% e)
     
   try:   
     rlons_i = reshape(rlons,(1,len(rlons)))
@@ -491,7 +497,7 @@ def unroate_pole(resource, write_to_file=True):
     grid_rlats = repeat(rlats_i, (len(rlons)), axis=1)
     grid_rlons = repeat(rlons_i, (len(rlats)), axis=0)
   except Exception as e: 
-    logger.error('failed to repeat coordinates %s'% e)
+    logger.debug('failed to repeat coordinates %s'% e)
   
   lons, lats = ct.unrotate_pole(grid_rlons, grid_rlats, pole_lon, pole_lat)
   

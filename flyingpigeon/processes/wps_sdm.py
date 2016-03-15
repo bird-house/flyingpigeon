@@ -172,7 +172,7 @@ class GAMProcess(WPSProcess):
         from cartopy import config
         from cartopy.util import add_cyclic_point
         import cartopy.crs as ccrs
-        logger.info('libraries loaded')
+        logger.info('plotting libraries loaded')
       except Exception as e: 
         logger.debug('failed to load libraries: %s' % e)
       
@@ -212,7 +212,7 @@ class GAMProcess(WPSProcess):
       
       # get the indices
       try:
-        logger.info('calculation of climate indices for reference period ')
+        logger.info('start calculation of climate indices for reference period ')
         ncs_indices = sdm.get_indices(resources=resources, indices=indices)
         logger.info('indice calculation done')
       except Exception as e: 
