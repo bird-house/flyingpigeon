@@ -1,6 +1,5 @@
 import os
 import datetime as dt
-from malleefowl.download import download
 
 from flyingpigeon.get_eobs_as_cordex import get_data
 from flyingpigeon.get_eobs_as_cordex import EOBS_VARIABLES
