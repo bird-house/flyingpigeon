@@ -1,4 +1,4 @@
-VERSION := 0.2.15
+VERSION := 0.2.16
 RELEASE := master
 
 # Application
@@ -8,6 +8,10 @@ APP_NAME := $(shell basename $(APP_ROOT))
 # guess OS (Linux, Darwin, ...)
 OS_NAME := $(shell uname -s 2>/dev/null || echo "unknown")
 CPU_ARCH := $(shell uname -m 2>/dev/null || uname -p 2>/dev/null || echo "unknown")
+
+# Python
+SETUPTOOLS_VERSION=20.1.1
+BUILDOUT_VERSION=2.5.0
 
 # Anaconda 
 ANACONDA_HOME ?= $(HOME)/anaconda
@@ -152,7 +156,8 @@ conda_config: anaconda
 
 .PHONY: conda_env
 conda_env: anaconda conda_config
-	@test -d $(PREFIX) || "$(ANACONDA_HOME)/bin/conda" create -m -p $(PREFIX) -c ioos --yes python setuptools=20.1.1 curl pyopenssl genshi mako
+	@test -d $(PREFIX) || "$(ANACONDA_HOME)/bin/conda" create -m -p $(PREFIX) -c ioos --yes python setuptools=$(SETUPTOOLS_VERSION) curl pyopenssl genshi mako
+	"$(ANACONDA_HOME)/bin/conda" install -n $(CONDA_ENV) setuptools=$(SETUPTOOLS_VERSION)
 
 .PHONY: conda_pinned
 conda_pinned: conda_env
@@ -168,7 +173,7 @@ conda_clean: anaconda conda_config
 .PHONY: bootstrap
 bootstrap: init conda_env conda_pinned bootstrap-buildout.py
 	@echo "Bootstrap buildout ..."
-	@test -f bin/buildout || bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);python bootstrap-buildout.py -c custom.cfg --allow-site-packages --setuptools-version=20.1.1 --buildout-version=2.5.0"
+	@test -f bin/buildout || bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);python bootstrap-buildout.py -c custom.cfg --allow-site-packages --setuptools-version=$(SETUPTOOLS_VERSION) --buildout-version=$(BUILDOUT_VERSION)"
 
 .PHONY: sysinstall
 sysinstall:
