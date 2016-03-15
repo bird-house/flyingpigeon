@@ -60,7 +60,7 @@ def get_PAmask(coordinates=[], domain='EUR-11'):
   if domain=='EUR-11': 
     nc = DIR_MASKS + '/sftlf_EUR-11_ECMWF-ERAINT_evaluation_r1i1p1_KNMI-RACMO22E_v1_fx.nc'
   else: 
-    logger.error('domain not found')
+    logger.debug('domain not found')
   
   ds = Dataset(nc, mode='r')
   lats = ds.variables['lat']
@@ -106,7 +106,7 @@ def get_indices(resources, indices):
           ncs_indices.append(nc)
           logger.info('Successful calculated indice %s %s' % (key, indice))
       except Exception as e: 
-        print e# logger.error('failed to calculate indice %s %s %s ' % (key, indice, e))    
+        logger.debug('failed to calculate indice %s %s %s ' % (key, indice, e))    
   return ncs_indices
 
 def sort_indices(ncs_indices):
