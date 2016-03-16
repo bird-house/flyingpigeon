@@ -46,6 +46,7 @@ class GAMProcess(WPSProcess):
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
+            default=' http://api.gbif.org/v1/occurrence/download/request/0013848-160118175350007.zip'
             #maxmegabites=50,
             #formats=[{"mimeType":"application/zip"}],
             )
@@ -99,31 +100,24 @@ class GAMProcess(WPSProcess):
             formats=[{"mimeType":"image/png"}],
             asReference=True,
             )
-         
+        
+                 
         self.output_indices = self.addComplexOutput(
             identifier="output_indices",
-            title="Climate indices for growth condition of reference period",
+            title="Climate indices for growth condition over all timestepps (3D)",
+            abstract="Tar file containing calculated climate indices as  netCDF files",
+            formats=[{"mimeType":"application/x-tar"}],
+            asReference=True,
+            )         
+         
+        self.output_reference = self.addComplexOutput(
+            identifier="output_reference",
+            title="Climate indices for growth condition of reference period (2D)",
             abstract="Tar file containing calculated climate indices as  netCDF files",
             formats=[{"mimeType":"application/x-tar"}],
             asReference=True,
             )         
         
-        self.output_reference = self.addComplexOutput(
-            identifier="output_reference",
-            title="reference growth condition",
-            abstract="Tar archive containing the graphic of the reference growing condition",
-            formats=[{"mimeType":"application/x-tar"}],
-            asReference=True,
-            )
-
-        self.output_prediction = self.addComplexOutput(
-            identifier="output_prediction",
-            title="predicted growth condition",
-            abstract="Tar archive containing the netCDF files of the predicted growing condition",
-            formats=[{"mimeType":"application/x-tar"}],
-            asReference=True,
-            )
-
         self.output_prediction = self.addComplexOutput(
             identifier="output_prediction",
             title="predicted growth condition",
@@ -150,6 +144,7 @@ class GAMProcess(WPSProcess):
         resources = self.getInputValues(identifier='resources')
         gbif = self.getInputValues(identifier='gbif')
         period = self.getInputValues(identifier='period')
+        period = period[0]
         indices = self.getInputValues(identifier='indices')
         logger.info('extract csv file from url: %s ' % (gbif))
       except Exception as e: 
@@ -212,20 +207,16 @@ class GAMProcess(WPSProcess):
       
       # get the indices
       try:
-        logger.info('start calculation of climate indices for reference period ')
+        logger.info('start calculation of climate indices for %s ' % indices )
         ncs_indices = sdm.get_indices(resources=resources, indices=indices)
         logger.info('indice calculation done')
       except Exception as e: 
         logger.debug('failed to calculate indices %s' % e)
       
-      #################################
-      ### mashine learning gam 
-      #################################
-      
       try: 
         # sort indices
         indices_dic = sdm.sort_indices(ncs_indices)
-        logger.info('indice files sorted')
+        logger.info('indice files sorted for %s Datasets' % len(indices_dic.keys()))
       except Exception as e: 
         logger.debug('failed to sort indices %s' % e)
 
@@ -233,11 +224,12 @@ class GAMProcess(WPSProcess):
         import tarfile
         import os
         
-        # open 3 tar files
-        tar_present = tarfile.open('present.tar', "w")
-        tar_prdiction = tarfile.open('prediction.tar', "w")
-        tar_present = tarfile.open('info.tar', "w")
+        # open tar files
+        tar_reference = tarfile.open('reference.tar', "w")
         tar_indices = tarfile.open('indices.tar', "w")
+
+        tar_info = tarfile.open('info.tar', "w")
+        tar_prediction = tarfile.open('prediction.tar', "w")
         
         logger.info('tar files prepared')
       except Exception as e: 
@@ -245,23 +237,39 @@ class GAMProcess(WPSProcess):
 
       for key in indices_dic.keys():
         try:
-          ncs_indices = indices_dic[key]
-          ncs_reference = sdm.get_reference(ncs_indices=ncs_indices, refperiod=period)
+          logger.info('Start processing of %s ' % key)
           
-          for nc_indice in ncs_indices: 
-            tar_indices.add(nc_indice, 
-                          arcname = result.replace(os.path.abspath(os.path.curdir), ""))
-        
-          for nc_reference in ncs_reference: 
-            tar_present.add(nc_reference, 
-                arcname = result.replace(os.path.abspath(os.path.curdir), ""))
+          ncs = indices_dic[key]
           
-          logger.info('reference climate condition calculated %s ' % key)
+          logger.info('with %s files' % len(ncs))
+          
+          try:
+            for nc in ncs: 
+              tar_indices.add(nc, 
+                            arcname = nc.replace(os.path.abspath(os.path.curdir), ""))
+            logger.info('indices added to tarfile for %s' % key)
+          except: 
+            logger.debug('failed adding inidces to tar')
+            raise
+            
+          try: 
+            ncs_references = sdm.get_reference(ncs_indices=ncs, period=period)
+            logger.info('reference indice calculated %s ' % ncs_references)
+          except: 
+            logger.debug('failed adding ref inidces to tar')
+            raise
+          
+          for nc_reference in ncs_references:
+            tar_reference.add(nc_reference, 
+                arcname = nc_reference.replace(os.path.abspath(os.path.curdir), ""))
+          
+          logger.info('reference indices added to tarfile')
         except Exception as e: 
-          logger.debug('failed to calculate ncs_reference %s ' % e)
+          logger.debug('failed to calculate reference indices %s ' % e)
 
         try:
-          gam_model, predict_gam, gam_info = sdm.get_gam(ncs_references,PApoints)
+          gam_model, predict_gam, gam_info = sdm.get_gam(ncs_references,PAmask)
+          
           tar_info.add(gam_info, 
                           arcname = result.replace(os.path.abspath(os.path.curdir), ""))
           logger.info('GAM sucessfully trained')
@@ -292,10 +300,12 @@ class GAMProcess(WPSProcess):
           logger.debug('failed to write species file %s ' % e)
 
       try:
-        tar_present.close()
+        tar_indices.close()
+        tar_reference.close()
+
         tar_prediction.close()
         tar_info.close()
-        tar_indices.close()
+        
         logger.info('tar files closed')
       except Exception as e:
         logger.debug('tar file closing failed %s' % e)
@@ -304,7 +314,7 @@ class GAMProcess(WPSProcess):
       self.output_gbif.setValue( tree_presents )
       self.output_PA.setValue( png_PA_mask )
       self.output_indices.setValue( 'indices.tar' )
-      self.output_reference.setValue ('present.tar')
+      self.output_reference.setValue ('reference.tar')
       self.output_prediction.setValue ('prediction.tar')
       self.output_info.setValue('info.tar')
       

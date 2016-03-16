@@ -52,7 +52,7 @@ def calc_grouping(grouping):
   return calc_grouping
 
 def drs_filename(nc_file, skip_timestamp=False, skip_format=False , 
-                 variable=None, rename_file=False, add_file_path=False  ):
+                 variable=None, rename_file=False, add_file_path=False ):
     """
     generates filename according to the data reference syntax (DRS) 
     based on the metadata in the nc_file.
@@ -272,17 +272,17 @@ def sort_by_filename(resource, historical_concatination = False):
   returns a dictionary with name:list_of_sorted_files"""
   from os  import path
   
-  logger.debug('sort_by_filename module start sorting %s files' % len(resource))
+  logger.info('sort_by_filename module start sorting %s files' % len(resource))
 
   ndic = {}
   tmp_dic = {}
   try: 
     if type(resource) == list:
-      logger.debug('resource is list with %s files' % len(resource))  
+      #logger.debug('resource is list with %s files' % len(resource))  
       try:  #if len(resource) > 1:
         # collect the different experiment names
         for nc in resource:
-          logger.debug('file: %s' % nc)
+          logger.info('file: %s' % nc)
           p, f = path.split(path.abspath(nc)) 
           n = f.split('_')
           bn = '_'.join(n[0:-1]) # skipping the date information in the filename
@@ -344,7 +344,7 @@ def sort_by_filename(resource, historical_concatination = False):
       tmp_dic[f.replace('.nc','')] = resource
     else:      
       logger.debug('sort_by_filename module failed: resource is not str or list')
-    logger.debug('sort_by_filename module done: len(ndic) = %s ' % len(ndic))  
+    logger.info('sort_by_filename module done: %s Datasets found' % len(ndic))  
   except Exception as e: 
     logger.debug('failed to sort files by filename')
     raise

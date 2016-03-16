@@ -82,9 +82,12 @@ def get_PAmask(coordinates=[], domain='EUR-11'):
   return PAmask
 
 def get_indices(resources, indices):
-  from flyingpigeon.utils import sort_by_filename, calc_grouping
+  from flyingpigeon.utils import sort_by_filename, calc_grouping, drs_filename
   from flyingpigeon.ocgis_module import call
   from flyingpigeon.indices import indice_variable
+
+  #names = [drs_filename(nc, skip_timestamp=False, skip_format=False, 
+  #               variable=None, rename_file=True, add_file_path=True) for nc in resources]
   
   ncs = sort_by_filename(resources, historical_concatination=True)
   ncs_indices = []
@@ -94,7 +97,7 @@ def get_indices(resources, indices):
       try: 
         name , month = indice.split('_')
         variable=key.split('_')[0]
-        #print name 
+        print name, month , variable 
         if variable == indice_variable(name):
           
           logger.info('calculating indice %s ' % indice)
@@ -130,7 +133,7 @@ def sort_indices(ncs_indices):
  
   return indices_dic
 
-def get_reference(ncs_indices, refperiod='1998-2000'):
+def get_reference(ncs_indices, period='all'):
   """
   calculates the netCDF files containing the mean climatology for statistical GAM training
   :param ncs_indices: list of climate indices defining the growing conditions of tree species
@@ -142,8 +145,8 @@ def get_reference(ncs_indices, refperiod='1998-2000'):
   from flyingpigeon.utils import get_variable
   from os.path import basename
   
-  if not refperiod == 'all':
-    s, e = refperiod.split('-')
+  if not period == 'all':
+    s, e = period.split('-')
     start = dt.strptime(s+'-01-01', '%Y-%m-%d')
     end = dt.strptime(e+'-12-31', '%Y-%m-%d')
     time_range=[start, end]
@@ -154,11 +157,11 @@ def get_reference(ncs_indices, refperiod='1998-2000'):
   for nc_indice in ncs_indices: 
     variable = get_variable(nc_indice)
     f = basename(nc_indice).strip('.nc')
-    prefix = '%s_ref-%s' % ('_'.join(f.split('_')[0:-1]), refperiod) 
+    prefix = '%s_ref-%s' % ('_'.join(f.split('_')[0:-1]), period) 
     
     ref_indices.append(call(resource=nc_indice, variable=variable,prefix=prefix, calc=[{'func':'mean','name': variable}],calc_grouping=['all'],time_range=time_range))
   
-  return ncs_reference
+  return ref_indices
 
 
 def get_gam(ncs_reference, PAmask):

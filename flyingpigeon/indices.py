@@ -23,7 +23,8 @@ _INDICES_ = dict(
     ID=dict(variable='tasmax', description='Nr of Ice days (tasmax as input files)'),
     HD17=dict(variable='tas', description='Heating degree days [sum of 17 degrees - mean temperature] (tas as input files)'),
     GD4=dict(variable='tas', description='Growing degree days [sum of TG >= 4 degrees] (tas as input files)'),
-    RR=dict(variable='pr', description='Precipitation flux mean (mon / year) (pr as input files)'),
+    #RR=dict(variable='pr', description='Precipitation flux mean (mon / year) (pr as input files)'),
+    PRCPTOT=dict(variable='pr', description='Precipitation flux mean (mon / year) (pr as input files)'),
     RR1=dict(variable='pr', description='Nr of days with precipitation > 1 mm  (pr as input files)'),
     CWD=dict(variable='pr', description='Consecutive wet days (pr as input files)'),
     CDD=dict(variable='pr', description='Consecutive dry days (pr as input files)'),
@@ -47,19 +48,19 @@ _INDICESper_ = dict(
     TN90p=dict(variable='tasmin', description='Days with TN > 90th percentile of daily minimum temperature (warm nights) (days)'),
     WSDI=dict(variable='tasmax', description='Warm-spell duration index (days)'),
     CSDI=dict(variable='tasmin', description='Cold-spell duration index (days)'),
-    R75p=dict(variable='pr', description= 'Days with RR > 75th percentile of daily amounts (moderate wet days) (days)'),
+    R75p=dict(variable='pr', description= 'Days with PRCPTOT > 75th percentile of daily amounts (moderate wet days) (days)'),
     R75pTOT=dict(variable='pr', description= 'Precipitation fraction due to moderate wet days (>75th percentile) (%)'),
-    R95p=dict(variable='pr', description= 'Days with RR > 95th percentile of daily amounts (very wet days) (days)'),
+    R95p=dict(variable='pr', description= 'Days with PRCPTOT > 95th percentile of daily amounts (very wet days) (days)'),
     R95pTOT=dict(variable='pr', description= 'Precipitation fraction due to very wet days (>95th percentile) (%)'),
-    R99p=dict(variable='pr', description= 'Days with RR > 99th percentile of daily amounts (extremely wet days)(days)'),
+    R99p=dict(variable='pr', description= 'Days with PRCPTOT > 99th percentile of daily amounts (extremely wet days)(days)'),
     R99pTOT=dict(variable='pr', description= 'recipitation fraction due to extremely wet days (>99th percentile)(%)'),
     )   
 
 _INDICEScomp_ = dict(
-    CD=dict(variable=['tas','pr'], description='Days with TG < 25th percentile of daily mean temperature and RR < 25th percentile of daily precipitation sum (cold/dry days)'),
-    CW=dict(variable=['tas','pr'], description='Days with TG < 25th percentile of daily mean temperature and RR > 75th percentile of daily precipitation sum (cold/wet days)'),
-    WD=dict(variable=['tas','pr'], description='days with TG > 75th percentile of daily mean temperature and RR < 25th percentile of daily precipitation sum (warm/dry days)'),
-    WW=dict(variable=['tas','pr'], description='Days with TG > 75th percentile of daily mean temperature and RR > 75th percentile of daily precipitation sum (warm/wet days)'),
+    CD=dict(variable=['tas','pr'], description='Days with TG < 25th percentile of daily mean temperature and PRCPTOT < 25th percentile of daily precipitation sum (cold/dry days)'),
+    CW=dict(variable=['tas','pr'], description='Days with TG < 25th percentile of daily mean temperature and PRCPTOT > 75th percentile of daily precipitation sum (cold/wet days)'),
+    WD=dict(variable=['tas','pr'], description='days with TG > 75th percentile of daily mean temperature and PRCPTOT < 25th percentile of daily precipitation sum (warm/dry days)'),
+    WW=dict(variable=['tas','pr'], description='Days with TG > 75th percentile of daily mean temperature and PRCPTOT > 75th percentile of daily precipitation sum (warm/wet days)'),
     )
 
 _INDICESunconventional_ = dict(

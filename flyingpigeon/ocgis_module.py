@@ -71,7 +71,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         add_auxiliary_files=False)
     logger.info('OcgOperations set')
   except Exception as e: 
-    logger.exception('failed to setup OcgOperations')
+    logger.debug('failed to setup OcgOperations')
     raise  
   
   # check memory load
@@ -104,7 +104,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     try: 
       geom_file = ops.execute()
     except Exception as e: 
-      logger.exception('failed to execute ocgis operation')
+      logger.debug('failed to execute ocgis operation')
       raise  
   else:
     size = ops.get_base_request_size()
@@ -128,7 +128,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
           add_auxiliary_files=False)
       geom_file = compute(ops, tile_dimension=int(tile_dim) , verbose=True)
     except Exception as e: 
-      logger.exception('failed to compute ocgis operation')
+      logger.debug('failed to compute ocgis operation')
       raise  
   
   logger.info('Succeeded with ocgis module call function')
