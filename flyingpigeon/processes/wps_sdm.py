@@ -135,7 +135,6 @@ class GAMProcess(WPSProcess):
             )
 
     def execute(self):
-      
       from flyingpigeon import sdm
       logger.info('Start process')
       
@@ -145,33 +144,29 @@ class GAMProcess(WPSProcess):
         gbif = self.getInputValues(identifier='gbif')
         period = self.getInputValues(identifier='period')
         period = period[0]
-        indices = self.getInputValues(identifier='indices')
-        logger.info('extract csv file from url: %s ' % (gbif))
+        indices = self.getInputValues(identifier='indices') # self.indices.getValue()
       except Exception as e: 
-        logger.debug('failed to read in the arguments %s ' % e)
-      
+        logger.error('failed to read in the arguments %s ' % e)
+      logger.info('indices %s ' % indices)
       try:
-        csv_file = sdm.get_csv(gbif[0])
         logger.info('extract csv file with tree observations')
+        csv_file = sdm.get_csv(gbif[0])
       except Exception as e: 
         logger.debug('failed to extract csv file from url %s' % e)
-      
-      try: 
-        latlon = sdm.get_latlon(csv_file)
+
+      try:
         logger.info('read in latlon coordinates of tree observations')
+        latlon = sdm.get_latlon(csv_file)
       except Exception as e: 
         logger.debug('failed to extract the latlon points %s' % e)
       
-      try: 
+      try:
+        logger.info('plotting Tree presents based on coordinates')
         import matplotlib.pyplot as plt
         from cartopy import config
         from cartopy.util import add_cyclic_point
         import cartopy.crs as ccrs
-        logger.info('plotting libraries loaded')
-      except Exception as e: 
-        logger.debug('failed to load libraries: %s' % e)
       
-      try: 
         fig = plt.figure(figsize=(20,10), dpi=600, facecolor='w', edgecolor='k')
         ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
         ax.coastlines()
@@ -180,7 +175,6 @@ class GAMProcess(WPSProcess):
         tree_presents = 'tree_presents.png'
         fig.savefig(tree_presents)
         plt.close()
-        logger.info('Points of tree observation plotted')
       except Exception as e: 
         logger.debug('plotting points failed %s' % e)
       
@@ -192,12 +186,12 @@ class GAMProcess(WPSProcess):
         logger.debug('failed to generate the PA mask %s' % e )
       
       try: 
+        logger.info('Ploting PA mask')
         fig = plt.figure(figsize=(20,10), dpi=300, facecolor='w', edgecolor='k')
         cs = plt.contourf(PAmask)
         png_PA_mask = 'PA_mask.png'
         fig.savefig(png_PA_mask)
         plt.close()
-        logger.info('PA mask plotted')
       except Exception as e: 
         logger.debug('failed to plot the PA mask %s' % e)
       
@@ -269,9 +263,7 @@ class GAMProcess(WPSProcess):
 
         try:
           gam_model, predict_gam, gam_info = sdm.get_gam(ncs_references,PAmask)
-          
-          tar_info.add(gam_info, 
-                          arcname = result.replace(os.path.abspath(os.path.curdir), ""))
+          tar_info.add(gam_info, arcname = "%s.pdf" % key)
           logger.info('GAM sucessfully trained')
         except Exception as e: 
           logger.debug('failed to train GAM %s ' % e)
@@ -295,7 +287,7 @@ class GAMProcess(WPSProcess):
           species_file = sdm.write_to_file(ncs_indices[0], prediction)
           logger.info('Favourabillity written to file')
           tar_prediction.add(species_file, 
-                          arcname = result.replace(os.path.abspath(os.path.curdir), ""))
+                          arcname = species_file.replace(os.path.abspath(os.path.curdir), ""))
         except Exception as e:
           logger.debug('failed to write species file %s ' % e)
 
