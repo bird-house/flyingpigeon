@@ -203,19 +203,25 @@ class GAMProcess(WPSProcess):
       #################################
       
       # get the indices
+      ncs_indices = None
       try:
         self.status.set('start calculation of climate indices for %s' % indices, 30 )
         ncs_indices = sdm.get_indices(resources=resources, indices=indices)
         logger.info('indice calculation done')
-      except Exception as e: 
-        logger.exception('failed to calculate indices')
-      
+      except Exception as e:
+        msg = 'failed to calculate indices'
+        logger.exception(msg)
+        raise Exception(msg)
+
+      indices_dic = None
       try: 
         # sort indices
         indices_dic = sdm.sort_indices(ncs_indices)
         logger.info('indice files sorted for %s Datasets' % len(indices_dic.keys()))
-      except Exception as e: 
-        logger.exception('failed to sort indices')
+      except Exception as e:
+        msg = 'failed to sort indices'
+        logger.exception(msg)
+        raise Exception(msg)
 
       try:
         import tarfile
@@ -232,9 +238,9 @@ class GAMProcess(WPSProcess):
       except Exception as e: 
         logger.exception('tar file preparation failed')
 
-      for key in indices_dic.keys():
+      for count,key in enumerate(indices_dic.keys()):
         try:
-          self.status.set('Start processing of %s ' % key, 40)
+          self.status.set('Start processing of %s ' % key, 40 + count * 10)
           
           ncs = indices_dic[key]
           
@@ -245,16 +251,18 @@ class GAMProcess(WPSProcess):
               tar_indices.add(nc, 
                             arcname = nc.replace(os.path.abspath(os.path.curdir), ""))
             logger.info('indices added to tarfile for %s' % key)
-          except: 
-            logger.exception('failed adding inidces to tar')
-            raise
+          except:
+            msg = 'failed adding indices to tar'  
+            logger.exception(msg)
+            raise Exception(msg)
             
           try: 
             ncs_references = sdm.get_reference(ncs_indices=ncs, period=period)
             logger.info('reference indice calculated %s ' % ncs_references)
-          except: 
-            logger.exception('failed adding ref inidces to tar')
-            raise
+          except:
+            msg = 'failed adding ref indices to tar'
+            logger.exception(msg)
+            raise Exception(msg)
           
           for nc_reference in ncs_references:
             tar_reference.add(nc_reference, 
