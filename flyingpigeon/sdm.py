@@ -109,7 +109,7 @@ def get_indices(resources, indices):
           ncs_indices.append(nc)
           logger.info('Successful calculated indice %s %s' % (key, indice))
       except Exception as e: 
-        logger.debug('failed to calculate indice %s %s %s ' % (key, indice, e))    
+        logger.exception('failed to calculate indice %s %s' % (key, indice))    
   return ncs_indices
 
 def sort_indices(ncs_indices):

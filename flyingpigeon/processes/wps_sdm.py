@@ -55,11 +55,12 @@ class GAMProcess(WPSProcess):
             identifier="indices",
             title="Indices",
             abstract="Climate indices related to growth condition of tree species",
-            default="TG_JJA",
+            #default="TG_JJA",
+            default="all",
             type=type(''),
             minOccurs=1,
-            maxOccurs=3,
-            allowedValues=['TG_JJA', 'TNn_Jan', 'PRCPTOT_JJA']
+            maxOccurs=1,
+            allowedValues=['all', 'TG_JJA', 'TNn_Jan', 'PRCPTOT_JJA']
             )
 
         self.period = self.addLiteralInput(
@@ -144,7 +145,9 @@ class GAMProcess(WPSProcess):
         gbif = self.getInputValues(identifier='gbif')
         period = self.getInputValues(identifier='period')
         period = period[0]
-        indices = self.getInputValues(identifier='indices') # self.indices.getValue()
+        indices = self.getInputValues(identifier='indices')
+        if 'all' in indices:
+            indices = ['TG_JJA', 'TNn_Jan', 'PRCPTOT_JJA']
       except Exception as e: 
         logger.error('failed to read in the arguments %s ' % e)
       logger.info('indices %s ' % indices)
