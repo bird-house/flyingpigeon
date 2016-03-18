@@ -162,7 +162,8 @@ class GAMProcess(WPSProcess):
         latlon = sdm.get_latlon(csv_file)
       except Exception as e: 
         logger.exception('failed to extract the latlon points')
-      
+
+      tree_presents = 'tree_presents.png'
       try:
         self.status.set('plotting Tree presents based on coordinates', 15)
         import matplotlib.pyplot as plt
@@ -175,11 +176,14 @@ class GAMProcess(WPSProcess):
         ax.coastlines()
         ax.set_global()
         cs = plt.scatter(latlon[:,1], latlon[:,0], transform=ccrs.PlateCarree())
-        tree_presents = 'tree_presents.png'
         fig.savefig(tree_presents)
         plt.close()
-      except Exception as e: 
-        logger.exception('plotting points failed')
+      except Exception as e:
+        msg = 'plotting points failed'   
+        logger.exception(msg)
+        with open(tree_presents, 'w') as fp:
+            # TODO: needs to be a png file
+            fp.write(msg)
       
       try:
         self.status.set('generating the PA mask', 20)
@@ -187,16 +191,20 @@ class GAMProcess(WPSProcess):
         logger.info('PA mask sucessfully generated')
       except Exception as e: 
         logger.exception('failed to generate the PA mask')
-      
+        
+      png_PA_mask = 'PA_mask.png'
       try: 
         self.status.set('Ploting PA mask', 25)
         fig = plt.figure(figsize=(20,10), dpi=300, facecolor='w', edgecolor='k')
         cs = plt.contourf(PAmask)
-        png_PA_mask = 'PA_mask.png'
         fig.savefig(png_PA_mask)
         plt.close()
-      except Exception as e: 
-        logger.exception('failed to plot the PA mask')
+      except Exception as e:
+        msg = 'failed to plot the PA mask'
+        logger.exception(msg)
+        with open(png_PA_mask, 'w') as fp:
+            # TODO: needs to be a png file
+            fp.write(msg)
       
       #################################
       ### calculate the climate inidces
