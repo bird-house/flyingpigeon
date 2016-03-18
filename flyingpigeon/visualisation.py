@@ -299,7 +299,6 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
     plt.annotate('// = low model ensemble agreement', (0,0), (0, -10), xycoords='axes fraction', textcoords='offset points', va='top')
     plt.annotate('..  = high model ensemble agreement', (0,0), (0, -20), xycoords='axes fraction', textcoords='offset points', va='top')
     
-
     graphic = 'modelAgreement.png'
 
     fig.savefig(graphic)
@@ -311,3 +310,23 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
     logger.error(' failed to plot graphic: %s ' % e)
 
   return graphic
+
+def concat_images(images): 
+  """ 
+  concatination of images.
+  :param images: list of images
+  :return string: path to image  
+  """
+  from PIL import Image
+  import sys
+
+  #if not len(sys.argv) > 3:
+      #raise SystemExit("Usage: %s src1 [src2] .. dest" % sys.argv[0])
+
+  open_images = map(Image.open, images[1:-1])
+  w = sum(i.size[0] for i in open_images)
+  mh = max(i.size[1] for i in open_images)
+  result = Image.new("RGBA", (w, mh))
+    
+  return result
+  
