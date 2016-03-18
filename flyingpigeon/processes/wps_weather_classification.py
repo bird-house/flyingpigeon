@@ -97,7 +97,7 @@ class WClassProcess(WPSProcess):
         
         from cdo import *
         cdo = Cdo()        
-        nc  = cdo.sellonlatbox(bbox, input=resources, output='subset.nc' )
+        nc  = cdo.sellonlatbox(bbox, input=resources[0], output='subset.nc' )
 
         # call 
         self.output_nc.setValue( nc )
