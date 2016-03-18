@@ -60,7 +60,7 @@ class GAMProcess(WPSProcess):
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
-            allowedValues=['all', 'TG_JJA', 'TNn_Jan', 'PRCPTOT_JJA']
+            allowedValues=['all', 'TG_JJA', 'TNn_Jan'] # 'PRCPTOT_JJA'
             )
 
         self.period = self.addLiteralInput(
@@ -147,7 +147,7 @@ class GAMProcess(WPSProcess):
         period = period[0]
         indices = self.getInputValues(identifier='indices')
         if 'all' in indices:
-            indices = ['TG_JJA', 'TNn_Jan', 'PRCPTOT_JJA']
+            indices = ['TG_JJA', 'TNn_Jan'] # 'PRCPTOT_JJA'
       except Exception as e: 
         logger.error('failed to read in the arguments %s ' % e)
       logger.info('indices %s ' % indices)
