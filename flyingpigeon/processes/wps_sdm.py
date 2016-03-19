@@ -234,6 +234,7 @@ class GAMProcess(WPSProcess):
       try:
         import tarfile
         import os
+        from os import basename
         
         # open tar files
         tar_reference = tarfile.open('reference.tar', "w")
@@ -257,7 +258,7 @@ class GAMProcess(WPSProcess):
           try:
             for nc in ncs: 
               tar_indices.add(nc, 
-                            arcname = nc.replace(os.path.abspath(os.path.curdir), ""))
+                            arcname = basename(nc) )# .replace(os.path.abspath(os.path.curdir), ""))
             logger.info('indices added to tarfile for %s' % key)
           except:
             msg = 'failed adding indices to tar'  
@@ -274,7 +275,7 @@ class GAMProcess(WPSProcess):
           
           for nc_reference in ncs_references:
             tar_reference.add(nc_reference, 
-                arcname = nc_reference.replace(os.path.abspath(os.path.curdir), ""))
+                arcname = basename(nc_reference))# nc_reference.replace(os.path.abspath(os.path.curdir), ""))
           
           logger.info('reference indices added to tarfile')
         except Exception as e: 
@@ -306,7 +307,7 @@ class GAMProcess(WPSProcess):
           species_file = sdm.write_to_file(ncs_indices[0], prediction)
           logger.info('Favourabillity written to file')
           tar_prediction.add(species_file, 
-                          arcname = species_file.replace(os.path.abspath(os.path.curdir), ""))
+                          arcname = basename(species_file))#.replace(os.path.abspath(os.path.curdir), ""))
         except Exception as e:
           logger.exception('failed to write species file')
 
