@@ -71,6 +71,14 @@ class WClassProcess(WPSProcess):
             asReference=True,
             )
 
+        self.output_clusters = self.addComplexOutput(
+            identifier="output_clusters",
+            title="Weather Classification Clusters",
+            abstract="Weather Classification Clusters",
+            formats=[{"mimeType":"image/png"}],
+            asReference=True,
+            )
+
     def execute(self):
         
         logger.info('Start process')
@@ -94,7 +102,7 @@ class WClassProcess(WPSProcess):
         #####################
         # from flyingpigeon.ocgis_module import call 
         
-        from flyingpigeon.utils import sort_by_filename()
+        from flyingpigeon.utils import sort_by_filename
         from flyingpigeon import weatherclass as wc
         from cdo import *
         cdo = Cdo()        
@@ -110,7 +118,8 @@ class WClassProcess(WPSProcess):
             logger.debug('invalid number of input files for dataset %s' % key)            
           nc  = cdo.sellonlatbox(bbox, input=input, output='subset.nc' )
           
-          imgage = wc.tSNE(nc)
+          image = wc.tSNE(nc)
           
         # call 
         self.output_nc.setValue( nc )
+        self.output_clusters.setValue( image )
