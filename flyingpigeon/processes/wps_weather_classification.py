@@ -87,17 +87,30 @@ class WClassProcess(WPSProcess):
             logger.error('failed to read in the arguments %s ' % e)
         
         bbox = '-80,22.5,50,70'
-        logger.info('bbox is set to %s' % bbox)
-        
+        logger.info('bbox is set to %s' % bbox)     
 
         #####################    
         ### get the required bbox from resource
         #####################
         # from flyingpigeon.ocgis_module import call 
         
+        from flyingpigeon.utils import sort_by_filename()
+        from flyingpigeon import weatherclass as wc
         from cdo import *
         cdo = Cdo()        
-        nc  = cdo.sellonlatbox(bbox, input=resources[0], output='subset.nc' )
-
+        
+        nsc = sort_by_filename(resource, historical_concatination=True)
+        
+        for key in ncs.keys():
+          if len(ncs[key])>1:
+            input = cdo.timmerge(input=ncs[key], output='merge.nc' )
+          elif len(ncs[key])==1:
+            input = ncs[key]
+          else:
+            logger.debug('invalid number of input files for dataset %s' % key)            
+          nc  = cdo.sellonlatbox(bbox, input=input, output='subset.nc' )
+          
+          imgage = wc.tSNE(nc)
+          
         # call 
         self.output_nc.setValue( nc )
