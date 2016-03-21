@@ -3,13 +3,17 @@ Processes for Species distribution
 Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 """
 
+import tarfile
+import os
+from os.path import basename
+
 from pywps.Process import WPSProcess
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-class GAMProcess(WPSProcess):
+class SDMProcess(WPSProcess):
     
     def __init__(self):
         WPSProcess.__init__(
@@ -232,10 +236,6 @@ class GAMProcess(WPSProcess):
         raise Exception(msg)
 
       try:
-        import tarfile
-        import os
-        from os import basename
-        
         # open tar files
         tar_reference = tarfile.open('reference.tar', "w")
         tar_indices = tarfile.open('indices.tar', "w")
@@ -244,8 +244,10 @@ class GAMProcess(WPSProcess):
         tar_prediction = tarfile.open('prediction.tar', "w")
         
         logger.info('tar files prepared')
-      except Exception as e: 
-        logger.exception('tar file preparation failed')
+      except Exception as e:
+        msg = 'tar file preparation failed'
+        logger.exception(msg)
+        raise Exception(msg)
 
       for count,key in enumerate(indices_dic.keys()):
         try:
@@ -278,21 +280,27 @@ class GAMProcess(WPSProcess):
                 arcname = basename(nc_reference))# nc_reference.replace(os.path.abspath(os.path.curdir), ""))
           
           logger.info('reference indices added to tarfile')
-        except Exception as e: 
-          logger.exception('failed to calculate reference indices.')
+        except Exception as e:
+          msg = 'failed to calculate reference indices.'
+          logger.exception(msg)
+          raise Exception(msg)
 
         try:
           gam_model, predict_gam, gam_info = sdm.get_gam(ncs_references,PAmask)
           tar_info.add(gam_info, arcname = "%s.pdf" % key)
           self.status.set('GAM sucessfully trained', 70)
-        except Exception as e: 
-          logger.exception('failed to train GAM')
+        except Exception as e:
+          msg = 'failed to train GAM'  
+          logger.exception(msg)
+          raise Exception(msg)
 
         try:
           prediction = sdm.get_prediction(gam_model, ncs_indices)
           self.status.set('prediction done', 80)
-        except Exception as e: 
-          logger.exception('failed to predict')
+        except Exception as e:
+          msg = 'failed to predict'   
+          logger.exception(msg)
+          raise Exception(msg)
           
         try:
           from numpy import invert, isnan, nan, broadcast_arrays, array, zeros, linspace, meshgrid
