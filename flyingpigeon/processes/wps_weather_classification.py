@@ -48,14 +48,37 @@ class WClassProcess(WPSProcess):
         #     crss=['EPSG:4326']
         #     )
 
+
         self.BBox = self.addLiteralInput(
             identifier="BBox",
-            title="Bounding Box",
+            title="Region",
             abstract="coordinates to define the region: (minlon,minlat,maxlon,maxlat)",
             default="-80,22.5,50,70",
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
+            )
+
+        self.time_region = self.addLiteralInput(
+            identifier="time_region",
+            title="Time region",
+            abstract="Select the months to define the time region (None == whole year will be analysed)",
+            default="12,1,2",
+            type=type(''),
+            minOccurs=1,
+            maxOccurs=1,
+            allowedValues= ["10,11,12,1,2,3","4,5,6,7,8,9","12,1,2","3,4,5","6,7,8","9,10,11", "None"] #GROUPING
+            )
+
+        self.method = self.addLiteralInput(
+            identifier="method",
+            title="Method",
+            abstract="Choose a clustering method",
+            default="tSNE",
+            type=type(''),
+            minOccurs=1,
+            maxOccurs=1,
+            allowedValues=['tSNE', 'kMEAN']
             )
 
         
@@ -80,15 +103,18 @@ class WClassProcess(WPSProcess):
             )
 
     def execute(self):
-        
         logger.info('Start process')
       
         try: 
             logger.info('read in the arguments')
-            
             resources = self.getInputValues(identifier='resources')
-            bbox = self.getInputValues(identifier='bbox')
+            method = self.getInputValues(identifier='method')[0]
+            time_region = self.getInputValues(identifier='time_region')[0]
+            bbox = self.getInputValues(identifier='BBox')[0]
+            
             logger.info('bbox %s' % str(bbox))
+            logger.info('time_region %s' % str(time_region))
+            logger.info('method: %s' % str(method))
             
 
         except Exception as e: 
@@ -102,13 +128,16 @@ class WClassProcess(WPSProcess):
         #####################
         # from flyingpigeon.ocgis_module import call 
         
-        from flyingpigeon.utils import sort_by_filename
+        from flyingpigeon.utils import sort_by_filename # , calc_grouping
         from flyingpigeon import weatherclass as wc
+        from flyingpigeon.ocgis_module import call
         from cdo import *
         cdo = Cdo()        
         
-        nsc = sort_by_filename(resource, historical_concatination=True)
-        
+        # grouping = calc_grouping(time_region)
+        ncs = sort_by_filename(resources, historical_concatination=True)
+
+        png_clusters = []
         for key in ncs.keys():
           if len(ncs[key])>1:
             input = cdo.timmerge(input=ncs[key], output='merge.nc' )
@@ -116,10 +145,18 @@ class WClassProcess(WPSProcess):
             input = ncs[key]
           else:
             logger.debug('invalid number of input files for dataset %s' % key)            
-          nc  = cdo.sellonlatbox(bbox, input=input, output='subset.nc' )
-          
-          image = wc.tSNE(nc)
-          
+ 
+          if not time_region == 'None':
+            nc_grouped = cdo.selmon(time_region, input=input, output='grouped.nc')
+          else:
+            nc_grouped = input 
+              
+          nc  = cdo.sellonlatbox(bbox, input=nc_grouped, output='subset.nc' )
+          png_clusters.append(wc.tSNE(nc))
+
+        from flyingpigeon import visualisation as vs
+        image = vs.concat_images(png_clusters)
+
         # call 
         self.output_nc.setValue( nc )
         self.output_clusters.setValue( image )

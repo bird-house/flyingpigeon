@@ -320,13 +320,19 @@ def concat_images(images):
   from PIL import Image
   import sys
 
-  #if not len(sys.argv) > 3:
-      #raise SystemExit("Usage: %s src1 [src2] .. dest" % sys.argv[0])
+  open_images = map(Image.open, images)
+  w = max(i.size[0] for i in open_images)
+  h = sum(i.size[1] for i in open_images)
+  result = Image.new("RGB", (w, h))
+  p = h / len(images) 
+  for i in range(len(images)):
+    oi = open_images[i] 
+    cw = oi.size[0]
+    ch = oi.size[1]
+    cp = p * i
+    box = [0,cp,cw,ch+cp]
 
-  open_images = map(Image.open, images[1:-1])
-  w = sum(i.size[0] for i in open_images)
-  mh = max(i.size[1] for i in open_images)
-  result = Image.new("RGBA", (w, mh))
-    
-  return result
-  
+    result.paste(oi, box=box)
+  fp = 'concat_images.png'
+  result.save(fp)
+  return fp
