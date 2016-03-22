@@ -308,15 +308,13 @@ def plot_tSNE(data, title='custer', sub_title='method: principal components'):
   :param param: values for x y coordinate
   :param title: string for title
   """
-  from tempfile import mkstemp
-  
   fig = plt.figure(figsize=(10, 10))
   #ax = plt.axes(frameon=True)
   #plt.subplots_adjust(left=0.0, bottom=0.0, right=1.0, top=0.9,
                   #wspace=0.0, hspace=0.0)
   plt.scatter(data[:, 0], data[:, 1], marker=".")
   plt.title(title)
-  plt.annotate(sub_title, (0,0), (0, -20), xycoords='axes fraction', textcoords='offset points', va='top')
+  plt.annotate(sub_title, (0,0), (0, -30), xycoords='axes fraction', textcoords='offset points', va='top')
   
   ip, image = mkstemp(dir='.',suffix='.png')
   plt.savefig(image)
@@ -325,33 +323,33 @@ def plot_tSNE(data, title='custer', sub_title='method: principal components'):
   return image 
 
 def plot_kMEAN(kmeans, pca, title='kmean', sub_title='file='):
-  from tempfile import mkstemp
-  
+  from itertools import cycle  
   centroids = kmeans.cluster_centers_
+  
+  c = kmeans.predict(pca)
+  x = pca[:, 0]
+  y = pca[:, 1]
   
   fig = plt.figure(figsize=(10, 10))
   
   plt.scatter(centroids[:, 0], centroids[:, 1],
             marker='x', s=169, linewidths=3,
             color='black', zorder=10)
-  plt.scatter(pca[:, 0], pca[:, 1],
-            marker='.', color='g')
+  
+  colors = cycle(["r", "b", "g", "y"])
+  
+  for i in range(max(c)+1):
+    plt.scatter(x[c==i],y[c==i],marker='.', s=30, lw=None, color=next(colors))
+  
   plt.axvline(0)
   plt.axhline(0)
   
   plt.title(title)
   
-  plt.annotate(sub_title, (0,0), (0, -20), xycoords='axes fraction', textcoords='offset points', va='top')
+  plt.annotate(sub_title, (0,0), (0, -30), xycoords='axes fraction', textcoords='offset points', va='top')
+  
   
   ip, image = mkstemp(dir='.',suffix='.png')
-  plt.savefig(image)
-  plt.close()
-  
-  return image
-
-
-  image = 'cluster.png'
-  
   plt.savefig(image)
   plt.close()
   
@@ -381,6 +379,7 @@ def concat_images(images):
 
     result.paste(oi, box=box)
   
-  fp = 'concat_images.png'
-  result.save(fp)
-  return fp
+  ip, image = mkstemp(dir='.',suffix='.png')
+  
+  result.save(image)
+  return image

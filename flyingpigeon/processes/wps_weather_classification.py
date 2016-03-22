@@ -74,7 +74,7 @@ class WClassProcess(WPSProcess):
             identifier="method",
             title="Method",
             abstract="Choose a clustering method",
-            default="tSNE",
+            default="kMEAN",
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
@@ -86,13 +86,13 @@ class WClassProcess(WPSProcess):
         ### define the outputs
         ######################
 
-        self.output_nc = self.addComplexOutput(
-            identifier="output_nc",
-            title="netCDF of required region",
-            abstract="3D timeseries",
-            formats=[{"mimeType":"application/netCDF"}],
-            asReference=True,
-            )
+        #self.output_nc = self.addComplexOutput(
+            #identifier="output_nc",
+            #title="netCDF of required region",
+            #abstract="3D timeseries",
+            #formats=[{"mimeType":"application/netCDF"}],
+            #asReference=True,
+            #)
 
         self.output_clusters = self.addComplexOutput(
             identifier="output_clusters",
@@ -108,7 +108,7 @@ class WClassProcess(WPSProcess):
         try: 
             logger.info('read in the arguments')
             resources = self.getInputValues(identifier='resources')
-            method = self.getInputValues(identifier='method')[0]
+            method = self.getInputValues(identifier='method')
             time_region = self.getInputValues(identifier='time_region')[0]
             bbox = self.getInputValues(identifier='BBox')[0]
             
@@ -120,7 +120,7 @@ class WClassProcess(WPSProcess):
         except Exception as e: 
             logger.error('failed to read in the arguments %s ' % e)
         
-        bbox = '-80,22.5,50,70'
+        #bbox = '-80,22.5,50,70'
         logger.info('bbox is set to %s' % bbox)     
 
         #####################    
@@ -130,8 +130,9 @@ class WClassProcess(WPSProcess):
         
         from flyingpigeon.utils import sort_by_filename # , calc_grouping
         from flyingpigeon import weatherclass as wc
-        from flyingpigeon.visualisation import plot_tSNE, plot_kMEAN
-        from flyingpigeon.ocgis_module import call
+        
+        from flyingpigeon.visualisation import plot_tSNE, plot_kMEAN, concat_images
+        
         from cdo import *
         cdo = Cdo()        
         
@@ -139,6 +140,7 @@ class WClassProcess(WPSProcess):
         ncs = sort_by_filename(resources, historical_concatination=True)
 
         png_clusters = []
+        
         for key in ncs.keys():
           if len(ncs[key])>1:
             input = cdo.timmerge(input=ncs[key], output='merge.nc' )
@@ -147,25 +149,39 @@ class WClassProcess(WPSProcess):
           else:
             logger.debug('invalid number of input files for dataset %s' % key)            
  
+          #for tr in time_region:
           if not time_region == 'None':
             nc_grouped = cdo.selmon(time_region, input=input, output='grouped.nc')
           else:
             nc_grouped = input 
-              
-          nc  = cdo.sellonlatbox(bbox, input=nc_grouped, output='subset.nc' )
           
-          pca = wc.get_pca(nc)
+      #     for bb in bbox:    
+          nc  = cdo.sellonlatbox('%s' % bbox, input=nc_grouped, output='subset.nc')
+          logger.info('nc subset: %s ' % nc)
           
-          if method == 'tSNE':
-            data = wc.calc_tSNE(pca)
-            png_clusters.append(plot_tSNE(data,title='tSNE month:%s'% time_region, sub_title=key))
-          if method == 'kMEAN':
-            kmeans = wc.calc_kMEAN(pca)
-            png_clusters.append(plot_kMEAN(kmeans, pca, title='kMEAN month:%s'% time_region, sub_title=key))
-       
-        from flyingpigeon import visualisation as vs
-        image = vs.concat_images(png_clusters)
+          try:
+            pca = wc.get_pca(nc)
+            logger.info('PCa calculated')
+          except:
+            logger.debug('failed to calculate PCs')
+            raise
+          
+          for md in method:
+            try:
+              if md == 'tSNE':
+                data = wc.calc_tSNE(pca)
+                png_clusters.append(plot_tSNE(data,title='tSNE month: %s [lonlat: %s]' % (time_region,bbox), sub_title='file: %s' % key))
+                logger.info('tSNE calculated for %s ' % key)
+              if md == 'kMEAN':
+                kmeans = wc.calc_kMEAN(pca)
+                png_clusters.append(plot_kMEAN(kmeans, pca, title='kMEAN month: %s [lonlat: %s]' % (time_region,bbox), sub_title='file: %s' % key))
+                logger.info('kMEAN calculated for %s ' % key)
+            except:
+              logger.debug('faild to calculate cluster for %s' % key )
+              raise
+
+        image = concat_images(png_clusters)
 
         # call 
-        self.output_nc.setValue( nc )
+        # self.output_nc.setValue( nc )
         self.output_clusters.setValue( image )
