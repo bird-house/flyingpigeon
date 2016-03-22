@@ -1,38 +1,6 @@
-def get_season(date):
-    """
-    convert month to season Nr.
-    """
-    m = date.month 
-
-    if ((m >= 2) and (m <= 4)):
-        s = 1  # spring
-    elif ((m >= 5) and (m <= 7)):
-        s = 2  # summer
-    elif ((m >= 8) and (m <= 10)):
-        s = 3  # fall
-    elif ((m >= 11) or (m == 1)):
-        s = 4  # winter
-    else:
-        raise IndexError("Invalid date")
-    return s
-  
-def plot_mnist(X, y, X_embedded, name, min_dist=10.0):
-  from matplotlib import pyplot as plt
-  fig = plt.figure(figsize=(10, 10))
-  ax = plt.axes(frameon=True)
-  plt.subplots_adjust(left=0.0, bottom=0.0, right=1.0, top=0.9,
-                  wspace=0.0, hspace=0.0)
-  plt.scatter(X_embedded[:, 0], X_embedded[:, 1],
-          c=y, marker="x")
-  plt.title('filename')
-  image = 'cluster.png'
-  
-  plt.savefig(image)
-  return image 
-    
 def get_pca(resource):
   """
-  calculation of p components
+  calculation of principal components
 
   :param resource: netCDF file containing pressure values for a defined region and selected timesteps
   :return pca: sklean objct
@@ -46,18 +14,12 @@ def get_pca(resource):
   psl = ds.variables[var]
   lat = ds.variables['lat']
   lon = ds.variables['lon']
-  time = ds.variables['time']
+  #time = ds.variables['time']
   
   # make array of seasons:
   # convert netCDF timesteps to datetime
-  timestamps = num2date(time[:], time.units, time.calendar)
-  season = [get_season(s) for s in timestamps]
-  
-  from matplotlib import pyplot as plt
-  from cartopy import config
-  from cartopy.util import add_cyclic_point
-  import cartopy.crs as ccrs
-  #from numpy import meshgrid
+  #timestamps = num2date(time[:], time.units, time.calendar)
+  #season = [get_season(s) for s in timestamps]
   
   from sklearn.decomposition import PCA
   import numpy as np
@@ -66,16 +28,28 @@ def get_pca(resource):
   data = np.array(psl)
   adata = data.reshape(psl[:].shape[0], (psl[:].shape[1] * psl[:].shape[2]) )
   pca = PCA(n_components=50).fit_transform(adata)
+  return pca #, season
+
+
+def calc_tSNE(pca):
+  """
+  perform a cluster analysis 
   
-  return pca, season
-
-
-def tSNE(resource):
+  """
   from sklearn.manifold import TSNE
-  X_all, y_all = get_pca(resource)
+  #X_all, y_all = get_pca(resource)
+  data = TSNE(n_components=2, perplexity=40, verbose=2).fit_transform(pca)
+  
+  return data
 
-  X_all_embedded = TSNE(n_components=2, perplexity=40, verbose=2).fit_transform(X_all)
+def calc_kMEAN(pca):
   
-  image = plot_mnist(X_all, y_all, X_all_embedded, "t-SNE", min_dist=20.0)
+  from sklearn import cluster
+  import numpy as np
+  from tempfile import mkstemp
+
+  kmeans = cluster.KMeans(n_clusters=4)
+  #cluster.KMeans(n_clusters=4, init='k-means++', n_init=10, max_iter=300, tol=0.0001, precompute_distances='auto', verbose=0, random_state=None, copy_x=True, n_jobs=1)
   
-  return image
+  kmeans.fit(pca)
+  return kmeans

@@ -1,3 +1,4 @@
+from matplotlib import pyplot as plt
 import os
 from tempfile import mkstemp
 from netCDF4 import Dataset
@@ -31,7 +32,6 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
   """
 
   import matplotlib.pyplot as plt
-
   fig = plt.figure(figsize=(20,10), dpi=600, facecolor='w', edgecolor='k')
 
   logger.debug('Start visualisation spagetti plot')
@@ -248,15 +248,8 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
 
     logger.info('data loaded')
     
-    # if 'rlon' in ds_signal.variables:
-    #   lons = np.squeeze(ds_signal.variables['rlon'][:])
-    #   lats = np.squeeze(ds_signal.variables['rlat'][:])
-    #   logger.info('rlat rlon loaded')
-
-    # elif 'lon' in ds_signal.variables:
     lons = np.squeeze(ds_signal.variables['lon'][:])
     lats = np.squeeze(ds_signal.variables['lat'][:])
-    # var_signal, lons = util.add_cyclic_point(var_signal, coord=lons, axis=-1)
           
     cyclic_var, cyclic_lons = add_cyclic_point(var_signal, coord=lons)
     mask_l, cyclic_lons = add_cyclic_point(mask_l, coord=lons)
@@ -266,9 +259,7 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
     var_signal = cyclic_var
 
     logger.info('lat lon loaded')
-    # else: 
-    #   logger.error('variables for lat and lon not found') 
-
+    
     minval = round(np.nanmin(var_signal))
     maxval = round(np.nanmax(var_signal)+.5)
  
@@ -311,6 +302,62 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
 
   return graphic
 
+def plot_tSNE(data, title='custer', sub_title='method: principal components'):
+  """
+  plot the output of weather classifiaction as a cluster
+  :param param: values for x y coordinate
+  :param title: string for title
+  """
+  from tempfile import mkstemp
+  
+  fig = plt.figure(figsize=(10, 10))
+  #ax = plt.axes(frameon=True)
+  #plt.subplots_adjust(left=0.0, bottom=0.0, right=1.0, top=0.9,
+                  #wspace=0.0, hspace=0.0)
+  plt.scatter(data[:, 0], data[:, 1], marker=".")
+  plt.title(title)
+  plt.annotate(sub_title, (0,0), (0, -20), xycoords='axes fraction', textcoords='offset points', va='top')
+  
+  ip, image = mkstemp(dir='.',suffix='.png')
+  plt.savefig(image)
+  plt.close()
+  
+  return image 
+
+def plot_kMEAN(kmeans, pca, title='kmean', sub_title='file='):
+  from tempfile import mkstemp
+  
+  centroids = kmeans.cluster_centers_
+  
+  fig = plt.figure(figsize=(10, 10))
+  
+  plt.scatter(centroids[:, 0], centroids[:, 1],
+            marker='x', s=169, linewidths=3,
+            color='black', zorder=10)
+  plt.scatter(pca[:, 0], pca[:, 1],
+            marker='.', color='g')
+  plt.axvline(0)
+  plt.axhline(0)
+  
+  plt.title(title)
+  
+  plt.annotate(sub_title, (0,0), (0, -20), xycoords='axes fraction', textcoords='offset points', va='top')
+  
+  ip, image = mkstemp(dir='.',suffix='.png')
+  plt.savefig(image)
+  plt.close()
+  
+  return image
+
+
+  image = 'cluster.png'
+  
+  plt.savefig(image)
+  plt.close()
+  
+  return image
+
+
 def concat_images(images): 
   """ 
   concatination of images.
@@ -333,6 +380,7 @@ def concat_images(images):
     box = [0,cp,cw,ch+cp]
 
     result.paste(oi, box=box)
+  
   fp = 'concat_images.png'
   result.save(fp)
   return fp

@@ -130,6 +130,7 @@ class WClassProcess(WPSProcess):
         
         from flyingpigeon.utils import sort_by_filename # , calc_grouping
         from flyingpigeon import weatherclass as wc
+        from flyingpigeon.visualisation import plot_tSNE, plot_kMEAN
         from flyingpigeon.ocgis_module import call
         from cdo import *
         cdo = Cdo()        
@@ -152,8 +153,16 @@ class WClassProcess(WPSProcess):
             nc_grouped = input 
               
           nc  = cdo.sellonlatbox(bbox, input=nc_grouped, output='subset.nc' )
-          png_clusters.append(wc.tSNE(nc))
-
+          
+          pca = wc.get_pca(nc)
+          
+          if method == 'tSNE':
+            data = wc.calc_tSNE(pca)
+            png_clusters.append(plot_tSNE(data,title='tSNE month:%s'% time_region, sub_title=key))
+          if method == 'kMEAN':
+            kmeans = wc.calc_kMEAN(pca)
+            png_clusters.append(plot_kMEAN(kmeans, pca, title='kMEAN month:%s'% time_region, sub_title=key))
+       
         from flyingpigeon import visualisation as vs
         image = vs.concat_images(png_clusters)
 
