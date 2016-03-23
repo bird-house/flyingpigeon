@@ -193,7 +193,7 @@ def get_timestamps(nc_file):
     end = get_time(nc_file)[-1]
     
     from_timestamp = '%s%s%s'  % (start.year, str(start.month).zfill(2) ,str(start.day).zfill(2)) 
-    to_timestamp = '%s%s%s'  %   (end.year,  str(start.month).zfill(2) ,str(start.day).zfill(2)) 
+    to_timestamp = '%s%s%s'  %   (end.year,  str(end.month).zfill(2) ,str(end.day).zfill(2)) 
 
     return (from_timestamp, to_timestamp)
 
