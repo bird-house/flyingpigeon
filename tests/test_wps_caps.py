@@ -9,6 +9,6 @@ def test_caps():
                             '/wps:Process'
                             '/ows:Identifier')
     sorted_names = sorted(names.split())
-    expected_names = ['ensembleRobustness', 'eobs_to_cordex', 'extractpoints', 'subset_countries', 'visualisation']
+    expected_names = ['WClass', 'analogs', 'ensembleRobustness', 'eobs_to_cordex', 'fetch', 'indices_single', 'sdm', 'segetalflora', 'subset_countries', 'visualisation']
     nose.tools.ok_(sorted_names == expected_names, "Expected: {0}, Got: {1}".format(expected_names, sorted_names))
 
