@@ -103,7 +103,7 @@ def worker(resource=[], start=None, end=None, timeslice=20,
   try:
     files = []
     for i, mf in enumerate(mergefiles):
-      files.append(cdo.selyear('%s/%s' % (start1,end2), input = mf , output =  'file_%s_.nc' % i )) #python version
+      files.append(cdo.selyear('{0}/{1}'.format(start1,end2), input=[mf] , output='file_{0}_.nc'.format(i) )) #python version
     logger.info('timeseries selected from defined start to end year')
   except Exception as e:
     msg = 'seltime and mergetime failed'
@@ -112,7 +112,7 @@ def worker(resource=[], start=None, end=None, timeslice=20,
 
   try: 
     # ensemble mean 
-    nc_ensmean = cdo.ensmean(input = files , output = 'nc_ensmean.nc')
+    nc_ensmean = cdo.ensmean(input=files , output='nc_ensmean.nc')
     logger.info('ensemble mean calculation done')
   except Exception as e:
     'ensemble mean failed'
@@ -121,7 +121,7 @@ def worker(resource=[], start=None, end=None, timeslice=20,
   
   try: 
     # ensemble std 
-    nc_ensstd  = cdo.ensstd(input = files , output = 'nc_ensstd.nc')
+    nc_ensstd  = cdo.ensstd(input=files , output='nc_ensstd.nc')
     logger.info('ensemble std and calculation done')
   except Exception as e:
     msg = 'ensemble std or failed'
