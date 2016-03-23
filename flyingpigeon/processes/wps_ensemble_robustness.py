@@ -1,3 +1,5 @@
+from flyingpigeon import ensembleRobustness as erob
+
 from pywps.Process import WPSProcess
 import logging
 
@@ -112,7 +114,6 @@ class EnsembleRobustnessProcess(WPSProcess):
             )
 
     def execute(self):
-      from flyingpigeon import ensembleRobustness as erob
       self.status.set('starting uncertainty process', 0)
   
       ncfiles = self.getInputValues(identifier='resource')
@@ -121,7 +122,7 @@ class EnsembleRobustnessProcess(WPSProcess):
       timeslice = self.timeslice.getValue()
       variable = self.variableIn.getValue()
 
-      self.status.set('arguments readed', 5)    
+      self.status.set('arguments read', 5)    
       
 
       signal, low_agreement_mask, high_agreement_mask, graphic, text_src  = erob.worker(resource=ncfiles, start=start, end=end, timeslice=timeslice, variable=variable)#

@@ -1,3 +1,9 @@
+from flyingpigeon.visualisation import map_ensembleRobustness
+from flyingpigeon.utils import get_variable
+from flyingpigeon.utils import sort_by_filename
+from flyingpigeon.utils import get_time
+    
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -21,12 +27,13 @@ def worker(resource=[], start=None, end=None, timeslice=20,
   
   try: 
     # preparing the resource
-    from flyingpigeon.utils import sort_by_filename
 #    from flyingpigeon.ocgis_module import call
     file_dic = sort_by_filename(resource, historical_concatination = True)
     logger.info('file names sorted experimets: %s' % len(file_dic.keys()))
-  except Exception as e: 
-    logger.error('failed to sort the input files')
+  except Exception as e:
+    msg = 'failed to sort the input files'
+    logger.exception(msg)
+    raise Exception(msg)
 
   try:
     mergefiles = []
@@ -37,8 +44,10 @@ def worker(resource=[], start=None, end=None, timeslice=20,
         mergefiles.append(file_dic[key][0])
 #      files.append(cdo.selyear('%s/%s' % (start1,end2), input = tmpfile , output =  key+'.nc' )) #python version
     logger.info('datasets merged %s ' % mergefiles)
-  except Exception as e: 
-    logger.error('seltime and mergetime failed: %s' % e )    
+  except Exception as e:
+    msg = 'seltime and mergetime failed'
+    logger.exception(msg)
+    raise Exception(msg)    
   
   try: 
     text_src = open('infiles.txt', 'a')
@@ -46,11 +55,12 @@ def worker(resource=[], start=None, end=None, timeslice=20,
       text_src.write(key + '\n')
     text_src.close()
   except Exception as e:
-    logger.error('failed to write source textfile: %s' % e)
+    msg = 'failed to write source textfile'
+    logger.exception(msg)
+    raise Exception(msg)
     
   # configure reference and compare period
   try: 
-    from flyingpigeon.utils import get_time
     if start == None:
       st_set = set()
       en_set = set()
@@ -66,7 +76,9 @@ def worker(resource=[], start=None, end=None, timeslice=20,
     if start >= end: 
       logger.error('ensemble is inconsistent!!! start year is later than end year')
   except Exception as e:
-    logger.error('failed to detect start and end times of the ensemble: %s' % e)
+    msg = 'failed to detect start and end times of the ensemble'
+    logger.exception(msg)
+    raise Exception(msg)
 
   # set the periodes: 
   try: 
@@ -84,31 +96,37 @@ def worker(resource=[], start=None, end=None, timeslice=20,
     end2 = end
     logger.info('timeslice and periodes set')
   except Exception as e:
-    logger.error('failed to set the periodes: %s' % e)
+    msg = 'failed to set the periodes'
+    logger.exception(msg)
+    raise Exception(msg)
 
   try:
     files = []
     for i, mf in enumerate(mergefiles):
       files.append(cdo.selyear('%s/%s' % (start1,end2), input = mf , output =  'file_%s_.nc' % i )) #python version
     logger.info('timeseries selected from defined start to end year')
-  except Exception as e: 
-    logger.error('seltime and mergetime failed: %s' % e )    
+  except Exception as e:
+    msg = 'seltime and mergetime failed'
+    logger.exception(msg)
+    raise Exception(msg)    
 
   try: 
     # ensemble mean 
     nc_ensmean = cdo.ensmean(input = files , output = 'nc_ensmean.nc')
     logger.info('ensemble mean calculation done')
-  except Exception as e: 
-    logger.exception('ensemble mean failed')
-    raise
+  except Exception as e:
+    'ensemble mean failed'
+    logger.exception(msg)
+    raise Exception(msg)
   
   try: 
     # ensemble std 
     nc_ensstd  = cdo.ensstd(input = files , output = 'nc_ensstd.nc')
     logger.info('ensemble std and calculation done')
-  except Exception as e: 
-    logger.exception('ensemble std or failed')
-    raise
+  except Exception as e:
+    msg = 'ensemble std or failed'
+    logger.exception(msg)
+    raise Exception(msg)
   
   # get the get the signal as difference from the beginning (first years) and end period (last years), :
   try:
@@ -119,8 +137,9 @@ def worker(resource=[], start=None, end=None, timeslice=20,
     signal = cdo.sub(input=[meanyearend, meanyearst], output = 'signal.nc')
     logger.info('Signal calculation done')
   except Exception as e:
-    logger.exception('calculation of signal failed')
-    raise
+    msg = 'calculation of signal failed'
+    logger.exception(msg)
+    raise Exception(msg)
   
   # get the intermodel standard deviation (mean over whole period)
   try:
@@ -131,20 +150,20 @@ def worker(resource=[], start=None, end=None, timeslice=20,
     std2 = cdo.mulc('2', input = std, output = 'std2.nc')
     logger.info('calculation of internal model std for time period done')
   except Exception as e:
-    logger.exception('calculation of internal model std failed') 
-    raise
+    msg = 'calculation of internal model std failed'
+    logger.exception(msg) 
+    raise Exception(msg)
   try:
     absolut = cdo.abs(input=signal, output='absolut_signal.nc')
     high_agreement_mask = cdo.gt(input=[absolut,std2],  output= 'large_change_with_high_model_agreement.nc')
     low_agreement_mask = cdo.lt(input=[absolut,std], output= 'small_signal_or_low_agreement_of_models.nc')
     logger.info('high and low mask done')
   except Exception as e:
-    logger.exception('calculation of robustness mask failed')
-    raise 
+    msg = 'calculation of robustness mask failed'
+    logger.exception(msg)
+    raise Exception(msg)
   
   try: 
-    from flyingpigeon.visualisation import map_ensembleRobustness
-    from flyingpigeon.utils import get_variable
     
     if variable == None: 
       variable = get_variable(signal)
@@ -160,5 +179,7 @@ def worker(resource=[], start=None, end=None, timeslice=20,
               title = title)
 
   except Exception as e:
-    logger.error('graphic generation failed: %s ' % e )
+    msg = 'graphic generation failed'
+    logger.exception(msg)
+    raise Exception(msg)
   return signal, low_agreement_mask, high_agreement_mask, graphic, text_src

@@ -227,7 +227,9 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
   :param title: default='Modelagreement of Signal'
   """
 
-  try: 
+  try:
+    import matplotlib.pyplot as plt
+    plt.switch_backend('agg')  # dont use x-server
     from cartopy import config
     from cartopy.util import add_cyclic_point
     import cartopy.crs as ccrs
