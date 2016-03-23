@@ -25,7 +25,6 @@ class WClassProcess(WPSProcess):
             storeSupported=True
             )
 
-
         # Literal Input Data
         # ------------------
 
@@ -101,6 +100,14 @@ class WClassProcess(WPSProcess):
             formats=[{"mimeType":"image/png"}],
             asReference=True,
             )
+        
+        self.output_info = self.addComplexOutput(
+            identifier="output_info",
+            title="Weather Regime per date",
+            abstract="Tar file containing tables of dates with appropriate weather regime association",
+            formats=[{"mimeType":"application/x-tar"}],
+            asReference=True,
+            )         
 
     def execute(self):
         logger.info('Start process')
@@ -128,10 +135,15 @@ class WClassProcess(WPSProcess):
         #####################
         # from flyingpigeon.ocgis_module import call 
         
-        from flyingpigeon.utils import sort_by_filename # , calc_grouping
+        from flyingpigeon.utils import sort_by_filename, get_time # , calc_grouping
         from flyingpigeon import weatherclass as wc
         
         from flyingpigeon.visualisation import plot_tSNE, plot_kMEAN, concat_images
+        
+        from datetime import datetime as dt
+        from numpy import savetxt, column_stack
+        
+        import tarfile
         
         from cdo import *
         cdo = Cdo()        
@@ -140,6 +152,18 @@ class WClassProcess(WPSProcess):
         ncs = sort_by_filename(resources, historical_concatination=True)
 
         png_clusters = []
+        txt_info = []
+        
+        try:
+          # open tar files
+          tar_info = tarfile.open('info.tar', "w")
+          
+          logger.info('tar files prepared')
+        except:
+          msg = 'tar file preparation failed'
+          logger.exception(msg)
+          raise Exception(msg)
+
         
         for key in ncs.keys():
           if len(ncs[key])>1:
@@ -174,6 +198,16 @@ class WClassProcess(WPSProcess):
                 logger.info('tSNE calculated for %s ' % key)
               if md == 'kMEAN':
                 kmeans = wc.calc_kMEAN(pca)
+                c = kmeans.predict(pca)
+                times = get_time(nc)
+                timestr = [dt.strftime(t, format='%Y-%d-%m_%H:%M:%S') for t in times]
+                tc = column_stack([timestr, c])
+                fn = '%s.txt' % key
+                
+                savetxt(fn, tc, fmt='%s', header='Date_Time WeatherRegime')
+
+                tar_info.add(fn) #, arcname = basename(nc) 
+                
                 png_clusters.append(plot_kMEAN(kmeans, pca, title='kMEAN month: %s [lonlat: %s]' % (time_region,bbox), sub_title='file: %s' % key))
                 logger.info('kMEAN calculated for %s ' % key)
             except:
@@ -181,7 +215,15 @@ class WClassProcess(WPSProcess):
               raise
 
         image = concat_images(png_clusters)
+        
+              
+        try:
+          logger.info('tar files closed')
+        except Exception as e:
+          logger.exception('tar file closing failed')
+    
 
         # call 
         # self.output_nc.setValue( nc )
         self.output_clusters.setValue( image )
+        self.output_info.setValue('info.tar')

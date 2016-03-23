@@ -332,9 +332,16 @@ def plot_kMEAN(kmeans, pca, title='kmean', sub_title='file='):
   
   fig = plt.figure(figsize=(10, 10))
   
-  plt.scatter(centroids[:, 0], centroids[:, 1],
-            marker='x', s=169, linewidths=3,
+  cx = centroids[:, 0]
+  cy= centroids[:, 1]
+  ct = plt.scatter(cx, cy,
+            marker='.', s=100, linewidths=3,
             color='black', zorder=10)
+  
+  #n = ['1', '2','3','4']
+  
+  #for i, txt in enumerate(n):
+    #plt.annotate(txt, (cx[i],cy[i]))
   
   colors = cycle(["r", "b", "g", "y"])
   

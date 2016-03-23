@@ -220,7 +220,7 @@ class SDMProcess(WPSProcess):
         self.status.set('start calculation of climate indices for %s' % indices, 30 )
         ncs_indices = sdm.get_indices(resources=resources, indices=indices)
         logger.info('indice calculation done')
-      except Exception as e:
+      except:
         msg = 'failed to calculate indices'
         logger.exception(msg)
         raise Exception(msg)
@@ -230,7 +230,7 @@ class SDMProcess(WPSProcess):
         # sort indices
         indices_dic = sdm.sort_indices(ncs_indices)
         logger.info('indice files sorted for %s Datasets' % len(indices_dic.keys()))
-      except Exception as e:
+      except:
         msg = 'failed to sort indices'
         logger.exception(msg)
         raise Exception(msg)
@@ -244,7 +244,7 @@ class SDMProcess(WPSProcess):
         tar_prediction = tarfile.open('prediction.tar', "w")
         
         logger.info('tar files prepared')
-      except Exception as e:
+      except:
         msg = 'tar file preparation failed'
         logger.exception(msg)
         raise Exception(msg)
@@ -280,7 +280,7 @@ class SDMProcess(WPSProcess):
                 arcname = basename(nc_reference))# nc_reference.replace(os.path.abspath(os.path.curdir), ""))
           
           logger.info('reference indices added to tarfile')
-        except Exception as e:
+        except:
           msg = 'failed to calculate reference indices.'
           logger.exception(msg)
           raise Exception(msg)
@@ -289,7 +289,7 @@ class SDMProcess(WPSProcess):
           gam_model, predict_gam, gam_info = sdm.get_gam(ncs_references,PAmask)
           tar_info.add(gam_info, arcname = "%s.pdf" % key)
           self.status.set('GAM sucessfully trained', 70)
-        except Exception as e:
+        except:
           msg = 'failed to train GAM'  
           logger.exception(msg)
           raise Exception(msg)
@@ -297,7 +297,7 @@ class SDMProcess(WPSProcess):
         try:
           prediction = sdm.get_prediction(gam_model, ncs_indices)
           self.status.set('prediction done', 80)
-        except Exception as e:
+        except:
           msg = 'failed to predict'   
           logger.exception(msg)
           raise Exception(msg)
@@ -308,7 +308,7 @@ class SDMProcess(WPSProcess):
           mask = broadcast_arrays(prediction, mask)[1]
           prediction[mask==False] = nan
           self.status.set('land sea mask for predicted data', 90)
-        except Exception as e: 
+        except: 
           logger.exception('failed to mask predicted data')
 
         try: 
@@ -316,8 +316,10 @@ class SDMProcess(WPSProcess):
           logger.info('Favourabillity written to file')
           tar_prediction.add(species_file, 
                           arcname = basename(species_file))#.replace(os.path.abspath(os.path.curdir), ""))
-        except Exception as e:
-          logger.exception('failed to write species file')
+        except:
+          msg = 'failed to write species file'
+          logger.exception(msg)
+          raise Exception(msg)
 
       try:
         tar_indices.close()
@@ -327,8 +329,9 @@ class SDMProcess(WPSProcess):
         tar_info.close()
         
         logger.info('tar files closed')
-      except Exception as e:
+      except:
         logger.exception('tar file closing failed')
+        raise Exception
         
       self.output_csv.setValue( csv_file )
       self.output_gbif.setValue( tree_presents )
