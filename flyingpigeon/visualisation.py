@@ -1,16 +1,20 @@
-from matplotlib import pyplot as plt
 import os
 from tempfile import mkstemp
 from netCDF4 import Dataset
 from datetime import datetime, date 
 import numpy as np
 
+import matplotlib
+matplotlib.use('Agg')   # use this if no xserver is available
+from matplotlib import pyplot as plt
+from matplotlib.colors import Normalize
+
 from flyingpigeon import utils
 
 import logging
 logger = logging.getLogger(__name__)
 
-from matplotlib.colors import Normalize
+
 class MidpointNormalize(Normalize):
   def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
     self.midpoint = midpoint
@@ -31,7 +35,6 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
   :param dir_out: directory for output files
   """
 
-  import matplotlib.pyplot as plt
   fig = plt.figure(figsize=(20,10), dpi=600, facecolor='w', edgecolor='k')
 
   logger.debug('Start visualisation spagetti plot')
@@ -93,8 +96,9 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
     
     logger.debug('timesseries spagetti plot done for %s with %s lines.'% (variable, c)) 
   except Exception as e:
-    logger.exception('matplotlib spagetti plot failed for %s : %s\n' % (variable , e))
-    raise  
+    msg = 'matplotlib spagetti plot failed for %s' % variable
+    logger.exception(msg)
+    raise Exception(msg) 
   return output_png 
 
 def uncertainty(resouces , variable=None, title=None, dir_out=None): 
@@ -224,13 +228,14 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
   """
 
   try: 
-    import matplotlib.pyplot as plt
     from cartopy import config
     from cartopy.util import add_cyclic_point
     import cartopy.crs as ccrs
     logger.info('libraries loaded')
-  except Exception as e: 
-    logger.error('failed to load libraries: %s' % e)
+  except Exception as e:
+    msg = 'failed to load libraries'  
+    logger.exception(msg)
+    raise Exception(msg)
 
   try: 
    # get the path of the file. It can be found in the repo data directory.
@@ -264,8 +269,10 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
     maxval = round(np.nanmax(var_signal)+.5)
  
     logger.info('prepared data for plotting')
-  except Exception as e: 
-    logger.error('failed to get data for plotting: %s' % e) 
+  except Exception as e:
+    msg = 'failed to get data for plotting'  
+    logger.exception(msg)
+    raise Exception(msg) 
 
   try:
     fig = plt.figure(figsize=(20,10), dpi=600, facecolor='w', edgecolor='k')
@@ -297,8 +304,10 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
     plt.close()
     
     logger.info('Plot created and figure saved')
-  except Exception as e: 
-    logger.error(' failed to plot graphic: %s ' % e)
+  except Exception as e:
+    msg = 'failed to plot graphic'  
+    logger.exception(msg)
+    raise Exception(msg)
 
   return graphic
 
