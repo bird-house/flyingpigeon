@@ -47,25 +47,6 @@ class ExtractPointsProcess(WPSProcess):
       maxOccurs=100,
       )
     
-    self.type_nc = self.addLiteralInput(
-      identifier="type_nc",
-      title="netCDF",
-      abstract="Output files in netCDF format",
-      type=type(False),
-      default=True,
-      minOccurs=1,
-      maxOccurs=1,
-      )
-    
-    self.type_csv = self.addLiteralInput(
-      identifier="type_csv",
-      title="CSV",
-      abstract="Output  files as tables with comma seperated values",
-      type=type(False),
-      default=False,
-      minOccurs=1,
-      maxOccurs=1,
-      )
   
     self.tarout = self.addComplexOutput(
       identifier="tarout",
@@ -110,71 +91,70 @@ class ExtractPointsProcess(WPSProcess):
       
       logging.debug('start calculation for %s ' % key )
       ncs = nc_exp[key]
-      ncs.sort()
-      
+    #  ncs.sort()
       
       var = key.split('_')[0]
-      rd = ocgis.RequestDataset(ncs, var) # time_range=[dt1, dt2]
+     
+      rd = ocgis.RequestDataset(ncs, variable=var) # time_range=[dt1, dt2]
       logging.debug('calculation of experimtent %s with variable %s'% (key,var))
 
-      if  (self.type_nc.getValue() == True ): 
-        try:
-          self.status.set('processing experiment: {0}'.format(key), 40)
-          # (fp_csv, nc_temp) = tempfile.mkstemp(dir=".", suffix=".nc") 
-          # rd = ocgis.RequestDataset(uri=nc)
-          ops = ocgis.OcgOperations(dataset=rd, geom=geom, prefix=key, select_nearest=False, output_format='nc', add_auxiliary_files=False)
-          ret = ops.execute()
-        except Exception as e:
-          msg = 'failed for experiment: {0}'.format(key) 
-          logging.exception(msg)
-          self.status.set(msg, 40)
+      # if  (self.type_nc.getValue() == True ): 
+      #   try:
+      #     self.status.set('processing experiment: {0}'.format(key), 40)
+      #     # (fp_csv, nc_temp) = tempfile.mkstemp(dir=".", suffix=".nc") 
+      #     # rd = ocgis.RequestDataset(uri=nc)
+      #     ops = ocgis.OcgOperations(dataset=rd, geom=geom, prefix=key, select_nearest=False, output_format='nc', add_auxiliary_files=False)
+      #     ret = ops.execute()
+      #   except Exception as e:
+      #     msg = 'failed for experiment: {0}'.format(key) 
+      #     logging.exception(msg)
+      #     self.status.set(msg, 40)
 
-      if  (self.type_csv.getValue() == True ): 
-        try: 
-          (fp_csv, csv_temp) = tempfile.mkstemp(dir=out_dir, suffix=".csv")
+     # if  (self.type_csv.getValue() == True ): 
+      try: 
+        (fp_csv, csv_temp) = tempfile.mkstemp(dir=out_dir, suffix=".csv")
+        
+        
+        self.status.set('processing files: %s, CSVfile :'  % (key) , 50)
+        coordsFrame = DataFrame()
+        coordsFrame.index.name = 'date'
+        
+        for p in coords :
+          self.status.set('processing point : %s'  % (p) , 60)
+          p = p.split(',')
+          self.status.set('splited x and y coord : %s'  % (p) , 60)
+          point = Point(float(p[0]), float(p[1]))
           
-          # csvout_file = tempfile.mktemp(suffix='.csv')
+          #rd = ocgis.RequestDataset(uri=nc)
+          ops = ocgis.OcgOperations(dataset=rd, geom=point, select_nearest=True, output_format='numpy')
+          ret = ops.execute()
           
-          self.status.set('processing files: %s, CSVfile :'  % (key) , 50)
-          coordsFrame = DataFrame()
-          coordsFrame.index.name = 'date'
+          self.status.set('file : %s.csv successfully ocgis procesed.'  % ( key ) , 70)
           
-          for p in coords :
-            self.status.set('processing point : %s'  % (p) , 60)
-            p = p.split(',')
-            self.status.set('splited x and y coord : %s'  % (p) , 60)
-            point = Point(float(p[0]), float(p[1]))
-            
-            #rd = ocgis.RequestDataset(uri=nc)
-            ops = ocgis.OcgOperations(dataset=rd, geom=point, select_nearest=True, output_format='numpy')
-            ret = ops.execute()
-            
-            self.status.set('file : %s.csv successfully ocgis procesed.'  % ( key ) , 70)
-            
-            # pandas conversion 
-            field_dict = ret[1]
-            field  = field_dict[rd.variable]
-            self.status.set('values in ocgis array', 75)
-            var = field.variables[rd.variable]
-            
-            var_value = np.squeeze(var.value.data)
-            self.status.set('values in numpy array', 80)
-            col_name = 'Point_%s_%s' % (point.x , point.y)
-            pointFrame = DataFrame(columns = [col_name] , index = field.temporal.value_datetime )
-            
-            self.status.set('pandas Dataframe initialised ', 85)
-            
-            pointFrame[col_name] = var_value
-            pointFrame.index.name = 'date'
-            coordsFrame = pd.concat([coordsFrame,pointFrame], axis=1, ignore_index=False) #coordsFrame.append(pointFrame)
-          coordsFrame.to_csv(csv_temp)
-          os.rename(csv_temp , os.path.join(out_dir, key+'.csv')) 
-          self.status.set('file : %s successfully pandas procesed: '  % (key+'.csv') , 90)
-            
-        except Exception as e:
-          msg = 'failed for file: {0}.csv'.format(key)
-          logging.exception(msg)  
-          self.status.set(msg, 90)
+          # pandas conversion 
+          field_dict = ret[1]
+          field  = field_dict[rd.variable]
+          self.status.set('values in ocgis array', 75)
+          var = field.variables[rd.variable]
+          
+          var_value = np.squeeze(var.value.data)
+          self.status.set('values in numpy array', 80)
+          col_name = 'Point_%s_%s' % (point.x , point.y)
+          pointFrame = DataFrame(columns = [col_name] , index = field.temporal.value_datetime )
+          
+          self.status.set('pandas Dataframe initialised ', 85)
+          
+          pointFrame[col_name] = var_value
+          pointFrame.index.name = 'date'
+          coordsFrame = pd.concat([coordsFrame,pointFrame], axis=1, ignore_index=False) #coordsFrame.append(pointFrame)
+        coordsFrame.to_csv(csv_temp)
+        os.rename(csv_temp , os.path.join(out_dir, key+'.csv')) 
+        self.status.set('file : %s successfully pandas procesed: '  % (key+'.csv') , 90)
+          
+      except Exception as e:
+        msg = 'failed for file: {0}.csv'.format(key)
+        logging.exception(msg)  
+        self.status.set(msg, 90)
     
     if (len(os.listdir(out_dir)) > 0):
       tar.add(out_dir, arcname = out_dir.replace(os.curdir , ""))
@@ -183,5 +163,4 @@ class ExtractPointsProcess(WPSProcess):
       raise Exception('ocgis folder contains NO files!')
       
     tar.close()
-    
     self.tarout.setValue( tarout_file )

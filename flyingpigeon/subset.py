@@ -194,6 +194,8 @@ def get_dimension_map(resource):
   return dimension_map
 
 
+
+
 def get_shp_column_values(geom, columnname): 
   """ returns a list of all entries the shapefile columnname
   :param geom: name of the shapefile
