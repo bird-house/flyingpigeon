@@ -385,7 +385,7 @@ def plot_pressuremap(data,
 
   if len(d.shape)==3:
     d = mean(d, axis=0)
-  if len(d.shape)!=1:
+  if len(d.shape)!=2:
     logger.error('data are not in shape for map display')
 
   co = plt.contour(d, lw=2, c='black')

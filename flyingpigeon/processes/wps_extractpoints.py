@@ -7,7 +7,7 @@ import pandas as pd
 from pandas import DataFrame, read_csv
 import numpy as np
     
-from flyingpigeon import tools
+from flyingpigeon.utils import sort_by_filename
     
 from pywps.Process import WPSProcess
 
@@ -85,8 +85,8 @@ class ExtractPointsProcess(WPSProcess):
     os.mkdir(out_dir)
     logging.debug('working dir initialised  %s ' % out_dir )
     
-    ncs_rn = tools.fn_creator(ncs)
-    nc_exp = tools.fn_sorter(ncs_rn) # dictionary {experiment:[files]}
+    # ncs_rn = tools.fn_creator(ncs)
+    nc_exp = sort_by_filename(ncs) # dictionary {experiment:[files]}
     
     geom = []
     for ugid, p in enumerate(coords, start=1):
