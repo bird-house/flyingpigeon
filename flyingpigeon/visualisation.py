@@ -203,12 +203,8 @@ def uncertainty(resouces , variable=None, title=None, dir_out=None):
     fig.title = "Mean and Uncertainty of  %s " % variable
     fig.grid
     
-    
     save(fig)
-
-
-    #hold('off')
-  
+    
     logger.debug('timesseries uncertainty plot done for %s'% variable) 
   except Exception as e:
     logger.exception('bokeh uncertainty plot failed for %s' % variable)
@@ -374,6 +370,41 @@ def plot_kMEAN(kmeans, pca, title='kmean', sub_title='file='):
   return image
 
 
+def plot_pressuremap(data, 
+                    title='pressure pattern', 
+                    sub_title='ploted in birdhouse'):
+  """
+  plots pressure data
+  :param data: 2D or 3D array of pressure data. if data == 3D a mean will be calculated
+  :param title: string for title
+  :param sub_title: string for sub_title
+  """
+  from numpy import squeeze, mean
+  
+  d = squeeze(data)
+
+  if len(d.shape)==3:
+    d = mean(d, axis=0)
+  if len(d.shape)!=1:
+    logger.error('data are not in shape for map display')
+
+  co = plt.contour(d, lw=2, c='black')
+  cf = plt.contourf(d)
+
+  plt.colorbar(cf)
+  plt.clabel(co, inline=1) # fontsize=10
+  
+  plt.title(title)
+  plt.annotate(sub_title, (0,0), (0, -30), xycoords='axes fraction',
+               textcoords='offset points', va='top')
+
+  ip, image = mkstemp(dir='.',suffix='.png')
+  plt.savefig(image)
+  plt.close()
+
+  return image
+
+
 def concat_images(images): 
   """ 
   concatination of images.
@@ -400,4 +431,5 @@ def concat_images(images):
   ip, image = mkstemp(dir='.',suffix='.png')
   
   result.save(image)
+
   return image

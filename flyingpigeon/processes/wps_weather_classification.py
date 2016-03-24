@@ -100,6 +100,14 @@ class WClassProcess(WPSProcess):
             formats=[{"mimeType":"image/png"}],
             asReference=True,
             )
+
+        self.output_maps = self.addComplexOutput(
+            identifier="output_maps",
+            title="Pressure pattern",
+            abstract="Corresponding pressure maps for Weather Regimes",
+            formats=[{"mimeType":"image/png"}],
+            asReference=True,
+            )
         
         self.output_info = self.addComplexOutput(
             identifier="output_info",
@@ -137,8 +145,7 @@ class WClassProcess(WPSProcess):
         
         from flyingpigeon.utils import sort_by_filename, get_time # , calc_grouping
         from flyingpigeon import weatherclass as wc
-        
-        from flyingpigeon.visualisation import plot_tSNE, plot_kMEAN, concat_images
+        from flyingpigeon.visualisation import plot_tSNE, plot_kMEAN, concat_images, plot_pressuremap
         
         from datetime import datetime as dt
         from numpy import savetxt, column_stack
@@ -153,11 +160,11 @@ class WClassProcess(WPSProcess):
 
         png_clusters = []
         txt_info = []
+        png_pressuremaps = []
         
         try:
           # open tar files
           tar_info = tarfile.open('info.tar', "w")
-          
           logger.info('tar files prepared')
         except:
           msg = 'tar file preparation failed'
@@ -184,7 +191,7 @@ class WClassProcess(WPSProcess):
           logger.info('nc subset: %s ' % nc)
           
           try:
-            pca = wc.get_pca(nc)
+            vals, pca = wc.get_pca(nc)
             logger.info('PCa calculated')
           except:
             logger.debug('failed to calculate PCs')
@@ -210,14 +217,48 @@ class WClassProcess(WPSProcess):
                 
                 png_clusters.append(plot_kMEAN(kmeans, pca, title='kMEAN month: %s [lonlat: %s]' % (time_region,bbox), sub_title='file: %s' % key))
                 logger.info('kMEAN calculated for %s ' % key)
+                
+                subplots = []
+                for i in range(4): 
+                    subplots.append(plot_pressuremap((vals[c==i]/100), title='Weather Regime %s: Month %s ' % (i, time_region), sub_title='file: %s' % key))
+
+                
+                from PIL import Image
+                import sys
+                from tempfile import mkstemp
+
+                open_subplots = map(Image.open, subplots)
+                w = max(i.size[0] for i in open_subplots)
+                h = max(i.size[1] for i in open_subplots)
+                
+                result = Image.new("RGB", (w*2, h*2))
+                # p = h / len(open_subplots)
+                c = 0 
+                for i ,iw in enumerate([0,w]):
+                    for j, jh in enumerate([0,h]):
+                        oi = open_subplots[c] 
+                        c = c +1
+                    
+                        cw = oi.size[0]
+                        ch = oi.size[1]
+
+                        box = [iw,jh,iw+cw,jh+ch]
+                        result.paste(oi, box=box)
+
+                ip, pressuremap = mkstemp(dir='.',suffix='.png')
+                result.save(pressuremap)
+                png_pressuremaps.append(pressuremap)
+                
             except:
               logger.debug('faild to calculate cluster for %s' % key )
               raise
 
-        image = concat_images(png_clusters)
+        c_clusters = concat_images(png_clusters)
+        c_maps = concat_images(png_pressuremaps)
         
               
         try:
+          tar_info.close()  
           logger.info('tar files closed')
         except Exception as e:
           logger.exception('tar file closing failed')
@@ -225,5 +266,6 @@ class WClassProcess(WPSProcess):
 
         # call 
         # self.output_nc.setValue( nc )
-        self.output_clusters.setValue( image )
+        self.output_clusters.setValue( c_clusters  )
+        self.output_maps.setValue( c_maps  )
         self.output_info.setValue('info.tar')

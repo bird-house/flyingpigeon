@@ -11,7 +11,7 @@ def get_pca(resource):
   var = get_variable(resource)
   print 'variable name: %s' % var
   ds = Dataset(resource)
-  psl = ds.variables[var]
+  vals = ds.variables[var]
   lat = ds.variables['lat']
   lon = ds.variables['lon']
   #time = ds.variables['time']
@@ -25,10 +25,10 @@ def get_pca(resource):
   import numpy as np
   
   # reshape
-  data = np.array(psl)
-  adata = data.reshape(psl[:].shape[0], (psl[:].shape[1] * psl[:].shape[2]) )
+  data = np.array(vals)
+  adata = data.reshape(vals[:].shape[0], (vals[:].shape[1] * vals[:].shape[2]) )
   pca = PCA(n_components=50).fit_transform(adata)
-  return pca #, season
+  return vals, pca #, season
 
 
 def calc_tSNE(pca):
