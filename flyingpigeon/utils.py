@@ -329,14 +329,14 @@ def sort_by_filename(resource, historical_concatination = False):
 
       try:
         # add date information to the key:
-        for key in ndic: 
+        for key in ndic.keys(): 
           ndic[key].sort()
           start = get_timestamps(ndic[key][0])[0]
           end = get_timestamps(ndic[key][-1])[1]
           newkey = key+'_'+start+'-'+end
           tmp_dic[newkey] = ndic[key]
       except Exception as e: 
-        logger.debug('failed to sort the list of resources and add dates to keyname %s' % e)
+        logger.debug('failed to sort the list of resources and add dates to keyname: %s' % e)
         raise
 
     elif type(resource) == str:

@@ -47,7 +47,6 @@ class ExtractPointsProcess(WPSProcess):
       maxOccurs=100,
       )
     
-  
     self.tarout = self.addComplexOutput(
       identifier="tarout",
       title="Tarfile",
@@ -57,110 +56,54 @@ class ExtractPointsProcess(WPSProcess):
       )
           
   def execute(self):
-    # get the values of WPS delivered arguments
+    from flyingpigeon.ocgis_module import call
+    from flyingpigeon.utils import get_time, get_variable, sort_by_filename
+    
+    from datetime import datetime as dt
+    from netCDF4 import Dataset
+    from numpy import savetxt, column_stack, squeeze
+    
     ncs = self.getInputValues(identifier='netcdf_file')
+    logging.info("ncs: %s " % ncs) 
     coords = self.getInputValues(identifier='coords')
-    logging.debug("coords %s", coords)
+    logging.info("coords %s", coords)
 
-    out_dir = os.path.join(os.path.curdir, 'out_dir') 
-    os.mkdir(out_dir)
-    logging.debug('working dir initialised  %s ' % out_dir )
-    
-    # ncs_rn = tools.fn_creator(ncs)
+ 
     nc_exp = sort_by_filename(ncs) # dictionary {experiment:[files]}
+    filenames = []
     
-    geom = []
-    for ugid, p in enumerate(coords, start=1):
+    (fp_tar, tarout_file) = tempfile.mkstemp(dir=".", suffix='.tar')
+    tar = tarfile.open(tarout_file, "w")
+    
+    for key in nc_exp.keys():
+      logging.info('start calculation for %s ' % key )
+      ncs = nc_exp[key]
+      nc = ncs[0]
+      
+      times = get_time(nc)
+      var = get_variable(nc)
+      
+      concat_vals = [dt.strftime(t, format='%Y-%d-%m_%H:%M:%S') for t in times]
+      header = 'date_time'
+      filename = '%s.csv' % key
+      filenames.append(filename) 
+      
+      for ugid, p in enumerate(coords, start=1):
         self.status.set('processing point : {0}'.format(p), 20)
         p = p.split(',')
         self.status.set('splited x and y coord : {0}'.format(p), 20)
         point = Point(float(p[0]), float(p[1]))
-        geom.append({'geom': point, 'properties': {'UGID': ugid}})
-  
-    ocgis.env.OVERWRITE = True
-    ocgis.env.DIR_OUTPUT = out_dir
-  
-    (fp_tar, tarout_file) = tempfile.mkstemp(dir=".", suffix='.tar')
-    tar = tarfile.open(tarout_file, "w")
-    
-    csvfiles = []
-    
-    self.status.set('coordinates : %s ' % ( coords), 30)
-
-    for key in nc_exp:
-      
-      logging.debug('start calculation for %s ' % key )
-      ncs = nc_exp[key]
-    #  ncs.sort()
-      
-      var = key.split('_')[0]
-     
-      rd = ocgis.RequestDataset(ncs, variable=var) # time_range=[dt1, dt2]
-      logging.debug('calculation of experimtent %s with variable %s'% (key,var))
-
-      # if  (self.type_nc.getValue() == True ): 
-      #   try:
-      #     self.status.set('processing experiment: {0}'.format(key), 40)
-      #     # (fp_csv, nc_temp) = tempfile.mkstemp(dir=".", suffix=".nc") 
-      #     # rd = ocgis.RequestDataset(uri=nc)
-      #     ops = ocgis.OcgOperations(dataset=rd, geom=geom, prefix=key, select_nearest=False, output_format='nc', add_auxiliary_files=False)
-      #     ret = ops.execute()
-      #   except Exception as e:
-      #     msg = 'failed for experiment: {0}'.format(key) 
-      #     logging.exception(msg)
-      #     self.status.set(msg, 40)
-
-     # if  (self.type_csv.getValue() == True ): 
-      try: 
-        (fp_csv, csv_temp) = tempfile.mkstemp(dir=out_dir, suffix=".csv")
         
+        #get the timeseries at gridpoint
+        timeseries = call(resource=ncs, geom=point, select_nearest=True)
         
-        self.status.set('processing files: %s, CSVfile :'  % (key) , 50)
-        coordsFrame = DataFrame()
-        coordsFrame.index.name = 'date'
-        
-        for p in coords :
-          self.status.set('processing point : %s'  % (p) , 60)
-          p = p.split(',')
-          self.status.set('splited x and y coord : %s'  % (p) , 60)
-          point = Point(float(p[0]), float(p[1]))
-          
-          #rd = ocgis.RequestDataset(uri=nc)
-          ops = ocgis.OcgOperations(dataset=rd, geom=point, select_nearest=True, output_format='numpy')
-          ret = ops.execute()
-          
-          self.status.set('file : %s.csv successfully ocgis procesed.'  % ( key ) , 70)
-          
-          # pandas conversion 
-          field_dict = ret[1]
-          field  = field_dict[rd.variable]
-          self.status.set('values in ocgis array', 75)
-          var = field.variables[rd.variable]
-          
-          var_value = np.squeeze(var.value.data)
-          self.status.set('values in numpy array', 80)
-          col_name = 'Point_%s_%s' % (point.x , point.y)
-          pointFrame = DataFrame(columns = [col_name] , index = field.temporal.value_datetime )
-          
-          self.status.set('pandas Dataframe initialised ', 85)
-          
-          pointFrame[col_name] = var_value
-          pointFrame.index.name = 'date'
-          coordsFrame = pd.concat([coordsFrame,pointFrame], axis=1, ignore_index=False) #coordsFrame.append(pointFrame)
-        coordsFrame.to_csv(csv_temp)
-        os.rename(csv_temp , os.path.join(out_dir, key+'.csv')) 
-        self.status.set('file : %s successfully pandas procesed: '  % (key+'.csv') , 90)
-          
-      except Exception as e:
-        msg = 'failed for file: {0}.csv'.format(key)
-        logging.exception(msg)  
-        self.status.set(msg, 90)
-    
-    if (len(os.listdir(out_dir)) > 0):
-      tar.add(out_dir, arcname = out_dir.replace(os.curdir , ""))
-      self.status.set('ocgis folder tared with : %i '  % (len(os.listdir(out_dir))) , 95)
-    else:
-      raise Exception('ocgis folder contains NO files!')
+        ds = Dataset(timeseries)
+        vals = squeeze(ds.variables[var])
+        header = header + ',%s_%s' % (p[0], p[1])
+        concat_vals = column_stack([concat_vals, vals])
+
+      savetxt(filename, concat_vals, fmt='%s', delimiter=',', header=header)
+      tar.add( filename )
       
     tar.close()
     self.tarout.setValue( tarout_file )
