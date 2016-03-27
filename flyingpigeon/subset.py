@@ -79,7 +79,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
       prefix = list([prefix])
   
   geoms = set()
-  ncs = sort_by_filename(resource)
+  ncs = sort_by_filename(resource, historical_concatination=True) #  historical_concatination=True
   geom_files = []
 
   if mosaik == True :
@@ -89,10 +89,9 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
         geoms.add(get_geom(polygon))
         nameadd = nameadd + polygon 
       if len(geoms) > 1: 
-        logger.error('polygons belong to differnt shapefiles! mosaik is not possible %s', geoms)
+        logger.debug('polygons belong to differnt shapefiles! mosaik is not possible %s', geoms)
       else: 
         geom = geoms.pop()
-    
       ugids = get_ugid(polygons=polygons, geom=geom)
       
       for key in  ncs.keys() :
@@ -102,12 +101,12 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
         try:
           
           if prefix == None:
-            prefix = key + nameadd
+            name = key + nameadd
           else:
-            prefix = prefix[0]
+            name = prefix[0]
             
           geom_file = call(resource=ncs[key], variable=variable, calc=calc, calc_grouping=calc_grouping ,
-            prefix=prefix, geom=geom, select_ugid=ugids, dir_output=dir_output, dimension_map=dimension_map)    
+            prefix=name, geom=geom, select_ugid=ugids, dir_output=dir_output, dimension_map=dimension_map)    
           
           geom_files.append( geom_file )
         except Exception as e:
@@ -128,11 +127,11 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
             logger.info('variable %s detected in resource' % (variable))  
           try:
             if prefix == None: 
-              prefix = key + '_' + polygon
+              name = key + '_' + polygon
             else:
-              prefix = prefix[i]
+              name = prefix[i]
             geom_file = call(resource=ncs[key], variable=variable,  calc=calc, calc_grouping=calc_grouping,
-              prefix=prefix, geom=geom, select_ugid=ugid, dir_output=dir_output, dimension_map=dimension_map)
+              prefix=name, geom=geom, select_ugid=ugid, dir_output=dir_output, dimension_map=dimension_map)
             geom_files.append( geom_file )
           except Exception as e:
             msg = 'ocgis calculations failed for %s ' % (key)
@@ -253,8 +252,7 @@ def get_ugid(polygons=None, geom=None):
       else:
         from ocgis import ShpCabinet
         sc = ShpCabinet(DIR_SHP)
-        logger.error('geom: %s not found in ShapeCabinet. Available geoms are: %s ', geom, sc) 
-
+        logger.debug('geom: %s not found in ShapeCabinet. Available geoms are: %s ', geom, sc)
     return result
 
 def get_geom(polygon=None):
@@ -272,7 +270,7 @@ def get_geom(polygon=None):
     elif polygon in _CONTINENTS_: 
       geom = 'continents'
     else:
-      logger.error('polygon: %s not found in geoms' % polygon) 
+      logger.debug('polygon: %s not found in geoms' % polygon) 
 
   return geom  
 

@@ -27,7 +27,7 @@ class MidpointNormalize(Normalize):
 
 def spaghetti(resouces, variable=None, title=None, dir_out=None):
   """
-  retunes an html file containing the appropriate spaghetti plot. 
+  retunes a png file containing the appropriate spaghetti plot. 
   
   :param resouces: list of files containing the same variable 
   :param variable: variable to be visualised, if None (default) variable will be detected
@@ -49,17 +49,8 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
   if dir_out == None: 
     dir_out = os.curdir
 
-  # === prepare bokeh
   try: 
     o1 , output_png = mkstemp(dir=dir_out, suffix='.png')
-    
-    #output_file(output_html)
-    #bplt.save()
-    
-    #fig = figure(x_axis_type = "datetime", tools="pan,wheel_zoom,box_zoom,reset,previewsave")
-    #logger.debug('output_file.html created')
-    #output_file(output_html, title=variable, autosave=True,)
-    #bplt.hold()
     
     for c , nc in enumerate(resouces):
       # get timestapms
@@ -77,7 +68,7 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
         plt.plot( dt,ts )
         #fig.line( dt,ts )
       except Exception as e:
-        logger.exception('bokeh lineplot failed for %s: %s\n' % (nc, e))
+        logger.debug('lineplot failed for %s: %s\n' % (nc, e))
 
       # plot into current figure
       # , legend= nc 
@@ -97,8 +88,8 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
     logger.debug('timesseries spagetti plot done for %s with %s lines.'% (variable, c)) 
   except Exception as e:
     msg = 'matplotlib spagetti plot failed for %s' % variable
-    logger.exception(msg)
-    raise Exception(msg) 
+    logger.debug(msg)
+    #raise Exception(msg) 
   return output_png 
 
 def uncertainty(resouces , variable=None, title=None, dir_out=None): 

@@ -188,13 +188,16 @@ def get_timestamps(nc_file):
     :param nc_file: NetCDF file
     :returns tuple: (from_timestamp, to_timestamp)
     """
-
-    start = get_time(nc_file)[0]
-    end = get_time(nc_file)[-1]
-    
-    from_timestamp = '%s%s%s'  % (start.year, str(start.month).zfill(2) ,str(start.day).zfill(2)) 
-    to_timestamp = '%s%s%s'  %   (end.year,  str(end.month).zfill(2) ,str(end.day).zfill(2)) 
-
+    try: 
+        start = get_time(nc_file)[0]
+        end = get_time(nc_file)[-1]
+        
+        from_timestamp = '%s%s%s'  % (start.year, str(start.month).zfill(2) ,str(start.day).zfill(2)) 
+        to_timestamp = '%s%s%s'  %   (end.year,  str(end.month).zfill(2) ,str(end.day).zfill(2))
+    except Exception as e: 
+      #logger.debug('failed to get_timestamps %s' % e)
+      raise Exception
+     
     return (from_timestamp, to_timestamp)
 
 def get_time(nc_file):
@@ -204,16 +207,15 @@ def get_time(nc_file):
     :param nc_file: NetCDF file
     :return format: netcdftime._datetime.datetime
     """
-     
-    ds = Dataset(nc_file)
-    time = ds.variables['time']
-
-    timestamps = num2date(time[:], time.units, time.calendar)
-    
-    ds.close()
-    
+    try:  
+      ds = Dataset(nc_file)
+      time = ds.variables['time']
+      timestamps = num2date(time[:], time.units, time.calendar)
+      ds.close()
+    except: 
+      logger.debug('failed to get time')
+      raise Exception
     return timestamps
-  
     
 def aggregations(nc_files):
     """
