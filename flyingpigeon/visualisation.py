@@ -75,9 +75,9 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
     
     #fig.legend()[0].orientation = "bottom_left"
     # fig.legend().orientation = "bottom_left"
-    plt.title(title)
+    plt.title(title, fontsize=20)
     plt.grid()# .grid_line_alpha=0.3
-
+    #lt.rcParams.update({'font.size': 22})
     #window_size = 30
     #window = np.ones(window_size)/float(window_size)
     fig.savefig(output_png)
@@ -307,9 +307,6 @@ def plot_tSNE(data, title='custer', sub_title='method: principal components'):
   :param title: string for title
   """
   fig = plt.figure(figsize=(10, 10))
-  #ax = plt.axes(frameon=True)
-  #plt.subplots_adjust(left=0.0, bottom=0.0, right=1.0, top=0.9,
-                  #wspace=0.0, hspace=0.0)
   plt.scatter(data[:, 0], data[:, 1], marker=".")
   plt.title(title)
   plt.annotate(sub_title, (0,0), (0, -30), xycoords='axes fraction', textcoords='offset points', va='top')

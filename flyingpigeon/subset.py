@@ -53,7 +53,7 @@ def masking(resource, mask, prefix=None, dir_output=None):
 
 
 def clipping(resource=[], variable=None, dimension_map=None, calc=None,  
-  calc_grouping= None, prefix=None, polygons=None, mosaik=False, dir_output=None):
+  calc_grouping= None, historical_concatination=True, prefix=None, polygons=None, mosaik=False, dir_output=None):
   """ returns list of clipped netCDF files
   possible entries: 
   :param resource: list of input netCDF files
@@ -61,6 +61,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
   :param dimesion_map: specify a dimension map input netCDF has unconventional dimension
   :param calc: ocgis calculation argument
   :param calc_grouping: ocgis calculation grouping 
+  :param historical_concatination: concat files of RCPs with appropriate historical runs to one timeseries 
   :param prefix: perfix for output file name
   :param polygons: list of polygons to be used. if more than 1 in the list, a appropriate mosaik will be clipped
   :param output_format: output_format (default='nc')
@@ -79,7 +80,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
       prefix = list([prefix])
   
   geoms = set()
-  ncs = sort_by_filename(resource, historical_concatination=True) #  historical_concatination=True
+  ncs = sort_by_filename(resource, historical_concatination=historical_concatination) #  historical_concatination=True
   geom_files = []
 
   if mosaik == True :
