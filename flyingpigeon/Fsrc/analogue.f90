@@ -1,4 +1,4 @@
-!> © LSCE – Laboratory related to CEA/DSM – CNRS – UVSQ, 
+!> © LSCE – Laboratory related to CEA/DSF – CNRS – UVSQ, 
 !! Sabine Radanovics (sabine.radanovics@lsce.ipsl.fr) andPascal Yiou (pascal.yiou@lsce.ipsl.fr)
 !! This source code is part of the CASTf90 software IDDN.FR.001.030008.000.S.P.2016.000.20700
 !!
@@ -248,7 +248,7 @@ IF (configs%param%calccor) THEN
   WRITE(22,'(A)') TRIM(headerline)
 IF (.NOT. configs%param%silent)  PRINT*, 'header written'
 ! write data
-  DO it=1,dim_sim%time_dim
+  DO it=1,dim_sim%time_dim-configs%param%timewin+1
    WRITE(22,TRIM(formatstring)) &
     & dates_sim(it), analogue_dates(:, it), distances(:, it), spatial_corr(:, it)
   END DO
@@ -274,7 +274,7 @@ ELSE
  OPEN(22,FILE=TRIM(configs%files%outputfile))
   WRITE(22,'(A)') headerline
 ! write data
-  DO it=1,dim_sim%time_dim
+  DO it=1,dim_sim%time_dim-configs%param%timewin+1
    WRITE(22,TRIM(formatstring)) &
     & dates_sim(it), analogue_dates(:, it), distances(:, it)
   END DO
