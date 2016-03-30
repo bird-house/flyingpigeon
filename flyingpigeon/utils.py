@@ -16,7 +16,7 @@ def archive(resources, format='tar', dir_output='.'):
   :param dir_output: path to output folder (default current direcory)
   :return archive: archive path/filname.ext
   """
-  
+
   logger.info('compressing files to archive')
 
   if type(resources) == str: 
@@ -42,6 +42,26 @@ def archive(resources, format='tar', dir_output='.'):
       msg = 'failed to compress into archive'
       logger.exception(msg)
       raise Exception(msg)
+  elif format == 'zip': 
+    from zipfile_infolist import print_info
+    import zipfile
+
+    print 'creating archive'
+    o1 , archive = mkstemp(dir='.', suffix='.zip')
+    zf = zipfile.ZipFile(archive, mode='w')
+    try:
+        for f in resources: 
+          zf.write(f)
+    finally:
+        print 'closing'
+        zf.close()
+
+    print
+    print_info('zipfile_write.zip')
+
+
+
+
   return archive
 
 def local_path(url):

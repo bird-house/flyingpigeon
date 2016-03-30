@@ -3,9 +3,8 @@ Processes for Species distribution
 Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 """
 
-import tarfile
-import os
-from os.path import basename
+#import tarfile
+#import os
 
 from pywps.Process import WPSProcess
 
@@ -143,15 +142,17 @@ class SDMProcess(WPSProcess):
             asReference=True,
             )
 
-        self.output_info = self.addComplexOutput(
-            identifier="output_info",
-            title="GAM statistics information",
-            abstract="Tar archive containing the mashine learning statistics",
-            formats=[{"mimeType":"application/x-tar"}],
-            asReference=True,
-            )
+        # self.output_info = self.addComplexOutput(
+        #     identifier="output_info",
+        #     title="GAM statistics information",
+        #     abstract="Tar archive containing the mashine learning statistics",
+        #     formats=[{"mimeType":"application/x-tar"}],
+        #     asReference=True,
+        #     )
 
     def execute(self):
+      from os.path import basename
+
       from flyingpigeon import sdm
       from flyingpigeon.utils import archive
 
@@ -229,7 +230,7 @@ class SDMProcess(WPSProcess):
             fp.write(msg)
       
       #################################
-      ### calculate the climate inidces
+      ### calculate the climate indices
       #################################
       
       # get the indices
@@ -261,19 +262,23 @@ class SDMProcess(WPSProcess):
         logger.exception(msg)
         raise Exception(msg)
 
-      try:
-        # open tar files
-        tar_reference = tarfile.open('reference.tar', "w")
-        tar_indices = tarfile.open('indices.tar', "w")
+      # try:
+      #   # open tar files
+      #   tar_reference = tarfile.open('reference.tar', "w")
+      #   tar_indices = tarfile.open('indices.tar', "w")
 
-        tar_info = tarfile.open('info.tar', "w")
-        tar_prediction = tarfile.open('prediction.tar', "w")
+      #   tar_info = tarfile.open('info.tar', "w")
+      #   tar_prediction = tarfile.open('prediction.tar', "w")
         
-        logger.info('tar files prepared')
-      except:
-        msg = 'tar file preparation failed'
-        logger.exception(msg)
-        raise Exception(msg)
+      #   logger.info('tar files prepared')
+      # except:
+      #   msg = 'tar file preparation failed'
+      #   logger.exception(msg)
+      #   raise Exception(msg)
+
+
+      ncs_references = []
+      species_files = []
 
       for count,key in enumerate(indices_dic.keys()):
         try:
@@ -282,30 +287,20 @@ class SDMProcess(WPSProcess):
           ncs = indices_dic[key]
           
           logger.info('with %s files' % len(ncs))
-          
-          # try:
-          #   for nc in ncs: 
-          #     tar_indices.add(nc, 
-          #                   arcname = basename(nc) )# .replace(os.path.abspath(os.path.curdir), ""))
-          #   logger.info('indices added to tarfile for %s' % key)
-          # except:
-          #   msg = 'failed adding indices to tar'  
-          #   logger.exception(msg)
-          #   raise Exception(msg)
             
           try: 
-            ncs_references = sdm.get_reference(ncs_indices=ncs, period=period)
+            ncs_references.extend(sdm.get_reference(ncs_indices=ncs, period=period))
             logger.info('reference indice calculated %s ' % ncs_references)
           except:
             msg = 'failed adding ref indices to tar'
             logger.exception(msg)
             raise Exception(msg)
           
-          for nc_reference in ncs_references:
-            tar_reference.add(nc_reference, 
-                arcname = basename(nc_reference))# nc_reference.replace(os.path.abspath(os.path.curdir), ""))
+          # for nc_reference in ncs_references:
+          #   tar_reference.add(nc_reference, 
+          #       arcname = basename(nc_reference))# nc_reference.replace(os.path.abspath(os.path.curdir), ""))
           
-          logger.info('reference indices added to tarfile')
+          # logger.info('reference indices added to tarfile')
         except:
           msg = 'failed to calculate reference indices.'
           logger.exception(msg)
@@ -313,7 +308,8 @@ class SDMProcess(WPSProcess):
 
         try:
           gam_model, predict_gam, gam_info = sdm.get_gam(ncs_references,PAmask)
-          tar_info.add(gam_info, arcname = "%s.pdf" % key)
+
+          #tar_info.add(gam_info, arcname = "%s.pdf" % key)
           self.status.set('GAM sucessfully trained', 70)
         except:
           msg = 'failed to train GAM'  
@@ -338,34 +334,58 @@ class SDMProcess(WPSProcess):
           logger.exception('failed to mask predicted data')
 
         try: 
-          species_file = sdm.write_to_file(ncs_indices[0], prediction)
+          species_files.append(sdm.write_to_file(ncs_indices[0], prediction))
+
           logger.info('Favourabillity written to file')
-          tar_prediction.add(species_file, 
-                          arcname = basename(species_file))#.replace(os.path.abspath(os.path.curdir), ""))
+          #tar_prediction.add(species_file, 
+           #               arcname = basename(species_file))#.replace(os.path.abspath(os.path.curdir), ""))
         except:
           msg = 'failed to write species file'
           logger.exception(msg)
           raise Exception(msg)
+      
 
+      archive_references = None
       try:
-        tar_indices.close()
-        tar_reference.close()
-
-        tar_prediction.close()
-        tar_info.close()
-        
-        logger.info('tar files closed')
+        archive_references = archive(ncs_references , format=archive_format)
+        logger.info('indices 2D added to archive')
       except:
-        logger.exception('tar file closing failed')
-        raise Exception
+        msg = 'failed adding 2D indices to archive'  
+        logger.exception(msg)
+        raise Exception(msg)  
+
+      archive_predicion = None
+      try:
+        archive_predicion = archive(species_files , format=archive_format)
+        logger.info('species_files added to archive')
+      except:
+        msg = 'failed adding species_files indices to archive'  
+        logger.exception(msg)
+        raise Exception(msg)  
+
+
+
+
+
+      # try:
+      #   #tar_indices.close()
+      #   #tar_reference.close()
+
+      #   tar_prediction.close()
+      #   #tar_info.close()
+        
+      #   logger.info('tar files closed')
+      # except:
+      #   logger.exception('tar file closing failed')
+      #   raise Exception
         
       self.output_csv.setValue( csv_file )
       self.output_gbif.setValue( tree_presents )
       self.output_PA.setValue( png_PA_mask )
       self.output_indices.setValue( archive_indices )
-      self.output_reference.setValue ('reference.tar')
-      self.output_prediction.setValue ('prediction.tar')
-      self.output_info.setValue('info.tar')
+      self.output_reference.setValue (archive_references)
+      self.output_prediction.setValue (archive_predicion)
+      #self.output_info.setValue('info.tar')
 
       self.status.set('done', 100)
       
