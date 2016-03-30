@@ -21,6 +21,8 @@ custom.cfg
 # Fortran
 *.o
 *.a
+*.mod
+*.out
 
 # Unit test / Coverage reports
 .coverage
