@@ -1,0 +1,269 @@
+\documentclass[11p,a4paper]{article}
+\usepackage{natbib}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\title{HOW TO CASTf90}
+\author{Sabine Radanovics}
+\date{\today}
+\begin{document}
+\maketitle
+\section{What does it do?}
+CASTf90 first downloads fields from NCEP reanalysis (sea level pressure, slp, as default) and then searches for a given simulation period the most similar cases within a given data base period according to a given distance measure. Finally it writes the N most similar days including the calculated distances for them to an output file. 
+\section{Requirements}
+CASTf90 is developed for Linux systems. It might run on macOSX, but this was never tested. 
+
+CASTf90 requires:
+\begin{itemize}
+ \item cdo (climate data operators)
+ \item nco (netCDF operators)
+ \item netCDF with Fortran90 interface
+ \item a Fortran95 compiler
+ \item lapack95 libraries
+\end{itemize}
+
+\section{Get the code}
+\subsection{Inside LSCE}
+The code is  located in a cvs repository situated on the on the common file system (make sure to be logged in on obelix...), so the first step is to checkout a so called working copy from the repository.
+To this end:
+
+\begin{enumerate}
+\item create a directory where you want the code to be located
+\begin{verbatim}
+ mkdir Mydir
+\end{verbatim}
+and change to this directory
+\begin{verbatim}
+ cd Mydir
+\end{verbatim}
+\item set the environment variable CVSROOT to /home/users/sradanov/cvs. The command depends on the active shell but might be something like 
+\begin{verbatim}
+ export CVSROOT=/home/users/sradanov/cvs
+\end{verbatim}
+Now cvs knows where to look for the repository.
+\item checkout the working copy from the repository with 
+\begin{verbatim}
+ cvs checkout Analogue/RSdev 
+\end{verbatim}
+\end{enumerate}
+Now you should have some fortran90 source files, some shell scripts, an example pbsscript and a makefile in your directory. (See \autoref{sec:listoffiles} for a complete list.)
+
+From time to time you may run
+\begin{verbatim}
+ cvs status
+\end{verbatim}
+to see if the source files are still all Up-to-date. If this is not the case, you may run
+\begin{verbatim}
+ cvs update
+\end{verbatim}
+to get the latest version of the source files and scripts. Attention! If .f90 sources were updated the program has to be recompiled! (see \autoref{sec:compil} for details). If run\_analogs\_case.sh has been updated, don't forget to change the variable \textit{sourcedir}. 
+
+For further details on cvs and its commands please refer to the cvs manual.
+\subsection{Outside LSCE}
+You can download the source code from the A2C2 project homepage.
+
+\href{https://a2c2.lsce.ipsl.fr/index.php/licences}{https://a2c2.lsce.ipsl.fr/index.php/licences}
+
+You can download the complete lapack95, lapack and blas library code from 
+
+\href{http://www.netlib.org/lapack95/}{http://www.netlib.org/lapack95/} file lapack95.tgz
+
+\href{http://www.netlib.org/blas/blas.tgz}{http://www.netlib.org/blas/blas.tgz} 
+
+\href{http://www.netlib.org/lapack/lapack.tgz}{http://www.netlib.org/lapack/lapack.tgz}
+
+\subsection{List of scripts and source files}
+\label{sec:listoffiles}
+After checkout or download the following files should be present:
+
+Shellscripts
+\begin{itemize}
+ \item run\_analogs\_case.sh
+ \item getNCEP\_slp.sh 
+ \item retrieve.sh
+\end{itemize}
+Source files
+\begin{itemize}
+ \item analogue.f90  
+ \item config.f90  
+ \item distance.f90  
+ \item eofs.f90  
+ \item read.f90  
+ \item routines.f90 
+\end{itemize}
+Makefile
+\begin{itemize}
+ \item Makefile
+\end{itemize}
+Example pbsscript
+\begin{itemize}
+ \item pbsscript
+\end{itemize}
+
+\section{Compile the program}
+\label{sec:compil}
+CASTf90 comes with a makefile to compile the fortran90 sources, however, it is assumed that netcdf libraries with fortran90 interface and the lapack library with fortran95 interface are installed.
+If you are working on "obelix" you just have to load the netcdf module using
+\begin{verbatim}
+ module load netcdf/4p
+\end{verbatim}
+before running 
+\begin{verbatim}
+ make -f Makefile
+\end{verbatim}
+Elsewhere please make sure that netcdf \textbf{AND} its fortran90 interface are installed and that INCLUDEPATH in the makefile is the directory containing netcdf.mod, and LIBPATH the one containing libnetcdff. 
+
+The intel compiler already comes with the -mkl option that gives access to the lapack library, however, the lapack95 interface may need to be installed separately. INCLUDEPATH2 and LIBPATH2 contain the .mod and the lib files for lapack95 respectively. 
+
+For other compilers the entire lapack library and possibly the blas library may need to be compiled and compiler flags will need to be adapted. (The most important is probably the one enabeling OpenMP.)
+
+\subsection{Local installation with gfortran including the lapack installation}
+Start with the installation of the blas library.
+Change to the directory containing the blas routines:
+\begin{verbatim}
+ cd Blas
+\end{verbatim}
+Compile the code and create a static library:
+\begin{verbatim}
+ gfortran -O2 -c *.f
+ ar cr libblas.a *.o
+\end{verbatim}
+Move the static library to a typical library directory such as /usr/lib64/. You will need the root password to do so.
+\begin{verbatim}
+ sudo cp libblas.a /usr/lib64/
+\end{verbatim}
+If you don't have the password, you may copy it to the main source directory where you will compile CASTf90.
+
+\section{Run the script}
+Before running the script the first time or after an update, please verify that the variable \textit{sourcedir} in run\_analogs\_case.sh (line 37) is set to the directory containing the source code.
+
+To anable parallel calculation the OMP\_NUM\_THREADS environement variable has to be set. The command depends on the active shell, but might be something like 
+\begin{verbatim}
+ export OMP_NUM_THREADS=12
+\end{verbatim}
+The number has to be adjusted according to the available ressources.
+When running through a batch system, this should be done in the batch script (see  \autoref{sec:batchmode} for details).
+
+Then to start the procedure, run
+\begin{verbatim}
+ ./run_analogs_case.sh
+\end{verbatim}
+run\_analogs\_case.sh accepts a number of options:
+\begin{itemize}
+ \item Options to set I/O paths:
+ \begin{itemize}
+  \item \textbf{-P}\textit{$<$path to base data$>$}
+  \item \textbf{-p}\textit{$<$path to simulation data$>$}
+  \item \textbf{-o}\textit{$<$path to output file$>$}
+ \end{itemize}
+ Paths have to end with a slash.
+ Example:
+ \begin{verbatim}
+  ./run_analogs_case.sh -P/home/scratch01/sradanov/A2C2/NCEP/
+ \end{verbatim}
+ \item Options related to the geographical region of interest:
+ \begin{itemize}
+  \item \textbf{-R}\textit{$<$region name$>$} Known region names are NA (North Atlantic) and NHmid (Northern Hemisphere midlatitudes). This region is used at the time of data download. Using a limited number of large regions for downloads avoids to store a version of the data for every domain one might want to use and to skip the download step if the data is already present. The -D option allows then to specify the spatial domain the analogues are actually calculated upon. New regions can be added in the script retrieve.sh from line 20 on.
+  \item \textbf{-D}\textit{$<$lonmin$>$,$<$lonmax$>$,$<$latmin$>$,$<$latmax$>$} predictor domain, that is the spatial domain for which the analogues should be calculated. The domain has to be inside the region defined in option -R. Example:
+ \begin{verbatim}
+  ./run_analogs_case.sh -RNA -D-20.0,50.0,22.5,70.0
+ \end{verbatim}
+ \end{itemize}
+ \item Time period selection:
+ \begin{itemize}
+  \item \textbf{-S}\textit{$<$YYYY-MM-DD$>$,$<$YYYY-MM-DD$>$} Simulation period
+  \item \textbf{-B}\textit{$<$YYYY-MM-DD$>$,$<$YYYY-MM-DD$>$} Database/archive period (period from which the analogues are chosen)
+ \end{itemize}  
+ Example:
+ \begin{verbatim}
+  ./run_analogs_case.sh -S2013-12-01,2014-02-28 -B1950-01-01,1979-12-31
+ \end{verbatim}
+ \item Anomalie options
+ \begin{itemize}
+  \item \textbf{-N}\textit{$<$mode$>$} while $<$mode$>$ is one of the following:
+  \begin{itemize}
+   \item \textit{none}  analogues are calculated for raw fields.
+   \item \textit{base}  anomalies are calculated with respect to a smoothed seasonal cycle calculated from the database/archive period. The seasonal cycle is first calculated as day of year average over the years in the database period and then smoothed using a weighted moving average. For the smoothing window parameter see option -m. 
+   \item \textit{sim} anomalies are calculated with respect to a smoothed seasonal cycle calculated over the simulation period. (caution: make sure that the simulation is sufficiently long for meaningful cycle calculation)
+   \item \textit{own} anomalies are calculated for each dataset (database and simulation) with respect to its own smoothed seasonal cycle. This option might be useful when simulation and database sets are from different sources and one want to get rid of the mean difference between the two data sets. (caution: change signals that manifest themselfs in the mean difference will probably be lost)
+  \end{itemize}  
+  \item \textbf{-m}\textit{$<$numberofdays$>$} number of days (preferably an odd number) to calculate weighted moving average for seasonal cycle smoothing. Weights are linearly decreasing towards  both ends of the interval.
+ \end{itemize}
+ Example:
+ \begin{verbatim}
+  ./run_analogs_case.sh -Nbase -m91
+ \end{verbatim}
+ \item Analogue calculation options:
+ \begin{itemize}
+  \item \textbf{-v}\textit{$<$varname$>$} Name of the NCEP field to download. The name has to be the same as in the filename in the NCEP database.
+  Example for precipitable water:
+  \begin{verbatim}
+   ./run_analogs_case.sh  -vpr_wtr.eatm
+  \end{verbatim}
+  \item \textbf{-l}\textit{$<$vertical level$>$} Either 'surface' for variables like slp or pressure level in hPa, e.g. '500'. Thge default is 'surface'
+  Example for geopotential at 500 hPa:
+  \begin{verbatim}
+   ./run_analogs_case.sh  -vhgt -l500
+  \end{verbatim}
+  \item \textbf{-t}\textit{$<$logical$>$} TRUE if the predictor variable (see -v) should be detrended, FALSE if not (default is FALSE). For example for geopotential as a circulation variable in order to remove the temperature induced trend.
+  \item \textbf{-w}\textit{$<$numberofdays$>$} Number of days of the year $\pm$ around the target day to consider as candidates. This parameter allows a seasonal restriction of the analogue search. For no seasonal restriction choose 183.
+  \item \textbf{-d}\textit{$<$distance$>$} Name of the distance to use for analogue calculation. Supported distances are (in increasing order of complexity):
+  \begin{itemize}
+   \item \textit{euclidean} (or equivalently \textit{rms}, \textit{rmse})
+   \item \textit{mahalanobis}
+   \item \textit{of}  (or equivalently \textit{opticalflow}) Which is a displacement and amplitude difference similar to \cite{keil09a} derived using the optical flow field deformation technique \citep{marzban10a}. (Experimental...)
+  \end{itemize}
+  Attention: the more complex the distance the longer the computation time. The computation time strongly depends on the domain size and the archive length!
+  \item \textbf{-C}\textit{$<$numberofdays$>$} Distances can be averaged over a \textit{number of consecutive days} in order to find situations with similar time evolution.
+  \item \textbf{-n}\textit{$<$numberofanalogs$>$} Number of closest analogue dates to write to output.
+  \item \textbf{-c}\textit{$<$logical$>$} TRUE if rank correlation should be calculated as an additional diagnostic (written to the output file), FALSE if not.
+ \end{itemize}  
+  Example:
+  \begin{verbatim}
+   ./run_analogs_case.sh -w30 -dmahalanobis -C3 -n25 -cTRUE
+  \end{verbatim}
+ \item \textbf{-silent} This option reduces the things that are written to standard output.
+ \item \textbf{-help} lists the options and default settings in the terminal and exits.
+ 
+\end{itemize} 
+
+\subsection{Batch system}
+\label{sec:batchmode}
+If the run\_analogs\_case.sh script is submitted to a batch system (qsub command), the options are interpreted as options for the qsub command rather than as options for the run\_analogs\_case.sh script. A workaround is to run run\_analogs\_case.sh inside an other script which is then submitted to the batch system. \textit{pbsscript} is an example for such a script.
+
+\section{Output}
+The output is a multi-column text file containing:
+\begin{itemize}
+ \item the date of the analyzed day (in the form yyyymmdd)
+ \item the dates of the n best analogues (in the form yyyymmdd)
+ \item the value of the minimised distance (to determine the analogues). 
+ \item the value of the spatial rank correlations between the n analogues and the analysed field if the -c option is TRUE.
+\end{itemize}
+
+The output file can serve as input for the AnaWEGE weather generator \citep{yiou14a}.
+
+\section{Legal Issues (Disclaimer)}
+This software program IDDN.FR.001.030008.000.S.P.2016.000.20700 is protected by the intellectual property right. 
+It is is governed by the CeCILL license under French law and abiding by the rules of distribution 
+of free software. You can use, modify and / or redistribute the software under the terms of the 
+ CeCILL license as circulated by CEA, CNRS and INRIA at the following URL \href{http://www.cecill.info}{http://www.cecill.info}.
+ 
+The owners grant to you, free of charge, the right to use this software program exclusively for research purposes provided you clearly specify the name of the software program and the here above copyright notice in any publication, written by you, related to research results obtained and/or consolidated, in whole or in part, from the use of the software program. 
+If source code of this software program has been delivered, you have to inform us of any modification of the software program by sending an email to pascal.yiou@lsce.ipsl.fr.
+Any distribution of this software program is forbidden. 
+
+For any other use, notably for any commercial use, you have to subscribe a specific license. In this case, send an email to pascal.yiou@lsce.ipsl.fr .
+
+\subsection{Liability}
+The owner’s liability shall not be incurred as a result of in particular (i) loss due the Licensee's total or partial failure to fulfill its obligations, (ii) direct or consequential loss that is suffered by the Licensee due to the use or performance of the software, and (iii) more generally, any consequential loss. 
+
+\subsection{Warranty}
+You acknowledge that the scientific and technical state-of-the-art when the software program was distributed did not enable all possible uses to be tested and verified, nor for the presence of possible defects to be detected. In this respect, the your attention has been drawn to the risks associated with loading, using, modifying and/or developing and reproducing the software which are reserved for experienced users.
+You shall be responsible for verifying, by any or all means, the suitability of the product for your requirements, its good working order, and for ensuring that it shall not cause damage to either persons or properties.
+The owners hereby represents, in good faith, that they are entitled to grant all the rights over the software program. You acknowledge that the software program is supplied "as is" by the owners without any other express or tacit warranty, other than that provided for here above and, in particular, without any warranty as to its commercial value, its secured, safe, innovative or relevant nature. Specifically, the owners do not warrant that the software program is free from any error, that it will operate without interruption, that it will be compatible with your own equipment and software configuration, nor that it will meet your requirements.
+The owners do not either expressly or tacitly warrant that the
+software program does not infringe any third party intellectual property right relating to a patent, software or any other property right. Therefore, the owners disclaim any and all liability towards you arising out of any or all proceedings for infringement that may be instituted in respect of the use, modification and redistribution of the software program. Nevertheless, should such proceedings be instituted against you, the owners shall provide it with technical and legal assistance for your defense. The owners disclaim any and all liability as regards your use of the name of the software program. No warranty is given as regards the existence of
+prior rights over the name of the software program or as regards the existence of a trademark.
+
+\bibliographystyle{apalike}
+\bibliography{howto}
+\end{document}
