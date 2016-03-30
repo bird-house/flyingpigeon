@@ -73,10 +73,22 @@ class SDMProcess(WPSProcess):
             abstract="Reference period for climate condition (all = entire timeserie)",
             default="all",
             type=type(''),
-            minOccurs=0,
+            minOccurs=1,
             maxOccurs=1,
             allowedValues=['all','1951-1980', '1961-1990', '1971-2000','1981-2010']
             )
+
+        self.archive_format = self.addLiteralInput(
+            identifier="archive_format",
+            title="Archive format",
+            abstract="Result files will be compressed into archives. Choose an appropriate format",
+            default="tar",
+            type=type(''),
+            minOccurs=1,
+            maxOccurs=1,
+            allowedValues=['zip','tar']
+            )
+
         
         ###########
         ### OUTPUTS
@@ -141,10 +153,12 @@ class SDMProcess(WPSProcess):
 
     def execute(self):
       from flyingpigeon import sdm
+      from flyingpigeon.utils import archive
+
       self.status.set('Start process', 0)
       
       try: 
-        logger.info('read in the arguments')
+        logger.info('reading the arguments')
         resources = self.getInputValues(identifier='resources')
         gbif = self.getInputValues(identifier='gbif')
         period = self.getInputValues(identifier='period')
@@ -152,6 +166,10 @@ class SDMProcess(WPSProcess):
         indices = self.getInputValues(identifier='indices')
         if 'all' in indices:
             indices = ['TG_JJA', 'TNn_Jan'] # 'PRCPTOT_JJA'
+        
+        archive_format = self.getInputValues(identifier='archive_format')
+        archive_format = archive_format[0]
+
       except Exception as e: 
         logger.error('failed to read in the arguments %s ' % e)
       logger.info('indices %s ' % indices)
@@ -225,6 +243,14 @@ class SDMProcess(WPSProcess):
         logger.exception(msg)
         raise Exception(msg)
 
+      try:
+        archive_indices = archive(ncs_indices , format=archive_format)
+        logger.info('indices 3D added to tarfile')
+      except:
+        msg = 'failed adding indices to tar'  
+        logger.exception(msg)
+        raise Exception(msg)  
+
       indices_dic = None
       try: 
         # sort indices
@@ -257,15 +283,15 @@ class SDMProcess(WPSProcess):
           
           logger.info('with %s files' % len(ncs))
           
-          try:
-            for nc in ncs: 
-              tar_indices.add(nc, 
-                            arcname = basename(nc) )# .replace(os.path.abspath(os.path.curdir), ""))
-            logger.info('indices added to tarfile for %s' % key)
-          except:
-            msg = 'failed adding indices to tar'  
-            logger.exception(msg)
-            raise Exception(msg)
+          # try:
+          #   for nc in ncs: 
+          #     tar_indices.add(nc, 
+          #                   arcname = basename(nc) )# .replace(os.path.abspath(os.path.curdir), ""))
+          #   logger.info('indices added to tarfile for %s' % key)
+          # except:
+          #   msg = 'failed adding indices to tar'  
+          #   logger.exception(msg)
+          #   raise Exception(msg)
             
           try: 
             ncs_references = sdm.get_reference(ncs_indices=ncs, period=period)
@@ -336,7 +362,7 @@ class SDMProcess(WPSProcess):
       self.output_csv.setValue( csv_file )
       self.output_gbif.setValue( tree_presents )
       self.output_PA.setValue( png_PA_mask )
-      self.output_indices.setValue( 'indices.tar' )
+      self.output_indices.setValue( archive_indices )
       self.output_reference.setValue ('reference.tar')
       self.output_prediction.setValue ('prediction.tar')
       self.output_info.setValue('info.tar')

@@ -6,6 +6,44 @@ logger = logging.getLogger(__name__)
 
 GROUPING = [ "day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON" ,"JAN" ]
 
+
+def archive(resources, format='tar', dir_output='.'): 
+  """
+  compressing a list of files into an archive
+
+  :param resources: list of files to be stored in archive
+  :param format: archive format. options: tar(default), zip
+  :param dir_output: path to output folder (default current direcory)
+  :return archive: archive path/filname.ext
+  """
+  
+  logger.info('compressing files to archive')
+
+  if type(resources) == str: 
+    resources = list([resources])
+
+  if format == 'tar':
+    import tarfile
+    from tempfile import mkstemp
+    from os.path import basename
+    try: 
+      o1 , archive = mkstemp(dir='.', suffix='.tar')
+      tar = tarfile.open(archive, "w")
+
+      for f in resources:
+        try: 
+          tar.add(f, arcname = basename(f))
+        except:
+          msg = 'archiving failed for %s' % f
+          logger.debug( msg )
+          raise Exception
+      tar.close()
+    except:
+      msg = 'failed to compress into archive'
+      logger.exception(msg)
+      raise Exception(msg)
+  return archive
+
 def local_path(url):
   from urllib2 import urlparse
   url_parts = urlparse.urlparse(url)

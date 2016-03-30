@@ -192,9 +192,7 @@ def get_dimension_map(resource):
     dimension_map = None
     
   return dimension_map
-
-
-
+  
 
 def get_shp_column_values(geom, columnname): 
   """ returns a list of all entries the shapefile columnname
