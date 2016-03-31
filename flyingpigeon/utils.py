@@ -37,7 +37,7 @@ def archive(resources, format='tar', dir_output='.', mode='w'):
   if format == 'tar':
     import tarfile
     try: 
-      o1 , archive = mkstemp(dir='.', suffix='.tar')
+      o1 , archive = mkstemp(dir=dir_output, suffix='.tar')
       tar = tarfile.open(archive, mode)
 
       for f in resources:
@@ -57,7 +57,7 @@ def archive(resources, format='tar', dir_output='.', mode='w'):
 
     logger.info('creating zip archive')
     try :
-      o1 , archive = mkstemp(dir='.', suffix='.zip')
+      o1 , archive = mkstemp(dir=dir_output, suffix='.zip')
       zf = zipfile.ZipFile(archive, mode=mode)
       try:
           for f in resources: 
