@@ -168,9 +168,7 @@ class SDMProcess(WPSProcess):
         if 'all' in indices:
             indices = ['TG_JJA', 'TNn_Jan'] # 'PRCPTOT_JJA'
         
-        archive_format = self.getInputValues(identifier='archive_format')
-        archive_format = archive_format[0]
-
+        archive_format = self.archive_format.getValue()
       except Exception as e: 
         logger.error('failed to read in the arguments %s ' % e)
       logger.info('indices %s ' % indices)
