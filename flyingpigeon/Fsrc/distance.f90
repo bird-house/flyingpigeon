@@ -22,7 +22,8 @@
 !! and that you accept its terms.
 !!
 MODULE distance
-USE lapack95
+!USE lapack95
+USE f95_lapack
 CONTAINS
 
 !> calculates euclidean (squared) distance between two arrays of type real
@@ -187,7 +188,7 @@ END DO
 !PRINT*, gradmat(1,:)
 !PRINT*, nx, ny, mcount
 ! linear model (lapack library) to derive beta 0-2, that is intensity error, delta x and delta y
-CALL gels(gradmat,beta,'N',info)
+CALL la_gels(gradmat,beta,'N',info)
 IF (PRESENT(infoin) .AND. infoin == 3) THEN
  PRINT*, 'lm beta ', beta(1:3)
 ! optimise betas using function with non-linear terms and BFGS optimisation

@@ -35,6 +35,6 @@ cd ../..
 # compile CASTf90
 echo 'compile CASTf90...'
 
-make -f Makefile.home
+make -f Makefile.pigeon
 
 
