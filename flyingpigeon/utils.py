@@ -7,16 +7,28 @@ logger = logging.getLogger(__name__)
 GROUPING = [ "day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON" ,"JAN" ]
 
 
-def archive(resources, format='tar', dir_output='.'): 
+def archive(resources, format='tar', dir_output='.', mode='w'): 
   """
   compressing a list of files into an archive
 
   :param resources: list of files to be stored in archive
   :param format: archive format. options: tar(default), zip
   :param dir_output: path to output folder (default current direcory)
+  :param mode:    for format='tar':
+                  'w' or 'w:'  open for writing without compression
+                  'w:gz'       open for writing with gzip compression
+                  'w:bz2'      open for writing with bzip2 compression
+                  'w|'         open an uncompressed stream for writing
+                  'w|gz'       open a gzip compressed stream for writing
+                  'w|bz2'      open a bzip2 compressed stream for writing
+                  
+                  for foramt='zip':
+                  read "r", write "w" or append "a"
   :return archive: archive path/filname.ext
   """
-
+  from tempfile import mkstemp
+  from os.path import basename
+  
   logger.info('compressing files to archive')
 
   if type(resources) == str: 
@@ -24,11 +36,9 @@ def archive(resources, format='tar', dir_output='.'):
 
   if format == 'tar':
     import tarfile
-    from tempfile import mkstemp
-    from os.path import basename
     try: 
-      o1 , archive = mkstemp(dir='.', suffix='.tar')
-      tar = tarfile.open(archive, "w")
+      o1 , archive = mkstemp(dir=dir_output, suffix='.tar')
+      tar = tarfile.open(archive, mode)
 
       for f in resources:
         try: 
@@ -43,25 +53,27 @@ def archive(resources, format='tar', dir_output='.'):
       logger.exception(msg)
       raise Exception(msg)
   elif format == 'zip': 
-    from zipfile_infolist import print_info
     import zipfile
 
-    print 'creating archive'
-    o1 , archive = mkstemp(dir='.', suffix='.zip')
-    zf = zipfile.ZipFile(archive, mode='w')
-    try:
-        for f in resources: 
-          zf.write(f)
-    finally:
-        print 'closing'
-        zf.close()
-
-    print
-    print_info('zipfile_write.zip')
-
-
-
-
+    logger.info('creating zip archive')
+    try :
+      o1 , archive = mkstemp(dir=dir_output, suffix='.zip')
+      zf = zipfile.ZipFile(archive, mode=mode)
+      try:
+          for f in resources: 
+            zf.write(f, basename(f))
+          zf.close()
+      except Exception as e:
+        msg = 'failed to create zip archive: %s' % msg
+        logger.debug(msg)
+        raise
+      #logger.info(print_info('zipfile_write.zip'))
+    except Exception as e: 
+      msg = 'failed to create zip archive'
+      logger.debug(msg)
+      raise
+  else: 
+    logger.error('no common archive format like: zip / tar')
   return archive
 
 def local_path(url):
