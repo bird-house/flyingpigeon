@@ -55,7 +55,7 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
     for c , nc in enumerate(resouces):
       # get timestapms
       try: 
-        d =  utils.get_time(nc) # [datetime.strptime(elem, '%Y-%m-%d') for elem in strDate[0]]
+        d = utils.get_time(nc) # [datetime.strptime(elem, '%Y-%m-%d') for elem in strDate[0]]
         
         dt = [datetime.strptime(str(i), '%Y-%m-%d %H:%M:%S') for i in d ]
         ds=Dataset(nc)
@@ -64,7 +64,7 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
           meanData = np.mean(data,axis=1)
           ts = np.mean(meanData,axis=1)
         else: 
-          ts = data
+          ts = data[:]
         plt.plot( dt,ts )
         #fig.line( dt,ts )
       except Exception as e:
@@ -102,10 +102,11 @@ def uncertainty(resouces , variable=None, title=None, dir_out=None):
   """
   logger.debug('Start visualisation uncertainty plot')
 
-  from bokeh.plotting import figure, output_file, save
-
-  import cdo 
-  cdo = cdo.Cdo()
+  import pandas as pd
+  import pandas as pd
+  import numpy as np
+  import netCDF4
+  from os.path import basename
   
   # === prepare invironment
   if type(resouces) == str: 
@@ -116,91 +117,55 @@ def uncertainty(resouces , variable=None, title=None, dir_out=None):
     title = "Field mean of %s " % variable
   if dir_out == None: 
     dir_out = '.'
-
-  # === prepare bokeh
-  try: 
-    o1 , output_html = mkstemp(dir=dir_out, suffix='.html')
   
-    fig = figure(x_axis_type = "datetime", tools="pan,wheel_zoom,box_zoom,reset,previewsave")
+  try:
+    fig = plt.figure(figsize=(20,10), dpi=600, facecolor='w', edgecolor='k')
+    o1 , output_png = mkstemp(dir=dir_out, suffix='.png')
+    variable = utils.get_variable(resouces[0])
+    df = pd.DataFrame()
+    for f in resouces:
+      ds = Dataset(f)
+      data = np.squeeze(ds.variables[variable][:])
+      if len(data.shape) == 3: 
+        meanData = np.mean(data,axis=1)
+        ts = np.mean(meanData,axis=1)
+      else: 
+        ts = data[:]
+
+      times = ds.variables['time']
+      jd = netCDF4.num2date(times[:],times.units)
+      hs = pd.Series(ts,index=jd, name=basename(f))
+      df[basename(f)] = hs
+
+    rollmean = df.rolling(window=30,center=True).mean()
     
-    output_file(output_html, title=variable, autosave=True,)
-  
-    # === get the datetime
-    dates = set()
-    for nc in resouces:
+    q50 = rollmean.quantile([0.5], axis=1)
+    q05 = rollmean.quantile([0.05], axis=1)
+    q33 = rollmean.quantile([0.33], axis=1)
+    q66 = rollmean.quantile([0.66], axis=1)
+    q95 = rollmean.quantile([0.95], axis=1)
 
-        logger.debug('looping files : %s ' % (nc))
-        # get timestapms
-        rawDate = cdo.showdate(input=[nc]) # ds.variables['time'][:]
-        strDate = rawDate[0].split('  ')
-        logger.debug('len strDate : %s ' % (len(strDate)))
-        dates =  dates.union(strDate) #dates.union( utils.get_time(nc))
-
-    #self.show_status('dates : %s ' % len(dates), 62)
-    ldates = list(dates)
-    ldates.sort()
-    ddates = dict( (ldates[i], i) for i in range(0,len(ldates)))
-
-    # initialise matirx
-
-    ma = np.empty([len(ddates), len(resouces)])*np.nan
-    #self.show_status('ddates : %s ' % ddates, 62)
-
-    # fill matrix
-    for y in range(0,len(resouces)) : 
-        rawDate = cdo.showdate(input=[resouces[y]]) # ds.variables['time'][:]
-        strDate = rawDate[0].split('  ')
-
-        ds=Dataset(resouces[y])
-        data = np.squeeze(ds.variables[variable][:])
-        if len(data.shape) == 3: 
-          meanData = np.mean(data,axis=1)
-          ts = np.mean(meanData,axis=1)
-        else: 
-          ts = data
-        logger.debug('ts array  : %s ' % (len(ts)) )
-        
-        for t in range(0, len(strDate)) : 
-            x = ddates.get(strDate[t],0)
-            ma[x,y] = ts[t]
-        
-    # get datetimes
-    dt = [datetime.strptime(elem, '%Y-%m-%d') for elem in ldates]
-    mdat = np.ma.masked_array(ma ,np.isnan(ma))
-
-    #self.show_status('matrix masked %s ' % mdat , 80)
-    #logger.debug('matrix %s ', mdat.shape) 
-
-    ma_mean = np.mean(mdat,axis=1)
-    logger.debug('mean  %s '%  len(ma_mean))
-    ma_min = np.min(mdat,axis=1)
-    ma_max = np.max(mdat,axis=1)
-    #ma_sub = np.subtract(ma_max, ma_min)
-    #ma_per75 = np.percentile(mdat,75, axis=0)
-    #ma_per25 = np.percentile(mdat,25, axis=0)
-    logger.debug('ma Vaules %s' % len(mdat.data))
-
-    #line(dt, ma_min , color='grey' ,line_width=1)
-    #line(dt, ma_max , color='grey' , line_width=2 )
-    fig.line(dt, ma_mean , color='red', line_width=1)
-
-    x = []
-    y = []
-    x = np.append(dt,dt[::-1])
-    y = np.append(ma_min, ma_max[::-1])
-
-    fig.patch(x,y, color='grey', alpha=0.8, line_color=None)
     
-    fig.title = "Mean and Uncertainty of  %s " % variable
-    fig.grid
+    plt.fill_between(rollmean.index.values,  np.squeeze(q05.values), np.squeeze( q95.values), alpha=0.5, color='grey')
+    plt.fill_between(rollmean.index.values, np.squeeze( q33.values),np.squeeze( q66.values), alpha=0.5, color='grey')
+    plt.plot(rollmean.index.values, np.squeeze(q50.values), c='r', lw=3)
     
-    save(fig)
+    plt.xlim(min(df.index.values), max(df.index.values))
+    plt.title(title, fontsize=20)
+    plt.grid()# .grid_line_alpha=0.3
+    #lt.rcParams.update({'font.size': 22})
+    #window_size = 30
+    #window = np.ones(window_size)/float(window_size)
+    fig.savefig(output_png)
+    #bplt.hold('off')
+    
+    plt.close()
     
     logger.debug('timesseries uncertainty plot done for %s'% variable) 
   except Exception as e:
-    logger.exception('bokeh uncertainty plot failed for %s' % variable)
+    logger.exception('uncertainty plot failed for %s' % variable)
     raise  
-  return output_html  
+  return output_png 
 
 def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, variable, cmap='seismic', title=None):
   """
