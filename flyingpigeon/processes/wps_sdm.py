@@ -121,24 +121,24 @@ class SDMProcess(WPSProcess):
         self.output_indices = self.addComplexOutput(
             identifier="output_indices",
             title="Climate indices for growth condition over all timestepps (3D)",
-            abstract="Tar file containing calculated climate indices as  netCDF files",
-            formats=[{"mimeType":"application/x-tar"}],
+            abstract="Archive (tar/zip) containing calculated climate indices as netCDF files",
+            formats=[{"mimeType":"application/x-tar"}, {"mimeType":"application/zip"}],
             asReference=True,
             )         
          
         self.output_reference = self.addComplexOutput(
             identifier="output_reference",
             title="Climate indices for growth condition of reference period (2D)",
-            abstract="Tar file containing calculated climate indices as  netCDF files",
-            formats=[{"mimeType":"application/x-tar"}],
+            abstract="Archive (tar/zip) containing calculated climate indices as netCDF files",
+            formats=[{"mimeType":"application/x-tar"}, {"mimeType":"application/zip"}],
             asReference=True,
             )         
         
         self.output_prediction = self.addComplexOutput(
             identifier="output_prediction",
             title="predicted growth condition",
-            abstract="Tar archive containing the netCDF files of the predicted growing condition",
-            formats=[{"mimeType":"application/x-tar"}],
+            abstract="Archive (tar/zip) containing the netCDF files of the predicted growing condition",
+            formats=[{"mimeType":"application/x-tar"}, {"mimeType":"application/zip"}],
             asReference=True,
             )
 
@@ -360,10 +360,6 @@ class SDMProcess(WPSProcess):
         msg = 'failed adding species_files indices to archive'  
         logger.exception(msg)
         raise Exception(msg)  
-
-
-
-
 
       # try:
       #   #tar_indices.close()
