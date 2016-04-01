@@ -5,5 +5,5 @@ channels:
 dependencies:
   - python=2
   - gcc
-  - netcdf-fortran=4.2.2
+  - netcdf-fortran
   - openblas
