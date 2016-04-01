@@ -40,6 +40,6 @@ echo 'compile CASTf90...'
 export PREFIX="$HOME/.conda/envs/fortran"
 export LD_LIBRARY_PATH="$PREFIX/lib":/usr/lib
 
-make -f Makefile.pigeon
+make PREFIX=$PREFIX -f Makefile.conda
 
 
