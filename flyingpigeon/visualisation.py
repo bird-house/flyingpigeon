@@ -9,6 +9,10 @@ matplotlib.use('Agg')   # use this if no xserver is available
 from matplotlib import pyplot as plt
 from matplotlib.colors import Normalize
 
+from cartopy import config
+from cartopy.util import add_cyclic_point
+import cartopy.crs as ccrs
+
 from flyingpigeon import utils
 
 import logging
@@ -92,7 +96,7 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
     #raise Exception(msg) 
   return output_png 
 
-def uncertainty(resouces , variable=None, title=None, dir_out=None): 
+def uncertainty(resouces , variable=None, ylim=None, title=None, dir_out=None): 
   """
   retunes an html file containing the appropriate uncertainty plot. 
   
@@ -134,23 +138,25 @@ def uncertainty(resouces , variable=None, title=None, dir_out=None):
 
       times = ds.variables['time']
       jd = netCDF4.num2date(times[:],times.units)
-      hs = pd.Series(ts,index=jd, name=basename(f))
-      df[basename(f)] = hs
+      
+      hs = pd.Series(ts, index=jd, name=basename(f))
+      hd = hs.to_frame()
+      df[basename(f)] = hs# 
 
     rollmean = df.rolling(window=30,center=True).mean()
     
-    q50 = rollmean.quantile([0.5], axis=1)
-    q05 = rollmean.quantile([0.05], axis=1)
-    q33 = rollmean.quantile([0.33], axis=1)
-    q66 = rollmean.quantile([0.66], axis=1)
-    q95 = rollmean.quantile([0.95], axis=1)
-
+    rmean = rollmean.median(axis=1, skipna=False)#  quantile([0.5], axis=1, numeric_only=False )
+    q05 = rollmean.quantile([0.05], axis=1,)# numeric_only=False)
+    q33 = rollmean.quantile([0.33], axis=1,)# numeric_only=False)
+    q66 = rollmean.quantile([0.66], axis=1, )#numeric_only=False)
+    q95 = rollmean.quantile([0.95], axis=1, )#numeric_only=False)
     
     plt.fill_between(rollmean.index.values,  np.squeeze(q05.values), np.squeeze( q95.values), alpha=0.5, color='grey')
     plt.fill_between(rollmean.index.values, np.squeeze( q33.values),np.squeeze( q66.values), alpha=0.5, color='grey')
-    plt.plot(rollmean.index.values, np.squeeze(q50.values), c='r', lw=3)
+    plt.plot(rollmean.index.values, np.squeeze(rmean.values), c='r', lw=3)
     
     plt.xlim(min(df.index.values), max(df.index.values))
+    plt.ylim(ylim)
     plt.title(title, fontsize=20)
     plt.grid()# .grid_line_alpha=0.3
     #lt.rcParams.update({'font.size': 22})
@@ -179,17 +185,17 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
   :param title: default='Modelagreement of Signal'
   """
 
-  try:
-    import matplotlib.pyplot as plt
-    plt.switch_backend('agg')  # dont use x-server
-    from cartopy import config
-    from cartopy.util import add_cyclic_point
-    import cartopy.crs as ccrs
-    logger.info('libraries loaded')
-  except Exception as e:
-    msg = 'failed to load libraries'  
-    logger.exception(msg)
-    raise Exception(msg)
+  #try:
+    ##import matplotlib.pyplot as plt
+    ##plt.switch_backend('agg')  # dont use x-server
+    ##from cartopy import config
+    ##from cartopy.util import add_cyclic_point
+    ##import cartopy.crs as ccrs
+    #logger.info('libraries loaded')
+  #except Exception as e:
+    #msg = 'failed to load libraries'  
+    #logger.exception(msg)
+    #raise Exception(msg)
 
   try: 
    # get the path of the file. It can be found in the repo data directory.
@@ -323,16 +329,18 @@ def plot_kMEAN(kmeans, pca, title='kmean', sub_title='file='):
   return image
 
 
-def plot_pressuremap(data, 
+def plot_pressuremap(data, lats=None, lons=None,  
                     title='pressure pattern', 
                     sub_title='ploted in birdhouse'):
   """
   plots pressure data
   :param data: 2D or 3D array of pressure data. if data == 3D a mean will be calculated
+  :param lats: 1D or 2D array for latitude coordinates (geographcal map will be plotted if lats / lons are provided)
+  :param lons: 1D or 2D array for longitude coordinates (geographcal map will be plotted if lats / lons are provided)
   :param title: string for title
   :param sub_title: string for sub_title
   """
-  from numpy import squeeze, mean
+  from numpy import squeeze, mean, meshgrid
   
   d = squeeze(data)
 
@@ -341,10 +349,25 @@ def plot_pressuremap(data,
   if len(d.shape)!=2:
     logger.error('data are not in shape for map display')
 
-  co = plt.contour(d, lw=2, c='black')
-  cf = plt.contourf(d)
-
-  plt.colorbar(cf)
+  fig = plt.figure(figsize=(20,10), dpi=600, facecolor='w',
+                   edgecolor='k')
+  
+  if not (lats == None or lons == None):
+    
+    if len(lats.shape) == 1: 
+      lons, lats = meshgrid( lons, lats)
+    
+    ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
+    ax.grid()
+    ax.coastlines()
+    
+    cf = plt.contourf(lons, lats, d, 60, transform=ccrs.PlateCarree(), cmap='jet', interpolation='nearest')
+    co = plt.contour(lons, lats, d, transform=ccrs.PlateCarree(), lw=2, color='black')
+  else:
+    cf = plt.contourf(d)
+    co = plt.contour(d, lw=2, c='black')
+    
+  # plt.colorbar(cf)
   plt.clabel(co, inline=1) # fontsize=10
   
   plt.title(title)

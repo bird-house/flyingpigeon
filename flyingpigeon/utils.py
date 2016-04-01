@@ -1,11 +1,9 @@
 import ocgis
 from netCDF4 import Dataset, num2date
-
 import logging
 logger = logging.getLogger(__name__)
 
 GROUPING = [ "day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON" ,"JAN" ]
-
 
 def archive(resources, format='tar', dir_output='.', mode='w'): 
   """
@@ -209,6 +207,25 @@ def get_variable(nc_file):
     
     return rd.variable
 
+def get_coordinates(nc_file): 
+  """
+  returns the values of latitude and longitude
+  :param nc_file: netCDF resource file
+  :returns lats, lons: netCDF4 data objectes
+  """
+  lats = None 
+  lons = None
+  try:
+    ds = Dataset(nc_file)
+    lats = ds.variables['lat']
+    lons = ds.variables['lon']
+  except:
+    msg = 'failed to extract coordinates'
+    logger.debug(msg)
+    raise Exception(msg)
+  
+  return lats, lons
+  
 
 def get_domain(nc_file):
   """
@@ -265,7 +282,7 @@ def get_timestamps(nc_file):
         from_timestamp = '%s%s%s'  % (start.year, str(start.month).zfill(2) ,str(start.day).zfill(2)) 
         to_timestamp = '%s%s%s'  %   (end.year,  str(end.month).zfill(2) ,str(end.day).zfill(2))
     except Exception as e: 
-      #logger.debug('failed to get_timestamps %s' % e)
+      #logger.debug('failed to get_timestamps %s't % e)
       raise Exception
      
     return (from_timestamp, to_timestamp)
