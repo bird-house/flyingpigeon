@@ -143,7 +143,7 @@ class WClassProcess(WPSProcess):
         #####################
         # from flyingpigeon.ocgis_module import call 
         
-        from flyingpigeon.utils import sort_by_filename, get_time # , calc_grouping
+        from flyingpigeon.utils import sort_by_filename, get_time , get_coordinates# , calc_grouping
         from flyingpigeon import weatherclass as wc
         from flyingpigeon.visualisation import plot_tSNE, plot_kMEAN, concat_images, plot_pressuremap
         
@@ -174,7 +174,7 @@ class WClassProcess(WPSProcess):
         
         for key in ncs.keys():
           if len(ncs[key])>1:
-            input = cdo.timmerge(input=ncs[key], output='merge.nc' )
+            input = cdo.cat(input=ncs[key], output='merge.nc' )
           elif len(ncs[key])==1:
             input = ncs[key]
           else:
@@ -191,7 +191,7 @@ class WClassProcess(WPSProcess):
           logger.info('nc subset: %s ' % nc)
           
           try:
-            vals, pca = wc.get_pca(nc)
+            vals, pca = wc.get_pca(nc)            
             logger.info('PCa calculated')
           except:
             logger.debug('failed to calculate PCs')
@@ -207,11 +207,11 @@ class WClassProcess(WPSProcess):
                 kmeans = wc.calc_kMEAN(pca)
                 c = kmeans.predict(pca)
                 times = get_time(nc)
-                timestr = [dt.strftime(t, format='%Y-%d-%m_%H:%M:%S') for t in times]
+                timestr = [t for t in times] # str(t).replace(' ','_') #dt.strftime(t, format='%Y-%d-%m_%H:%M:%S')
                 tc = column_stack([timestr, c])
-                fn = '%s.txt' % key
+                fn = '%s.csv' % key
                 
-                savetxt(fn, tc, fmt='%s', header='Date_Time WeatherRegime')
+                savetxt(fn, tc, fmt='%s', delimiter=',', header='Date Time,WeatherRegime')
 
                 tar_info.add(fn) #, arcname = basename(nc) 
                 
@@ -219,9 +219,9 @@ class WClassProcess(WPSProcess):
                 logger.info('kMEAN calculated for %s ' % key)
                 
                 subplots = []
+                lats, lons = get_coordinates(nc)
                 for i in range(4): 
-                    subplots.append(plot_pressuremap((vals[c==i]/100), title='Weather Regime %s: Month %s ' % (i, time_region), sub_title='file: %s' % key))
-
+                    subplots.append(plot_pressuremap((vals[c==i]/100),lats=lats, lons=lons, title='Weather Regime %s: Month %s ' % (i, time_region), sub_title='file: %s' % key))
                 
                 from PIL import Image
                 import sys
