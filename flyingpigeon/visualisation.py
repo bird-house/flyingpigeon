@@ -358,7 +358,7 @@ def plot_pressuremap(data, lats=None, lons=None,
       lons, lats = meshgrid( lons, lats)
     
     ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
-    ax.grid()
+    ax.gridlines() 
     ax.coastlines()
     
     cf = plt.contourf(lons, lats, d, 60, transform=ccrs.PlateCarree(), cmap='jet', interpolation='nearest')
