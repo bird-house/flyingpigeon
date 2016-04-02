@@ -18,12 +18,6 @@ custom.cfg
 *.sqlite
 *.bak
 
-# Fortran
-*.o
-*.a
-*.mod
-*.out
-
 # Unit test / Coverage reports
 .coverage
 .tox
