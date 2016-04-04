@@ -41,5 +41,3 @@ export PREFIX="$HOME/.conda/envs/fortran"
 export LD_LIBRARY_PATH="$PREFIX/lib":/usr/lib
 
 make PREFIX=$PREFIX -f Makefile.conda
-
-

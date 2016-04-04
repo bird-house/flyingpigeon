@@ -52,7 +52,7 @@ class WClassProcess(WPSProcess):
             identifier="BBox",
             title="Region",
             abstract="coordinates to define the region: (minlon,minlat,maxlon,maxlat)",
-            default="-80,22.5,50,70",
+            default="-80,50,22.5,70",
             type=type(''),
             minOccurs=1,
             maxOccurs=1,

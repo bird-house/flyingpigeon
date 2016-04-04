@@ -3,19 +3,22 @@ def get_pca(resource):
   calculation of principal components
 
   :param resource: netCDF file containing pressure values for a defined region and selected timesteps
-  :return pca: sklean objct
+  :returns data, pca: normalised data , sklean objct
   """
   from netCDF4 import Dataset, num2date
   from flyingpigeon.utils import get_variable
+  from numpy import mean
 
   var = get_variable(resource)
   print 'variable name: %s' % var
   ds = Dataset(resource)
   vals = ds.variables[var]
+
   lat = ds.variables['lat']
   lon = ds.variables['lon']
   #time = ds.variables['time']
   
+
   # make array of seasons:
   # convert netCDF timesteps to datetime
   #timestamps = num2date(time[:], time.units, time.calendar)
@@ -25,10 +28,12 @@ def get_pca(resource):
   import numpy as np
   
   # reshape
-  data = np.array(vals)
-  adata = data.reshape(vals[:].shape[0], (vals[:].shape[1] * vals[:].shape[2]) )
+  #data = np.array(vals)
+  m = mean(vals)
+  mdata = data - m 
+  adata = mdata.reshape(vals[:].shape[0], (vals[:].shape[1] * vals[:].shape[2]) )
   pca = PCA(n_components=50).fit_transform(adata)
-  return vals, pca #, season
+  return mdata , pca #, season
 
 
 def calc_tSNE(pca):

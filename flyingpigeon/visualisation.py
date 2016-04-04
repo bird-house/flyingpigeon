@@ -98,11 +98,12 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
 
 def uncertainty(resouces , variable=None, ylim=None, title=None, dir_out=None): 
   """
-  retunes an html file containing the appropriate uncertainty plot. 
+  returnes a png file containing the appropriate uncertainty plot. 
   
   :param resouces: list of files containing the same variable 
   :param variable: variable to be visualised, if None (default) variable will be detected
   :param title: sting to be used as title
+  :returns str: path/to/file.png
   """
   logger.debug('Start visualisation uncertainty plot')
 
@@ -183,6 +184,7 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
   :param variable:
   :param cmap: default='seismic',
   :param title: default='Modelagreement of Signal'
+  :returns str: path/to/file.png
   """
 
   #try:
@@ -357,7 +359,8 @@ def plot_pressuremap(data, lats=None, lons=None,
     if len(lats.shape) == 1: 
       lons, lats = meshgrid( lons, lats)
     
-    ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
+    central_longitude = int(mean(lons))
+    ax = plt.axes(projection=ccrs.Robinson(central_longitude=central_longitude))
     ax.gridlines() 
     ax.coastlines()
     
