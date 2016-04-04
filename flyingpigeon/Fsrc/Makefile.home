@@ -6,7 +6,7 @@ lib1 = -lnetcdff
 lib2 = -llapack95
 lib3 = -llapack
 #COMPILE = ifort -mkl -c -O2 -ipo -check all,noarg_temp_created -warn all -openmp 
-COMPILE = gfortran -c -fbacktrace -Warray-bounds -fopenmp -ffree-line-length-0 
+COMPILE = gfortran -c -O3 -Warray-bounds -fopenmp -ffree-line-length-0 
 
 #LINK = ifort -mkl -openmp -warn -o 
 LINK = gfortran  -Warray-bounds -Wall -fopenmp -O3 -o 

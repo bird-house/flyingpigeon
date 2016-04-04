@@ -1,6 +1,6 @@
-INCLUDEPATH = /usr/include
+INCLUDEPATH = /homel/sradanov/.conda/envs/birdhouse/include
 INCLUDEPATH2 = ./Lapack95
-LIBPATH = /usr/lib64
+LIBPATH = /homel/sradanov/.conda/envs/birdhouse/lib
 LIBPATH2 = ./Lapack95
 lib1 = -lnetcdff
 lib2 = -llapack95
