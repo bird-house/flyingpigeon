@@ -3,7 +3,13 @@
 Processes in Flyingpigeon
 *************************
 
-Flyingpigeon provides processes focussing on climate impact and extrem values. 
+Flyingpigeon provides processes for climate model data analytis, climate impact studies and extrem values investigatins. 
+
+
+.. _analogs:
+
+CASTf90 first downloads fields from NCEP reanalysis (sea level pressure, slp, as default) and then searches for a given simulation period the most similar cases within a given data base period according to a given distance measure. Finally it writes the N most similar days including the calculated distances for them to an output file
+
 
 .. _extremvalues: 
 
