@@ -232,7 +232,7 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
  
     logger.info('prepared data for plotting')
   except Exception as e:
-    msg = 'failed to get data for plotting'  
+    msg = 'failed to get data for plotting %s' % e  
     logger.exception(msg)
     raise Exception(msg) 
 
@@ -242,8 +242,8 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
     norm = MidpointNormalize(midpoint=0)
 
     cs = plt.contourf(lons, lats, var_signal, 60, norm=norm, transform=ccrs.PlateCarree(), cmap=cmap, interpolation='nearest')
-    cl = plt.contourf(lons, lats, mask_l, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['//']) 
-    ch = plt.contourf(lons, lats, mask_h, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['.'])
+   # cl = plt.contourf(lons, lats, mask_l, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['//']) 
+   # ch = plt.contourf(lons, lats, mask_h, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['.'])
 
     # plt.clim(minval,maxval)
     ax.coastlines()

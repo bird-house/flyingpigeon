@@ -3,7 +3,6 @@ from flyingpigeon.utils import get_variable
 from flyingpigeon.utils import sort_by_filename
 from flyingpigeon.utils import get_time
     
-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -21,6 +20,7 @@ def worker(resource=[], start=None, end=None, timeslice=20,
 
   :return: signal.nc, low_agreement_mask.nc, high_agreement_mask.nc, graphic.png, text.txt
   """
+  from os.path import split
   from cdo import Cdo
   cdo = Cdo()
   cdo.forceOutput = True 
@@ -29,6 +29,7 @@ def worker(resource=[], start=None, end=None, timeslice=20,
     # preparing the resource
 #    from flyingpigeon.ocgis_module import call
     file_dic = sort_by_filename(resource, historical_concatination = True)
+    #print file_dic
     logger.info('file names sorted experimets: %s' % len(file_dic.keys()))
   except Exception as e:
     msg = 'failed to sort the input files'
@@ -38,16 +39,21 @@ def worker(resource=[], start=None, end=None, timeslice=20,
   try:
     mergefiles = []
     for key in file_dic.keys():
-      if len(file_dic[key]) > 1:
-        mergefiles.append(cdo.mergetime(input=file_dic[key], output=key+'_mergetime.nc'))
+      
+      if type(file_dic[key]) == list and len(file_dic[key]) > 1:
+        input = []
+        for i in file_dic[key]:
+          print i 
+          input.extend([i.replace(' ','\\\ ')])
+        mergefiles.append(cdo.mergetime(input=input, output=key+'_mergetime.nc'))
       else:
-        mergefiles.append(file_dic[key][0])
+        mergefiles.extend(file_dic[key])
 #      files.append(cdo.selyear('%s/%s' % (start1,end2), input = tmpfile , output =  key+'.nc' )) #python version
     logger.info('datasets merged %s ' % mergefiles)
   except Exception as e:
-    msg = 'seltime and mergetime failed'
+    msg = 'seltime and mergetime failed %s' % e
     logger.exception(msg)
-    raise Exception(msg)    
+    raise Exception(e)    
   
   try: 
     text_src = open('infiles.txt', 'a')
@@ -64,7 +70,8 @@ def worker(resource=[], start=None, end=None, timeslice=20,
     if start == None:
       st_set = set()
       en_set = set()
-      for f in mergefiles: 
+      for f in mergefiles:
+        print f
         times = get_time(f)
         st_set.update([times[0].year])
         if end == None: 
@@ -103,7 +110,7 @@ def worker(resource=[], start=None, end=None, timeslice=20,
   try:
     files = []
     for i, mf in enumerate(mergefiles):
-      files.append(cdo.selyear('{0}/{1}'.format(start1,end2), input=[mf] , output='file_{0}_.nc'.format(i) )) #python version
+      files.append(cdo.selyear('{0}/{1}'.format(start1,end2), input=[mf.replace(' ','\ ')] , output='file_{0}_.nc'.format(i) )) #python version
     logger.info('timeseries selected from defined start to end year')
   except Exception as e:
     msg = 'seltime and mergetime failed'
@@ -115,7 +122,7 @@ def worker(resource=[], start=None, end=None, timeslice=20,
     nc_ensmean = cdo.ensmean(input=files , output='nc_ensmean.nc')
     logger.info('ensemble mean calculation done')
   except Exception as e:
-    'ensemble mean failed'
+    msg = 'ensemble mean failed'
     logger.exception(msg)
     raise Exception(msg)
   
@@ -172,14 +179,15 @@ def worker(resource=[], start=None, end=None, timeslice=20,
       title='Change of %s (difference of mean %s-%s to %s-%s)' % (variable, end1, end2, start1, start2)  
     
     logger.info('variable to be plotted: %s' % variable)
-    
+    graphic = None
     graphic = map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, 
               variable=variable, 
               cmap=cmap,
               title = title)
 
   except Exception as e:
-    msg = 'graphic generation failed'
-    logger.exception(msg)
-    raise Exception(msg)
+    print 'graphic generation failed'
+    #msg = 'graphic generation failed'
+    #logger.exception(msg)
+    #raise Exception(msg)
   return signal, low_agreement_mask, high_agreement_mask, graphic, text_src
