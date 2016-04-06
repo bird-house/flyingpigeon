@@ -1,3 +1,9 @@
+from flyingpigeon import config
+
+import logging
+logger = logging.getLogger(__name__)
+
+
 def get_pca(resource):
   """
   calculation of principal components
@@ -30,7 +36,7 @@ def get_pca(resource):
   # reshape
   #data = np.array(vals)
   m = mean(vals)
-  mdata = data - m 
+  mdata = vals - m 
   adata = mdata.reshape(vals[:].shape[0], (vals[:].shape[1] * vals[:].shape[2]) )
   pca = PCA(n_components=50).fit_transform(adata)
   return mdata , pca #, season
@@ -58,3 +64,50 @@ def calc_kMEAN(pca):
   
   kmeans.fit(pca)
   return kmeans
+
+def get_NCEP():
+  """
+  fetching the NCEP slp data to local file system
+  :return list: list of path/files.nc 
+  """
+  try:
+    from malleefowl import download 
+    from datetime import datetime as dt
+
+    cur_year = dt.now().year
+    ncep_data = []
+
+    for year in range(1948, cur_year + 1):
+      try:
+        url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.%s.nc' % year
+        ncep_data.append(download.wget(url))
+      except:
+        logger.error("wget failed on {0}.".format(url))
+        raise
+  except:
+    logger.error("get_NCEP module failed")
+    raise
+  return ncep_data
+
+def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, variable=None):
+  """
+  extracts the time regions (e.g. '12,1,2') and bounding box from a dataset
+  :param resource: List of files belonging to one dataset
+  :param bbox: geographical region lat/lon
+  :param time_region: month to be picked from the data
+  :returns str: path to output file
+  """
+  
+  from flyingpigeon.ocgis_module import call
+
+  month = map(int, time_region.split(','))
+
+  nc_grouped = call(resource=resource, variable=variable, time_region={'month':month}, prefix='grouped')
+
+  from cdo import Cdo
+  cdo = Cdo()
+
+  data  = cdo.sellonlatbox('%s' % bbox, input=nc_grouped, output='subset.nc')
+  logger.info('subset done: %s ' % data)  
+
+  return data

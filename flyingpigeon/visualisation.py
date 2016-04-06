@@ -332,8 +332,8 @@ def plot_kMEAN(kmeans, pca, title='kmean', sub_title='file='):
 
 
 def plot_pressuremap(data, lats=None, lons=None,  
-                    title='pressure pattern', 
-                    sub_title='ploted in birdhouse'):
+                    title='Pressure Pattern', 
+                    sub_title='plotted in birdhouse'):
   """
   plots pressure data
   :param data: 2D or 3D array of pressure data. if data == 3D a mean will be calculated
