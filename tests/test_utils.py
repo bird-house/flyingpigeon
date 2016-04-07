@@ -6,6 +6,7 @@ from nose.plugins.attrib import attr
 from tests.common import prepare_env, TESTDATA
 prepare_env()
 
+import os.path
 import tempfile
 import tarfile
 import zipfile
@@ -20,6 +21,10 @@ class UtilsTestCase(TestCase):
         cls.resources = []
         cls.resources.append( utils.local_path(TESTDATA['cmip5_tasmax_2006_nc']) )
         cls.resources.append( utils.local_path(TESTDATA['cmip5_tasmax_2007_nc']) )
+
+    def test_download_with_cache(self):
+        filename = utils.download(TESTDATA['cmip5_tasmax_2006_nc'], cache=True)
+        assert os.path.basename(filename) == 'tasmax_Amon_MPI-ESM-MR_rcp45_r1i1p1_200601-200612.nc'
 
     def test_archive_tar(self):
         result = utils.archive(self.resources, format='tar', dir_output=tempfile.mkdtemp())
