@@ -71,5 +71,6 @@ testdata.json
 *.o
 *.a
 *.mod
+*.out
 
 

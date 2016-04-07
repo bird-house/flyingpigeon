@@ -1,4 +1,4 @@
-VERSION := 0.2.16
+VERSION := 0.2.17
 RELEASE := master
 
 # Application
@@ -130,7 +130,7 @@ downloads:
 	@test -d $(DOWNLOAD_CACHE) || mkdir -v -p $(DOWNLOAD_CACHE)
 
 .PHONY: init
-init: .gitignore custom.cfg downloads
+init: custom.cfg downloads
 
 bootstrap-buildout.py:
 	@echo "Update buildout bootstrap-buildout.py ..."
@@ -213,6 +213,8 @@ clean:
 	@-for i in $(BUILDOUT_FILES); do \
             test -e $$i && rm -v -rf $$i; \
         done
+	@echo "Removing *.pyc files ..."
+	@-find $(APP_ROOT) -type f -name "*.pyc" -print0 | xargs -0r rm
 
 .PHONY: distclean
 distclean: backup clean
