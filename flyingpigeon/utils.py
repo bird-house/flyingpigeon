@@ -1,9 +1,38 @@
+import urlparse
+import os
+import wget
 import ocgis
 from netCDF4 import Dataset, num2date
+
+from flyingpigeon import config
+
 import logging
 logger = logging.getLogger(__name__)
 
 GROUPING = [ "day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON" ,"JAN" ]
+
+def download(url, cache=False):
+    """
+    Downloads URL using the Python wget module to the current directory.
+
+    :param cache: if True then files will be downloaded to a cache directory.
+    """
+    if cache:
+        parsed_url = urlparse.urlparse(url)
+        filename = os.path.join(config.cache_path(), parsed_url.netloc, parsed_url.path.strip('/'))
+        if os.path.exists(filename):
+            logger.debug('file already in cache: %s', filename)
+        else:
+            if not os.path.exists(os.path.dirname(filename)):
+                os.makedirs(os.path.dirname(filename))
+            logger.info('downloading: %s', url)
+            filename = wget.download(url, out=filename, bar=None)
+        # make softlink to current dir
+        #os.symlink(filename, os.path.basename(filename))
+        #filename = os.path.basename(filename)
+    else:
+        filename = wget.download(url, bar=None)
+    return filename
 
 def archive(resources, format='tar', dir_output='.', mode='w'): 
   """
