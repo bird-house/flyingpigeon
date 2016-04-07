@@ -1,4 +1,4 @@
-from flyingpigeon import config
+import wget
 
 import logging
 logger = logging.getLogger(__name__)
@@ -71,7 +71,6 @@ def get_NCEP():
   :return list: list of path/files.nc 
   """
   try:
-    from malleefowl import download 
     from datetime import datetime as dt
 
     cur_year = dt.now().year
@@ -80,13 +79,15 @@ def get_NCEP():
     for year in range(1948, cur_year + 1):
       try:
         url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.%s.nc' % year
-        ncep_data.append(download.wget(url))
+        ncep_data.append(wget.download(url, bar=None))
       except:
-        logger.error("wget failed on {0}.".format(url))
-        raise
+        msg = "wget failed on {0}.".format(url)
+        logger.exception(msg)
+        raise Exception(msg)
   except:
-    logger.error("get_NCEP module failed")
-    raise
+    msg = "get_NCEP module failed"
+    logger.exception(msg)
+    raise Exception(msg)
   return ncep_data
 
 def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, variable=None):
