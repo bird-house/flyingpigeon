@@ -1,4 +1,4 @@
-import wget
+from flyingpigeon import utils
 
 import logging
 logger = logging.getLogger(__name__)
@@ -79,7 +79,7 @@ def get_NCEP():
     for year in range(1948, cur_year + 1):
       try:
         url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.%s.nc' % year
-        ncep_data.append(wget.download(url, bar=None))
+        ncep_data.append(utils.download(url, cache=True))
       except:
         msg = "wget failed on {0}.".format(url)
         logger.exception(msg)
