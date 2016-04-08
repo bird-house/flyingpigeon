@@ -155,9 +155,9 @@ class WClassProcess(WPSProcess):
         #####################
         # from flyingpigeon.ocgis_module import call 
         
-        from flyingpigeon.utils import sort_by_filename, get_time , get_coordinates# , calc_grouping
+        from flyingpigeon.utils import sort_by_filename, get_time, get_coordinates  #calc_grouping
         from flyingpigeon import weatherclass as wc
-        from flyingpigeon.visualisation import plot_tSNE, plot_kMEAN, concat_images, plot_pressuremap
+        from flyingpigeon.visualisation import plot_kMEAN, concat_images, plot_pressuremap
         
         from datetime import datetime as dt
         from numpy import savetxt, column_stack

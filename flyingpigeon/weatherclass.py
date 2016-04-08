@@ -103,8 +103,9 @@ def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, variable=None)
 
   month = map(int, time_region.split(','))
 
-  nc_grouped = call(resource=resource, variable=variable, time_region={'month':month}, prefix='grouped')
-
+  nc_grouped = call(resource=resource,  conform_units_to='hPa', variable=variable, time_region={'month':month}, prefix='grouped')
+  # conform_units_to='hPa', 
+  
   from cdo import Cdo
   cdo = Cdo()
 
