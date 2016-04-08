@@ -211,7 +211,7 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
         logger.exception('could not calc key %s' % key)
     return outputs
 
-def calc_indice_percentile(resource=[], variable='tas', prefix=None,indices=None, period=None,
+def calc_indice_percentile(resource=[], variable='tas', prefix=None, indices=None, period=None,
     groupings=None, dir_output=None, dimension_map = None):
     """
     Calculates given indices for suitable files in the appopriate time grouping and polygon.
@@ -220,7 +220,6 @@ def calc_indice_percentile(resource=[], variable='tas', prefix=None,indices=None
     :param variable: variable name to be selected in the in netcdf file (default=None)
     :param indices: list of indices (default ='SU')
     :param period: reference period
-    :param polygons: list of polgons (default ='FRA')
     :param grouping: indices time aggregation (default='yr')
     :param out_dir: output directory for result file (netcdf)
     :param dimension_map: optional dimension map if different to standard (default=None)
@@ -244,38 +243,36 @@ def calc_indice_percentile(resource=[], variable='tas', prefix=None,indices=None
       
     if type(period) == list: 
       period = period[0] 
-    if type(polygons) != list and polygons != None:
-      polygons = list([polygons])
-    elif polygons == None:
-      polygons = [None]
-    else: 
-      logger.error('Polygons not found')
-    if type(groupings) != list:
-      groupings = list([groupings])
+    #if type(polygons) != list and polygons != None:
+      #polygons = list([polygons])
+    #elif polygons == None:
+      #polygons = [None]
+    #else: 
+      #logger.error('Polygons not found')
+    #if type(groupings) != list:
+      #groupings = list([groupings])
     
     if dir_output != None:
       if not exists(dir_output): 
         makedirs(dir_output)
-    
-    
-    
     
     ########################################################################################################################
     # Compute a custom percentile basis using ICCLIM. ######################################################################
     ########################################################################################################################
 
     # Sorting the files according to datasets
-    experiments = sort_by_filename(resource, historical_concatination=True)
-    nc_indices = []
+    #experiments = sort_by_filename(resource, historical_concatination=True)
+    #nc_indices = []
     
     # from ocgis import RequestDataset, OcgOperations
     from ocgis.contrib.library_icclim import IcclimTG90p
     from flyingpigeon.ocgis_module import call
     from flyingpigeon.utils import get_values, get_time
+    from numpy import ma 
     
     years = range(1971, 2001)
     month = [12,1,2] # grouping to month
-    time_region = {'month': month, 'years': years } 
+    time_region = {'year': years , 'month': month} 
     
     nc_ref_vals = call(resource=resource, variable=variable,  prefix='nc_ref_vals', time_region=time_region, output_format='nc')
 
@@ -284,6 +281,10 @@ def calc_indice_percentile(resource=[], variable='tas', prefix=None,indices=None
     dt_arr = get_time(nc_ref_vals)
     percentile = 90
     window_width = 5
+    
+    arr = ma.masked_array(arr)
+    dt_arr = ma.masked_array(dt_arr)
+    
     percentile_dict = IcclimTG90p.get_percentile_dict(arr, dt_arr, percentile, window_width)
 
     ########################################################################################################################
@@ -291,10 +292,10 @@ def calc_indice_percentile(resource=[], variable='tas', prefix=None,indices=None
     ########################################################################################################################
 
     calc = [{'func': 'icclim_TG90p', 'name': 'TG90p', 'kwds': {'percentile_dict': percentile_dict}}]
-    calc_group = calc_grouping(grouping)
+    calc_group = calc_grouping(groupings)
     
-    ops = OcgOperations(dataset=rd, calc=calc, calc_grouping=calc_grouping)
-    coll = ops.execute()
+    #ops = OcgOperations(dataset=rd, calc=calc, calc_grouping=calc_grouping)
+    #coll = ops.execute()
     
     nc_indices =  call(resource=resource, variable=variable,  prefix='indices', calc=calc, calc_grouping=calc_group, output_format='nc')
     
