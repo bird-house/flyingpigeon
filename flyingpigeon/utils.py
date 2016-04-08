@@ -14,7 +14,6 @@ GROUPING = [ "day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA",
 def download(url, cache=False):
     """
     Downloads URL using the Python wget module to the current directory.
-
     :param cache: if True then files will be downloaded to a cache directory.
     """
     if cache:
@@ -281,7 +280,7 @@ def get_domain(nc_file):
 
 def get_frequency(nc_file):
   """
-  returns the frequency
+  returns the frequency (see also metadata.get_frequency)
   :param nc_file: NetCDF file
   :return: frequency
   """
@@ -296,6 +295,26 @@ def get_frequency(nc_file):
   else:
     ds.close()
     return frequency
+
+def get_values(nc_files, variable=None):
+  """
+  returns the values for a list of files of files belonging to one Dataset
+  :param nc_files: list of files
+  :param variable: variable to be picked from the files (if not set, variable will be detected)
+  """
+  
+  from netCDF4 import MFDataset
+  from numpy import squeeze
+  if variable == None:
+    if type(nc_files) == str:
+      variable = get_variable(nc_files)
+    else:
+      variable = get_variable(nc_files[0])
+      
+  mds = MFDataset(nc_files)
+  vals = squeeze(mds.variables[variable][:])
+  
+  return vals
 
 def get_timestamps(nc_file):
     """
@@ -326,11 +345,17 @@ def get_time(nc_file):
     try:  
       ds = Dataset(nc_file)
       time = ds.variables['time']
-      timestamps = num2date(time[:], time.units, time.calendar)
+      if hasattr(time , 'units'):
+        timestamps = num2date(time[:], time.units) 
+      elif hasattr(time , 'units') and hasattr(time , 'calendar'):
+        timestamps = num2date(time[:], time.units , time.calendar)
+      else: 
+        timestamps = num2date(time[:])
       ds.close()
     except: 
       logger.debug('failed to get time')
       raise Exception
+    
     return timestamps
     
 def aggregations(nc_files):
