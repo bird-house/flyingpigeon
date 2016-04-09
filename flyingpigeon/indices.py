@@ -211,7 +211,7 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
         logger.exception('could not calc key %s' % key)
     return outputs
 
-def calc_indice_percentile(resource=[], variable='tas', prefix=None, indices=None, period=None,
+def calc_indice_percentile(resources=[], variable='tas', prefix=None, indices=None, period=None,
     groupings=None, dir_output=None, dimension_map = None):
     """
     Calculates given indices for suitable files in the appopriate time grouping and polygon.
@@ -227,30 +227,25 @@ def calc_indice_percentile(resource=[], variable='tas', prefix=None, indices=Non
     :return: list of netcdf files with calculated indices. Files are saved into out_dir
     """
     from os.path import join, dirname, exists
-    from flyingpigeon import ocgis_module
-    from flyingpigeon.subset import clipping
-    
-    from os.path import join, dirname, exists
     from os import remove
     import uuid
-    from flyingpigeon import ocgis_module
-    from flyingpigeon.subset import get_ugid, get_geom
+    from numpy import ma 
 
-    if type(resource) != list: 
-      resource = list([resource])
+    from flyingpigeon.ocgis_module import call
+    from flyingpigeon.utils import get_values, get_time
+    
+    if type(resources) != list: 
+      resources = list([resources])
     if type(indices) != list: 
       indices = list([indices])
       
     if type(period) == list: 
       period = period[0] 
-    #if type(polygons) != list and polygons != None:
-      #polygons = list([polygons])
-    #elif polygons == None:
-      #polygons = [None]
-    #else: 
-      #logger.error('Polygons not found')
-    #if type(groupings) != list:
-      #groupings = list([groupings])
+    
+    nc_indices = []
+    indice = 'TG90p'
+    years = range(1971, 2001)
+    time_region = {'year': years} 
     
     if dir_output != None:
       if not exists(dir_output): 
@@ -260,47 +255,29 @@ def calc_indice_percentile(resource=[], variable='tas', prefix=None, indices=Non
     # Compute a custom percentile basis using ICCLIM. ######################################################################
     ########################################################################################################################
 
-    # Sorting the files according to datasets
-    #experiments = sort_by_filename(resource, historical_concatination=True)
-    #nc_indices = []
-    
-    # from ocgis import RequestDataset, OcgOperations
     from ocgis.contrib.library_icclim import IcclimTG90p
-    from flyingpigeon.ocgis_module import call
-    from flyingpigeon.utils import get_values, get_time
-    from numpy import ma 
     
-    years = range(1971, 2001)
-    month = [12,1,2] # grouping to month
-    time_region = {'year': years , 'month': month} 
+    nc_dic = sort_by_filename(resources)
+    for key in nc_dic.keys():
+      resource = nc_dic[key]
     
-    nc_ref_vals = call(resource=resource, variable=variable,  prefix='nc_ref_vals', time_region=time_region, output_format='nc')
+      nc_reference = call(resource=resource, prefix='nc_reference',time_region=time_region, output_format='nc')
+      
+      arr = get_values(nc_files=nc_reference)
+      dt_arr = get_time(nc_file=nc_reference)
 
-    # Calculate the percentile basis. The data values must be a three-dimensional array.
-    arr = get_values(nc_ref_vals)
-    dt_arr = get_time(nc_ref_vals)
-    percentile = 90
-    window_width = 5
-    
-    arr = ma.masked_array(arr)
-    dt_arr = ma.masked_array(dt_arr)
-    
-    percentile_dict = IcclimTG90p.get_percentile_dict(arr, dt_arr, percentile, window_width)
+      arr = ma.masked_array(arr)
+      dt_arr = ma.masked_array(dt_arr)
 
-    ########################################################################################################################
-    # Calculate indice using custom percentile basis. ######################################################################
-    ########################################################################################################################
+      percentile = 90
+      window_width = 5
+      percentile_dict = IcclimTG90p.get_percentile_dict(arr, dt_arr, percentile, window_width)
 
-    calc = [{'func': 'icclim_TG90p', 'name': 'TG90p', 'kwds': {'percentile_dict': percentile_dict}}]
-    calc_group = calc_grouping(groupings)
-    
-    #ops = OcgOperations(dataset=rd, calc=calc, calc_grouping=calc_grouping)
-    #coll = ops.execute()
-    
-    nc_indices =  call(resource=resource, variable=variable,  prefix='indices', calc=calc, calc_grouping=calc_group, output_format='nc')
-    
+      calc = [{'func': 'icclim_TG90p', 'name': 'TG90p', 'kwds': {'percentile_dict': percentile_dict}}]
+      calc_grouping = 'year'
+      nc_indices.append(call(resource=resource, prefix=key.replace(variable,indice), 
+                            calc=calc, calc_grouping=calc_grouping, output_format='nc'))
     return nc_indices
-
 
 def calc_indice_unconventional(resource=[], variable=None, prefix=None,
   indices=None, polygons=None,  groupings=None, 

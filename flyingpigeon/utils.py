@@ -2,7 +2,7 @@ import urlparse
 import os
 import wget
 import ocgis
-from netCDF4 import Dataset, num2date
+from netCDF4 import Dataset, MFDataset, num2date
 
 from flyingpigeon import config
 
@@ -303,7 +303,7 @@ def get_values(nc_files, variable=None):
   :param variable: variable to be picked from the files (if not set, variable will be detected)
   """
   
-  from netCDF4 import MFDataset
+ # from netCDF4 import MFDataset
   from numpy import squeeze
   if variable == None:
     if type(nc_files) == str:
@@ -339,23 +339,22 @@ def get_time(nc_file):
     """
     returns all timestamps of given netcdf file as datetime list.
     
-    :param nc_file: NetCDF file
+    :param nc_file: NetCDF file(s)
     :return format: netcdftime._datetime.datetime
     """
     try:  
-      ds = Dataset(nc_file)
+      ds = MFDataset(nc_file)
       time = ds.variables['time']
-      if hasattr(time , 'units'):
-        timestamps = num2date(time[:], time.units) 
-      elif hasattr(time , 'units') and hasattr(time , 'calendar'):
+      if (hasattr(time , 'units') and hasattr(time , 'calendar')) == True:
         timestamps = num2date(time[:], time.units , time.calendar)
+      elif hasattr(time , 'units'):
+        timestamps = num2date(time[:], time.units) 
       else: 
         timestamps = num2date(time[:])
       ds.close()
     except: 
       logger.debug('failed to get time')
       raise Exception
-    
     return timestamps
     
 def aggregations(nc_files):
