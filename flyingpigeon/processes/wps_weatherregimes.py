@@ -10,11 +10,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class WClassProcess(WPSProcess):
+class WeatherRegimesProcess(WPSProcess):
     def __init__(self):
         WPSProcess.__init__(
             self,
-            identifier = "WClass",
+            identifier = "weatherregimes",
             title = "Weather Regimes",
             version = "0.1",
             metadata=[
@@ -52,7 +52,7 @@ class WClassProcess(WPSProcess):
             identifier="BBox",
             title="Region",
             abstract="coordinates to define the region: (minlon,minlat,maxlon,maxlat)",
-            default="-80,50,22.5,70",
+            default='-80,50,22.5,70', #"-80,22.5,50,70",
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
@@ -180,7 +180,7 @@ class WClassProcess(WPSProcess):
         if obs == 'NCEP': 
           nc_ncep = wc.get_NCEP()
 
-          subset = wc.subset(nc_ncep, time_region='12,1')
+          subset = wc.subset(nc_ncep, bbox=bbox, time_region=time_region) #
           
           data_ncep , pca_ncep = wc.get_pca(subset)
           
@@ -245,17 +245,10 @@ class WClassProcess(WPSProcess):
           else:
             logger.debug('invalid number of input files for dataset %s' % key)            
  
-          #for tr in time_region:
-          if not time_region == 'None':
-            nc_grouped = cdo.selmon(time_region, input=input, output='grouped.nc')
-          else:
-            nc_grouped = input 
+          nc = wc.subset(nc_ncep, bbox=bbox,time_region=time_region)
           
-      #     for bb in bbox:    
-          nc  = cdo.sellonlatbox('%s' % bbox, input=nc_grouped, output='subset.nc')
           logger.info('nc subset: %s ' % nc)
           
-
           try:
             vals, pca = wc.get_pca(nc)            
             logger.info('PCa calculated')
