@@ -156,7 +156,7 @@ conda_config: anaconda
 
 .PHONY: conda_env
 conda_env: anaconda conda_config
-	@test -d $(PREFIX) || "$(ANACONDA_HOME)/bin/conda" create -m -p $(PREFIX) -c ioos --yes python setuptools=$(SETUPTOOLS_VERSION) curl pyopenssl cryptography genshi mako pyyaml
+	@test -d $(PREFIX) || "$(ANACONDA_HOME)/bin/conda" create -m -p $(PREFIX) -c ioos --yes python setuptools=$(SETUPTOOLS_VERSION) curl pyopenssl cryptography=1.0.2 genshi mako pyyaml
 	"$(ANACONDA_HOME)/bin/conda" install -n $(CONDA_ENV) setuptools=$(SETUPTOOLS_VERSION)
 
 .PHONY: conda_pinned
