@@ -123,9 +123,15 @@ Time series visualisation of netCDF files.
 Creating a spagetti plot and an uncertainty plot.
 
 
-.. _weather_regimes:
+.. _weatherregimes:
 
 Weather Regimes
 ---------------
 
-Weather Classification based on pressure patterns (kmean method)
+Calculation of weatherregimes based on pressure patterns (kmean method). The processes is performing a pattern clusterfication for observations data ( NCEP ) as well as to model data. both results are compared
+ 
+processing stepps: 
+
+* fetching observation data 
+* fetching model data
+ 

@@ -279,7 +279,7 @@ class WeatherRegimesProcess(WPSProcess):
             subplots = []
             lats, lons = get_coordinates(nc)
             for i in range(4): 
-                subplots.append(plot_pressuremap((vals[c==i]/100),lats=lats, lons=lons, title='Weather Regime %s: Month %s ' % (i, time_region), sub_title='file: %s' % key))
+                subplots.append(plot_pressuremap((vals[c==i]),lats=lats, lons=lons, title='Weather Regime %s: Month %s ' % (i, time_region), sub_title='file: %s' % key))
             
             from PIL import Image
             import sys
