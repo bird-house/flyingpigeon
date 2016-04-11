@@ -6,7 +6,10 @@ from nose.plugins.attrib import attr
 from tests.common import prepare_env, TESTDATA
 prepare_env()
 
+import os.path
 import tempfile
+import tarfile
+import zipfile
 from netCDF4 import Dataset
 
 from flyingpigeon import utils
@@ -15,8 +18,24 @@ class UtilsTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        pass
-        
+        cls.resources = []
+        cls.resources.append( utils.local_path(TESTDATA['cmip5_tasmax_2006_nc']) )
+        cls.resources.append( utils.local_path(TESTDATA['cmip5_tasmax_2007_nc']) )
+
+    def test_download_with_cache(self):
+        filename = utils.download(TESTDATA['cmip5_tasmax_2006_nc'], cache=True)
+        assert os.path.basename(filename) == 'tasmax_Amon_MPI-ESM-MR_rcp45_r1i1p1_200601-200612.nc'
+
+    def test_archive_tar(self):
+        result = utils.archive(self.resources, format='tar', dir_output=tempfile.mkdtemp())
+        tar = tarfile.open(result)
+        assert len(tar.getnames()) == 2
+
+    def test_archive_zip(self):
+        result = utils.archive(self.resources, format='zip', dir_output=tempfile.mkdtemp())
+        zipf = zipfile.ZipFile(result)
+        assert len(zipf.namelist()) == 2
+    
     def test_local_path(self):
         nose.tools.ok_(utils.local_path('file:///tmp/test.nc') == '/tmp/test.nc')
         nose.tools.ok_(utils.local_path('/tmp/test.nc') == '/tmp/test.nc')

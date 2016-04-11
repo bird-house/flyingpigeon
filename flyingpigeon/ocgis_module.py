@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 def call(resource=[], variable=None, dimension_map=None, calc=None,  
   calc_grouping= None, conform_units_to=None, memory_limit=None,  prefix=None, 
-  geom=None, output_format_options=False, select_ugid=None, time_region=None, time_range=None,
+  geom=None, output_format_options=False, search_radius_mult=2., select_nearest=False, select_ugid=None, time_region=None, time_range=None,
   dir_output=None, output_format='nc'):
   '''
   ocgis operation call
@@ -23,6 +23,8 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   :param prefix:
   :param geom: name of shapefile stored in birdhouse shape cabinet
   :param output_format_options: output options for netCDF e.g compression level()
+  :param search_radius_mult: search radius for point geometries. All included gridboxes will be returned
+  :param select_nearest: neares neighbour selection for point geometries
   :param select_ugid: ugid for appropriate poligons 
   :param time_region:
   :param time_range: sequence of two datetime.datetime objects to mark start and end point 
@@ -30,7 +32,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   :param output_format:
   :return: output file path
   '''
-
+  print 'start ocgis module'
   logger.info('Start ocgis module call function')
   from ocgis import OcgOperations, RequestDataset , env
   from ocgis.util.large_array import compute
@@ -64,14 +66,18 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         output_format_options=output_format_options,
         #options=options,
         calc=calc, 
+        
         calc_grouping=calc_grouping,
-        output_format=output_format, # 'nc' is necessary for chunked execution  
-        select_ugid=select_ugid, 
         geom=geom,
+        output_format=output_format, 
+        search_radius_mult=search_radius_mult,
+        select_nearest=select_nearest,
+        select_ugid=select_ugid, 
+        
         add_auxiliary_files=False)
     logger.info('OcgOperations set')
   except Exception as e: 
-    logger.exception('failed to setup OcgOperations')
+    logger.debug('failed to setup OcgOperations')
     raise  
   
   # check memory load
@@ -104,7 +110,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     try: 
       geom_file = ops.execute()
     except Exception as e: 
-      logger.exception('failed to execute ocgis operation')
+      logger.debug('failed to execute ocgis operation')
       raise  
   else:
     size = ops.get_base_request_size()
@@ -128,7 +134,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
           add_auxiliary_files=False)
       geom_file = compute(ops, tile_dimension=int(tile_dim) , verbose=True)
     except Exception as e: 
-      logger.exception('failed to compute ocgis operation')
+      logger.debug('failed to compute ocgis operation')
       raise  
   
   logger.info('Succeeded with ocgis module call function')

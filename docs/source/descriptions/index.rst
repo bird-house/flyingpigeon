@@ -3,7 +3,25 @@
 Processes in Flyingpigeon
 *************************
 
-Flyingpigeon provides processes focussing on climate impact and extrem values. 
+Flyingpigeon provides processes for climate model data analytis, climate impact studies and extrem values investigatins. 
+
+
+
+.. _analogs:
+
+Analog pressure pattern
+-----------------------
+
+CASTf90 first downloads fields from NCEP reanalysis (sea level pressure, slp, as default) and then searches for a given simulation period the most similar cases within a given data base period according to a given distance measure. Finally it writes the N most similar days including the calculated distances for them to an output file
+
+
+.. _extract_coordinates
+
+1D Timeseries from coordinate points
+------------------------------------
+
+Extract Timeseries for specified coordinates from grid data
+
 
 .. _extremvalues: 
 
@@ -20,18 +38,34 @@ get EOBS Data in CORDEX format
 
 converts EOBS data files into the CORDEX convetion. (variable names, attributes etc ... )
 
-.. _indices:
+.. _fetch: 
 
-ECA simple indices
--------------------
 
-Indices based on one input variable. The indices are executed by an ocgis call of icclim
+Download Resources
+------------------
+
+Downloads resources (limited to 50GB) to the local file system of the birdhouse compute provider
+
+.. _indices_simple:
+
+Climate indices
+---------------
+
+OCgis intrgartion of icclim indices. 
+
+.. _ensemble_Robustness:
+
+Robustness of an ensemble
+-------------------------
+
+Calculates the robustness as the ratio of noise to signal in an ensemle of timeseries
+
 
 .. _segetalflora: 
 
 Segetalflora
 ------------
-Calculation of numbers of segetal flora species in Europe. 
+Species biodiversity of segetal flora. Imput files: variable:tas , domain: EUR-11 or EUR-44
 
 .. _sdm: 
 
@@ -45,11 +79,10 @@ The appraoch is to be performed in two steps:
 * Statistical training with species presents absense data and historical climate data
 * future projection based on the statistical training
 
+.. _subset_countries: 
 
-.. _subset: 
-
-Subset
-------
+Subset Counties 
+---------------
 
 generates a polygon subset of input netCDF files 
 
@@ -64,26 +97,19 @@ For optimisation of processing the subset, the appropriate shapefile are prepare
    :maxdepth: 1
 
    shapefilepreparation
-
-
-
-
-.. _vbd: 
-
-Vector borne diseases
----------------------
-
-The livecycle of disease transmitting vectors (mosquitos, ticks etc. ) are stronly depending on climatic conditions.
-
-These models are integrated:
-
-* Thommy Model
-* Kamil Model
-
+   
 .. _visualisation: 
 
 Visualisation
 -------------
 
-Line plots using `Bokeh <http://bokeh.pydata.org/en/latest/>`_ to compare variables of NetCDF files from CORDEX and CMIP5. [..]
+Time series visualisation of netCDF files. 
+Creating a spagetti plot and an uncertainty plot.
 
+
+.. _weather_regimes:
+
+Weather Regimes
+---------------
+
+Weather Classification based on pressure patterns (kmean method)

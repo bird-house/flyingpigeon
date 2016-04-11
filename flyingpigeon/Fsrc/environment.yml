@@ -1,0 +1,9 @@
+# conda env create environment.yml
+name: fortran 
+channels:
+  - birdhouse
+dependencies:
+  - python=2
+  - gcc
+  - netcdf-fortran
+  - openblas

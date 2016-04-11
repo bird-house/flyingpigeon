@@ -45,7 +45,7 @@ class WpsTestClient(object):
         os.environ['REQUEST_METHOD'] = pywps.METHOD_GET
         os.environ['PATH'] = "{0}:{1}".format(os.path.join(home_path, 'bin'), os.environ['PATH'])
         os.environ['GDAL_DATA'] = os.path.join(home_path, 'share', 'gdal')
-        self.wps = pywps.Pywps(os.environ)
+        self.wps = pywps.Pywps(os.environ["REQUEST_METHOD"], os.environ.get("PYWPS_CFG"))
    
     def get(self, *args, **kwargs):
         query = ""

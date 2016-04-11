@@ -95,7 +95,6 @@ extent(c5_mean) <- c(min(c5_lon),max(c5_lon),min(c5_lat),max(c5_lat))
 
 save.image(file=args[1])  
 
-
 # ########################################## 
 # prepare list of used variables and read values 
 # ########################################## 
@@ -153,7 +152,7 @@ for (i in 2:length(c_names))
 {
   temp <- paste(temp," + s(",c_names[i],", k = ", c_kappa[i],")",sep="")
 }
-temp <- paste("Fsylv ~ ",temp, sep="" )
+
 
 # calculate the modelprameter
 GamFsylv <- gam(eval(parse(text=(temp))),data=PAS_Clima,family=binomial(),scale=-1)

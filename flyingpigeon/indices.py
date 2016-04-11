@@ -23,7 +23,8 @@ _INDICES_ = dict(
     ID=dict(variable='tasmax', description='Nr of Ice days (tasmax as input files)'),
     HD17=dict(variable='tas', description='Heating degree days [sum of 17 degrees - mean temperature] (tas as input files)'),
     GD4=dict(variable='tas', description='Growing degree days [sum of TG >= 4 degrees] (tas as input files)'),
-    RR=dict(variable='pr', description='Precipitation flux mean (mon / year) (pr as input files)'),
+    #RR=dict(variable='pr', description='Precipitation flux mean (mon / year) (pr as input files)'),
+    PRCPTOT=dict(variable='pr', description='Precipitation flux mean (mon / year) (pr as input files)'),
     RR1=dict(variable='pr', description='Nr of days with precipitation > 1 mm  (pr as input files)'),
     CWD=dict(variable='pr', description='Consecutive wet days (pr as input files)'),
     CDD=dict(variable='pr', description='Consecutive dry days (pr as input files)'),
@@ -47,19 +48,19 @@ _INDICESper_ = dict(
     TN90p=dict(variable='tasmin', description='Days with TN > 90th percentile of daily minimum temperature (warm nights) (days)'),
     WSDI=dict(variable='tasmax', description='Warm-spell duration index (days)'),
     CSDI=dict(variable='tasmin', description='Cold-spell duration index (days)'),
-    R75p=dict(variable='pr', description= 'Days with RR > 75th percentile of daily amounts (moderate wet days) (days)'),
+    R75p=dict(variable='pr', description= 'Days with PRCPTOT > 75th percentile of daily amounts (moderate wet days) (days)'),
     R75pTOT=dict(variable='pr', description= 'Precipitation fraction due to moderate wet days (>75th percentile) (%)'),
-    R95p=dict(variable='pr', description= 'Days with RR > 95th percentile of daily amounts (very wet days) (days)'),
+    R95p=dict(variable='pr', description= 'Days with PRCPTOT > 95th percentile of daily amounts (very wet days) (days)'),
     R95pTOT=dict(variable='pr', description= 'Precipitation fraction due to very wet days (>95th percentile) (%)'),
-    R99p=dict(variable='pr', description= 'Days with RR > 99th percentile of daily amounts (extremely wet days)(days)'),
+    R99p=dict(variable='pr', description= 'Days with PRCPTOT > 99th percentile of daily amounts (extremely wet days)(days)'),
     R99pTOT=dict(variable='pr', description= 'recipitation fraction due to extremely wet days (>99th percentile)(%)'),
     )   
 
 _INDICEScomp_ = dict(
-    CD=dict(variable=['tas','pr'], description='Days with TG < 25th percentile of daily mean temperature and RR < 25th percentile of daily precipitation sum (cold/dry days)'),
-    CW=dict(variable=['tas','pr'], description='Days with TG < 25th percentile of daily mean temperature and RR > 75th percentile of daily precipitation sum (cold/wet days)'),
-    WD=dict(variable=['tas','pr'], description='days with TG > 75th percentile of daily mean temperature and RR < 25th percentile of daily precipitation sum (warm/dry days)'),
-    WW=dict(variable=['tas','pr'], description='Days with TG > 75th percentile of daily mean temperature and RR > 75th percentile of daily precipitation sum (warm/wet days)'),
+    CD=dict(variable=['tas','pr'], description='Days with TG < 25th percentile of daily mean temperature and PRCPTOT < 25th percentile of daily precipitation sum (cold/dry days)'),
+    CW=dict(variable=['tas','pr'], description='Days with TG < 25th percentile of daily mean temperature and PRCPTOT > 75th percentile of daily precipitation sum (cold/wet days)'),
+    WD=dict(variable=['tas','pr'], description='days with TG > 75th percentile of daily mean temperature and PRCPTOT < 25th percentile of daily precipitation sum (warm/dry days)'),
+    WW=dict(variable=['tas','pr'], description='Days with TG > 75th percentile of daily mean temperature and PRCPTOT > 75th percentile of daily precipitation sum (warm/wet days)'),
     )
 
 _INDICESunconventional_ = dict(
@@ -209,6 +210,74 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
       except Exception as e:
         logger.exception('could not calc key %s' % key)
     return outputs
+
+def calc_indice_percentile(resources=[], variable='tas', prefix=None, indices=None, period=None,
+    groupings=None, dir_output=None, dimension_map = None):
+    """
+    Calculates given indices for suitable files in the appopriate time grouping and polygon.
+
+    :param resource: list of filenames in drs convention (netcdf)
+    :param variable: variable name to be selected in the in netcdf file (default=None)
+    :param indices: list of indices (default ='SU')
+    :param period: reference period
+    :param grouping: indices time aggregation (default='yr')
+    :param out_dir: output directory for result file (netcdf)
+    :param dimension_map: optional dimension map if different to standard (default=None)
+
+    :return: list of netcdf files with calculated indices. Files are saved into out_dir
+    """
+    from os.path import join, dirname, exists
+    from os import remove
+    import uuid
+    from numpy import ma 
+
+    from flyingpigeon.ocgis_module import call
+    from flyingpigeon.utils import get_values, get_time
+    
+    if type(resources) != list: 
+      resources = list([resources])
+    if type(indices) != list: 
+      indices = list([indices])
+      
+    if type(period) == list: 
+      period = period[0] 
+    
+    nc_indices = []
+    indice = 'TG90p'
+    years = range(1971, 2001)
+    time_region = {'year': years} 
+    
+    if dir_output != None:
+      if not exists(dir_output): 
+        makedirs(dir_output)
+    
+    ########################################################################################################################
+    # Compute a custom percentile basis using ICCLIM. ######################################################################
+    ########################################################################################################################
+
+    from ocgis.contrib.library_icclim import IcclimTG90p
+    
+    nc_dic = sort_by_filename(resources)
+    for key in nc_dic.keys():
+      resource = nc_dic[key]
+    
+      nc_reference = call(resource=resource, prefix='nc_reference',time_region=time_region, output_format='nc')
+      
+      arr = get_values(nc_files=nc_reference)
+      dt_arr = get_time(nc_file=nc_reference)
+
+      arr = ma.masked_array(arr)
+      dt_arr = ma.masked_array(dt_arr)
+
+      percentile = 90
+      window_width = 5
+      percentile_dict = IcclimTG90p.get_percentile_dict(arr, dt_arr, percentile, window_width)
+
+      calc = [{'func': 'icclim_TG90p', 'name': 'TG90p', 'kwds': {'percentile_dict': percentile_dict}}]
+      calc_grouping = 'year'
+      nc_indices.append(call(resource=resource, prefix=key.replace(variable,indice), 
+                            calc=calc, calc_grouping=calc_grouping, output_format='nc'))
+    return nc_indices
 
 def calc_indice_unconventional(resource=[], variable=None, prefix=None,
   indices=None, polygons=None,  groupings=None, 

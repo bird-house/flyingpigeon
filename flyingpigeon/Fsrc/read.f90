@@ -1,4 +1,4 @@
-!> © LSCE – Laboratory related to CEA/DSM – CNRS – UVSQ, 
+!> © LSCE – Laboratory related to CEA/DSF – CNRS – UVSQ, 
 !! Sabine Radanovics (sabine.radanovics@lsce.ipsl.fr) andPascal Yiou (pascal.yiou@lsce.ipsl.fr)
 !! This source code is part of the CASTf90 software IDDN.FR.001.030008.000.S.P.2016.000.20700
 !!
