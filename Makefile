@@ -1,4 +1,4 @@
-VERSION := 0.2.17
+VERSION := 0.2.18
 RELEASE := master
 
 # Application
@@ -15,7 +15,7 @@ BUILDOUT_VERSION=2.5.0
 
 # Anaconda 
 ANACONDA_HOME ?= $(HOME)/anaconda
-CONDA_ENV := birdhouse
+CONDA_ENV ?= birdhouse
 CONDA_ENVS_DIR ?= $(HOME)/.conda/envs
 PREFIX := $(CONDA_ENVS_DIR)/$(CONDA_ENV)
 
@@ -156,7 +156,7 @@ conda_config: anaconda
 
 .PHONY: conda_env
 conda_env: anaconda conda_config
-	@test -d $(PREFIX) || "$(ANACONDA_HOME)/bin/conda" create -m -p $(PREFIX) -c ioos --yes python setuptools=$(SETUPTOOLS_VERSION) curl pyopenssl genshi mako
+	@test -d $(PREFIX) || "$(ANACONDA_HOME)/bin/conda" create -m -p $(PREFIX) -c ioos --yes python setuptools=$(SETUPTOOLS_VERSION) curl pyopenssl cryptography=1.0.2 genshi mako pyyaml
 	"$(ANACONDA_HOME)/bin/conda" install -n $(CONDA_ENV) setuptools=$(SETUPTOOLS_VERSION)
 
 .PHONY: conda_pinned
