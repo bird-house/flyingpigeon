@@ -8,7 +8,7 @@ CHANGES = open(os.path.join(here, 'CHANGES.rst')).read()
 
 requires = [
     'cdo',
-    'bokeh',
+    #'bokeh',
     'ocgis',
     'pandas',
     'nose',
