@@ -240,12 +240,17 @@ def calc_indice_percentile(resources=[], variable='tas', prefix=None, indices=No
       indices = list([indices])
       
     if type(period) == list: 
-      period = period[0] 
-    
+      period = period[0]
+      
+    if period == 'all'
+      time_region = None
+    else:
+      start, end = int(period.split('-'))
+      years = range(start, end)
+      time_region = {'year': years}
+
     nc_indices = []
-    indice = 'TG90p'
-    years = range(1971, 2001)
-    time_region = {'year': years} 
+    
     
     if dir_output != None:
       if not exists(dir_output): 
@@ -260,22 +265,18 @@ def calc_indice_percentile(resources=[], variable='tas', prefix=None, indices=No
     nc_dic = sort_by_filename(resources)
     for key in nc_dic.keys():
       resource = nc_dic[key]
-    
       nc_reference = call(resource=resource, prefix='nc_reference',time_region=time_region, output_format='nc')
-      
       arr = get_values(nc_files=nc_reference)
       dt_arr = get_time(nc_file=nc_reference)
-
       arr = ma.masked_array(arr)
       dt_arr = ma.masked_array(dt_arr)
-
       percentile = 90
       window_width = 5
       percentile_dict = IcclimTG90p.get_percentile_dict(arr, dt_arr, percentile, window_width)
-
-      calc = [{'func': 'icclim_TG90p', 'name': 'TG90p', 'kwds': {'percentile_dict': percentile_dict}}]
-      calc_grouping = 'year'
-      nc_indices.append(call(resource=resource, prefix=key.replace(variable,indice), 
+      for indice in indices: 
+        calc = [{'func': 'icclim_%s' % indice, 'name': indice, 'kwds': {'percentile_dict': percentile_dict}}]
+        calc_grouping = 'year'
+        nc_indices.append(call(resource=resource, prefix=key.replace(variable,indice), 
                             calc=calc, calc_grouping=calc_grouping, output_format='nc'))
     return nc_indices
 

@@ -17,10 +17,10 @@ CASTf90 first downloads fields from NCEP reanalysis (sea level pressure, slp, as
 
 .. _extract_coordinates
 
-1D Timeseries from coordinate points
-------------------------------------
+extract 1D Timeseries from coordinate points
+--------------------------------------------
 
-Extract Timeseries for specified coordinates from grid data
+Extract Timeseries for specified coordinates from grided data
 
 
 .. _extremvalues: 
@@ -46,12 +46,28 @@ Download Resources
 
 Downloads resources (limited to 50GB) to the local file system of the birdhouse compute provider
 
-.. _indices_simple:
+.. _indices:
 
-Climate indices
----------------
+Climate indice
+--------------
 
-OCgis intrgartion of icclim indices. 
+Climate indice are values to describe the state the climate system for a certain parameter. Climate indice as timeseries can be used to describe or estimate the climte change over time. 
+The climate indices processes in flyingpigeon are based on the python package 'Link icclim <http://icclim.readthedocs.org/en/latest/>'.
+they are subcassed to 
+
+.. toctree::
+  indice simple
+  -------------
+  
+  indice percentile based
+  -----------------------
+  
+  indice multi varaibales 
+  -----------------------
+  
+  indices custom
+  --------------
+  
 
 .. _ensemble_Robustness:
 

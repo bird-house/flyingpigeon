@@ -156,7 +156,7 @@ class WeatherRegimesProcess(WPSProcess):
         # from flyingpigeon.ocgis_module import call 
         
         from flyingpigeon.utils import sort_by_filename, get_time, get_coordinates  #calc_grouping
-        from flyingpigeon import weatherclass as wc
+        from flyingpigeon import weatherregimes as wr
         from flyingpigeon.visualisation import plot_kMEAN, concat_images, plot_pressuremap
         
         from datetime import datetime as dt
@@ -178,13 +178,13 @@ class WeatherRegimesProcess(WPSProcess):
         
         ### Calculate reference for NCEP Data
         if obs == 'NCEP': 
-          nc_ncep = wc.get_NCEP()
+          nc_ncep = wr.get_NCEP()
 
-          subset = wc.subset(nc_ncep, bbox=bbox, time_region=time_region) #
+          subset = wr.subset(nc_ncep, bbox=bbox, time_region=time_region) #
           
-          data_ncep , pca_ncep = wc.get_pca(subset)
+          data_ncep , pca_ncep = wr.get_pca(subset)
           
-          kmeans_ncep = wc.calc_kMEAN(pca_ncep)
+          kmeans_ncep = wr.calc_kMEAN(pca_ncep)
           c_ncep = kmeans_ncep.predict(pca_ncep)
 
           png_clusters.append(plot_kMEAN(kmeans_ncep, pca_ncep, title='kMEAN month: %s [lonlat: %s]' % (time_region,bbox), sub_title='file: NCEP Data'))
@@ -245,12 +245,12 @@ class WeatherRegimesProcess(WPSProcess):
           else:
             logger.debug('invalid number of input files for dataset %s' % key)            
  
-          nc = wc.subset(nc_ncep, bbox=bbox,time_region=time_region)
+          nc = wr.subset(nc_ncep, bbox=bbox,time_region=time_region)
           
           logger.info('nc subset: %s ' % nc)
           
           try:
-            vals, pca = wc.get_pca(nc)            
+            vals, pca = wr.get_pca(nc)            
             logger.info('PCa calculated')
           except:
             logger.debug('failed to calculate PCs')
@@ -258,11 +258,11 @@ class WeatherRegimesProcess(WPSProcess):
           
           try:
             # if md == 'tSNE':
-            #   data = wc.calc_tSNE(pca)
+            #   data = wr.calc_tSNE(pca)
             #   png_clusters.append(plot_tSNE(data,title='tSNE month: %s [lonlat: %s]' % (time_region,bbox), sub_title='file: %s' % key))
             #   logger.info('tSNE calculated for %s ' % key)
             #if md == 'kMEAN':
-            kmeans = wc.calc_kMEAN(pca)
+            kmeans = wr.calc_kMEAN(pca)
             c = kmeans.predict(pca)
             times = get_time(nc)
             timestr = [t for t in times] # str(t).replace(' ','_') #dt.strftime(t, format='%Y-%d-%m_%H:%M:%S')

@@ -69,7 +69,7 @@ class SingleIndicesProcess(WPSProcess):
             title="Indice",
             abstract="Calculated indice as NetCDF file",
             metadata=[],
-            formats=[{"mimeType":"application/x-netcdf"}],
+            formats=[{"mimeType":"application/x-tar"}],
             asReference=True
             )
 

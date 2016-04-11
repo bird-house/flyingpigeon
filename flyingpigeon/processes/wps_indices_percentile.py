@@ -80,7 +80,7 @@ class IndicesPercentileProcess(WPSProcess):
             title="Indice",
             abstract="Calculated indice as NetCDF file",
             metadata=[],
-            formats=[{"mimeType":"application/x-netcdf"}],
+            formats=[{"mimeType":"application/x-tar"}],
             asReference=True
             )
 
@@ -100,7 +100,7 @@ class IndicesPercentileProcess(WPSProcess):
         self.status.set('starting: indices=%s, period=%s, groupings=%s, num_files=%s' % (indices, period, groupings, len(ncs)), 0)
 
         results = calc_indice_percentile(
-            resource = ncs,
+            resources = ncs,
             indices = indices,
             period = period,
             groupings = groupings,
