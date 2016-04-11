@@ -15,7 +15,7 @@ BUILDOUT_VERSION=2.5.0
 
 # Anaconda 
 ANACONDA_HOME ?= $(HOME)/anaconda
-CONDA_ENV := birdhouse
+CONDA_ENV ?= birdhouse
 CONDA_ENVS_DIR ?= $(HOME)/.conda/envs
 PREFIX := $(CONDA_ENVS_DIR)/$(CONDA_ENV)
 
