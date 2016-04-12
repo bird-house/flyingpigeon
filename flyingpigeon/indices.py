@@ -242,7 +242,7 @@ def calc_indice_percentile(resources=[], variable='tas', prefix=None, indices=No
     if type(period) == list: 
       period = period[0]
       
-    if period == 'all'
+    if period == 'all':
       time_region = None
     else:
       start, end = int(period.split('-'))

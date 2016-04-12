@@ -343,7 +343,6 @@ def plot_pressuremap(data, lats=None, lons=None,
   :param sub_title: string for sub_title
   """
   from numpy import squeeze, mean, meshgrid
-  
   d = squeeze(data)
 
   if len(d.shape)==3:
@@ -360,7 +359,10 @@ def plot_pressuremap(data, lats=None, lons=None,
       lons, lats = meshgrid( lons, lats)
     
     central_longitude = int(mean(lons))
-    ax = plt.axes(projection=ccrs.Robinson(central_longitude=central_longitude))
+    
+    #AlbersEqualArea(central_longitude=0.0, central_latitude=0.0, false_easting=0.0, false_northing=0.0, standard_parallels=(20.0, 50.0), globe=None)
+    
+    ax = plt.axes(projection=ccrs.AlbersEqualArea(central_longitude=central_longitude)) #,Robinson(central_longitude=central_longitude))
     ax.gridlines() 
     ax.coastlines()
     

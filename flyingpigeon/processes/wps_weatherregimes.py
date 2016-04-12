@@ -155,26 +155,29 @@ class WeatherRegimesProcess(WPSProcess):
         #####################
         # from flyingpigeon.ocgis_module import call 
         
-        from flyingpigeon.utils import sort_by_filename, get_time, get_coordinates  #calc_grouping
+        from flyingpigeon.utils import sort_by_filename, get_time, get_coordinates, get_values  #calc_grouping
         from flyingpigeon import weatherregimes as wr
         from flyingpigeon.visualisation import plot_kMEAN, concat_images, plot_pressuremap
         
-        from datetime import datetime as dt
-        from numpy import savetxt, column_stack
-        
+        from numpy import savetxt, column_stack, ma, mean
         import tarfile
-        
-        from cdo import *
-        cdo = Cdo()        
-        
-        # grouping = calc_grouping(time_region)
-
         
         ncs = sort_by_filename(resources, historical_concatination=True)
 
-        png_clusters = []
-        txt_info = []
-        png_pressuremaps = []
+        try:
+          png_clusters = []
+          txt_info = []
+          png_pressuremaps = []
+          
+          regime_dic = {}
+          # open tar files
+          tar_info = tarfile.open('info.tar', "w")
+          logger.info('tar files prepared')
+        except:
+          msg = 'tar file preparation failed'
+          logger.exception(msg)
+          raise Exception(msg)
+
         
         ### Calculate reference for NCEP Data
         if obs == 'NCEP': 
@@ -182,24 +185,34 @@ class WeatherRegimesProcess(WPSProcess):
 
           subset = wr.subset(nc_ncep, bbox=bbox, time_region=time_region) #
           
-          data_ncep , pca_ncep = wr.get_pca(subset)
+          pca_ncep = wr.get_pca(subset)
           
-          kmeans_ncep = wr.calc_kMEAN(pca_ncep)
-          c_ncep = kmeans_ncep.predict(pca_ncep)
+          centroids_ncep, distance_ncep , regime_ncep  = wr.calc_kMEAN(pca_ncep)
+          
+          times = get_time(subset)
+          timestr = [t for t in times]
+          tc = column_stack([timestr, regime_ncep])
+          fn = 'NCEP_data.csv'
+          
+          savetxt(fn, tc, fmt='%s', delimiter=',', header='Date Time,WeatherRegime')
 
-          png_clusters.append(plot_kMEAN(kmeans_ncep, pca_ncep, title='kMEAN month: %s [lonlat: %s]' % (time_region,bbox), sub_title='file: NCEP Data'))
+          tar_info.add(fn)
+          
+          png_clusters.append(plot_kMEAN(centroids_ncep, pca_ncep, title='kMEAN month: %s [lonlat: %s]' % (time_region,bbox), sub_title='file: NCEP Data'))
           logger.info('kMEAN calculated for NCEP Data')
 
-          times = get_time(subset)
           lats, lons = get_coordinates(subset)
+          data_ncep = get_values(subset)
 
           subplots = []
-          
-          for i in range(4): 
-              subplots.append(plot_pressuremap((data_ncep[c_ncep==i]), lats=lats, lons=lons, 
-                title='Weather Regime %s: Month %s ' % (i, time_region), 
+          regime_dic['NCEP'] = {}
+          for i in range(4):
+            d_mask = ma.masked_array(distance_ncep[:,i], mask=(regime_ncep==i))
+            best_pattern = d_mask.argsort()[0:10]
+            subplots.append(plot_pressuremap(data_ncep[best_pattern],lats=lats, lons=lons,title='Weather Regime %s: Month %s ' % (i, time_region), 
                 sub_title='NCEP slp mean'))
-          
+            regime_dic['NCEP']['weather regime %s' % i] = mean(data_ncep[best_pattern], axis = 0)
+            
           from PIL import Image
           import sys
           from tempfile import mkstemp
@@ -209,7 +222,7 @@ class WeatherRegimesProcess(WPSProcess):
           h = max(i.size[1] for i in open_subplots)
           
           result = Image.new("RGB", (w*2, h*2))
-          # p = h / len(open_subplots)
+          
           c = 0 
           for i ,iw in enumerate([0,w]):
               for j, jh in enumerate([0,h]):
@@ -227,70 +240,48 @@ class WeatherRegimesProcess(WPSProcess):
           result.save(pressuremap)
           png_pressuremaps.append(pressuremap)
 
-        try:
-          # open tar files
-          tar_info = tarfile.open('info.tar', "w")
-          logger.info('tar files prepared')
-        except:
-          msg = 'tar file preparation failed'
-          logger.exception(msg)
-          raise Exception(msg)
-
-        
         for key in ncs.keys():
-          if len(ncs[key])>1:
-            input = cdo.cat(input=ncs[key], output='merge.nc' )
-          elif len(ncs[key])==1:
-            input = ncs[key]
-          else:
-            logger.debug('invalid number of input files for dataset %s' % key)            
- 
-          nc = wr.subset(nc_ncep, bbox=bbox,time_region=time_region)
           
+          nc = wr.subset(ncs[key], bbox=bbox,time_region=time_region)  
           logger.info('nc subset: %s ' % nc)
           
           try:
-            vals, pca = wr.get_pca(nc)            
+            pca = wr.get_pca(nc)            
             logger.info('PCa calculated')
           except:
             logger.debug('failed to calculate PCs')
             raise
           
           try:
-            # if md == 'tSNE':
-            #   data = wr.calc_tSNE(pca)
-            #   png_clusters.append(plot_tSNE(data,title='tSNE month: %s [lonlat: %s]' % (time_region,bbox), sub_title='file: %s' % key))
-            #   logger.info('tSNE calculated for %s ' % key)
-            #if md == 'kMEAN':
-            kmeans = wr.calc_kMEAN(pca)
-            c = kmeans.predict(pca)
+            centroids, distance, regime  = wr.calc_kMEAN(pca)
+            
             times = get_time(nc)
-            timestr = [t for t in times] # str(t).replace(' ','_') #dt.strftime(t, format='%Y-%d-%m_%H:%M:%S')
-            tc = column_stack([timestr, c])
+            timestr = [t for t in times]
+            tc = column_stack([timestr, regime])
             fn = '%s.csv' % key
             
             savetxt(fn, tc, fmt='%s', delimiter=',', header='Date Time,WeatherRegime')
 
             tar_info.add(fn) #, arcname = basename(nc) 
             
-            png_clusters.append(plot_kMEAN(kmeans, pca, title='kMEAN month: %s [lonlat: %s]' % (time_region,bbox), sub_title='file: %s' % key))
+            png_clusters.append(plot_kMEAN(centroids, pca, title='kMEAN month: %s [lonlat: %s]' % (time_region,bbox), sub_title='file: %s' % key))
             logger.info('kMEAN calculated for %s ' % key)
             
             subplots = []
             lats, lons = get_coordinates(nc)
-            for i in range(4): 
-                subplots.append(plot_pressuremap((vals[c==i]),lats=lats, lons=lons, title='Weather Regime %s: Month %s ' % (i, time_region), sub_title='file: %s' % key))
-            
-            from PIL import Image
-            import sys
-            from tempfile import mkstemp
-
+            data = get_values(nc)
+            for i in range(4):
+              d_mask = ma.masked_array(distance[:,i], mask=(regime==i))
+              best_pattern = d_mask.argsort()[0:10]
+              subplots.append(plot_pressuremap(data[best_pattern],lats=lats, lons=lons,title='Weather Regime %s: Month %s ' % (i, time_region), sub_title='file: %s' % key))
+              regime_dic[key]['weather regime %s' % i] = mean(data[best_pattern], axis = 0)
+      
             open_subplots = map(Image.open, subplots)
             w = max(i.size[0] for i in open_subplots)
             h = max(i.size[1] for i in open_subplots)
             
             result = Image.new("RGB", (w*2, h*2))
-            # p = h / len(open_subplots)
+            
             c = 0 
             for i ,iw in enumerate([0,w]):
                 for j, jh in enumerate([0,h]):
@@ -314,19 +305,13 @@ class WeatherRegimesProcess(WPSProcess):
 
         c_clusters = concat_images(png_clusters)
         c_maps = concat_images(png_pressuremaps)
-        
-              
+                      
         try:
           tar_info.close()  
           logger.info('tar files closed')
         except Exception as e:
           logger.exception('tar file closing failed')
 
-
-    
-
-        # call 
-        # self.output_nc.setValue( nc )
         self.output_clusters.setValue( c_clusters  )
         self.output_maps.setValue( c_maps  )
         self.output_info.setValue('info.tar')

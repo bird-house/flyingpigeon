@@ -24,7 +24,6 @@ def get_pca(resource):
   lon = ds.variables['lon']
   #time = ds.variables['time']
   
-
   # make array of seasons:
   # convert netCDF timesteps to datetime
   #timestamps = num2date(time[:], time.units, time.calendar)
@@ -35,12 +34,11 @@ def get_pca(resource):
   
   # reshape
   #data = np.array(vals)
-  m = mean(vals)
-  mdata = vals - m 
-  adata = mdata.reshape(vals[:].shape[0], (vals[:].shape[1] * vals[:].shape[2]) )
+  #m = mean(vals)
+  #mdata = vals - m 
+  adata = vals[:].reshape(vals[:].shape[0], (vals[:].shape[1] * vals[:].shape[2]) )
   pca = PCA(n_components=50).fit_transform(adata)
-  return mdata , pca #, season
-
+  return pca #, season
 
 def calc_tSNE(pca):
   """
@@ -57,7 +55,7 @@ def calc_kMEAN(pca):
   """
   perform a cluster analysis with kMean method
   :param pca: principal components
-  :return numpy array: kmeans
+  :return distance, centroid: distances and appropriate nearest centroid (weather regime of timestep)
   """
   
   from sklearn import cluster
@@ -67,8 +65,12 @@ def calc_kMEAN(pca):
   kmeans = cluster.KMeans(n_clusters=4)
   #cluster.KMeans(n_clusters=4, init='k-means++', n_init=10, max_iter=300, tol=0.0001, precompute_distances='auto', verbose=0, random_state=None, copy_x=True, n_jobs=1)
   
-  kmeans.fit(pca)
-  return kmeans
+  centroids = kmeans.fit(pca)
+  
+  distance = kmeans.fit_transform(pca)
+  regime = distance.argsort()[:,3]
+  
+  return centroids, distance, regime
 
 def get_NCEP():
   """
@@ -145,7 +147,6 @@ def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, variable=None)
   if variable == None:
     variable = utils.get_variable(resource[0])
 
-
   if not time_region == None:
     month = map(int, time_region.split(','))
     time_region = {'month':month}
@@ -166,3 +167,23 @@ def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, variable=None)
   nc_normalized = cdo.sub(input=[nc_weighted, nc_anual_cycle], output= 'nc_normalized.nc')
 
   return nc_normalized
+
+
+def get_NCEPmatrix(dictionary):
+  """
+  Compares the model weather regimes with the NCEP weather regimes
+  :param dictionary: dictionary of weather regimes
+  :returns matix: modelmatrix
+  """
+  from scipy.interpolate import griddata
+  
+  ncep = dictionary['NCEP']
+  dictionary.pop('NCEP')
+  domain = ncep['regime 1'].shape
+  
+  for key in dictionary.keys(): 
+    for regime in dictionary[key].keys():
+      print regime
+      
+  
+  return domain #ncep, models # modelmatrix
