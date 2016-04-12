@@ -52,7 +52,7 @@ Climate indice
 --------------
 
 Climate indice are values to describe the state the climate system for a certain parameter. Climate indice as timeseries can be used to describe or estimate the climte change over time. 
-The climate indices processes in flyingpigeon are based on the python package `Link icclim <http://icclim.readthedocs.org/en/latest/>`_.
+The climate indices processes in flyingpigeon are based on the python package `icclim <http://icclim.readthedocs.org/en/latest/>`_.
 they are subcassed to 
 
 .. toctree::
