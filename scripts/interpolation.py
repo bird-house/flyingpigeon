@@ -42,16 +42,16 @@ fig.show()
 
 from scipy import signal
 from scipy import misc
-lena = misc.face() - misc.face().mean()
-template = np.copy(lena[235:295, 310:370]) # right eye
+face = misc.face() - misc.face().mean()
+template = np.copy(face[235:295, 310:370]) # right eye
 template -= template.mean()
-lena = lena + np.random.randn(*lena.shape) * 50 # add noise
-corr = signal.correlate2d(lena, template, boundary='symm', mode='same')
+face = face + np.random.randn(*face.shape) * 50 # add noise
+corr = signal.correlate2d(face, template, boundary='symm', mode='same')
 y, x = np.unravel_index(np.argmax(corr), corr.shape) # find the match
 
 import matplotlib.pyplot as plt
 fig, (ax_orig, ax_template, ax_corr) = plt.subplots(1, 3)
-ax_orig.imshow(lena, cmap='gray')
+ax_orig.imshow(face, cmap='gray')
 ax_orig.set_title('Original')
 ax_orig.set_axis_off()
 ax_template.imshow(template, cmap='gray')
