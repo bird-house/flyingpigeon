@@ -55,7 +55,7 @@ def calc_kMEAN(pca):
   """
   perform a cluster analysis with kMean method
   :param pca: principal components
-  :return distance, centroid: distances and appropriate nearest centroid (weather regime of timestep)
+  :return centroids, distance, regime: centroids of all timesepps, the distances to the cluster center weather regime of timestep
   """
   
   from sklearn import cluster
@@ -91,6 +91,7 @@ def get_NCEP():
         msg = "wget failed on {0}.".format(url)
         logger.exception(msg)
         raise Exception(msg)
+    logger.info('NCEP data fetched for %s files' % len(ncep_data))  
   except:
     msg = "get_NCEP module failed"
     logger.exception(msg)
@@ -138,22 +139,21 @@ def score_pattern(pattern1, pattern2):
   from sklearn import linear_model
   from numpy import mean
 
-  if len(patter1.shape) == 3:
-    patter1 = mean(patter1, axis=0)
-  if len(patter2.shape) == 3:
-    patter2 = mean(patter2, axis=0)
+  if len(pattern1.shape) == 3:
+    pattern1 = mean(pattern1, axis=0)
+  if len(pattern2.shape) == 3:
+    pattern2 = mean(pattern2, axis=0)
 
-  if patter1.shape != patter2.shape:
+  if pattern1.shape != pattern2.shape:
     logger.error('score_pattern failed: pattern are in differnet shape')
   
   regr = linear_model.LinearRegression()
+  regr.fit(pattern1, pattern2)
   score = regr.score(pattern1, pattern2)
-
   return score
 
 
-
-def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, variable=None):
+def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, variable=None, regrid_destination=None):
   """
   extracts the time regions (e.g. '12,1,2') and bounding box from a dataset
 
@@ -164,6 +164,8 @@ def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, variable=None)
   """
   
   from flyingpigeon.ocgis_module import call
+  from tempfile import mkstemp
+  import uuid
 
   if type(resource) == str: 
     resource = list([resource])
@@ -175,23 +177,41 @@ def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, variable=None)
     month = map(int, time_region.split(','))
     time_region = {'month':month}
 
-  nc_grouped = call(resource=resource,  conform_units_to='hPa', variable=variable, time_region=time_region, prefix='nc_grouped')
+  nc_grouped = call(resource=resource,  
+    conform_units_to='hPa',
+    #prefix=str(uuid.uuid1()),
+    regrid_destination=regrid_destination,
+    regrid_options='bil',
+    time_region=time_region,
+    variable=variable)
+
+  print nc_grouped
 
   # conform_units_to='hPa', 
   
   from cdo import Cdo
   cdo = Cdo()
 
-  nc_subset  = cdo.sellonlatbox('%s' % bbox, input=nc_grouped, output='nc_subset.nc')
+  ip, nc_subset = mkstemp(dir='.',suffix='.nc')
+
+  nc_subset  = cdo.sellonlatbox('%s' % bbox, input=nc_grouped, output=nc_subset)
   logger.info('subset done: %s ' % nc_subset)
+
+  # if not regrid_destination == None:
+  #   ip , nc_regrid = mkstemp(dir='.',suffix='.nc') 
+  #   nc_regrid = cdo.remapbil(regrid_destination, input= nc_subset, output=nc_regrid)
+  # else:
+  #   nc_regrid = nc_subset
 
   nc_weighted = weight_by_lat(nc_subset)
 
-  nc_anual_cycle = cdo.ydaymean(input= nc_weighted , output='nc_anual_cycle.nc') #call(resource=nc_subset, calc=calc, calc_grouping=calc_grouping, variable=variable)
-  nc_normalized = cdo.sub(input=[nc_weighted, nc_anual_cycle], output= 'nc_normalized.nc')
+  ip , nc_anual_cycle = mkstemp(dir='.',suffix='.nc')
+  ip , nc_normalized = mkstemp(dir='.',suffix='.nc')
+
+  nc_anual_cycle = cdo.ydaymean(input= nc_weighted , output=nc_anual_cycle) 
+  nc_normalized = cdo.sub(input=[nc_weighted, nc_anual_cycle], output= nc_normalized )
 
   return nc_normalized
-
 
 def get_NCEPmatrix(dictionary):
   """

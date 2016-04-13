@@ -366,7 +366,7 @@ def plot_pressuremap(data, lats=None, lons=None,
     ax.gridlines() 
     ax.coastlines()
     
-    cf = plt.contourf(lons, lats, d, 60, transform=ccrs.PlateCarree(), cmap='jet', interpolation='nearest')
+    cf = plt.contourf(lons, lats, d, 60, transform=ccrs.PlateCarree(), cmap='jet', interpolation=None) #'nearest'
     co = plt.contour(lons, lats, d, transform=ccrs.PlateCarree(), lw=2, color='black')
   else:
     cf = plt.contourf(d)
@@ -386,10 +386,11 @@ def plot_pressuremap(data, lats=None, lons=None,
   return image
 
 
-def concat_images(images): 
+def concat_images(images, orientation='v'): 
   """ 
   concatination of images.
   :param images: list of images
+  :param orientation: vertical ('v' default) or horizontal ('h') concatination
   :return string: path to image  
   """
   from PIL import Image
@@ -397,17 +398,34 @@ def concat_images(images):
 
   open_images = map(Image.open, images)
   w = max(i.size[0] for i in open_images)
-  h = sum(i.size[1] for i in open_images)
-  result = Image.new("RGB", (w, h))
-  p = h / len(images) 
-  for i in range(len(images)):
-    oi = open_images[i] 
-    cw = oi.size[0]
-    ch = oi.size[1]
-    cp = p * i
-    box = [0,cp,cw,ch+cp]
+  h = max(i.size[1] for i in open_images)
+  nr = len(open_images)
+  
+  if orientation == 'v': 
+    result = Image.new("RGB", (w, h * nr))
+    #p = nr # h / len(images) 
+    for i in range(len(open_images)):
+      oi = open_images[i] 
+      
+      cw = oi.size[0]
+      ch = oi.size[1]
+      cp = h * i
+      box = [0,cp,cw,ch+cp]
+      
+      result.paste(oi, box=box)
 
-    result.paste(oi, box=box)
+  if orientation == 'h': 
+    result = Image.new("RGB", (w * nr , h ))
+    #p = nr # h / len(images) 
+    for i in range(len(open_images)):
+      oi = open_images[i] 
+      
+      cw = oi.size[0]
+      ch = oi.size[1]
+      cp = w * i
+      box = [cp,0,cw+cp,ch]
+      
+      result.paste(oi, box=box)
   
   ip, image = mkstemp(dir='.',suffix='.png')
   

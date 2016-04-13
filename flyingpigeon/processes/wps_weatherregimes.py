@@ -161,7 +161,7 @@ class WeatherRegimesProcess(WPSProcess):
         
         from numpy import savetxt, column_stack, ma, mean
         import tarfile
-        
+
         ncs = sort_by_filename(resources, historical_concatination=True)
 
         try:
@@ -181,71 +181,54 @@ class WeatherRegimesProcess(WPSProcess):
         
         ### Calculate reference for NCEP Data
         if obs == 'NCEP': 
+
           nc_ncep = wr.get_NCEP()
 
-          subset = wr.subset(nc_ncep, bbox=bbox, time_region=time_region) #
-          
-          pca_ncep = wr.get_pca(subset)
-          
+          subset_ncep = wr.subset(nc_ncep, bbox=bbox, time_region=time_region)
+          pca_ncep = wr.get_pca(subset_ncep) 
           centroids_ncep, distance_ncep , regime_ncep  = wr.calc_kMEAN(pca_ncep)
           
-          times = get_time(subset)
+          lats, lons = get_coordinates(subset_ncep)
+          data_ncep = get_values(subset_ncep)
+
+          times = get_time(subset_ncep)
           timestr = [t for t in times]
           tc = column_stack([timestr, regime_ncep])
           fn = 'NCEP_data.csv'
           
           savetxt(fn, tc, fmt='%s', delimiter=',', header='Date Time,WeatherRegime')
-
           tar_info.add(fn)
           
-          png_clusters.append(plot_kMEAN(centroids_ncep, pca_ncep, title='kMEAN month: %s [lonlat: %s]' % (time_region,bbox), sub_title='file: NCEP Data'))
+          png_clusters.append(plot_kMEAN(centroids_ncep, pca_ncep, 
+            title='kMEAN month: %s [lonlat: %s]' % (time_region,bbox), sub_title='file: NCEP Data'))
+          
           logger.info('kMEAN calculated for NCEP Data')
-
-          lats, lons = get_coordinates(subset)
-          data_ncep = get_values(subset)
+          
+          ###############################
+          # plot weather regimes for NCEP 
+          ###############################
 
           subplots = []
-          regime_dic['NCEP'] = {}
           for i in range(4):
             d_mask = ma.masked_array(distance_ncep[:,i], mask=(regime_ncep==i))
             best_pattern = d_mask.argsort()[0:10]
-            subplots.append(plot_pressuremap(data_ncep[best_pattern],lats=lats, lons=lons,title='Weather Regime %s: Month %s ' % (i, time_region), 
-                sub_title='NCEP slp mean'))
+            subplots.append(plot_pressuremap(data_ncep[best_pattern], 
+              lats=lats, lons=lons, 
+              title='Weather Regime %s: Month %s ' % (i, time_region), 
+              sub_title='NCEP slp mean'))
             regime_dic['NCEP']['weather regime %s' % i] = mean(data_ncep[best_pattern], axis = 0)
-            
-          from PIL import Image
-          import sys
-          from tempfile import mkstemp
-
-          open_subplots = map(Image.open, subplots)
-          w = max(i.size[0] for i in open_subplots)
-          h = max(i.size[1] for i in open_subplots)
           
-          result = Image.new("RGB", (w*2, h*2))
+          png_pressuremaps.append(concat_images(subplots, orientation='h'))
+        
+        ##############################################
+        # Weather regime classification for Model data
+        ##############################################
           
-          c = 0 
-          for i ,iw in enumerate([0,w]):
-              for j, jh in enumerate([0,h]):
-                  oi = open_subplots[c] 
-                  c = c +1
-              
-                  cw = oi.size[0]
-                  ch = oi.size[1]
-
-                  box = [iw,jh,iw+cw,jh+ch]
-                  result.paste(oi, box=box)
-
-          ip, pressuremap = mkstemp(dir='.',suffix='.png')
-          
-          result.save(pressuremap)
-          png_pressuremaps.append(pressuremap)
-
         for key in ncs.keys():
           
-          nc = wr.subset(ncs[key], bbox=bbox,time_region=time_region)  
-          logger.info('nc subset: %s ' % nc)
-          
           try:
+            nc = wr.subset(ncs[key], bbox=bbox, time_region=time_region, regrid_destination= subset_ncep)  
+            logger.info('nc subset: %s ' % nc)
             pca = wr.get_pca(nc)            
             logger.info('PCa calculated')
           except:
@@ -255,56 +238,43 @@ class WeatherRegimesProcess(WPSProcess):
           try:
             centroids, distance, regime  = wr.calc_kMEAN(pca)
             
+            lats, lons = get_coordinates(nc)
+            data = get_values(nc)
+
             times = get_time(nc)
             timestr = [t for t in times]
             tc = column_stack([timestr, regime])
             fn = '%s.csv' % key
             
             savetxt(fn, tc, fmt='%s', delimiter=',', header='Date Time,WeatherRegime')
-
-            tar_info.add(fn) #, arcname = basename(nc) 
+            tar_info.add(fn)
             
             png_clusters.append(plot_kMEAN(centroids, pca, title='kMEAN month: %s [lonlat: %s]' % (time_region,bbox), sub_title='file: %s' % key))
             logger.info('kMEAN calculated for %s ' % key)
             
             subplots = []
-            lats, lons = get_coordinates(nc)
-            data = get_values(nc)
+            
+            ################################
+            # plot weather regimes for Model
+            ################################
+
             for i in range(4):
               d_mask = ma.masked_array(distance[:,i], mask=(regime==i))
               best_pattern = d_mask.argsort()[0:10]
               subplots.append(plot_pressuremap(data[best_pattern],lats=lats, lons=lons,title='Weather Regime %s: Month %s ' % (i, time_region), sub_title='file: %s' % key))
               regime_dic[key]['weather regime %s' % i] = mean(data[best_pattern], axis = 0)
-      
-            open_subplots = map(Image.open, subplots)
-            w = max(i.size[0] for i in open_subplots)
-            h = max(i.size[1] for i in open_subplots)
-            
-            result = Image.new("RGB", (w*2, h*2))
-            
-            c = 0 
-            for i ,iw in enumerate([0,w]):
-                for j, jh in enumerate([0,h]):
-                    oi = open_subplots[c] 
-                    c = c +1
-                
-                    cw = oi.size[0]
-                    ch = oi.size[1]
 
-                    box = [iw,jh,iw+cw,jh+ch]
-                    result.paste(oi, box=box)
-
-            ip, pressuremap = mkstemp(dir='.',suffix='.png')
-            
-            result.save(pressuremap)
-            png_pressuremaps.append(pressuremap)
-              
+            png_pressuremaps.append(concat_images(subplots, orientation='h'))  
           except:
             logger.debug('faild to calculate cluster for %s' % key )
             raise
 
-        c_clusters = concat_images(png_clusters)
-        c_maps = concat_images(png_pressuremaps)
+        ######################
+        # concatinate pictures
+        ######################
+
+        c_clusters = concat_images(png_clusters, orientation='v')
+        c_maps = concat_images(png_pressuremaps, orientation='v')
                       
         try:
           tar_info.close()  
