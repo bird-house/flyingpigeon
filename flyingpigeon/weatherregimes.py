@@ -127,6 +127,30 @@ def weight_by_lat(resource):
 
   return resource
 
+def score_pattern(pattern1, pattern2):
+  """
+  compares two 2D fields in terms of similarity
+
+  :param pattern1: observation pattern
+  :param pattern2: model pattern
+  :return score: number 0-1 (0 low, 1 high correlation)
+  """
+  from sklearn import linear_model
+  from numpy import mean
+
+  if len(patter1.shape) == 3:
+    patter1 = mean(patter1, axis=0)
+  if len(patter2.shape) == 3:
+    patter2 = mean(patter2, axis=0)
+
+  if patter1.shape != patter2.shape:
+    logger.error('score_pattern failed: pattern are in differnet shape')
+  
+  regr = linear_model.LinearRegression()
+  score = regr.score(pattern1, pattern2)
+
+  return score
+
 
 
 def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, variable=None):

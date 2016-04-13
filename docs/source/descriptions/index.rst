@@ -132,8 +132,22 @@ Weather Regimes
 
 Calculation of weatherregimes based on pressure patterns (kmean method). The processes is performing a pattern clusterfication for observations data ( NCEP ) as well as to model data. both results are compared
  
-processing stepps: 
+processing stepps:
+.................. 
 
 * fetching observation data 
 * fetching model data
- 
+* subset the selected geographical region 
+* selection of month to be analyzed
+* unit conversion to hPa (if necessary)
+* regridding (biliniar) to the grid of observation (if necessary)
+* comuting of pricipal componets for dimension reduction
+* 
+
+
+output: 
+.......
+
+* scatter plot showing the centoides of the clusters and the appropriate centroids of each timestep
+* maps for each weather regime of all input datasets. including comparison statistics with observation pattern
+* tar archive containing text files with date time , weatherregime table
