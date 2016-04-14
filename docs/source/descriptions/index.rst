@@ -132,8 +132,8 @@ Weather Regimes
 
 Calculation of weatherregimes based on pressure patterns (kmean method). The processes is performing a pattern clusterfication for observations data ( NCEP ) as well as to model data. both results are compared
  
-processing stepps:
-.................. 
+Method:
+.......
 
 * fetching observation data 
 * fetching model data
@@ -144,10 +144,34 @@ processing stepps:
 * comuting of pricipal componets for dimension reduction
 * 
 
+Process Arguments:
+..................
 
-output: 
+* resources (links to netCDF sea surface pressure data) 
+|_ or search with phoenix 
+
+
+
+
+Inputs:
+.......
+
+* NCEP slp data (automatic fetch)
+* any kind of surface pressure data (netCDF files in cf convention). Multiple Datasets slized in seperate files possible
+
+Outputs: 
 .......
 
 * scatter plot showing the centoides of the clusters and the appropriate centroids of each timestep
 * maps for each weather regime of all input datasets. including comparison statistics with observation pattern
 * tar archive containing text files with date time , weatherregime table
+
+
+Example with Phoenix (GUI):
+...........................
+
+* login 
+  |_ wizard
+    |_flyingpgeon 
+      |_weather regimes
+        |_ 

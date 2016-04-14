@@ -16,7 +16,6 @@ def get_pca(resource):
   from numpy import mean
 
   var = get_variable(resource)
-  print 'variable name: %s' % var
   ds = Dataset(resource)
   vals = ds.variables[var]
 
@@ -184,10 +183,6 @@ def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, variable=None,
     regrid_options='bil',
     time_region=time_region,
     variable=variable)
-
-  print nc_grouped
-
-  # conform_units_to='hPa', 
   
   from cdo import Cdo
   cdo = Cdo()
@@ -196,12 +191,6 @@ def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, variable=None,
 
   nc_subset  = cdo.sellonlatbox('%s' % bbox, input=nc_grouped, output=nc_subset)
   logger.info('subset done: %s ' % nc_subset)
-
-  # if not regrid_destination == None:
-  #   ip , nc_regrid = mkstemp(dir='.',suffix='.nc') 
-  #   nc_regrid = cdo.remapbil(regrid_destination, input= nc_subset, output=nc_regrid)
-  # else:
-  #   nc_regrid = nc_subset
 
   nc_weighted = weight_by_lat(nc_subset)
 
@@ -212,22 +201,3 @@ def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, variable=None,
   nc_normalized = cdo.sub(input=[nc_weighted, nc_anual_cycle], output= nc_normalized )
 
   return nc_normalized
-
-def get_NCEPmatrix(dictionary):
-  """
-  Compares the model weather regimes with the NCEP weather regimes
-  :param dictionary: dictionary of weather regimes
-  :returns matix: modelmatrix
-  """
-  from scipy.interpolate import griddata
-  
-  ncep = dictionary['NCEP']
-  dictionary.pop('NCEP')
-  domain = ncep['regime 1'].shape
-  
-  for key in dictionary.keys(): 
-    for regime in dictionary[key].keys():
-      print regime
-      
-  
-  return domain #ncep, models # modelmatrix

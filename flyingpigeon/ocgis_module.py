@@ -140,12 +140,30 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     element_in_mb = element_in_kb / 1024.
 
     tile_dim = sqrt(mem_limit/(element_in_mb*nb_time_coordinates_rd)) # maximum chunk size 
+    
     try:
       logger.info('ocgis module call compute with chunks')
+      if calc == None:
+        calc = '%s=%s*1' % (variable, variable)
+        logger.info('calc set to = %s ' %  calc)
+        ops = OcgOperations(dataset=rd,
+          output_format_options=output_format_options,
+          #options=options,
+          calc=calc,
+          calc_grouping=calc_grouping,
+          geom=geom,
+          output_format=output_format,
+          prefix=prefix,
+          search_radius_mult=search_radius_mult,
+          select_nearest=select_nearest,
+          select_ugid=select_ugid, 
+          add_auxiliary_files=False)
+
       geom_file = compute(ops, tile_dimension=int(tile_dim) , verbose=True)
     except Exception as e: 
       logger.debug('failed to compute ocgis with chunks')
       raise
+
   logger.info('Succeeded with ocgis module call function')
 
   ############################################
@@ -153,20 +171,21 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   ############################################
 
   if not regrid_destination == None:
-    print 'performing remaping'
-    from tempfile import mkstemp
-    from cdo import Cdo
-    cdo = Cdo()
-    
-    output = '%s.nc' % uuid.uuid1()
-    remap = 'remap%s' % regrid_options
-    
-    call = [op for op in dir(cdo) if remap in op]
-    
-    cmd = "output = cdo.%s('%s',input='%s', output='%s')" % (str(call[0]), regrid_destination, geom_file, output) 
-    print cmd
-    exec cmd
-
+    try:
+      from tempfile import mkstemp
+      from cdo import Cdo
+      cdo = Cdo()
+      
+      output = '%s.nc' % uuid.uuid1()
+      remap = 'remap%s' % regrid_options
+      
+      call = [op for op in dir(cdo) if remap in op]
+      
+      cmd = "output = cdo.%s('%s',input='%s', output='%s')" % (str(call[0]), regrid_destination, geom_file, output) 
+      exec cmd
+    except Exception as e: 
+      logger.debug('failed to remap')
+      raise 
   else:
     output = geom_file
 

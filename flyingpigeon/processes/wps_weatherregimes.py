@@ -119,6 +119,14 @@ class WeatherRegimesProcess(WPSProcess):
             formats=[{"mimeType":"image/png"}],
             asReference=True,
             )
+
+        self.output_matrix = self.addComplexOutput(
+            identifier="output_matrix",
+            title="Pressure pattern sorted by R value",
+            abstract="Pressure pattern with highest R value for appropriate Observation",
+            formats=[{"mimeType":"image/png"}],
+            asReference=True,
+            )
         
         self.output_info = self.addComplexOutput(
             identifier="output_info",
@@ -159,15 +167,15 @@ class WeatherRegimesProcess(WPSProcess):
         from flyingpigeon import weatherregimes as wr
         from flyingpigeon.visualisation import plot_kMEAN, concat_images, plot_pressuremap
         
-        from numpy import savetxt, column_stack, ma, mean
+        from numpy import savetxt, column_stack, ma, mean , reshape , ones, empty
+        from scipy import stats
         import tarfile
-
-        ncs = sort_by_filename(resources, historical_concatination=True)
 
         try:
           png_clusters = []
           txt_info = []
           png_pressuremaps = []
+          png_sorted = []
           
           #regime_dic = {}
           # open tar files
@@ -180,17 +188,21 @@ class WeatherRegimesProcess(WPSProcess):
 
         
         ### Calculate reference for NCEP Data
-        if obs == 'NCEP': 
+        if obs == 'NCEP':
 
           nc_ncep = wr.get_NCEP()
-
+          
+          #subset_ncep = wr.subset(nc_ncep, bbox="-80,50,22.5,70", time_region='12,1,2')
           subset_ncep = wr.subset(nc_ncep, bbox=bbox, time_region=time_region)
-          pca_ncep = wr.get_pca(subset_ncep) 
-          centroids_ncep, distance_ncep , regime_ncep  = wr.calc_kMEAN(pca_ncep)
+
+          pca_ncep = wr.get_pca(subset_ncep)
+          centroids_ncep, distance_ncep, regime_ncep = wr.calc_kMEAN(pca_ncep)
+
+          # pca_ncep = wr.get_pca(subset_ncep)
+          # centroids_ncep, distance_ncep , regime_ncep  = wr.calc_kMEAN(pca_ncep)
           
           lats, lons = get_coordinates(subset_ncep)
           data_ncep = get_values(subset_ncep)
-
           times = get_time(subset_ncep)
           timestr = [t for t in times]
           tc = column_stack([timestr, regime_ncep])
@@ -209,10 +221,14 @@ class WeatherRegimesProcess(WPSProcess):
           ###############################
 
           subplots = []
+          obs_pattern = []
+
           for i in range(4):
             d_mask = ma.masked_array(distance_ncep[:,i], mask=(regime_ncep==i))
             best_pattern = d_mask.argsort()[0:10]
-            subplots.append(plot_pressuremap(data_ncep[best_pattern], 
+            pattern = mean(data_ncep[best_pattern], axis = 0)
+            obs_pattern.append(pattern) 
+            subplots.append(plot_pressuremap(pattern, 
               lats=lats, lons=lons, 
               title='Weather Regime %s: Month %s ' % (i, time_region), 
               sub_title='NCEP slp mean'))
@@ -223,7 +239,9 @@ class WeatherRegimesProcess(WPSProcess):
         ##############################################
         # Weather regime classification for Model data
         ##############################################
-          
+
+        ncs = sort_by_filename(resources, historical_concatination=True)
+  
         for key in ncs.keys():
           
           try:
@@ -253,18 +271,40 @@ class WeatherRegimesProcess(WPSProcess):
             logger.info('kMEAN calculated for %s ' % key)
             
             subplots = []
+            model_pattern = []
+            stat_vals = ones([4, 5]) * -1 
+            order = empty([4])
+            m, n  = obs_pattern[0].shape
             
             ################################
             # plot weather regimes for Model
             ################################
 
-            for i in range(4):
+
+            for i in [0,1,2,3]:
               d_mask = ma.masked_array(distance[:,i], mask=(regime==i))
               best_pattern = d_mask.argsort()[0:10]
-              subplots.append(plot_pressuremap(data[best_pattern],lats=lats, lons=lons,title='Weather Regime %s: Month %s ' % (i, time_region), sub_title='file: %s' % key))
-              #regime_dic[key]['weather regime %s' % i] = mean(data[best_pattern], axis = 0)
+              pattern = mean(data[best_pattern], axis = 0)
+              model_pattern.append(pattern)
+              
+                  #### compare with observation    
+              for j in [0,1,2,3]:
+                r_value = 0
+                x = reshape(obs_pattern[j], (n*m))
+                y = reshape(model_pattern[i], (n*m))
+                alpha, beta, r_value, p_value, std_err = stats.linregress(x, y)
+                if r_value >= stat_vals[i,:][2]:
+                  stat_vals[i,:] = [alpha, beta, r_value, p_value, std_err]
+                  order[i] = j
+              
+              subplots.append(plot_pressuremap(pattern,
+              lats=lats, lons=lons, 
+              title='file %s' % key , 
+              sub_title='Model \nR = %s \n' % stat_vals[i,:][2] ))
 
-            png_pressuremaps.append(concat_images(subplots, orientation='h'))  
+            subplots_ordered = [subplots[int(i)] for i in order]
+            png_pressuremaps.append(concat_images(subplots, orientation='h'))
+            png_sorted.append(concat_images(subplots_ordered, orientation='h'))
           except:
             logger.debug('faild to calculate cluster for %s' % key )
             raise
@@ -275,6 +315,7 @@ class WeatherRegimesProcess(WPSProcess):
 
         c_clusters = concat_images(png_clusters, orientation='v')
         c_maps = concat_images(png_pressuremaps, orientation='v')
+        c_matrix = concat_images(png_sorted, orientation='v')
                       
         try:
           tar_info.close()  
@@ -282,6 +323,7 @@ class WeatherRegimesProcess(WPSProcess):
         except Exception as e:
           logger.exception('tar file closing failed')
 
-        self.output_clusters.setValue( c_clusters  )
-        self.output_maps.setValue( c_maps  )
+        self.output_clusters.setValue( c_clusters )
+        self.output_maps.setValue( c_maps )
+        self.output_matrix.setValue( c_matrix )
         self.output_info.setValue('info.tar')
