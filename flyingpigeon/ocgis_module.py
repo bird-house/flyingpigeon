@@ -157,11 +157,8 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     from tempfile import mkstemp
     from cdo import Cdo
     cdo = Cdo()
-    if prefix == None:
-      ip , output = mkstemp(dir='.',suffix='.nc')
-    else:
-      output = '%s.nc' % prefix
-
+    
+    output = '%s.nc' % uuid.uuid1()
     remap = 'remap%s' % regrid_options
     
     call = [op for op in dir(cdo) if remap in op]
