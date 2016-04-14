@@ -235,6 +235,7 @@ class WeatherRegimesProcess(WPSProcess):
             #regime_dic['NCEP']['weather regime %s' % i] = mean(data_ncep[best_pattern], axis = 0)
           
           png_pressuremaps.append(concat_images(subplots, orientation='h'))
+          png_sorted.append(concat_images(subplots, orientation='h'))
         
         ##############################################
         # Weather regime classification for Model data
