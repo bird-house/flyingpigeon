@@ -88,7 +88,7 @@ class WeatherRegimesProcess(WPSProcess):
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
-            allowedValues=['None', 'NCEP']
+            allowedValues=['NCEP']
             )
 
         
@@ -169,7 +169,7 @@ class WeatherRegimesProcess(WPSProcess):
           txt_info = []
           png_pressuremaps = []
           
-          regime_dic = {}
+          #regime_dic = {}
           # open tar files
           tar_info = tarfile.open('info.tar', "w")
           logger.info('tar files prepared')
@@ -216,7 +216,7 @@ class WeatherRegimesProcess(WPSProcess):
               lats=lats, lons=lons, 
               title='Weather Regime %s: Month %s ' % (i, time_region), 
               sub_title='NCEP slp mean'))
-            regime_dic['NCEP']['weather regime %s' % i] = mean(data_ncep[best_pattern], axis = 0)
+            #regime_dic['NCEP']['weather regime %s' % i] = mean(data_ncep[best_pattern], axis = 0)
           
           png_pressuremaps.append(concat_images(subplots, orientation='h'))
         
@@ -262,7 +262,7 @@ class WeatherRegimesProcess(WPSProcess):
               d_mask = ma.masked_array(distance[:,i], mask=(regime==i))
               best_pattern = d_mask.argsort()[0:10]
               subplots.append(plot_pressuremap(data[best_pattern],lats=lats, lons=lons,title='Weather Regime %s: Month %s ' % (i, time_region), sub_title='file: %s' % key))
-              regime_dic[key]['weather regime %s' % i] = mean(data[best_pattern], axis = 0)
+              #regime_dic[key]['weather regime %s' % i] = mean(data[best_pattern], axis = 0)
 
             png_pressuremaps.append(concat_images(subplots, orientation='h'))  
           except:
