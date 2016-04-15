@@ -246,7 +246,7 @@ class WeatherRegimesProcess(WPSProcess):
         for key in ncs.keys():
           
           try:
-            nc = wr.subset(ncs[key], bbox=bbox, time_region=time_region, regrid_destination= subset_ncep)  
+            nc = wr.subset_model(ncs[key], bbox=bbox, time_region=time_region, regrid_destination= subset_ncep)  
             logger.info('nc subset: %s ' % nc)
             pca = wr.get_pca(nc)            
             logger.info('PCa calculated')

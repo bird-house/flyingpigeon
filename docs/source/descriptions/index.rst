@@ -164,6 +164,10 @@ Outputs:
 * maps for each weather regime of all input datasets. including comparison statistics with observation pattern
 * tar archive containing text files with date time , weatherregime table
 
+Example PYTHON call: 
+
+`Asyncron Link creation <https://github.com/bird-house/flyingpigeon/blob/master/notebooks/WPS_weatherregimes.ipynb>`
+
 
 Example with Phoenix (GUI):
 ...........................
@@ -180,7 +184,7 @@ Example with Phoenix (GUI):
             
 The next window is the Data search interface to the available data of the ESGF archive. Weather regimes are computed based on sea surface pressure values. The appropriate variable for CMIP5 data are 'psl'. With other search options the dataselection shoule look like this example: 
 
-.. image:: ../pics/esgf_search_psl.png
+.. image:: pics/esgf_search_psl.png
 
 You can save your settings as favourite. And submit the job.  
 Done!!!
