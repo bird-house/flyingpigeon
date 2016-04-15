@@ -1,4 +1,4 @@
-VERSION := 0.2.18
+VERSION := 0.2.19
 RELEASE := master
 
 # Application
@@ -152,12 +152,11 @@ conda_config: anaconda
 	@"$(ANACONDA_HOME)/bin/conda" config --set ssl_verify false
 	@"$(ANACONDA_HOME)/bin/conda" config --add channels defaults
 	@"$(ANACONDA_HOME)/bin/conda" config --add channels birdhouse
-	@"$(ANACONDA_HOME)/bin/conda" config --add channels ioos
 
 .PHONY: conda_env
 conda_env: anaconda conda_config
 	@test -d $(PREFIX) || "$(ANACONDA_HOME)/bin/conda" create -m -p $(PREFIX) -c ioos --yes python setuptools=$(SETUPTOOLS_VERSION) curl pyopenssl cryptography=1.0.2 genshi mako pyyaml
-	"$(ANACONDA_HOME)/bin/conda" install -n $(CONDA_ENV) setuptools=$(SETUPTOOLS_VERSION)
+	"$(ANACONDA_HOME)/bin/conda" install -y -n $(CONDA_ENV) setuptools=$(SETUPTOOLS_VERSION)
 
 .PHONY: conda_pinned
 conda_pinned: conda_env
