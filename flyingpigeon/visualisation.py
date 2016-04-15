@@ -332,7 +332,7 @@ def plot_kMEAN(kmeans, pca, title='kmean', sub_title='file='):
 
 
 def plot_pressuremap(data, lats=None, lons=None,
-                     facecolor = 'w',  edgecolor='k'
+                     facecolor = 'w',  edgecolor='k',
                     title='Pressure Pattern', 
                     sub_title='plotted in birdhouse'):
   """
