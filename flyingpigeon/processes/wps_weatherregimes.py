@@ -245,7 +245,9 @@ class WeatherRegimesProcess(WPSProcess):
 
         ncs = sort_by_filename(resources, historical_concatination=True)
   
-        for per , key in enumerate(ncs.keys().sorted):
+        keys = ncs.keys()
+        keys.sort()
+        for per, key in enumerate(keys):
           
           try:
             msg = 'start processing: %s' % key
