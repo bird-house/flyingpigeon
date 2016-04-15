@@ -261,6 +261,6 @@ def subset_model(resource=[], bbox="-80,50,22.5,70",  time_region=None, variable
 
   nc_anual_cycle = cdo.ydaymean(input= nc_weighted , output=nc_anual_cycle) 
   nc_normalized = cdo.sub(input=[nc_weighted, nc_anual_cycle], output= nc_normalized )
-  logger.info('weightning and normalisation done: %s ' % nc_subset)
+  logger.info('weightning and normalisation done: %s ' % nc_normalized)
   
   return nc_normalized
