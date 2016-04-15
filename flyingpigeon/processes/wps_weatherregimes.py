@@ -183,7 +183,7 @@ class WeatherRegimesProcess(WPSProcess):
           logger.info('tar files prepared')
         except:
           msg = 'tar file preparation failed'
-          logger.exception(msg)
+          logger.debug(msg)
           raise Exception(msg)
 
         
@@ -227,6 +227,7 @@ class WeatherRegimesProcess(WPSProcess):
               obs_pattern.append(pattern) 
               subplots.append(plot_pressuremap(pattern, 
                 lats=lats, lons=lons, 
+                facecolor = '#E0E0E0', # grey background 
                 title='Weather Regime %s: Month %s ' % (i, time_region), 
                 sub_title='NCEP slp mean'))
               #regime_dic['NCEP']['weather regime %s' % i] = mean(data_ncep[best_pattern], axis = 0)
