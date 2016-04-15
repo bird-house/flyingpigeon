@@ -143,21 +143,21 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     
     try:
       logger.info('ocgis module call compute with chunks')
-      #if calc == None:
-        #calc = '%s=%s*1' % (variable, variable)
-        #logger.info('calc set to = %s ' %  calc)
-        #ops = OcgOperations(dataset=rd,
-          #output_format_options=output_format_options,
-          ##options=options,
-          #calc=calc,
-          #calc_grouping=calc_grouping,
-          #geom=geom,
-          #output_format=output_format,
-          #prefix=prefix,
-          #search_radius_mult=search_radius_mult,
-          #select_nearest=select_nearest,
-          #select_ugid=select_ugid, 
-          #add_auxiliary_files=False)
+      if calc == None:
+        calc = '%s=%s*1' % (variable, variable)
+        logger.info('calc set to = %s ' %  calc)
+        ops = OcgOperations(dataset=rd,
+          output_format_options=output_format_options,
+          #options=options,
+          calc=calc,
+          calc_grouping=calc_grouping,
+          geom=geom,
+          output_format=output_format,
+          prefix=prefix,
+          search_radius_mult=search_radius_mult,
+          select_nearest=select_nearest,
+          select_ugid=select_ugid, 
+          add_auxiliary_files=False)
       geom_file = compute(ops, tile_dimension=int(tile_dim) , verbose=True)
     except Exception as e: 
       logger.debug('failed to compute ocgis with chunks')
