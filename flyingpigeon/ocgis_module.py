@@ -69,7 +69,6 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   
   if type(resource) != list: 
     resource = list([resource])
-
   # execute ocgis 
   logger.info('Execute ocgis module call function')
   

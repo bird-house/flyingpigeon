@@ -151,7 +151,6 @@ def score_pattern(pattern1, pattern2):
   score = regr.score(pattern1, pattern2)
   return score
 
-
 def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, variable=None, regrid_destination=None):
   """
   extracts the time regions (e.g. '12,1,2') and bounding box from a dataset
@@ -161,7 +160,6 @@ def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, variable=None,
   :param time_region: month to be picked from the data
   :returns netCDF: file containing containing lat weighted and normalize (by anual cycle) data
   """
-  
   from flyingpigeon.ocgis_module import call
   from tempfile import mkstemp
   import uuid
@@ -178,6 +176,7 @@ def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, variable=None,
 
   nc_grouped = call(resource=resource,  
     conform_units_to='hPa',
+    #geom= [float(n) for n in bbox.split(',')], # not possible due to wrapping difficulties in ocgis
     #prefix=str(uuid.uuid1()),
     regrid_destination=regrid_destination,
     regrid_options='bil',
@@ -188,16 +187,80 @@ def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, variable=None,
   cdo = Cdo()
 
   ip, nc_subset = mkstemp(dir='.',suffix='.nc')
-
   nc_subset  = cdo.sellonlatbox('%s' % bbox, input=nc_grouped, output=nc_subset)
   logger.info('subset done: %s ' % nc_subset)
-
+  
+  # nc_subset = nc_grouped
   nc_weighted = weight_by_lat(nc_subset)
-
+  
   ip , nc_anual_cycle = mkstemp(dir='.',suffix='.nc')
   ip , nc_normalized = mkstemp(dir='.',suffix='.nc')
 
   nc_anual_cycle = cdo.ydaymean(input= nc_weighted , output=nc_anual_cycle) 
   nc_normalized = cdo.sub(input=[nc_weighted, nc_anual_cycle], output= nc_normalized )
+  logger.info('weightning and normalisation done: %s ' % nc_subset)
+  
+  return nc_normalized
 
+
+def subset_model(resource=[], bbox="-80,50,22.5,70",  time_region=None, variable=None, regrid_destination=None):
+  """
+  extracts the time regions (e.g. '12,1,2') and bounding box from a dataset
+  
+  Temporary module will be deleted soon
+
+  :param resource: List of files belonging to one dataset
+  :param bbox: geographical region lat/lon
+  :param time_region: month to be picked from the data
+  :returns netCDF: file containing containing lat weighted and normalize (by anual cycle) data
+  """
+  from flyingpigeon.ocgis_module import call
+  from tempfile import mkstemp
+  import uuid
+  from shutil import rmtree
+
+  if type(resource) == str: 
+    resource = list([resource])
+
+  if variable == None:
+    variable = utils.get_variable(resource[0])
+
+  if not time_region == None:
+    month = map(int, time_region.split(','))
+    time_region = {'month':month}
+
+  from cdo import Cdo
+  cdo = Cdo()
+
+  ip, nc_grouped = mkstemp(dir='.',suffix='.nc')
+
+  nc_grouped = cdo.cat(input=resource, output=nc_grouped)
+  logger.info('concatination done: %s ' % nc_grouped)
+
+  ip, nc_remap = mkstemp(dir='.',suffix='.nc')
+  nc_remap  = cdo.remapbil('%s' % regrid_destination, input=nc_grouped, output=nc_remap)
+  logger.info('remapbil done: %s ' % nc_remap)
+  
+  rmtree(nc_grouped, ignore_errors=True, onerror=None)
+  logger.info('concatination removed')
+  
+  nc_unitconvert = call(resource=nc_remap,  
+    conform_units_to='hPa',
+    #geom= [float(n) for n in bbox.split(',')], # not possible due to wrapping difficulties in ocgis
+    #prefix=str(uuid.uuid1()),
+    #regrid_destination=regrid_destination,
+    #regrid_options='bil',
+    time_region=time_region,
+    variable=variable)
+  
+  # nc_subset = nc_grouped
+  nc_weighted = weight_by_lat(nc_unitconvert)
+  
+  ip , nc_anual_cycle = mkstemp(dir='.',suffix='.nc')
+  ip , nc_normalized = mkstemp(dir='.',suffix='.nc')
+
+  nc_anual_cycle = cdo.ydaymean(input= nc_weighted , output=nc_anual_cycle) 
+  nc_normalized = cdo.sub(input=[nc_weighted, nc_anual_cycle], output= nc_normalized )
+  logger.info('weightning and normalisation done: %s ' % nc_subset)
+  
   return nc_normalized
