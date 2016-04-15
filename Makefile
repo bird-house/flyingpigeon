@@ -1,4 +1,4 @@
-VERSION := 0.2.18
+VERSION := 0.2.19
 RELEASE := master
 
 # Application
@@ -152,7 +152,6 @@ conda_config: anaconda
 	@"$(ANACONDA_HOME)/bin/conda" config --set ssl_verify false
 	@"$(ANACONDA_HOME)/bin/conda" config --add channels defaults
 	@"$(ANACONDA_HOME)/bin/conda" config --add channels birdhouse
-	@"$(ANACONDA_HOME)/bin/conda" config --add channels ioos
 
 .PHONY: conda_env
 conda_env: anaconda conda_config
