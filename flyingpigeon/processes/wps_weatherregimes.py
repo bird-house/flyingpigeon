@@ -190,53 +190,54 @@ class WeatherRegimesProcess(WPSProcess):
         ### Calculate reference for NCEP Data
         if obs == 'NCEP':
 
-          nc_ncep = wr.get_NCEP()
+          try:
+            nc_ncep = wr.get_NCEP()
           
-          #subset_ncep = wr.subset(nc_ncep, bbox="-80,50,22.5,70", time_region='12,1,2')
-          subset_ncep = wr.subset(nc_ncep, bbox=bbox, time_region=time_region)
+            subset_ncep = wr.subset(nc_ncep, bbox=bbox, time_region=time_region)
 
-          pca_ncep = wr.get_pca(subset_ncep)
-          centroids_ncep, distance_ncep, regime_ncep = wr.calc_kMEAN(pca_ncep)
+            pca_ncep = wr.get_pca(subset_ncep)
+            centroids_ncep, distance_ncep, regime_ncep = wr.calc_kMEAN(pca_ncep)
+          
+            lats, lons = get_coordinates(subset_ncep)
+            data_ncep = get_values(subset_ncep)
+            times = get_time(subset_ncep)
+            timestr = [t for t in times]
+            tc = column_stack([timestr, regime_ncep])
+            fn = 'NCEP_data.csv'
+            
+            savetxt(fn, tc, fmt='%s', delimiter=',', header='Date Time,WeatherRegime')
+            tar_info.add(fn)
+            
+            png_clusters.append(plot_kMEAN(centroids_ncep, pca_ncep, 
+              title='kMEAN month: %s [lonlat: %s]' % (time_region,bbox), sub_title='file: NCEP Data'))
+            
+            logger.info('kMEAN calculated for NCEP Data')
+            
+            ###############################
+            # plot weather regimes for NCEP 
+            ###############################
 
-          # pca_ncep = wr.get_pca(subset_ncep)
-          # centroids_ncep, distance_ncep , regime_ncep  = wr.calc_kMEAN(pca_ncep)
-          
-          lats, lons = get_coordinates(subset_ncep)
-          data_ncep = get_values(subset_ncep)
-          times = get_time(subset_ncep)
-          timestr = [t for t in times]
-          tc = column_stack([timestr, regime_ncep])
-          fn = 'NCEP_data.csv'
-          
-          savetxt(fn, tc, fmt='%s', delimiter=',', header='Date Time,WeatherRegime')
-          tar_info.add(fn)
-          
-          png_clusters.append(plot_kMEAN(centroids_ncep, pca_ncep, 
-            title='kMEAN month: %s [lonlat: %s]' % (time_region,bbox), sub_title='file: NCEP Data'))
-          
-          logger.info('kMEAN calculated for NCEP Data')
-          
-          ###############################
-          # plot weather regimes for NCEP 
-          ###############################
+            subplots = []
+            obs_pattern = []
 
-          subplots = []
-          obs_pattern = []
-
-          for i in range(4):
-            d_mask = ma.masked_array(distance_ncep[:,i], mask=(regime_ncep==i))
-            best_pattern = d_mask.argsort()[0:10]
-            pattern = mean(data_ncep[best_pattern], axis = 0)
-            obs_pattern.append(pattern) 
-            subplots.append(plot_pressuremap(pattern, 
-              lats=lats, lons=lons, 
-              title='Weather Regime %s: Month %s ' % (i, time_region), 
-              sub_title='NCEP slp mean'))
-            #regime_dic['NCEP']['weather regime %s' % i] = mean(data_ncep[best_pattern], axis = 0)
-          
-          png_pressuremaps.append(concat_images(subplots, orientation='h'))
-          png_sorted.append(concat_images(subplots, orientation='h'))
-        
+            for i in range(4):
+              d_mask = ma.masked_array(distance_ncep[:,i], mask=(regime_ncep==i))
+              best_pattern = d_mask.argsort()[0:10]
+              pattern = mean(data_ncep[best_pattern], axis = 0)
+              obs_pattern.append(pattern) 
+              subplots.append(plot_pressuremap(pattern, 
+                lats=lats, lons=lons, 
+                title='Weather Regime %s: Month %s ' % (i, time_region), 
+                sub_title='NCEP slp mean'))
+              #regime_dic['NCEP']['weather regime %s' % i] = mean(data_ncep[best_pattern], axis = 0)
+            
+            png_pressuremaps.append(concat_images(subplots, orientation='h'))
+            png_sorted.append(concat_images(subplots, orientation='h'))
+          except Exception as e:
+            msg = 'failed to calculate NCEP %s' % e
+            logger.error(msg)
+            raise Exception(msg)
+            
         ##############################################
         # Weather regime classification for Model data
         ##############################################
@@ -250,9 +251,9 @@ class WeatherRegimesProcess(WPSProcess):
             logger.info('nc subset: %s ' % nc)
             pca = wr.get_pca(nc)            
             logger.info('PCa calculated')
-          except:
-            logger.debug('failed to calculate PCs')
-            raise
+          except Exception as e:
+            logger.debug('failed to calculate PCs %s' %e)
+            
           
           try:
             centroids, distance, regime  = wr.calc_kMEAN(pca)
@@ -306,23 +307,29 @@ class WeatherRegimesProcess(WPSProcess):
             subplots_ordered = [subplots[int(i)] for i in order]
             png_pressuremaps.append(concat_images(subplots, orientation='h'))
             png_sorted.append(concat_images(subplots_ordered, orientation='h'))
-          except:
-            logger.debug('faild to calculate cluster for %s' % key )
-            raise
+          except Exception as e:
+            logger.debug('faild to calculate cluster for %s, %s' % (key, e) )
 
         ######################
         # concatinate pictures
         ######################
-
-        c_clusters = concat_images(png_clusters, orientation='v')
-        c_maps = concat_images(png_pressuremaps, orientation='v')
-        c_matrix = concat_images(png_sorted, orientation='v')
-                      
+          
+        try:
+          c_clusters = None
+          c_maps = None
+          C_matrix = None
+          c_clusters = concat_images(png_clusters, orientation='v')
+          c_maps = concat_images(png_pressuremaps, orientation='v')
+          c_matrix = concat_images(png_sorted, orientation='v')
+        except Exception as e:
+          logger.debug('failed to concat plots %s ' % e)
+        
+        
         try:
           tar_info.close()  
           logger.info('tar files closed')
         except Exception as e:
-          logger.exception('tar file closing failed')
+          logger.debug('tar file closing failed %s' % e)
 
         self.output_clusters.setValue( c_clusters )
         self.output_maps.setValue( c_maps )
