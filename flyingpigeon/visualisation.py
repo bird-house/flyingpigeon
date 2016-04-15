@@ -331,7 +331,8 @@ def plot_kMEAN(kmeans, pca, title='kmean', sub_title='file='):
   return image
 
 
-def plot_pressuremap(data, lats=None, lons=None,facecolor = 'w',  
+def plot_pressuremap(data, lats=None, lons=None,
+                     facecolor = 'w',  edgecolor='k'
                     title='Pressure Pattern', 
                     sub_title='plotted in birdhouse'):
   """
@@ -350,7 +351,7 @@ def plot_pressuremap(data, lats=None, lons=None,facecolor = 'w',
   if len(d.shape)!=2:
     logger.error('data are not in shape for map display')
 
-  fig = plt.figure( facecolor='w', edgecolor='k')
+  fig = plt.figure( facecolor=facecolor, edgecolor=edgecolor)
   
   if not (lats == None or lons == None):
     

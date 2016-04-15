@@ -245,9 +245,12 @@ class WeatherRegimesProcess(WPSProcess):
 
         ncs = sort_by_filename(resources, historical_concatination=True)
   
-        for key in ncs.keys():
+        for per , key in enumerate(ncs.keys().sorted):
           
           try:
+            msg = 'start processing: %s' % key
+            self.status.set(msg, 60 + per )
+            logger.info(msg)
             nc = wr.subset_model(ncs[key], bbox=bbox, time_region=time_region, regrid_destination= subset_ncep)  
             logger.info('nc subset: %s ' % nc)
             pca = wr.get_pca(nc)            
@@ -255,7 +258,6 @@ class WeatherRegimesProcess(WPSProcess):
           except Exception as e:
             logger.debug('failed to calculate PCs %s' %e)
             
-          
           try:
             centroids, distance, regime  = wr.calc_kMEAN(pca)
             
