@@ -56,33 +56,31 @@ def calc_kMEAN(pca):
   :param pca: principal components
   :return centroids, distance, regime: centroids of all timesepps, the distances to the cluster center weather regime of timestep
   """
-  
   from sklearn import cluster
-  import numpy as np
-  from tempfile import mkstemp
-
   kmeans = cluster.KMeans(n_clusters=4)
   #cluster.KMeans(n_clusters=4, init='k-means++', n_init=10, max_iter=300, tol=0.0001, precompute_distances='auto', verbose=0, random_state=None, copy_x=True, n_jobs=1)
   
   centroids = kmeans.fit(pca)
-  
   distance = kmeans.fit_transform(pca)
   regime = distance.argsort()[:,3]
   
   return centroids, distance, regime
 
-def get_NCEP():
+def get_NCEP( start=1948, end=None ):
   """
   fetching the NCEP slp data to local file system
+  :param start: int for start year to fetch source data
+  :param end: int for end year to fetch source data (if None, current year will be the end)
   :return list: list of path/files.nc 
   """
   try:
     from datetime import datetime as dt
 
-    cur_year = dt.now().year
+    if end == None: 
+      end = dt.now().year
     ncep_data = []
 
-    for year in range(1948, cur_year + 1):
+    for year in range(start, end + 1):
       try:
         url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.%s.nc' % year
         ncep_data.append(utils.download(url, cache=True))

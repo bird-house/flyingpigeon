@@ -47,6 +47,27 @@ def get_configfile(files, timewin=1, varname='slp', seacyc=True, cycsmooth=91, n
   return config_file
 
 
+def subset(resource=[], bbox='-80,50,22.5,70'):
+  """
+  returns a subset
+  :param resource: netCDF input files of one dataset
+  :param bbox: bounding box
+  """
+  from tempfile import mkstemp
+  from cdo import Cdo 
+  cdo = Cdo()
+
+  resource.sort()
+
+  ip, nc_concat = mkstemp(dir='.',suffix='.nc')
+  nc_concat = cdo.cat(input=resource, output=nc_concat)
+
+  ip, nc_subset = mkstemp(dir='.',suffix='.nc')
+  nc_subset = cdo.sellonlatbox('%s' % bbox, input=nc_concat, output=nc_subset)
+  logger.info('subset done: %s ' % nc_subset)
+
+  return nc_subset
+
 
 # start_date=`date +"%d/%m/%Y (%H:%M:%S)"`
 # echo -e "\n\nStarting script at: ${start_date}\n"
