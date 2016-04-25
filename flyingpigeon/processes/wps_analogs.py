@@ -258,11 +258,7 @@ class AnalogsProcess(WPSProcess):
     #   logger.error(msg)  
     #   raise Exception(msg)
 
-    self.status.set('preparting output', 99)  
-
+    self.status.set('preparting output', 99)
     self.config.setValue( config_file )
     # self.analogs.setValue( output )
     self.status.set('execution ended', 100)
-
-
-    
