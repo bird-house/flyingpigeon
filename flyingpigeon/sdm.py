@@ -9,7 +9,7 @@ def get_csv(zip_file_url):
   z = zipfile.ZipFile(StringIO.StringIO(r.content))
   z.extractall()  
   csv = z.namelist()[0]
- 
+
   return csv
 
 def get_latlon( csv_file ):
@@ -176,9 +176,10 @@ def get_gam(ncs_reference, PAmask):
 
   import rpy2.robjects.numpy2ri
   rpy2.robjects.numpy2ri.activate()
-  mgcv = importr("mgcv")
+  
   base = importr("base")
   stats = importr("stats")
+  mgcv = importr("mgcv")
   
   data = {'PA': ro.FloatVector(ravel(PAmask))}
   domain = PAmask.shape
@@ -206,8 +207,8 @@ def get_gam(ncs_reference, PAmask):
   
   grdevices = importr('grDevices')
   
-  output_info = "info.pdf"
-  grdevices.pdf(file=output_info)
+  output_info = "info.png"
+  grdevices.png(filename=output_info)
   # plotting code here
 
   for i in range(1,len(ncs_reference)+1):    
