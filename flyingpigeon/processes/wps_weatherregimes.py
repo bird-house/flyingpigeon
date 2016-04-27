@@ -47,12 +47,11 @@ class WeatherRegimesProcess(WPSProcess):
         #     crss=['EPSG:4326']
         #     )
 
-
         self.BBox = self.addLiteralInput(
             identifier="BBox",
             title="Region",
-            abstract="coordinates to define the region: (minlon,minlat,maxlon,maxlat)",
-            default='-80,50,22.5,70', #"-80,22.5,50,70",
+            abstract="coordinates to define the region: (minlon,maxlon,minlat,maxlat)",
+            default='-80,50,22.5,70', #  cdo syntax: 'minlon,maxlon,minlat,maxlat' ; ocgis syntax (minlon,minlat,maxlon,maxlat)
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
@@ -274,7 +273,9 @@ class WeatherRegimesProcess(WPSProcess):
             savetxt(fn, tc, fmt='%s', delimiter=',', header='Date Time,WeatherRegime')
             tar_info.add(fn)
             
-            png_clusters.append(plot_kMEAN(centroids, pca, title='kMEAN month: %s [lonlat: %s]' % (time_region,bbox), sub_title='file: %s' % key))
+            png_clusters.append(plot_kMEAN(centroids, pca, 
+                title='kMEAN month: %s [lonlat: %s]' % (time_region,bbox), 
+                sub_title='file: %s' % key))
             logger.info('kMEAN calculated for %s ' % key)
             
             subplots = []

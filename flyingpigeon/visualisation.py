@@ -351,7 +351,8 @@ def plot_pressuremap(data, lats=None, lons=None,
   if len(d.shape)!=2:
     logger.error('data are not in shape for map display')
 
-  fig = plt.figure( facecolor=facecolor, edgecolor=edgecolor)
+  fig = plt.figure( edgecolor=edgecolor )
+  fig.patch.set_facecolor(facecolor)
   
   if not (lats == None or lons == None):
     
