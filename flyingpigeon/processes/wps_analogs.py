@@ -68,7 +68,7 @@ class AnalogsProcess(WPSProcess):
       identifier="dateSt",
       title="Start date of analyse period",
       abstract="This is a Date: 2013-07-15",
-      default="2014-07-15",
+      default="2013-07-15",
       type=type(date(2013,7,15)),
       minOccurs=1,
       maxOccurs=1,
@@ -78,7 +78,7 @@ class AnalogsProcess(WPSProcess):
       identifier="dateEn",
       title="End date of analyse period",
       abstract="This is a Date: 2013-12-31",
-      default="2013-12-31",
+      default="2014-12-31",
       type=type(date(2014,12,31)),
       minOccurs=1,
       maxOccurs=1,
@@ -89,7 +89,7 @@ class AnalogsProcess(WPSProcess):
       title="Start reference period",
       abstract="Start YEAR of reference period",
       default="1955-01-01",
-      type=type(date(1948,01,01)),
+      type=type(date(1955,01,01)),
       minOccurs=1,
       maxOccurs=1,
       )
@@ -99,7 +99,7 @@ class AnalogsProcess(WPSProcess):
       title="End reference period",
       abstract="End YEAR of reference period",
       default="1957-12-31",
-      type=type(date(1958,12,31)),
+      type=type(date(1957,12,31)),
       minOccurs=1,
       maxOccurs=1,
       )
@@ -155,13 +155,13 @@ class AnalogsProcess(WPSProcess):
       asReference=True,
       )
 
-    # self.analogs = self.addComplexOutput(
-    #   identifier="analogs",
-    #   title="Analogs File",
-    #   abstract="mulit-column text file",
-    #   formats=[{"mimeType":"text/plain"}],
-    #   asReference=True,
-    #   )
+    self.analogs = self.addComplexOutput(
+      identifier="analogs",
+      title="Analogs File",
+      abstract="mulit-column text file",
+      formats=[{"mimeType":"text/plain"}],
+      asReference=True,
+      )
 
   def execute(self):
 
@@ -222,8 +222,9 @@ class AnalogsProcess(WPSProcess):
       logger.debug(msg)
       raise Exception(msg)
       
-    ip, output = mkstemp(dir='.',suffix='.txt') 
-    files=[path.abspath(archive), path.abspath(simulation), path.abspath(output)]
+    ip, output = mkstemp(dir='.',suffix='.txt')
+    output_file =  path.abspath(output)
+    files=[path.abspath(archive), path.abspath(simulation), output_file]
 
     ############################
     # generating the config file
@@ -233,7 +234,7 @@ class AnalogsProcess(WPSProcess):
       config_file = analogs.get_configfile(files=files, 
         timewin=timewin, 
         varname='slp', 
-        seacyc=True, 
+        seacyc=False, 
         cycsmooth=91, 
         nanalog=20, 
         seasonwin=30, 
@@ -249,16 +250,16 @@ class AnalogsProcess(WPSProcess):
     # CASTf90 call 
     #######################
 
-    # try:
-    #   self.status.set('execution of CASTf90', 50)
-    #   cmd = 'analogue.out %s' % path.abspath(config_file)
-    #   system(cmd)
-    # except Exception as e: 
-    #   msg = 'CASTf90 failed %s ' % e
-    #   logger.error(msg)  
-    #   raise Exception(msg)
+    try:
+      #self.status.set('execution of CASTf90', 50)
+      cmd = 'analogue.out %s' % config_file
+      system(cmd)
+    except Exception as e: 
+      msg = 'CASTf90 failed %s ' % e
+      logger.error(msg)  
+      raise Exception(msg)
 
     self.status.set('preparting output', 99)
     self.config.setValue( config_file )
-    # self.analogs.setValue( output )
+    self.analogs.setValue( output_file )
     self.status.set('execution ended', 100)

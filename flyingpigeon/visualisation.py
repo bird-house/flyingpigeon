@@ -332,7 +332,7 @@ def plot_kMEAN(kmeans, pca, title='kmean', sub_title='file='):
 
 
 def plot_pressuremap(data, lats=None, lons=None,
-                     facecolor = 'w',  edgecolor='k',
+                    facecolor=None,  edgecolor=None,
                     title='Pressure Pattern', 
                     sub_title='plotted in birdhouse'):
   """
@@ -351,8 +351,8 @@ def plot_pressuremap(data, lats=None, lons=None,
   if len(d.shape)!=2:
     logger.error('data are not in shape for map display')
 
-  fig = plt.figure( edgecolor=edgecolor )
-  fig.patch.set_facecolor(facecolor)
+  # fig = plt.figure( )
+  # fig.patch.set_facecolor(facecolor)
   
   if not (lats == None or lons == None):
     
@@ -363,7 +363,7 @@ def plot_pressuremap(data, lats=None, lons=None,
     
     #AlbersEqualArea(central_longitude=0.0, central_latitude=0.0, false_easting=0.0, false_northing=0.0, standard_parallels=(20.0, 50.0), globe=None)
     
-    ax = plt.axes(projection=ccrs.AlbersEqualArea(central_longitude=central_longitude)) #,Robinson(central_longitude=central_longitude))
+    ax = plt.axes(projection=ccrs.AlbersEqualArea(central_longitude=central_longitude), axisbg=facecolor) #,Robinson(central_longitude=central_longitude))
     ax.gridlines() 
     ax.coastlines()
     
@@ -375,7 +375,6 @@ def plot_pressuremap(data, lats=None, lons=None,
     
   # plt.colorbar(cf)
   plt.clabel(co, inline=1) # fontsize=10
-  
   plt.title(title)
   plt.annotate(sub_title, (0,0), (0, -30), xycoords='axes fraction',
                textcoords='offset points', va='top')
