@@ -51,7 +51,7 @@ def get_configfile(files, timewin=1, varname='slp', seacyc=False, cycsmooth=91, 
   return abspath(config_file)
 
 
-def subset(resource=[], bbox='-80,50,22.5,70'):
+def subset(resource=[], bbox='-80,50,22.5,70', normalize=False):
   """
   returns a subset
   :param resource: netCDF input files of one dataset
@@ -69,6 +69,9 @@ def subset(resource=[], bbox='-80,50,22.5,70'):
   ip, nc_subset = mkstemp(dir='.',suffix='.nc')
   nc_subset = cdo.sellonlatbox('%s' % bbox, input=nc_concat, output=nc_subset)
   logger.info('subset done: %s ' % nc_subset)
+  
+  if normalize == True: 
+    nc_subset = nc_subset
 
   return nc_subset
 

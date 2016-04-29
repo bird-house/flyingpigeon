@@ -103,6 +103,16 @@ class AnalogsProcess(WPSProcess):
       minOccurs=1,
       maxOccurs=1,
       )
+    
+    self.normalize = self.addLiteralInput(
+      identifier="normalize",
+      title="Normalize",
+      abstract="Normalize by substraction of annual cycle",
+      default=False,
+      type=type(False),
+      minOccurs=1,
+      maxOccurs=1,
+        )
 
     self.timewin = self.addLiteralInput(
       identifier="timewin",
@@ -180,6 +190,8 @@ class AnalogsProcess(WPSProcess):
     dateSt = self.getInputValues(identifier='dateSt')
     dateEn = self.getInputValues(identifier='dateEn')
     
+    normalize = self.getInputValues(identifier='normalize')[0]
+    
     refSt = dt.datetime.strptime(refSt[0],'%Y-%m-%d')
     refEn = dt.datetime.strptime(refEn[0],'%Y-%m-%d')
     dateSt = dt.datetime.strptime(dateSt[0],'%Y-%m-%d')
@@ -204,7 +216,9 @@ class AnalogsProcess(WPSProcess):
         logger.error('input experiment not found')
 
       region = self.getInputValues(identifier='region')[0]
-      nc_subset = analogs.subset(resource=input, bbox=region)
+      nc_subset = analogs.subset(resource=input, 
+                                 bbox=region, 
+                                 normalize=normalize)
     except Exeption as e :
       msg = 'failed to fetch input files %s' % e
       logger.error(msg)
@@ -222,7 +236,7 @@ class AnalogsProcess(WPSProcess):
       logger.debug(msg)
       raise Exception(msg)
       
-    ip, output = mkstemp(dir='.',suffix='.txt')
+    ip, output = mkstemp(dir='/home/nils/data/analogs',suffix='.txt')
     output_file =  path.abspath(output)
     files=[path.abspath(archive), path.abspath(simulation), output_file]
 
@@ -234,7 +248,7 @@ class AnalogsProcess(WPSProcess):
       config_file = analogs.get_configfile(files=files, 
         timewin=timewin, 
         varname='slp', 
-        seacyc=False, 
+        seacyc=normalize, 
         cycsmooth=91, 
         nanalog=20, 
         seasonwin=30, 
@@ -252,7 +266,7 @@ class AnalogsProcess(WPSProcess):
 
     try:
       #self.status.set('execution of CASTf90', 50)
-      cmd = 'analogue.out %s' % config_file
+      cmd = 'analogue.out %s' % path.relpath(config_file)
       system(cmd)
     except Exception as e: 
       msg = 'CASTf90 failed %s ' % e
