@@ -43,27 +43,26 @@ class AnalogsProcess(WPSProcess):
       )
 
     
-    self.region = self.addBBoxInput(
+    #self.region = self.addBBoxInput(
+      #identifier="region",
+      #title="Region",
+      #abstract="coordinates to define the region: (minlon,minlat,maxlon,maxlat)",
+      ##default='-80,50,22.5,70', #"-80,22.5,50,70",
+      ##type=type(''),
+      #minOccurs=1,
+      #maxOccurs=1,
+      #crss=["EPSG:4326"]
+      #)
+
+    self.region = self.addLiteralInput(
       identifier="region",
       title="Region",
       abstract="coordinates to define the region: (minlon,minlat,maxlon,maxlat)",
       default='-80,50,22.5,70', #"-80,22.5,50,70",
-      #type=type(''),
       minOccurs=1,
       maxOccurs=1,
-      crss=["EPSG:4326"]
+      type=type(''),
       )
-
-    # self.region = self.addLiteralInput(
-    #   identifier="region",
-    #   title="Select Region",
-    #   abstract="Select a predifined region",
-    #   default="NA",
-    #   type=type(''),
-    #   minOccurs=1,
-    #   maxOccurs=1,
-    #   allowedValues=['NA']
-    #   )
          
     self.dateSt = self.addLiteralInput(
       identifier="dateSt",

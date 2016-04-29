@@ -47,9 +47,7 @@ def get_configfile(files, timewin=1, varname='slp', seacyc=False, cycsmooth=91, 
   config.write(' my_params%silent = .{silent}.\n'.format(silent=silent.upper()))
   config.write('/\n')
   config.close()
-
   return abspath(config_file)
-
 
 def subset(resource=[], bbox='-80,50,22.5,70', normalize=False):
   """
