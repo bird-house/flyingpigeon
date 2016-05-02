@@ -190,36 +190,60 @@ class WeatherRegimesProcess(WPSProcess):
         if obs == 'NCEP':
 
           try:
-            nc_ncep = wr.get_NCEP()
-          
+            nc_ncep = wr.get_NCEP() 
+          except Exception as e:
+            msg = 'failed to get NCEP data  %s' % e
+            logger.error(msg)
+            raise Exception(msg)
+                    
+          try:  
             subset_ncep = wr.subset(nc_ncep, bbox=bbox, time_region=time_region)
-
             pca_ncep = wr.get_pca(subset_ncep)
             centroids_ncep, distance_ncep, regime_ncep = wr.calc_kMEAN(pca_ncep)
-          
+          except Exception as e:
+            msg = 'failed to calculate NCEP weather regimes %s' % e
+            logger.error(msg)
+            raise Exception(msg)
+
+          try:
             lats, lons = get_coordinates(subset_ncep)
             data_ncep = get_values(subset_ncep)
             times = get_time(subset_ncep)
             timestr = [t for t in times]
+          except Exception as e:
+            msg = 'failed to get data lats/lons or times %s' % e
+            logger.error(msg)
+            raise Exception(msg)
+
+          try:
             tc = column_stack([timestr, regime_ncep])
             fn = 'NCEP_data.csv'
             
             savetxt(fn, tc, fmt='%s', delimiter=',', header='Date Time,WeatherRegime')
             tar_info.add(fn)
+          except Exception as e:
+            msg = 'failed to write NCEP csv file %s' % e
+            logger.error(msg)
+            raise Exception(msg)
             
+        ###############################
+        # plot weather regimes for NCEP 
+        ###############################
+
+          try:
             png_clusters.append(plot_kMEAN(centroids_ncep, pca_ncep, 
               title='kMEAN month: %s [lonlat: %s]' % (time_region,bbox), sub_title='file: NCEP Data'))
-            
             logger.info('kMEAN calculated for NCEP Data')
-            
-            ###############################
-            # plot weather regimes for NCEP 
-            ###############################
+          except Exception as e:
+            msg = 'failed to plot NCEP cluster %s' % e
+            logger.error(msg)
+            raise Exception(msg)
 
-            subplots = []
-            obs_pattern = []
+          subplots = []
+          obs_pattern = []
 
-            for i in range(4):
+          for i in range(4):
+            try:
               d_mask = ma.masked_array(distance_ncep[:,i], mask=(regime_ncep==i))
               best_pattern = d_mask.argsort()[0:10]
               pattern = mean(data_ncep[best_pattern], axis = 0)
@@ -229,12 +253,16 @@ class WeatherRegimesProcess(WPSProcess):
                 facecolor = '#E0E0E0', # grey background 
                 title='Weather Regime %s: Month %s ' % (i, time_region), 
                 sub_title='NCEP slp mean'))
-              #regime_dic['NCEP']['weather regime %s' % i] = mean(data_ncep[best_pattern], axis = 0)
-            
+            except Exception as e:
+              msg = 'failed to plot NCEP weather regime pattern %s' % e
+              logger.error(msg)
+              raise Exception(msg)
+
+          try:  
             png_pressuremaps.append(concat_images(subplots, orientation='h'))
             png_sorted.append(concat_images(subplots, orientation='h'))
           except Exception as e:
-            msg = 'failed to calculate NCEP %s' % e
+            msg = 'failed to concatinate NCEP weather regimes %s' % e
             logger.error(msg)
             raise Exception(msg)
             
