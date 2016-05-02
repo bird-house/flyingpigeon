@@ -216,9 +216,9 @@ class AnalogsProcess(WPSProcess):
         logger.error('input experiment not found')
 
       region = self.getInputValues(identifier='region')[0]
+      
       nc_subset = analogs.subset(resource=input, 
-                                 bbox=region, 
-                                 normalize=normalize)
+                                 bbox=region)
     except Exeption as e :
       msg = 'failed to fetch input files %s' % e
       logger.error(msg)
@@ -230,13 +230,16 @@ class AnalogsProcess(WPSProcess):
 
     try: 
       archive = call(resource=nc_subset, time_range=[refSt , refEn]) 
-      simulation = call(resource=nc_subset, time_range=[dateSt , dateEn]) 
+      simulation = call(resource=nc_subset, time_range=[dateSt , dateEn])
+      if normalize == True:
+        analogs.seacyc(archive, simulation)
+
     except Exception as e:
       msg = 'failed to prepare archive and simulation files %s ' % e
       logger.debug(msg)
       raise Exception(msg)
       
-    ip, output = mkstemp(dir='/home/nils/data/analogs',suffix='.txt')
+    ip, output = mkstemp(dir='.',suffix='.txt')
     output_file =  path.abspath(output)
     files=[path.abspath(archive), path.abspath(simulation), output_file]
 

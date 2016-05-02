@@ -49,7 +49,7 @@ def get_configfile(files, timewin=1, varname='slp', seacyc=False, cycsmooth=91, 
   config.close()
   return abspath(config_file)
 
-def subset(resource=[], bbox='-80,50,22.5,70', normalize=False):
+def subset(resource=[], bbox='-80,50,22.5,70'):
   """
   returns a subset
   :param resource: netCDF input files of one dataset
@@ -68,11 +68,23 @@ def subset(resource=[], bbox='-80,50,22.5,70', normalize=False):
   nc_subset = cdo.sellonlatbox('%s' % bbox, input=nc_concat, output=nc_subset)
   logger.info('subset done: %s ' % nc_subset)
   
-  if normalize == True: 
-    nc_subset = nc_subset
-
   return nc_subset
 
+def seacyc(archive, simulation):
+  from cdo import Cdo 
+  cdo = Cdo()
+
+ # calculate seasonal cycle and add an additional file into the working directory 
+ # base) cdo -s ydaymean ${basedir}base_${varname}_${dtrstr}${region}_${datestring1}_${namestring}.nc seasoncyc_base.nc
+ #       cp seasoncyc_base.nc seasoncyc_sim.nc ;;
+ # sim)  cdo -s ydaymean ${simdir}sim_${varname}_${dtrstr}${region}_${datestring2}_${namestring}.nc seasoncyc_sim.nc
+ #       cp seasoncyc_sim.nc seasoncyc_base.nc ;;
+ # own)  cdo -s ydaymean ${basedir}base_${varname}_${dtrstr}${region}_${datestring1}_${namestring}.nc seasoncyc_base.nc
+ #       cdo -s ydaymean ${simdir}sim_${varname}_${dtrstr}${region}_${datestring2}_${namestring}.nc seasoncyc_sim.nc ;;
+  seasoncyc_base = cdo.ydaymean(input=archive, output='seasoncyc_base.nc' )
+  seasoncyc_sim  = cdo.ydaymean(input=simulation, output='seasoncyc_sim.nc' )
+
+  return seasoncyc_base, seasoncyc_sim
 
 # start_date=`date +"%d/%m/%Y (%H:%M:%S)"`
 # echo -e "\n\nStarting script at: ${start_date}\n"
