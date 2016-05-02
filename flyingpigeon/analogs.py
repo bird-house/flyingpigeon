@@ -2,7 +2,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def get_configfile(files, timewin=1, varname='slp', seacyc=True, cycsmooth=91, nanalog=20, seasonwin=30, 
+def get_configfile(files, timewin=1, varname='slp', seacyc=False, cycsmooth=91, nanalog=20, seasonwin=30, 
   distfun='rms', calccor=True, silent=False, ): 
   """
   Generating the config file for fortran calculation
@@ -10,6 +10,8 @@ def get_configfile(files, timewin=1, varname='slp', seacyc=True, cycsmooth=91, n
   :param :
   """
   from datetime import datetime as dt
+  from os.path import abspath
+  from tempfile import mkstemp
   
   date_stamp = dt.strftime(dt.now(), format='%Y%m%d_%H%M%S')
   logger.info('start configuraion file preparation at: %s' %(date_stamp))
@@ -21,31 +23,55 @@ def get_configfile(files, timewin=1, varname='slp', seacyc=True, cycsmooth=91, n
 
 
   # write stuff to configuration file
-  config_file = open("config_%s.txt" % (date_stamp), "w")
+  ip, config_file = mkstemp(dir='.',suffix='.txt')
+
+  config = open(config_file, "w")
   
-  config_file.write('!Configuration file for flyingpigeon analogs process\n')
-  config_file.write('!Created : %s \n' % (dt.strftime(dt.now(), format='%Y-%m-%d %H:%M:%S')))
-  config_file.write('!Version : 0.1 \n')
-  config_file.write('&FILES \n')
-  config_file.write(' my_files%archivefile = "{file}" \n'.format(file=files[0]) ) 
-  config_file.write(' my_files%simulationfile = "{file}" \n'.format(file=files[1]) )
-  config_file.write(' my_files%outputfile = "{file}" \n'.format(file=files[2]) )
-  config_file.write('/ \n')
-  config_file.write('&PARAM \n')
-  config_file.write(' my_params%timewin = {timewin} \n'.format(timewin=timewin))
-  config_file.write(' my_params%varname = "{varname}" \n'.format(varname=varname))
-  config_file.write(' my_params%seacyc = .{seacyc}. \n'.format(seacyc=seacyc.upper()))
-  config_file.write(' my_params%cycsmooth = {cycsmooth} \n'.format(cycsmooth=cycsmooth))
-  config_file.write(' my_params%nanalog = {nanalog} \n'.format(nanalog=nanalog))
-  config_file.write(' my_params%seasonwin = {seasonwin} \n'.format(seasonwin=seasonwin))
-  config_file.write(' my_params%distfun = "{distfun}" \n'.format(distfun=distfun))
-  config_file.write(' my_params%calccor = .{calccor}. \n'.format(calccor=calccor.upper()))
-  config_file.write(' my_params%silent = .{silent}.\n'.format(silent=silent.upper()))
-  config_file.write('/\n')
-  config_file.close()
+  config.write('!Configuration file for flyingpigeon analogs process\n')
+  config.write('!Created : %s \n' % ( date_stamp ))
+  config.write('!Version : 0.1 \n')
+  config.write('&FILES \n')
+  config.write(' my_files%archivefile = "{file}" \n'.format(file=files[0]) ) 
+  config.write(' my_files%simulationfile = "{file}" \n'.format(file=files[1]) )
+  config.write(' my_files%outputfile = "{file}" \n'.format(file=files[2]) )
+  config.write('/ \n')
+  config.write('&PARAM \n')
+  config.write(' my_params%timewin = {timewin} \n'.format(timewin=timewin))
+  config.write(' my_params%varname = "{varname}" \n'.format(varname=varname))
+  config.write(' my_params%seacyc = .{seacyc}. \n'.format(seacyc=seacyc.upper()))
+  config.write(' my_params%cycsmooth = {cycsmooth} \n'.format(cycsmooth=cycsmooth))
+  config.write(' my_params%nanalog = {nanalog} \n'.format(nanalog=nanalog))
+  config.write(' my_params%seasonwin = {seasonwin} \n'.format(seasonwin=seasonwin))
+  config.write(' my_params%distfun = "{distfun}" \n'.format(distfun=distfun))
+  config.write(' my_params%calccor = .{calccor}. \n'.format(calccor=calccor.upper()))
+  config.write(' my_params%silent = .{silent}.\n'.format(silent=silent.upper()))
+  config.write('/\n')
+  config.close()
+  return abspath(config_file)
 
-  return config_file
+def subset(resource=[], bbox='-80,50,22.5,70', normalize=False):
+  """
+  returns a subset
+  :param resource: netCDF input files of one dataset
+  :param bbox: bounding box
+  """
+  from tempfile import mkstemp
+  from cdo import Cdo 
+  cdo = Cdo()
 
+  resource.sort()
+
+  ip, nc_concat = mkstemp(dir='.',suffix='.nc')
+  nc_concat = cdo.cat(input=resource, output=nc_concat)
+
+  ip, nc_subset = mkstemp(dir='.',suffix='.nc')
+  nc_subset = cdo.sellonlatbox('%s' % bbox, input=nc_concat, output=nc_subset)
+  logger.info('subset done: %s ' % nc_subset)
+  
+  if normalize == True: 
+    nc_subset = nc_subset
+
+  return nc_subset
 
 
 # start_date=`date +"%d/%m/%Y (%H:%M:%S)"`

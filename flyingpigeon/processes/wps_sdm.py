@@ -2,15 +2,12 @@
 Processes for Species distribution 
 Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 """
-
 #import tarfile
 #import os
 
 from pywps.Process import WPSProcess
-
 import logging
 logger = logging.getLogger(__name__)
-
 
 class SDMProcess(WPSProcess):
     
@@ -28,10 +25,8 @@ class SDMProcess(WPSProcess):
             storeSupported=True
             )
 
-
         # Literal Input Data
         # ------------------
-
         self.resources = self.addComplexInput(
             identifier="resources",
             title="NetCDF File",
@@ -116,8 +111,7 @@ class SDMProcess(WPSProcess):
             formats=[{"mimeType":"image/png"}],
             asReference=True,
             )
-        
-                 
+             
         self.output_indices = self.addComplexOutput(
             identifier="output_indices",
             title="Climate indices for growth condition over all timestepps (3D)",
@@ -142,13 +136,13 @@ class SDMProcess(WPSProcess):
             asReference=True,
             )
 
-        # self.output_info = self.addComplexOutput(
-        #     identifier="output_info",
-        #     title="GAM statistics information",
-        #     abstract="Tar archive containing the mashine learning statistics",
-        #     formats=[{"mimeType":"application/x-tar"}],
-        #     asReference=True,
-        #     )
+        self.output_info = self.addComplexOutput(
+            identifier="output_info",
+            title="GAM statistics information",
+            abstract="Graphics and information of the learning statistics",
+            formats=[{"mimeType":"image/png"}],
+            asReference=True,
+            )
 
     def execute(self):
       from os.path import basename
@@ -277,6 +271,7 @@ class SDMProcess(WPSProcess):
 
       ncs_references = []
       species_files = []
+      statistics_info = []
 
       for count,key in enumerate(indices_dic.keys()):
         try:
@@ -299,6 +294,7 @@ class SDMProcess(WPSProcess):
           #       arcname = basename(nc_reference))# nc_reference.replace(os.path.abspath(os.path.curdir), ""))
           
           # logger.info('reference indices added to tarfile')
+          
         except:
           msg = 'failed to calculate reference indices.'
           logger.exception(msg)
@@ -307,7 +303,8 @@ class SDMProcess(WPSProcess):
         try:
           gam_model, predict_gam, gam_info = sdm.get_gam(ncs_references,PAmask)
 
-          #tar_info.add(gam_info, arcname = "%s.pdf" % key)
+          statistics_info.append(gam_info)
+
           self.status.set('GAM sucessfully trained', 70)
         except:
           msg = 'failed to train GAM'  
@@ -324,7 +321,7 @@ class SDMProcess(WPSProcess):
           
         try:
           from numpy import invert, isnan, nan, broadcast_arrays, array, zeros, linspace, meshgrid
-          mask = invert(isnan(PApoints))
+          mask = invert(isnan(PAmask))
           mask = broadcast_arrays(prediction, mask)[1]
           prediction[mask==False] = nan
           self.status.set('land sea mask for predicted data', 90)
@@ -341,7 +338,15 @@ class SDMProcess(WPSProcess):
           msg = 'failed to write species file'
           logger.exception(msg)
           raise Exception(msg)
-      
+
+      from flyingpigeon.visualisation import concat_images
+      statistics_infos = None
+      try: 
+        statistics_infos = concat_images(statistics_info, orientation='v')
+      except:
+        msg = 'failed to concat images'  
+        logger.exception(msg)
+        raise Exception(msg)  
 
       archive_references = None
       try:
@@ -379,7 +384,7 @@ class SDMProcess(WPSProcess):
       self.output_indices.setValue( archive_indices )
       self.output_reference.setValue (archive_references)
       self.output_prediction.setValue (archive_predicion)
-      #self.output_info.setValue('info.tar')
+      self.output_info.setValue(statistics_infos)
 
       self.status.set('done', 100)
       

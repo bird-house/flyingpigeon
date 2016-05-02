@@ -232,7 +232,7 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
  
     logger.info('prepared data for plotting')
   except Exception as e:
-    msg = 'failed to get data for plotting'  
+    msg = 'failed to get data for plotting %s' % e  
     logger.exception(msg)
     raise Exception(msg) 
 
@@ -242,8 +242,8 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
     norm = MidpointNormalize(midpoint=0)
 
     cs = plt.contourf(lons, lats, var_signal, 60, norm=norm, transform=ccrs.PlateCarree(), cmap=cmap, interpolation='nearest')
-    cl = plt.contourf(lons, lats, mask_l, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['//']) 
-    ch = plt.contourf(lons, lats, mask_h, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['.'])
+   # cl = plt.contourf(lons, lats, mask_l, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['//']) 
+   # ch = plt.contourf(lons, lats, mask_h, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['.'])
 
     # plt.clim(minval,maxval)
     ax.coastlines()
@@ -331,9 +331,10 @@ def plot_kMEAN(kmeans, pca, title='kmean', sub_title='file='):
   return image
 
 
-def plot_pressuremap(data, lats=None, lons=None,  
-                    title='pressure pattern', 
-                    sub_title='ploted in birdhouse'):
+def plot_pressuremap(data, lats=None, lons=None,
+                    facecolor=None,  edgecolor=None,
+                    title='Pressure Pattern', 
+                    sub_title='plotted in birdhouse'):
   """
   plots pressure data
   :param data: 2D or 3D array of pressure data. if data == 3D a mean will be calculated
@@ -343,7 +344,6 @@ def plot_pressuremap(data, lats=None, lons=None,
   :param sub_title: string for sub_title
   """
   from numpy import squeeze, mean, meshgrid
-  
   d = squeeze(data)
 
   if len(d.shape)==3:
@@ -351,8 +351,8 @@ def plot_pressuremap(data, lats=None, lons=None,
   if len(d.shape)!=2:
     logger.error('data are not in shape for map display')
 
-  fig = plt.figure(figsize=(20,10), dpi=600, facecolor='w',
-                   edgecolor='k')
+  # fig = plt.figure( )
+  # fig.patch.set_facecolor(facecolor)
   
   if not (lats == None or lons == None):
     
@@ -360,11 +360,14 @@ def plot_pressuremap(data, lats=None, lons=None,
       lons, lats = meshgrid( lons, lats)
     
     central_longitude = int(mean(lons))
-    ax = plt.axes(projection=ccrs.Robinson(central_longitude=central_longitude))
+    
+    #AlbersEqualArea(central_longitude=0.0, central_latitude=0.0, false_easting=0.0, false_northing=0.0, standard_parallels=(20.0, 50.0), globe=None)
+    
+    ax = plt.axes(projection=ccrs.AlbersEqualArea(central_longitude=central_longitude), axisbg=facecolor) #,Robinson(central_longitude=central_longitude))
     ax.gridlines() 
     ax.coastlines()
     
-    cf = plt.contourf(lons, lats, d, 60, transform=ccrs.PlateCarree(), cmap='jet', interpolation='nearest')
+    cf = plt.contourf(lons, lats, d, 60, transform=ccrs.PlateCarree(), cmap='jet', interpolation=None) #'nearest'
     co = plt.contour(lons, lats, d, transform=ccrs.PlateCarree(), lw=2, color='black')
   else:
     cf = plt.contourf(d)
@@ -372,7 +375,6 @@ def plot_pressuremap(data, lats=None, lons=None,
     
   # plt.colorbar(cf)
   plt.clabel(co, inline=1) # fontsize=10
-  
   plt.title(title)
   plt.annotate(sub_title, (0,0), (0, -30), xycoords='axes fraction',
                textcoords='offset points', va='top')
@@ -384,10 +386,11 @@ def plot_pressuremap(data, lats=None, lons=None,
   return image
 
 
-def concat_images(images): 
+def concat_images(images, orientation='v'): 
   """ 
   concatination of images.
   :param images: list of images
+  :param orientation: vertical ('v' default) or horizontal ('h') concatination
   :return string: path to image  
   """
   from PIL import Image
@@ -395,17 +398,34 @@ def concat_images(images):
 
   open_images = map(Image.open, images)
   w = max(i.size[0] for i in open_images)
-  h = sum(i.size[1] for i in open_images)
-  result = Image.new("RGB", (w, h))
-  p = h / len(images) 
-  for i in range(len(images)):
-    oi = open_images[i] 
-    cw = oi.size[0]
-    ch = oi.size[1]
-    cp = p * i
-    box = [0,cp,cw,ch+cp]
+  h = max(i.size[1] for i in open_images)
+  nr = len(open_images)
+  
+  if orientation == 'v': 
+    result = Image.new("RGB", (w, h * nr))
+    #p = nr # h / len(images) 
+    for i in range(len(open_images)):
+      oi = open_images[i] 
+      
+      cw = oi.size[0]
+      ch = oi.size[1]
+      cp = h * i
+      box = [0,cp,cw,ch+cp]
+      
+      result.paste(oi, box=box)
 
-    result.paste(oi, box=box)
+  if orientation == 'h': 
+    result = Image.new("RGB", (w * nr , h ))
+    #p = nr # h / len(images) 
+    for i in range(len(open_images)):
+      oi = open_images[i] 
+      
+      cw = oi.size[0]
+      ch = oi.size[1]
+      cp = w * i
+      box = [cp,0,cw+cp,ch]
+      
+      result.paste(oi, box=box)
   
   ip, image = mkstemp(dir='.',suffix='.png')
   

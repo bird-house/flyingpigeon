@@ -1,20 +1,20 @@
 from pywps.Process import WPSProcess
 
-from flyingpigeon.indices import indices, indices_description, calc_indice_single
+from flyingpigeon.indices import indices, indices_description
 from flyingpigeon.subset import countries, countries_longname
 from flyingpigeon.utils import GROUPING
 
 import logging
 
-class SingleIndicesProcess(WPSProcess):
+class IndicesPercentileProcess(WPSProcess):
     """This process calculates a climate indice for the given input netcdf files."""
     def __init__(self):
         WPSProcess.__init__(
             self, 
-            identifier = "indices_single",
-            title="Calculation of climate indice (single variable)",
-            version = "0.3",
-            abstract="This process calculates climate indices based on one single variable.",
+            identifier = "indices_percentile",
+            title="Calculation of percentile based climate indices (single variable)",
+            version = "0.1",
+            abstract="This process calculates climate indices based on one single variable and based on percentils of a referece period.",
             statusSupported=True,
             storeSupported=True
             )
@@ -29,6 +29,28 @@ class SingleIndicesProcess(WPSProcess):
             formats=[{"mimeType":"application/x-netcdf"}],
             )
     
+        self.indices = self.addLiteralInput(
+            identifier="indices",
+            title="Indice",
+            abstract='Select an indice',
+            default='TG90p',
+            type=type(''),
+            minOccurs=1,
+            maxOccurs=1, # len(indices()),
+            allowedValues=['TG90p','TN90p'], # indices()
+            )
+        
+        self.period = self.addLiteralInput(
+            identifier="period",
+            title="Reference period",
+            abstract="Reference period for climate condition (all = entire timeserie)",
+            default="all",
+            type=type(''),
+            minOccurs=1,
+            maxOccurs=1,
+            allowedValues=['all','1951-1980', '1961-1990', '1971-2000','1981-2010']
+            )
+
         self.groupings = self.addLiteralInput(
             identifier="groupings",
             title="Grouping",
@@ -39,28 +61,17 @@ class SingleIndicesProcess(WPSProcess):
             maxOccurs=len(GROUPING),
             allowedValues=GROUPING
             )
-
-        self.indices = self.addLiteralInput(
-            identifier="indices",
-            title="Indice",
-            abstract=indices_description(),
-            default='SU',
-            type=type(''),
-            minOccurs=1,
-            maxOccurs=len(indices()),
-            allowedValues=indices()
-            )
         
-        self.polygons = self.addLiteralInput(
-            identifier="polygons",
-            title="Country subset",
-            abstract= countries_longname(), 
-            #default='FRA',
-            type=type(''),
-            minOccurs=0,
-            maxOccurs=len(countries()),
-            allowedValues=countries()
-            )
+        #self.polygons = self.addLiteralInput(
+            #identifier="polygons",
+            #title="Country subset",
+            #abstract= countries_longname(), 
+            #default='DEU',
+            #type=type(''),
+            #minOccurs=0,
+            #maxOccurs=len(countries()),
+            #allowedValues=countries()
+            #)
 
         # complex output
         # -------------
@@ -74,6 +85,7 @@ class SingleIndicesProcess(WPSProcess):
             )
 
     def execute(self):
+        from flyingpigeon.indices import calc_indice_percentile   
         import os
         import tarfile
         from tempfile import mkstemp
@@ -81,20 +93,16 @@ class SingleIndicesProcess(WPSProcess):
         
         ncs       = self.getInputValues(identifier='resource')
         indices   = self.indices.getValue()
-        polygons  = self.polygons.getValue() 
+        # polygons  = self.polygons.getValue() 
         groupings = self.groupings.getValue() # getInputValues(identifier='groupings')
+        period = self.period.getValue()
+       
+        self.status.set('starting: indices=%s, period=%s, groupings=%s, num_files=%s' % (indices, period, groupings, len(ncs)), 0)
 
-        polygons = self.polygons.getValue()
-        # if len(polygons)==0: 
-        #     polygons = None
-
-        self.status.set('starting: indices=%s, groupings=%s, countries=%s, num_files=%s' % (indices, 
-            groupings, polygons, len(ncs)), 0)
-
-        results = calc_indice_single(
-            resource = ncs,
+        results = calc_indice_percentile(
+            resources = ncs,
             indices = indices,
-            polygons= polygons,
+            period = period,
             groupings = groupings,
             dir_output = path.curdir,
             )

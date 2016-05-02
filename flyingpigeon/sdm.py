@@ -9,7 +9,7 @@ def get_csv(zip_file_url):
   z = zipfile.ZipFile(StringIO.StringIO(r.content))
   z.extractall()  
   csv = z.namelist()[0]
- 
+
   return csv
 
 def get_latlon( csv_file ):
@@ -176,9 +176,10 @@ def get_gam(ncs_reference, PAmask):
 
   import rpy2.robjects.numpy2ri
   rpy2.robjects.numpy2ri.activate()
-  mgcv = importr("mgcv")
+  
   base = importr("base")
   stats = importr("stats")
+  mgcv = importr("mgcv")
   
   data = {'PA': ro.FloatVector(ravel(PAmask))}
   domain = PAmask.shape
@@ -201,29 +202,37 @@ def get_gam(ncs_reference, PAmask):
   
   dataf = ro.DataFrame(data)
   eq = ro.Formula(str(form))
-  
   gam_model = mgcv.gam(base.eval(eq), data=dataf, family=stats.binomial(), scale=-1, na_action=stats.na_exclude)
-  
   grdevices = importr('grDevices')
   
-  output_info = "info.pdf"
-  grdevices.pdf(file=output_info)
-  # plotting code here
+  ### ###########################
+  # plot response curves
+  ### ###########################
 
-  for i in range(1,len(ncs_reference)+1):    
-  #ylim = ro.IntVector([-6,6])
-    mgcv.plot_gam(gam_model, shade='T', col='black',select=i,ylab='Predicted Probability',rug=False , cex_lab = 1.4, cex_axis = 1.4, ) #ylim=ylim,  trans=base.eval(trans),
+  from flyingpigeon.visualisation import concat_images
+  from tempfile import mkstemp
+  infos = []
+
+  for i in range(1,len(ncs_reference)+1):
+    ip, info =  mkstemp(dir='.',suffix='.png')
+    infos.append(info)
+
+    grdevices.png(filename=info)
     
-  grdevices.dev_off()
-  
+    #ylim = ro.IntVector([-6,6])
+    mgcv.plot_gam(gam_model, shade='T', col='black',select=i,ylab='Predicted Probability',rug=False , cex_lab = 1.4, cex_axis = 1.4, ) 
+    #ylim=ylim,  trans=base.eval(trans),
+    grdevices.dev_off()
+
+  infos_concat = concat_images(infos, orientation='h')
+
   predict_gam = mgcv.predict_gam(gam_model, type="response", progress="text", na_action=stats.na_exclude) #, 
-  
   prediction = array(predict_gam).reshape(domain)
     
-  return gam_model, prediction, output_info
+  return gam_model, prediction, infos_concat
 
 
-def get_prediction(gam_model, ncs_indices ):#, mask=None
+def get_prediction(gam_model, ncs_indices ): #mask=None
   """
   predict the probabillity based on the gam_model and the given climate indice datasets
   

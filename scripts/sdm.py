@@ -15,14 +15,24 @@ ncs_indices = ['/home/nils/data/sdm/TG_EUR-11_CNRM-CERFACS-CNRM-CM5_historical_r
 '/home/nils/data/sdm/TG_EUR-11_MOHC-HadGEM2-ES_historical_r1i1p1_KNMI-RACMO22E_v1_JJA_20010101-20050101.nc']
 
 
-
 csv = '/home/nils/Downloads/0013848-160118175350007.csv'
 latlon = sdm.get_latlon(csv)
 
-PApoints = sdm.get_PApoints(coordinates=latlon)
-
+PApoints = sdm.get_PAmask(coordinates=latlon)
 
 gam_model, predict_ref, gam_info = sdm.get_gam(ncs_references,PApoints)
+
+print gam_model.names
+
+
+import matplotlib.pyplot as plt
+for i in range(len(gam_model)):
+  try: 
+    plt.plot(gam_model[i])
+    plt.show()
+  except:
+    print 'failed for' , i
+
 prediction = sdm.get_prediction(gam_model, ncs_indices)
 
 from numpy import invert, isnan, nan, broadcast_arrays, array, zeros, linspace, meshgrid
@@ -35,3 +45,5 @@ species_file = sdm.write_to_file(ncs_indices[0], prediction)
 tac = dt.now()
 
 print 'prediction finished in %s minutes' % (tac - tic)
+
+

@@ -1,4 +1,4 @@
-VERSION := 0.2.16
+VERSION := 0.2.19
 RELEASE := master
 
 # Application
@@ -15,7 +15,7 @@ BUILDOUT_VERSION=2.5.0
 
 # Anaconda 
 ANACONDA_HOME ?= $(HOME)/anaconda
-CONDA_ENV := birdhouse
+CONDA_ENV ?= birdhouse
 CONDA_ENVS_DIR ?= $(HOME)/.conda/envs
 PREFIX := $(CONDA_ENVS_DIR)/$(CONDA_ENV)
 
@@ -130,7 +130,7 @@ downloads:
 	@test -d $(DOWNLOAD_CACHE) || mkdir -v -p $(DOWNLOAD_CACHE)
 
 .PHONY: init
-init: .gitignore custom.cfg downloads
+init: custom.cfg downloads
 
 bootstrap-buildout.py:
 	@echo "Update buildout bootstrap-buildout.py ..."
@@ -152,12 +152,11 @@ conda_config: anaconda
 	@"$(ANACONDA_HOME)/bin/conda" config --set ssl_verify false
 	@"$(ANACONDA_HOME)/bin/conda" config --add channels defaults
 	@"$(ANACONDA_HOME)/bin/conda" config --add channels birdhouse
-	@"$(ANACONDA_HOME)/bin/conda" config --add channels ioos
 
 .PHONY: conda_env
 conda_env: anaconda conda_config
-	@test -d $(PREFIX) || "$(ANACONDA_HOME)/bin/conda" create -m -p $(PREFIX) -c ioos --yes python setuptools=$(SETUPTOOLS_VERSION) curl pyopenssl genshi mako
-	"$(ANACONDA_HOME)/bin/conda" install -n $(CONDA_ENV) setuptools=$(SETUPTOOLS_VERSION)
+	@test -d $(PREFIX) || "$(ANACONDA_HOME)/bin/conda" create -m -p $(PREFIX) -c ioos --yes python setuptools=$(SETUPTOOLS_VERSION) curl pyopenssl cryptography=1.0.2 genshi mako pyyaml
+	"$(ANACONDA_HOME)/bin/conda" install -y -n $(CONDA_ENV) setuptools=$(SETUPTOOLS_VERSION)
 
 .PHONY: conda_pinned
 conda_pinned: conda_env
@@ -213,6 +212,8 @@ clean:
 	@-for i in $(BUILDOUT_FILES); do \
             test -e $$i && rm -v -rf $$i; \
         done
+	@echo "Removing *.pyc files ..."
+	@-find $(APP_ROOT) -type f -name "*.pyc" -print0 | xargs -0r rm
 
 .PHONY: distclean
 distclean: backup clean

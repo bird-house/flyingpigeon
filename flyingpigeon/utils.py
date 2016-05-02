@@ -1,9 +1,37 @@
+import urlparse
+import os
+import wget
 import ocgis
-from netCDF4 import Dataset, num2date
+from netCDF4 import Dataset, MFDataset, num2date
+
+from flyingpigeon import config
+
 import logging
 logger = logging.getLogger(__name__)
 
 GROUPING = [ "day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON" ,"JAN" ]
+
+def download(url, cache=False):
+    """
+    Downloads URL using the Python wget module to the current directory.
+    :param cache: if True then files will be downloaded to a cache directory.
+    """
+    if cache:
+        parsed_url = urlparse.urlparse(url)
+        filename = os.path.join(config.cache_path(), parsed_url.netloc, parsed_url.path.strip('/'))
+        if os.path.exists(filename):
+            logger.debug('file already in cache: %s', filename)
+        else:
+            if not os.path.exists(os.path.dirname(filename)):
+                os.makedirs(os.path.dirname(filename))
+            logger.info('downloading: %s', url)
+            filename = wget.download(url, out=filename, bar=None)
+        # make softlink to current dir
+        #os.symlink(filename, os.path.basename(filename))
+        #filename = os.path.basename(filename)
+    else:
+        filename = wget.download(url, bar=None)
+    return filename
 
 def archive(resources, format='tar', dir_output='.', mode='w'): 
   """
@@ -177,7 +205,7 @@ def drs_filename(nc_file, skip_timestamp=False, skip_format=False ,
 
         # add from/to timestamp if not skipped
         if skip_timestamp == False:
-            from_timestamp, to_timestamp = get_timestamps(nc_file)
+            from_timestamp, to_timestamp = get_timerange(nc_file)
             filename = "%s_%s-%s" % (filename, int(from_timestamp), int(to_timestamp))
 
         # add format extension
@@ -252,7 +280,7 @@ def get_domain(nc_file):
 
 def get_frequency(nc_file):
   """
-  returns the frequency
+  returns the frequency (see also metadata.get_frequency)
   :param nc_file: NetCDF file
   :return: frequency
   """
@@ -268,12 +296,57 @@ def get_frequency(nc_file):
     ds.close()
     return frequency
 
+def get_values(nc_files, variable=None):
+  """
+  returns the values for a list of files of files belonging to one Dataset
+  :param nc_files: list of files
+  :param variable: variable to be picked from the files (if not set, variable will be detected)
+  """
+  
+ # from netCDF4 import MFDataset
+  from numpy import squeeze
+  if variable == None:
+    if type(nc_files) == str:
+      variable = get_variable(nc_files)
+    else:
+      variable = get_variable(nc_files[0])
+      
+  mds = MFDataset(nc_files)
+  vals = squeeze(mds.variables[variable][:])
+  
+  return vals
+
+def get_timerange(resources):
+  """
+  returns from/to timestamp of given netcdf file(s).
+  :param resources: path to netCDF file(s)
+  :returns netcdf.dateime.dateime: start, end
+  """
+  try:  
+    ds = MFDataset(resources)
+    time = ds.variables['time']
+    if (hasattr(time , 'units') and hasattr(time , 'calendar')) == True:
+      s = num2date(time[0], time.units , time.calendar)
+      e = num2date(time[-1], time.units , time.calendar)
+    elif hasattr(time , 'units'):
+      s = num2date(time[0], time.units , time.calendar)
+      e = num2date(time[-1], time.units , time.calendar)
+    else: 
+      s = num2date(time[0], time.units , time.calendar)
+      e = num2date(time[-1], time.units , time.calendar)
+    # to do: include frequency
+    start = '%s%s%s'  % (s.year, str(s.month).zfill(2) ,str(s.day).zfill(2)) 
+    end = '%s%s%s'  %   (e.year,  str(e.month).zfill(2) ,str(e.day).zfill(2))
+    ds.close()
+  except Exception as e: 
+    msg = 'failed to get time: %s' % e
+    logger.debug(msg)
+    raise Exception(msg)
+  return start, end
+
 def get_timestamps(nc_file):
     """
-    returns from/to timestamp of given netcdf file.
-    
-    :param nc_file: NetCDF file
-    :returns tuple: (from_timestamp, to_timestamp)
+    replaced by get_timerange
     """
     try: 
         start = get_time(nc_file)[0]
@@ -291,13 +364,18 @@ def get_time(nc_file):
     """
     returns all timestamps of given netcdf file as datetime list.
     
-    :param nc_file: NetCDF file
+    :param nc_file: NetCDF file(s)
     :return format: netcdftime._datetime.datetime
     """
     try:  
-      ds = Dataset(nc_file)
+      ds = MFDataset(nc_file)
       time = ds.variables['time']
-      timestamps = num2date(time[:], time.units, time.calendar)
+      if (hasattr(time , 'units') and hasattr(time , 'calendar')) == True:
+        timestamps = num2date(time[:], time.units , time.calendar)
+      elif hasattr(time , 'units'):
+        timestamps = num2date(time[:], time.units) 
+      else: 
+        timestamps = num2date(time[:])
       ds.close()
     except: 
       logger.debug('failed to get time')
@@ -334,9 +412,9 @@ def aggregations(nc_files):
         # sort files by time
         aggregations[key]['files'] = sort_by_time(aggregations[key]['files'])
         # start timestamp of first file
-        start, _ = get_timestamps(aggregations[key]['files'][0])
+        start, end = get_timerange(aggregations[key]['files'])
         # end timestamp of last file
-        _, end = get_timestamps(aggregations[key]['files'][-1])
+        #_, end = get_timestamps(aggregations[key]['files'][-1])
         aggregations[key]['from_timestamp'] = start
         aggregations[key]['to_timestamp'] = end
         aggregations[key]['start_year'] = int(start[0:4])
@@ -420,8 +498,7 @@ def sort_by_filename(resource, historical_concatination = False):
         # add date information to the key:
         for key in ndic.keys(): 
           ndic[key].sort()
-          start = get_timestamps(ndic[key][0])[0]
-          end = get_timestamps(ndic[key][-1])[1]
+          start, end = get_timerange(ndic[key])
           newkey = key+'_'+start+'-'+end
           tmp_dic[newkey] = ndic[key]
       except Exception as e: 

@@ -211,6 +211,75 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
         logger.exception('could not calc key %s' % key)
     return outputs
 
+def calc_indice_percentile(resources=[], variable='tas', prefix=None, indices=None, period=None,
+    groupings=None, dir_output=None, dimension_map = None):
+    """
+    Calculates given indices for suitable files in the appopriate time grouping and polygon.
+
+    :param resource: list of filenames in drs convention (netcdf)
+    :param variable: variable name to be selected in the in netcdf file (default=None)
+    :param indices: list of indices (default ='SU')
+    :param period: reference period
+    :param grouping: indices time aggregation (default='yr')
+    :param out_dir: output directory for result file (netcdf)
+    :param dimension_map: optional dimension map if different to standard (default=None)
+
+    :return: list of netcdf files with calculated indices. Files are saved into out_dir
+    """
+    from os.path import join, dirname, exists
+    from os import remove
+    import uuid
+    from numpy import ma 
+
+    from flyingpigeon.ocgis_module import call
+    from flyingpigeon.utils import get_values, get_time
+    
+    if type(resources) != list: 
+      resources = list([resources])
+    if type(indices) != list: 
+      indices = list([indices])
+      
+    if type(period) == list: 
+      period = period[0]
+      
+    if period == 'all':
+      time_region = None
+    else:
+      start, end = int(period.split('-'))
+      years = range(start, end)
+      time_region = {'year': years}
+
+    nc_indices = []
+    
+    
+    if dir_output != None:
+      if not exists(dir_output): 
+        makedirs(dir_output)
+    
+    ########################################################################################################################
+    # Compute a custom percentile basis using ICCLIM. ######################################################################
+    ########################################################################################################################
+
+    from ocgis.contrib.library_icclim import IcclimTG90p
+    
+    nc_dic = sort_by_filename(resources)
+    for key in nc_dic.keys():
+      resource = nc_dic[key]
+      nc_reference = call(resource=resource, prefix='nc_reference',time_region=time_region, output_format='nc')
+      arr = get_values(nc_files=nc_reference)
+      dt_arr = get_time(nc_file=nc_reference)
+      arr = ma.masked_array(arr)
+      dt_arr = ma.masked_array(dt_arr)
+      percentile = 90
+      window_width = 5
+      percentile_dict = IcclimTG90p.get_percentile_dict(arr, dt_arr, percentile, window_width)
+      for indice in indices: 
+        calc = [{'func': 'icclim_%s' % indice, 'name': indice, 'kwds': {'percentile_dict': percentile_dict}}]
+        calc_grouping = 'year'
+        nc_indices.append(call(resource=resource, prefix=key.replace(variable,indice), 
+                            calc=calc, calc_grouping=calc_grouping, output_format='nc'))
+    return nc_indices
+
 def calc_indice_unconventional(resource=[], variable=None, prefix=None,
   indices=None, polygons=None,  groupings=None, 
   dir_output=None, dimension_map = None):

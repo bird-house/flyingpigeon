@@ -1,17 +1,9 @@
-from datetime import datetime, date
-import types
-import tempfile
-import tarfile
-import ocgis 
-from ocgis import RequestDataset
-import datetime as dt
-import os
-
-from flyingpigeon import analogs
+from datetime import date
  
 from pywps.Process import WPSProcess
 
 import logging
+logger = logging.getLogger(__name__)
 
 class AnalogsProcess(WPSProcess):
   
@@ -42,39 +34,42 @@ class AnalogsProcess(WPSProcess):
     self.experiment = self.addLiteralInput(
       identifier="experiment",
       title="Data experiment",
-      abstract="Choose the experiment",
+      abstract="Choose the experiment (if 'None' is selected, provide a resource)",
       default="NCEP",
       type=type(''),
       minOccurs=1,
       maxOccurs=1,
-      allowedValues=['NCEP']
+      allowedValues=['None','NCEP']
       )
-       
+
+    
+    #self.region = self.addBBoxInput(
+      #identifier="region",
+      #title="Region",
+      #abstract="coordinates to define the region: (minlon,minlat,maxlon,maxlat)",
+      ##default='-80,50,22.5,70', #"-80,22.5,50,70",
+      ##type=type(''),
+      #minOccurs=1,
+      #maxOccurs=1,
+      #crss=["EPSG:4326"]
+      #)
+
     self.region = self.addLiteralInput(
       identifier="region",
-      title="Select Region",
-      abstract="Select a predifined region",
-      default="NA",
-      type=type(''),
+      title="Region",
+      abstract="coordinates to define the region: (minlon,minlat,maxlon,maxlat)",
+      default='-80,50,22.5,70', #"-80,22.5,50,70",
       minOccurs=1,
       maxOccurs=1,
-      allowedValues=['NA']
-      )       
-
-    #self.bbox = self.addLiteralOutput(
-      #identifier="bbox",
-      #title="Bounding Box",
-      #abstract="This is a BBox: (minx,miny,maxx,maxy)",
-      #default="0,-90,180,90",
-      #type=type(''),
-      #)
+      type=type(''),
+      )
          
     self.dateSt = self.addLiteralInput(
       identifier="dateSt",
       title="Start date of analyse period",
       abstract="This is a Date: 2013-07-15",
-      default="2014-07-15",
-      type=type(date(2014,7,15)),
+      default="2013-07-15",
+      type=type(date(2013,7,15)),
       minOccurs=1,
       maxOccurs=1,
       )
@@ -83,8 +78,8 @@ class AnalogsProcess(WPSProcess):
       identifier="dateEn",
       title="End date of analyse period",
       abstract="This is a Date: 2013-12-31",
-      default="2013-12-31",
-      type=type(date(2013,12,31)),
+      default="2014-12-31",
+      type=type(date(2014,12,31)),
       minOccurs=1,
       maxOccurs=1,
       )
@@ -94,7 +89,7 @@ class AnalogsProcess(WPSProcess):
       title="Start reference period",
       abstract="Start YEAR of reference period",
       default="1955-01-01",
-      type=type(date(1948,01,01)),
+      type=type(date(1955,01,01)),
       minOccurs=1,
       maxOccurs=1,
       )
@@ -104,10 +99,20 @@ class AnalogsProcess(WPSProcess):
       title="End reference period",
       abstract="End YEAR of reference period",
       default="1957-12-31",
-      type=type(date(1958,12,31)),
+      type=type(date(1957,12,31)),
       minOccurs=1,
       maxOccurs=1,
       )
+    
+    self.normalize = self.addLiteralInput(
+      identifier="normalize",
+      title="Normalize",
+      abstract="Normalize by substraction of annual cycle",
+      default=False,
+      type=type(False),
+      minOccurs=1,
+      maxOccurs=1,
+        )
 
     self.timewin = self.addLiteralInput(
       identifier="timewin",
@@ -147,24 +152,10 @@ class AnalogsProcess(WPSProcess):
       # calccor=True,
       # silent=False)
 
-
+    ### ###################
     # define the outputs
-    
-    # self.ncout = self.addComplexOutput(
-    #   identifier="ncout",
-    #   title="netCDF inputfile",
-    #   abstract="netCDF file of the ps valuels",
-    #   formats=[{"mimeType":"application/netcdf"}],
-    #   asReference=True,
-    #   )
+    ### ###################
 
-    # self.tarout = self.addComplexOutput(
-    #   identifier="tarout",
-    #   title="Result tar file",
-    #   abstract="Tar archive containing files with the analog dates",
-    #   formats=[{"mimeType":"application/x-tar"}],
-    #   asReference=True,
-    #   )
 
     self.config = self.addComplexOutput(
       identifier="config",
@@ -174,13 +165,32 @@ class AnalogsProcess(WPSProcess):
       asReference=True,
       )
 
-  def execute(self): 
+    self.analogs = self.addComplexOutput(
+      identifier="analogs",
+      title="Analogs File",
+      abstract="mulit-column text file",
+      formats=[{"mimeType":"text/plain"}],
+      asReference=True,
+      )
+
+  def execute(self):
+
+    from os import system, path
+    from tempfile import mkstemp
+    from flyingpigeon import analogs
+    import datetime as dt
+
+    from flyingpigeon.ocgis_module import call
+    from flyingpigeon.weatherregimes import get_NCEP
+
     self.status.set('execution started at : %s '  % dt.datetime.now() , 5)
 
     refSt = self.getInputValues(identifier='refSt')
     refEn = self.getInputValues(identifier='refEn')
     dateSt = self.getInputValues(identifier='dateSt')
     dateEn = self.getInputValues(identifier='dateEn')
+    
+    normalize = self.getInputValues(identifier='normalize')[0]
     
     refSt = dt.datetime.strptime(refSt[0],'%Y-%m-%d')
     refEn = dt.datetime.strptime(refEn[0],'%Y-%m-%d')
@@ -189,94 +199,81 @@ class AnalogsProcess(WPSProcess):
 
     timewin = 1 #int(self.getInputValues(identifier='timewin')[0])
     
-    start = min(refSt, refEn, dateSt, dateEn )
-    end = max(refSt, refEn, dateSt, dateEn )
+    start = min( refSt, dateSt )
+    end = max( refEn, dateEn )
 
-    archive = '/pfad/to/archive/file.nc'
-    simulation = '/pfad/to/simulation/file.nc'
-    output = '/pfad/to/output/file.nc'
+    #################
+    # get input data
+    #################
 
+    try: 
+      experiment = self.getInputValues(identifier='experiment')[0]
+      if experiment == 'NCEP':
+        input = get_NCEP(start = start.year, end = end.year )
+      elif   experiment == 'None':
+        input = self.getInputValues(identifier='resource')
+      else:
+        logger.error('input experiment not found')
 
-    files=[archive, simulation, output ] 
+      region = self.getInputValues(identifier='region')[0]
+      nc_subset = analogs.subset(resource=input, 
+                                 bbox=region, 
+                                 normalize=normalize)
+    except Exeption as e :
+      msg = 'failed to fetch input files %s' % e
+      logger.error(msg)
+      raise Exeption(msg)
+        
+    ########################
+    # input data preperation 
+    ########################
 
-    config_file = analogs.get_configfile(files=files, 
-      timewin=timewin, 
-      varname='slp', 
-      seacyc=True, 
-      cycsmooth=91, 
-      nanalog=20, 
-      seasonwin=30, 
-      distfun='rms', 
-      calccor=True,
-      silent=False)
-
-
-    #self.ncout.setValue(ret)
-    self.config.setValue( config_file )
-    #self.tarout.setValue(tarout_file)
-    self.status.set('execution ended at : %s'  %  dt.datetime.now() , 100)
-
-
-
-
-    # uris = []
-    # (fp_tar, tarout_file) = tempfile.mkstemp(dir=".", suffix='.tar')
-    # tar = tarfile.open(tarout_file, "w")
-
-    # for y in range(start.year , end.year +1 , 1): 
-    #   url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.%i.nc' % (y)
-    #   (fp_tf, tf ) = tempfile.mkstemp(dir=".", suffix=".nc")
-    #   (fp_tf2, tf2 ) = tempfile.mkstemp(dir=".", suffix=".nc")
-    #   #cmd =  str('ncks -O -d lon,280.0,50.0 -d lat,22.5,70.0 %s %s' %( download(url), tf))
-    #   cmd = ['ncks', '-O', '-d', 'lon,280.0,50.0', '-d', 'lat,22.5,70.0', download(url), tf]
-    #   #os.system(cmd) # ["ls", "-l"])nc = wget.download(url)
-    #   self.cmd(cmd, stdout=True)
-    #   #cdo_cmd = 'cdo sellonlatbox,-80,50,22.5,70 %s %s ' % (tf, tf2)
-    #   cdo_cmd = ['cdo', 'sellonlatbox,-80,50,22.5,70', tf, tf2]
-    #   self.cmd(cdo_cmd, stdout=True)
-    #   #os.system(cdo_cmd)
-    #   uris.append(tf2)
-    #   self.status.set('NCEP file year: %i  downloaded'  % (y) , 7)
+    try: 
+      archive = call(resource=nc_subset, time_range=[refSt , refEn]) 
+      simulation = call(resource=nc_subset, time_range=[dateSt , dateEn]) 
+    except Exception as e:
+      msg = 'failed to prepare archive and simulation files %s ' % e
+      logger.debug(msg)
+      raise Exception(msg)
       
-    # us = ocgis.util.helpers.get_sorted_uris_by_time_dimension(uris, variable=None)  # for time sorting
-    # fname = str('slp_NOA_NCEP_%i_%i' % (start.year , end.year))
-    # self.status.set('download done for : %s '  % (fname) , 10)
+    ip, output = mkstemp(dir='/home/nils/data/analogs',suffix='.txt')
+    output_file =  path.abspath(output)
+    files=[path.abspath(archive), path.abspath(simulation), output_file]
 
-    # # ocgis specifications:
-    # # try: 
-    # # if (self.getInputValues(identifier='region') == 'NOA'):
-    # #geom = [-80, 22.5, 50, 70.0 ] # [min x, min y, max x, max y].
-    
-    # ocgis.env.DIR_OUTPUT = os.curdir
-    # rds = RequestDataset(us, 'slp')
-    # ops = ocgis.OcgOperations(dataset=rds, prefix=fname,  output_format='nc', allow_empty=True, add_auxiliary_files=False)
-    # ret = ops.execute()
-    # fpath = '%s' % (ret)
-    # # tar.add(fpath , arcname = fpath.replace(os.curdir, ""))
-    # self.status.set('ocgis subset succeded for file : %s '  % (ret) , 15)
-    
-    # ### run R file 
-    # pf = str(os.path.dirname(os.path.abspath(__file__)))
-    
-    # Rskript = os.path.join(pf + '/Rsrc/analogs.R')
-    # Rsource = os.path.join(pf + '/Rsrc/')
-    # logger.debug('found R skript : %s', Rskript)
-    # curdir = os.path.abspath(os.path.curdir)
-    # logger.debug('curdir : %s '  % (curdir))
-    # logger.debug('analogs.R : %s '  % (Rskript))
-    # os.mkdir(os.path.curdir+'/RoutDir/')
-    # RoutDir = os.path.join(os.path.curdir+'/RoutDir/')
-    # (fp_Rlog, Rlog) = tempfile.mkstemp(dir="./RoutDir/", suffix='.log')
-    # Rcmd = 'R --vanilla --args %s %s %s %i %i %s %s <  %s > %s ' % (ret, dateSt.date(), dateEn.date(), refSt.year, refEn.year, Rsource, curdir, Rskript, Rlog )
-    # #Rcmd = ['R', '--vanilla', '--args', ret, str(dateSt.date()), str(dateEn.date()), str(refSt.year), str(refEn.year), Rsource, curdir,'<', Rskript,'>', Rlog]
-    # logging.debug('system call : %s '  % (Rcmd))
-    
-    # # Call the R skript
-    # os.system(str(Rcmd))
-    # #self.cmd(Rcmd, stdout=False)
-    # tar.add(RoutDir) # , arcname = fpath.replace(os.curdir, ""))
-    # ##except Exception as e: 
-    #   ##self.show_status('failed for file : %s '  % ( e ) , 15)
-    # tar.close()
-    
-    
+    ############################
+    # generating the config file
+    ############################
+
+    try:  
+      config_file = analogs.get_configfile(files=files, 
+        timewin=timewin, 
+        varname='slp', 
+        seacyc=normalize, 
+        cycsmooth=91, 
+        nanalog=20, 
+        seasonwin=30, 
+        distfun='rms', 
+        calccor=True,
+        silent=False)
+    except Exception as e:
+      msg = 'failed to generate config file %s ' % e
+      logger.debug(msg)
+      raise Exception(msg)
+      
+    #######################
+    # CASTf90 call 
+    #######################
+
+    try:
+      #self.status.set('execution of CASTf90', 50)
+      cmd = 'analogue.out %s' % path.relpath(config_file)
+      system(cmd)
+    except Exception as e: 
+      msg = 'CASTf90 failed %s ' % e
+      logger.error(msg)  
+      raise Exception(msg)
+
+    self.status.set('preparting output', 99)
+    self.config.setValue( config_file )
+    self.analogs.setValue( output_file )
+    self.status.set('execution ended', 100)
