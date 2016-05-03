@@ -219,7 +219,7 @@ class AnalogsProcess(WPSProcess):
       
       nc_subset = analogs.subset(resource=input, 
                                  bbox=region)
-    except Exeption as e :
+    except Exception as e :
       msg = 'failed to fetch input files %s' % e
       logger.error(msg)
       raise Exeption(msg)
