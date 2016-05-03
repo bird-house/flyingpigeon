@@ -222,7 +222,7 @@ class AnalogsProcess(WPSProcess):
     except Exception as e :
       msg = 'failed to fetch input files %s' % e
       logger.error(msg)
-      raise Exeption(msg)
+      raise Exception(msg)
         
     ########################
     # input data preperation 
