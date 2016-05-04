@@ -106,21 +106,22 @@ class AnalogsProcess(WPSProcess):
       identifier="normalize",
       title="normalisation",
       abstract="Normalize by substraction of annual cycle",
-      default='own',
+      default='base',
       type=type(''),
       minOccurs=1,
       maxOccurs=1,
       allowedValues=['None','base','sim','own']
         )
 
-    self.cosine = self.addLiteralInput(
-      identifier="cosine",
-      title="Cosine Distance",
-      abstract="Cosine Distance",
-      default=True,
-      type=type(False),
+    self.distance = self.addLiteralInput(
+      identifier="dist",
+      title="Distance",
+      abstract="Distance function to define analogues",
+      default='euclidean',
+      type=type(''),
       minOccurs=1,
       maxOccurs=1,
+      allowedValues=['euclidean','mahalanobis','cosine','of']
         )
 
     self.outformat = self.addLiteralInput(
@@ -215,7 +216,7 @@ class AnalogsProcess(WPSProcess):
     else: 
       seacyc = True
       
-    cosine = self.getInputValues(identifier='cosine')[0]
+    distance = self.getInputValues(identifier='dist')[0]
     outformat = self.getInputValues(identifier='outformat')[0]
     
     if outformat == 'ascii': 
@@ -287,7 +288,7 @@ class AnalogsProcess(WPSProcess):
         cycsmooth=91, 
         nanalog=20, 
         seasonwin=30, 
-        distfun='rms',
+        distfun=distance,
         outformat=outformat,
         calccor=True,
         silent=False)
