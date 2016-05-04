@@ -3,7 +3,6 @@ from flyingpigeon import utils
 import logging
 logger = logging.getLogger(__name__)
 
-
 def get_pca(resource):
   """
   calculation of principal components

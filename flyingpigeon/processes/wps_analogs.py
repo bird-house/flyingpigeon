@@ -1,5 +1,4 @@
-from datetime import date
- 
+from datetime import date 
 from pywps.Process import WPSProcess
 
 import logging
@@ -42,7 +41,6 @@ class AnalogsProcess(WPSProcess):
       allowedValues=['None','NCEP']
       )
 
-    
     #self.region = self.addBBoxInput(
       #identifier="region",
       #title="Region",
@@ -106,19 +104,41 @@ class AnalogsProcess(WPSProcess):
     
     self.normalize = self.addLiteralInput(
       identifier="normalize",
-      title="Normalize",
+      title="normalisation",
       abstract="Normalize by substraction of annual cycle",
-      default=False,
+      default='own',
+      type=type(''),
+      minOccurs=1,
+      maxOccurs=1,
+      allowedValues=['None','base','sim','own']
+        )
+
+    self.cosine = self.addLiteralInput(
+      identifier="cosine",
+      title="Cosine Distance",
+      abstract="Cosine Distance",
+      default=True,
       type=type(False),
       minOccurs=1,
       maxOccurs=1,
         )
 
+    self.outformat = self.addLiteralInput(
+      identifier="outformat",
+      title="output file format",
+      abstract="Choose the output format for the analog output file",
+      default="ascii",
+      type=type(''),
+      minOccurs=1,
+      maxOccurs=1,
+      allowedValues=['ascii','netCDF4']
+      )
+
     self.timewin = self.addLiteralInput(
       identifier="timewin",
       title="Time window",
       abstract="Nr of days following the analog day",
-      default=1,
+      default=30,
       type=type(1),
       minOccurs=0,
       maxOccurs=1,
@@ -174,7 +194,6 @@ class AnalogsProcess(WPSProcess):
       )
 
   def execute(self):
-
     from os import system, path
     from tempfile import mkstemp
     from flyingpigeon import analogs
@@ -183,7 +202,7 @@ class AnalogsProcess(WPSProcess):
     from flyingpigeon.ocgis_module import call
     from flyingpigeon.weatherregimes import get_NCEP
 
-    self.status.set('execution started at : %s '  % dt.datetime.now() , 5)
+    self.status.set('execution started at : %s '  % dt.datetime.now(),5)
 
     refSt = self.getInputValues(identifier='refSt')
     refEn = self.getInputValues(identifier='refEn')
@@ -191,6 +210,20 @@ class AnalogsProcess(WPSProcess):
     dateEn = self.getInputValues(identifier='dateEn')
     
     normalize = self.getInputValues(identifier='normalize')[0]
+    if normalize == 'None': 
+      seacyc = False
+    else: 
+      seacyc = True
+      
+    cosine = self.getInputValues(identifier='cosine')[0]
+    outformat = self.getInputValues(identifier='outformat')[0]
+    
+    if outformat == 'ascii': 
+      outformat = '.txt'
+    elif outformat == 'netCDF':
+      outformat = '.nc'
+    else:
+      logger.error('output format not valid')
     
     refSt = dt.datetime.strptime(refSt[0],'%Y-%m-%d')
     refEn = dt.datetime.strptime(refEn[0],'%Y-%m-%d')
@@ -216,7 +249,6 @@ class AnalogsProcess(WPSProcess):
         logger.error('input experiment not found')
 
       region = self.getInputValues(identifier='region')[0]
-      
       nc_subset = analogs.subset(resource=input, 
                                  bbox=region)
     except Exception as e :
@@ -231,8 +263,8 @@ class AnalogsProcess(WPSProcess):
     try: 
       archive = call(resource=nc_subset, time_range=[refSt , refEn]) 
       simulation = call(resource=nc_subset, time_range=[dateSt , dateEn])
-      if normalize == True:
-        analogs.seacyc(archive, simulation)
+      if seacyc == True:
+        analogs.seacyc(archive, simulation, method=normalize)
 
     except Exception as e:
       msg = 'failed to prepare archive and simulation files %s ' % e
@@ -251,11 +283,12 @@ class AnalogsProcess(WPSProcess):
       config_file = analogs.get_configfile(files=files, 
         timewin=timewin, 
         varname='slp', 
-        seacyc=normalize, 
+        seacyc=seacyc, 
         cycsmooth=91, 
         nanalog=20, 
         seasonwin=30, 
-        distfun='rms', 
+        distfun='rms',
+        outformat=outformat,
         calccor=True,
         silent=False)
     except Exception as e:
