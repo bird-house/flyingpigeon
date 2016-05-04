@@ -95,6 +95,32 @@ The appraoch is to be performed in two steps:
 
 The algorithm is described in the `Journal of Climatology <http://www.hindawi.com/journals/jcli/2013/787250/>`_.
 
+Example with Phoenix (GUI):
+...........................
+
+* login to a Phoenix GUI (e.g. `Compute provider DKRZ` <https://mouflon.dkrz.de>/_) 
+
+|_ Menu option: Wizard
+  |_ Choose a Favorite: No Favourite 
+    |_ Choose a Web Processing Service: Flyingpigeon 
+      |_ Choose WPS Process of Flyingpigeon: Species distribution model - Species distribution model (SDM) 
+        |_ Literal inputs of Species distribution model :
+        
+.. image:: ../pics/sdm_literalinputs.png
+        
+          |_ Choose Input Parameter of Species distribution model: netCDF
+            |_ Choose Data Source : Earth System Grid (ESGF) 
+            
+The next window is the Data search interface to the available data of the ESGF archive. The input files are used to calculate the climate conditions. Dipending on the selection of indices appropriate variables has to be provided (an indice based on pricipitation needs 'pr' as input variable ). multiple selection can be done while pressing the Cntr button. With other search options the dataselection shoule look like this example: 
+
+.. image:: ../pics/sdm_esgfsearch.png
+
+You can save your settings as favourite. And submit the job.  
+Done!!!
+
+You can follow the log file of your process in the monitor (klick on the job ID e.g. a4aa98de-ffde-11e5-b50a-bb0d01b14483). Manual reload of your browser site is necessary.
+
+
 .. _subset_countries: 
 
 Subset Counties 
