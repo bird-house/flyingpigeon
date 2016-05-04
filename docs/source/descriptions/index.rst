@@ -103,17 +103,22 @@ Example with Phoenix (GUI):
 |_ Menu option: Wizard
   |_ Choose a Favorite: No Favourite 
     |_ Choose a Web Processing Service: Flyingpigeon 
-      |_ Choose WPS Process of Flyingpigeon: Species distribution model - Species distribution model (SDM) 
-        |_ Literal inputs of Species distribution model :
-        
+      |_ Choose WPS Process of Flyingpigeon: Species distribution model 
+        |_ Literal inputs of Species distribution model
+
+
+
 .. image:: ../pics/sdm_literalinputs.png
-        
-          |_ Choose Input Parameter of Species distribution model: netCDF
-            |_ Choose Data Source : Earth System Grid (ESGF) 
+
+
+Choose Input Parameter of Species distribution model: netCDF
+Choose Data Source : Earth System Grid (ESGF) 
             
 The next window is the Data search interface to the available data of the ESGF archive. The input files are used to calculate the climate conditions. Dipending on the selection of indices appropriate variables has to be provided (an indice based on pricipitation needs 'pr' as input variable ). multiple selection can be done while pressing the Cntr button. With other search options the dataselection shoule look like this example: 
 
+
 .. image:: ../pics/sdm_esgfsearch.png
+
 
 You can save your settings as favourite. And submit the job.  
 Done!!!
