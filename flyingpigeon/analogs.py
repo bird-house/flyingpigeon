@@ -2,8 +2,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def get_configfile(files, timewin=1, varname='slp', seacyc=False, cycsmooth=91, nanalog=20, seasonwin=30, 
-  distfun='rms', calccor=True, silent=False, ): 
+def get_configfile(files, timewin=1, varname='slp', seacyc=False,
+                   cycsmooth=91, nanalog=20, 
+                   seasonwin=30, 
+                   distfun='rms', outformat='.txt',
+                   period=["1973-01-01","2012-12-31"], 
+                   bbox="-80.0,50.0,22.5,70.0",
+                   calccor=True, silent=False, ): 
   """
   Generating the config file for fortran calculation
 
@@ -44,12 +49,21 @@ def get_configfile(files, timewin=1, varname='slp', seacyc=False, cycsmooth=91, 
   config.write(' my_params%seasonwin = {seasonwin} \n'.format(seasonwin=seasonwin))
   config.write(' my_params%distfun = "{distfun}" \n'.format(distfun=distfun))
   config.write(' my_params%calccor = .{calccor}. \n'.format(calccor=calccor.upper()))
+  config.write(' my_params%oformat = "{outformat}" \n'.format(outformat=outformat)) # ".txt" # ! if equals ".nc"
   config.write(' my_params%silent = .{silent}.\n'.format(silent=silent.upper()))
   config.write('/\n')
+  config.write('&ATTS\n')
+  config.write(' my_atts%simsource = "NCEP" \n') # model name
+  config.write('my_atts%predictorvar = "{varname}" \n'.format(varname=varname))
+  config.write('my_atts%archisource = "NCEP" \n')
+  config.write('my_atts%archiperiod = "{start},{end}" \n'.format(start=period[0], end=period[1]))
+  config.write('my_atts%predictordom = "-80.0,50.0,22.5,70.0" \n') # .format(bbox))
+  config.write('/\n')
+  
   config.close()
   return abspath(config_file)
 
-def subset(resource=[], bbox='-80,50,22.5,70', normalize=False):
+def subset(resource=[], bbox='-80,50,22.5,70'):
   """
   returns a subset
   :param resource: netCDF input files of one dataset
@@ -58,7 +72,6 @@ def subset(resource=[], bbox='-80,50,22.5,70', normalize=False):
   from tempfile import mkstemp
   from cdo import Cdo 
   cdo = Cdo()
-
   resource.sort()
 
   ip, nc_concat = mkstemp(dir='.',suffix='.nc')
@@ -68,11 +81,42 @@ def subset(resource=[], bbox='-80,50,22.5,70', normalize=False):
   nc_subset = cdo.sellonlatbox('%s' % bbox, input=nc_concat, output=nc_subset)
   logger.info('subset done: %s ' % nc_subset)
   
-  if normalize == True: 
-    nc_subset = nc_subset
-
   return nc_subset
 
+def seacyc(archive, simulation, method='base'):
+  """
+  substracts the seasonal cycle
+  :param archive: netCDF file containing the reference period
+  :param simulation: netCDF file containg the period to be analysed
+  :param method: method to generat the seasonal cycle files
+                 base = seasonal cycle generated from reference period
+                 sim = seasonal cycle generated from period to be analysed
+                 own = seasonal cycle generated for both time windows
+                 
+  """
+  from shutil import copy
+  from cdo import Cdo 
+  cdo = Cdo()
+
+ # calculate seasonal cycle and add an additional file into the working directory 
+ # base) cdo -s ydaymean ${basedir}base_${varname}_${dtrstr}${region}_${datestring1}_${namestring}.nc seasoncyc_base.nc
+ #       cp seasoncyc_base.nc seasoncyc_sim.nc ;;
+ # sim)  cdo -s ydaymean ${simdir}sim_${varname}_${dtrstr}${region}_${datestring2}_${namestring}.nc seasoncyc_sim.nc
+ #       cp seasoncyc_sim.nc seasoncyc_base.nc ;;
+ # own)  cdo -s ydaymean ${basedir}base_${varname}_${dtrstr}${region}_${datestring1}_${namestring}.nc seasoncyc_base.nc
+ #       cdo -s ydaymean ${simdir}sim_${varname}_${dtrstr}${region}_${datestring2}_${namestring}.nc seasoncyc_sim.nc ;;
+  if method == 'base':
+    seasoncyc_base = cdo.ydaymean(input=archive, output='seasoncyc_base.nc' )
+    seasoncyc_sim = 'seasoncyc_sim.nc'
+    copy(seasoncyc_base, seasoncyc_sim)
+  if method == 'sim':
+    seasoncyc_sim  = cdo.ydaymean(input=simulation, output='seasoncyc_sim.nc' )
+    seasoncyc_base = 'seasoncyc_base.nc'
+    copy(seasoncyc_sim, seasoncyc_base)
+  if method == 'own':
+    seasoncyc_base = cdo.ydaymean(input=archive, output='seasoncyc_base.nc' )
+    seasoncyc_sim  = cdo.ydaymean(input=simulation, output='seasoncyc_sim.nc' )
+  return seasoncyc_base, seasoncyc_sim
 
 # start_date=`date +"%d/%m/%Y (%H:%M:%S)"`
 # echo -e "\n\nStarting script at: ${start_date}\n"
