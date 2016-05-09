@@ -127,6 +127,7 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
     from os.path import join, dirname, exists
     from flyingpigeon import ocgis_module
     from flyingpigeon.subset import clipping
+    import uuid
 
     #DIR_SHP = config.shapefiles_dir()
     #env.DIR_SHPCABINET = DIR_SHP
@@ -166,7 +167,7 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
                      dimension_map=dimension_map, 
                      calc=calc,
                      #alc_grouping= calc_group, 
-                     prefix=key, 
+                     prefix=str(uuid.uuid4()), 
                      dir_output=dir_output,
                      output_format='nc')
 
