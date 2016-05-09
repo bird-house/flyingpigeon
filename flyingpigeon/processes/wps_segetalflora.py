@@ -49,16 +49,16 @@ class SegetalfloraProcess(WPSProcess):
       allowedValues=["fallow", "intensiv", "extensiv"] # sem
       )
     
-    self.region = self.addLiteralInput(
-      identifier="region",
-      title="Region",
-      abstract="European Regions ...",
-      default='FRA',
-      type=type(''),
-      minOccurs=0,
-      maxOccurs=25,
-      allowedValues=countries() 
-      )
+    #self.region = self.addLiteralInput(
+      #identifier="region",
+      #title="Region",
+      #abstract="European Regions ...",
+      #default='FRA',
+      #type=type(''),
+      #minOccurs=0,
+      #maxOccurs=25,
+      #allowedValues=countries() 
+      #)
 
 
     #complex output
@@ -158,14 +158,14 @@ class SegetalfloraProcess(WPSProcess):
     ncs = self.getInputValues(identifier='netcdf_file')
     climate_type = self.climate_type.getValue()
     culture_type = self.culture_type.getValue()
-    countries = self.getInputValues(identifier='region')
+    #countries = self.getInputValues(identifier='region')
     
     if type(climate_type) != list:
       climate_type = list([climate_type])
     if type(culture_type) != list:
       culture_type = list([culture_type])
-    if type(countries) != list:
-      countries = list([countries])
+    #if type(countries) != list:
+      #countries = list([countries])
       
     logging.debug('urls for %s ncs found' % (len(ncs)))
     logging.debug('culture type: %s ' % (culture_type))
@@ -179,11 +179,10 @@ class SegetalfloraProcess(WPSProcess):
         per = (start / stepps) * 95
         self.status.set('%s/%s processing for %s climate type: %s' %(start, stepps, culture_type, climate_type), per)
         try:
-          sf_files =  sf.get_segetalflora(ncs, culture_type=cult,
-                                          climate_type=clim,
-                                          #countries=countries, 
-                                          dir_output=dir_tas,
-                                          dir_segetalflora=dir_segetalflora)
+          sf_files =  sf.get_segetalflora(resource=ncs, dir_output=dir_tas, 
+                                          culture_type=cult, climate_type=clim,
+                                          region=None, dimension_map=None)
+            
           self.status.set("processing of %s segetalflora files done " % (len(sf_files)) , 95)
         except Exception as e:
           logging.exception('segetalflora calculation failed %s %s' % ( climate_type, culture_type))
