@@ -97,13 +97,13 @@ def get_indices(resources, indices):
       try: 
         name , month = indice.split('_')
         variable=key.split('_')[0]
-        print name, month , variable 
+        # print name, month , variable 
         if variable == indice_variable(name):
           logger.info('calculating indice %s ' % indice)
-          grouping = calc_grouping(month)
           prefix=key.replace(variable, name).replace('_day_','_%s_' % month)
-          nc = calc_indice_single(resource=ncs[key], variable=variable, prefix=prefix, indices=indice,  groupings=grouping)
+          nc = calc_indice_single(resource=ncs[key], variable=variable, prefix=prefix, indices=name,  groupings=month)
           
+          #grouping = calc_grouping(month)
           #calc = [{'func' : 'icclim_' + name, 'name' : name}] 
           #nc = call(resource=ncs[key], variable=variable, calc=calc, calc_grouping=grouping, prefix=prefix , memory_limit=500) #memory_limit=500
           

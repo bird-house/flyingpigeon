@@ -8,6 +8,8 @@ ncs_indices = ['/home/nils/data/sdm/RX1day_EUR-11_MPI-M-MPI-ESM-LR_historical_r1
 ncs_references = ['/home/nils/data/sdm/RX1day_EUR-11_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_JJA_ref-1998-2000.nc','/home/nils/data/sdm/TG_EUR-11_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_JJA_ref-1998-2000.nc','/home/nils/data/sdm/TNn_EUR-11_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_Jan_ref-1998-2000.nc']
 
 
+ncs_references = ['/home/nils/.conda/envs/birdhouse/etc/pywps/TNn_EUR-11_CNRM-CERFACS-CNRM-CM5_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_Jan_ref-all.nc', '/home/nils/.conda/envs/birdhouse/etc/pywps/TG_EUR-11_CNRM-CERFACS-CNRM-CM5_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_JJA_ref-all.nc', '/home/nils/.conda/envs/birdhouse/etc/pywps/PRCPTOT_EUR-11_CNRM-CERFACS-CNRM-CM5_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_JJA_ref-all.nc']
+
 ncs_indices = ['/home/nils/data/sdm/TG_EUR-11_CNRM-CERFACS-CNRM-CM5_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_JJA_20010101-20050101.nc',
 '/home/nils/data/sdm/TG_EUR-11_ICHEC-EC-EARTH_historical_r12i1p1_CLMcom-CCLM4-8-17_v1_JJA_20010101-20050101.nc',
 '/home/nils/data/sdm/TG_EUR-11_ICHEC-EC-EARTH_historical_r1i1p1_KNMI-RACMO22E_v1_JJA_20010101-20050101.nc',
