@@ -84,7 +84,7 @@ def get_PAmask(coordinates=[], domain='EUR-11'):
 def get_indices(resources, indices):
   from flyingpigeon.utils import sort_by_filename, calc_grouping, drs_filename
   from flyingpigeon.ocgis_module import call
-  from flyingpigeon.indices import indice_variable
+  from flyingpigeon.indices import indice_variable, calc_indice_single
 
   #names = [drs_filename(nc, skip_timestamp=False, skip_format=False, 
   #               variable=None, rename_file=True, add_file_path=True) for nc in resources]
@@ -99,14 +99,15 @@ def get_indices(resources, indices):
         variable=key.split('_')[0]
         print name, month , variable 
         if variable == indice_variable(name):
-          
           logger.info('calculating indice %s ' % indice)
           grouping = calc_grouping(month)
-          calc = [{'func' : 'icclim_' + name, 'name' : name}]
           prefix=key.replace(variable, name).replace('_day_','_%s_' % month)
-           
-          nc = call(resource=ncs[key], variable=variable, calc=calc, calc_grouping=grouping, prefix=prefix , memory_limit=500) #memory_limit=500
-          ncs_indices.append(nc)
+          nc = calc_indice_single(resource=ncs[key], variable=variable, prefix=prefix, indices=indice,  groupings=grouping)
+          
+          #calc = [{'func' : 'icclim_' + name, 'name' : name}] 
+          #nc = call(resource=ncs[key], variable=variable, calc=calc, calc_grouping=grouping, prefix=prefix , memory_limit=500) #memory_limit=500
+          
+          ncs_indices.append(nc[0])
           logger.info('Successful calculated indice %s %s' % (key, indice))
       except Exception as e: 
         logger.exception('failed to calculate indice %s %s' % (key, indice))    

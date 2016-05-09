@@ -54,7 +54,7 @@ class SingleIndicesProcess(WPSProcess):
         self.polygons = self.addLiteralInput(
             identifier="polygons",
             title="Country subset",
-            abstract= countries_longname(), 
+            abstract= str(countries_longname()), 
             #default='FRA',
             type=type(''),
             minOccurs=0,
