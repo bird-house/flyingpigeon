@@ -158,7 +158,21 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
         variable = get_variable(experiments[key][0])
         #variable = key.split('_')[0]
       try: 
-        ncs = experiments[key]
+        
+        if variable == 'pr': 
+          calc = 'pr=pr*86400'
+          ncs = ocgis_module.call(resource=experiments[key],
+                     variable=variable,
+                     dimension_map=dimension_map, 
+                     calc=calc,
+                     #alc_grouping= calc_group, 
+                     prefix=key, 
+                     dir_output=dir_output,
+                     output_format='nc')
+
+        else:
+          ncs = experiments[key]
+          
         for indice in indices:
           logger.info('indice: %s' % indice)
           try: 
