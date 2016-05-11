@@ -217,7 +217,6 @@ def get_gam(ncs_reference, PAmask):
   except Exception as e:
     logger.debug('form string generation for gam failed')
   
-  
   dataf = ro.DataFrame(data)
   eq = ro.Formula(str(form))
   
@@ -236,16 +235,14 @@ def get_gam(ncs_reference, PAmask):
   for i in range(1,len(ncs_reference)+1):
     ip, info =  mkstemp(dir='.',suffix='.png')
     infos.append(info)
-
     grdevices.png(filename=info)
-    
     #ylim = ro.IntVector([-6,6])
-    mgcv.plot_gam(gam_model, shade='T', col='black',select=i,ylab='Predicted Probability',rug=False , cex_lab = 1.4, cex_axis = 1.4, ) 
-    #ylim=ylim,  trans=base.eval(trans),
+    trans = ro.r('function(x){exp(x)/(1+exp(x))}')
+    mgcv.plot_gam(gam_model, trans=trans, shade='T', col='black',select=i,ylab='Predicted Probability',rug=False , cex_lab = 1.4, cex_axis = 1.4, ) #
+    #ylim=ylim,  ,
     grdevices.dev_off()
-
+    
   infos_concat = concat_images(infos, orientation='h')
-
   predict_gam = mgcv.predict_gam(gam_model, type="response", progress="text", na_action=stats.na_exclude) #, 
   prediction = array(predict_gam).reshape(domain)
     

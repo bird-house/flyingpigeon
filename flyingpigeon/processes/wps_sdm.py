@@ -54,11 +54,11 @@ class SDMProcess(WPSProcess):
             title="Indices",
             abstract="Climate indices related to growth condition of tree species",
             #default="TG_JJA",
-            default="all",
+            default=['TG_JJA', 'TNn_Jan', 'PRCPTOT_JJA'],
             type=type(''),
             minOccurs=1,
-            maxOccurs=1,
-            allowedValues=['all', 'TG_JJA', 'TNn_Jan', 'PRCPTOT_JJA'] # 'PRCPTOT_JJA'
+            maxOccurs=3,
+            allowedValues=['TG_JJA', 'TNn_Jan', 'PRCPTOT_JJA'] # 'PRCPTOT_JJA'
             )
 
         self.period = self.addLiteralInput(
@@ -159,8 +159,8 @@ class SDMProcess(WPSProcess):
         period = self.getInputValues(identifier='period')
         period = period[0]
         indices = self.getInputValues(identifier='indices')
-        if 'all' in indices:
-            indices = ['TG_JJA', 'TNn_Jan', 'PRCPTOT_JJA'] # 
+        #if 'all' in indices:
+            #indices = ['TG_JJA', 'TNn_Jan', 'PRCPTOT_JJA'] # 
         
         archive_format = self.archive_format.getValue()
       except Exception as e: 
