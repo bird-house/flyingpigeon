@@ -172,38 +172,57 @@ def get_gam(ncs_reference, PAmask):
   from numpy import squeeze, ravel, isnan, nan, array, reshape
   
   from flyingpigeon.utils import get_variable
-  from rpy2.robjects.packages import importr
-  import rpy2.robjects as ro
+  
 
-  import rpy2.robjects.numpy2ri
-  rpy2.robjects.numpy2ri.activate()
+  try:
+    from rpy2.robjects.packages import importr
+    import rpy2.robjects as ro
+    import rpy2.robjects.numpy2ri
+    
+    rpy2.robjects.numpy2ri.activate()
+    
+    base = importr("base")
+    stats = importr("stats")
+    mgcv = importr("mgcv")
+    logger.info('rpy2 modules imported')
+  except Exception as e: 
+    msg = 'failed to import rpy2 modules %s' % e
+    logger.debug(msg)
+    raise Exception(msg)
   
-  base = importr("base")
-  stats = importr("stats")
-  mgcv = importr("mgcv")
-  
-  data = {'PA': ro.FloatVector(ravel(PAmask))}
-  domain = PAmask.shape
+  try: 
+    data = {'PA': ro.FloatVector(ravel(PAmask))}
+    domain = PAmask.shape
+    logger.info('mask data converted to R float vector')
+  except Exception as e: 
+    msg = 'failed to convert mask to R vector'
   
   form = 'PA ~ '
   ncs_reference.sort()
   
-  for i , nc in enumerate(ncs_reference):
-    var = get_variable(nc)
-    agg = basename(nc).split('_')[-2]
-    ds = Dataset(nc)
-    vals = squeeze(ds.variables[var])
-    vals[isnan(PAmask)] = nan 
-    indice = '%s_%s' % (var, agg)
-    data[str(indice)] = ro.FloatVector(ravel(vals))
-    if i == 0:
-      form = form + 's(%s, k=3)' % indice 
-    else: 
-      form = form + ' + s(%s, k=3)' % indice
+  try:
+    for i , nc in enumerate(ncs_reference):
+      var = get_variable(nc)
+      agg = basename(nc).split('_')[-2]
+      ds = Dataset(nc)
+      vals = squeeze(ds.variables[var])
+      vals[vals > 1000 ] = 0 
+      vals[isnan(PAmask)] = nan 
+      indice = '%s_%s' % (var, agg)
+      data[str(indice)] = ro.FloatVector(ravel(vals))
+      if i == 0:
+        form = form + 's(%s, k=3)' % indice 
+      else: 
+        form = form + ' + s(%s, k=3)' % indice
+  except Exception as e:
+    logger.debug('form string generation for gam failed')
+  
   
   dataf = ro.DataFrame(data)
   eq = ro.Formula(str(form))
-  gam_model = mgcv.gam(base.eval(eq), data=dataf, family=stats.binomial(), scale=-1, na_action=stats.na_exclude)
+  
+  gam_model = mgcv.gam(base.eval(eq), data=dataf, family=stats.binomial(), scale=-1, na_action=stats.na_exclude) # 
+  
   grdevices = importr('grDevices')
   
   ### ###########################
