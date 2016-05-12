@@ -233,9 +233,11 @@ def get_gam(ncs_reference, PAmask):
   infos = []
 
   for i in range(1,len(ncs_reference)+1):
+    #ip, info =  mkstemp(dir='.',suffix='.pdf')
     ip, info =  mkstemp(dir='.',suffix='.png')
     infos.append(info)
     grdevices.png(filename=info)
+    #grdevices.pdf(filename=info)
     #ylim = ro.IntVector([-6,6])
     trans = ro.r('function(x){exp(x)/(1+exp(x))}')
     mgcv.plot_gam(gam_model, trans=trans, shade='T', col='black',select=i,ylab='Predicted Probability',rug=False , cex_lab = 1.4, cex_axis = 1.4, ) #

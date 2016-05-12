@@ -49,16 +49,16 @@ class SDMProcess(WPSProcess):
             #formats=[{"mimeType":"application/zip"}],
             )
         
-        self.indices = self.addLiteralInput(
-            identifier="indices",
+        self.input_indices = self.addLiteralInput(
+            identifier="input_indices",
             title="Indices",
             abstract="Climate indices related to growth condition of tree species",
             #default="TG_JJA",
-            default=['TG_JJA', 'TNn_Jan', 'PRCPTOT_JJA'],
+            default=['all'],
             type=type(''),
             minOccurs=1,
             maxOccurs=3,
-            allowedValues=['TG_JJA', 'TNn_Jan', 'PRCPTOT_JJA'] # 'PRCPTOT_JJA'
+            allowedValues=['all','TG_JJA', 'TNn_Jan', 'PRCPTOT_JJA'] # 'PRCPTOT_JJA'
             )
 
         self.period = self.addLiteralInput(
@@ -156,11 +156,13 @@ class SDMProcess(WPSProcess):
         logger.info('reading the arguments')
         resources = self.getInputValues(identifier='resources')
         gbif = self.getInputValues(identifier='gbif')
+        #period = self.period.getValue()
         period = self.getInputValues(identifier='period')
         period = period[0]
-        indices = self.getInputValues(identifier='indices')
-        #if 'all' in indices:
-            #indices = ['TG_JJA', 'TNn_Jan', 'PRCPTOT_JJA'] # 
+        indices = self.input_indices.getValue()
+        #indices = self.getInputValues(identifier='indices')
+        if 'all' in indices:
+            indices = ['TG_JJA', 'TNn_Jan', 'PRCPTOT_JJA'] # 
         
         archive_format = self.archive_format.getValue()
       except Exception as e: 

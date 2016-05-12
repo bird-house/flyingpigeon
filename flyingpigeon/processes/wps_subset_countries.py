@@ -7,6 +7,8 @@ from flyingpigeon.subset import countries, countries_longname
 from pywps.Process import WPSProcess
 
 import logging
+logger = logging.getLogger(__name__)
+
 
 class ClippingProcess(WPSProcess):
     def __init__(self):
@@ -86,20 +88,21 @@ class ClippingProcess(WPSProcess):
         mosaik = self.mosaik.getValue()
         regions = self.region.getValue()
         variable = self.variable.getValue()
+        
+        #logger.info('regions: %s' % regions)
 
         dimension_map = self.dimension_map.getValue()
         if dimension_map != None: 
             dimension_map = literal_eval(dimension_map)
 
-
-        logging.debug('urls = %s', urls)
-        logging.debug('regions = %s', regions)
-        logging.debug('mosaik = %s', mosaik)
-        logging.debug('dimension_map = %s', dimension_map)
+        logger.info('urls = %s', urls)
+        logger.info('regions = %s', regions)
+        logger.info('mosaik = %s', mosaik)
+        logger.info('dimension_map = %s', dimension_map)
     
         self.status.set('Arguments set for subset process', 0)
 
-        logging.debug('starting: regions=%s, num_files=%s' % (len(regions), len(urls)))
+        logger.debug('starting: regions=%s, num_files=%s' % (len(regions), len(urls)))
 
         try:
             results = clipping(
@@ -112,7 +115,7 @@ class ClippingProcess(WPSProcess):
                 )
 
         except Exception as e:
-            logging.exception('clipping failed')
+            logger.exception('clipping failed')
             self.status.set('clipping failed')
         # prepare tar file 
         try: 
@@ -123,9 +126,9 @@ class ClippingProcess(WPSProcess):
                 tar.add( result , arcname = result.replace(os.path.abspath(os.path.curdir), ""))
             tar.close()
 
-            logging.info('Tar file prepared')
+            logger.info('Tar file prepared')
         except Exception as e:
-            logging.exception('Tar file preparation failed')
+            logger.exception('Tar file preparation failed')
             raise
 
         self.output.setValue( tarf )
