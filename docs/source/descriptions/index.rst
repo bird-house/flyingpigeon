@@ -3,7 +3,7 @@
 Processes in Flyingpigeon
 *************************
 
-Flyingpigeon provides processes for climate model data analytis, climate impact studies and extrem values investigatins. 
+Flyingpigeon provides processes for climate model data analysis, climate impact studies and investigations of extremes. 
 
 
 
@@ -13,7 +13,7 @@ Analog pressure pattern
 -----------------------
 
 
-CASTf90 first downloads fields from NCEP reanalysis (sea level pressure, slp, as default) and then searches for a given simulation period the most similar cases within a given data base period according to a given distance measure. Finally it writes the N most similar days including the calculated distances for them to an output file
+CASTf90 first downloads fields from NCEP reanalysis (sea level pressure, slp, as default) and then searches in a given simulation period for the most similar cases within a given data base period according to a given distance measure. Finally, it writes the N most similar days, including their calculated distances from the reference case, to an output file.
 
 
 .. _extract_coordinates
@@ -21,14 +21,14 @@ CASTf90 first downloads fields from NCEP reanalysis (sea level pressure, slp, as
 extract 1D Timeseries from coordinate points
 --------------------------------------------
 
-Extract Timeseries for specified coordinates from grided data
+Extract Timeseries for specified coordinates from gridded data.
 
-.. _extremvalues: 
+.. _extremevalues: 
 
-Extremvalues
+Extremevalues
 -------------
 
-Calculation of retun time Values for 1D time series. 
+Calculation of return time Values for 1D timeseries. 
 
 
 .. _getEOBS_inCORDEXformat: 
@@ -36,7 +36,7 @@ Calculation of retun time Values for 1D time series.
 get EOBS Data in CORDEX format
 -------------------------------
 
-converts EOBS data files into the CORDEX convetion. (variable names, attributes etc ... )
+converts EOBS data files into the CORDEX convention. (variable names, attributes, etc ... ).
 
 .. _fetch: 
 
@@ -44,36 +44,36 @@ converts EOBS data files into the CORDEX convetion. (variable names, attributes 
 Download Resources
 ------------------
 
-Downloads resources (limited to 50GB) to the local file system of the birdhouse compute provider
+Downloads resources (limited to 50GB) to the local file system of the birdhouse computer provider.
 
 .. _indices:
 
-Climate indice
---------------
+Climate indices
+---------------
 
-Climate indice are values to describe the state the climate system for a certain parameter. Climate indice as timeseries can be used to describe or estimate the climte change over time. 
+Climate indices are values that describe the state the climate system for a certain parameter. Climate indices as timeseries can be used to describe or estimate the change in climte over time. 
 The climate indices processes in flyingpigeon are based on the python package 'Link icclim <http://icclim.readthedocs.org/en/latest/>'.
-they are subcassed to 
+they are subclassed to 
 
-* indice simple: 
+* index simple: 
 
 
 +--------+----------------+--------------------------------------------------------------------------------+
-| Indice | Input Variable | Definition                                                                     |
+| Index  | Input Variable | Definition                                                                     |
 +========+================+================================================================================+
-| TG     |        tas     | Mean of mean temperatur                                                        |
+| TG     |        tas     | Mean of mean temperature                                                       |
 +--------+----------------+--------------------------------------------------------------------------------+
-| TX     |     tasmax     | Mean of max temperatur                                                         |
+| TX     |     tasmax     | Mean of max temperature                                                        |
 +--------+----------------+--------------------------------------------------------------------------------+
-| TN     |     tasmin     | Mean of daily min temperatur                                                   |
+| TN     |     tasmin     | Mean of daily min temperature                                                  |
 +--------+----------------+--------------------------------------------------------------------------------+
-| TXn    |     tasmax     | Min of daily min temperatur                                                    |
+| TXn    |     tasmax     | Min of daily min temperature                                                   |
 +--------+----------------+--------------------------------------------------------------------------------+
-| TXx    |     tasmax     | Max of daily max temperatur                                                    |
+| TXx    |     tasmax     | Max of daily max temperature                                                   |
 +--------+----------------+--------------------------------------------------------------------------------+
-| TNn    |     tasmin     | Min of daily min temperatur                                                    |
+| TNn    |     tasmin     | Min of daily min temperature                                                   |
 +--------+----------------+--------------------------------------------------------------------------------+
-| TNx    |     tasmin     | Max of daily min temperatur                                                    |
+| TNx    |     tasmin     | Max of daily min temperature                                                   |
 +--------+----------------+--------------------------------------------------------------------------------+
 | SU     |     tasmax     | Nr of summer days  [tasmax > = 25°C]                                           |
 +--------+----------------+--------------------------------------------------------------------------------+
@@ -101,7 +101,7 @@ they are subcassed to
 +--------+----------------+--------------------------------------------------------------------------------+
 | SDII   |         pr     | Simple daily intensity index for wet days [mm/wet day]                         |
 +--------+----------------+--------------------------------------------------------------------------------+
-| R10mm  |         pr     | Nr of days >10mm                                                               |
+| R10mm  |         pr     | Nr of days > 10mm                                                              |
 +--------+----------------+--------------------------------------------------------------------------------+
 | R20mm  |         pr     | Nr of days with precipitation >= 20 mm                                         |
 +--------+----------------+--------------------------------------------------------------------------------+
@@ -121,39 +121,24 @@ they are subcassed to
 
 
 
-* indice percentile based 
+* index percentile based
 
-+------------+----------------+--------------------------------------------------------------------------------+
-| Indice     | Input Variable | Definition                                                                     |
-+============+================+================================================================================+
-| TG10p      |   tas          |    Days with TG < 10th percentile of daily mean temperature (cold days)        |
-+------------+----------------+--------------------------------------------------------------------------------+
-|  TX10p     |    tasmax      |    Days with TX < 10th percentile of daily maximum temperature (cold day-times)|
-+------------+----------------+--------------------------------------------------------------------------------+
-|  TN10p     |    tasmin      |    Days with TN < 10th percentile of daily minimum temperature (cold nights)   |
-+------------+----------------+--------------------------------------------------------------------------------+
-|  TG90p     |    tas         |    Days with TG > 90th percentile of daily mean temperature (warm days)        |
-+------------+----------------+--------------------------------------------------------------------------------+
-|  TX90p     |    tasmax      |    Days with TX > 90th percentile of daily maximum temperature (warm day-times)|
-+------------+----------------+--------------------------------------------------------------------------------+
-|  TN90p     |    tasmin      |    Days with TN > 90th percentile of daily minimum temperature (warm nights)   |
-+------------+----------------+--------------------------------------------------------------------------------+
-|  WSDI      |    tasmax      |    Warm-spell duration index                                                   |
-+------------+----------------+--------------------------------------------------------------------------------+
-|  CSDI      |    tasmin      |    Cold-spell duration index                                                   |
-+------------+----------------+--------------------------------------------------------------------------------+
-|  R75p      |    pr          |   Days with PRCPTOT > 75th percentile of daily amounts (moderate wet days)     |
-+------------+----------------+--------------------------------------------------------------------------------+
-|  R75pTOT   |    pr          |     Precipitation fraction due to moderate wet days (>75th percentile)         |
-+------------+----------------+--------------------------------------------------------------------------------+
-|  R95p      |    pr          |     Days with PRCPTOT > 95th percentile of daily amounts (very wet days)       |
-+------------+----------------+--------------------------------------------------------------------------------+
-|  R95pTOT   |    pr          |     Precipitation fraction due to very wet days (>95th percentile) (%)         |
-+------------+----------------+--------------------------------------------------------------------------------+
-|  R99p      |    pr          |     Days with PRCPTOT > 99th percentile of daily amounts (extremely wet days)  |
-+------------+----------------+--------------------------------------------------------------------------------+
-|  R99pTOT   |    pr          |     recipitation fraction due to extremely wet days (>99th percentile)(%)      |
-+------------+----------------+--------------------------------------------------------------------------------+
+_INDICESper_ = dict(
+    TG10p=dict(variable='tas', description='Days with TG < 10th percentile of daily mean temperature (cold days) (days)'),
+    TX10p=dict(variable='tasmax', description='Days with TX < 10th percentile of daily maximum temperature (cold day-times) (days)'),
+    TN10p=dict(variable='tasmin', description='Days with TN < 10th percentile of daily minimum temperature (cold nights) (days)'),
+    TG90p=dict(variable='tas', description='Days with TG > 90th percentile of daily mean temperature (warm days) (days)'),
+    TX90p=dict(variable='tasmax', description='Days with TX > 90th percentile of daily maximum temperature (warm day-times) (days)'),
+    TN90p=dict(variable='tasmin', description='Days with TN > 90th percentile of daily minimum temperature (warm nights) (days)'),
+    WSDI=dict(variable='tasmax', description='Warm-spell duration index (days)'),
+    CSDI=dict(variable='tasmin', description='Cold-spell duration index (days)'),
+    R75p=dict(variable='pr', description= 'Days with PRCPTOT > 75th percentile of daily amounts (moderate wet days) (days)'),
+    R75pTOT=dict(variable='pr', description= 'Precipitation fraction due to moderate wet days (>75th percentile) (%)'),
+    R95p=dict(variable='pr', description= 'Days with PRCPTOT > 95th percentile of daily amounts (very wet days) (days)'),
+    R95pTOT=dict(variable='pr', description= 'Precipitation fraction due to very wet days (>95th percentile) (%)'),
+    R99p=dict(variable='pr', description= 'Days with PRCPTOT > 99th percentile of daily amounts (extremely wet days)(days)'),
+    R99pTOT=dict(variable='pr', description= 'recipitation fraction due to extremely wet days (>99th percentile)(%)'),
+    )  
     
 
 .. _ensemble_Robustness:
@@ -161,25 +146,25 @@ they are subcassed to
 Robustness of an ensemble
 -------------------------
 
-Calculates the robustness as the ratio of noise to signal in an ensemle of timeseries
+Calculates the robustness as the ratio of noise to signal in an ensemble of timeseries.
 
 
 .. _segetalflora: 
 
 Segetalflora
 ------------
-Species biodiversity of segetal flora. Imput files: variable:tas , domain: EUR-11 or EUR-44
+Species biodiversity of segetal flora. Imput files: variable:tas , domain: EUR-11 or EUR-44.
 
 .. _sdm: 
 
 Species Distribution Model
 --------------------------
 
-Statistical approach to calculate the spatial favorability of climate sensitive species.
+Statistical approach to calculate the spatial favorability of climate-sensitive species.
 
-The appraoch is to be performed in two steps:
+The appraoch is performed in two steps:
 
-* Statistical training with species presents absense data and historical climate data
+* Statistical training with species presents absence data and historical climate data
 * future projection based on the statistical training
 
 .. _subset_countries: 
@@ -187,13 +172,13 @@ The appraoch is to be performed in two steps:
 Subset Counties 
 ---------------
 
-generates a polygon subset of input netCDF files 
+Generates a polygon subset of input netCDF files.
 
 
 Based on an ocgis call, several predfined polygons ( world counties ) can be used to generate an appropriate subset of input netCDF files. 
-The option 'MOSAIK' as an checkbox allows you to decide in case of multiple polygon selection, if the polygons are stiched together to one polygon (e.g. shape of Germany and France as one polygon) or calculated as seperte output files. 
+The option 'MOSAIK' as a checkbox allows you to decide, in the case of multiple polygon selection, if the polygons should be stitched together into one polygon (e.g. shape of Germany and France as one polygon) or calculated as separate output files. 
 
-For optimisation of processing the subset, the appropriate shapefile are prepared with the following stepps: 
+For optimisation of the subset process, the appropriate shapefiles are prepared as follows: 
 
 
 .. toctree::
@@ -207,7 +192,7 @@ Visualisation
 -------------
 
 Time series visualisation of netCDF files. 
-Creating a spagetti plot and an uncertainty plot.
+Creates a spaghetti plot and an uncertainty plot.
 
 
 .. _weatherregimes:
@@ -215,10 +200,10 @@ Creating a spagetti plot and an uncertainty plot.
 Weather Regimes
 ---------------
 
-Calculation of weatherregimes based on pressure patterns (kmean method). The processes is performing a pattern clusterfication for observations data ( NCEP ) as well as to model data. both results are compared
+Calculation of weather regimes based on pressure patterns (k-means clustering method). The processes clusters data into a predefined number of clusters. Performed on observation data ( NCEP ) and model data and the results of the clustering are compared.
  
 processing stepps: 
 
-* fetching observation data 
-* fetching model data
+* fetch observation data 
+* fetch model data
  
