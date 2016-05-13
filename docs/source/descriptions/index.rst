@@ -121,24 +121,39 @@ they are subcassed to
 
 
 
-* indice percentile based
+* indice percentile based 
 
-_INDICESper_ = dict(
-    TG10p=dict(variable='tas', description='Days with TG < 10th percentile of daily mean temperature (cold days) (days)'),
-    TX10p=dict(variable='tasmax', description='Days with TX < 10th percentile of daily maximum temperature (cold day-times) (days)'),
-    TN10p=dict(variable='tasmin', description='Days with TN < 10th percentile of daily minimum temperature (cold nights) (days)'),
-    TG90p=dict(variable='tas', description='Days with TG > 90th percentile of daily mean temperature (warm days) (days)'),
-    TX90p=dict(variable='tasmax', description='Days with TX > 90th percentile of daily maximum temperature (warm day-times) (days)'),
-    TN90p=dict(variable='tasmin', description='Days with TN > 90th percentile of daily minimum temperature (warm nights) (days)'),
-    WSDI=dict(variable='tasmax', description='Warm-spell duration index (days)'),
-    CSDI=dict(variable='tasmin', description='Cold-spell duration index (days)'),
-    R75p=dict(variable='pr', description= 'Days with PRCPTOT > 75th percentile of daily amounts (moderate wet days) (days)'),
-    R75pTOT=dict(variable='pr', description= 'Precipitation fraction due to moderate wet days (>75th percentile) (%)'),
-    R95p=dict(variable='pr', description= 'Days with PRCPTOT > 95th percentile of daily amounts (very wet days) (days)'),
-    R95pTOT=dict(variable='pr', description= 'Precipitation fraction due to very wet days (>95th percentile) (%)'),
-    R99p=dict(variable='pr', description= 'Days with PRCPTOT > 99th percentile of daily amounts (extremely wet days)(days)'),
-    R99pTOT=dict(variable='pr', description= 'recipitation fraction due to extremely wet days (>99th percentile)(%)'),
-    )  
++------------+----------------+--------------------------------------------------------------------------------+
+| Indice     | Input Variable | Definition                                                                     |
++============+================+================================================================================+
+| TG10p      |   tas          |    Days with TG < 10th percentile of daily mean temperature (cold days)        |
++------------+----------------+--------------------------------------------------------------------------------+
+|  TX10p     |    tasmax      |    Days with TX < 10th percentile of daily maximum temperature (cold day-times)|
++------------+----------------+--------------------------------------------------------------------------------+
+|  TN10p     |    tasmin      |    Days with TN < 10th percentile of daily minimum temperature (cold nights)   |
++------------+----------------+--------------------------------------------------------------------------------+
+|  TG90p     |    tas         |    Days with TG > 90th percentile of daily mean temperature (warm days)        |
++------------+----------------+--------------------------------------------------------------------------------+
+|  TX90p     |    tasmax      |    Days with TX > 90th percentile of daily maximum temperature (warm day-times)|
++------------+----------------+--------------------------------------------------------------------------------+
+|  TN90p     |    tasmin      |    Days with TN > 90th percentile of daily minimum temperature (warm nights)   |
++------------+----------------+--------------------------------------------------------------------------------+
+|  WSDI      |    tasmax      |    Warm-spell duration index                                                   |
++------------+----------------+--------------------------------------------------------------------------------+
+|  CSDI      |    tasmin      |    Cold-spell duration index                                                   |
++------------+----------------+--------------------------------------------------------------------------------+
+|  R75p      |    pr          |   Days with PRCPTOT > 75th percentile of daily amounts (moderate wet days)     |
++------------+----------------+--------------------------------------------------------------------------------+
+|  R75pTOT   |    pr          |     Precipitation fraction due to moderate wet days (>75th percentile)         |
++------------+----------------+--------------------------------------------------------------------------------+
+|  R95p      |    pr          |     Days with PRCPTOT > 95th percentile of daily amounts (very wet days)       |
++------------+----------------+--------------------------------------------------------------------------------+
+|  R95pTOT   |    pr          |     Precipitation fraction due to very wet days (>95th percentile) (%)         |
++------------+----------------+--------------------------------------------------------------------------------+
+|  R99p      |    pr          |     Days with PRCPTOT > 99th percentile of daily amounts (extremely wet days)  |
++------------+----------------+--------------------------------------------------------------------------------+
+|  R99pTOT   |    pr          |     recipitation fraction due to extremely wet days (>99th percentile)(%)      |
++------------+----------------+--------------------------------------------------------------------------------+
     
 
 .. _ensemble_Robustness:
