@@ -54,7 +54,7 @@ class SDMProcess(WPSProcess):
             title="Indices",
             abstract="Climate indices related to growth condition of tree species",
             #default="TG_JJA",
-            default=['all'],
+            default="all",
             type=type(''),
             minOccurs=1,
             maxOccurs=3,
@@ -159,8 +159,9 @@ class SDMProcess(WPSProcess):
         #period = self.period.getValue()
         period = self.getInputValues(identifier='period')
         period = period[0]
-        indices = self.input_indices.getValue()
-        #indices = self.getInputValues(identifier='indices')
+        #indices = self.input_indices.getValue()
+        indices = self.getInputValues(identifier='input_indices')
+        logger.debug("indices = %s", indices)
         if 'all' in indices:
             indices = ['TG_JJA', 'TNn_Jan', 'PRCPTOT_JJA'] # 
         
