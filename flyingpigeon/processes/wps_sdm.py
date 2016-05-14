@@ -53,12 +53,11 @@ class SDMProcess(WPSProcess):
             identifier="input_indices",
             title="Indices",
             abstract="Climate indices related to growth condition of tree species",
-            #default="TG_JJA",
-            default="all",
+            default=['TG_JJA', 'TNn_Jan',],
             type=type(''),
             minOccurs=1,
             maxOccurs=3,
-            allowedValues=['all','TG_JJA', 'TNn_Jan', 'PRCPTOT_JJA'] # 'PRCPTOT_JJA'
+            allowedValues=['TG_JJA', 'TNn_Jan', 'PRCPTOT_JJA']
             )
 
         self.period = self.addLiteralInput(
@@ -162,8 +161,6 @@ class SDMProcess(WPSProcess):
         #indices = self.input_indices.getValue()
         indices = self.getInputValues(identifier='input_indices')
         logger.debug("indices = %s", indices)
-        if 'all' in indices:
-            indices = ['TG_JJA', 'TNn_Jan', 'PRCPTOT_JJA'] # 
         
         archive_format = self.archive_format.getValue()
       except Exception as e: 
@@ -305,9 +302,7 @@ class SDMProcess(WPSProcess):
 
         try:
           gam_model, predict_gam, gam_info = sdm.get_gam(ncs_references,PAmask)
-
           statistics_info.append(gam_info)
-
           self.status.set('GAM sucessfully trained', 70)
         except:
           msg = 'failed to train GAM'  

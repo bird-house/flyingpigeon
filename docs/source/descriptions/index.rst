@@ -16,35 +16,6 @@ Analog pressure pattern
 CASTf90 first downloads fields from NCEP reanalysis (sea level pressure, slp, as default) and then searches in a given simulation period for the most similar cases within a given data base period according to a given distance measure. Finally, it writes the N most similar days, including their calculated distances from the reference case, to an output file.
 
 
-.. _extract_coordinates
-
-extract 1D Timeseries from coordinate points
---------------------------------------------
-
-Extract Timeseries for specified coordinates from gridded data.
-
-.. _extremevalues: 
-
-Extremevalues
--------------
-
-Calculation of return time Values for 1D timeseries. 
-
-
-.. _getEOBS_inCORDEXformat: 
-
-get EOBS Data in CORDEX format
--------------------------------
-
-converts EOBS data files into the CORDEX convention. (variable names, attributes, etc ... ).
-
-.. _fetch: 
-
-
-Download Resources
-------------------
-
-Downloads resources (limited to 50GB) to the local file system of the birdhouse computer provider.
 
 .. _indices:
 
@@ -55,8 +26,9 @@ Climate indices are values that describe the state the climate system for a cert
 The climate indices processes in flyingpigeon are based on the python package 'Link icclim <http://icclim.readthedocs.org/en/latest/>'.
 they are subclassed to 
 
-* index simple: 
+* simple indices:
 
+Simple indices are based on a single input variable, and with and an simple calculation algorythem.
 
 +--------+----------------+--------------------------------------------------------------------------------+
 | Index  | Input Variable | Definition                                                                     |
@@ -119,8 +91,14 @@ they are subclassed to
 +--------+----------------+--------------------------------------------------------------------------------+
 
 
-* index percentile based
+* Percentile based indices:
+---------------------------
 
+
+Percentile based indices requires two additional calculation stepps: 
+
+* Calculation of the appropriate percentile value for a given revenence period
+* Counting of days beyond the threshold
 
 +------------+----------------+--------------------------------------------------------------------------------+
 | Indice     | Input Variable | Definition                                                                     |
@@ -154,6 +132,37 @@ they are subclassed to
 |  R99pTOT   |    pr          |    Precipitation fraction due to extremely wet days (>99th percentile)(%)      |
 +------------+----------------+--------------------------------------------------------------------------------+
 
+
+
+.. _extract_coordinates
+
+extract 1D Timeseries from coordinate points
+--------------------------------------------
+
+Extract Timeseries for specified coordinates from gridded data.
+
+.. _extremevalues: 
+
+Extremevalues
+-------------
+
+Calculation of return time Values for 1D timeseries. 
+
+
+.. _getEOBS_inCORDEXformat: 
+
+get EOBS Data in CORDEX format
+-------------------------------
+
+converts EOBS data files into the CORDEX convention. (variable names, attributes, etc ... ).
+
+.. _fetch: 
+
+
+Download Resources
+------------------
+
+Downloads resources (limited to 50GB) to the local file system of the birdhouse computer provider.
 
 
 .. _ensemble_Robustness:
@@ -194,9 +203,11 @@ Example with Phoenix (GUI):
     |_ Choose a Web Processing Service: Flyingpigeon 
       |_ Choose WPS Process of Flyingpigeon: Species distribution model - Species distribution model (SDM) 
         |_ Literal inputs of Species distribution model :
+
         
 .. image:: ../pics/sdm_literalinputs.png
-        
+
+
           |_ Choose Input Parameter of Species distribution model: netCDF
             |_ Choose Data Source : Earth System Grid (ESGF) 
             
