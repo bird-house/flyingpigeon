@@ -24,7 +24,7 @@ Contents:
    installation
    configuration
    descriptions/index
-   examples
+   tutorials
    
  
 

@@ -1,5 +1,5 @@
 Shapefile preparation
-========================
+=====================
 
 This text describes how to prepare, simplify and customize shapefiles from the `GADM database <http://www.gadm.org/>`_. We used GADM version 2.7.
 

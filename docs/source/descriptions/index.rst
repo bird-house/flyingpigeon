@@ -1,13 +1,8 @@
-.. _processes:
+Processes:
+**********
 
-Processes in Flyingpigeon
-*************************
+Flyingpigeon provides processes (also named as workflows ) for climate model data analysis, climate impact studies and investigations of extremes. 
 
-Flyingpigeon provides processes for climate model data analysis, climate impact studies and investigations of extremes. 
-
-
-
-.. _analogs:
 
 Analog pressure pattern
 -----------------------
@@ -16,19 +11,44 @@ Analog pressure pattern
 CASTf90 first downloads fields from NCEP reanalysis (sea level pressure, slp, as default) and then searches in a given simulation period for the most similar cases within a given data base period according to a given distance measure. Finally, it writes the N most similar days, including their calculated distances from the reference case, to an output file.
 
 
-.. _indices:
-
-
 Climate indices
 ---------------
 
 
-Climate indices are values that describe the state the climate system for a certain parameter. Climate indices as timeseries can be used to describe or estimate the change in climte over time. 
+Climate indices are values that describe the state the climate system for a certain parameter. Climate indices as timeseries can be used to describe or estimate the change in climte over time.
+Climate indices have to be calculated for a given time aggregation: 
+
+
++-------------+-------------+---------+
+|             | Time        |values   |
+|             | aggregation |per year | 
++-------------+-------------+---------+
+| mon         | monthly     | 12      |
++-------------+-------------+---------+
+| sem         | seasonal    | 4       |          
++-------------+-------------+---------+
+| yr          | yearly      | 1       |
++-------------+-------------+---------+
+| ONDJFM      | winter half | 1       |
++-------------+-------------+---------+ 
+| AMJJAS      | summer half | 1       |
++-------------+-------------+---------+
+| DJF         | winter      | 1       |                
++-------------+-------------+---------+ 
+| MAM         | Spring      | 1       |
++-------------+-------------+---------+ 
+| JJA         | Summer      | 1       |
++-------------+-------------+---------+ 
+| SON         | Autumn      | 1       |
++-------------+-------------+---------+ 
+| JAN         | Januar      | 1       |
++-------------+-------------+---------+
+
 The climate indices processes in flyingpigeon are based on the python package 'Link icclim <http://icclim.readthedocs.org/en/latest/>'.
 they are subclassed to 
 
 Simple indices:
-...............
+===============
 
 Simple indices are based on a single input variable, and with and an simple calculation algorythem.
 
@@ -94,12 +114,13 @@ Simple indices are based on a single input variable, and with and an simple calc
 
 
 Percentile based indices:
-.........................
+=========================
 
-Percentile based indices requires two additional calculation stepps: 
+Percentile based indices are calculated based on an given percentile of a reference periode. 
+The calculation of percentile based indices are done in two stepps:
 
 * Calculation of the appropriate percentile value for a given revenence period
-* Counting of days beyond the threshold
+* Counting of days beyond the threshold, the sum of days beyond the treshold within the time aggregation is taken as the result 
 
 +------------+----------------+--------------------------------------------------------------------------------+
 | Indice     | Input Variable | Definition                                                                     |
@@ -134,7 +155,11 @@ Percentile based indices requires two additional calculation stepps:
 +------------+----------------+--------------------------------------------------------------------------------+
 
 
-.. _getEOBS_inCORDEXformat: 
+Download Resources
+------------------
+
+Downloads resources (limited to 50GB) to the local file system of the birdhouse computer provider.
+
 
 EOBS to CORDEX
 --------------
@@ -142,31 +167,11 @@ EOBS to CORDEX
 converts EOBS data files into the CORDEX convention. (variable names, attributes, etc ... ).
 
 
-.. _extract_coordinates:
-
 extract Timeseries
 ------------------
 
 Extract 1D Timeseries for specified coordinates from gridded data.
 
-.. _extremevalues: 
-
-Extremevalues
--------------
-
-Calculation of return time Values for 1D timeseries. 
-
-
-.. _fetch: 
-
-
-Download Resources
-------------------
-
-Downloads resources (limited to 50GB) to the local file system of the birdhouse computer provider.
-
-
-.. _ensemble_Robustness:
 
 Robustness of an ensemble
 -------------------------
@@ -174,26 +179,33 @@ Robustness of an ensemble
 Calculates the robustness as the ratio of noise to signal in an ensemble of timeseries.
 
 
-.. _segetalflora: 
+Returntimes
+-----------
+
+Calculation of return time Values for 1D timeseries. 
 
 Segetalflora
 ------------
 Species biodiversity of segetal flora. Imput files: variable:tas , domain: EUR-11 or EUR-44.
 
 
-
-.. _sdm: 
-
 Species Distribution Model
 --------------------------
 
+The process is performing the following steps:
 
-The appraoch is to be performed in two steps:
+* fetching selected data (GBIF zip file) and climate model data. 
+* extraction of GBIF Data
+* based on GBIF Data coordinates a presents/absence mask is generated
+* calculation of selected climate indices in appropriate time aggregations
+* calculation of mean values of climate indices for the given reference period
+* statistical training (GAM) based on presents / absence maks and climate indices of reference period
+* prediction of favourability based on traind GAM and projected as yearly timeseries for the whole proided time series
+* plotting information and storing netCDF files in archive files (tar or zip)
 
-* Statistical training with species presents absense data and historical climate data
-* future projection based on the statistical training
+Further reading: 
 
-The algorithm is described in `Falk et al. <http://www.hindawi.com/journals/jcli/2013/787250/>`_.
+`Species Favourability Shift in Europe due to Climate Change: A Case Study for Fagus sylvatica L. and Picea abies (L.) Karst. Based on an Ensemble of Climate Models <http://www.hindawi.com/journals/jcli/2013/787250/>`_.
 
 
 Example with Phoenix (GUI):
