@@ -16,6 +16,13 @@ Analog pressure pattern
 CASTf90 first downloads fields from NCEP reanalysis (sea level pressure, slp, as default) and then searches in a given simulation period for the most similar cases within a given data base period according to a given distance measure. Finally, it writes the N most similar days, including their calculated distances from the reference case, to an output file.
 
 
+.. _getEOBS_inCORDEXformat: 
+
+converts EOBS Data to CORDEX format
+-----------------------------------
+
+converts EOBS data files into the CORDEX convention. (variable names, attributes, etc ... ).
+
 
 .. _indices:
 
@@ -26,7 +33,8 @@ Climate indices are values that describe the state the climate system for a cert
 The climate indices processes in flyingpigeon are based on the python package 'Link icclim <http://icclim.readthedocs.org/en/latest/>'.
 they are subclassed to 
 
-* simple indices:
+Simple indices:
+---------------
 
 Simple indices are based on a single input variable, and with and an simple calculation algorythem.
 
@@ -91,9 +99,8 @@ Simple indices are based on a single input variable, and with and an simple calc
 +--------+----------------+--------------------------------------------------------------------------------+
 
 
-* Percentile based indices:
----------------------------
-
+Percentile based indices:
+-------------------------
 
 Percentile based indices requires two additional calculation stepps: 
 
@@ -103,7 +110,7 @@ Percentile based indices requires two additional calculation stepps:
 +------------+----------------+--------------------------------------------------------------------------------+
 | Indice     | Input Variable | Definition                                                                     |
 +============+================+================================================================================+
-| TG10p      |    tas         |    Days with TG < 10th percentile of daily mean temperature (cold days)        |
+|  TG10p     |    tas         |    Days with TG < 10th percentile of daily mean temperature (cold days)        |
 +------------+----------------+--------------------------------------------------------------------------------+
 |  TX10p     |    tasmax      |    Days with TX < 10th percentile of daily maximum temperature (cold day-times)|
 +------------+----------------+--------------------------------------------------------------------------------+
@@ -133,7 +140,6 @@ Percentile based indices requires two additional calculation stepps:
 +------------+----------------+--------------------------------------------------------------------------------+
 
 
-
 .. _extract_coordinates
 
 extract 1D Timeseries from coordinate points
@@ -148,13 +154,6 @@ Extremevalues
 
 Calculation of return time Values for 1D timeseries. 
 
-
-.. _getEOBS_inCORDEXformat: 
-
-get EOBS Data in CORDEX format
--------------------------------
-
-converts EOBS data files into the CORDEX convention. (variable names, attributes, etc ... ).
 
 .. _fetch: 
 
