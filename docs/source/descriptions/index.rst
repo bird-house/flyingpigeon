@@ -21,6 +21,7 @@ CASTf90 first downloads fields from NCEP reanalysis (sea level pressure, slp, as
 converts EOBS Data to CORDEX format
 -----------------------------------
 
+
 converts EOBS data files into the CORDEX convention. (variable names, attributes, etc ... ).
 
 
@@ -140,7 +141,7 @@ Percentile based indices requires two additional calculation stepps:
 +------------+----------------+--------------------------------------------------------------------------------+
 
 
-.. _extract_coordinates
+.. _extract_coordinates:
 
 extract 1D Timeseries from coordinate points
 --------------------------------------------
@@ -190,36 +191,33 @@ The appraoch is to be performed in two steps:
 * Statistical training with species presents absense data and historical climate data
 * future projection based on the statistical training
 
-The algorithm is described in the `Journal of Climatology <http://www.hindawi.com/journals/jcli/2013/787250/>`_.
+The algorithm is described in `Falk et al. <http://www.hindawi.com/journals/jcli/2013/787250/>`_.
+
 
 Example with Phoenix (GUI):
 ...........................
 
-* login to a Phoenix GUI (e.g. `Compute provider DKRZ` <https://mouflon.dkrz.de>/_) 
 
-|_ Menu option: Wizard
-  |_ Choose a Favorite: No Favourite 
-    |_ Choose a Web Processing Service: Flyingpigeon 
-      |_ Choose WPS Process of Flyingpigeon: Species distribution model - Species distribution model (SDM) 
-        |_ Literal inputs of Species distribution model :
+1. login to a Phoenix GUI (e.g. `Compute provider mouflon at DKRZ <https://mouflon.dkrz.de/>`_) 
+2. Menu option: Wizard
+3. Choose a Favorite: No Favourite 
+4. Choose a Web Processing Service: Flyingpigeon 
+5. Choose WPS Process of Flyingpigeon: Species distribution model - Species distribution model (SDM) 
+6. Literal inputs of Species distribution model :
 
-        
 .. image:: ../pics/sdm_literalinputs.png
 
-
-          |_ Choose Input Parameter of Species distribution model: netCDF
-            |_ Choose Data Source : Earth System Grid (ESGF) 
+7. Choose Input Parameter of Species distribution model: netCDF
+8. Choose Data Source : Earth System Grid (ESGF)
             
 The next window is the Data search interface to the available data of the ESGF archive. The input files are used to calculate the climate conditions. Dipending on the selection of indices appropriate variables has to be provided (an indice based on pricipitation needs 'pr' as input variable ). multiple selection can be done while pressing the Cntr button. With other search options the dataselection shoule look like this example: 
 
 .. image:: ../pics/sdm_esgfsearch.png
 
-You can save your settings as favourite. And submit the job.  
-Done!!!
+10. You can optional check or uncheck  'Save as Favourite' with an appropriate name;  and submit the job.  
+11. Done!!!
 
 You can follow the log file of your process in the monitor (klick on the job ID e.g. a4aa98de-ffde-11e5-b50a-bb0d01b14483). Manual reload of your browser site is necessary.
-
-
 
 
 .. _subset_countries: 
@@ -267,13 +265,13 @@ Method:
 * unit conversion to hPa (if necessary)
 * regridding (biliniar) to the grid of observation (if necessary)
 * comuting of pricipal componets for dimension reduction
-* 
 
 Process Arguments:
 ..................
 
 * resources (links to netCDF sea surface pressure data) 
-|_ or search with phoenix 
+* or search with phoenix
+
 
 
 Inputs:
@@ -283,13 +281,14 @@ Inputs:
 * any kind of surface pressure data (netCDF files in cf convention). Multiple Datasets slized in seperate files possible
 
 Outputs: 
-.......
+........
 
 * scatter plot showing the centoides of the clusters and the appropriate centroids of each timestep
 * maps for each weather regime of all input datasets. including comparison statistics with observation pattern
 * tar archive containing text files with date time , weatherregime table
 
-Example PYTHON call: 
+Example PYTHON call:
+....................
 
 `Asyncron Link creation <https://github.com/bird-house/flyingpigeon/blob/master/notebooks/WPS_weatherregimes.ipynb>`
 
@@ -297,15 +296,15 @@ Example PYTHON call:
 Example with Phoenix (GUI):
 ...........................
 
-* login to a Phoenix GUI (e.g. `Compute provider DKRZ` <https://mouflon.dkrz.de>/_) 
+- login to a Phoenix GUI (e.g. `Compute provider mouflon at DKRZ <https://mouflon.dkrz.de/>`_) 
 
-|_ Menu option: Wizard
-  |_ Choose a Favorite: No Favourite 
-    |_ Choose a Web Processing Service: Flyingpigeon 
-      |_ Choose WPS Process of Flyingpigeon: Weather Regimes
-        |_ Literal inputs of Weather Regimes: given is a default, feel free to change ;-) 
-          |_ Choose Input Parameter of Weather Regimes: netCDF
-            |_ Choose Data Source : Earth System Grid (ESGF) 
+- Menu option: Wizard
+- Choose a Favorite: No Favourite 
+- Choose a Web Processing Service: Flyingpigeon 
+- Choose WPS Process of Flyingpigeon: Weather Regimes
+- Literal inputs of Weather Regimes: given is a default, feel free to change ;-) 
+- Choose Input Parameter of Weather Regimes: netCDF
+- Choose Data Source : Earth System Grid (ESGF) 
             
 The next window is the Data search interface to the available data of the ESGF archive. Weather regimes are computed based on sea surface pressure values. The appropriate variable for CMIP5 data are 'psl'. With other search options the dataselection shoule look like this example: 
 
