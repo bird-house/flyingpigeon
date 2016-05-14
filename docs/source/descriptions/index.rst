@@ -170,17 +170,47 @@ Segetalflora
 ------------
 Species biodiversity of segetal flora. Imput files: variable:tas , domain: EUR-11 or EUR-44.
 
+
+
 .. _sdm: 
 
 Species Distribution Model
 --------------------------
 
-Statistical approach to calculate the spatial favorability of climate-sensitive species.
+The appraoch is to be performed in two steps:
 
-The appraoch is performed in two steps:
-
-* Statistical training with species presents absence data and historical climate data
+* Statistical training with species presents absense data and historical climate data
 * future projection based on the statistical training
+
+The algorithm is described in the `Journal of Climatology <http://www.hindawi.com/journals/jcli/2013/787250/>`_.
+
+Example with Phoenix (GUI):
+...........................
+
+* login to a Phoenix GUI (e.g. `Compute provider DKRZ` <https://mouflon.dkrz.de>/_) 
+
+|_ Menu option: Wizard
+  |_ Choose a Favorite: No Favourite 
+    |_ Choose a Web Processing Service: Flyingpigeon 
+      |_ Choose WPS Process of Flyingpigeon: Species distribution model - Species distribution model (SDM) 
+        |_ Literal inputs of Species distribution model :
+        
+.. image:: ../pics/sdm_literalinputs.png
+        
+          |_ Choose Input Parameter of Species distribution model: netCDF
+            |_ Choose Data Source : Earth System Grid (ESGF) 
+            
+The next window is the Data search interface to the available data of the ESGF archive. The input files are used to calculate the climate conditions. Dipending on the selection of indices appropriate variables has to be provided (an indice based on pricipitation needs 'pr' as input variable ). multiple selection can be done while pressing the Cntr button. With other search options the dataselection shoule look like this example: 
+
+.. image:: ../pics/sdm_esgfsearch.png
+
+You can save your settings as favourite. And submit the job.  
+Done!!!
+
+You can follow the log file of your process in the monitor (klick on the job ID e.g. a4aa98de-ffde-11e5-b50a-bb0d01b14483). Manual reload of your browser site is necessary.
+
+
+
 
 .. _subset_countries: 
 
@@ -215,10 +245,66 @@ Creates a spaghetti plot and an uncertainty plot.
 Weather Regimes
 ---------------
 
-Calculation of weather regimes based on pressure patterns (k-means clustering method). The processes clusters data into a predefined number of clusters. Performed on observation data ( NCEP ) and model data and the results of the clustering are compared.
+Calculation of weatherregimes based on pressure patterns (kmean method). The processes is performing a pattern clusterfication for observations data ( NCEP ) as well as to model data. both results are compared
  
-processing stepps: 
+Method:
+.......
 
-* fetch observation data 
-* fetch model data
- 
+* fetching observation data 
+* fetching model data
+* subset the selected geographical region 
+* selection of month to be analyzed
+* unit conversion to hPa (if necessary)
+* regridding (biliniar) to the grid of observation (if necessary)
+* comuting of pricipal componets for dimension reduction
+* 
+
+Process Arguments:
+..................
+
+* resources (links to netCDF sea surface pressure data) 
+|_ or search with phoenix 
+
+
+Inputs:
+.......
+
+* NCEP slp data (automatic fetch)
+* any kind of surface pressure data (netCDF files in cf convention). Multiple Datasets slized in seperate files possible
+
+Outputs: 
+.......
+
+* scatter plot showing the centoides of the clusters and the appropriate centroids of each timestep
+* maps for each weather regime of all input datasets. including comparison statistics with observation pattern
+* tar archive containing text files with date time , weatherregime table
+
+Example PYTHON call: 
+
+`Asyncron Link creation <https://github.com/bird-house/flyingpigeon/blob/master/notebooks/WPS_weatherregimes.ipynb>`
+
+
+Example with Phoenix (GUI):
+...........................
+
+* login to a Phoenix GUI (e.g. `Compute provider DKRZ` <https://mouflon.dkrz.de>/_) 
+
+|_ Menu option: Wizard
+  |_ Choose a Favorite: No Favourite 
+    |_ Choose a Web Processing Service: Flyingpigeon 
+      |_ Choose WPS Process of Flyingpigeon: Weather Regimes
+        |_ Literal inputs of Weather Regimes: given is a default, feel free to change ;-) 
+          |_ Choose Input Parameter of Weather Regimes: netCDF
+            |_ Choose Data Source : Earth System Grid (ESGF) 
+            
+The next window is the Data search interface to the available data of the ESGF archive. Weather regimes are computed based on sea surface pressure values. The appropriate variable for CMIP5 data are 'psl'. With other search options the dataselection shoule look like this example: 
+
+.. image:: ../pics/esgf_search_psl.png
+
+You can save your settings as favourite. And submit the job.  
+Done!!!
+
+You follow the log file of your in the monitor (klick on the job ID e.g. a4aa98de-ffde-11e5-b50a-bb0d01b14483). manual reload of your browser site is necessary.
+
+.. image:: ../pics/monitor_log_weatherregimes.png
+
