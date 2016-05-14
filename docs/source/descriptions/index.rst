@@ -16,26 +16,19 @@ Analog pressure pattern
 CASTf90 first downloads fields from NCEP reanalysis (sea level pressure, slp, as default) and then searches in a given simulation period for the most similar cases within a given data base period according to a given distance measure. Finally, it writes the N most similar days, including their calculated distances from the reference case, to an output file.
 
 
-.. _getEOBS_inCORDEXformat: 
-
-converts EOBS Data to CORDEX format
------------------------------------
-
-
-converts EOBS data files into the CORDEX convention. (variable names, attributes, etc ... ).
-
-
 .. _indices:
+
 
 Climate indices
 ---------------
+
 
 Climate indices are values that describe the state the climate system for a certain parameter. Climate indices as timeseries can be used to describe or estimate the change in climte over time. 
 The climate indices processes in flyingpigeon are based on the python package 'Link icclim <http://icclim.readthedocs.org/en/latest/>'.
 they are subclassed to 
 
 Simple indices:
----------------
+...............
 
 Simple indices are based on a single input variable, and with and an simple calculation algorythem.
 
@@ -101,7 +94,7 @@ Simple indices are based on a single input variable, and with and an simple calc
 
 
 Percentile based indices:
--------------------------
+.........................
 
 Percentile based indices requires two additional calculation stepps: 
 
@@ -141,12 +134,20 @@ Percentile based indices requires two additional calculation stepps:
 +------------+----------------+--------------------------------------------------------------------------------+
 
 
+.. _getEOBS_inCORDEXformat: 
+
+EOBS to CORDEX
+--------------
+
+converts EOBS data files into the CORDEX convention. (variable names, attributes, etc ... ).
+
+
 .. _extract_coordinates:
 
-extract 1D Timeseries from coordinate points
---------------------------------------------
+extract Timeseries
+------------------
 
-Extract Timeseries for specified coordinates from gridded data.
+Extract 1D Timeseries for specified coordinates from gridded data.
 
 .. _extremevalues: 
 
@@ -186,6 +187,7 @@ Species biodiversity of segetal flora. Imput files: variable:tas , domain: EUR-1
 Species Distribution Model
 --------------------------
 
+
 The appraoch is to be performed in two steps:
 
 * Statistical training with species presents absense data and historical climate data
@@ -222,8 +224,8 @@ You can follow the log file of your process in the monitor (klick on the job ID 
 
 .. _subset_countries: 
 
-Subset Counties 
----------------
+Subset Countries 
+----------------
 
 Generates a polygon subset of input netCDF files.
 
