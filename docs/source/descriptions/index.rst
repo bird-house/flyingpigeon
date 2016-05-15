@@ -14,10 +14,18 @@ CASTf90 first downloads fields from NCEP reanalysis (sea level pressure, slp, as
 Climate indices
 ---------------
 
-
 Climate indices are values that describe the state the climate system for a certain parameter. Climate indices as timeseries can be used to describe or estimate the change in climte over time.
-Climate indices have to be calculated for a given time aggregation: 
 
+The climate indices processes in flyingpigeon are based on the `python package icclim <http://icclim.readthedocs.org/en/latest/>`_
+They are subclassed to:
+
+.. toctree::
+   :maxdepth: 1
+   
+   indices
+
+
+Climate indices have to be calculated for a time aggregation:
 
 +-------------+-------------+---------+
 |             | Time        |values   |
@@ -43,117 +51,8 @@ Climate indices have to be calculated for a given time aggregation:
 +-------------+-------------+---------+ 
 | JAN         | Januar      | 1       |
 +-------------+-------------+---------+
-
-The climate indices processes in flyingpigeon are based on the python package 'Link icclim <http://icclim.readthedocs.org/en/latest/>'.
-they are subclassed to 
-
-Simple indices:
-===============
-
-Simple indices are based on a single input variable, and with and an simple calculation algorythem.
-
-+--------+----------------+--------------------------------------------------------------------------------+
-| Index  | Input Variable | Definition                                                                     |
-+========+================+================================================================================+
-| TG     |        tas     | Mean of mean temperature                                                       |
-+--------+----------------+--------------------------------------------------------------------------------+
-| TX     |     tasmax     | Mean of max temperature                                                        |
-+--------+----------------+--------------------------------------------------------------------------------+
-| TN     |     tasmin     | Mean of daily min temperature                                                  |
-+--------+----------------+--------------------------------------------------------------------------------+
-| TXn    |     tasmax     | Min of daily min temperature                                                   |
-+--------+----------------+--------------------------------------------------------------------------------+
-| TXx    |     tasmax     | Max of daily max temperature                                                   |
-+--------+----------------+--------------------------------------------------------------------------------+
-| TNn    |     tasmin     | Min of daily min temperature                                                   |
-+--------+----------------+--------------------------------------------------------------------------------+
-| TNx    |     tasmin     | Max of daily min temperature                                                   |
-+--------+----------------+--------------------------------------------------------------------------------+
-| SU     |     tasmax     | Nr of summer days  [tasmax > = 25°C]                                           |
-+--------+----------------+--------------------------------------------------------------------------------+
-| CSU    |     tasmax     | Nr of consecutive summer days                                                  |
-+--------+----------------+--------------------------------------------------------------------------------+
-| FD     |     tasmin     | Nr of frost days  [tasmin < 0°C]                                               |
-+--------+----------------+--------------------------------------------------------------------------------+
-| CFD    |     tasmin     | Nr of consecutive frost days                                                   |
-+--------+----------------+--------------------------------------------------------------------------------+
-| TR     |      tasmin    | Tropical nights [tasmin >= 20°C]                                               |
-+--------+----------------+--------------------------------------------------------------------------------+
-| ID     |     tasmax     | Nr of Ice days [tasmax < 0°C]                                                  |
-+--------+----------------+--------------------------------------------------------------------------------+
-| HD17   |        tas     | Heating degree days [sum of 17 degrees - mean temperature]                     |
-+--------+----------------+--------------------------------------------------------------------------------+
-| GD4    |        tas     | Growing degree days [sum of TG >= 4 degrees]                                   |
-+--------+----------------+--------------------------------------------------------------------------------+
-| PRCPTOT|         pr     | Precipitation total amount [sum]                                               |
-+--------+----------------+--------------------------------------------------------------------------------+
-| RR1    |         pr     | Nr of days with precipitation > 1 mm                                           |
-+--------+----------------+--------------------------------------------------------------------------------+
-| CWD    |         pr     | Consecutive wet days                                                           |
-+--------+----------------+--------------------------------------------------------------------------------+
-| CDD    |         pr     | Consecutive dry days                                                           |
-+--------+----------------+--------------------------------------------------------------------------------+
-| SDII   |         pr     | Simple daily intensity index for wet days [mm/wet day]                         |
-+--------+----------------+--------------------------------------------------------------------------------+
-| R10mm  |         pr     | Nr of days > 10mm                                                              |
-+--------+----------------+--------------------------------------------------------------------------------+
-| R20mm  |         pr     | Nr of days with precipitation >= 20 mm                                         |
-+--------+----------------+--------------------------------------------------------------------------------+
-| RX1day |         pr     | Highest 1-day precipitation amount                                             |
-+--------+----------------+--------------------------------------------------------------------------------+
-| RX5day |         pr     | Highest 5-day precipitation amount                                             |
-+--------+----------------+--------------------------------------------------------------------------------+
-| SD     |       prsn     | Nr of snow days                                                                |
-+--------+----------------+--------------------------------------------------------------------------------+
-| SD1    |       prsn     | Nr of days with snow >= 1cm                                                    |
-+--------+----------------+--------------------------------------------------------------------------------+
-| SD5cm  |       prsn     | Nr of days with snow >= 5cm                                                    |
-+--------+----------------+--------------------------------------------------------------------------------+
-| SD50cm |       prsn     | Nr of days with snow >= 50 cm                                                  |
-+--------+----------------+--------------------------------------------------------------------------------+
-
-
-Percentile based indices:
-=========================
-
-Percentile based indices are calculated based on an given percentile of a reference periode. 
-The calculation of percentile based indices are done in two stepps:
-
-* Calculation of the appropriate percentile value for a given revenence period
-* Counting of days beyond the threshold, the sum of days beyond the treshold within the time aggregation is taken as the result 
-
-+------------+----------------+--------------------------------------------------------------------------------+
-| Indice     | Input Variable | Definition                                                                     |
-+============+================+================================================================================+
-|  TG10p     |    tas         |    Days with TG < 10th percentile of daily mean temperature (cold days)        |
-+------------+----------------+--------------------------------------------------------------------------------+
-|  TX10p     |    tasmax      |    Days with TX < 10th percentile of daily maximum temperature (cold day-times)|
-+------------+----------------+--------------------------------------------------------------------------------+
-|  TN10p     |    tasmin      |    Days with TN < 10th percentile of daily minimum temperature (cold nights)   |
-+------------+----------------+--------------------------------------------------------------------------------+
-|  TG90p     |    tas         |    Days with TG > 90th percentile of daily mean temperature (warm days)        |
-+------------+----------------+--------------------------------------------------------------------------------+
-|  TX90p     |    tasmax      |    Days with TX > 90th percentile of daily maximum temperature (warm day-times)|
-+------------+----------------+--------------------------------------------------------------------------------+
-|  TN90p     |    tasmin      |    Days with TN > 90th percentile of daily minimum temperature (warm nights)   |
-+------------+----------------+--------------------------------------------------------------------------------+
-|  WSDI      |    tasmax      |    Warm-spell duration index                                                   |
-+------------+----------------+--------------------------------------------------------------------------------+
-|  CSDI      |    tasmin      |    Cold-spell duration index                                                   |
-+------------+----------------+--------------------------------------------------------------------------------+
-|  R75p      |    pr          |    Days with PRCPTOT > 75th percentile of daily amounts (moderate wet days)    |
-+------------+----------------+--------------------------------------------------------------------------------+
-|  R75pTOT   |    pr          |    Precipitation fraction due to moderate wet days (>75th percentile)          |
-+------------+----------------+--------------------------------------------------------------------------------+
-|  R95p      |    pr          |    Days with PRCPTOT > 95th percentile of daily amounts (very wet days)        |
-+------------+----------------+--------------------------------------------------------------------------------+
-|  R95pTOT   |    pr          |    Precipitation fraction due to very wet days (>95th percentile) (%)          |
-+------------+----------------+--------------------------------------------------------------------------------+
-|  R99p      |    pr          |    Days with PRCPTOT > 99th percentile of daily amounts (extremely wet days)   |
-+------------+----------------+--------------------------------------------------------------------------------+
-|  R99pTOT   |    pr          |    Precipitation fraction due to extremely wet days (>99th percentile)(%)      |
-+------------+----------------+--------------------------------------------------------------------------------+
-
+   
+   
 
 Download Resources
 ------------------
@@ -207,32 +106,12 @@ Further reading:
 
 `Species Favourability Shift in Europe due to Climate Change: A Case Study for Fagus sylvatica L. and Picea abies (L.) Karst. Based on an Ensemble of Climate Models <http://www.hindawi.com/journals/jcli/2013/787250/>`_.
 
-
-Example with Phoenix (GUI):
-...........................
-
-
-1. login to a Phoenix GUI (e.g. `Compute provider mouflon at DKRZ <https://mouflon.dkrz.de/>`_) 
-2. Menu option: Wizard
-3. Choose a Favorite: No Favourite 
-4. Choose a Web Processing Service: Flyingpigeon 
-5. Choose WPS Process of Flyingpigeon: Species distribution model - Species distribution model (SDM) 
-6. Literal inputs of Species distribution model :
-
-.. image:: ../pics/sdm_literalinputs.png
-
-7. Choose Input Parameter of Species distribution model: netCDF
-8. Choose Data Source : Earth System Grid (ESGF)
-            
-The next window is the Data search interface to the available data of the ESGF archive. The input files are used to calculate the climate conditions. Dipending on the selection of indices appropriate variables has to be provided (an indice based on pricipitation needs 'pr' as input variable ). multiple selection can be done while pressing the Cntr button. With other search options the dataselection shoule look like this example: 
-
-.. image:: ../pics/sdm_esgfsearch.png
-
-10. You can optional check or uncheck  'Save as Favourite' with an appropriate name;  and submit the job.  
-11. Done!!!
-
-You can follow the log file of your process in the monitor (klick on the job ID e.g. a4aa98de-ffde-11e5-b50a-bb0d01b14483). Manual reload of your browser site is necessary.
-
+.. toctree::
+   :maxdepth: 1
+   
+   sdm
+   
+   
 
 .. _subset_countries: 
 
