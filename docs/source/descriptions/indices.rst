@@ -1,7 +1,7 @@
 Simple indices:
 ===============
 
-Simple indices are based on a single input variable, and with and an simple calculation algorythem.
+Simple indices are based on a single input variable, and with and an simple calculation algorithm.
 
 +--------+----------------+--------------------------------------------------------------------------------+
 | Index  | Input Variable | Definition                                                                     |
@@ -64,17 +64,17 @@ Simple indices are based on a single input variable, and with and an simple calc
 +--------+----------------+--------------------------------------------------------------------------------+
 
 
-Percentile based indices:
+Percentile-based indices:
 =========================
 
-Percentile based indices are calculated based on an given percentile of a reference periode. 
-The calculation of percentile based indices are done in two stepps:
+Percentile-based indices are calculated based on an given percentile of a reference period. 
+The calculation of percentile-based indices is done in two steps:
 
-* Calculation of the appropriate percentile value for a given revenence period
-* Counting of days beyond the threshold, the sum of days beyond the treshold within the time aggregation is taken as the result 
+* Calculation of the percentile value for a given reference period
+* Cumulative sum of the number of days beyond the threshold 
 
 +------------+----------------+--------------------------------------------------------------------------------+
-| Indice     | Input Variable | Definition                                                                     |
+| Index      | Input Variable | Definition                                                                     |
 +============+================+================================================================================+
 |  TG10p     |    tas         |    Days with TG < 10th percentile of daily mean temperature (cold days)        |
 +------------+----------------+--------------------------------------------------------------------------------+
