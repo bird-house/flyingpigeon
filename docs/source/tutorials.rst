@@ -1,5 +1,7 @@
-Turorials 
-=========
+.. _tutorial:
+
+Tutorial 
+========
 
 Processing files of the local (compute providers) disc system with solr - search 
 ................................................................................
