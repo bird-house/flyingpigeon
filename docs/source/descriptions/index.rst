@@ -206,7 +206,7 @@ The next window is the Data search interface to the available data of the ESGF a
 You can save your settings as favourite. And submit the job.  
 Done!!!
 
-You follow the log file of your in the monitor (klick on the job ID e.g. a4aa98de-ffde-11e5-b50a-bb0d01b14483). manual reload of your browser site is necessary.
+You follow the log file of your in the monitor (click on the job ID e.g. a4aa98de-ffde-11e5-b50a-bb0d01b14483). manual reload of your browser site is necessary.
 
 .. image:: ../pics/monitor_log_weatherregimes.png
 
