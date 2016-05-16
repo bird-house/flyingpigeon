@@ -1,6 +1,7 @@
-Example with Phoenix (GUI):
-...........................
+Tutorial: Species distribution model
+....................................
 
+Execution with Pheonix (web browser GUI)
 
 1. login to a Phoenix GUI (e.g. `Compute provider mouflon at DKRZ <https://mouflon.dkrz.de/>`_) 
 2. Menu option: Wizard

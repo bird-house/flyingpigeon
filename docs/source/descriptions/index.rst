@@ -109,7 +109,7 @@ Further reading:
 .. toctree::
    :maxdepth: 1
    
-   sdm
+   ../tutorial/sdm
    
    
 
