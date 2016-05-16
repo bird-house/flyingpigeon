@@ -1,7 +1,5 @@
-.. _installation:
-
 Installation
-************
+============
 
 The installation uses the Python distribution system `Anaconda <https://www.continuum.io/>`_ to maintain software dependencies. 
 You may use an existing (shared, read-only access possible) Anaconda installation. To do this, set an environment variable to the location of your existing Anaconda, for example::

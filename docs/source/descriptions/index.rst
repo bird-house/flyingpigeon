@@ -28,8 +28,8 @@ They are subclassed to:
 Climate indices have to be calculated for a time aggregation:
 
 +-------------+-------------+---------+
-|             | Time        |values   |
-|             | aggregation |per year | 
+| Time        |Description  |values   |
+| aggregation |             |per year | 
 +-------------+-------------+---------+
 | mon         | monthly     | 12      |
 +-------------+-------------+---------+
@@ -76,14 +76,15 @@ Robustness of an ensemble
 -------------------------
 
 Calculates the robustness as the ratio of noise to signal in an ensemble of timeseries.
+Good luck 
 
 
-Returntimes
------------
+Return times
+------------
 
 Calculation of return time Values for 1D timeseries. 
 
-Segetalflora
+Segetal flora
 ------------
 Species biodiversity of segetal flora. Imput files: variable:tas , domain: EUR-11 or EUR-44.
 
@@ -109,10 +110,8 @@ Further reading:
 .. toctree::
    :maxdepth: 1
    
-   ../tutorial/sdm
+   ../tutorials/sdm
    
-   
-
 .. _subset_countries: 
 
 Subset Countries 

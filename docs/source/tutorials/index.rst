@@ -7,16 +7,14 @@ Processes in Flyingpigeon can be executed in various ways:
 
 :ref: `Tutorials to get familliar with general usage of Pheonix <phoenix:tutorial>`
 
-.. _tutorial:
-
 Tutorials 
 =========
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   tutorial/robustness_solr
-   tutorial/sdm
+   robustness_solr
+   sdm
 
 
 Notebooks:
