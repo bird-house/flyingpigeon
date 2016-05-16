@@ -10,11 +10,17 @@ Processes in Flyingpigeon can be executed in various ways:
 
 .. _tutorial:
 
-Tutorial 
-========
+Tutorials 
+=========
 
 .. toctree::
    :maxdepth: 1
 
    tutorial/robustness_solr
    tutorial/sdm
+
+Ipython Notebooks 
+=================
+
+`WPS Ensemble Robustness <https://github.com/bird-house/flyingpigeon/blob/master/notebooks/WPS_ensembleRobustness.ipynb>`_
+

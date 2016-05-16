@@ -27,6 +27,17 @@ class EnsembleRobustnessProcess(WPSProcess):
             formats=[{"mimeType":"application/x-netcdf"}],
             )
 
+        self.method = self.addLiteralInput(
+          identifier="method",
+          title="Method of robustness calculation",
+          abstract="Detailed information about the methodes can be found in the documentation",
+          type=type(''),
+          default=['Method_A'],
+          minOccurs=1,
+          maxOccurs=1,
+          allowedValues=['Method_A', 'Method_B', 'Method_C']
+          )
+
         self.start = self.addLiteralInput(
           identifier="start",
           title="Start Year",
@@ -58,7 +69,6 @@ class EnsembleRobustnessProcess(WPSProcess):
           maxOccurs=1,
           #allowedValues=range(1,50)
           )
-        
         
         self.variableIn = self.addLiteralInput(
           identifier="variable",
