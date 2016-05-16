@@ -7,7 +7,6 @@ Processes in Flyingpigeon can be executed in various ways:
 
 :ref: `Tutorials to get familliar with general usage of Pheonix <phoenix:tutorial>`
 
-
 .. _tutorial:
 
 Tutorials 
@@ -19,8 +18,8 @@ Tutorials
    tutorial/robustness_solr
    tutorial/sdm
 
-Ipython Notebooks 
-=================
+Notebooks 
+=========
 
 `WPS Ensemble Robustness <https://github.com/bird-house/flyingpigeon/blob/master/notebooks/WPS_ensembleRobustness.ipynb>`_
 
