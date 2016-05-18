@@ -22,7 +22,6 @@ def get_csv(zip_file_url):
   z = zipfile.ZipFile(StringIO.StringIO(r.content))
   z.extractall()  
   csv = z.namelist()[0]
-
   return csv
 
 def get_latlon( csv_file ):

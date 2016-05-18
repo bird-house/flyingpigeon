@@ -55,10 +55,10 @@ class SDMProcess(WPSProcess):
             identifier="input_indices",
             title="Indices",
             abstract="Climate indices related to growth condition of tree species",
-            default=['TG_JJA', 'TNn_Jan',],
+            default=['TG_JJA', 'TNn_Jan'],
             type=type(''),
             minOccurs=1,
-            maxOccurs=3,
+            maxOccurs=10,
             allowedValues=_SDMINDICES_ 
             )
 
