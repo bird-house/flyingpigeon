@@ -16,10 +16,4 @@ Tutorials
    robustness_solr
    sdm
 
-
-Notebooks:
-..........
-
-`WPS Ensemble Robustness <https://github.com/bird-house/flyingpigeon/blob/master/notebooks/WPS_ensembleRobustness.ipynb>`_
-   
-   
+     

@@ -124,7 +124,9 @@ Further reading:
 .. toctree::
    :maxdepth: 1
    
-   sdm
+   sdm   
+   /tutorials/sdm
+
 
    
 .. _subset_countries: 

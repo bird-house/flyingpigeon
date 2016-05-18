@@ -25,9 +25,9 @@ Contents:
    configuration
    descriptions/index
    tutorials/index
+   notebooks
    
- 
-
+  
 
 
 

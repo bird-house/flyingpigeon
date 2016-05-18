@@ -1,6 +1,5 @@
-Indices: 
-........
-
+Indices for SDM:
+................
 
 +----------------+----------------+--------------------------------------------------------------------------------+
 | Index          | Input Variable | Definition                                                                     |
@@ -63,9 +62,3 @@ The process is performing the following steps:
 * statistical training (GAM) based on presents / absence maks and climate indices of reference period
 * prediction of favourability based on traind GAM and projected as yearly timeseries for the whole proided time series
 * plotting information and storing netCDF files in archive files (tar or zip)
-
-
-.. toctree::
-   :maxdepth: 1
-   
-   /tutorials/sdm
