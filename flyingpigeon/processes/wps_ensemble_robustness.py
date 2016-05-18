@@ -118,7 +118,7 @@ class EnsembleRobustnessProcess(WPSProcess):
         self.output_text = self.addComplexOutput(
             identifier="output_text",
             title="Sourcefiles",
-            abstract="test file with a list of the used input data sets",
+            abstract="text file with a list of the used input data sets",
             formats=[{"mimeType":"text/plain"}],
             asReference=True,
             )

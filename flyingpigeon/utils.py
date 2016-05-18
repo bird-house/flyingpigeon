@@ -9,7 +9,8 @@ from flyingpigeon import config
 import logging
 logger = logging.getLogger(__name__)
 
-GROUPING = [ "day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON" ,"JAN" ]
+GROUPING = [ "day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON" ,
+            "Jan", 'Feb', "Mar", "Apr", "May", "Jun", 'Jul', "Aug", 'Sep', 'Okt', 'Nov', 'Dec' ]
 
 def download(url, cache=False):
     """
@@ -134,11 +135,31 @@ def calc_grouping(grouping):
   elif grouping == 'day':
     calc_grouping = ['year', 'month', 'day']
   elif grouping == 'mon':
-      calc_grouping = ['year', 'month']
-  
+      calc_grouping = ['year', 'month'] 
   elif grouping == 'Jan':
       calc_grouping = [[1], 'unique']
-  
+  elif grouping == 'Feb':
+      calc_grouping = [[2], 'unique']
+  elif grouping == 'Mar':
+      calc_grouping = [[3], 'unique']
+  elif grouping == 'Apr':
+      calc_grouping = [[4], 'unique']
+  elif grouping == 'May':
+      calc_grouping = [[5], 'unique']
+  elif grouping == 'Jun':
+      calc_grouping = [[6], 'unique']
+  elif grouping == 'Jul':
+      calc_grouping = [[7], 'unique']
+  elif grouping == 'Aug':
+      calc_grouping = [[8], 'unique']
+  elif grouping == 'Sep':
+      calc_grouping = [[9], 'unique']
+  elif grouping == 'Oct':
+      calc_grouping = [[10], 'unique']
+  elif grouping == 'Nov':
+      calc_grouping = [[11], 'unique']
+  elif grouping == 'Dec':
+      calc_grouping = [[12], 'unique']
   elif grouping in ['year', 'month']:
       calc_grouping = [grouping]
   else:

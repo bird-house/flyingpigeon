@@ -1,5 +1,5 @@
-Processes:
-**********
+Processes
+*********
 
 Flyingpigeon provides processes (also named as workflows ) for climate model data analysis, climate impact studies and investigations of extremes. 
 
@@ -49,9 +49,31 @@ Climate indices have to be calculated for a time aggregation:
 +-------------+-------------+---------+ 
 | SON         | Autumn      | 1       |
 +-------------+-------------+---------+ 
-| JAN         | Januar      | 1       |
+| Jan         | Januar      | 1       |
 +-------------+-------------+---------+
-   
+| Feb         | Februar     | 1       |
++-------------+-------------+---------+
+| Mar         | March       | 1       |
++-------------+-------------+---------+
+| April       | April       | 1       |
++-------------+-------------+---------+
+| May         | May         | 1       |
++-------------+-------------+---------+
+| Jun         | June        | 1       |
++-------------+-------------+---------+
+| Jul         | July        | 1       |
++-------------+-------------+---------+
+| Aug         | August      | 1       |
++-------------+-------------+---------+
+| Sep         | September   | 1       |
++-------------+-------------+---------+
+| Oct         | October     | 1       |
++-------------+-------------+---------+
+| Nov         | November    | 1       |
++-------------+-------------+---------+
+| Dec         | December    | 1       |
++-------------+-------------+---------+
+
    
 
 Download Resources
@@ -92,25 +114,18 @@ Species biodiversity of segetal flora. Imput files: variable:tas , domain: EUR-1
 Species Distribution Model
 --------------------------
 
-The process is performing the following steps:
-
-* fetching selected data (GBIF zip file) and climate model data. 
-* extraction of GBIF Data
-* based on GBIF Data coordinates a presents/absence mask is generated
-* calculation of selected climate indices in appropriate time aggregations
-* calculation of mean values of climate indices for the given reference period
-* statistical training (GAM) based on presents / absence maks and climate indices of reference period
-* prediction of favourability based on traind GAM and projected as yearly timeseries for the whole proided time series
-* plotting information and storing netCDF files in archive files (tar or zip)
+Prediction of growth favourability for tree species. 
 
 Further reading: 
 
 `Species Favourability Shift in Europe due to Climate Change: A Case Study for Fagus sylvatica L. and Picea abies (L.) Karst. Based on an Ensemble of Climate Models <http://www.hindawi.com/journals/jcli/2013/787250/>`_.
 
+
 .. toctree::
    :maxdepth: 1
    
-   ../tutorials/sdm
+   sdm
+
    
 .. _subset_countries: 
 

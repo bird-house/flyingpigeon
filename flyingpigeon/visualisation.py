@@ -237,7 +237,7 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
     raise Exception(msg) 
 
   try:
-    fig = plt.figure(figsize=(20,10), dpi=600, facecolor='w', edgecolor='k')
+    fig = plt.figure( facecolor='w', edgecolor='k') # figsize=(20,10), dpi=600,
     ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
     norm = MidpointNormalize(midpoint=0)
 

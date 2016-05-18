@@ -9,6 +9,8 @@ from pywps.Process import WPSProcess
 import logging
 logger = logging.getLogger(__name__)
 
+from flyingpigeon.sdm import _SDMINDICES_
+
 class SDMProcess(WPSProcess):
     
     def __init__(self):
@@ -57,7 +59,7 @@ class SDMProcess(WPSProcess):
             type=type(''),
             minOccurs=1,
             maxOccurs=3,
-            allowedValues=['TG_JJA', 'TNn_Jan', 'PRCPTOT_JJA']
+            allowedValues=_SDMINDICES_ 
             )
 
         self.period = self.addLiteralInput(

@@ -40,9 +40,9 @@ Simple indices are based on a single input variable, and with and an simple calc
 +--------+----------------+--------------------------------------------------------------------------------+
 | RR1    |         pr     | Nr of days with precipitation > 1 mm                                           |
 +--------+----------------+--------------------------------------------------------------------------------+
-| CWD    |         pr     | Consecutive wet days                                                           |
+| CWD    |         pr     | Longest period of consecutive wet days                                         |
 +--------+----------------+--------------------------------------------------------------------------------+
-| CDD    |         pr     | Consecutive dry days                                                           |
+| CDD    |         pr     | Longest period of consecutive dry days                                         |
 +--------+----------------+--------------------------------------------------------------------------------+
 | SDII   |         pr     | Simple daily intensity index for wet days [mm/wet day]                         |
 +--------+----------------+--------------------------------------------------------------------------------+
@@ -104,3 +104,24 @@ The calculation of percentile-based indices is done in two steps:
 +------------+----------------+--------------------------------------------------------------------------------+
 |  R99pTOT   |    pr          |    Precipitation fraction due to extremely wet days (>99th percentile)(%)      |
 +------------+----------------+--------------------------------------------------------------------------------+
+
+
+Multivariable Indices
+=====================
+
++------------+----------------+--------------------------------------------------------------------------------+
+| Index      | Input Variable | Definition                                                                     |
++============+================+================================================================================+
+| CD         | tas , pr       | Days with TG < 25th percentile of daily mean temperature and                   |
+|            |                | PRCPTOT < 25th percentile of daily precipitation sum (cold/dry days)           |
++------------+----------------+--------------------------------------------------------------------------------+
+| CW         | tas , pr       | Days with TG < 25th percentile of daily mean temperature and                   |
+|            |                | PRCPTOT > 75th percentile of daily precipitation sum (cold/wet days)           |
++------------+----------------+--------------------------------------------------------------------------------+
+| WD         | tas , pr       | days with TG > 75th percentile of daily mean temperature and                   |
+|            |                | PRCPTOT < 25th percentile of daily precipitation sum (warm/dry days)           |
++------------+----------------+--------------------------------------------------------------------------------+
+| WW         | tas, pr        | Days with TG > 75th percentile of daily mean temperature and                   |
+|            |                | PRCPTOT > 75th percentile of daily precipitation sum (warm/wet days)           |
++------------+----------------+--------------------------------------------------------------------------------+
+
