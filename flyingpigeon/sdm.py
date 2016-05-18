@@ -2,16 +2,18 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-_SDMINDICES_ = ['TG_yr', 'TG_AMJJAS', 'TG_ONDJFM','TG_JJA', 
-                'TNn_yr','TNn_AMJJAS','TG_ONDJFM','TNn_Jan', 
-                'SU_yr',
-                'FD_ONDJFM','FD_April', 'FD_May', 'FD_June', 
-                'CFD_ONDJFM',
-                'ID_yr',
-                'GD4_yr',
-                'PRCPTOT_yr','PRCPTOT_ONDJFM', 'PRCPTOT_AMJJAS', 'PRCPTOT_JJA', 'PRCPTOT_MAM', 'PRCPTOT_JJA'
-                'RR1_yr',
-                'CDD_AMJJAS']
+_SDMINDICES_ = [
+  'CDD_AMJJAS',
+  'CFD_ONDJFM',
+  'FD_ONDJFM','FD_April', 'FD_May', 'FD_June',
+  'GD4_yr',
+  'ID_yr',
+  'PRCPTOT_yr','PRCPTOT_ONDJFM', 'PRCPTOT_AMJJAS', 'PRCPTOT_JJA', 'PRCPTOT_MAM', 'PRCPTOT_JJA',
+  'RR1_yr',
+  'SU_yr',
+  'TG_yr', 'TG_AMJJAS', 'TG_ONDJFM','TG_JJA', 
+  'TNn_yr','TNn_AMJJAS','TG_ONDJFM','TNn_Jan', 
+  ]
 
 def get_csv(zip_file_url):
   
