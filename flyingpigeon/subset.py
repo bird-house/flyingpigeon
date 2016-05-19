@@ -17,7 +17,7 @@ def countries():
     """
     countries = _COUNTRIES_.keys()
     countries.sort()
-    return countries
+    return countries  
 
 def countries_longname():
     """
@@ -143,8 +143,6 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
         raise 
 
   return  geom_files
-
-
 
 
 def get_dimension_map(resource): 

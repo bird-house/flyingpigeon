@@ -2,21 +2,21 @@ import os
 import tarfile
 
 from flyingpigeon.subset import clipping
-from flyingpigeon.subset import countries, countries_longname        
+from flyingpigeon.subset import _CONTINENTS_       
 from pywps.Process import WPSProcess
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-class ClippingProcess(WPSProcess):
+class subset_continentsProcess(WPSProcess):
     def __init__(self):
         WPSProcess.__init__(
             self, 
-            identifier = "subset_countries",
-            title="Subset countries",
+            identifier = "subset_continents",
+            title="Subset continents",
             version = "0.3",
-            abstract="Returns only the given country polygon for input dataset.",
+            abstract="Returns only the given continent(s) polygon for input dataset.",
             statusSupported=True,
             storeSupported=True
             )
@@ -38,10 +38,9 @@ class ClippingProcess(WPSProcess):
             default='DEU',
             type=type(''),
             minOccurs=1,
-            maxOccurs=len(countries()),
-            allowedValues=countries() #REGION_EUROPE #COUNTRIES # 
+            maxOccurs=len(_CONTINENTS_),
+            allowedValues=_CONTINENTS_ #REGION_EUROPE #COUNTRIES # 
             )
-
 
         self.dimension_map = self.addLiteralInput(
             identifier="dimension_map",
