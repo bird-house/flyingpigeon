@@ -1,6 +1,7 @@
 __all__ = [
         "wps_subset_countries",
         "wps_subset_continents",
+        "wps_subset_regionseurope",
         "wps_extractpoints",
         "wps_indices",
         "wps_indices_percentile",

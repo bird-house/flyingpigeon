@@ -2,19 +2,22 @@ import os
 import tarfile
 
 from flyingpigeon.subset import clipping
-from flyingpigeon.subset import countries, countries_longname        
+from flyingpigeon.subset import _EUREGIONS_ #countries, countries_longname
+europeanregions = _EUREGIONS_.keys()
+europeanregions.sort()
+
 from pywps.Process import WPSProcess
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-class ClippingProcess(WPSProcess):
+class subset_regionseuropeProcess(WPSProcess):
     def __init__(self):
         WPSProcess.__init__(
             self, 
-            identifier = "subset_countries",
-            title="Subset countries",
+            identifier = "subset_regionseurope",
+            title="Subset European Regions",
             version = "0.3",
             abstract="Returns only the selected polygon for each input dataset",
             statusSupported=True,
@@ -35,11 +38,11 @@ class ClippingProcess(WPSProcess):
             identifier="region",
             title="Region",
             #abstract= countries_longname(), # need to handle special non-ascii char in countries.
-            default='DEU',
+            default='DE.MV',
             type=type(''),
             minOccurs=1,
-            maxOccurs=len(countries()),
-            allowedValues=countries() #REGION_EUROPE #COUNTRIES # 
+            maxOccurs=len(europeanregions),
+            allowedValues=europeanregions
             )
 
 

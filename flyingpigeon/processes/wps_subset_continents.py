@@ -16,7 +16,7 @@ class subset_continentsProcess(WPSProcess):
             identifier = "subset_continents",
             title="Subset continents",
             version = "0.3",
-            abstract="Returns only the given continent(s) polygon for input dataset.",
+            abstract="Returns only the selected polygon for each input dataset",
             statusSupported=True,
             storeSupported=True
             )
@@ -35,7 +35,7 @@ class subset_continentsProcess(WPSProcess):
             identifier="region",
             title="Region",
             #abstract= countries_longname(), # need to handle special non-ascii char in countries.
-            default='DEU',
+            default='Africa',
             type=type(''),
             minOccurs=1,
             maxOccurs=len(_CONTINENTS_),

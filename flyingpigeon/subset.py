@@ -94,31 +94,30 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
       else: 
         geom = geoms.pop()
       ugids = get_ugid(polygons=polygons, geom=geom)
-      
-      for key in  ncs.keys() :
-        if variable == None:
-          variable = get_variable(ncs[key])
-          logger.info('variable %s detected in resource' % (variable))  
-        try:
-          
-          if prefix == None:
-            name = key + nameadd
-          else:
-            name = prefix[0]
-            
-          geom_file = call(resource=ncs[key], variable=variable, 
-                           calc=calc, calc_grouping=calc_grouping ,
-            prefix=name, geom=geom, select_ugid=ugids,
-            dir_output=dir_output, dimension_map=dimension_map)    
-          
-          geom_files.append( geom_file )
-        except Exception as e:
-          msg = 'ocgis calculations failed for %s ' % (key)
-          logger.exception(msg)
-          raise
     except Exception as e:
-      logger.exception('geom identification failed %s ' % e)
-      raise
+      logger.debug('geom identification failed %s ' % e)
+  
+    for key in  ncs.keys() :
+      if variable == None:
+        variable = get_variable(ncs[key])
+        logger.info('variable %s detected in resource' % (variable))  
+      try:
+        
+        if prefix == None:
+          name = key + nameadd
+        else:
+          name = prefix[0]
+          
+        geom_file = call(resource=ncs[key], variable=variable, 
+                          calc=calc, calc_grouping=calc_grouping ,
+          prefix=name, geom=geom, select_ugid=ugids,
+          dir_output=dir_output, dimension_map=dimension_map)    
+        
+        geom_files.append( geom_file )
+      except Exception as e:
+        msg = 'ocgis calculations failed for %s ' % (key)
+        logger.debug(msg)
+        
   else: 
     try:
       for i, polygon in enumerate(polygons): 
@@ -138,10 +137,10 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
             geom_files.append( geom_file )
           except Exception as e:
             msg = 'ocgis calculations failed for %s ' % (key)
-            logger.exception(msg)
+            logger.debug(msg)
             raise
     except Exception as e:
-        logger.exception('geom identification failed')
+        logger.debug('geom identification failed')
         raise 
 
   return  geom_files
@@ -265,6 +264,8 @@ def get_geom(polygon=None):
     if polygon in _COUNTRIES_: # (polygon) == 3:
       geom = 'countries'
     elif polygon in _POLYGONS_EXTREMOSCOPE_: #len(polygon) == 5 and polygon[2] == '.': 
+      geom = 'extremoscope'
+    elif polygon in _EUREGIONS_:
       geom = 'extremoscope'
     elif polygon in _CONTINENTS_: 
       geom = 'continents'
