@@ -77,7 +77,6 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
       dimension_map=dimension_map, conform_units_to=conform_units_to, 
       time_region=time_region)
    
-    
     ops = OcgOperations(dataset=rd,
         output_format_options=output_format_options,
         #options=options,
