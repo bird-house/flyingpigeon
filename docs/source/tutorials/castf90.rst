@@ -1,4 +1,4 @@
-Tutorial: CASTf90
+Tutorial: castf90
 ..................
 
 
