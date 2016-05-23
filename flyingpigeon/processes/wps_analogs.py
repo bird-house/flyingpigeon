@@ -231,7 +231,7 @@ class AnalogsProcess(WPSProcess):
     dateSt = dt.datetime.strptime(dateSt[0],'%Y-%m-%d')
     dateEn = dt.datetime.strptime(dateEn[0],'%Y-%m-%d')
 
-    timewin = 1 #int(self.getInputValues(identifier='timewin')[0])
+    timewin = int(self.getInputValues(identifier='timewin')[0])
     
     start = min( refSt, dateSt )
     end = max( refEn, dateEn )

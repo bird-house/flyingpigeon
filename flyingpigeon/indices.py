@@ -110,7 +110,7 @@ def indice_variable(indice):
     return variable
 
 def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
-    polygons=None, groupings=None, dir_output=None, dimension_map = None):
+    polygons=None, groupings=None, dir_output=None, dimension_map = None, memory_limit=None):
     """
     Calculates given indices for suitable files in the appopriate time grouping and polygon.
 
@@ -166,6 +166,7 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
                      variable=variable,
                      dimension_map=dimension_map, 
                      calc=calc,
+                     memory_limit=memory_limit,
                      #alc_grouping= calc_group, 
                      prefix=str(uuid.uuid4()), 
                      dir_output=dir_output,
