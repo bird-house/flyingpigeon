@@ -1,20 +1,19 @@
+Tutorial: CASTf90
+..................
 
-Processes in Flyingpigeon can be executed in various ways: 
 
-* with terminal command line using birdy
-* as a python call 
-* :ref:`via the web browser GUI Phoenix <phoenix:introduction>`: 
+Picking dates of analog pressure patterns in a reverence period for specific time slice. 
 
-:ref: `Tutorials to get familliar with general usage of Pheonix <phoenix:tutorial>`
+* login to a Phoenix GUI (e.g. `Compute provider DKRZ <https://mouflon.dkrz.de/>`_)
+( `Detailed descritions for login options <http://pyramid-phoenix.readthedocs.io/en/latest/user_guide.html#login>`_ )
 
-Tutorials 
-=========
+- Menu option: Processes
+- Web Processing Services: Flyingpigeon
+- Processes: Days with analog pressure pattern
+- choose the approriate input parameter. 
+(a resource is not necessary, NCEP data are fetched within the process)
 
-.. toctree::
-   :maxdepth: 2
+.. image:: pics/analogs_literalinputs.png
 
-   robustness_solr
-   sdm
-   castf90
-
-     
+Press execute to submit the job! 
+You follow the log file of your in the monitor (klick on the info button to follow the log file). manual reload of your browser site is necessary.
