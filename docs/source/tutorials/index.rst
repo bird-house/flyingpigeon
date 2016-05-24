@@ -5,7 +5,7 @@ Processes in Flyingpigeon can be executed in various ways:
 * Within a skipt in a language like python
 * :ref: `via the web browser GUI Phoenix <phoenix:introduction>`_ : 
 
-:ref: `Tutorials to get familliar with general usage of Pheonix <phoenix:tutorial>`_
+:ref: `Tutorials to get familiar with general usage of Pheonix <phoenix:tutorial>`_
 
 Tutorials 
 =========
@@ -16,5 +16,6 @@ Tutorials
    robustness_solr
    sdm
    castf90
+   weatherregimes
 
      
