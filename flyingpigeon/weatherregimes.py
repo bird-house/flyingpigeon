@@ -148,13 +148,14 @@ def score_pattern(pattern1, pattern2):
   score = regr.score(pattern1, pattern2)
   return score
 
-def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, variable=None, regrid_destination=None):
+def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, time_range=None, variable=None, regrid_destination=None):
   """
   extracts the time regions (e.g. '12,1,2') and bounding box from a dataset
 
   :param resource: List of files belonging to one dataset
   :param bbox: geographical region lat/lon
   :param time_region: month to be picked from the data
+  :param time_range: defines the start and end time to be taken into accont (time_range=[datetime(start), datetime(end)])
   :returns netCDF: file containing containing lat weighted and normalize (by anual cycle) data
   """
   from flyingpigeon.ocgis_module import call
@@ -178,6 +179,7 @@ def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, variable=None,
     regrid_destination=regrid_destination,
     regrid_options='bil',
     time_region=time_region,
+    time_range=time_range,
     variable=variable)
   
   from cdo import Cdo

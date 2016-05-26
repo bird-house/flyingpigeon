@@ -75,7 +75,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   try: 
     rd = RequestDataset(resource, variable=variable, 
       dimension_map=dimension_map, conform_units_to=conform_units_to, 
-      time_region=time_region)
+      time_region=time_region, time_range=time_range)
    
     ops = OcgOperations(dataset=rd,
         output_format_options=output_format_options,
