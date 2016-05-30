@@ -12,9 +12,9 @@ class SingleIndicesProcess(WPSProcess):
         WPSProcess.__init__(
             self, 
             identifier = "indices_single",
-            title="Calculation of climate indice (single variable)",
+            title="Climate indices",
             version = "0.3",
-            abstract="This process calculates climate indices based on one single variable.",
+            abstract="This process calculates climate indices based on one single input variable.",
             statusSupported=True,
             storeSupported=True
             )

@@ -5,10 +5,10 @@ Author: Cathy Nangini
 """
 
 from pywps.Process import WPSProcess
+from datetime import  date #datetime,
 
 import logging
 logger = logging.getLogger(__name__)
-
 
 class WeatherRegimesProcess(WPSProcess):
     def __init__(self):
@@ -38,14 +38,14 @@ class WeatherRegimesProcess(WPSProcess):
             formats=[{"mimeType":"application/x-netcdf"}],
             )
 
-        # self.bbox = self.addBBoxInput(
-        #     identifier="bbox",
-        #     title="Bounding Box",
-        #     abstract="Region for weather classification",
-        #     minOccurs=1,
-        #     maxOccurs=1,
-        #     crss=['EPSG:4326']
-        #     )
+        #self.BBox = self.addBBoxInput(
+            #identifier="BBox",
+            #title="Bounding Box",
+            #abstract="coordinates to define the region for weather classification",
+            #minOccurs=1,
+            #maxOccurs=1,
+            #crss=['EPSG:4326']
+            #)
 
         self.BBox = self.addLiteralInput(
             identifier="BBox",
@@ -67,17 +67,26 @@ class WeatherRegimesProcess(WPSProcess):
             maxOccurs=1,
             allowedValues= ["10,11,12,1,2,3","4,5,6,7,8,9","12,1,2","3,4,5","6,7,8","9,10,11", "None"] #GROUPING
             )
+        
+        self.dateobsst = self.addLiteralInput(
+            identifier="dateobsst",
+            title="Start of period",
+            abstract="Date to start analysing the observation data (if not set, the first date of the dataset will be taken)",
+            default="2013-01-01",
+            type=type(date(2013,01,01)),
+            minOccurs=0,
+            maxOccurs=1,
+            )
 
-        # self.method = self.addLiteralInput(
-        #     identifier="method",
-        #     title="Method",
-        #     abstract="Choose a clustering method",
-        #     default="kMEAN",
-        #     type=type(''),
-        #     minOccurs=1,
-        #     maxOccurs=1,
-        #     allowedValues=['tSNE', 'kMEAN']
-        #     )
+        self.dateobsen = self.addLiteralInput(
+            identifier="dateobsen",
+            title="End of period",
+            abstract="Date to end analysing the observation data (if not set, the first date of the dataset will be taken)",
+            default="2014-12-31",
+            type=type(date(2014,12,31)),
+            minOccurs=0,
+            maxOccurs=1,
+            )
 
         self.observation = self.addLiteralInput(
             identifier="observation",
@@ -137,6 +146,7 @@ class WeatherRegimesProcess(WPSProcess):
 
     def execute(self):
         logger.info('Start process')
+        from datetime import datetime as dt
       
         try: 
             logger.info('read in the arguments')
@@ -145,12 +155,14 @@ class WeatherRegimesProcess(WPSProcess):
             time_region = self.getInputValues(identifier='time_region')[0]
             bbox = self.getInputValues(identifier='BBox')[0]
             obs = self.getInputValues(identifier='observation')[0]
-
-            logger.info('bbox %s' % str(bbox))
+            dateobsst = self.getInputValues(identifier='dateobsst')[0]            
+            dateobsen =self.getInputValues(identifier='dateobsen')[0]
+            
+            logger.info('bbox %s' % bbox)
+            logger.info('dateobsst %s' % str(dateobsst))
             logger.info('time_region %s' % str(time_region))
            # logger.info('method: %s' % str(method))
             
-
         except Exception as e: 
             logger.error('failed to read in the arguments %s ' % e)
         
@@ -197,7 +209,14 @@ class WeatherRegimesProcess(WPSProcess):
             raise Exception(msg)
                     
           try:  
-            subset_ncep = wr.subset(nc_ncep, bbox=bbox, time_region=time_region)
+            if dateobsst != None and dateobsen != None : 
+              start = dt.strptime(dateobsst, '%Y-%m-%d')
+              end = dt.strptime(dateobsen, '%Y-%m-%d')
+              time_range = [start,end]
+            else: 
+              time_range = None
+                                  
+            subset_ncep = wr.subset(nc_ncep, bbox=bbox, time_region=time_region, time_range=time_range)
             pca_ncep = wr.get_pca(subset_ncep)
             centroids_ncep, distance_ncep, regime_ncep = wr.calc_kMEAN(pca_ncep)
           except Exception as e:

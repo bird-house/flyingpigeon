@@ -12,9 +12,9 @@ class IndicesPercentileProcess(WPSProcess):
         WPSProcess.__init__(
             self, 
             identifier = "indices_percentile",
-            title="Calculation of percentile based climate indices (single variable)",
+            title="Climate indices percentile based",
             version = "0.1",
-            abstract="This process calculates climate indices based on one single variable and based on percentils of a referece period.",
+            abstract="Calculation of climate indices based on one single input variable and based on percentils of a referece period.",
             statusSupported=True,
             storeSupported=True
             )
