@@ -260,7 +260,6 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
     plt.annotate('..  = high model ensemble agreement', (0,0), (0, -20), xycoords='axes fraction', textcoords='offset points', va='top')
     
     graphic = 'modelAgreement.png'
-
     fig.savefig(graphic)
 
     plt.close()
@@ -273,22 +272,22 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
 
   return graphic
 
-def plot_tSNE(data, title='custer', sub_title='method: principal components'):
-  """
-  plot the output of weather classifiaction as a cluster
-  :param param: values for x y coordinate
-  :param title: string for title
-  """
-  fig = plt.figure(figsize=(10, 10))
-  plt.scatter(data[:, 0], data[:, 1], marker=".")
-  plt.title(title)
-  plt.annotate(sub_title, (0,0), (0, -30), xycoords='axes fraction', textcoords='offset points', va='top')
+#def plot_tSNE(data, title='custer', sub_title='method: principal components'):
+  #"""
+  #plot the output of weather classifiaction as a cluster
+  #:param param: values for x y coordinate
+  #:param title: string for title
+  #"""
+  #fig = plt.figure(figsize=(10, 10))
+  #plt.scatter(data[:, 0], data[:, 1], marker=".")
+  #plt.title(title)
+  #plt.annotate(sub_title, (0,0), (0, -30), xycoords='axes fraction', textcoords='offset points', va='top')
   
-  ip, image = mkstemp(dir='.',suffix='.png')
-  plt.savefig(image)
-  plt.close()
+  #ip, image = mkstemp(dir='.',suffix='.png')
+  #plt.savefig(image)
+  #plt.close()
   
-  return image 
+  #return image 
 
 def plot_kMEAN(kmeans, pca, title='kmean', sub_title='file='):
   from itertools import cycle  
@@ -332,7 +331,7 @@ def plot_kMEAN(kmeans, pca, title='kmean', sub_title='file='):
 
 
 def plot_pressuremap(data, lats=None, lons=None,
-                    facecolor=None,  edgecolor=None,
+                    facecolor=None,  edgecolor=None, vmin=None, vmax=None,
                     title='Pressure Pattern', 
                     sub_title='plotted in birdhouse'):
   """
@@ -344,6 +343,7 @@ def plot_pressuremap(data, lats=None, lons=None,
   :param sub_title: string for sub_title
   """
   from numpy import squeeze, mean, meshgrid
+  norm = MidpointNormalize(midpoint=0, vmin=vmin, vmax=vmax)
   d = squeeze(data)
 
   if len(d.shape)==3:
@@ -367,13 +367,14 @@ def plot_pressuremap(data, lats=None, lons=None,
     ax.gridlines() 
     ax.coastlines()
     
-    cf = plt.contourf(lons, lats, d, 60, transform=ccrs.PlateCarree(), cmap='jet', interpolation=None) #'nearest'
+    cf = plt.contourf(lons, lats, d, 60, transform=ccrs.PlateCarree(), norm=norm, cmap='jet', interpolation=None) #'nearest'
     co = plt.contour(lons, lats, d, transform=ccrs.PlateCarree(), lw=2, color='black')
   else:
-    cf = plt.contourf(d)
+    cf = plt.contourf(d, norm=norm, cmap='jet')
     co = plt.contour(d, lw=2, c='black')
     
-  # plt.colorbar(cf)
+  plt.colorbar(cf, shrink=0.5,)
+  # clb = plt.colorbar( ticks=clevs)
   plt.clabel(co, inline=1) # fontsize=10
   plt.title(title)
   plt.annotate(sub_title, (0,0), (0, -30), xycoords='axes fraction',

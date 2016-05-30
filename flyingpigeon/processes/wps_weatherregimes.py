@@ -268,7 +268,7 @@ class WeatherRegimesProcess(WPSProcess):
               pattern = mean(data_ncep[best_pattern], axis = 0)
               obs_pattern.append(pattern) 
               subplots.append(plot_pressuremap(pattern, 
-                lats=lats, lons=lons, 
+                lats=lats, lons=lons, vmin=-30, vmax=30,
                 facecolor = '#E0E0E0', # grey background 
                 title='Weather Regime %s: Month %s ' % (i, time_region), 
                 sub_title='NCEP slp mean'))
@@ -353,7 +353,7 @@ class WeatherRegimesProcess(WPSProcess):
                   order[i] = j
               
               subplots.append(plot_pressuremap(pattern,
-              lats=lats, lons=lons, 
+              lats=lats, lons=lons, vmin=-30, vmax=30,
               title='file %s' % key , 
               sub_title='Model \nR = %s \n' % stat_vals[i,:][2] ))
 
