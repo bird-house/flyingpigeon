@@ -7,6 +7,7 @@ __all__ = [
         "wps_indices_percentile",
         "wps_visualisation",
         "wps_eobs_to_cordex",
+        "wps_weatherregimes_obs",
         "wps_weatherregimes",
         "wps_ensemble_robustness",
         "wps_analogs",

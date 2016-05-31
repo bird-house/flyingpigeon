@@ -317,11 +317,9 @@ def plot_kMEAN(kmeans, pca, title='kmean', sub_title='file='):
   
   plt.axvline(0)
   plt.axhline(0)
-  
   plt.title(title)
   
   plt.annotate(sub_title, (0,0), (0, -30), xycoords='axes fraction', textcoords='offset points', va='top')
-  
   
   ip, image = mkstemp(dir='.',suffix='.png')
   plt.savefig(image)
@@ -354,11 +352,9 @@ def plot_pressuremap(data, lats=None, lons=None,
   # fig = plt.figure( )
   # fig.patch.set_facecolor(facecolor)
   
-  if not (lats == None or lons == None):
-    
+  if not (lats == None or lons == None):  
     if len(lats.shape) == 1: 
       lons, lats = meshgrid( lons, lats)
-    
     central_longitude = int(mean(lons))
     
     #AlbersEqualArea(central_longitude=0.0, central_latitude=0.0, false_easting=0.0, false_northing=0.0, standard_parallels=(20.0, 50.0), globe=None)

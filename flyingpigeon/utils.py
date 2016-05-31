@@ -3,7 +3,6 @@ import os
 import wget
 import ocgis
 from netCDF4 import Dataset, MFDataset, num2date
-
 from flyingpigeon import config
 
 import logging
@@ -221,7 +220,6 @@ def drs_filename(nc_file, skip_timestamp=False, skip_format=False ,
                 )
         else:
             raise Exception('unknown project %s' % ds.project_id)
-
         ds.close()
 
         # add from/to timestamp if not skipped

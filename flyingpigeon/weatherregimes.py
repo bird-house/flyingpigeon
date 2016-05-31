@@ -13,10 +13,11 @@ def get_pca(resource):
   from netCDF4 import Dataset, num2date
   from flyingpigeon.utils import get_variable
   from numpy import mean
-
+  import numpy as np
+  
   var = get_variable(resource)
   ds = Dataset(resource)
-  vals = ds.variables[var]
+  vals = np.squeeze(ds.variables[var])
 
   lat = ds.variables['lat']
   lon = ds.variables['lon']
@@ -28,13 +29,12 @@ def get_pca(resource):
   #season = [get_season(s) for s in timestamps]
   
   from sklearn.decomposition import PCA
-  import numpy as np
-  
+ 
   # reshape
   #data = np.array(vals)
   #m = mean(vals)
   #mdata = vals - m 
-  adata = vals[:].reshape(vals[:].shape[0], (vals[:].shape[1] * vals[:].shape[2]) )
+  adata = vals.reshape(vals.shape[0], (vals.shape[1] * vals.shape[2]) )
   pca = PCA(n_components=50).fit_transform(adata)
   return pca #, season
 
@@ -62,11 +62,77 @@ def calc_kMEAN(pca):
   centroids = kmeans.fit(pca)
   distance = kmeans.fit_transform(pca)
   regime = distance.argsort()[:,3]
-  
   return centroids, distance, regime
 
-def get_NCEP( start=1948, end=None, variable='slp' ):
+def get_OBS( start=1948, end=None, variable='slp', dataset='NCEP'):
   """
+  replaced by get_OBS
+  fetching the NCEP slp data to local file system
+  :param start: int for start year to fetch source data
+  :param end: int for end year to fetch source data (if None, current year will be the end)
+  :return list: list of path/files.nc 
+  """
+  try:
+    from datetime import datetime as dt
+    
+    if end == None: 
+      end = dt.now().year
+    obs_data = []
+    
+    if start == None: 
+      if dataset == 'NCEP':
+        start = 1948
+      if dataset == '20CR':
+        start = 1851
+    logger.info('start / end date set')    
+  except Exception as e:
+    msg = "get_OBS module failed to get start end dates %s " % e
+    logger.debug(msg)
+    raise Exception(msg)
+  
+  try:
+    for year in range(start, end + 1):
+      try:
+        if dataset == 'NCEP':
+          if variable == 'slp':
+            url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/%s.%s.nc' % (variable, year)
+          elif 'z' in variable:
+            url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/pressure/hgt.%s.nc' % ( year)          
+        elif dataset == '20CR':
+          url = 'http://portal.nersc.gov/pydap/20C_Reanalysis_version2c_ensemble/analysis/%s/%s_%s.nc' % (variable, variable, year ) 
+        else: 
+          logger.error('Dataset %s not known' % dataset)    
+        
+      except Exception as e:
+        msg = "could not set url: %s " % e
+        logger.debug(msg)
+        raise Exception(msg)
+      try:  
+        obs_data.append(utils.download(url, cache=True))
+      except:
+        msg = "wget failed on {0}.".format(url)
+        logger.debug(msg)
+        raise Exception(msg)
+    logger.info('Obseration data fetched for %s files' % len(obs_data))  
+  except Exception as e:
+    msg = "get_OBS module failed to fetch data %s " % e
+    logger.debug(msg)
+    raise Exception(msg)
+  return obs_data
+
+def get_level(obs_data, level):
+  from cdo import Cdo 
+  cdo = Cdo()
+  
+  level_data = cdo.sellevel(level, input = obs_data, output ='NCEP_level.nc' )
+  
+  return level_data 
+  
+
+
+def get_NCEP(start=1948, end=None, variable='slp' ):
+  """
+  replaced by get_OBS
   fetching the NCEP slp data to local file system
   :param start: int for start year to fetch source data
   :param end: int for end year to fetch source data (if None, current year will be the end)
@@ -77,23 +143,24 @@ def get_NCEP( start=1948, end=None, variable='slp' ):
 
     if end == None: 
       end = dt.now().year
-    ncep_data = []
+    obs_data = []
 
     for year in range(start, end + 1):
       try:
         url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.%s.nc' % year
         # ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis.dailyavgs/surface/
-        ncep_data.append(utils.download(url, cache=True))
+        obs_data.append(utils.download(url, cache=True))
       except:
         msg = "wget failed on {0}.".format(url)
-        logger.exception(msg)
+        logger.debugion(msg)
         raise Exception(msg)
-    logger.info('NCEP data fetched for %s files' % len(ncep_data))  
+    logger.info('NCEP data fetched for %s files' % len(obs_data))  
   except:
     msg = "get_NCEP module failed"
-    logger.exception(msg)
+    logger.debugion(msg)
     raise Exception(msg)
-  return ncep_data
+  return obs_data
+
 
 def weight_by_lat(resource):
   """
@@ -107,7 +174,6 @@ def weight_by_lat(resource):
   from numpy import meshgrid, sqrt, cos, pi, broadcast_arrays
 
   variable = utils.get_variable(resource)
-
   ds = Dataset(resource, mode='a')
   lat = ds.variables['lat']
   lon = ds.variables['lon']
@@ -142,14 +208,16 @@ def score_pattern(pattern1, pattern2):
     pattern2 = mean(pattern2, axis=0)
 
   if pattern1.shape != pattern2.shape:
-    logger.error('score_pattern failed: pattern are in differnet shape')
+    logger.debug('score_pattern failed: pattern are in differnet shape')
   
   regr = linear_model.LinearRegression()
   regr.fit(pattern1, pattern2)
   score = regr.score(pattern1, pattern2)
   return score
 
-def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, time_range=None, variable=None, regrid_destination=None):
+def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, time_range=None,
+           variable=None, level=None, conform_units_to='hPa', 
+           regrid_destination=None, regrid_options=None,):
   """
   extracts the time regions (e.g. '12,1,2') and bounding box from a dataset
 
@@ -167,15 +235,18 @@ def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, time_range=Non
     resource = list([resource])
 
   if variable == None:
-    variable = utils.get_variable(resource[0])
+    variable = utils.get_variable(resource)
 
   if not time_region == None:
     month = map(int, time_region.split(','))
     time_region = {'month':month}
+    
+    minx, maxx, miny, maxy  =  bbox.split(',')  # ( minx , miny , maxx , maxy )
+    geom = [ float(minx) , float(miny) , float(maxx) , float(maxy) ]
 
   nc_grouped = call(resource=resource,  
-    conform_units_to='hPa',
-    #geom= [float(n) for n in bbox.split(',')], # not possible due to wrapping difficulties in ocgis
+    conform_units_to=conform_units_to,
+    #geom= geom, # not possible due to wrapping difficulties in ocgis
     #prefix=str(uuid.uuid1()),
     regrid_destination=regrid_destination,
     regrid_options='bil',
@@ -185,10 +256,13 @@ def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, time_range=Non
   
   from cdo import Cdo
   cdo = Cdo()
-
   ip, nc_subset = mkstemp(dir='.',suffix='.nc')
   nc_subset  = cdo.sellonlatbox('%s' % bbox, input=nc_grouped, output=nc_subset)
   logger.info('subset done: %s ' % nc_subset)
+  
+  if level != None:
+    nc_level = get_level( nc_subset, level) 
+    nc_subset =  nc_level
   
   # nc_subset = nc_grouped
   nc_weighted = weight_by_lat(nc_subset)
