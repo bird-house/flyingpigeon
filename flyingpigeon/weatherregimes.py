@@ -65,7 +65,7 @@ def calc_kMEAN(pca):
   
   return centroids, distance, regime
 
-def get_NCEP( start=1948, end=None ):
+def get_NCEP( start=1948, end=None, variable='slp' ):
   """
   fetching the NCEP slp data to local file system
   :param start: int for start year to fetch source data
@@ -82,6 +82,7 @@ def get_NCEP( start=1948, end=None ):
     for year in range(start, end + 1):
       try:
         url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.%s.nc' % year
+        # ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis.dailyavgs/surface/
         ncep_data.append(utils.download(url, cache=True))
       except:
         msg = "wget failed on {0}.".format(url)
