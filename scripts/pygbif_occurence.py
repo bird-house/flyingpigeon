@@ -1,4 +1,5 @@
 from pygbif import species, occurrences
+<<<<<<< HEAD
 from numpy import nan, empty 
 TName = "Fagus sylvatica"
 key = species.name_backbone(name=TName, rank="species")["usageKey"]
