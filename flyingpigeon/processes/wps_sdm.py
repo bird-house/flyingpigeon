@@ -17,12 +17,12 @@ class SDMProcess(WPSProcess):
         WPSProcess.__init__(
             self,
             identifier = "sdm",
-            title = "Species distribution model",
+            title = "SDM",
             version = "0.4",
             metadata=[
                 {"title":"SDM", "href":"http://flyingpigeon.readthedocs.org/en/latest/"},
                 ],
-            abstract="Species distribution model (SDM) ",
+            abstract="Species distribution model for tree species based on GBIF presens/absence data and climate indices",
             statusSupported=True,
             storeSupported=True
             )
