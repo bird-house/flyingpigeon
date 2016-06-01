@@ -204,7 +204,7 @@ class AnalogsProcess(WPSProcess):
     from flyingpigeon.weatherregimes import get_NCEP
 
     self.status.set('execution started at : %s '  % dt.datetime.now(),5)
-
+    
     refSt = self.getInputValues(identifier='refSt')
     refEn = self.getInputValues(identifier='refEn')
     dateSt = self.getInputValues(identifier='dateSt')
@@ -236,10 +236,13 @@ class AnalogsProcess(WPSProcess):
     start = min( refSt, dateSt )
     end = max( refEn, dateEn )
 
+
+    self.status.set('Read in the arguments', 5)
     #################
     # get input data
     #################
 
+    self.status.set('fetching input data', 7)
     try: 
       experiment = self.getInputValues(identifier='experiment')[0]
       if experiment == 'NCEP':
@@ -256,11 +259,14 @@ class AnalogsProcess(WPSProcess):
       msg = 'failed to fetch input files %s' % e
       logger.error(msg)
       raise Exception(msg)
-        
+    
+    self.status.set('**** Input data fetched', 10)
+    
     ########################
     # input data preperation 
     ########################
-
+    self.status.set('Start preparing input data', 12)
+    
     try: 
       archive = call(resource=nc_subset, time_range=[refSt , refEn]) 
       simulation = call(resource=nc_subset, time_range=[dateSt , dateEn])
@@ -279,7 +285,9 @@ class AnalogsProcess(WPSProcess):
     ############################
     # generating the config file
     ############################
-
+    
+    self.status.set('writing config file', 15)
+    
     try:  
       config_file = analogs.get_configfile(files=files, 
         timewin=timewin, 
@@ -302,7 +310,9 @@ class AnalogsProcess(WPSProcess):
     #######################
     import subprocess
     import shlex
-
+    
+    self.status.set('Start CASTf90 call', 20)
+    
     try:
       #self.status.set('execution of CASTf90', 50)
       cmd = 'analogue.out %s' % path.relpath(config_file)
@@ -311,11 +321,12 @@ class AnalogsProcess(WPSProcess):
       output,error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE).communicate()
       logger.info('analogue.out info:\n %s ' % output)
       logger.debug('analogue.out errors:\n %s ' % error)
+      self.status.set('**** CASTf90 suceeded', 90)
     except Exception as e: 
       msg = 'CASTf90 failed %s ' % e
       logger.error(msg)  
       raise Exception(msg)
-
+    
     self.status.set('preparting output', 99)
     self.config.setValue( config_file )
     self.analogs.setValue( output_file )
