@@ -20,15 +20,15 @@ class AnalogsProcess(WPSProcess):
       storeSupported=True
       )
 
-    self.resource = self.addComplexInput(
-      identifier="resource",
-      title="Resource",
-      abstract="URL to netCDF file",
-      minOccurs=0,
-      maxOccurs=1000,
-      maxmegabites=5000,
-      formats=[{"mimeType":"application/x-netcdf"}],
-      )
+    #self.resource = self.addComplexInput(
+      #identifier="resource",
+      #title="Resource",
+      #abstract="URL to netCDF file",
+      #minOccurs=0,
+      #maxOccurs=1000,
+      #maxmegabites=5000,
+      #formats=[{"mimeType":"application/x-netcdf"}],
+      #)
 
     self.experiment = self.addLiteralInput(
       identifier="experiment",
@@ -195,7 +195,7 @@ class AnalogsProcess(WPSProcess):
       )
 
   def execute(self):
-    from os import system, path
+    from os import path
     from tempfile import mkstemp
     from flyingpigeon import analogs
     import datetime as dt
@@ -300,11 +300,17 @@ class AnalogsProcess(WPSProcess):
     #######################
     # CASTf90 call 
     #######################
+    import subprocess
+    import shlex
 
     try:
       #self.status.set('execution of CASTf90', 50)
       cmd = 'analogue.out %s' % path.relpath(config_file)
-      system(cmd)
+      #system(cmd)
+      args = shlex.split(cmd)
+      output,error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE).communicate()
+      logger.info('analogue.out info:\n %s ' % output)
+      logger.debug('analogue.out errors:\n %s ' % error)
     except Exception as e: 
       msg = 'CASTf90 failed %s ' % e
       logger.error(msg)  
