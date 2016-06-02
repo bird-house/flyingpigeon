@@ -1,5 +1,8 @@
 from pygbif import species, occurrences
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> pygbif download
 from numpy import nan, empty 
 TName = "Fagus sylvatica"
 key = species.name_backbone(name=TName, rank="species")["usageKey"]
@@ -56,4 +59,8 @@ for i, x in enumerate(results["results"]):
     # print x['decimalLongitude'], x['decimalLatitude']
     # print Continent, Country, State, County, Locality, Latitude, Longitude
     latlon[i][0] = Latitude  
+<<<<<<< HEAD
     latlon[i][1] = Longitude
+=======
+    latlon[i][1] = Longitude
+>>>>>>> pygbif download
