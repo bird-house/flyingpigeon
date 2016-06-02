@@ -379,7 +379,6 @@ def plot_pressuremap(data, lats=None, lons=None,
   ip, image = mkstemp(dir='.',suffix='.png')
   plt.savefig(image)
   plt.close()
-
   return image
 
 
@@ -421,11 +420,28 @@ def concat_images(images, orientation='v'):
       ch = oi.size[1]
       cp = w * i
       box = [cp,0,cw+cp,ch]
-      
       result.paste(oi, box=box)
   
-  ip, image = mkstemp(dir='.',suffix='.png')
-  
+  ip, image = mkstemp(dir='.',suffix='.png')  
   result.save(image)
 
   return image
+
+
+def map_gbifoccurrences(latlon):
+  
+  import matplotlib.pyplot as plt
+  from cartopy import config
+  from cartopy.util import add_cyclic_point
+  import cartopy.crs as ccrs
+  
+  tree_presents = 'tree_presents.png'
+  fig = plt.figure(figsize=(20,10), facecolor='w', edgecolor='k')
+  ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
+  ax.coastlines()
+  ax.set_global()
+  cs = plt.scatter(latlon[:,1], latlon[:,0], transform=ccrs.PlateCarree())
+  fig.savefig(tree_presents)
+  plt.close()
+ 
+  return tree_presents
