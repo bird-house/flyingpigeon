@@ -99,7 +99,10 @@ def get_OBS( start=1948, end=None, variable='slp', dataset='NCEP'):
           elif 'z' in variable:
             url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/pressure/hgt.%s.nc' % ( year)          
         elif dataset == '20CR':
-          url = 'http://portal.nersc.gov/pydap/20C_Reanalysis_version2c_ensemble/analysis/%s/%s_%s.nc' % (variable, variable, year ) 
+          if variable == 'prmsl'
+            url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/monolevel/prmsl.%s.nc' % year
+          if 'z' in variable:  
+            url = 'http://portal.nersc.gov/pydap/20C_Reanalysis_version2c_ensemble/analysis/%s/%s_%s.nc' % (variable, variable, year ) 
         else: 
           logger.error('Dataset %s not known' % dataset)    
         
