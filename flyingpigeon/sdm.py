@@ -71,6 +71,7 @@ def gbif_serach(taxon_name):
   except Exception as e: 
     logger.exception('failed search GBIF data %s' % (e))
   return ll             
+
   
 
 def get_latlon( csv_file ):

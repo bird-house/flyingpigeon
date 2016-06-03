@@ -13,6 +13,6 @@ __all__ = [
         "wps_analogs",
         "wps_segetalflora",
         "wps_sdm",
-      #  "wps_sdmgbif",
+        "wps_sdmgbif",
         "wps_fetch",
         ]
