@@ -15,10 +15,10 @@ class WeatherRegimesProcess(WPSProcess):
         WPSProcess.__init__(
             self,
             identifier = "weatherregimes",
-            title = "Weather Regimes",
+            title = "Weather Regimes -- Compare with Reanalyse Data",
             version = "0.1",
             metadata=[
-                {"title":"Weather Regimes"},
+                {"title":"Weather Regimes -- Compare with Reanalyse Data"},
                 ],
             abstract="Weather Regimes based on pressure patterns (kmean method)",
             statusSupported=True,

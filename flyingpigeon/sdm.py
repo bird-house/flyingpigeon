@@ -70,44 +70,7 @@ def gbif_serach(taxon_name):
     logger.info('read in PA coordinates for %s rows ' % len(ll[:,0])) 
   except Exception as e: 
     logger.exception('failed search GBIF data %s' % (e))
-  return ll
- 
-
-  # from pygbif import species, occurrences
-  # 
-  # #TName = "Fagus sylvatica"
-  # try:
-  #   key = species.name_backbone(name=taxon_name, rank="species")["usageKey"]
-  #   n = occurrences.count(taxonKey=key, isGeoreferenced=True)
-
-  #   if n > 300:
-  #       max = 300
-  #   else:
-  #       max = n
-        
-  #   results = occurrences.search(taxonKey=key, limit=max)
-  #   logger.info('(', key, ')', '-', format(n, ','), " ocurrence(s)")
-
-  #   latlon = empty([max,2], dtype=float, order='C')
-
-  #   for i, x in enumerate(results["results"]):
-  #     try:
-  #       Latitude = (x['decimalLatitude'])
-  #       #if Latitude == 0.0:
-  #         #Latitude = nan
-  #     except:
-  #       Latitude = nan
-  #     try:
-  #       Longitude = (x['decimalLongitude'])
-  #       #if Longitude == 0.0:
-  #         #Longitude = nan
-  #     except:
-  #       Longitude = nan
-
-      # latlon[i][0] = Latitude  
-      # latlon[i][1] = Longitude
-  
-             
+  return ll             
   
 
 def get_latlon( csv_file ):

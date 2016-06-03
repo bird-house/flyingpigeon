@@ -10,7 +10,7 @@ class AnalogsProcess(WPSProcess):
     # definition of this process
     WPSProcess.__init__(self, 
       identifier = "analogs",
-      title="Days with analog pressure pattern",
+      title="CASTf90",
       version = "0.2",
       metadata= [
               {"title": "Institut Pierre Simon Laplace", "href": "https://www.ipsl.fr/en/"}
