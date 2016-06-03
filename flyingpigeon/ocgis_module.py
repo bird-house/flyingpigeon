@@ -10,7 +10,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   calc_grouping= None, conform_units_to=None, memory_limit=None,  prefix=None, 
   regrid_destination=None, regrid_options='bil',
   geom=None, output_format_options=False, search_radius_mult=2., 
-  select_nearest=False, select_ugid=None, time_region=None, time_range=None,
+  select_nearest=False, select_ugid=None, spatial_wrapping=None ,time_region=None, time_range=None,
   dir_output=None, output_format='nc'):
   '''
   ocgis operation call
@@ -38,6 +38,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   :param search_radius_mult: search radius for point geometries. All included gridboxes will be returned
   :param select_nearest: neares neighbour selection for point geometries
   :param select_ugid: ugid for appropriate poligons 
+  :param spatial_wrapping: how to handle coordinates in case of subsets, options: None(default), @wrap', 'unwrap'
   :param time_region:
   :param time_range: sequence of two datetime.datetime objects to mark start and end point 
   :param dir_output:
@@ -79,6 +80,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
    
     ops = OcgOperations(dataset=rd,
         output_format_options=output_format_options,
+        spatial_wrapping=spatial_wrapping,
         #options=options,
         calc=calc,
         calc_grouping=calc_grouping,
