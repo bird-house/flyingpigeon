@@ -53,7 +53,7 @@ def masking(resource, mask, prefix=None, dir_output=None):
 
 
 def clipping(resource=[], variable=None, dimension_map=None, calc=None,  
-  calc_grouping= None, historical_concatination=True, prefix=None, polygons=None, mosaik=False, dir_output=None):
+  calc_grouping= None, historical_concatination=True, prefix=None, spatial_wrapping='wrap', polygons=None, mosaik=False, dir_output=None):
   """ returns list of clipped netCDF files
   possible entries: 
   :param resource: list of input netCDF files
@@ -110,7 +110,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
           
         geom_file = call(resource=ncs[key], variable=variable, 
                           calc=calc, calc_grouping=calc_grouping ,
-          prefix=name, geom=geom, select_ugid=ugids,
+          prefix=name, geom=geom, select_ugid=ugids,spatial_wrapping=spatial_wrapping,
           dir_output=dir_output, dimension_map=dimension_map)    
         
         geom_files.append( geom_file )
@@ -133,7 +133,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
             else:
               name = prefix[i]
             geom_file = call(resource=ncs[key], variable=variable,  calc=calc, calc_grouping=calc_grouping,
-              prefix=name, geom=geom, select_ugid=ugid, dir_output=dir_output, dimension_map=dimension_map)
+              prefix=name, geom=geom, select_ugid=ugid, dir_output=dir_output, dimension_map=dimension_map, spatial_wrapping=spatial_wrapping)
             geom_files.append( geom_file )
           except Exception as e:
             msg = 'ocgis calculations failed for %s ' % (key)
