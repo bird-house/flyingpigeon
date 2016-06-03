@@ -98,14 +98,18 @@ def get_OBS( start=1948, end=None, variable='slp', dataset='NCEP'):
             url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/%s.%s.nc' % (variable, year)
           elif 'z' in variable:
             url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/pressure/hgt.%s.nc' % ( year)          
-        elif dataset == '20CR':
-          if variable == 'prmsl'
+        elif dataset == '20CRV2':
+          if variable == 'prmsl':
+            url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2/monolevel/prmsl.%s.nc' % year
+          if 'z' in variable:
+            url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2/pressure/hgt.%s.nc' % ( year )
+        elif dataset == '20CRV2c':
+          if variable == 'prmsl':
             url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/monolevel/prmsl.%s.nc' % year
-          if 'z' in variable:  
-            url = 'http://portal.nersc.gov/pydap/20C_Reanalysis_version2c_ensemble/analysis/%s/%s_%s.nc' % (variable, variable, year ) 
+          if 'z' in variable:
+            url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/pressure/hgt.%s.nc' % ( year )     
         else: 
-          logger.error('Dataset %s not known' % dataset)    
-        
+          logger.error('Dataset %s not known' % dataset)
       except Exception as e:
         msg = "could not set url: %s " % e
         logger.debug(msg)
@@ -116,7 +120,7 @@ def get_OBS( start=1948, end=None, variable='slp', dataset='NCEP'):
         msg = "wget failed on {0}.".format(url)
         logger.debug(msg)
         raise Exception(msg)
-    logger.info('Obseration data fetched for %s files' % len(obs_data))  
+    logger.info('Obseration data fetched for %s files' % len(obs_data))
   except Exception as e:
     msg = "get_OBS module failed to fetch data %s " % e
     logger.debug(msg)
@@ -126,12 +130,8 @@ def get_OBS( start=1948, end=None, variable='slp', dataset='NCEP'):
 def get_level(obs_data, level):
   from cdo import Cdo 
   cdo = Cdo()
-  
-  level_data = cdo.sellevel(level, input = obs_data, output ='NCEP_level.nc' )
-  
-  return level_data 
-  
-
+  level_data = cdo.sellevel(level, input = obs_data, output ='NCEP_level.nc')
+  return level_data
 
 def get_NCEP(start=1948, end=None, variable='slp' ):
   """

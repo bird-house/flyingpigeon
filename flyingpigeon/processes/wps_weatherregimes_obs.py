@@ -15,12 +15,12 @@ class WeatherRegimesObsProcess(WPSProcess):
         WPSProcess.__init__(
             self,
             identifier = "weatherregimes_obs",
-            title = "Weather Regimes for Obervation data",
+            title = "Weather Regimes -- Reanalyses data",
             version = "0.1",
             metadata=[
-                {"title":"Weather Regimes for Obervation data"},
+                {"title":"Weather Regimes -- Reanalyses data"},
                 ],
-            abstract="Weather Regimes based on pressure patterns (kmean method)",
+            abstract="Weather Regimes based on pressure patterns, fetching selected Realayses Datasets",
             statusSupported=True,
             storeSupported=True
             )
@@ -87,7 +87,16 @@ class WeatherRegimesObsProcess(WPSProcess):
             minOccurs=1,
             maxOccurs=1,
             allowedValues=['NCEP_slp', 'NCEP_z1000',   'NCEP_z925',   'NCEP_z850',   'NCEP_z700',   'NCEP_z600',   'NCEP_z500',   'NCEP_z400',   'NCEP_z300',
-         'NCEP_z250',   'NCEP_z200',   'NCEP_z150',   'NCEP_z100',    'NCEP_z70',    'NCEP_z50',    'NCEP_z30',    'NCEP_z20', 'NCEP_z10'] #  '20CR_ps', '20CR_z200', '20CR_z500', '20CR_z1000'
+         'NCEP_z250', 'NCEP_z200',   'NCEP_z150',   'NCEP_z100',    'NCEP_z70',    'NCEP_z50',    'NCEP_z30',    'NCEP_z20', 'NCEP_z10',
+         '20CRV2_prmsl',
+         '20CRV2_z1000',   '20CRV2_z950',   '20CRV2_z900',   '20CRV2_z850',   '20CRV2_z800',   '20CRV2_z750',   '20CRV2_z700',   '20CRV2_z650',
+         '20CRV2_z600',   '20CRV2_z550',   '20CRV2_z500',   '20CRV2_z450',   '20CRV2_z400',   '20CRV2_z350',   '20CRV2_z300',   '20CRV2_z250',
+         '20CRV2_z200',   '20CRV2_z150',   '20CRV2_z100',    '20CRV2_z70',    '20CRV2_z50',    '20CRV2_z30',    '20CRV2_z20',    '20CRV2_z10',
+         '20CRV2c_prmsl',
+         '20CRV2c_z1000',   '20CRV2c_z950',   '20CRV2c_z900',   '20CRV2c_z850',   '20CRV2c_z800',   '20CRV2c_z750',   '20CRV2c_z700',   '20CRV2c_z650',
+         '20CRV2c_z600',   '20CRV2c_z550',   '20CRV2c_z500',   '20CRV2c_z450',   '20CRV2c_z400',   '20CRV2c_z350',   '20CRV2c_z300',   '20CRV2c_z250',
+         '20CRV2c_z200',   '20CRV2c_z150',   '20CRV2c_z100',    '20CRV2c_z70',    '20CRV2c_z50',    '20CRV2c_z30',    '20CRV2c_z20',    '20CRV2c_z10',
+         ] #  '', '20CR_z200', '20CR_z500', '20CR_z1000'
             )
         
         ######################
@@ -189,7 +198,7 @@ class WeatherRegimesObsProcess(WPSProcess):
           nc_obs = wr.get_OBS(start=int(dateobsst.split('-')[0]), 
                               end=int(dateobsen.split('-')[0]), 
                               dataset=obs, variable=var)
-          
+
           logger.info('observation data fetched')
         except Exception as e:
           msg = 'failed to get Observation data  %s' % e
@@ -204,19 +213,36 @@ class WeatherRegimesObsProcess(WPSProcess):
           else: 
             time_range = None
             
-          if obs == 'NCEP' and 'z' in var:
-            variable='hgt'
-            level=var.strip('z')
-            conform_units_to=None
-            vmin=-200
-            vmax=200
+          if obs == 'NCEP': 
+            if 'z' in var:
+              variable='hgt'
+              level=var.strip('z')
+              conform_units_to=None
+              vmin=-200
+              vmax=200
+            else:
+              variable='slp'
+              level=None
+              conform_units_to='hPa'
+              vmin=-35
+              vmax=35
+
+          elif '20CRV2' in obs: 
+            if 'z' in var:
+              variable='hgt'
+              level=var.strip('z')
+              conform_units_to=None
+              vmin=-200
+              vmax=200
+            else:
+              variable='prmsl'
+              level=None
+              conform_units_to='hPa'
+              vmin=-35
+              vmax=35
           else:
-            variable='slp'
-            level=None
-            conform_units_to='hPa'
-            vmin=-35
-            vmax=35
-          
+            logger.error('Reanalyses dataset not known')
+
           subset_obs = wr.subset(nc_obs, bbox=bbox, time_region=time_region, time_range=time_range, 
                                  variable=variable, level=level, conform_units_to=conform_units_to)
           logger.info('observation data prepared')
