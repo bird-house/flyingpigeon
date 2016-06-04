@@ -11,7 +11,7 @@ __all__ = [
         "wps_analogs",
         "wps_segetalflora",
         "wps_sdm_gbif",
-        "wps_sdm_cvs",
+        "wps_sdm_csv",
         "wps_plottimeseries",
         "wps_eobs2cordex",
         "wps_fetch",
