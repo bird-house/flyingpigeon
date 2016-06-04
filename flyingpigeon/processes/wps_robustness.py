@@ -3,12 +3,12 @@ from flyingpigeon import ensembleRobustness as erob
 from pywps.Process import WPSProcess
 import logging
 
-class EnsembleRobustnessProcess(WPSProcess):
+class robustnessProcess(WPSProcess):
     def __init__(self):
         # definition of this process
         WPSProcess.__init__(self, 
-            identifier = "ensembleRobustness",
-            title="Calculation of the robustness of an ensemle",
+            identifier = "robustness",
+            title="Robustness",
             version = "0.2",
             metadata= [ {"title": "LSCE" , "href": "http://www.lsce.ipsl.fr/"} ],
             abstract="Calculates the robustness as the ratio of noise to signal in an ensemle of timeseries",
