@@ -24,15 +24,17 @@ def get_csv(zip_file_url):
   csv = z.namelist()[0]
   return csv
  
- def gbif_serach(taxon_name):
-  from numpy import nan, empty
-  from pygbif import occurrences as occ
-  from pygbif import species
+def gbif_serach(taxon_name):
+  """
+  API to GBIF database.
+  :param taxon_name: Scientific name of tree species (e.g 'Fagus sylvatica')
+  """
   
   try:
-    nm = species.name_backbone(taxon_name)['usageKey']
+    from pygbif import occurrences as occ
+    from pygbif import species
 
-    ## a set of WKT polygons
+
     polys = ["POLYGON ((-13.9746093699999996 66.1882478999999933, -6.4746093699999996 66.1882478999999933, -6.4746093699999996 57.4422366399999973, -13.9746093699999996 57.4422366399999973, -13.9746093699999996 66.1882478999999933))",
     "POLYGON ((-6.4746093699999996 66.1882478999999933, 8.5253906300000004 66.1882478999999933, 8.5253906300000004 57.4422366399999973, -6.4746093699999996 57.4422366399999973, -6.4746093699999996 66.1882478999999933))",
     "POLYGON ((8.5253906300000004 66.1882478999999933, 23.5253906300000004 66.1882478999999933, 23.5253906300000004 57.4422366399999973, 8.5253906300000004 57.4422366399999973, 8.5253906300000004 66.1882478999999933))",      
@@ -46,32 +48,42 @@ def get_csv(zip_file_url):
     "POLYGON ((23.5253906300000004 34.9422366399999973, 8.5253906300000004 34.9422366399999973, 8.5253906300000004 42.4422366399999973, 23.5253906300000004 42.4422366399999973, 23.5253906300000004 34.9422366399999973))",     
     "POLYGON ((31.7285156300000004 42.4422366399999973, 31.7285156300000004 34.9422366399999973, 23.5253906300000004 34.9422366399999973, 23.5253906300000004 42.4422366399999973, 31.7285156300000004 42.4422366399999973))"]
 
+
+    nm = species.name_backbone(taxon_name)['usageKey']
+    logger.info('Taxon Key found: %s' % nm)
+  except Exception as e:
+    logger.error('Taxon Key defining failed %s' % (e))
+  
+  try:
     results = []
-    for i in polys:
-        res = []
-        x = occ.search(taxonKey = nm, geometry = i)
-        res.append(x['results'])
-        while not x['endOfRecords']:
-            x = occ.search(taxonKey = nm, geometry = i, offset = sum([ len(x) for x in res ]))
-            res.append(x['results'])
-
-        results.append([w for z in res for w in z])
-        logger.info('polyon fetched')
-
+    for i, p  in enumerate(polys):
+      res = []
+      x = occ.search(taxonKey = nm, geometry = p)
+      res.append(x['results'])
+      while not x['endOfRecords']:
+          x = occ.search(taxonKey = nm, geometry = p, offset = sum([ len(x) for x in res ]))
+          res.append(x['results'])
+      results.append([w for z in res for w in z])
+      logger.info ('Polygon %s/%s done' % (i+1, len(polys)))
+    logger.info('***** GBIF data fetching done! ***** ')    
+  except Exception as e:
+    logger.error('Coordinate fetching failed: %s' % (e))
+   
+  try:
     allres = [w for z in results for w in z]
     coords = [ { k: v for k, v in w.items() if k.startswith('decimal') } for w in allres ]
 
+    from numpy import empty
     latlon = empty([len(coords),2], dtype=float, order='C')
-    for i , coord in enumerate(coords): 
-      latlon[i][0] = Latitude  
-      latlon[i][1] = Longitude  
-    nz = (latlon == 0).sum(1)
-    ll = latlon[nz == 0, :]
-    logger.info('read in PA coordinates for %s rows ' % len(ll[:,0])) 
-  except Exception as e: 
-    logger.exception('failed search GBIF data %s' % (e))
-  return ll
 
+    for i, coord in enumerate(coords):   
+      latlon[i][0] = coord['decimalLatitude']  
+      latlon[i][1] = coord['decimalLongitude']
+     
+    logger.info('read in PA coordinates for %s rows ' % len(ll[:,0])) 
+  except Exception as e:
+    logger.error('failed search GBIF data %s' % (e))
+  return latlon
 
 def get_latlon( csv_file ):
   import csv 
@@ -94,16 +106,15 @@ def get_latlon( csv_file ):
     try:
       latlon[i][0] = float(columns['decimallatitude'][i])
       latlon[i][1] = float(columns['decimallongitude'][i])
-    except Exception as e: 
+    except: 
       c = c +1 
-  logger.info('failed to read in PA coordinates for %s rows ' % c)
   
+  logger.info('failed to read in PA coordinates for %s rows ' % c)
   
   nz = (latlon == 0).sum(1)
   ll = latlon[nz == 0, :]    
   
   logger.info('read in PA coordinates for %s rows ' % len(ll[:,0]))
-  
   return ll
 
 def get_PAmask(coordinates=[], domain='EUR-11'):

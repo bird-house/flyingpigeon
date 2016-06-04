@@ -106,11 +106,11 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
         if prefix == None:
           name = key + nameadd
         else:
-          name = prefix[0]
-          
+          name = prefix[0]        
         geom_file = call(resource=ncs[key], variable=variable, 
                           calc=calc, calc_grouping=calc_grouping ,
-          prefix=name, geom=geom, select_ugid=ugids,spatial_wrapping=spatial_wrapping,
+          prefix=name, geom=geom, select_ugid=ugids,
+          # spatial_wrapping=spatial_wrapping,
           dir_output=dir_output, dimension_map=dimension_map)    
         
         geom_files.append( geom_file )
@@ -133,7 +133,8 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
             else:
               name = prefix[i]
             geom_file = call(resource=ncs[key], variable=variable,  calc=calc, calc_grouping=calc_grouping,
-              prefix=name, geom=geom, select_ugid=ugid, dir_output=dir_output, dimension_map=dimension_map, spatial_wrapping=spatial_wrapping)
+              prefix=name, geom=geom, select_ugid=ugid, dir_output=dir_output, dimension_map=dimension_map, #spatial_wrapping=spatial_wrapping
+              )
             geom_files.append( geom_file )
           except Exception as e:
             msg = 'ocgis calculations failed for %s ' % (key)

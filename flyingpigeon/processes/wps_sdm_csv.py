@@ -11,13 +11,13 @@ logger = logging.getLogger(__name__)
 
 from flyingpigeon.sdm import _SDMINDICES_
 
-class SDMProcess(WPSProcess):
+class sdmcsvProcess(WPSProcess):
     
     def __init__(self):
         WPSProcess.__init__(
             self,
-            identifier = "sdm",
-            title = "SDM",
+            identifier = "sdm_csv",
+            title = "SDM -- csv table",
             version = "0.4",
             metadata=[
                 {"title":"SDM", "href":"http://flyingpigeon.readthedocs.org/en/latest/"},

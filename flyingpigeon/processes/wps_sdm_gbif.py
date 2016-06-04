@@ -16,8 +16,8 @@ class SDMProcess(WPSProcess):
     def __init__(self):
         WPSProcess.__init__(
             self,
-            identifier = "sdmtaxon_name",
-            title = "SDM with GBIF search",
+            identifier = "sdm_gbifsearch",
+            title = "SDM -- GBIF search",
             version = "0.4",
             metadata=[
                 {"title":"SDM  with GBIF search", "href":"http://flyingpigeon.readthedocs.org/en/latest/"},
@@ -87,13 +87,13 @@ class SDMProcess(WPSProcess):
         ### OUTPUTS
         ###########
         
-        self.output_csv = self.addComplexOutput(
-            identifier="output_csv",
-            title="Tree species table",
-            abstract="Extracted CSV file containing the tree species table ",
-            formats=[{"mimeType":"text/csv"}],
-            asReference=True,
-            )
+        #self.output_csv = self.addComplexOutput(
+            #identifier="output_csv",
+            #title="Tree species table",
+            #abstract="Extracted CSV file containing the tree species table ",
+            #formats=[{"mimeType":"text/csv"}],
+            #asReference=True,
+            #)
         
         self.output_gbif = self.addComplexOutput(
             identifier="output_gbif",
@@ -154,21 +154,22 @@ class SDMProcess(WPSProcess):
       try: 
         logger.info('reading the arguments')
         resources = self.getInputValues(identifier='resources')
-        taxon_name = self.getInputValues(identifier='taxon_name')
+        taxon_name = self.getInputValues(identifier='taxon_name')[0]
         #period = self.period.getValue()
         period = self.getInputValues(identifier='period')
         period = period[0]
         
         #indices = self.input_indices.getValue()
         indices = self.getInputValues(identifier='input_indices')
-        logger.debug("indices = %s", indices)
+        logger.debug("indices = %s for %s ", indices, taxon_name)
         
         archive_format = self.archive_format.getValue()
       except Exception as e: 
         logger.error('failed to read in the arguments %s ' % e)
       logger.info('indices %s ' % indices)
       
-      try: 
+      try:
+        self.status.set('Fetching GBIF Data', 10)
         latlon = sdm.gbif_serach(taxon_name)
       except Exception as e: 
         logger.exception('failed to search gbif %s' % e)
@@ -205,7 +206,8 @@ class SDMProcess(WPSProcess):
         logger.exception('failed to generate the PA mask')
         
       png_PA_mask = 'PA_mask.png'
-      try: 
+      try:
+        import matplotlib.pyplot as plt
         self.status.set('Ploting PA mask', 25)
         fig = plt.figure(figsize=(20,10), dpi=300, facecolor='w', edgecolor='k')
         cs = plt.contourf(PAmask)
@@ -372,8 +374,7 @@ class SDMProcess(WPSProcess):
       # except:
       #   logger.exception('tar file closing failed')
       #   raise Exception
-        
-      self.output_csv.setValue( csv_file )
+           #self.output_csv.setValue( csv_file )
       self.output_gbif.setValue( tree_presents )
       self.output_PA.setValue( png_PA_mask )
       self.output_indices.setValue( archive_indices )
