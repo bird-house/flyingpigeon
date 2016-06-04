@@ -23,9 +23,8 @@ def get_csv(zip_file_url):
   z.extractall()  
   csv = z.namelist()[0]
   return csv
-
-<<<<<<< HEAD
-def gbif_serach(taxon_name):
+ 
+ def gbif_serach(taxon_name):
   from numpy import nan, empty
   from pygbif import occurrences as occ
   from pygbif import species
@@ -72,88 +71,7 @@ def gbif_serach(taxon_name):
   except Exception as e: 
     logger.exception('failed search GBIF data %s' % (e))
   return ll
- 
 
-  # from pygbif import species, occurrences
-  # 
-  # #TName = "Fagus sylvatica"
-  # try:
-  #   key = species.name_backbone(name=taxon_name, rank="species")["usageKey"]
-  #   n = occurrences.count(taxonKey=key, isGeoreferenced=True)
-
-  #   if n > 300:
-  #       max = 300
-  #   else:
-  #       max = n
-        
-  #   results = occurrences.search(taxonKey=key, limit=max)
-  #   logger.info('(', key, ')', '-', format(n, ','), " ocurrence(s)")
-
-  #   latlon = empty([max,2], dtype=float, order='C')
-
-  #   for i, x in enumerate(results["results"]):
-  #     try:
-  #       Latitude = (x['decimalLatitude'])
-  #       #if Latitude == 0.0:
-  #         #Latitude = nan
-  #     except:
-  #       Latitude = nan
-  #     try:
-  #       Longitude = (x['decimalLongitude'])
-  #       #if Longitude == 0.0:
-  #         #Longitude = nan
-  #     except:
-  #       Longitude = nan
-
-      # latlon[i][0] = Latitude  
-      # latlon[i][1] = Longitude
-  
-             
-  
-=======
-def gbif_serach(taxon_name): 
-  from pygbif import species, occurrences
-  from numpy import nan, empty
-  #TName = "Fagus sylvatica"
-  try:
-    key = species.name_backbone(name=taxon_name, rank="species")["usageKey"]
-    n = occurrences.count(taxonKey=key, isGeoreferenced=True)
-
-    if n > 300:
-        max = 300
-    else:
-        max = n
-        
-    results = occurrences.search(taxonKey=key, limit=max)
-    logger.info('(', key, ')', '-', format(n, ','), " ocurrence(s)")
-
-    latlon = empty([max,2], dtype=float, order='C')
-
-    for i, x in enumerate(results["results"]):
-      try:
-        Latitude = (x['decimalLatitude'])
-        #if Latitude == 0.0:
-          #Latitude = nan
-      except:
-        Latitude = nan
-      try:
-        Longitude = (x['decimalLongitude'])
-        #if Longitude == 0.0:
-          #Longitude = nan
-      except:
-        Longitude = nan
-      
-      latlon[i][0] = Latitude  
-      latlon[i][1] = Longitude
-  
-    nz = (latlon == 0).sum(1)
-    ll = latlon[nz == 0, :]
-    logger.info('read in PA coordinates for %s rows ' % len(ll[:,0]))          
-  except Exception as e: 
-    logger.exception('failed search GBIF data %s' % (e))
-  return ll
-
->>>>>>> pygbif download
 
 def get_latlon( csv_file ):
   import csv 
@@ -179,6 +97,7 @@ def get_latlon( csv_file ):
     except Exception as e: 
       c = c +1 
   logger.info('failed to read in PA coordinates for %s rows ' % c)
+  
   
   nz = (latlon == 0).sum(1)
   ll = latlon[nz == 0, :]    
