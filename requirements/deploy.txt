@@ -1,10 +1,9 @@
+cartopy
 cdo
 ocgis
 pandas
 pygbif>=0.1.4
-cartopy
+pyyaml
 scikit-learn
 statsmodels
 wget
-pyyaml
-
