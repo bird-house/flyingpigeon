@@ -24,5 +24,3 @@ You follow the log file of your in the monitor (click on the job ID e.g. a4aa98d
 
 .. image:: ../pics/monitor_log_weatherregimes.png
 
-
-http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#example-with-phoenix-gui

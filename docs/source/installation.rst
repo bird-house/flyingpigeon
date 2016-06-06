@@ -28,4 +28,4 @@ Check the log files for errors::
    $ cd ~/.conda/envs/birdhouse
    $ tail -f  var/log/pywps/flyingpigeon.log
 
-For other install options, run ``make help`` and read the documention for the `Makefile <http://birdhousebuilderbootstrap.readthedocs.org/en/latest/>`_.
+For other install options, run ``make help`` and read the documention for the `Makefile <Bootstrap_>`_.
