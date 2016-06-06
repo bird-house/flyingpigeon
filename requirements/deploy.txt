@@ -1,0 +1,10 @@
+cdo
+ocgis
+pandas
+pygbif>=0.1.4
+cartopy
+scikit-learn
+statsmodels
+wget
+pyyaml
+
