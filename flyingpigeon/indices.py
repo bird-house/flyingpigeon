@@ -227,8 +227,8 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
         logger.exception('could not calc key %s' % key)
     return outputs
 
-def calc_indice_percentile(resources=[], variable='tas', prefix=None, indices=None, period=None,
-    groupings=None, dir_output=None, dimension_map = None):
+def calc_indice_percentile(resources=[], variable='tas', prefix=None, indices='TG90p', , period=None,
+    groupings='yr', percentile=90, dir_output=None, dimension_map = None):
     """
     Calculates given indices for suitable files in the appopriate time grouping and polygon.
 
@@ -267,7 +267,6 @@ def calc_indice_percentile(resources=[], variable='tas', prefix=None, indices=No
 
     nc_indices = []
     
-    
     if dir_output != None:
       if not exists(dir_output): 
         makedirs(dir_output)
@@ -286,11 +285,11 @@ def calc_indice_percentile(resources=[], variable='tas', prefix=None, indices=No
       dt_arr = get_time(nc_file=nc_reference)
       arr = ma.masked_array(arr)
       dt_arr = ma.masked_array(dt_arr)
-      percentile = 90
+      percentile = percentile
       window_width = 5
       percentile_dict = IcclimTG90p.get_percentile_dict(arr, dt_arr, percentile, window_width)
       for indice in indices: 
-        calc = [{'func': 'icclim_%s' % indice, 'name': indice, 'kwds': {'percentile_dict': percentile_dict}}]
+        calc = [{'func': 'icclim_%s' % indice, 'name': indice.replace('90',percentile), 'kwds': {'percentile_dict': percentile_dict}}]
         calc_grouping = 'year'
         nc_indices.append(call(resource=resource, prefix=key.replace(variable,indice), 
                             calc=calc, calc_grouping=calc_grouping, output_format='nc'))
