@@ -227,17 +227,18 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
         logger.exception('could not calc key %s' % key)
     return outputs
 
-def calc_indice_percentile(resources=[], variable='tas', prefix=None, indices='TG90p', , period=None,
+def calc_indice_percentile(resources=[], variable='tas', prefix=None, indices='TG90p', period=None,
     groupings='yr', percentile=90, dir_output=None, dimension_map = None):
     """
     Calculates given indices for suitable files in the appopriate time grouping and polygon.
 
     :param resource: list of filenames in drs convention (netcdf)
     :param variable: variable name to be selected in the in netcdf file (default=None)
-    :param indices: list of indices (default ='SU')
-    :param period: reference period
+    :param indices: list of indices (default ='TG90p')
+    :param prefix: filename prefix 
+    :param period: reference period touple = (start,end)
     :param grouping: indices time aggregation (default='yr')
-    :param out_dir: output directory for result file (netcdf)
+    :param dir_output: output directory for result file (netcdf)
     :param dimension_map: optional dimension map if different to standard (default=None)
 
     :return: list of netcdf files with calculated indices. Files are saved into out_dir
@@ -258,11 +259,10 @@ def calc_indice_percentile(resources=[], variable='tas', prefix=None, indices='T
     if type(period) == list: 
       period = period[0]
       
-    if period == 'all':
+    if period == None:
       time_region = None
     else:
-      start, end = int(period.split('-'))
-      years = range(start, end)
+      years = range(period[0], period[1])
       time_region = {'year': years}
 
     nc_indices = []
@@ -280,19 +280,22 @@ def calc_indice_percentile(resources=[], variable='tas', prefix=None, indices='T
     nc_dic = sort_by_filename(resources)
     for key in nc_dic.keys():
       resource = nc_dic[key]
-      nc_reference = call(resource=resource, prefix='nc_reference',time_region=time_region, output_format='nc')
+      nc_reference = call(resource=resource, prefix=str(uuid.uuid4()), time_region=time_region, output_format='nc', dir_output=dir_output)
       arr = get_values(nc_files=nc_reference)
       dt_arr = get_time(nc_file=nc_reference)
       arr = ma.masked_array(arr)
       dt_arr = ma.masked_array(dt_arr)
       percentile = percentile
       window_width = 5
-      percentile_dict = IcclimTG90p.get_percentile_dict(arr, dt_arr, percentile, window_width)
-      for indice in indices: 
-        calc = [{'func': 'icclim_%s' % indice, 'name': indice.replace('90',percentile), 'kwds': {'percentile_dict': percentile_dict}}]
+ 
+      for indice in indices:
+        name = indice.replace('90', str(percentile))
+        percentile_dict = IcclimTG90p.get_percentile_dict(arr, dt_arr, percentile, window_width)
+        calc = [{'func': 'icclim_%s' % indice, 'name': name, 'kwds': {'percentile_dict': percentile_dict}}]
         calc_grouping = 'year'
-        nc_indices.append(call(resource=resource, prefix=key.replace(variable,indice), 
+        nc_indices.append(call(resource=resource, prefix=key.replace(variable,name), 
                             calc=calc, calc_grouping=calc_grouping, output_format='nc'))
+
     return nc_indices
 
 def calc_indice_unconventional(resource=[], variable=None, prefix=None,

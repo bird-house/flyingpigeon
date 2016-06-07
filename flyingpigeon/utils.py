@@ -303,7 +303,7 @@ def get_frequency(nc_file):
   :param nc_file: NetCDF file
   :return: frequency
   """
-  ds = Dataset(nc_file)
+  ds = MFDataset(nc_file)
 
   try:
     frequency = ds.frequency
