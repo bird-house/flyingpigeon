@@ -229,7 +229,7 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
 
 def calc_indice_percentile(resources=[], variable='tas', 
   prefix=None, indices='TG90p', period=None,
-    groupings='yr', polygons=polygons, percentile=90, 
+    groupings='yr', polygons=None, percentile=90, 
     dir_output=None, dimension_map = None):
     """
     Calculates given indices for suitable files in the appopriate time grouping and polygon.
@@ -261,10 +261,10 @@ def calc_indice_percentile(resources=[], variable='tas',
     if type(period) == list: 
       period = period[0]
       
-    if period == None:
+    if period == 'all':
       time_region = None
     else:
-      years = range(period[0], period[1])
+      years = range(int(period[0]), int(period[1]))
       time_region = {'year': years}
 
     nc_indices = []

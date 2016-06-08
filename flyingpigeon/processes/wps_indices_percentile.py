@@ -105,7 +105,7 @@ class IndicesPercentileProcess(WPSProcess):
         ncs        = self.getInputValues(identifier='resource')
         indices    = self.indices.getValue()
         polygons   = self.polygons.getValue()
-        percentile = self.percentile.getValue()[0]
+        percentile = int(self.percentile.getValue()[0])
         groupings  = self.groupings.getValue() # getInputValues(identifier='groupings')
         period     = self.period.getValue()
        
