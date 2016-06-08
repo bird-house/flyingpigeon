@@ -39,6 +39,17 @@ class IndicesPercentileProcess(WPSProcess):
             maxOccurs=1, # len(indices()),
             allowedValues=['TG90p','TN90p'], # indices()
             )
+
+        self.percentile = self.addLiteralInput(
+            identifier="percentile",
+            title="Percentile",
+            abstract='Select an percentile',
+            default=90,
+            type=type('0'),
+            minOccurs=1,
+            maxOccurs=1, # len(indices()),
+            allowedValues=range(1,100), # indices()
+            )
         
         self.period = self.addLiteralInput(
             identifier="period",
@@ -62,16 +73,16 @@ class IndicesPercentileProcess(WPSProcess):
             allowedValues=GROUPING
             )
         
-        #self.polygons = self.addLiteralInput(
-            #identifier="polygons",
-            #title="Country subset",
-            #abstract= countries_longname(), 
-            #default='DEU',
-            #type=type(''),
-            #minOccurs=0,
-            #maxOccurs=len(countries()),
-            #allowedValues=countries()
-            #)
+        self.polygons = self.addLiteralInput(
+            identifier="polygons",
+            title="Country subset",
+            abstract= countries_longname(), 
+            default='DEU',
+            type=type(''),
+            minOccurs=0,
+            maxOccurs=len(countries()),
+            allowedValues=countries()
+            )
 
         # complex output
         # -------------
@@ -91,17 +102,20 @@ class IndicesPercentileProcess(WPSProcess):
         from tempfile import mkstemp
         from os import path
         
-        ncs       = self.getInputValues(identifier='resource')
-        indices   = self.indices.getValue()
-        # polygons  = self.polygons.getValue() 
-        groupings = self.groupings.getValue() # getInputValues(identifier='groupings')
-        period = self.period.getValue()
+        ncs        = self.getInputValues(identifier='resource')
+        indices    = self.indices.getValue()
+        polygons   = self.polygons.getValue()
+        percentile = self.percentile.getValue()[0]
+        groupings  = self.groupings.getValue() # getInputValues(identifier='groupings')
+        period     = self.period.getValue()
        
         self.status.set('starting: indices=%s, period=%s, groupings=%s, num_files=%s' % (indices, period, groupings, len(ncs)), 0)
 
         results = calc_indice_percentile(
             resources = ncs,
             indices = indices,
+            percentile = percentile,
+            polygons = polygons,
             period = period,
             groupings = groupings,
             dir_output = path.curdir,

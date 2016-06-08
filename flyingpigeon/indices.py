@@ -227,8 +227,10 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
         logger.exception('could not calc key %s' % key)
     return outputs
 
-def calc_indice_percentile(resources=[], variable='tas', prefix=None, indices='TG90p', period=None,
-    groupings='yr', percentile=90, dir_output=None, dimension_map = None):
+def calc_indice_percentile(resources=[], variable='tas', 
+  prefix=None, indices='TG90p', period=None,
+    groupings='yr', polygons=polygons, percentile=90, 
+    dir_output=None, dimension_map = None):
     """
     Calculates given indices for suitable files in the appopriate time grouping and polygon.
 
@@ -276,25 +278,30 @@ def calc_indice_percentile(resources=[], variable='tas', prefix=None, indices='T
     ########################################################################################################################
 
     from ocgis.contrib.library_icclim import IcclimTG90p
-    
     nc_dic = sort_by_filename(resources)
     for key in nc_dic.keys():
       resource = nc_dic[key]
-      nc_reference = call(resource=resource, prefix=str(uuid.uuid4()), time_region=time_region, output_format='nc', dir_output=dir_output)
+      nc_reference = call(resource=resource, 
+        prefix=str(uuid.uuid4()), 
+        time_region=time_region, 
+        output_format='nc', 
+        dir_output=dir_output)
       arr = get_values(nc_files=nc_reference)
       dt_arr = get_time(nc_file=nc_reference)
       arr = ma.masked_array(arr)
       dt_arr = ma.masked_array(dt_arr)
       percentile = percentile
       window_width = 5
- 
       for indice in indices:
         name = indice.replace('90', str(percentile))
         percentile_dict = IcclimTG90p.get_percentile_dict(arr, dt_arr, percentile, window_width)
         calc = [{'func': 'icclim_%s' % indice, 'name': name, 'kwds': {'percentile_dict': percentile_dict}}]
         calc_grouping = 'year'
-        nc_indices.append(call(resource=resource, prefix=key.replace(variable,name), 
-                            calc=calc, calc_grouping=calc_grouping, output_format='nc'))
+        nc_indices.append(call(resource=resource, 
+          prefix=key.replace(variable,name), 
+                            calc=calc, 
+                            calc_grouping=calc_grouping, 
+                            output_format='nc'))
 
     return nc_indices
 
