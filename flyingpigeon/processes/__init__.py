@@ -10,6 +10,7 @@ __all__ = [
         "wps_weatherregimes_R",
         "wps_robustness",
         "wps_analogs",
+        "wps_analogviewer",
         "wps_segetalflora",
         "wps_sdm_gbif",
         "wps_sdm_csv",

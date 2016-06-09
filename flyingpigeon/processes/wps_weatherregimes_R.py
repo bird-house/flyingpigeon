@@ -246,7 +246,7 @@ class WeatherRegimesRProcess(WPSProcess):
           yr2 <- dateobsst
           ip, output_graphics = mkstemp(dir=curdir(),suffix='.pdf')
 
-          cmd = 'Rscript --vanilla %s/regimes_NCEP.R %s' % (path.relpath(Rscr), rworkspace, Rsrc, infile, 
+          cmd = 'Rscript --vanilla %s/regimes_NCEP.R %s' % (path.relpath(Rsrc), rworkspace, Rsrc, infile, 
                                                              variable, modelname, yr1, yr2, output_graphics)
           args = shlex.split(cmd)
           output,error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE).communicate()
