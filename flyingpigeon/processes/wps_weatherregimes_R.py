@@ -226,8 +226,7 @@ class WeatherRegimesRProcess(WPSProcess):
         if level != None:
           nc_level = get_level( nc_subset, level) 
           nc_subset =  nc_level
-        
-              
+             
         ############################################
         ### call the R scripts
         ############################################
