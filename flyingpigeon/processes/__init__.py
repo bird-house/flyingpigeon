@@ -7,6 +7,7 @@ __all__ = [
         "wps_indices_percentile",
         "wps_weatherregimes_obs",
         "wps_weatherregimes_compare",
+        "wps_weatherregimes_R",
         "wps_robustness",
         "wps_analogs",
         "wps_segetalflora",

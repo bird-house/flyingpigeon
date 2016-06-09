@@ -1,7 +1,6 @@
 """
 Processes for Weather Classification  
 Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
-Author: Cathy Nangini 
 """
 
 from pywps.Process import WPSProcess
@@ -61,9 +60,9 @@ class WeatherRegimesRProcess(WPSProcess):
         self.dateobsst = self.addLiteralInput(
             identifier="dateobsst",
             title="Start of period",
-            abstract="Date to start analysing the observation data (if not set, the first date of the dataset will be taken)",
-            default="2010-01-01",
-            type=type(date(2013,01,01)),
+            abstract="Year to start analysing the observation data (if not set, the first date of the dataset will be taken)",
+            default="2010",
+            type=type(''),
             minOccurs=0,
             maxOccurs=1,
             )
@@ -71,9 +70,9 @@ class WeatherRegimesRProcess(WPSProcess):
         self.dateobsen = self.addLiteralInput(
             identifier="dateobsen",
             title="End of period",
-            abstract="Date to end analysing the observation data (if not set, the first date of the dataset will be taken)",
-            default="2014-12-31",
-            type=type(date(2014,12,31)),
+            abstract="Year to end analysing the observation data (if not set, the first date of the dataset will be taken)",
+            default="2014",
+            type=type(''),
             minOccurs=0,
             maxOccurs=1,
             )
@@ -103,29 +102,13 @@ class WeatherRegimesRProcess(WPSProcess):
         ### define the outputs
         ######################
 
-        self.output_clusters = self.addComplexOutput(
-            identifier="output_clusters",
-            title="Weather Classification Clusters",
-            abstract="Weather Classification Clusters",
-            formats=[{"mimeType":"image/png"}],
+        self.Routput_graphic = self.addComplexOutput(
+            identifier="Routput_graphic",
+            title="Weather Classification output",
+            abstract="Weather Classification",
+            formats=[{"mimeType":"image/pdf"}],
             asReference=True,
             )
-
-        self.output_maps = self.addComplexOutput(
-            identifier="output_maps",
-            title="Pressure pattern",
-            abstract="Corresponding pressure maps for Weather Regimes",
-            formats=[{"mimeType":"image/png"}],
-            asReference=True,
-            )
-
-        #self.output_matrix = self.addComplexOutput(
-            #identifier="output_matrix",
-            #title="Pressure pattern sorted by R value",
-            #abstract="Pressure pattern with highest R value for appropriate Observation",
-            #formats=[{"mimeType":"image/png"}],
-            #asReference=True,
-            #)
         
         self.output_info = self.addComplexOutput(
             identifier="output_info",
@@ -139,6 +122,7 @@ class WeatherRegimesRProcess(WPSProcess):
         logger.info('Start process')
         from datetime import datetime as dt
         from flyingpigeon import weatherregimes as wr
+        from tempfile import mkstemp
         
       
         ################################
@@ -167,11 +151,10 @@ class WeatherRegimesRProcess(WPSProcess):
         ###########################
         ### set the environment
         ###########################
-
         try:  
           if dateobsst != None and dateobsen != None : 
-            start = dt.strptime(dateobsst, '%Y-%m-%d')
-            end = dt.strptime(dateobsen, '%Y-%m-%d')
+            start = int(dateobsst[0])# dt.strptime(dateobsst, '%Y-%m-%d')
+            end = int(dateobsen[0])# dt.strptime(dateobsen, '%Y-%m-%d')
             time_range = [start,end]
           else: 
             time_range = None
@@ -205,16 +188,21 @@ class WeatherRegimesRProcess(WPSProcess):
               vmax=35
           else:
             logger.error('Reanalyses dataset not known')
+          
+          logger.info('environment set')
+        except Exception as e: 
+          msg = 'failed to set environment %s ' % e
+          logger.error(msg)  
+          raise Exception(msg)
 
-        ############################
-        ### fetch Data
-        ############################
+        ##########################################
+        ### fetch Data from original data archive
+        ##########################################
         
         try:
-          nc_obs = wr.get_OBS(start=int(dateobsst.split('-')[0]), 
-                              end=int(dateobsen.split('-')[0]), 
+          nc_obs = wr.get_OBS(start=int(dateobsst[0]), 
+                              end=int(dateobsen[0]), 
                               dataset=obs, variable=var)
-
           logger.info('observation data fetched')
         except Exception as e:
           msg = 'failed to get Observation data  %s' % e
@@ -225,19 +213,54 @@ class WeatherRegimesRProcess(WPSProcess):
         ### get the required bbox from resource data
         ############################################
         
+        from flyingpigeon.weatherregimes import get_level
         from flyingpigeon.ocgis_module import call
+        from cdo import Cdo
+        cdo = Cdo()
+
+        nc_grouped = call(resource=nc_obs, variable=variable, conform_units_to='hPa')
+
+        ip, nc_subset = mkstemp(dir='.',suffix='.nc')
+        nc_subset  = cdo.sellonlatbox('%s' % bbox, input=nc_grouped, output=nc_subset)
+        logger.info('subset done: %s ' % nc_subset)
+        if level != None:
+          nc_level = get_level( nc_subset, level) 
+          nc_subset =  nc_level
         
-        
-        
+              
         ############################################
         ### call the R scripts
         ############################################
-        
+        import shlex
+        import subprocess
+        from flyingpigeon import config
+        from os.path import curdir
+
+        try:
+          rworkspace = curdir()
+          Rsrc = config.Rsrc_dir() 
+          infile <- nc_subset
+          #variable <- args[4]
+          modelname <- obs
+          yr1 <- dateobsst
+          yr2 <- dateobsst
+          ip, output_grphics = mkstemp(dir=curdir(),suffix='.pdf')
+
+          cmd = 'Rscript --vanilla %s/regimes_NCEP.R %s' % (path.relpath(Rscr), rworkspace, Rsrc, infile, 
+                                                             variable, modelname, yr1, yr2, output_grphics)
+          args = shlex.split(cmd)
+          output,error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE).communicate()
+          logger.info('R outlog info:\n %s ' % output)
+          logger.debug('R outlog errors:\n %s ' % error)
+          self.status.set('**** weatherregime in R suceeded', 90)
+        except Exception as e: 
+          msg = 'weatherregime in R %s ' % e
+          logger.error(msg)  
+          raise Exception(msg)
 
         ############################################
         ### set the outputs
         ############################################
 
-        self.output_clusters.setValue( png_clusters[0] )
-        self.output_maps.setValue( png_pressuremaps[0] )
+        self.Routput_graphic.setValue( output_grphics )
         self.output_info.setValue('info.tar')

@@ -262,7 +262,6 @@ def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, time_range=Non
   ip, nc_subset = mkstemp(dir='.',suffix='.nc')
   nc_subset  = cdo.sellonlatbox('%s' % bbox, input=nc_grouped, output=nc_subset)
   logger.info('subset done: %s ' % nc_subset)
-  
   if level != None:
     nc_level = get_level( nc_subset, level) 
     nc_subset =  nc_level

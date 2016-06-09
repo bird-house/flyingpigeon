@@ -7,6 +7,9 @@ logger = logging.getLogger(__name__)
 def shapefiles_dir():
     return os.path.join(os.path.abspath(os.path.dirname(__file__)), 'shapefiles')
 
+def Rscr_dir():
+    return os.path.join(os.path.abspath(os.path.dirname(__file__)), 'Rscr')
+
 def masks_dir():
     return os.path.join(os.path.abspath(os.path.dirname(__file__)), 'masks')
 

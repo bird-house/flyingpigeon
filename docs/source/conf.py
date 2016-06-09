@@ -321,7 +321,7 @@ intersphinx_mapping = {'python': ('http://docs.python.org/', None),
 
 # linkcheck options
 # http://www.sphinx-doc.org/en/stable/config.html?highlight=linkchecker#options-for-the-linkcheck-builder
-linkcheck_ignore = [r'http[s]*://localhost.*/', 'https://mouflon.dkrz.de/', 'https://esgf-data.dkrz.de/']
+linkcheck_ignore = [r'http[s]*://localhost.*/']
 linkcheck_timeout = 5
 
 # Link references always present on RST page.
@@ -331,7 +331,6 @@ rst_epilog = """
 .. _Read the Docs: https://readthedocs.org
 .. _Anaconda: https://www.continuum.io/
 .. _Buildout: http://www.buildout.org/en/latest/ 
-.. _Birdhouse: http://birdhouse.readthedocs.io/en/latest/
 .. _Phoenix: http://pyramid-phoenix.readthedocs.io/en/latest/
 .. _Malleefowl: http://malleefowl.readthedocs.io/en/latest/
 .. _Twitcher: http://birdhouse-hummingbird.readthedocs.io/en/latest/
