@@ -244,10 +244,10 @@ class WeatherRegimesRProcess(WPSProcess):
           modelname <- obs
           yr1 <- dateobsst
           yr2 <- dateobsst
-          ip, output_grphics = mkstemp(dir=curdir(),suffix='.pdf')
+          ip, output_graphics = mkstemp(dir=curdir(),suffix='.pdf')
 
           cmd = 'Rscript --vanilla %s/regimes_NCEP.R %s' % (path.relpath(Rscr), rworkspace, Rsrc, infile, 
-                                                             variable, modelname, yr1, yr2, output_grphics)
+                                                             variable, modelname, yr1, yr2, output_graphics)
           args = shlex.split(cmd)
           output,error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE).communicate()
           logger.info('R outlog info:\n %s ' % output)
@@ -262,5 +262,5 @@ class WeatherRegimesRProcess(WPSProcess):
         ### set the outputs
         ############################################
 
-        self.Routput_graphic.setValue( output_grphics )
+        self.Routput_graphic.setValue( output_graphics )
         self.output_info.setValue('info.tar')
