@@ -56,13 +56,12 @@ class WeatherRegimesRProcess(WPSProcess):
             maxOccurs=1,
             allowedValues= ["10,11,12,1,2,3", "4,5,6,7,8,9", "12,1,2", "3,4,5", "6,7,8", "9,10,11", "None"] #GROUPING
             )
-        
         self.dateobsst = self.addLiteralInput(
             identifier="dateobsst",
             title="Start of period",
-            abstract="Year to start analysing the observation data (if not set, the first date of the dataset will be taken)",
-            default="2010",
-            type=type(''),
+            abstract="Date to start analysing the observation data (if not set, the first date of the dataset will be taken)",
+            default="2010-01-01",
+            type=type(date(2013,01,01)),
             minOccurs=0,
             maxOccurs=1,
             )
@@ -70,12 +69,13 @@ class WeatherRegimesRProcess(WPSProcess):
         self.dateobsen = self.addLiteralInput(
             identifier="dateobsen",
             title="End of period",
-            abstract="Year to end analysing the observation data (if not set, the first date of the dataset will be taken)",
-            default="2014",
-            type=type(''),
+            abstract="Date to end analysing the observation data (if not set, the first date of the dataset will be taken)",
+            default="2014-12-31",
+            type=type(date(2014,12,31)),
             minOccurs=0,
             maxOccurs=1,
             )
+
 
         self.observation = self.addLiteralInput(
             identifier="observation",
@@ -110,13 +110,13 @@ class WeatherRegimesRProcess(WPSProcess):
             asReference=True,
             )
         
-        self.output_info = self.addComplexOutput(
-            identifier="output_info",
-            title="Weather Regime per date",
-            abstract="Tar file containing tables of dates with appropriate weather regime association",
-            formats=[{"mimeType":"application/x-tar"}],
-            asReference=True,
-            )         
+        #self.output_info = self.addComplexOutput(
+            #identifier="output_info",
+            #title="Weather Regime per date",
+            #abstract="Tar file containing tables of dates with appropriate weather regime association",
+            #formats=[{"mimeType":"application/x-tar"}],
+            #asReference=True,
+            #)         
 
     def execute(self):
         logger.info('Start process')
@@ -135,7 +135,7 @@ class WeatherRegimesRProcess(WPSProcess):
             bbox = self.getInputValues(identifier='BBox')[0]
             obs_var = self.getInputValues(identifier='observation')[0]
             dateobsst = self.getInputValues(identifier='dateobsst')[0]            
-            dateobsen =self.getInputValues(identifier='dateobsen')[0]
+            dateobsen = self.getInputValues(identifier='dateobsen')[0]
             
             obs, var = obs_var.split('_')
             
@@ -153,9 +153,9 @@ class WeatherRegimesRProcess(WPSProcess):
         ###########################
         try:  
           if dateobsst != None and dateobsen != None : 
-            start = int(dateobsst[0])# dt.strptime(dateobsst, '%Y-%m-%d')
-            end = int(dateobsen[0])# dt.strptime(dateobsen, '%Y-%m-%d')
-            time_range = [start,end]
+            startyr = dt.strptime(dateobsst, '%Y-%m-%d')
+            endyr = dt.strptime(dateobsen, '%Y-%m-%d')
+            time_range = [startyr,endyr]
           else: 
             time_range = None
             
@@ -198,11 +198,12 @@ class WeatherRegimesRProcess(WPSProcess):
         ##########################################
         ### fetch Data from original data archive
         ##########################################
-        
+                
         try:
-          nc_obs = wr.get_OBS(start=int(dateobsst[0]), 
-                              end=int(dateobsen[0]), 
+          nc_obs = wr.get_OBS(start=int(dateobsst.split('-')[0]), 
+                              end=int(dateobsen.split('-')[0]), 
                               dataset=obs, variable=var)
+
           logger.info('observation data fetched')
         except Exception as e:
           msg = 'failed to get Observation data  %s' % e
@@ -233,25 +234,40 @@ class WeatherRegimesRProcess(WPSProcess):
         import shlex
         import subprocess
         from flyingpigeon import config
-        from os.path import curdir
+        from os.path import curdir, exists, join
 
         try:
-          rworkspace = curdir()
+          rworkspace = curdir
           Rsrc = config.Rsrc_dir() 
-          infile <- nc_subset
-          #variable <- args[4]
-          modelname <- obs
-          yr1 <- dateobsst
-          yr2 <- dateobsst
-          ip, output_graphics = mkstemp(dir=curdir(),suffix='.pdf')
-
-          cmd = 'Rscript --vanilla %s/regimes_NCEP.R %s' % (path.relpath(Rsrc), rworkspace, Rsrc, infile, 
-                                                             variable, modelname, yr1, yr2, output_graphics)
-          args = shlex.split(cmd)
-          output,error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE).communicate()
+          Rfile = 'regimes_NCEP.R'
+          
+          infile = nc_subset
+          modelname = obs
+          yr1 = dateobsst.split('-')[0]
+          yr2 = dateobsen.split('-')[0]
+          ip, output_graphics = mkstemp(dir=curdir ,suffix='.pdf')
+          
+          #cmd = 'Rscipt  %s %s/ %s/ %s %s %s %s %s %s' % (join(Rsrc,Rfile), curdir, Rsrc, infile, variable, modelname, yr1,yr2, output_graphics)
+          
+          #args =shlex.split(cmd)
+          
+          args = ['Rscript', join(Rsrc,Rfile), '%s/' % curdir, 
+                  '%s/' % Rsrc, '%s'% infile, '%s' % variable, 
+                  '%s' % modelname, '%s' % yr1, '%s' % yr2, 
+                  '%s' % output_graphics]
+          logger.info('Rcall builded')
+        except Exception as e: 
+          msg = 'failed to build the R command %s' % e
+          logger.error(msg)  
+          raise Exception(msg)
+        try:
+          output,error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE).communicate() #, shell=True
           logger.info('R outlog info:\n %s ' % output)
           logger.debug('R outlog errors:\n %s ' % error)
-          self.status.set('**** weatherregime in R suceeded', 90)
+          if len(output) > 0:            
+            self.status.set('**** weatherregime in R suceeded', 90)
+          else:
+            logger.error('NO! output returned from R call')
         except Exception as e: 
           msg = 'weatherregime in R %s ' % e
           logger.error(msg)  
@@ -262,4 +278,3 @@ class WeatherRegimesRProcess(WPSProcess):
         ############################################
 
         self.Routput_graphic.setValue( output_graphics )
-        self.output_info.setValue('info.tar')

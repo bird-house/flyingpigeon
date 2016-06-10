@@ -1,6 +1,5 @@
 from datetime import date 
 from pywps.Process import WPSProcess
-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -312,7 +311,6 @@ class AnalogsProcess(WPSProcess):
     import shlex
     
     self.status.set('Start CASTf90 call', 20)
-    
     try:
       #self.status.set('execution of CASTf90', 50)
       cmd = 'analogue.out %s' % path.relpath(config_file)

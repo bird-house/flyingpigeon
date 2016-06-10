@@ -15,9 +15,20 @@ Rsrc <- args[2]
 infile <- args[3]
 variable <- args[4]
 modelname <- args[5]
-yr1 <- args[6] #1948
-yr2 <- args[7] #2014
+yr1 <- as.numeric(args[6]) #1948
+yr2 <- as.numeric(args[7]) #2014
 output_grphics <- args[8]
+
+print( rworkspace )
+print( Rsrc )
+print( infile)
+print( variable )
+print( modelname )
+print( yr1 )
+print( yr2 )
+print( output_grphics )
+
+
 
 source(paste(Rsrc,"imagecont.R",sep=""))
 source(paste(Rsrc,"readextranc.R",sep=""))
@@ -98,8 +109,8 @@ for(yr in yr1:(yr2)){
 
 ##### plot EOFs
 
-setwd(NCEPdir)
-#file=paste(modelname,"_",seas,"_",yr1,"-",yr2,"_EOF.pdf",sep="")
+# setwd(NCEPdir)
+# file=paste(modelname,"_",seas,"_",yr1,"-",yr2,"_EOF.pdf",sep="")
 
 pdf(output_grphics)
 layout(matrix(1:4,2,2))
