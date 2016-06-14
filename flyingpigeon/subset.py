@@ -51,6 +51,14 @@ def masking(resource, mask, prefix=None, dir_output=None):
   os.system(call)
   return resource_masked
 
+def has_Lambert_Conformal(nc):
+  from netCDF4 import MFDataset
+  ds = MFDataset(nc)
+  if 'Lambert_Conformal' in ds.variables.keys():
+    lc_ckeck = True
+  else: 
+    lc_ckeck = False
+  return lc_ckeck
 
 def clipping(resource=[], variable=None, dimension_map=None, calc=None,  
   calc_grouping= None, historical_concatination=True, prefix=None, spatial_wrapping='wrap', polygons=None, mosaik=False, dir_output=None):
@@ -82,52 +90,47 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
   geoms = set()
   ncs = sort_by_filename(resource, historical_concatination=historical_concatination) #  historical_concatination=True
   geom_files = []
-
   if mosaik == True :
+    
     try:
       nameadd = '_'
       for polygon in polygons: 
         geoms.add(get_geom(polygon))
-        nameadd = nameadd + polygon 
+        nameadd = nameadd + '-' + polygon  
       if len(geoms) > 1: 
-        logger.debug('polygons belong to differnt shapefiles! mosaik is not possible %s', geoms)
+        logger.error('polygons belong to differnt shapefiles! mosaik option is not possible %s', geoms)
       else: 
         geom = geoms.pop()
       ugids = get_ugid(polygons=polygons, geom=geom)
     except Exception as e:
       logger.debug('geom identification failed %s ' % e)
-  
-    for key in  ncs.keys() :
-      if variable == None:
-        variable = get_variable(ncs[key])
-        logger.info('variable %s detected in resource' % (variable))  
+    for i, key in enumerate (ncs.keys()):
       try:
-        
+        if variable == None:
+          variable = get_variable(ncs[key])
+          logger.info('variable %s detected in resource' % (variable))
         if prefix == None:
           name = key + nameadd
         else:
-          name = prefix[0]        
-        geom_file = call(resource=ncs[key], variable=variable, 
-                          calc=calc, calc_grouping=calc_grouping ,
-          prefix=name, geom=geom, select_ugid=ugids,
-          # spatial_wrapping=spatial_wrapping,
-          dir_output=dir_output, dimension_map=dimension_map)    
-        
-        geom_files.append( geom_file )
+          name = prefix[i]
+        geom_file = call(resource=ncs[key], variable=variable, calc=calc, calc_grouping=calc_grouping, 
+                         prefix=name, geom=geom, select_ugid=ugids,
+                         # spatial_wrapping=spatial_wrapping,
+                         dir_output=dir_output, dimension_map=dimension_map)
+        geom_files.append( geom_file )  
       except Exception as e:
         msg = 'ocgis calculations failed for %s ' % (key)
         logger.debug(msg)
-        
   else: 
-    try:
-      for i, polygon in enumerate(polygons): 
+    for i, polygon in enumerate(polygons): 
+      try:
         geom = get_geom(polygon)
         ugid = get_ugid(polygons=polygon, geom=geom)
-        for key in  ncs.keys() :
-          if variable == None:
-            variable = get_variable(ncs[key])
-            logger.info('variable %s detected in resource' % (variable))  
+        for key in  ncs.keys():
           try:
+            if variable == None:
+              variable = get_variable(ncs[key])
+              logger.info('variable %s detected in resource' % (variable))  
             if prefix == None: 
               name = key + '_' + polygon
             else:
@@ -140,10 +143,9 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
             msg = 'ocgis calculations failed for %s ' % (key)
             logger.debug(msg)
             raise
-    except Exception as e:
-        logger.debug('geom identification failed')
-        raise 
-
+      except Exception as e:
+          logger.debug('geom identification failed')
+          raise
   return  geom_files
 
 

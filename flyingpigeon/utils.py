@@ -60,6 +60,9 @@ def archive(resources, format='tar', dir_output='.', mode='w'):
   if type(resources) == str: 
     resources = list([resources])
 
+  resources_filter =  [x for x in resources if x is not None]
+  resources =  resources_filter
+
   if format == 'tar':
     import tarfile
     try: 
