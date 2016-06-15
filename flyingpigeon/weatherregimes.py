@@ -5,10 +5,10 @@ logger = logging.getLogger(__name__)
 
 def get_pca(resource):
   """
-  calculation of principal components
-
-  :param resource: netCDF file containing pressure values for a defined region and selected timesteps
-  :returns data, pca: normalised data , sklean objct
+  calculation of principal components (PCA)
+  
+  :param resource: input netCDF file 
+  :returns data, pca: normalised data, sklean objct
   """
   from netCDF4 import Dataset, num2date
   from flyingpigeon.utils import get_variable

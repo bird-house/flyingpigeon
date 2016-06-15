@@ -1,28 +1,20 @@
-import ocgis
-from shapely.geometry import Point
-import tempfile
-import tarfile
-import os
-import pandas as pd 
-from pandas import DataFrame, read_csv
-import numpy as np
-    
-from flyingpigeon.utils import sort_by_filename
-    
+from flyingpigeon.utils import sort_by_filename    
 from pywps.Process import WPSProcess
 
 import logging
+logger = logging.getLogger(__name__)
 
-class ExtractPointsProcess(WPSProcess):
+
+class SubsetPointsProcess(WPSProcess):
   def __init__(self):
     WPSProcess.__init__(self, 
-      identifier = "extractpoints",
-      title="Extract Coordinate Points",
+      identifier = "subset_points",
+      title="Subset Points",
       version = "0.3",
       metadata= [
               {"title": "Institut Pierre Simon Laplace", "href": "https://www.ipsl.fr/en/"}
               ],
-      abstract="Extract Timeseries for specified coordinates from grid data",
+      abstract="Extract Timeseries for specified coordinates from gridded datasets",
       statusSupported=True,
       storeSupported=True
       )
@@ -57,53 +49,54 @@ class ExtractPointsProcess(WPSProcess):
           
   def execute(self):
     from flyingpigeon.ocgis_module import call
-    from flyingpigeon.utils import get_time, get_variable, sort_by_filename
-    
-    from datetime import datetime as dt
-    from netCDF4 import Dataset
-    from numpy import savetxt, column_stack, squeeze
-    
+    from flyingpigeon.utils import sort_by_filename, archive, get_values, get_time
+        
     ncs = self.getInputValues(identifier='netcdf_file')
-    logging.info("ncs: %s " % ncs) 
+    logger.info("ncs: %s " % ncs) 
     coords = self.getInputValues(identifier='coords')
-    logging.info("coords %s", coords)
-
- 
-    nc_exp = sort_by_filename(ncs) # dictionary {experiment:[files]}
-    filenames = []
+    logger.info("coords %s", coords)
+    filenames = []    
+    nc_exp = sort_by_filename(ncs, historical_concatination=True)
     
-    (fp_tar, tarout_file) = tempfile.mkstemp(dir=".", suffix='.tar')
-    tar = tarfile.open(tarout_file, "w")
+    #(fp_tar, tarout_file) = tempfile.mkstemp(dir=".", suffix='.tar')
+    #tar = tarfile.open(tarout_file, "w")
+
+    from numpy import savetxt, column_stack
+    from shapely.geometry import Point
     
     for key in nc_exp.keys():
-      logging.info('start calculation for %s ' % key )
-      ncs = nc_exp[key]
-      nc = ncs[0]
-      
-      times = get_time(nc)
-      var = get_variable(nc)
-      
-      concat_vals = [dt.strftime(t, format='%Y-%d-%m_%H:%M:%S') for t in times]
-      header = 'date_time'
-      filename = '%s.csv' % key
-      filenames.append(filename) 
-      
-      for ugid, p in enumerate(coords, start=1):
-        self.status.set('processing point : {0}'.format(p), 20)
-        p = p.split(',')
-        self.status.set('splited x and y coord : {0}'.format(p), 20)
-        point = Point(float(p[0]), float(p[1]))
+      try:
+        logger.info('start calculation for %s ' % key )
+        ncs = nc_exp[key]
+        times = get_time(ncs)
+        concat_vals = ['%s-%02d-%02d_%02d:%02d:%02d' %
+                       (t.year, t.month, t.day, t.hour, t.minute, t.second) for t in times]
+        header = 'date_time'
+        filename = '%s.csv' % key
+        filenames.append(filename) 
         
-        #get the timeseries at gridpoint
-        timeseries = call(resource=ncs, geom=point, select_nearest=True)
-        
-        ds = Dataset(timeseries)
-        vals = squeeze(ds.variables[var])
-        header = header + ',%s_%s' % (p[0], p[1])
-        concat_vals = column_stack([concat_vals, vals])
+        for p in coords:
+          try: 
+            self.status.set('processing point : {0}'.format(p), 20)
+            # define the point:  
+            p = p.split(',')
+            point = Point(float(p[0]), float(p[1]))       
+            
+            # get the values
+            timeseries = call(resource=ncs, geom=point, select_nearest=True)
+            vals = get_values(timeseries)
+            
+            # concatination of values 
+            header = header + ',%s-%s' % (p[0], p[1])
+            concat_vals = column_stack([concat_vals, vals])
+          except Exception as e: 
+            logger.debug('failed for point %s %s' % (p , e))
+        self.status.set('*** all points processed for {0} ****'.format(key), 50)
+        savetxt(filename, concat_vals, fmt='%s', delimiter=',', header=header)
+      except Exception as e: 
+        logger.debug('failed for %s %s' % (key, e))
 
-      savetxt(filename, concat_vals, fmt='%s', delimiter=',', header=header)
-      tar.add( filename )
-      
-    tar.close()
+    ### set the outputs
+    self.status.set('*** creating output tar archive ****',90) 
+    tarout_file = archive(filenames)
     self.tarout.setValue( tarout_file )
