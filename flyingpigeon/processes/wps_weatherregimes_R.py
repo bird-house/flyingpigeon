@@ -248,7 +248,6 @@ class WeatherRegimesRProcess(WPSProcess):
           ip, output_graphics = mkstemp(dir=curdir ,suffix='.pdf')
           
           #cmd = 'Rscipt  %s %s/ %s/ %s %s %s %s %s %s' % (join(Rsrc,Rfile), curdir, Rsrc, infile, variable, modelname, yr1,yr2, output_graphics)
-          
           #args =shlex.split(cmd)
           
           args = ['Rscript', join(Rsrc,Rfile), '%s/' % curdir, 
