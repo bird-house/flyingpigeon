@@ -28,8 +28,6 @@ print( yr1 )
 print( yr2 )
 print( output_grphics )
 
-
-
 source(paste(Rsrc,"imagecont.R",sep=""))
 source(paste(Rsrc,"readextranc.R",sep=""))
 source(paste(Rsrc,"classif.R",sep=""))
@@ -54,7 +52,7 @@ l.seas=list(JJA=6:8,SON=9:11,DJF=c(12,1,2),SONDJF=c(9:12,1,2),MAM=3:5,JJAS=6:9,D
 seas="JJA"
 days=30+31+31
 ISEAS=which(datNCEP$conv.time$month %in% l.seas[[seas]])
-dat.m=datNCEP$anom[ISEAS,]/100
+dat.m=datNCEP$anom[ISEAS,]
 data=datNCEP$time[ISEAS]
 
 # Compute PCs
