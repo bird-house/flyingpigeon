@@ -19,6 +19,8 @@ yr1 <- as.numeric(args[6]) #1948
 yr2 <- as.numeric(args[7]) #2014
 output_grphics <- args[8]
 
+print(' *** Here starts the R execution ***')
+
 print( rworkspace )
 print( Rsrc )
 print( infile)
@@ -103,6 +105,7 @@ for(yr in yr1:(yr2)){
 #             row.names=FALSE,quote=FALSE)
 # save(file=fname,dat.class,
 #      lon,lat,timeout)
+
 ############################################################### plots
 
 ##### plot EOFs

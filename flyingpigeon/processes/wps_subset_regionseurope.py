@@ -120,14 +120,9 @@ class subset_regionseuropeProcess(WPSProcess):
             logger.exception('clipping failed')
             self.status.set('clipping failed')
         # prepare tar file 
-        try: 
-            tarf = 'out.tar'
-            tar = tarfile.open(tarf, "w")
-
-            for result in results: 
-                tar.add( result , arcname = result.replace(os.path.abspath(os.path.curdir), ""))
-            tar.close()
-
+        try:
+            from flyingpigeon.utils import archive
+            tarf = archive(results)
             logger.info('Tar file prepared')
         except Exception as e:
             logger.exception('Tar file preparation failed')
