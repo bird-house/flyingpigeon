@@ -150,7 +150,7 @@ anaconda:
 conda_config: anaconda
 	@echo "Update ~/.condarc"
 	@"$(ANACONDA_HOME)/bin/conda" config --add envs_dirs $(CONDA_ENVS_DIR)
-	@"$(ANACONDA_HOME)/bin/conda" config --set ssl_verify false
+	@"$(ANACONDA_HOME)/bin/conda" config --set ssl_verify true
 	@"$(ANACONDA_HOME)/bin/conda" config --add channels defaults
 	@"$(ANACONDA_HOME)/bin/conda" config --add channels birdhouse
 
@@ -241,12 +241,12 @@ passwd: custom.cfg
 .PHONY: test
 test:
 	@echo "Running tests (skip slow tests) ..."
-	bin/nosetests -A 'not slow and not online and not testdata' tests
+	bin/py.test -v -m 'not slow and not online and not testdata'
 
 .PHONY: testall
 testall:
 	@echo "Running all tests (include slow tests) ..."
-	bin/nosetests tests
+	bin/py.test -v
 
 .PHONY: docs
 docs:
