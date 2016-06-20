@@ -60,7 +60,7 @@ class WeatherRegimesRProcess(WPSProcess):
             identifier="dateobsst",
             title="Start of period",
             abstract="Date to start analysing the observation data (if not set, the first date of the dataset will be taken)",
-            default="2010-01-01",
+            default="1970-01-01",
             type=type(date(2013,01,01)),
             minOccurs=0,
             maxOccurs=1,
@@ -70,7 +70,7 @@ class WeatherRegimesRProcess(WPSProcess):
             identifier="dateobsen",
             title="End of period",
             abstract="Date to end analysing the observation data (if not set, the first date of the dataset will be taken)",
-            default="2014-12-31",
+            default="2010-12-31",
             type=type(date(2014,12,31)),
             minOccurs=0,
             maxOccurs=1,
@@ -261,8 +261,10 @@ class WeatherRegimesRProcess(WPSProcess):
           raise Exception(msg)
         try:
           output,error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE).communicate() #, shell=True
+          
           logger.info('R outlog info:\n %s ' % output)
           logger.debug('R outlog errors:\n %s ' % error)
+          
           if len(output) > 0:            
             self.status.set('**** weatherregime in R suceeded', 90)
           else:

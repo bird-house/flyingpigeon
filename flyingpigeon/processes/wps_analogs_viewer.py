@@ -5,10 +5,10 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class AnalogviewerProcess(WPSProcess):
+class AnalogsviewerProcess(WPSProcess):
     def __init__(self):
         WPSProcess.__init__(self,
-            identifier="analogviewer",
+            identifier="analogs_viewer",
             title="Analogviewer",
             version = "0.1",
             abstract="Visualisation of text output of analogue process",
@@ -31,6 +31,14 @@ class AnalogviewerProcess(WPSProcess):
             abstract="web browser compartible hmtl file",
             formats=[{"mimeType":"text/html"}],
             asReference=True,
+            )
+
+        self.output_txt = self.addLiteralOutput(
+            identifier="output_txt",
+            title="modified analogs txt file",
+            abstract="txt file for analog viewer",
+            default=None,
+            type=type(''),
             )
 
         # self.output_txt = self.addComplexOutput(
@@ -103,5 +111,5 @@ class AnalogviewerProcess(WPSProcess):
         
         logger.info('Data url: %s ' % output_data)
 
-#        output_txt = output_data # .setValue( mod_analogs )     
+        self.output_txt.setValue( output_data )     
         self.output_html.setValue( output_av )
