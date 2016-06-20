@@ -1,89 +1,199 @@
-.. _processes:
+Processes
+*********
 
-Processes in Flyingpigeon
-*************************
-
-Flyingpigeon provides processes focussing on climate impact and extrem values. 
-
-.. _extremvalues: 
-
-Extremvalues
--------------
-
-Calculation of retun time Values for 1D time series. 
+Flyingpigeon provides processes (also named as workflows ) for climate model data analysis, climate impact studies and investigations of extremes. 
 
 
-.. _getEOBS_inCORDEXformat: 
+Analog pressure pattern
+-----------------------
 
-get EOBS Data in CORDEX format
--------------------------------
 
-converts EOBS data files into the CORDEX convetion. (variable names, attributes etc ... )
+CASTf90 first downloads fields from NCEP reanalysis (sea level pressure, slp, as default) and then searches in a given simulation period for the most similar cases within a given data base period according to a given distance measure. Finally, it writes the N most similar days, including their calculated distances from the reference case, to an output file.
 
-.. _indices:
 
-ECA simple indices
--------------------
+Climate indices
+---------------
 
-Indices based on one input variable. The indices are executed by an ocgis call of icclim
+Climate indices are values that describe the state the climate system for a certain parameter. Climate indices as timeseries can be used to describe or estimate the change in climte over time.
 
-.. _segetalflora: 
+The climate indices processes in flyingpigeon are based on the `python package icclim <http://icclim.readthedocs.io/en/latest/>`_
+They are subclassed to:
 
-Segetalflora
+.. toctree::
+   :maxdepth: 1
+   
+   indices
+
+
+Climate indices have to be calculated for a time aggregation:
+
++-------------+-------------+---------+
+| Time        |Description  |values   |
+| aggregation |             |per year | 
++-------------+-------------+---------+
+| mon         | monthly     | 12      |
++-------------+-------------+---------+
+| sem         | seasonal    | 4       |          
++-------------+-------------+---------+
+| yr          | yearly      | 1       |
++-------------+-------------+---------+
+| ONDJFM      | winter half | 1       |
++-------------+-------------+---------+ 
+| AMJJAS      | summer half | 1       |
++-------------+-------------+---------+
+| DJF         | winter      | 1       |                
++-------------+-------------+---------+ 
+| MAM         | Spring      | 1       |
++-------------+-------------+---------+ 
+| JJA         | Summer      | 1       |
++-------------+-------------+---------+ 
+| SON         | Autumn      | 1       |
++-------------+-------------+---------+ 
+| Jan         | Januar      | 1       |
++-------------+-------------+---------+
+| Feb         | Februar     | 1       |
++-------------+-------------+---------+
+| Mar         | March       | 1       |
++-------------+-------------+---------+
+| April       | April       | 1       |
++-------------+-------------+---------+
+| May         | May         | 1       |
++-------------+-------------+---------+
+| Jun         | June        | 1       |
++-------------+-------------+---------+
+| Jul         | July        | 1       |
++-------------+-------------+---------+
+| Aug         | August      | 1       |
++-------------+-------------+---------+
+| Sep         | September   | 1       |
++-------------+-------------+---------+
+| Oct         | October     | 1       |
++-------------+-------------+---------+
+| Nov         | November    | 1       |
++-------------+-------------+---------+
+| Dec         | December    | 1       |
++-------------+-------------+---------+
+
+   
+
+Download Resources
+------------------
+
+Downloads resources (limited to 50GB) to the local file system of the birdhouse computer provider.
+
+
+EOBS to CORDEX
+--------------
+
+converts EOBS data files into the CORDEX convention. (variable names, attributes, etc ... ).
+
+
+extract Timeseries
+------------------
+
+Extract 1D Timeseries for specified coordinates from gridded data.
+
+
+Robustness of an ensemble
+-------------------------
+
+Calculates the robustness as the ratio of noise to signal in an ensemble of timeseries.
+Good luck 
+
+
+Return times
 ------------
-Calculation of numbers of segetal flora species in Europe. 
 
-.. _sdm: 
+Calculation of return time Values for 1D timeseries. 
+
+Segetal flora
+------------
+Species biodiversity of segetal flora. Imput files: variable:tas , domain: EUR-11 or EUR-44.
+
 
 Species Distribution Model
 --------------------------
 
-Statistical approach to calculate the spatial favorability of climate sensitive species.
+Prediction of growth favourability for tree species. 
 
-The appraoch is to be performed in two steps:
+Further reading: 
 
-* Statistical training with species presents absense data and historical climate data
-* future projection based on the statistical training
+`Species Favourability Shift in Europe due to Climate Change: A Case Study for Fagus sylvatica L. and Picea abies (L.) Karst. Based on an Ensemble of Climate Models <http://www.hindawi.com/journals/jcli/2013/787250/>`_.
 
 
-.. _subset: 
+.. toctree::
+   :maxdepth: 1
+   
+   sdm   
+   /tutorials/sdm
 
-Subset
-------
 
-generates a polygon subset of input netCDF files 
+   
+.. _subset_countries: 
+
+Subset Countries 
+----------------
+
+Generates a polygon subset of input netCDF files.
 
 
 Based on an ocgis call, several predfined polygons ( world counties ) can be used to generate an appropriate subset of input netCDF files. 
-The option 'MOSAIK' as an checkbox allows you to decide in case of multiple polygon selection, if the polygons are stiched together to one polygon (e.g. shape of Germany and France as one polygon) or calculated as seperte output files. 
+The option 'MOSAIK' as a checkbox allows you to decide, in the case of multiple polygon selection, if the polygons should be stitched together into one polygon (e.g. shape of Germany and France as one polygon) or calculated as separate output files. 
 
-For optimisation of processing the subset, the appropriate shapefile are prepared with the following stepps: 
+For optimisation of the subset process, the appropriate shapefiles are prepared as follows: 
 
 
 .. toctree::
    :maxdepth: 1
 
    shapefilepreparation
-
-
-
-
-.. _vbd: 
-
-Vector borne diseases
----------------------
-
-The livecycle of disease transmitting vectors (mosquitos, ticks etc. ) are stronly depending on climatic conditions.
-
-These models are integrated:
-
-* Thommy Model
-* Kamil Model
-
+   
 .. _visualisation: 
 
 Visualisation
 -------------
 
-Line plots using `Bokeh <http://bokeh.pydata.org/en/latest/>`_ to compare variables of NetCDF files from CORDEX and CMIP5. [..]
+Time series visualisation of netCDF files. 
+Creates a spaghetti plot and an uncertainty plot.
+
+
+.. _weatherregimes:
+
+Weather Regimes
+---------------
+
+Calculation of weatherregimes based on pressure patterns (kmean method). The processes is performing a pattern clusterfication for observations data ( NCEP ) as well as to model data. both results are compared
+ 
+Method:
+.......
+
+* fetching observation data 
+* fetching model data
+* subset the selected geographical region 
+* selection of month to be analyzed
+* unit conversion to hPa (if necessary)
+* regridding (biliniar) to the grid of observation (if necessary)
+* comuting of pricipal componets for dimension reduction
+
+Process Arguments:
+..................
+
+* resources (links to netCDF sea surface pressure data) 
+* or search with phoenix
+
+
+
+Inputs:
+.......
+
+* NCEP slp data (automatic fetch)
+* any kind of surface pressure data (netCDF files in cf convention). Multiple Datasets slized in seperate files possible
+
+Outputs: 
+........
+
+* scatter plot showing the centoides of the clusters and the appropriate centroids of each timestep
+* maps for each weather regime of all input datasets. including comparison statistics with observation pattern
+* tar archive containing text files with date time , weatherregime table
+
 

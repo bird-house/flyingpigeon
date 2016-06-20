@@ -1,6 +1,5 @@
 """ processing of timeseries """
-from malleefowl import wpslogging as logging
-#import logging
+import logging
 logger = logging.getLogger(__name__)
 
 from netCDF4 import  Dataset

@@ -1,0 +1,126 @@
+#******************************************************************************
+#  Copyright(C) 2005-2013 Intel Corporation. All Rights Reserved.
+#  
+#  The source code, information  and  material ("Material") contained herein is
+#  owned  by Intel Corporation or its suppliers or licensors, and title to such
+#  Material remains  with Intel Corporation  or its suppliers or licensors. The
+#  Material  contains proprietary information  of  Intel or  its  suppliers and
+#  licensors. The  Material is protected by worldwide copyright laws and treaty
+#  provisions. No  part  of  the  Material  may  be  used,  copied, reproduced,
+#  modified, published, uploaded, posted, transmitted, distributed or disclosed
+#  in any way  without Intel's  prior  express written  permission. No  license
+#  under  any patent, copyright  or  other intellectual property rights  in the
+#  Material  is  granted  to  or  conferred  upon  you,  either  expressly,  by
+#  implication, inducement,  estoppel or  otherwise.  Any  license  under  such
+#  intellectual  property  rights must  be express  and  approved  by  Intel in
+#  writing.
+#  
+#  *Third Party trademarks are the property of their respective owners.
+#  
+#  Unless otherwise  agreed  by Intel  in writing, you may not remove  or alter
+#  this  notice or  any other notice embedded  in Materials by Intel or Intel's
+#  suppliers or licensors in any way.
+#
+#******************************************************************************
+#  Content:
+#      Intel(R) Math Kernel Library LAPACK95 library creation
+#******************************************************************************
+
+help:
+	@echo "Usage: make {libia32|libintel64} INSTALL_DIR=<path>"
+	@echo "            [interface=interface_name] [FC=compiler_name]"
+	@echo
+	@echo "Intel(R) Fortran Compiler as default"
+	@echo
+	@echo "INSTALL_DIR    - library and the .mod files will be built and installed"
+	@echo "                 in subdirectories of <path> the same way as if <path>"
+	@echo "                 were the Intel MKL installation directory."
+	@echo "interface_name - can be lp64 or ilp64 for intel64. Default value is lp64."
+	@echo "FC             - can be ifort, gfortran or pgf95. Default value is ifort."
+
+##------------------------------------------------------------------------------
+## examples of using:
+##
+## make libia32 INSTALL_DIR=lib95    - build  by Intel(R) Fortran Compiler  (as default)
+##                                   for 32-bit applications, static linking
+##
+## make libintel64 INSTALL_DIR=lib95 - build  by Intel(R) Fortran Compiler  (as default)
+##                                   for Intel(R) 64 applications, static linking
+##------------------------------------------------------------------------------
+
+include lapack95.lst
+
+iface_95 = lapack.f90
+iface_77 = lapack_interfaces.f90
+
+FC=gfortran
+
+opts0    =
+optsc    = -c $(opts0)
+sufobj   = o
+suflib   = a
+sufmod   = mod
+src_path = source
+LIBR     = ar -rs
+
+ifndef MKLROOT
+MKLROOT = ../..
+endif
+
+obj_path = ./Obj
+obj77_path = $(obj_path)/obj77
+
+#inc_path = $(MKLROOT)
+inc_path = .
+
+MODULE_DIR = .
+mod_path = .
+
+objs    = $(src_lapack95:.f90=.$(sufobj))
+objects = $(addprefix $(obj_path)/,$(objs))
+mod95 = mkl95_lapack.mod
+mod77 = $(obj77_path)/$(iface_77:.f90=.obj)
+
+opt_mod = -I
+FOPTS=-fautomatic
+mkl_lapack95_lib      = liblapack95.$(suflib)
+
+vpath %.f90       $(src_path)
+vpath %.f90       $(inc_path)
+vpath %.$(sufobj) $(obj_path)
+
+$(obj_path)/%.$(sufobj): %.f90
+	$(FC) $(SPEC_OPT) $(FOPTS) $(opt_mod)$(obj77_path) $(optsc) -o $(obj_path)/$(@F) $<
+
+$(mod_path)/$(mod95): $(mod_path)/$(iface_95)
+	mkdir -p $(obj77_path)
+	mkdir -p $(mod_path)
+	$(FC) $(SPEC_OPT) $(FOPTS) $(opt_mod)$(mod_path) $(optsc) -o $(obj77_path)/mkl_lapack.$(sufobj) $<
+
+.PHONY: build lib mod clean check checkdir lib32 libia32 libem64t libintel64 objects clean_obj cleania32 cleanintel64
+
+build:	lib mod
+lib:	$(mkl_lapack95_lib)
+mod:	$(mod_path)/$(mod95)
+
+$(mkl_lapack95_lib):
+	mkdir -p $(obj77_path)
+	$(FC) $(SPEC_OPT) $(FOPTS) $(opt_mod)$(obj77_path) $(optsc) -o $(mod77) $(src_path)/$(iface_77)
+	make -f makefile.home objects
+	cd $(obj_path) ; $(LIBR) $(mkl_lapack95_lib) *.$(sufobj)
+	mv $(obj_path)/$(mkl_lapack95_lib) $(mod_path)
+objects:$(objects)
+
+
+#clean: cleania32 cleanintel64
+#cleania32: checkdir
+#	-rm -rf $(INSTALL_DIR)/lib/ia32/obj_lapack95_32_*
+#	-rm -f $(INSTALL_DIR)/lib/ia32/libmkl_lapack95.$(suflib)
+#	-rm -f $(INSTALL_DIR)/include/ia32/mkl95_lapack.$(sufmod) $(INSTALL_DIR)/include/ia32/mkl95_precision.$(sufmod)
+#cleanintel64: checkdir
+#	-rm -rf $(INSTALL_DIR)/lib/intel64/obj_lapack95_intel64_*
+#	-rm -f $(INSTALL_DIR)/lib/intel64/libmkl_lapack95_*lp64.$(suflib)
+#	-rm -f $(INSTALL_DIR)/include/intel64/*lp64/mkl95_lapack.$(sufmod) $(INSTALL_DIR)/include/intel64/*lp64/mkl95_precision.$(sufmod)
+
+#clean_obj: check
+#	-rm -rf $(obj_path)

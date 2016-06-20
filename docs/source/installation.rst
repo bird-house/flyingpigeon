@@ -1,9 +1,7 @@
-.. _installation:
-
 Installation
-************
+============
 
-The installation uses the Python distribution system `Anaconda <http://www.continuum.io/>`_ to maintain software dependencies. 
+The installation uses the Python distribution system `Anaconda <https://www.continuum.io/>`_ to maintain software dependencies. 
 You may use an existing (shared, read-only access possible) Anaconda installation. To do this, set an environment variable to the location of your existing Anaconda, for example::
 
    $ export ANACONDA_HOME=/opt/anaconda
@@ -16,7 +14,7 @@ Now, check out the Flying Pigeon code from github and start the installation::
 
    $ git clone https://github.com/bird-house/flyingpigeon.git
    $ cd flyingpigeon
-   $ make
+   $ make install
 
 After successful installation, you need to start the services. All installed files (config etc ...) are below the conda environment ``birdhouse`` which is by default in your home directory ``~/.conda/envs/birdhouse``. Now, start the services::
 
@@ -28,6 +26,6 @@ The depolyed WPS service is available on http://localhost:8093/wps?service=WPS&v
 Check the log files for errors::
 
    $ cd ~/.conda/envs/birdhouse
-   $ tail -f  var/log/supervisor/flyingpigeon.log
+   $ tail -f  var/log/pywps/flyingpigeon.log
 
-For other install options, run ``make help`` and read the documention for the `Makefile <http://birdhousebuilderbootstrap.readthedocs.org/en/latest/>`_.
+For other install options, run ``make help`` and read the documention for the `Makefile <Bootstrap_>`_.

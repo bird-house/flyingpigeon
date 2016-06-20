@@ -7,3 +7,5 @@ hostname = localhost
 http-port = 8093
 log-level = INFO
 
+[pywps]
+maxoperations = 100

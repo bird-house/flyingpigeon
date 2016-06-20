@@ -1,12 +1,15 @@
-from .exceptions import CalculationException
-from .utils import drs_filename, get_variable, calc_grouping , sort_by_filename
-from malleefowl import wpslogging as logging
+from cdo import Cdo
+from tempfile import mkstemp
+import os
 
+from flyingpigeon.utils import drs_filename, get_variable, calc_grouping , sort_by_filename
+from flyingpigeon import config
+
+import logging
 logger = logging.getLogger(__name__)
-from os.path import dirname, join, getsize, abspath
 
-DIR_MASKS = join(abspath(dirname(__file__)), 'processes', 'masks')
-DIR_SHP = join(abspath(dirname(__file__)), 'processes', 'shapefiles')
+DIR_MASKS = config.masks_dir()
+DIR_SHP = config.shapefiles_dir()
 
 def countries():
     """
@@ -14,7 +17,7 @@ def countries():
     """
     countries = _COUNTRIES_.keys()
     countries.sort()
-    return countries
+    return countries  
 
 def countries_longname():
     """
@@ -33,27 +36,32 @@ def masking(resource, mask, prefix=None, dir_output=None):
   :param prefix:  prefix for filename. If prefix is not set, a filename will be created
   :param dir_output: directory for output file. If dir_output is not set, a tempdir will be created
   """
-  from cdo import Cdo
   cdo = Cdo()
-  from tempfile import mkstemp
-  from os import system, path 
   
   if dir_output == None: 
-    dir_output = path.curdir
-  nc_mask = path.join(DIR_MASKS, mask + '.nc')
+    dir_output = os.curdir
+  nc_mask = os.path.join(DIR_MASKS, mask + '.nc')
   
   if prefix == None: 
     p1 , resource_masked = mkstemp(dir = dir_output, suffix='.nc')
   else: 
-    resource_masked = path.join(dir_output, prefix + '.nc')
+    resource_masked = os.path.join(dir_output, prefix + '.nc')
 # try:
   call = "cdo div '%s' '%s' '%s'" % ( resource , nc_mask , resource_masked)
-  system(call)
+  os.system(call)
   return resource_masked
 
+def has_Lambert_Conformal(nc):
+  from netCDF4 import MFDataset
+  ds = MFDataset(nc)
+  if 'Lambert_Conformal' in ds.variables.keys():
+    lc_ckeck = True
+  else: 
+    lc_ckeck = False
+  return lc_ckeck
 
 def clipping(resource=[], variable=None, dimension_map=None, calc=None,  
-  calc_grouping= None, prefix=None, polygons=None, mosaik=False, dir_output=None):
+  calc_grouping= None, historical_concatination=True, prefix=None, spatial_wrapping='wrap', polygons=None, mosaik=False, dir_output=None):
   """ returns list of clipped netCDF files
   possible entries: 
   :param resource: list of input netCDF files
@@ -61,6 +69,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
   :param dimesion_map: specify a dimension map input netCDF has unconventional dimension
   :param calc: ocgis calculation argument
   :param calc_grouping: ocgis calculation grouping 
+  :param historical_concatination: concat files of RCPs with appropriate historical runs to one timeseries 
   :param prefix: perfix for output file name
   :param polygons: list of polygons to be used. if more than 1 in the list, a appropriate mosaik will be clipped
   :param output_format: output_format (default='nc')
@@ -79,70 +88,65 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
       prefix = list([prefix])
   
   geoms = set()
-  ncs = sort_by_filename(resource)
+  ncs = sort_by_filename(resource, historical_concatination=historical_concatination) #  historical_concatination=True
   geom_files = []
-
   if mosaik == True :
+    
     try:
       nameadd = '_'
       for polygon in polygons: 
         geoms.add(get_geom(polygon))
-        nameadd = nameadd + polygon 
+        nameadd = nameadd + '-' + polygon  
       if len(geoms) > 1: 
-        logger.error('polygons belong to differnt shapefiles! mosaik is not possible %s', geoms)
+        logger.error('polygons belong to differnt shapefiles! mosaik option is not possible %s', geoms)
       else: 
         geom = geoms.pop()
-    
       ugids = get_ugid(polygons=polygons, geom=geom)
-      
-      for key in  ncs.keys() :
+    except Exception as e:
+      logger.debug('geom identification failed %s ' % e)
+    for i, key in enumerate (ncs.keys()):
+      try:
         if variable == None:
           variable = get_variable(ncs[key])
-          logger.info('variable %s detected in resource' % (variable))  
-        try:
-          
-          if prefix == None:
-            prefix = key + nameadd
-          else:
-            prefix = prefix[0]
-            
-          geom_file = call(resource=ncs[key], variable=variable, calc=calc, calc_grouping=calc_grouping ,
-            prefix=prefix, geom=geom, select_ugid=ugids, dir_output=dir_output, dimension_map=dimension_map)    
-          
-          geom_files.append( geom_file )
-        except Exception as e:
-          msg = 'ocgis calculations failed for %s ' % (key)
-          logger.exception(msg)
-          raise CalculationException(msg, e)
-    except Exception as e:
-        logger.error('geom identification failed %s', e)
+          logger.info('variable %s detected in resource' % (variable))
+        if prefix == None:
+          name = key + nameadd
+        else:
+          name = prefix[i]
+        geom_file = call(resource=ncs[key], variable=variable, calc=calc, calc_grouping=calc_grouping, 
+                         prefix=name, geom=geom, select_ugid=ugids,
+                         # spatial_wrapping=spatial_wrapping,
+                         dir_output=dir_output, dimension_map=dimension_map)
+        geom_files.append( geom_file )  
+      except Exception as e:
+        msg = 'ocgis calculations failed for %s ' % (key)
+        logger.debug(msg)
   else: 
-    try:
-      for i, polygon in enumerate(polygons): 
+    for i, polygon in enumerate(polygons): 
+      try:
         geom = get_geom(polygon)
         ugid = get_ugid(polygons=polygon, geom=geom)
-        for key in  ncs.keys() :
-          if variable == None:
-            variable = get_variable(ncs[key])
-            logger.info('variable %s detected in resource' % (variable))  
+        for key in  ncs.keys():
           try:
+            if variable == None:
+              variable = get_variable(ncs[key])
+              logger.info('variable %s detected in resource' % (variable))  
             if prefix == None: 
-              prefix = key + '_' + polygon
+              name = key + '_' + polygon
             else:
-              prefix = prefix[i]
+              name = prefix[i]
             geom_file = call(resource=ncs[key], variable=variable,  calc=calc, calc_grouping=calc_grouping,
-              prefix=prefix, geom=geom, select_ugid=ugid, dir_output=dir_output, dimension_map=dimension_map)
+              prefix=name, geom=geom, select_ugid=ugid, dir_output=dir_output, dimension_map=dimension_map, #spatial_wrapping=spatial_wrapping
+              )
             geom_files.append( geom_file )
           except Exception as e:
             msg = 'ocgis calculations failed for %s ' % (key)
-            logger.exception(msg)
-            raise CalculationException(msg, e)
-    except Exception as e:
-        logger.error('geom identification failed %s', e) 
-
+            logger.debug(msg)
+            raise
+      except Exception as e:
+          logger.debug('geom identification failed')
+          raise
   return  geom_files
-
-
 
 
 def get_dimension_map(resource): 
@@ -152,8 +156,7 @@ def get_dimension_map(resource):
   :param resource: str input file path
   """
 
-  from os.path import basename
-  file_name = basename(resource)
+  file_name = os.path.basename(resource)
   
   dim_map1 = {'X': {'variable': 'lon', 'dimension': 'x', 'pos': 2},
               'Y': {'variable': 'lat', 'dimension': 'y', 'pos': 1},
@@ -191,7 +194,7 @@ def get_dimension_map(resource):
     dimension_map = None
     
   return dimension_map
-
+  
 
 def get_shp_column_values(geom, columnname): 
   """ returns a list of all entries the shapefile columnname
@@ -250,8 +253,7 @@ def get_ugid(polygons=None, geom=None):
       else:
         from ocgis import ShpCabinet
         sc = ShpCabinet(DIR_SHP)
-        logger.error('geom: %s not found in ShapeCabinet. Available geoms are: %s ', geom, sc) 
-
+        logger.debug('geom: %s not found in ShapeCabinet. Available geoms are: %s ', geom, sc)
     return result
 
 def get_geom(polygon=None):
@@ -266,10 +268,12 @@ def get_geom(polygon=None):
       geom = 'countries'
     elif polygon in _POLYGONS_EXTREMOSCOPE_: #len(polygon) == 5 and polygon[2] == '.': 
       geom = 'extremoscope'
+    elif polygon in _EUREGIONS_:
+      geom = 'extremoscope'
     elif polygon in _CONTINENTS_: 
       geom = 'continents'
     else:
-      logger.error('polygon: %s not found in geoms' % polygon) 
+      logger.debug('polygon: %s not found in geoms' % polygon) 
 
   return geom  
 

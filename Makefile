@@ -1,4 +1,4 @@
-VERSION := 0.2.10
+VERSION := 0.2.20
 RELEASE := master
 
 # Application
@@ -9,9 +9,13 @@ APP_NAME := $(shell basename $(APP_ROOT))
 OS_NAME := $(shell uname -s 2>/dev/null || echo "unknown")
 CPU_ARCH := $(shell uname -m 2>/dev/null || uname -p 2>/dev/null || echo "unknown")
 
+# Python
+SETUPTOOLS_VERSION=20.1.1
+BUILDOUT_VERSION=2.5.0
+
 # Anaconda 
 ANACONDA_HOME ?= $(HOME)/anaconda
-CONDA_ENV := birdhouse
+CONDA_ENV ?= birdhouse
 CONDA_ENVS_DIR ?= $(HOME)/.conda/envs
 PREFIX := $(CONDA_ENVS_DIR)/$(CONDA_ENV)
 
@@ -19,8 +23,7 @@ PREFIX := $(CONDA_ENVS_DIR)/$(CONDA_ENV)
 HOSTNAME ?= localhost
 USER ?= www-data
 OUTPUT_PORT ?= 8090
-PHOENIX_PASSWORD ?= ""
-WPS_URL ?= http://malleefowl:8094/wps
+LOG_LEVEL ?= WARN
 
 # choose anaconda installer depending on your OS
 ANACONDA_URL = http://repo.continuum.io/miniconda
@@ -42,10 +45,10 @@ DOCKER_CONTAINER := $(APP_NAME)
 
 # end of configuration
 
-.DEFAULT_GOAL := all
+.DEFAULT_GOAL := help
 
 .PHONY: all
-all: sysinstall clean install
+all: clean install
 	@echo "\nRun 'make help' for a description of all make targets."
 	@echo "Read also the README.rst on GitHub: https://github.com/bird-house/birdhousebuilder.bootstrap"
 
@@ -53,8 +56,8 @@ all: sysinstall clean install
 help:
 	@echo "make [target]\n"
 	@echo "targets:\n"
-	@echo "\t all         \t- Does a complete installation. Shortcut for 'make sysinstall clean install.' (Default)"
-	@echo "\t help        \t- Prints this help message."
+	@echo "\t help        \t- Prints this help message. (Default)"
+	@echo "\t all         \t- Does a complete installation. Shortcut for 'make clean install.'"
 	@echo "\t version     \t- Prints version number of this Makefile."
 	@echo "\t info        \t- Prints information about your system."
 	@echo "\t install     \t- Installs your application by running 'bin/buildout -c custom.cfg'."
@@ -62,6 +65,7 @@ help:
 	@echo "\t test        \t- Run tests (but skip long running tests)."
 	@echo "\t testall     \t- Run all tests (including long running tests)."
 	@echo "\t clean       \t- Deletes all files that are created by running buildout."
+	@echo "\t srcclean    \t- Removes all *.pyc files."
 	@echo "\t distclean   \t- Removes *all* files that are not controlled by 'git'.\n\t\t\tWARNING: use it *only* if you know what you do!"
 	@echo "\t sysinstall  \t- Installs system packages from requirements.sh. You can also call 'bash requirements.sh' directly."
 	@echo "\t passwd      \t- Generate password for 'phoenix-password' in custom.cfg."
@@ -101,6 +105,7 @@ backup:
 	@echo "Backup custom config ..." 
 	@-test -f custom.cfg && cp -v --update --backup=numbered --suffix=.bak custom.cfg custom.cfg.bak
 
+.PHONY: .gitignore
 .gitignore:
 	@echo "Setup default .gitignore ..."
 	@curl "https://raw.githubusercontent.com/bird-house/birdhousebuilder.bootstrap/$(RELEASE)/dot_gitignore" --silent --insecure --output .gitignore 
@@ -126,7 +131,7 @@ downloads:
 	@test -d $(DOWNLOAD_CACHE) || mkdir -v -p $(DOWNLOAD_CACHE)
 
 .PHONY: init
-init: .gitignore custom.cfg downloads
+init: custom.cfg downloads
 
 bootstrap-buildout.py:
 	@echo "Update buildout bootstrap-buildout.py ..."
@@ -145,14 +150,14 @@ anaconda:
 conda_config: anaconda
 	@echo "Update ~/.condarc"
 	@"$(ANACONDA_HOME)/bin/conda" config --add envs_dirs $(CONDA_ENVS_DIR)
-	@"$(ANACONDA_HOME)/bin/conda" config --set ssl_verify false
+	@"$(ANACONDA_HOME)/bin/conda" config --set ssl_verify true
 	@"$(ANACONDA_HOME)/bin/conda" config --add channels defaults
 	@"$(ANACONDA_HOME)/bin/conda" config --add channels birdhouse
-	@"$(ANACONDA_HOME)/bin/conda" config --add channels ioos
 
 .PHONY: conda_env
 conda_env: anaconda conda_config
-	@test -d $(PREFIX) || "$(ANACONDA_HOME)/bin/conda" create -m -p $(PREFIX) -c ioos --yes python setuptools curl pyopenssl genshi mako
+	@test -d $(PREFIX) || "$(ANACONDA_HOME)/bin/conda" create -m -p $(PREFIX) -c ioos --yes python setuptools=$(SETUPTOOLS_VERSION) curl pyopenssl cryptography=1.0.2 genshi mako pyyaml
+	"$(ANACONDA_HOME)/bin/conda" install -y -n $(CONDA_ENV) setuptools=$(SETUPTOOLS_VERSION)
 
 .PHONY: conda_pinned
 conda_pinned: conda_env
@@ -168,41 +173,51 @@ conda_clean: anaconda conda_config
 .PHONY: bootstrap
 bootstrap: init conda_env conda_pinned bootstrap-buildout.py
 	@echo "Bootstrap buildout ..."
-	@test -f bin/buildout || bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);python bootstrap-buildout.py -c custom.cfg --allow-site-packages --setuptools-version=17.1.1 --buildout-version=2.4.0"
+	@test -f bin/buildout || bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);python bootstrap-buildout.py -c custom.cfg --allow-site-packages --setuptools-version=$(SETUPTOOLS_VERSION) --buildout-version=$(BUILDOUT_VERSION)"
 
 .PHONY: sysinstall
 sysinstall:
 	@echo "\nInstalling system packages for bootstrap ..."
 	@bash bootstrap.sh -i
 	@echo "\nInstalling system packages for your application ..."
-	@bash requirements.sh
+	@test -f requirements.sh || bash requirements.sh
 
 .PHONY: install
 install: bootstrap
 	@echo "Installing application with buildout ..."
 	bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);bin/buildout -c custom.cfg"
+	@echo "\nStart service with 'make start'"
 
 .PHONY: update
 update:
-	@echo "Update application config with buildout ..."
+	@echo "Update application config with buildout (offline mode) ..."
 	bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);bin/buildout -o -c custom.cfg"
 
 .PHONY: update-config
 update-config:
-	@echo "Update application config with buildout ..."
-	bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);bin/buildout settings:hostname=$(HOSTNAME) settings:output-port=$(OUTPUT_PORT) settings:phoenix-password=$(PHOENIX_PASSWORD) settings:wps-url=$(WPS_URL) -o"
-	chown -R $(USER) $(PREFIX)/var/.
+	@echo "Update application config with buildout (offline mode) and enviroment variables..."
+	bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);bin/buildout settings:hostname=$(HOSTNAME) settings:output-port=$(OUTPUT_PORT) settings:log-level=$(LOG_LEVEL) -o -c custom.cfg"
+
+.PHONY: update-user
+update-user:
+	@echo "Update user permission on var/ ..."
+	chown -R $(USER) $(PREFIX)/var && chown -R $(USER) $(PREFIX)/var/lib/.
 
 .PHONY: build
 build: install
 	@echo "\nPlease use 'make install' instead of 'make build'"
 
 .PHONY: clean
-clean:
+clean: srcclean
 	@echo "Cleaning buildout files ..."
 	@-for i in $(BUILDOUT_FILES); do \
             test -e $$i && rm -v -rf $$i; \
         done
+
+.PHONY: srcclean
+srcclean:
+	@echo "Removing *.pyc files ..."
+	@-find $(APP_ROOT) -type f -name "*.pyc" -print0 | xargs -0r rm
 
 .PHONY: distclean
 distclean: backup clean
@@ -226,21 +241,21 @@ passwd: custom.cfg
 .PHONY: test
 test:
 	@echo "Running tests (skip slow tests) ..."
-	bin/nosetests -A 'not slow and not online and not testdata' tests
+	bin/py.test -v -m 'not slow and not online and not testdata'
 
 .PHONY: testall
 testall:
 	@echo "Running all tests (include slow tests) ..."
-	bin/nosetests tests
+	bin/py.test -v
 
 .PHONY: docs
 docs:
 	@echo "Generating docs with Sphinx ..."
-	$(MAKE) -C $@ clean html
+	$(MAKE) -C $@ clean linkcheck html
 	@echo "open your browser: firefox docs/build/html/index.html"
 
 .PHONY: selfupdate
-selfupdate: bootstrap.sh requirements.sh
+selfupdate: bootstrap.sh requirements.sh .gitignore
 	@curl "https://raw.githubusercontent.com/bird-house/birdhousebuilder.bootstrap/$(RELEASE)/Makefile" --silent --insecure --output Makefile 
 
 ## Supervisor targets
@@ -263,14 +278,10 @@ restart:
 .PHONY: status
 status:
 	@echo "Supervisor status ..."
-	$(PREFIX)/bin/supervisorctl status
+	$(PREFIX)/bin/supervisorctl -c ${PREFIX}/etc/supervisor/supervisord.conf status
 
 
 ## Docker targets
-
-.dockerignore:
-	@echo "Update .dockerignore ..."
-	@curl "https://raw.githubusercontent.com/bird-house/birdhousebuilder.bootstrap/master/dot_dockerignore" --silent --insecure --output .dockerignore 
 
 .PHONY: Dockerfile
 Dockerfile: bootstrap
@@ -283,7 +294,7 @@ dockerrmi:
 	docker rmi $(DOCKER_IMAGE)
 
 .PHONY: dockerbuild
-dockerbuild: Dockerfile .dockerignore
+dockerbuild: Dockerfile
 	@echo "Building docker image ..."
 	docker build --rm -t $(DOCKER_IMAGE) .
 

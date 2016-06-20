@@ -12,6 +12,7 @@ before_script:
   - sleep 15
 script:
   - export GDAL_DATA=/home/travis/.conda/envs/birdhouse/share/gdal 
-  - make test
+  - make docs
+  - make testall
 #after_success:
 # - coveralls

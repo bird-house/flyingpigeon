@@ -1,10 +1,10 @@
-from .exceptions import CalculationException
-
-from malleefowl import wpslogging as logging
-logger = logging.getLogger(__name__)
-
 import datetime as dt
 import tempfile
+
+from flyingpigeon import config
+
+import logging
+logger = logging.getLogger(__name__)
 
 EOBS_VARIABLES = ['tn', 'tx' , 'tn', 'rr'] #, 'pp'
 
@@ -66,8 +66,6 @@ def set_attributes(resource, variable):
     
   return resource
 
-
-
 def func_june_july(value, bounds=None):
     months = [6, 7]
     indices = []
@@ -94,7 +92,7 @@ def get_data(variable,
 
   try: 
     ocgis.env.OVERWRITE=True
-    ocgis.env.DIR_SHPCABINET = path.join(path.dirname(__file__), 'processes', 'shapefiles')
+    ocgis.env.DIR_SHPCABINET = config.shapefiles_dir()
     geoms = '50m_country'
     # sci = ShpCabinetIterator(geoms)
     

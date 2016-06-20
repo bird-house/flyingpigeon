@@ -1,4 +1,4 @@
-from malleefowl import wpslogging as logging
+import logging
 logger = logging.getLogger(__name__)
 
 from os import path , mkdir, listdir
@@ -146,7 +146,8 @@ def plot_ascii(infile):
     print ('ascii plotted')
     # fig.close()
   except Exception as e:
-    print 'plotting failed for file %s : %s' % (basename , e)
+    logger.exception('plotting failed for file %s' % basename)
+    raise
 
 def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate_type=2, region=None, dimension_map=None): 
   """productive worker for segetalflora jobs
@@ -161,7 +162,7 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
   import os
   from os import remove
   from tempfile import mkstemp
-  from ocgis import RequestDataset , OcgOperations
+  from ocgis import RequestDataset, OcgOperations
   
   from cdo import Cdo
   cdo = Cdo()

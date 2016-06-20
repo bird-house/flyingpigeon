@@ -1,28 +1,11 @@
-import tempfile
-from .exceptions import CalculationException
-
-from flyingpigeon.utils import calc_grouping, sort_by_filename # aggregations, 
-from flyingpigeon.subset import get_ugid, get_geom
-
-from malleefowl import wpslogging as logging
 import os
 
-#import logging
-logger = logging.getLogger(__name__)
+from flyingpigeon.utils import calc_grouping, sort_by_filename, get_variable # aggregations, 
+from flyingpigeon.subset import get_ugid, get_geom
+from flyingpigeon import config
 
-#logfile = os.path.basename(__file__).replace('.py','.log') #  'several_nodes.log' # 
-#fh = logging.FileHandler(os.path.join('/home/estimr2/nhempelmann/data/test/'+ logfile))
-#fh.setLevel(logging.DEBUG)
-# create console handler with a higher log level
-#ch = logging.StreamHandler()
-#ch.setLevel(logging.ERROR)
-# create formatter and add it to the handlers
-#formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-#ch.setFormatter(formatter)
-#fh.setFormatter(formatter)
-# add the handlers to logger
-#logger.addHandler(ch)
-#logger.addHandler(fh)
+import logging
+logger = logging.getLogger(__name__)
 
 _INDICES_ = dict(
     TG=dict(variable='tas', description='Mean of mean temperatur (tas as input files)'),
@@ -40,7 +23,8 @@ _INDICES_ = dict(
     ID=dict(variable='tasmax', description='Nr of Ice days (tasmax as input files)'),
     HD17=dict(variable='tas', description='Heating degree days [sum of 17 degrees - mean temperature] (tas as input files)'),
     GD4=dict(variable='tas', description='Growing degree days [sum of TG >= 4 degrees] (tas as input files)'),
-    RR=dict(variable='pr', description='Precipitation flux mean (mon / year) (pr as input files)'),
+    #RR=dict(variable='pr', description='Precipitation flux mean (mon / year) (pr as input files)'),
+    PRCPTOT=dict(variable='pr', description='Precipitation flux mean (mon / year) (pr as input files)'),
     RR1=dict(variable='pr', description='Nr of days with precipitation > 1 mm  (pr as input files)'),
     CWD=dict(variable='pr', description='Consecutive wet days (pr as input files)'),
     CDD=dict(variable='pr', description='Consecutive dry days (pr as input files)'),
@@ -64,19 +48,19 @@ _INDICESper_ = dict(
     TN90p=dict(variable='tasmin', description='Days with TN > 90th percentile of daily minimum temperature (warm nights) (days)'),
     WSDI=dict(variable='tasmax', description='Warm-spell duration index (days)'),
     CSDI=dict(variable='tasmin', description='Cold-spell duration index (days)'),
-    R75p=dict(variable='pr', description= 'Days with RR > 75th percentile of daily amounts (moderate wet days) (days)'),
+    R75p=dict(variable='pr', description= 'Days with PRCPTOT > 75th percentile of daily amounts (moderate wet days) (days)'),
     R75pTOT=dict(variable='pr', description= 'Precipitation fraction due to moderate wet days (>75th percentile) (%)'),
-    R95p=dict(variable='pr', description= 'Days with RR > 95th percentile of daily amounts (very wet days) (days)'),
+    R95p=dict(variable='pr', description= 'Days with PRCPTOT > 95th percentile of daily amounts (very wet days) (days)'),
     R95pTOT=dict(variable='pr', description= 'Precipitation fraction due to very wet days (>95th percentile) (%)'),
-    R99p=dict(variable='pr', description= 'Days with RR > 99th percentile of daily amounts (extremely wet days)(days)'),
+    R99p=dict(variable='pr', description= 'Days with PRCPTOT > 99th percentile of daily amounts (extremely wet days)(days)'),
     R99pTOT=dict(variable='pr', description= 'recipitation fraction due to extremely wet days (>99th percentile)(%)'),
     )   
 
 _INDICEScomp_ = dict(
-    CD=dict(variable=['tas','pr'], description='Days with TG < 25th percentile of daily mean temperature and RR < 25th percentile of daily precipitation sum (cold/dry days)'),
-    CW=dict(variable=['tas','pr'], description='Days with TG < 25th percentile of daily mean temperature and RR > 75th percentile of daily precipitation sum (cold/wet days)'),
-    WD=dict(variable=['tas','pr'], description='days with TG > 75th percentile of daily mean temperature and RR < 25th percentile of daily precipitation sum (warm/dry days)'),
-    WW=dict(variable=['tas','pr'], description='Days with TG > 75th percentile of daily mean temperature and RR > 75th percentile of daily precipitation sum (warm/wet days)'),
+    CD=dict(variable=['tas','pr'], description='Days with TG < 25th percentile of daily mean temperature and PRCPTOT < 25th percentile of daily precipitation sum (cold/dry days)'),
+    CW=dict(variable=['tas','pr'], description='Days with TG < 25th percentile of daily mean temperature and PRCPTOT > 75th percentile of daily precipitation sum (cold/wet days)'),
+    WD=dict(variable=['tas','pr'], description='days with TG > 75th percentile of daily mean temperature and PRCPTOT < 25th percentile of daily precipitation sum (warm/dry days)'),
+    WW=dict(variable=['tas','pr'], description='Days with TG > 75th percentile of daily mean temperature and PRCPTOT > 75th percentile of daily precipitation sum (warm/wet days)'),
     )
 
 _INDICESunconventional_ = dict(
@@ -126,7 +110,7 @@ def indice_variable(indice):
     return variable
 
 def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
-    polygons=None, groupings=None, dir_output=None, dimension_map = None):
+    polygons=None, groupings=None, dir_output=None, dimension_map = None, memory_limit=None):
     """
     Calculates given indices for suitable files in the appopriate time grouping and polygon.
 
@@ -143,8 +127,9 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
     from os.path import join, dirname, exists
     from flyingpigeon import ocgis_module
     from flyingpigeon.subset import clipping
+    import uuid
 
-    #DIR_SHP = join(dirname(__file__),'flyingpigeon', 'processes', 'shapefiles')
+    #DIR_SHP = config.shapefiles_dir()
     #env.DIR_SHPCABINET = DIR_SHP
     #env.OVERWRITE = True
 
@@ -174,7 +159,22 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
         variable = get_variable(experiments[key][0])
         #variable = key.split('_')[0]
       try: 
-        ncs = experiments[key]
+        
+        if variable == 'pr': 
+          calc = 'pr=pr*86400'
+          ncs = ocgis_module.call(resource=experiments[key],
+                     variable=variable,
+                     dimension_map=dimension_map, 
+                     calc=calc,
+                     memory_limit=memory_limit,
+                     #alc_grouping= calc_group, 
+                     prefix=str(uuid.uuid4()), 
+                     dir_output=dir_output,
+                     output_format='nc')
+
+        else:
+          ncs = experiments[key]
+          
         for indice in indices:
           logger.info('indice: %s' % indice)
           try: 
@@ -199,7 +199,7 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
                      output_format='nc')
                     outputs.extend( [tmp] )
                   except Exception as e: 
-                    logger.exception('could not calc indice %s for domain in %s: %s' %( indice, key, e) )   
+                    logger.exception('could not calc indice %s for domain in %s' %( indice, key) )   
                 else: 
                   for polygon in polygons:
                     try:
@@ -217,15 +217,93 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
                         dir_output=dir_output)
                       outputs.extend( tmp )
                     except Exception as e:
-                      logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s' % ( indice, key, polygon, grouping, e ))  
-                logger.info('indice file calcualted %s ' % (tmp))      
+                      logger.exception('could not calc indice %s for key %s and grouping %s' % ( indice, key, grouping))  
+                logger.info('indice file calculated')      
               except Exception as e:
-                logger.exception('could not calc indice %s for key %s and calc_grouping %s : %s' %  (indice, key, polygon, e))  
+                logger.exception('could not calc indice %s for key %s and grouping %s' %  (indice, key, grouping))  
           except Exception as e:
-            logger.exception('could not calc indice %s for key %s: %s' % ( indice, key, e ))        
+            logger.exception('could not calc indice %s for key %s' % ( indice, key))        
       except Exception as e:
-        logger.exception('could not calc key %s: %s' %  (key, e))
+        logger.exception('could not calc key %s' % key)
     return outputs
+
+def calc_indice_percentile(resources=[], variable='tas', 
+  prefix=None, indices='TG90p', period=None,
+    groupings='yr', polygons=None, percentile=90, 
+    dir_output=None, dimension_map = None):
+    """
+    Calculates given indices for suitable files in the appopriate time grouping and polygon.
+
+    :param resource: list of filenames in drs convention (netcdf)
+    :param variable: variable name to be selected in the in netcdf file (default=None)
+    :param indices: list of indices (default ='TG90p')
+    :param prefix: filename prefix 
+    :param period: reference period touple = (start,end)
+    :param grouping: indices time aggregation (default='yr')
+    :param dir_output: output directory for result file (netcdf)
+    :param dimension_map: optional dimension map if different to standard (default=None)
+
+    :return: list of netcdf files with calculated indices. Files are saved into out_dir
+    """
+    from os.path import join, dirname, exists
+    from os import remove
+    import uuid
+    from numpy import ma 
+
+    from flyingpigeon.ocgis_module import call
+    from flyingpigeon.utils import get_values, get_time
+    
+    if type(resources) != list: 
+      resources = list([resources])
+    if type(indices) != list: 
+      indices = list([indices])
+      
+    if type(period) == list: 
+      period = period[0]
+      
+    if period == 'all':
+      time_region = None
+    else:
+      years = range(int(period[0]), int(period[1]))
+      time_region = {'year': years}
+
+    nc_indices = []
+    
+    if dir_output != None:
+      if not exists(dir_output): 
+        makedirs(dir_output)
+    
+    ########################################################################################################################
+    # Compute a custom percentile basis using ICCLIM. ######################################################################
+    ########################################################################################################################
+
+    from ocgis.contrib.library_icclim import IcclimTG90p
+    nc_dic = sort_by_filename(resources)
+    for key in nc_dic.keys():
+      resource = nc_dic[key]
+      nc_reference = call(resource=resource, 
+        prefix=str(uuid.uuid4()), 
+        time_region=time_region, 
+        output_format='nc', 
+        dir_output=dir_output)
+      arr = get_values(nc_files=nc_reference)
+      dt_arr = get_time(nc_file=nc_reference)
+      arr = ma.masked_array(arr)
+      dt_arr = ma.masked_array(dt_arr)
+      percentile = percentile
+      window_width = 5
+      for indice in indices:
+        name = indice.replace('90', str(percentile))
+        percentile_dict = IcclimTG90p.get_percentile_dict(arr, dt_arr, percentile, window_width)
+        calc = [{'func': 'icclim_%s' % indice, 'name': name, 'kwds': {'percentile_dict': percentile_dict}}]
+        calc_grouping = 'year'
+        nc_indices.append(call(resource=resource, 
+          prefix=key.replace(variable,name), 
+                            calc=calc, 
+                            calc_grouping=calc_grouping, 
+                            output_format='nc'))
+
+    return nc_indices
 
 def calc_indice_unconventional(resource=[], variable=None, prefix=None,
   indices=None, polygons=None,  groupings=None, 

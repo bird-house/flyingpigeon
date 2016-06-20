@@ -1,4 +1,4 @@
-from malleefowl import wpslogging as logging
+import logging
 logger = logging.getLogger(__name__)
 
 from os.path import exists
@@ -98,4 +98,3 @@ def eventdistribution(data, per=[5,95], nsim=1000, rp = [ 10., 20., 50., 100., 2
     rl_c = vstack((rp, per_low, rl, per_high))
     
     return (rl_c)
-

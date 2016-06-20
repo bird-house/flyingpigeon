@@ -1,5 +1,4 @@
-from malleefowl import wpslogging as logging
-#import logging
+import logging
 logger = logging.getLogger(__name__)
 
 from flyingpigeon.utils import calc_grouping, sort_by_filename, get_frequency # aggregations,
@@ -22,10 +21,12 @@ def aggregatTime(resource=[], variable=None, frequency=None, prefix=None, groupi
     ncs = sort_by_filename(resource, historical_concatination=historical_concatination)
     group = calc_grouping(grouping=grouping)
   except Exception as e: 
-    logger.error('failed to determine ncs or calc_grouping: %e' % (e))  
+    logger.exception('failed to determine ncs or calc_grouping')
+    raise  
   
   if len(ncs.keys())!= 1: 
-    logger.error('None or more than one data experiments found in resource')  
+    logger.exception('None or more than one data experiments found in resource')
+    raise Exception('None or more than one data experiments found in resource') 
 
   for key in ncs.keys()[0:1]:
     try:
@@ -46,7 +47,7 @@ def aggregatTime(resource=[], variable=None, frequency=None, prefix=None, groupi
       prefix=prefix )
       logger.info('time aggregation done for %s '% (key))
     except Exception as e: 
-      logger.error('time aggregation failed for %s: %s ' % (key, e))
-      output = ''
+      logger.exception('time aggregation failed for %s' % key)
+      raise
 
   return output #  key # output

@@ -1,7 +1,5 @@
-.. _configuration:
-
 Configuration
-*************
+=============
 
 If you want to run on a different hostname or port then change the default values in ``custom.cfg``::
 
