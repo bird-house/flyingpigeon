@@ -1,7 +1,7 @@
 import urlparse
 import os
 import wget
-import ocgis
+from ocgis import RequestDataset
 from netCDF4 import Dataset, MFDataset, num2date
 from flyingpigeon import config
 
@@ -253,7 +253,7 @@ def get_variable(nc_file):
     returns the variable name (str)
     :param nc_file: NetCDF file
     """
-    rd = ocgis.RequestDataset(nc_file)
+    rd = RequestDataset(nc_file)
     
     return rd.variable
 
@@ -542,7 +542,7 @@ def sort_by_filename(resource, historical_concatination = False):
 def has_variable(resource, variable):
     success = False
     try:
-        rd = ocgis.RequestDataset(uri=resource)
+        rd = RequestDataset(uri=resource)
         success = rd.variable == variable
     except:
         logger.exception('has_variable failed.')
@@ -553,7 +553,6 @@ def filename_creator(nc_files, var=None):
   """ use drs_filename instead """
   
   from os import path , rename
-  from ocgis import RequestDataset
   from netCDF4 import Dataset
   from datetime import datetime, timedelta
     
