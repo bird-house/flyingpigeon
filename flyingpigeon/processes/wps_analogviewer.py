@@ -33,13 +33,13 @@ class AnalogviewerProcess(WPSProcess):
             asReference=True,
             )
 
-        self.output_txt = self.addComplexOutput(
-            identifier="output_txt",
-            title="modified analogs txt file",
-            abstract="txt file for analog viewer",
-            formats=[{"mimeType":"text/txt"}],
-            asReference=True,
-            )
+        # self.output_txt = self.addComplexOutput(
+        #     identifier="output_txt",
+        #     title="modified analogs txt file",
+        #     abstract="txt file for analog viewer",
+        #     formats=[{"mimeType":"text/txt"}],
+        #     asReference=True,
+        #     )
 
     def execute(self):
         ######################
@@ -54,16 +54,54 @@ class AnalogviewerProcess(WPSProcess):
         # converting the analog txt file 
         ################################
 
-        mod_analogs = analogs
+        from flyingpigeon import config
+        from tempfile import mkstemp
+
+
+        output_path = config.output_path()
+        ip , f = mkstemp(suffix='.json', prefix='modified-analogfile', dir=output_path, text=False)
+
+        #Replace with pandas code
+        #copyfile(myanalogs, f)
+        from shutil import copyfile
+        copyfile(analogs, f)
 
         ################################
         # modify JS template
         ################################
+
+        from os.path import basename
         
-        output_av = tmpl
+        ip, output_av = mkstemp(suffix='.html', prefix='analogviewer', dir='.', text=False)
+        #copyfile(tmpl, output_av) 
+
+        tmpl_file = open(tmpl).read()
+        
+        out = open(output_av, 'w')
+
+        #replacements = {'analogues_placeholder.json':basename(f)}
+        #for i in replacements.keys():
+
+        tmpl_file = tmpl_file.replace('analogues_placeholder.json', basename(f) )
+        out.write(tmpl_file)
+        out.close()
+
+        # with open(output_av, 'r+') as f:
+        #     content = f.read()
+        #     f.seek(0)
+        #     f.truncate()
+        #     f.write(content.replace('analogues_placeholder.json', basename(f)))
+
 
         ################################
         # set the outputs
         ################################
-        self.output_txt.setValue( mod_analogs )
+        
+        outputUrl_path = config.outputUrl_path()
+
+        output_data = outputUrl_path  + '/' + basename(f)
+        
+        logger.info('Data url: %s ' % output_data)
+
+#        output_txt = output_data # .setValue( mod_analogs )     
         self.output_html.setValue( output_av )
