@@ -19,6 +19,7 @@ custom.cfg
 *.bak
 
 # Unit test / Coverage reports
+.cache
 .coverage
 .tox
 nosetests.xml
