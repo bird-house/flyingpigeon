@@ -1,5 +1,5 @@
 from flyingpigeon import config
-from os.path import join, abspath, dirname, getsize
+from os.path import join, abspath, dirname, getsize, curdir
 
 DIR_SHP = config.shapefiles_dir()
 
@@ -23,7 +23,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   regrid_destination=None, regrid_options='bil',
   geom=None, output_format_options=False, search_radius_mult=2., 
   select_nearest=False, select_ugid=None, spatial_wrapping=None ,time_region=None, time_range=None,
-  dir_output=None, output_format='nc'):
+  dir_output=curdir, output_format='nc'):
   '''
   ocgis operation call
 
@@ -53,7 +53,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   :param spatial_wrapping: how to handle coordinates in case of subsets, options: None(default), @wrap', 'unwrap'
   :param time_region:
   :param time_range: sequence of two datetime.datetime objects to mark start and end point 
-  :param dir_output:
+  :param dir_output (default= curdir):
   :param output_format:
   :return: output file path
   '''
