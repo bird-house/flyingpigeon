@@ -15,128 +15,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.min.js"></script>
   
     <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/dc/2.0.0-beta.26/dc.min.js"></script>-->
-    <script src="lib/my_dc.beta26.js"></script>
+    <script src="../static/my_dc.beta26.js"></script>
     <link rel="stylesheet" href="lib/dc.min.css" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/js/bootstrap.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
 
-    <style>
-    #charts {
-      padding: 0 0;
-    }
+    <link href="../css/style.css" rel="stylesheet" type="text/css" media="all">
 
-    .chart {
-      display: inline-block;
-      margin: 0 20px 20px;
-
-    }
-
-    .reset {
-      padding-left: 1em;
-      font-size: smaller;
-      color: #555;
-    }
-
-    .background.bar {
-      fill: #ccc;
-    }
-
-    .dc-chart g.row text {
-      fill: #333;
-    }
-
-    /*seasons pie chart*/
-    .dc-chart .pie-slice {
-        fill: black;
-        font-size: 10px;    
-    }
-
-    .axis path, .axis line {
-      fill: none;
-      stroke: #333;
-      shape-rendering: crispEdges;
-    }
-
-    .axis text {
-      font: 10px sans-serif;
-      fill: #333;
-    }
-
-    #chart-depth .brush rect.extent {
-      fill: #2EA3DB;
-      fill-opacity: .25;
-    }
-
-    #chart-age .brush rect.extent {
-      fill: #F5B441;
-      fill-opacity: .25;
-    }
-
-    .brush .resize path {
-      fill: #eee;
-      stroke: #666;
-    }
-
-    #map-div {
-      height: 512px;
-    }
-
-    .dc-chart-title {
-      color: #333;
-      font-weight: normal;
-      font-style: italic;
-    }
-
-    .filter {
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      display: inline-block;
-      text-align: left;
-    }
-    .imghelp {
-      border-radius: 10px;
-    }
-
-    /* Sticky footer style*/
-    html,
-    body {
-      height: 100%;
-      /* The html and body elements cannot have any padding or margin. */
-    }
-
-    /* Wrapper for page content to push down footer */
-    #wrap {
-      min-height: 100%;
-      height: auto;
-      /* Negative indent footer by its height */
-      margin: 0 auto -60px;
-      /* Pad bottom by footer height */
-      padding: 0 0 60px;
-    }
-
-    /* Set the fixed height of the footer here */
-    #footer {
-      height: 60px;
-      background-color: #f5f5f5;
-    }
-
-    #wrap > .container {
-      padding: 60px 15px 0;
-    }
-    .container .credit {
-      margin: 20px 0;
-    }
-
-    #footer > .container {
-      padding-left: 15px;
-      padding-right: 15px;
-    }
-
-    code {
-      font-size: 80%;
-    }
-  </style>
 
 </head>
 
