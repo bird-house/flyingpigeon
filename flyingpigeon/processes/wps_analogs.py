@@ -194,6 +194,9 @@ class AnalogsProcess(WPSProcess):
       )
 
   def execute(self):
+    import time # performance test
+    process_start_time = time.time() # measure process execution time ...
+     
     from os import path
     from tempfile import mkstemp
     from flyingpigeon import analogs
@@ -203,6 +206,8 @@ class AnalogsProcess(WPSProcess):
     from flyingpigeon.weatherregimes import get_NCEP
 
     self.status.set('execution started at : %s '  % dt.datetime.now(),5)
+
+    start_time = time.time() # measure init ...
     
     refSt = self.getInputValues(identifier='refSt')
     refEn = self.getInputValues(identifier='refEn')
@@ -235,11 +240,15 @@ class AnalogsProcess(WPSProcess):
     start = min( refSt, dateSt )
     end = max( refEn, dateEn )
 
+    logger.debug("init took %s seconds.", time.time() - start_time)
+
 
     self.status.set('Read in the arguments', 5)
     #################
     # get input data
     #################
+
+    start_time = time.time()  # measure get_input_data ...
 
     self.status.set('fetching input data', 7)
     try: 
@@ -258,6 +267,8 @@ class AnalogsProcess(WPSProcess):
       msg = 'failed to fetch input files %s' % e
       logger.error(msg)
       raise Exception(msg)
+
+    logger.debug("get_input_data took %s seconds.", time.time() - start_time)
     
     self.status.set('**** Input data fetched', 10)
     
@@ -265,6 +276,8 @@ class AnalogsProcess(WPSProcess):
     # input data preperation 
     ########################
     self.status.set('Start preparing input data', 12)
+
+    start_time = time.time()  # mesure data preperation ...
     
     try: 
       archive = call(resource=nc_subset, time_range=[refSt , refEn]) 
@@ -281,11 +294,15 @@ class AnalogsProcess(WPSProcess):
     output_file =  path.abspath(output)
     files=[path.abspath(archive), path.abspath(simulation), output_file]
 
+    logger.debug("data preperation took %s seconds.", time.time() - start_time)
+
     ############################
     # generating the config file
     ############################
     
     self.status.set('writing config file', 15)
+
+    start_time = time.time() # measure write config ...
     
     try:  
       config_file = analogs.get_configfile(files=files, 
@@ -303,12 +320,16 @@ class AnalogsProcess(WPSProcess):
       msg = 'failed to generate config file %s ' % e
       logger.debug(msg)
       raise Exception(msg)
+
+    logger.debug("write_config took %s seconds.", time.time() - start_time)
       
     #######################
     # CASTf90 call 
     #######################
     import subprocess
     import shlex
+
+    start_time = time.time() # measure call castf90
     
     self.status.set('Start CASTf90 call', 20)
     try:
@@ -324,8 +345,12 @@ class AnalogsProcess(WPSProcess):
       msg = 'CASTf90 failed %s ' % e
       logger.error(msg)  
       raise Exception(msg)
+
+    logger.debug("castf90 took %s seconds.", time.time() - start_time)
     
     self.status.set('preparting output', 99)
     self.config.setValue( config_file )
     self.analogs.setValue( output_file )
     self.status.set('execution ended', 100)
+
+    logger.debug("total execution took %s seconds.", time.time() - process_start_time)
