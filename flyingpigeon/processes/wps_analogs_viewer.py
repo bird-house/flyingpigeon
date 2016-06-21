@@ -28,7 +28,7 @@ class AnalogsviewerProcess(WPSProcess):
         self.output_html = self.addComplexOutput(
             identifier="output_html",
             title="html viewer",
-            abstract="web browser compartible hmtl file",
+            abstract="web browser compatible hmtl file",
             formats=[{"mimeType":"text/html"}],
             asReference=True,
             )
@@ -110,6 +110,7 @@ class AnalogsviewerProcess(WPSProcess):
         output_data = outputUrl_path  + '/' + basename(f)
         
         logger.info('Data url: %s ' % output_data)
+        logger.info('output_av: %s ' % output_av)
 
         self.output_txt.setValue( output_data )     
         self.output_html.setValue( output_av )
