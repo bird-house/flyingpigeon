@@ -58,21 +58,62 @@ class AnalogsviewerProcess(WPSProcess):
         tmpl = JSsrc_dir() + '/template_analogviewer.html'
         analogs = self.getInputValues(identifier='resource')[0]     
 
-        ################################
-        # converting the analog txt file 
-        ################################
+        ###########################################
+        # reorganize analog txt file for javascript
+        ###########################################
 
         from flyingpigeon import config
         from tempfile import mkstemp
 
+        #begin CN
+        import numpy as np
+        import pandas as pd
+        import collections
+        import os
 
+        num_analogues = 20 #number of analogues searched for
+
+        #Create dataframe and read in output csv file of analogs process
+        dfS = pd.DataFrame()
+        dfS = pd.read_csv(analogs, delimiter=' ', index_col=0)
+
+        #Save date index
+        dfS['dateRef'] = dfS.index
+
+        #Create date table
+        dfA_raw = dfS.iloc[:, 0:20]
+
+        #STACK ANALOGUE DATES ACROSS COLUMNS INTO ONE COLUMN
+
+        #first remove index name of dfA_raw
+        dfA_raw.index.name = ""
+
+        dfA_stack = dfA_raw.stack()
+        dfA_stack.index.name
+
+        #CREATE EMPTY DATAFRAME WITH NUM ROWS = NUM COLS OF dfA_raw
+        index = dfA_raw.shape[0] #num cols of dfA
+        columns = 2
+        dfA = pd.DataFrame(np.nan, index=range(0, dfA_raw.shape[0]), columns=['dateAnlg'])
+
+        #REPLACE INDEX COL OF dfA WITH ORIG date_id
+        dfA = dfA.set_index(dfS['dateRef'])
+
+        #REPLICATE INDEX COL num_analogues = 20 TIMES PER ROW
+        dfA = dfA.loc[np.repeat(dfA.index.values,num_analogues)]
+
+        #REPLACE COL 0 WITH STACKED DATES
+        dfA.iloc[:,0] = list(dfA_stack)
+
+        #SAVE TO TSV FILE
         output_path = config.output_path()
-        ip , f = mkstemp(suffix='.json', prefix='modified-analogfile', dir=output_path, text=False)
+        ip , f = mkstemp(suffix='.tsv', prefix='modified-analogfile', dir=output_path, text=False)
+        dfA.to_csv(f, sep='\t')
 
-        #Replace with pandas code
+       
         #copyfile(myanalogs, f)
-        from shutil import copyfile
-        copyfile(analogs, f)
+        #from shutil import copyfile
+        #copyfile(analogs, f)
 
         ################################
         # modify JS template
