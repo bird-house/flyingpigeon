@@ -1,15 +1,35 @@
 # computing weather regimes for NCEP in a reference Period (1970-2010)
 # by Pascal Yiou & Carmen Alvarez-Castro
-rm(list=ls())
+# modified by Nils Hempelmann June 2016
+
+# set the environment
+rm(list = ls(all = TRUE))
 ptm <- proc.time()# starting time script
 library(ncdf4)
 library(mclust)
 library(maps)
-NCEPdir="/home/estimr2/calvarez/birdhouse/libraryregimes.R"
-Results=NCEPdir
-source(paste(NCEPdir,"libraryregimes.R",sep=""))
-varname="slp"
-modelname="NCEP"
+
+
+# fetching the arguments
+args <- commandArgs(trailingOnly = TRUE) # pass --args modelname (match to filename)
+
+rworkspace <- args[1]
+Rsrc <- args[2]
+infile <- args[3]
+variable <- args[4]
+modelname <- args[5]
+yr1 <- as.numeric(args[6]) #1948
+yr2 <- as.numeric(args[7]) #2014
+output_grphics <- args[8]
+
+print(' *** Here starts the R execution ***')
+
+#NCEPdir="/home/estimr2/calvarez/birdhouse/libraryregimes.R"
+#Results=NCEPdir
+
+source(paste(Rsrc,"libraryregimes.R",sep=""))
+varname=variable
+modelname=modelname
 yr1=1948
 yr2=2014
 seas="JJA"
