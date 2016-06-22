@@ -20,7 +20,7 @@ _PRESSUREDATA_ = ['NCEP_slp', 'NCEP_z1000',   'NCEP_z925',   'NCEP_z850',   'NCE
 _EOBSVARIABLES_ = ['tg', 'tx' , 'tn', 'rr']
 
 
-def reanalysis( start=1948, end=None, variable='slp', dataset='NCEP'):
+def reanalyses( start=1948, end=None, variable='slp', dataset='NCEP'):
   """
   fetching the reanalysis data (NCEP, 20CR or ERA_20C) to local file system
   :param start: int for start year to fetch source data

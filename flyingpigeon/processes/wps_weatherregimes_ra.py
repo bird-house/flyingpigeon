@@ -14,7 +14,7 @@ class WeatherRegimesRProcess(WPSProcess):
     def __init__(self):
         WPSProcess.__init__(
             self,
-            identifier = "weatherregimes_R",
+            identifier = "weatherregimes_reanalyse",
             title = "Weather Regimes -- Reanalyses data (R based)",
             version = "0.1",
             metadata=[
@@ -56,20 +56,21 @@ class WeatherRegimesRProcess(WPSProcess):
             maxOccurs=1,
             allowedValues= ["10,11,12,1,2,3", "4,5,6,7,8,9", "12,1,2", "3,4,5", "6,7,8", "9,10,11", "None"] #GROUPING
             )
-        self.dateobsst = self.addLiteralInput(
-            identifier="dateobsst",
+
+        self.datemodelst = self.addLiteralInput(
+            identifier="datemodelst",
             title="Start of period",
-            abstract="Date to start analysing the observation data (if not set, the first date of the dataset will be taken)",
+            abstract="Date to start analysing the reanalyses data (if not set, the first date of the dataset will be taken)",
             default="1970-01-01",
             type=type(date(2013,01,01)),
             minOccurs=0,
             maxOccurs=1,
             )
 
-        self.dateobsen = self.addLiteralInput(
-            identifier="dateobsen",
+        self.datemodelen = self.addLiteralInput(
+            identifier="datemodelen",
             title="End of period",
-            abstract="Date to end analysing the observation data (if not set, the first date of the dataset will be taken)",
+            abstract="Date to end analysing the reanalyses data (if not set, the first date of the dataset will be taken)",
             default="2010-12-31",
             type=type(date(2014,12,31)),
             minOccurs=0,
@@ -77,25 +78,15 @@ class WeatherRegimesRProcess(WPSProcess):
             )
 
 
-        self.observation = self.addLiteralInput(
-            identifier="observation",
-            title="Observation Data",
-            abstract="Choose an observation dataset for comparison",
+        self.reanalyses = self.addLiteralInput(
+            identifier="reanalyses",
+            title="Reanalyses Data",
+            abstract="Choose an reanalyses dataset for comparison",
             default="NCEP_slp",
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
-            allowedValues= _PRESSUREDATA_ #['NCEP_slp', 'NCEP_z1000',   'NCEP_z925',   'NCEP_z850',   'NCEP_z700',   'NCEP_z600',   'NCEP_z500',   'NCEP_z400',   'NCEP_z300',
-         # 'NCEP_z250', 'NCEP_z200',   'NCEP_z150',   'NCEP_z100',    'NCEP_z70',    'NCEP_z50',    'NCEP_z30',    'NCEP_z20', 'NCEP_z10',
-         # '20CRV2_prmsl',
-         # '20CRV2_z1000',   '20CRV2_z950',   '20CRV2_z900',   '20CRV2_z850',   '20CRV2_z800',   '20CRV2_z750',   '20CRV2_z700',   '20CRV2_z650',
-         # '20CRV2_z600',   '20CRV2_z550',   '20CRV2_z500',   '20CRV2_z450',   '20CRV2_z400',   '20CRV2_z350',   '20CRV2_z300',   '20CRV2_z250',
-         # '20CRV2_z200',   '20CRV2_z150',   '20CRV2_z100',    '20CRV2_z70',    '20CRV2_z50',    '20CRV2_z30',    '20CRV2_z20',    '20CRV2_z10',
-         # '20CRV2c_prmsl',
-         # '20CRV2c_z1000',   '20CRV2c_z950',   '20CRV2c_z900',   '20CRV2c_z850',   '20CRV2c_z800',   '20CRV2c_z750',   '20CRV2c_z700',   '20CRV2c_z650',
-         # '20CRV2c_z600',   '20CRV2c_z550',   '20CRV2c_z500',   '20CRV2c_z450',   '20CRV2c_z400',   '20CRV2c_z350',   '20CRV2c_z300',   '20CRV2c_z250',
-         # '20CRV2c_z200',   '20CRV2c_z150',   '20CRV2c_z100',    '20CRV2c_z70',    '20CRV2c_z50',    '20CRV2c_z30',    '20CRV2c_z20',    '20CRV2c_z10',
-         # ] #  '', '20CR_z200', '20CR_z500', '20CR_z1000'
+            allowedValues= _PRESSUREDATA_ 
             )
         
         ######################
@@ -133,14 +124,14 @@ class WeatherRegimesRProcess(WPSProcess):
            # resources = self.getInputValues(identifier='resources')
             time_region = self.getInputValues(identifier='time_region')[0]
             bbox = self.getInputValues(identifier='BBox')[0]
-            obs_var = self.getInputValues(identifier='observation')[0]
-            dateobsst = self.getInputValues(identifier='dateobsst')[0]            
-            dateobsen = self.getInputValues(identifier='dateobsen')[0]
+            model_var = self.getInputValues(identifier='reanalyses')[0]
+            datemodelst = self.getInputValues(identifier='datemodelst')[0]            
+            datemodelen = self.getInputValues(identifier='datemodelen')[0]
             
-            obs, var = obs_var.split('_')
+            model, var = model_var.split('_')
             
             logger.info('bbox %s' % bbox)
-            logger.info('dateobsst %s' % str(dateobsst))
+            logger.info('datemodelst %s' % str(datemodelst))
             logger.info('time_region %s' % str(time_region))
             logger.info('bbox is set to %s' % bbox)
             
@@ -151,44 +142,44 @@ class WeatherRegimesRProcess(WPSProcess):
         ###########################
         ### set the environment
         ###########################
+        
         try:  
-          if dateobsst != None and dateobsen != None : 
-            startyr = dt.strptime(dateobsst, '%Y-%m-%d')
-            endyr = dt.strptime(dateobsen, '%Y-%m-%d')
+          if datemodelst != None and datemodelen != None : 
+            startyr = dt.strptime(datemodelst, '%Y-%m-%d')
+            endyr = dt.strptime(datemodelen, '%Y-%m-%d')
             time_range = [startyr,endyr]
           else: 
             time_range = None
             
-          if obs == 'NCEP': 
+          if model == 'NCEP': 
             if 'z' in var:
               variable='hgt'
               level=var.strip('z')
               conform_units_to=None
-              vmin=-200
-              vmax=200
+#              vmin=-200
+#              vmax=200
             else:
               variable='slp'
               level=None
               conform_units_to='hPa'
-              vmin=-35
-              vmax=35
+#              vmin=-35
+#              vmax=35
 
-          elif '20CRV2' in obs: 
+          elif '20CRV2' in model: 
             if 'z' in var:
               variable='hgt'
               level=var.strip('z')
               conform_units_to=None
-              vmin=-200
-              vmax=200
+#              vmin=-200
+#              vmax=200
             else:
               variable='prmsl'
               level=None
               conform_units_to='hPa'
-              vmin=-35
-              vmax=35
+#              vmin=-35
+#              vmax=35
           else:
-            logger.error('Reanalyses dataset not known')
-          
+            logger.error('Reanalyses dataset not known')          
           logger.info('environment set')
         except Exception as e: 
           msg = 'failed to set environment %s ' % e
@@ -198,36 +189,53 @@ class WeatherRegimesRProcess(WPSProcess):
         ##########################################
         ### fetch Data from original data archive
         ##########################################
-                
-        try:
-          nc_obs = wr.get_OBS(start=int(dateobsst.split('-')[0]), 
-                              end=int(dateobsen.split('-')[0]), 
-                              dataset=obs, variable=var)
 
-          logger.info('observation data fetched')
+        from flyingpigeon.datafetch import reanalyses as rl            
+        try:
+          model_nc = rl(start=int(datemodelst.split('-')[0]), 
+                              end=int(datemodelen.split('-')[0]), 
+                              dataset=model, variable=var)
+
+          logger.info('reanalyses data fetched')
         except Exception as e:
-          msg = 'failed to get Observation data  %s' % e
+          msg = 'failed to get reanalyses data  %s' % e
           logger.debug(msg)
           raise Exception(msg)
                 
-        ############################################    
-        ### get the required bbox from resource data
-        ############################################
+        ############################################################    
+        ### get the required bbox and time region from resource data
+        ############################################################
         
-        from flyingpigeon.weatherregimes import get_level
+        # from flyingpigeon.weatherregimes import get_level
         from flyingpigeon.ocgis_module import call
         from cdo import Cdo
         cdo = Cdo()
 
-        nc_grouped = call(resource=nc_obs, variable=variable, conform_units_to='hPa')
+        # fixing this as soon as possible :-)) 
+        time_region = {'month':[6,7,8]}
 
-        ip, nc_subset = mkstemp(dir='.',suffix='.nc')
-        nc_subset  = cdo.sellonlatbox('%s' % bbox, input=nc_grouped, output=nc_subset)
-        logger.info('subset done: %s ' % nc_subset)
-        if level != None:
-          nc_level = get_level( nc_subset, level) 
-          nc_subset =  nc_level
-             
+        model_grouped = call(resource=model_nc, variable=variable, time_region=time_region, conform_units_to=conform_units_to)
+
+        ip, model_subset = mkstemp(dir='.',suffix='.nc')
+        
+        model_subset  = cdo.sellonlatbox('%s' % bbox, input=model_grouped, output=model_subset)
+        logger.info('subset done: %s ' % model_subset)
+        #if level != None:
+        #  nc_level = get_level( nc_subset, level) 
+        #  nc_subset =  nc_level
+
+        ########################
+        ### computing anomalies 
+        ########################
+         
+        model_anomal = wr.get_anomalies(model_subset)
+
+        ############################
+        ### ponderation by latitude
+        ############################
+
+        model_ponderate = wr.get_ponderate(model_anomal)
+
         ############################################
         ### call the R scripts
         ############################################
@@ -241,10 +249,10 @@ class WeatherRegimesRProcess(WPSProcess):
           Rsrc = config.Rsrc_dir() 
           Rfile = 'regimes_NCEP.R'
           
-          infile = nc_subset
-          modelname = obs
-          yr1 = dateobsst.split('-')[0]
-          yr2 = dateobsen.split('-')[0]
+          infile = model_ponderate # nc_subset
+          modelname = model
+          yr1 = datemodelst.split('-')[0]
+          yr2 = datemodelen.split('-')[0]
           ip, output_graphics = mkstemp(dir=curdir ,suffix='.pdf')
           
           #cmd = 'Rscipt  %s %s/ %s/ %s %s %s %s %s %s' % (join(Rsrc,Rfile), curdir, Rsrc, infile, variable, modelname, yr1,yr2, output_graphics)

@@ -1,4 +1,5 @@
 from flyingpigeon import utils
+from tempfile import mkstemp
 
 import logging
 logger = logging.getLogger(__name__)
@@ -46,7 +47,6 @@ def calc_tSNE(pca):
   from sklearn.manifold import TSNE
   #X_all, y_all = get_pca(resource)
   data = TSNE(n_components=2, perplexity=40, verbose=2).fit_transform(pca)
-  
   return data
 
 def calc_kMEAN(pca):
@@ -66,7 +66,7 @@ def calc_kMEAN(pca):
 
 def get_OBS( start=1948, end=None, variable='slp', dataset='NCEP'):
   """
-  replaced by get_OBS
+  replaced by get reanalyses in datafetch
   fetching the NCEP slp data to local file system
   :param start: int for start year to fetch source data
   :param end: int for end year to fetch source data (if None, current year will be the end)
@@ -135,7 +135,7 @@ def get_level(obs_data, level):
 
 def get_NCEP(start=1948, end=None, variable='slp' ):
   """
-  replaced by get_OBS
+    replaced by get reanalyses in datafetch
   fetching the NCEP slp data to local file system
   :param start: int for start year to fetch source data
   :param end: int for end year to fetch source data (if None, current year will be the end)
@@ -218,6 +218,7 @@ def score_pattern(pattern1, pattern2):
   score = regr.score(pattern1, pattern2)
   return score
 
+
 def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, time_range=None,
            variable=None, level=None, conform_units_to='hPa', 
            regrid_destination=None, regrid_options=None,):
@@ -278,6 +279,45 @@ def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, time_range=Non
   
   return nc_normalized
 
+def get_anomalies(nc_file):
+
+  from cdo import Cdo
+  cdo = Cdo()
+
+  ip , nc_anual_cycle = mkstemp(dir='.',suffix='.nc')
+  ip , nc_anomal = mkstemp(dir='.',suffix='.nc')
+  ip , nc_period = mkstemp(dir='.',suffix='.nc')
+
+  nc_period = cdo.selyear('1970/1999', input= nc_file, output=nc_period)
+  nc_anual_cycle = cdo.ydaymean(input= nc_period , output=nc_anual_cycle) 
+  nc_anomal = cdo.sub(input=[nc_file, nc_anual_cycle], output= nc_anomal )
+  logger.info('anomalisation done: %s ' % nc_anomal)
+
+  return nc_anomal
+
+
+def get_ponderate(nc_file):
+  from netCDF4 import Dataset
+  from numpy import meshgrid, sqrt, cos, pi, broadcast_arrays
+
+#  variable = utils.get_variable(nc_file)
+
+  ds = Dataset(nc_file, mode='a')
+  
+  lat = ds.variables['lat']
+  lon = ds.variables['lon']
+
+  lons, lats = meshgrid(lon, lat)
+# vals = ds.variables[variable]
+  ponderate = 1/sqrt(cos(lats[:]*pi/180))
+
+#  weights3D = broadcast_arrays(vals,weights)[1]
+#  vals_weighted = vals[:] * weights3D
+#  vals[:,:,:] = vals_weighted[:,:,:]  
+  ds.close()
+  return ponderate
+  
+
 
 def subset_model(resource=[], bbox="-80,50,22.5,70",  time_region=None, variable=None, regrid_destination=None):
   """
@@ -291,7 +331,7 @@ def subset_model(resource=[], bbox="-80,50,22.5,70",  time_region=None, variable
   :returns netCDF: file containing containing lat weighted and normalize (by anual cycle) data
   """
   from flyingpigeon.ocgis_module import call
-  from tempfile import mkstemp
+  
   import uuid
   from shutil import rmtree
 
