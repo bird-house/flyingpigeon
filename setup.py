@@ -20,7 +20,7 @@ classifiers=[
 
 setup(name='flyingpigeon',
       version='0.2.0',
-      description='Processes for climate data, indices and extrem events',
+      description='Processes for climate data, indices and extreme events',
       long_description=README + '\n\n' + CHANGES,
       classifiers=classifiers,
       author='Nils Hempelmann',
