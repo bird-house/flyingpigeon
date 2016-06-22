@@ -21,6 +21,7 @@ modelname <- args[5]
 yr1 <- as.numeric(args[6]) #1948
 yr2 <- as.numeric(args[7]) #2014
 output_grphics <- args[8]
+season <- args[9]
 
 print(' *** Here starts the R execution ***')
 
@@ -32,7 +33,7 @@ varname=variable
 modelname=modelname
 yr1=1948
 yr2=2014
-seas="JJA"
+seas=season
 
 #reference period
 y1=1970
