@@ -214,7 +214,8 @@ class WeatherRegimesRProcess(WPSProcess):
         # fixing this as soon as possible :-)) 
         time_region = {'month':[6,7,8]}
 
-        model_grouped = call(resource=model_nc, variable=variable, time_region=time_region, conform_units_to=conform_units_to)
+        model_grouped = call(resource=model_nc, variable=variable,
+         time_region=time_region, conform_units_to=conform_units_to)
 
         ip, model_subset = mkstemp(dir='.',suffix='.nc')
         

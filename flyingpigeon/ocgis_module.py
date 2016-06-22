@@ -16,8 +16,6 @@ def has_Lambert_Conformal(nc):
     lc_ckeck = False
   return lc_ckeck
 
-
-
 def call(resource=[], variable=None, dimension_map=None, calc=None,  
   calc_grouping= None, conform_units_to=None, memory_limit=None,  prefix=None, 
   regrid_destination=None, regrid_options='bil',
@@ -176,7 +174,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
       except Exception as e: 
         logger.debug('failed to compute ocgis with chunks')
         raise
-
+        
     logger.info('Succeeded with ocgis module call function')
 
     ############################################
