@@ -50,12 +50,15 @@ class WeatherRegimesRProcess(WPSProcess):
             identifier="time_region",
             title="Time region",
             abstract="Select the months to define the time region (None == whole year will be analysed)",
-            default="12,1,2",
+            default="JJA",
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
-            allowedValues= ["10,11,12,1,2,3", "4,5,6,7,8,9", "12,1,2", "3,4,5", "6,7,8", "9,10,11", "None"] #GROUPING
-            )
+            allowedValues= ['JJA','SON','DJF','SONDJF','MAM','all',
+            'JJAS','DJFM','MAMJ','FMA','DJFM','MAMJ',
+            'JJAS','SOND']
+	     )
+
         self.dateobsst = self.addLiteralInput(
             identifier="dateobsst",
             title="Start of period",
@@ -239,7 +242,7 @@ class WeatherRegimesRProcess(WPSProcess):
         try:
           rworkspace = curdir
           Rsrc = config.Rsrc_dir() 
-          Rfile = 'regimes_NCEP.R'
+          Rfile = 'regimes_ref_NCEP.R'
           
           infile = nc_subset
           modelname = obs
@@ -253,7 +256,8 @@ class WeatherRegimesRProcess(WPSProcess):
           args = ['Rscript', join(Rsrc,Rfile), '%s/' % curdir, 
                   '%s/' % Rsrc, '%s'% infile, '%s' % variable, 
                   '%s' % modelname, '%s' % yr1, '%s' % yr2, 
-                  '%s' % output_graphics]
+                  '%s' % output_graphics, '%s' % time_region]
+
           logger.info('Rcall builded')
         except Exception as e: 
           msg = 'failed to build the R command %s' % e
