@@ -16,7 +16,7 @@
   
     <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/dc/2.0.0-beta.26/dc.min.js"></script>-->
     <script src="../static/js/my_dc.beta26.js"></script>
-    <link rel="stylesheet" href="lib/dc.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dc/2.0.0-beta.26/dc.min.css" />
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/js/bootstrap.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
@@ -74,6 +74,7 @@
         function init() {
 
             d3.tsv("analogues_placeholder.json", function(data) {
+                console.log("data")
 
                 minDate = dateFormat.parse(data[0].dateRef); //first date in file
                 maxDate = dateFormat.parse(data[Object.keys(data).length - 1].dateRef); //last date in file
