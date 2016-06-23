@@ -219,7 +219,9 @@ class WeatherRegimesRProcess(WPSProcess):
 
         ip, model_subset = mkstemp(dir='.',suffix='.nc')
         
-        model_subset  = cdo.sellonlatbox('%s' % bbox, input=model_grouped, output=model_subset)
+        model_subset  = cdo.sellonlatbox('%s' % bbox, 
+          input=model_grouped,
+          output=model_subset)
         logger.info('subset done: %s ' % model_subset)
         #if level != None:
         #  nc_level = get_level( nc_subset, level) 

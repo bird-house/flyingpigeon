@@ -64,105 +64,105 @@ def calc_kMEAN(pca):
   regime = distance.argsort()[:,3]
   return centroids, distance, regime
 
-def get_OBS( start=1948, end=None, variable='slp', dataset='NCEP'):
-  """
-  replaced by get reanalyses in datafetch
-  fetching the NCEP slp data to local file system
-  :param start: int for start year to fetch source data
-  :param end: int for end year to fetch source data (if None, current year will be the end)
-  :return list: list of path/files.nc 
-  """
-  try:
-    from datetime import datetime as dt
+# def get_OBS( start=1948, end=None, variable='slp', dataset='NCEP'):
+#   """
+#   replaced by get reanalyses in datafetch
+#   fetching the NCEP slp data to local file system
+#   :param start: int for start year to fetch source data
+#   :param end: int for end year to fetch source data (if None, current year will be the end)
+#   :return list: list of path/files.nc 
+#   """
+#   try:
+#     from datetime import datetime as dt
     
-    if end == None: 
-      end = dt.now().year
-    obs_data = []
+#     if end == None: 
+#       end = dt.now().year
+#     obs_data = []
     
-    if start == None: 
-      if dataset == 'NCEP':
-        start = 1948
-      if dataset == '20CR':
-        start = 1851
-    logger.info('start / end date set')    
-  except Exception as e:
-    msg = "get_OBS module failed to get start end dates %s " % e
-    logger.debug(msg)
-    raise Exception(msg)
+#     if start == None: 
+#       if dataset == 'NCEP':
+#         start = 1948
+#       if dataset == '20CR':
+#         start = 1851
+#     logger.info('start / end date set')    
+#   except Exception as e:
+#     msg = "get_OBS module failed to get start end dates %s " % e
+#     logger.debug(msg)
+#     raise Exception(msg)
   
-  try:
-    for year in range(start, end + 1):
-      try:
-        if dataset == 'NCEP':
-          if variable == 'slp':
-            url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/%s.%s.nc' % (variable, year)
-          elif 'z' in variable:
-            url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/pressure/hgt.%s.nc' % ( year)          
-        elif dataset == '20CRV2':
-          if variable == 'prmsl':
-            url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2/monolevel/prmsl.%s.nc' % year
-          if 'z' in variable:
-            url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2/pressure/hgt.%s.nc' % ( year )
-        elif dataset == '20CRV2c':
-          if variable == 'prmsl':
-            url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/monolevel/prmsl.%s.nc' % year
-          if 'z' in variable:
-            url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/pressure/hgt.%s.nc' % ( year )     
-        else: 
-          logger.error('Dataset %s not known' % dataset)
-      except Exception as e:
-        msg = "could not set url: %s " % e
-        logger.debug(msg)
-        raise Exception(msg)
-      try:  
-        obs_data.append(utils.download(url, cache=True))
-      except:
-        msg = "wget failed on {0}.".format(url)
-        logger.debug(msg)
-        raise Exception(msg)
-    logger.info('Obseration data fetched for %s files' % len(obs_data))
-  except Exception as e:
-    msg = "get_OBS module failed to fetch data %s " % e
-    logger.debug(msg)
-    raise Exception(msg)
-  return obs_data
+#   try:
+#     for year in range(start, end + 1):
+#       try:
+#         if dataset == 'NCEP':
+#           if variable == 'slp':
+#             url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/%s.%s.nc' % (variable, year)
+#           elif 'z' in variable:
+#             url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/pressure/hgt.%s.nc' % ( year)          
+#         elif dataset == '20CRV2':
+#           if variable == 'prmsl':
+#             url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2/monolevel/prmsl.%s.nc' % year
+#           if 'z' in variable:
+#             url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2/pressure/hgt.%s.nc' % ( year )
+#         elif dataset == '20CRV2c':
+#           if variable == 'prmsl':
+#             url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/monolevel/prmsl.%s.nc' % year
+#           if 'z' in variable:
+#             url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/pressure/hgt.%s.nc' % ( year )     
+#         else: 
+#           logger.error('Dataset %s not known' % dataset)
+#       except Exception as e:
+#         msg = "could not set url: %s " % e
+#         logger.debug(msg)
+#         raise Exception(msg)
+#       try:  
+#         obs_data.append(utils.download(url, cache=True))
+#       except:
+#         msg = "wget failed on {0}.".format(url)
+#         logger.debug(msg)
+#         raise Exception(msg)
+#     logger.info('Obseration data fetched for %s files' % len(obs_data))
+#   except Exception as e:
+#     msg = "get_OBS module failed to fetch data %s " % e
+#     logger.debug(msg)
+#     raise Exception(msg)
+#   return obs_data
 
-def get_level(obs_data, level):
-  from cdo import Cdo 
-  cdo = Cdo()
-  level_data = cdo.sellevel(level, input = obs_data, output ='NCEP_level.nc')
-  return level_data
+# def get_level(obs_data, level):
+#   from cdo import Cdo 
+#   cdo = Cdo()
+#   level_data = cdo.sellevel(level, input = obs_data, output ='NCEP_level.nc')
+#   return level_data
 
-def get_NCEP(start=1948, end=None, variable='slp' ):
-  """
-    replaced by get reanalyses in datafetch
-  fetching the NCEP slp data to local file system
-  :param start: int for start year to fetch source data
-  :param end: int for end year to fetch source data (if None, current year will be the end)
-  :return list: list of path/files.nc 
-  """
-  try:
-    from datetime import datetime as dt
+# def get_NCEP(start=1948, end=None, variable='slp' ):
+#   """
+#     replaced by get reanalyses in datafetch
+#   fetching the NCEP slp data to local file system
+#   :param start: int for start year to fetch source data
+#   :param end: int for end year to fetch source data (if None, current year will be the end)
+#   :return list: list of path/files.nc 
+#   """
+#   try:
+#     from datetime import datetime as dt
 
-    if end == None: 
-      end = dt.now().year
-    obs_data = []
+#     if end == None: 
+#       end = dt.now().year
+#     obs_data = []
 
-    for year in range(start, end + 1):
-      try:
-        url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.%s.nc' % year
-        # ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis.dailyavgs/surface/
-        obs_data.append(utils.download(url, cache=True))
-      except:
-        msg = "wget failed on {0}.".format(url)
-        logger.debugion(msg)
-        raise Exception(msg)
-    logger.info('NCEP data fetched for %s files' % len(obs_data))  
-  except:
-    msg = "get_NCEP module failed"
-    logger.debugion(msg)
-    raise Exception(msg)
-  return obs_data
+#     for year in range(start, end + 1):
+#       try:
+#         url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.%s.nc' % year
+#         # ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis.dailyavgs/surface/
+#         obs_data.append(utils.download(url, cache=True))
+#       except:
+#         msg = "wget failed on {0}.".format(url)
+#         logger.debugion(msg)
+#         raise Exception(msg)
+#     logger.info('NCEP data fetched for %s files' % len(obs_data))  
+#   except:
+#     msg = "get_NCEP module failed"
+#     logger.debugion(msg)
+#     raise Exception(msg)
+#   return obs_data
 
 
 def weight_by_lat(resource):
@@ -290,7 +290,21 @@ def get_anomalies(nc_file):
 
   nc_period = cdo.selyear('1970/1999', input= nc_file, output=nc_period)
   nc_anual_cycle = cdo.ydaymean(input= nc_period , output=nc_anual_cycle) 
+  
+  ### spline for smoothing
+
+  from netCDF4 import Dataset
+  variable = utils.get_variable(nc_file)
+
+  ds = Dataset(nc_anual_cycle, mode='a')
+  
+  vals = ds.variables[variable]
+
+
+
   nc_anomal = cdo.sub(input=[nc_file, nc_anual_cycle], output= nc_anomal )
+  
+
   logger.info('anomalisation done: %s ' % nc_anomal)
 
   return nc_anomal

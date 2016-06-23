@@ -6,7 +6,6 @@ DIR_SHP = config.shapefiles_dir()
 import logging
 logger = logging.getLogger(__name__)
 
-
 def has_Lambert_Conformal(nc):
   from netCDF4 import MFDataset
   ds = MFDataset(nc)
@@ -174,7 +173,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
       except Exception as e: 
         logger.debug('failed to compute ocgis with chunks')
         raise
-        
+
     logger.info('Succeeded with ocgis module call function')
 
     ############################################
