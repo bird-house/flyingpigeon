@@ -66,6 +66,8 @@ class AnalogsviewerProcess(WPSProcess):
 
         from flyingpigeon import config
         from tempfile import mkstemp
+        from flyingpigeon.config import www_url
+        #my_css_url = www_url() + "/static/css/style.css"
 
         #begin CN
         #use as test input file: http://birdhouse-lsce.extra.cea.fr:8090/wpsoutputs/flyingpigeon/output_txt-0797016c-378e-11e6-91dd-41d8cd554993.txt
