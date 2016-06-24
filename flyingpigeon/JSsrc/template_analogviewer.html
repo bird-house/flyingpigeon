@@ -45,8 +45,8 @@
         var poiDates_manual = []; //filled by input date boxes
         var day = 60 * 60 * 24 * 1000; //day in milliseconds
         //default date range for poiChart upon page load
-        var init_date0 = dateFormat.parse("20150101"),
-            init_date1 = dateFormat.parse("20151231");
+        var init_date0 = dateFormat.parse("20090101"),
+            init_date1 = dateFormat.parse("20111231");
 
         //http://www.colourlovers.com/palette/3860796/Melting_Glaciers
         var decadeColours = d3.scale.ordinal()
@@ -92,8 +92,8 @@
                     else if (yr >= 1976 && yr <= 1985) d.dateAnlg = "1976-1985";
                     else if (yr >= 1986 && yr <= 1995) d.dateAnlg = "1986-1995";
                     else if (yr >= 1996 && yr <= 2005) d.dateAnlg = "1996-2005";
-                    else if (yr >= 2006 && yr <= 2015) d.dateAnlg = "2006-2015";
-                    else if (yr == 2016) d.dateAnlg = "2016";
+                    else if (yr >= 2006 && yr <= 2015) d.dateAnlg = "2006-2015";                    
+                    //else if (yr == 2016) d.dateAnlg = "2016";
 
                     //bin correlation and distance
                     d.Corr = d3.format(",.1f")(corrBinWidth * Math.round(d.Corr / corrBinWidth));
