@@ -50,11 +50,13 @@ class WeatherRegimesRProcess(WPSProcess):
             identifier="time_region",
             title="Time region",
             abstract="Select the months to define the time region (None == whole year will be analysed)",
-            default="12,1,2",
+            default="DJF",
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
-            allowedValues= ["10,11,12,1,2,3", "4,5,6,7,8,9", "12,1,2", "3,4,5", "6,7,8", "9,10,11", "None"] #GROUPING
+            allowedValues= ['JJA','SON','DJF','SONDJF','MAM','all',
+            'JJAS','DJFM','MAMJ','FMA','DJFM','MAMJ',
+            'JJAS','SOND']
             )
 
         self.datemodelst = self.addLiteralInput(
@@ -77,7 +79,6 @@ class WeatherRegimesRProcess(WPSProcess):
             maxOccurs=1,
             )
 
-
         self.reanalyses = self.addLiteralInput(
             identifier="reanalyses",
             title="Reanalyses Data",
@@ -98,6 +99,22 @@ class WeatherRegimesRProcess(WPSProcess):
             title="Weather Classification output",
             abstract="Weather Classification",
             formats=[{"mimeType":"image/pdf"}],
+            asReference=True,
+            )
+        
+        self.output_pca = self.addComplexOutput(
+            identifier="output_pca",
+            title="PCA",
+            abstract="Principal components",
+            formats=[{"mimeType":"text/plain"}],
+            asReference=True,
+            )
+
+        self.output_classification = self.addComplexOutput(
+            identifier="output_classification",
+            title="classification",
+            abstract="Weather regime classification",
+            formats=[{"mimeType":"text/plain"}],
             asReference=True,
             )
         
@@ -137,7 +154,6 @@ class WeatherRegimesRProcess(WPSProcess):
             
         except Exception as e: 
             logger.debug('failed to read in the arguments %s ' % e)
-        
         
         ###########################
         ### set the environment
@@ -212,17 +228,17 @@ class WeatherRegimesRProcess(WPSProcess):
         cdo = Cdo()
 
         # fixing this as soon as possible :-)) 
-        time_region = {'month':[6,7,8]}
+#        time_region = {'month':[6,7,8]}
 
-        model_grouped = call(resource=model_nc, variable=variable,
-         time_region=time_region, conform_units_to=conform_units_to)
-
+        model_grouped = call(resource=model_nc, variable=variable, conform_units_to=conform_units_to)
+                        #time_region=time_region,
         ip, model_subset = mkstemp(dir='.',suffix='.nc')
         
         model_subset  = cdo.sellonlatbox('%s' % bbox, 
           input=model_grouped,
           output=model_subset)
         logger.info('subset done: %s ' % model_subset)
+        
         #if level != None:
         #  nc_level = get_level( nc_subset, level) 
         #  nc_subset =  nc_level
@@ -231,13 +247,13 @@ class WeatherRegimesRProcess(WPSProcess):
         ### computing anomalies 
         ########################
          
-        model_anomal = wr.get_anomalies(model_subset)
+#        model_anomal = wr.get_anomalies(model_subset)
 
         ############################
         ### ponderation by latitude
         ############################
 
-        model_ponderate = wr.get_ponderate(model_anomal)
+#        model_ponderate = wr.get_ponderate(model_anomal)
 
         ############################################
         ### call the R scripts
@@ -250,21 +266,23 @@ class WeatherRegimesRProcess(WPSProcess):
         try:
           rworkspace = curdir
           Rsrc = config.Rsrc_dir() 
-          Rfile = 'regimes_NCEP.R'
+          Rfile = 'weatherregimes_model.R'
           
-          infile = model_ponderate # nc_subset
+          infile = model_subset # model_ponderate 
           modelname = model
           yr1 = datemodelst.split('-')[0]
           yr2 = datemodelen.split('-')[0]
           ip, output_graphics = mkstemp(dir=curdir ,suffix='.pdf')
+          ip, file_pca = mkstemp(dir=curdir ,suffix='.dat')
+          ip, file_class = mkstemp(dir=curdir ,suffix='.Rdat')
           
-          #cmd = 'Rscipt  %s %s/ %s/ %s %s %s %s %s %s' % (join(Rsrc,Rfile), curdir, Rsrc, infile, variable, modelname, yr1,yr2, output_graphics)
+          # cmd = 'Rscipt  %s %s/ %s/ %s %s %s %s %s %s' % (join(Rsrc,Rfile), curdir, Rsrc, infile, variable, modelname, yr1,yr2, output_graphics)
           #args =shlex.split(cmd)
           
           args = ['Rscript', join(Rsrc,Rfile), '%s/' % curdir, 
-                  '%s/' % Rsrc, '%s'% infile, '%s' % variable, 
-                  '%s' % modelname, '%s' % yr1, '%s' % yr2, 
-                  '%s' % output_graphics]
+                  '%s/' % Rsrc, '%s'% infile, '%s' % variable,
+                  '%s' % yr1, '%s' % yr2, 
+                  '%s' % output_graphics, '%s' % file_pca, '%s' % file_class, '%s' % time_region]
           logger.info('Rcall builded')
         except Exception as e: 
           msg = 'failed to build the R command %s' % e
@@ -290,3 +308,5 @@ class WeatherRegimesRProcess(WPSProcess):
         ############################################
 
         self.Routput_graphic.setValue( output_graphics )
+        self.output_pca.setValue( file_pca )
+        self.output_classification.setValue( file_class )

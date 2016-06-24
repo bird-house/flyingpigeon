@@ -279,7 +279,7 @@ def subset(resource=[], bbox="-80,50,22.5,70",  time_region=None, time_range=Non
   
   return nc_normalized
 
-def get_anomalies(nc_file):
+def get_anomalies(nc_file, frac=0.2):
 
   from cdo import Cdo
   cdo = Cdo()
@@ -292,19 +292,37 @@ def get_anomalies(nc_file):
   nc_anual_cycle = cdo.ydaymean(input= nc_period , output=nc_anual_cycle) 
   
   ### spline for smoothing
-
+  
+  import statsmodels.api as sm
+  from numpy import tile, empty, linspace
   from netCDF4 import Dataset
-  variable = utils.get_variable(nc_file)
-
-  ds = Dataset(nc_anual_cycle, mode='a')
   
-  vals = ds.variables[variable]
+  try:
+    variable = utils.get_variable(nc_file)
+    ds = Dataset(nc_anual_cycle, mode='a')
+    vals = ds.variables[variable]
+    vals_sm = empty(vals.shape)
+    
+    ts = vals.shape[0]
+    x = linspace(1, ts*3 , num=ts*3 , endpoint=True)
 
-
-
+    for lat in range(vals.shape[1]):
+      for lon in range(vals.shape[2]):
+        try:
+          y = tile(vals[:,lat,lon], 3)
+          ys = sm.nonparametric.lowess(y, x, frac=frac )[ts:ts*2,1]
+          vals_sm[:,lat,lon] = ys
+        except Exception as e: 
+          logger.debug('failed for lat %s lon %s  %s ' % (lat,lon,e))
+    vals[:,:,:] = vals_sm[:,:,:]
+    ds.close()
+    logger.info('smothing of anual cycle done')
+  except Exception as e:
+    msg = 'failed smothing of anual cycle %s ' % e
+    logger.error(msg)
+    raise Exception(msg)
+  
   nc_anomal = cdo.sub(input=[nc_file, nc_anual_cycle], output= nc_anomal )
-  
-
   logger.info('anomalisation done: %s ' % nc_anomal)
 
   return nc_anomal

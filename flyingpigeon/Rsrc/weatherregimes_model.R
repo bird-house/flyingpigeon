@@ -1,38 +1,45 @@
-# computing weather regimes for NCEP in a reference Period (1970-2010)
-# by Pascal Yiou & Carmen Alvarez-Castro
-# modified by Nils Hempelmann June 2016
+# calcultion of weather regimes for a single model dataset
+#
+#
+########################################################################
+#                            R Version 3.1.2
+########################################################################
 
-# set the environment
 rm(list = ls(all = TRUE))
+# rm(list=ls())
 ptm <- proc.time()# starting time script
 library(ncdf4)
 library(mclust)
 library(maps)
 
-
 # fetching the arguments
-args <- commandArgs(trailingOnly = TRUE) # pass --args modelname (match to filename)
+args <- commandArgs(trailingOnly = TRUE) 
 
 rworkspace <- args[1]
 Rsrc <- args[2]
 infile <- args[3]
 variable <- args[4]
-modelname <- args[5]
-yr1 <- as.numeric(args[6]) #1948
-yr2 <- as.numeric(args[7]) #2014
-output_grphics <- args[8]
-season <- args[9]
+yr1 <- as.numeric(args[5]) #1948
+yr2 <- as.numeric(args[6]) #2014
+output_graphics <- args[7]
+file_pca <- args[8]
+file_classification <- args[9]
+season <- args[10]
 
 print(' *** Here starts the R execution ***')
 
-#NCEPdir="/home/estimr2/calvarez/birdhouse/libraryregimes.R"
-#Results=NCEPdir
+print( rworkspace )
+print( Rsrc )
+print( infile)
+print( variable )
+print( yr1 )
+print( yr2 )
+print( output_graphics )
 
 source(paste(Rsrc,"libraryregimes.R",sep=""))
 varname=variable
-modelname=modelname
-yr1=1948
-yr2=2014
+yr1=yr1
+yr2=yr2
 seas=season
 
 #reference period
@@ -40,10 +47,11 @@ y1=1970
 y2=2010
 
 #open netcdf4
-fname = paste(NCEPdir,"slp.",yr1,"-",yr2,"_NA.nc",sep="")
-nc = nc_open(fname)
-datNCEP=lirevarnc(nc,varname)
-dat.NCEP.dum=sousseasmean(datNCEP$dat,datNCEP$conv.time,l.year=c(1970:1999))
+# fname = paste(dirname,"slp.1948-2014_NA.nc",sep="")
+
+nc = nc_open(infile)
+datNCEP=lirevarnc(nc,variable)
+dat.NCEP.dum=sousseasmean(datNCEP$dat,datNCEP$conv.time,l.year=c(y1:y2))
 datNCEP$anom=dat.NCEP.dum$anom
 datNCEP$seascyc=dat.NCEP.dum$seascyc
 conv.time=datNCEP$conv.time
@@ -72,15 +80,13 @@ scale.slp=rep(pond.slp,length(lon))
 # Calculating PCs
 pc.dat=prcomp(dat.m,scale.=scale.slp)
 
-## Saving the first 10 EOFs/PCs/variance
-# filout=paste(Results,varname,"_PC_",seas,"_clim.dat",sep="")
 npc=10
 # write.table(file=filout,cbind(time[ISEAS],pc.dat$x[,1:npc]),quote=FALSE,
 #             col.names=FALSE,row.names=FALSE)
 # filout=paste(Results,varname,"_vap_",seas,"_clim.dat",sep="")
 # cat(file=filout,pc.dat$sdev^2)
-filout=paste(Results,varname,"_EOF_",seas,"_clim.dat",sep="")
-write.table(file=filout,pc.dat$rotation[,1:npc],quote=FALSE,
+#filout='/home/nils/birdhouse/flyingpigeon/textfile.txt'
+write.table(file=file_pca,pc.dat$rotation[,1:npc],quote=FALSE,
             col.names=FALSE,row.names=FALSE)
 
 ## Classification using k-means approach
@@ -102,23 +108,27 @@ for(i in 1:nrow(dat.m)){
   dat.cor=c(dat.cor,cor.r)
 }
 
+
+############################################################### plots
+##### plot EOFs
+
+pdf(output_graphics)
+
 ## Plotting Weather regimes
-# fname=paste(Results,"NCEP_regimes_",y1,"-",y2,"_",seas,".pdf",sep="")
-# pdf(file=fname)
-# layout(matrix(1:(2*ceiling(nreg/2)),2,ceiling(nreg/2)))
-# par(mar=c(4,6,2,2))
-# for(i in 1:nreg){ 
-#   image.cont.mc(lon,lat,dat.class$reg.var[,i]/100,
-#                xlab="",ylab="",mar=c(2.5,2,2,1),paquet="maps",
-#                titre=paste(modelname,"(",y1,"-",y2,") Reg.",i,"(",
-#                            format(dat.class$perc.r[i],digits=3),"%)"))
-# }#end for i
-# dev.off()
+layout(matrix(1:(2*ceiling(nreg/2)),2,ceiling(nreg/2)))
+par(mar=c(4,6,2,2))
+for(i in 1:nreg){ 
+  image.cont.mc(lon,lat,dat.class$reg.var[,i],
+                xlab="",ylab="",mar=c(2.5,2,2,1),paquet="maps",
+                titre=paste("Reg.",i,"(",
+                            format(dat.class$perc.r[i],digits=2),"%)"))
+}#end for i
+dev.off()
 
 ## Saving the classification of Weather Regimes that we will use for projections
 timeout=datNCEP$time[ISEAS]
-fname=paste(Results,"NCEP_regimes_",y1,"-",y2,"_",seas,".Rdat",sep="")
-save(file=fname,dat.class,lon,lat,timeout,nreg,dat.climatol,dat.rms,dat.cor,mean.clim.ref)
+#fname=paste(Results,"NCEP_regimes_",y1,"-",y2,"_",seas,".Rdat",sep="")
+
+save(file=file_classification,dat.class,lon,lat,timeout,nreg,dat.climatol,dat.rms,dat.cor,mean.clim.ref)
 proc.time() - ptm #ending time script
-#end
 
