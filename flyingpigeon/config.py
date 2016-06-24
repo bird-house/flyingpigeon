@@ -29,7 +29,8 @@ def cache_path():
 def output_path(): 
     try:
         output_path  =  wpsconfig.getConfigValue("server", "outputPath")
-    except: 
+    except:
+        output_path = None
         logger.warn('no output path configured')
     return output_path
 
@@ -37,9 +38,17 @@ def outputUrl_path():
     try: 
         outputUrl = wpsconfig.getConfigValue("server", "outputUrl")
     except:
+        outputUrl = None
         logger.warn('no outputUrl configured')
     return outputUrl    
 
+def www_url(): 
+    try:
+        url = wpsconfig.getConfigValue("flyingpigeon", "www_url")
+    except:
+        url = None
+        logger.warn('no www-url configured')
+    return url
            
     
 
