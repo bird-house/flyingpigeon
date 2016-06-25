@@ -47,7 +47,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   :param search_radius_mult: search radius for point geometries. All included gridboxes will be returned
   :param select_nearest: neares neighbour selection for point geometries
   :param select_ugid: ugid for appropriate poligons 
-  :param spatial_wrapping: how to handle coordinates in case of subsets, options: None(default), @wrap', 'unwrap'
+  :param spatial_wrapping: how to handle coordinates in case of subsets, options: None(default), 'wrap', 'unwrap'
   :param time_region:
   :param time_range: sequence of two datetime.datetime objects to mark start and end point 
   :param dir_output (default= curdir):
@@ -63,6 +63,11 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   env.DIR_SHPCABINET = DIR_SHP
   env.OVERWRITE = True
   env.DIR_OUTPUT = dir_output
+  if spatial_wrapping != None:
+    spatial_reorder = True
+  else: 
+    spatial_reorder = False
+  
   
   if prefix == None:
     prefix = str(uuid.uuid1()) 
@@ -90,7 +95,8 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         time_region=time_region, time_range=time_range)
       ops = OcgOperations(dataset=rd,
           output_format_options=output_format_options,
-          #spatial_wrapping=spatial_wrapping,
+          spatial_wrapping=spatial_wrapping,
+          spatial_reorder = spatial_reorder,
           #options=options,
           calc=calc,
           calc_grouping=calc_grouping,
@@ -158,7 +164,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
           logger.info('calc set to = %s ' %  calc)
           ops = OcgOperations(dataset=rd,
             output_format_options=output_format_options,
-            #spatial_wrapping=spatial_wrapping,
+            spatial_wrapping=spatial_wrapping,
             #options=options,
             calc=calc,
             calc_grouping=calc_grouping,

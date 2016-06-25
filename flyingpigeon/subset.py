@@ -115,7 +115,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
           name = prefix[i]
         geom_file = call(resource=ncs[key], variable=variable, calc=calc, calc_grouping=calc_grouping, 
                          prefix=name, geom=geom, select_ugid=ugids,
-                         # spatial_wrapping=spatial_wrapping,
+                         spatial_wrapping=spatial_wrapping,
                          dir_output=dir_output, dimension_map=dimension_map)
         geom_files.append( geom_file )  
       except Exception as e:
@@ -136,7 +136,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
             else:
               name = prefix[i]
             geom_file = call(resource=ncs[key], variable=variable,  calc=calc, calc_grouping=calc_grouping,
-              prefix=name, geom=geom, select_ugid=ugid, dir_output=dir_output, dimension_map=dimension_map, #spatial_wrapping=spatial_wrapping
+              prefix=name, geom=geom, select_ugid=ugid, dir_output=dir_output, dimension_map=dimension_map, spatial_wrapping=spatial_wrapping
               )
             geom_files.append( geom_file )
           except Exception as e:
@@ -147,7 +147,6 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
           logger.debug('geom identification failed')
           raise
   return  geom_files
-
 
 def get_dimension_map(resource): 
   """ returns the dimension map for a file, required for ocgis processing. 
