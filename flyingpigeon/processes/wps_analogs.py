@@ -203,8 +203,10 @@ class AnalogsProcess(WPSProcess):
     import datetime as dt
 
     from flyingpigeon.ocgis_module import call
-    from flyingpigeon.weatherregimes import get_NCEP
-
+    
+    #from flyingpigeon.weatherregimes import get_NCEP
+    from flyingpigeon.datafetch import reanalyses
+    
     self.status.set('execution started at : %s '  % dt.datetime.now(),5)
 
     start_time = time.time() # measure init ...
@@ -254,7 +256,8 @@ class AnalogsProcess(WPSProcess):
     try: 
       experiment = self.getInputValues(identifier='experiment')[0]
       if experiment == 'NCEP':
-        input = get_NCEP(start = start.year, end = end.year )
+        #input = get_NCEP(start = start.year, end = end.year )
+        input = (start = start.year, end = end.year, variable='slp', dataset='NCEP')
       elif   experiment == 'None':
         input = self.getInputValues(identifier='resource')
       else:
