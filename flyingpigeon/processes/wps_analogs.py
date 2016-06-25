@@ -9,7 +9,7 @@ class AnalogsProcess(WPSProcess):
     # definition of this process
     WPSProcess.__init__(self, 
       identifier = "analogs",
-      title="CASTf90",
+      title="Analogs -- Detection",
       version = "0.2",
       metadata= [
               {"title": "Institut Pierre Simon Laplace", "href": "https://www.ipsl.fr/en/"}
@@ -257,7 +257,7 @@ class AnalogsProcess(WPSProcess):
       experiment = self.getInputValues(identifier='experiment')[0]
       if experiment == 'NCEP':
         #input = get_NCEP(start = start.year, end = end.year )
-        input = (start = start.year, end = end.year, variable='slp', dataset='NCEP')
+        input = reanalyses(start = start.year, end = end.year, variable='slp', dataset='NCEP')
       elif   experiment == 'None':
         input = self.getInputValues(identifier='resource')
       else:
