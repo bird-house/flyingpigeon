@@ -63,6 +63,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   env.DIR_SHPCABINET = DIR_SHP
   env.OVERWRITE = True
   env.DIR_OUTPUT = dir_output
+  
   if spatial_wrapping != None:
     spatial_reorder = True
   else: 
@@ -96,7 +97,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
       ops = OcgOperations(dataset=rd,
           output_format_options=output_format_options,
           spatial_wrapping=spatial_wrapping,
-          # spatial_reorder = spatial_reorder,
+          spatial_reorder = spatial_reorder,
           # options=options,
           calc=calc,
           calc_grouping=calc_grouping,
@@ -159,12 +160,13 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
       
       try:
         logger.info('ocgis module call compute with chunks')
+        print 'ocgis module call compute with chunks'
         if calc == None:
           calc = '%s=%s*1' % (variable, variable)
           logger.info('calc set to = %s ' %  calc)
           ops = OcgOperations(dataset=rd,
             output_format_options=output_format_options,
-            # spatial_wrapping=spatial_wrapping,
+            spatial_wrapping=spatial_wrapping,
             # options=options,
             calc=calc,
             calc_grouping=calc_grouping,
@@ -179,7 +181,6 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
       except Exception as e: 
         logger.debug('failed to compute ocgis with chunks')
         raise
-
     logger.info('Succeeded with ocgis module call function')
 
     ############################################
@@ -193,10 +194,8 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         cdo = Cdo()
         
         output = '%s.nc' % uuid.uuid1()
-        remap = 'remap%s' % regrid_options
-        
+        remap = 'remap%s' % regrid_options  
         call = [op for op in dir(cdo) if remap in op]
-        
         cmd = "output = cdo.%s('%s',input='%s', output='%s')" % (str(call[0]), regrid_destination, geom_file, output) 
         exec cmd
       except Exception as e: 
@@ -204,5 +203,4 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         raise 
     else:
       output = geom_file
-  
   return output 

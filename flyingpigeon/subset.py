@@ -61,7 +61,7 @@ def has_Lambert_Conformal(nc):
   return lc_ckeck
 
 def clipping(resource=[], variable=None, dimension_map=None, calc=None,  
-  calc_grouping= None, historical_concatination=True, prefix=None, spatial_wrapping='wrap', polygons=None, mosaik=False, dir_output=None):
+  calc_grouping= None, historical_concatination=True, prefix=None, spatial_wrapping='wrap', polygons=None, mosaik=False, dir_output=None, memory_limit=None):
   """ returns list of clipped netCDF files
   possible entries: 
   :param resource: list of input netCDF files
@@ -115,7 +115,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
           name = prefix[i]
         geom_file = call(resource=ncs[key], variable=variable, calc=calc, calc_grouping=calc_grouping, 
                          prefix=name, geom=geom, select_ugid=ugids,
-                         #spatial_wrapping=spatial_wrapping,
+                         spatial_wrapping=spatial_wrapping, memory_limit=memory_limit,
                          dir_output=dir_output, dimension_map=dimension_map)
         geom_files.append( geom_file )  
       except Exception as e:
@@ -136,7 +136,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
             else:
               name = prefix[i]
             geom_file = call(resource=ncs[key], variable=variable,  calc=calc, calc_grouping=calc_grouping,
-              prefix=name, geom=geom, select_ugid=ugid, dir_output=dir_output, dimension_map=dimension_map, spatial_wrapping=spatial_wrapping
+              prefix=name, geom=geom, select_ugid=ugid, dir_output=dir_output, dimension_map=dimension_map, spatial_wrapping=spatial_wrapping, memory_limit=memory_limit,
               )
             geom_files.append( geom_file )
           except Exception as e:
