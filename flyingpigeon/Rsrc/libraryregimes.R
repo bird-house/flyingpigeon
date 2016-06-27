@@ -153,7 +153,8 @@
   if(rprint) print("Seasonal cycle smoothing")
   seas.cyc.spl=rbind(seas.cyc,seas.cyc,seas.cyc)
   for(i in 1:ncol(seas.cyc)){
-    seas.cyc.spl[,i]=smooth.spline(seas.cyc.spl[,i],spar=0.8)$y
+    seas.cyc.spl[,i]= smooth.spline(seas.cyc.spl[,i],spar=0.8)$y
+    # seas.cyc.spl[,i]= with(seas.cyc.spl[!is.na(seas.cyc.spl[,i]),i],smooth.spline(seas.cyc.spl[,i],spar=0.8)$y)
   }
   seas.cyc.spl=seas.cyc.spl[(nrow(seas.cyc)+1):(2*nrow(seas.cyc)),]
   
