@@ -703,6 +703,7 @@ def unroate_pole(resource, write_to_file=True):
     lon[:] = lons
   
   ds.close()
+  
   return lats, lons
 
 class FreeMemory(object):
