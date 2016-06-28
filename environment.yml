@@ -4,3 +4,7 @@ channels:
 - birdhouse
 dependencies:
 - python=2.7
+- pyyaml
+- cryptography=1.4
+- pip:
+  - genshi==0.7
