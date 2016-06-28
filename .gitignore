@@ -6,6 +6,7 @@
 
 # custom configs
 custom.cfg
+Makefile.config
 
 # Python / Extensions etc.
 *~
