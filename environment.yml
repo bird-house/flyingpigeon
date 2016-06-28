@@ -1,0 +1,6 @@
+name: flyingpigeon
+channels:
+- defaults
+- birdhouse
+dependencies:
+- python=2.7
