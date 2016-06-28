@@ -5,12 +5,12 @@ ptm <- proc.time()# starting time script
 library(ncdf4)
 library(mclust)
 library(maps)
-# NCEPdir="/home/estimr2/calvarez/birdhouse/"
-NCEPdir="~/birdhouse/flyingpigeon/flyingpigeon/Rsrc/"
+NCEPdir="/home/estimr2/calvarez/birdhouse/"
+#NCEPdir="~/birdhouse/flyingpigeon/flyingpigeon/Rsrc/"
 Results=NCEPdir
 source(paste(NCEPdir,"libraryregimes.R",sep=""))
-# varname="slp"
-varname="psl"
+varname="slp"
+# varname="psl"
 modelname="NCEP"
 yr1=1970
 yr2=2000
@@ -21,8 +21,9 @@ y1=1970
 y2=2000
 
 #open netcdf4
-# fname = paste(NCEPdir,"slp.",yr1,"-",yr2,"_NA.nc",sep="")
-fname = "/home/nils/data/tests/tmprfvS2r.nc"
+fname = paste(NCEPdir,'slp.1948-2014_NA.nc',sep = '' )
+
+#fname = "/home/nils/data/tests/tmprfvS2r.nc"
 nc = nc_open(fname)
 datNCEP=lirevarnc(nc,varname)
 
@@ -31,7 +32,6 @@ datNCEP$anom=dat.NCEP.dum$anom
 datNCEP$seascyc=dat.NCEP.dum$seascyc
 conv.time=datNCEP$conv.time
 nc_close(nc)
-
 
 # Define months and seasons
 l.seas=list(JJA=6:8,SON=9:11,DJF=c(12,1,2),SONDJF=c(9:12,1,2),MAM=c(3,4,5),all=c(1:12),
@@ -45,6 +45,13 @@ print(paste("Classification for",seas))
 ## SLP Climatology 
 dat.climatol=apply(datNCEP$dat[ISEAS,]/100,2,mean,na.rm=TRUE)
 mean.clim.ref=mean(dat.climatol)
+
+# anomalie from python  
+# nc_anom = '/homel/nhempel/birdhouse/flyingpigeon/notebooks/e98aec52-3d40-11e6-a747-4fdf094a67d8.nc'
+# nc = nc_open(nc_anom)
+
+# datNCEP=lirevarnc(nc,varname)
+# dat.m = datNCEP$dat
 
 #Normalization by latitude by latitute
 lon=datNCEP$lon
@@ -86,18 +93,18 @@ for(i in 1:nrow(dat.m)){
   dat.cor=c(dat.cor,cor.r)
 }
 
-## Plotting Weather regimes
-# fname=paste(Results,"NCEP_regimes_",y1,"-",y2,"_",seas,".pdf",sep="")
-# pdf(file=fname)
-# layout(matrix(1:(2*ceiling(nreg/2)),2,ceiling(nreg/2)))
-# par(mar=c(4,6,2,2))
-# for(i in 1:nreg){ 
-#   image.cont.mc(lon,lat,dat.class$reg.var[,i]/100,
-#                xlab="",ylab="",mar=c(2.5,2,2,1),paquet="maps",
-#                titre=paste(modelname,"(",y1,"-",y2,") Reg.",i,"(",
-#                            format(dat.class$perc.r[i],digits=3),"%)"))
-# }#end for i
-# dev.off()
+# Plotting Weather regimes
+fname=paste('~/data/tests/',"NCEP_regimes_python_",y1,"-",y2,"_",seas,".pdf",sep="")
+pdf(file=fname)
+layout(matrix(1:(2*ceiling(nreg/2)),2,ceiling(nreg/2)))
+par(mar=c(4,6,2,2))
+for(i in 1:nreg){ 
+  image.cont.mc(lon,lat,dat.class$reg.var[,i]/100,
+               xlab="",ylab="",mar=c(2.5,2,2,1),paquet="maps",
+               titre=paste(modelname,"(",y1,"-",y2,") Reg.",i,"(",
+                           format(dat.class$perc.r[i],digits=3),"%)"))
+}#end for i
+dev.off()
 
 ## Saving the classification of Weather Regimes that we will use for projections
 timeout=datNCEP$time[ISEAS]

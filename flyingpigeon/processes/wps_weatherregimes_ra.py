@@ -27,24 +27,24 @@ class WeatherRegimesRProcess(WPSProcess):
 
         # Literal Input Data
         # ------------------
-        #self.BBox = self.addBBoxInput(
-            #identifier="BBox",
-            #title="Bounding Box",
-            #abstract="coordinates to define the region for weather classification",
-            #minOccurs=1,
-            #maxOccurs=1,
-            #crss=['EPSG:4326']
-            #)
-
-        self.BBox = self.addLiteralInput(
+        self.BBox = self.addBBoxInput(
             identifier="BBox",
-            title="Region",
-            abstract="coordinates to define the region: (minlon,maxlon,minlat,maxlat)",
-            default='-80,50,22.5,70', #  cdo syntax: 'minlon,maxlon,minlat,maxlat' ; ocgis syntax (minlon,minlat,maxlon,maxlat)
-            type=type(''),
+            title="Bounding Box",
+            abstract="coordinates to define the region for weather classification",
             minOccurs=1,
             maxOccurs=1,
+            crss=['EPSG:4326']
             )
+
+        # self.BBox = self.addLiteralInput(
+        #     identifier="BBox",
+        #     title="Region",
+        #     abstract="coordinates to define the region: (minlon,maxlon,minlat,maxlat)",
+        #     default='-80,22.5,50,70', #  cdo syntax: 'minlon,maxlon,minlat,maxlat' ; ocgis syntax (minlon,minlat,maxlon,maxlat)
+        #     type=type(''),
+        #     minOccurs=1,
+        #     maxOccurs=1,
+        #     )
 
         self.time_region = self.addLiteralInput(
             identifier="time_region",
@@ -140,12 +140,14 @@ class WeatherRegimesRProcess(WPSProcess):
             logger.info('read in the arguments')
            # resources = self.getInputValues(identifier='resources')
             time_region = self.getInputValues(identifier='time_region')[0]
-            bbox = self.getInputValues(identifier='BBox')[0]
+            bbox = self.getInputValues(identifier='BBox')
             model_var = self.getInputValues(identifier='reanalyses')[0]
             datemodelst = self.getInputValues(identifier='datemodelst')[0]            
             datemodelen = self.getInputValues(identifier='datemodelen')[0]
             
             model, var = model_var.split('_')
+
+            bbox = [float(b) for b in bbox]
             
             logger.info('bbox %s' % bbox)
             logger.info('datemodelst %s' % str(datemodelst))
@@ -230,13 +232,13 @@ class WeatherRegimesRProcess(WPSProcess):
         # fixing this as soon as possible :-)) 
 #        time_region = {'month':[6,7,8]}
 
-        model_grouped = call(resource=model_nc, variable=variable, conform_units_to=conform_units_to)
+        model_subset = call(resource=model_nc, variable=variable, geom=bbox, conform_units_to=conform_units_to)
                         #time_region=time_region,
-        ip, model_subset = mkstemp(dir='.',suffix='.nc')
+        # ip, model_subset = mkstemp(dir='.',suffix='.nc')
         
-        model_subset  = cdo.sellonlatbox('%s' % bbox, 
-          input=model_grouped,
-          output=model_subset)
+        # model_subset  = cdo.sellonlatbox('%s' % bbox, 
+        #   input=model_grouped,
+        #   output=model_subset)
         logger.info('subset done: %s ' % model_subset)
         
         #if level != None:

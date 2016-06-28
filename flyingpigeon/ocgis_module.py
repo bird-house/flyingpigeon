@@ -95,19 +95,19 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         dimension_map=dimension_map, conform_units_to=conform_units_to, 
         time_region=time_region, time_range=time_range)
       ops = OcgOperations(dataset=rd,
-          output_format_options=output_format_options,
-          spatial_wrapping=spatial_wrapping,
-          spatial_reorder = spatial_reorder,
-          # options=options,
-          calc=calc,
-          calc_grouping=calc_grouping,
-          geom=geom,
-          output_format=output_format,
-          prefix=prefix,
-          search_radius_mult=search_radius_mult,
-          select_nearest=select_nearest,
-          select_ugid=select_ugid, 
-          add_auxiliary_files=False)
+        output_format_options=output_format_options,
+        spatial_wrapping=spatial_wrapping,
+        spatial_reorder=spatial_reorder,
+        # options=options,
+        calc=calc,
+        calc_grouping=calc_grouping,
+        geom=geom,
+        output_format=output_format,
+        prefix=prefix,
+        search_radius_mult=search_radius_mult,
+        select_nearest=select_nearest,
+        select_ugid=select_ugid, 
+        add_auxiliary_files=False)
       logger.info('OcgOperations set')
       
     except Exception as e: 
@@ -203,4 +203,4 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         raise 
     else:
       output = geom_file
-  return output 
+  return output
