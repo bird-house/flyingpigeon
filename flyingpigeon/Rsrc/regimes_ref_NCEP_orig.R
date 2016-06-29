@@ -47,11 +47,14 @@ dat.climatol=apply(datNCEP$dat[ISEAS,]/100,2,mean,na.rm=TRUE)
 mean.clim.ref=mean(dat.climatol)
 
 # anomalie from python  
-# nc_anom = '/homel/nhempel/birdhouse/flyingpigeon/notebooks/e98aec52-3d40-11e6-a747-4fdf094a67d8.nc'
-# nc = nc_open(nc_anom)
+nc_anom = '/homel/nhempel/birdhouse/flyingpigeon/notebooks/e98aec52-3d40-11e6-a747-4fdf094a67d8.nc'
+nc = nc_open(nc_anom)
 
-# datNCEP=lirevarnc(nc,varname)
-# dat.m = datNCEP$dat
+datNCEP=lirevarnc(nc,varname)
+ISEAS=which(datNCEP$conv.time$month %in% l.seas[[seas]] &
+              datNCEP$conv.time$year %in% c(y1:y2))
+dat.m=datNCEP$anom[ISEAS,]
+dat.m = datNCEP$dat
 
 #Normalization by latitude by latitute
 lon=datNCEP$lon
