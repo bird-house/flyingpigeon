@@ -12,54 +12,75 @@ source(paste(NCEPdir,"libraryregimes.R",sep=""))
 varname="slp"
 # varname="psl"
 modelname="NCEP"
-yr1=1970
-yr2=2000
+# yr1=1948
+# yr2=2014
 seas="JJA"
 
 #reference period
 y1=1970
-y2=2000
+y2=2010
 
 #open netcdf4
-fname = paste(NCEPdir,'slp.1948-2014_NA.nc',sep = '' )
+# fname = paste(NCEPdir,'slp.1948-2014_NA.nc',sep = '' )
+# 
+# #fname = "/home/nils/data/tests/tmprfvS2r.nc"
+# nc = nc_open(fname)
+# datNCEP=lirevarnc(nc,varname)
+# 
+# dat.NCEP.dum=sousseasmean(datNCEP$dat,datNCEP$conv.time, l.year=c(1970:1999), rprint=TRUE) #
+# datNCEP$anom=dat.NCEP.dum$anom
+# datNCEP$seascyc=dat.NCEP.dum$seascyc
+# conv.time=datNCEP$conv.time
+# nc_close(nc)
+# 
+# # Define months and seasons
+# l.seas=list(JJA=6:8,SON=9:11,DJF=c(12,1,2),SONDJF=c(9:12,1,2),MAM=c(3,4,5),all=c(1:12),
+#             JJAS=6:9,DJFM=c(1:3,12),MAMJ=3:6,FMA=c(2,3,4),DJFM=c(12,1,2,3),MAMJ=c(3:6),
+#             JJAS=c(6:9),SOND=c(9:12))
+# ISEAS=which(datNCEP$conv.time$month %in% l.seas[[seas]] &
+#               datNCEP$conv.time$year %in% c(y1:y2))
+# dat.m=datNCEP$anom[ISEAS,]
+# print(paste("Classification for",seas))
+# 
+# ## SLP Climatology 
+# # dat.climatol=apply(datNCEP$dat[ISEAS,]/100,2,mean,na.rm=TRUE)
+# # mean.clim.ref=mean(dat.climatol)
 
-#fname = "/home/nils/data/tests/tmprfvS2r.nc"
-nc = nc_open(fname)
-datNCEP=lirevarnc(nc,varname)
+# anomalie from python
 
-dat.NCEP.dum=sousseasmean(datNCEP$dat,datNCEP$conv.time) #l.year=c(y1:y2)
-datNCEP$anom=dat.NCEP.dum$anom
-datNCEP$seascyc=dat.NCEP.dum$seascyc
-conv.time=datNCEP$conv.time
-nc_close(nc)
+# nc_anom = '/homel/nhempel/birdhouse/flyingpigeon/notebooks/e98aec52-3d40-11e6-a747-4fdf094a67d8.nc'
+# nc_anom = '/homel/nhempel/birdhouse/flyingpigeon/notebooks/1df133e4-3dd6-11e6-affb-8dfea85a04cd.nc'
+# nc_anom = '/homel/nhempel/birdhouse/flyingpigeon/notebooks/9b893a54-3de5-11e6-affb-8dfea85a04cd.nc'
 
-# Define months and seasons
-l.seas=list(JJA=6:8,SON=9:11,DJF=c(12,1,2),SONDJF=c(9:12,1,2),MAM=c(3,4,5),all=c(1:12),
-            JJAS=6:9,DJFM=c(1:3,12),MAMJ=3:6,FMA=c(2,3,4),DJFM=c(12,1,2,3),MAMJ=c(3:6),
-            JJAS=c(6:9),SOND=c(9:12))
-ISEAS=which(datNCEP$conv.time$month %in% l.seas[[seas]] &
-              datNCEP$conv.time$year %in% c(y1:y2))
-dat.m=datNCEP$anom[ISEAS,]
-print(paste("Classification for",seas))
+# nc_anom = '/homel/nhempel/birdhouse/flyingpigeon/notebooks/d8cb7252-3df3-11e6-b034-0756a0266937.nc'
 
-## SLP Climatology 
-dat.climatol=apply(datNCEP$dat[ISEAS,]/100,2,mean,na.rm=TRUE)
-mean.clim.ref=mean(dat.climatol)
-
-# anomalie from python  
-nc_anom = '/homel/nhempel/birdhouse/flyingpigeon/notebooks/e98aec52-3d40-11e6-a747-4fdf094a67d8.nc'
+nc_anom = '/homel/nhempel/birdhouse/flyingpigeon/notebooks/ea4e5ea8-3df9-11e6-b034-0756a0266937.nc'
 nc = nc_open(nc_anom)
 
-datNCEP=lirevarnc(nc,varname)
-ISEAS=which(datNCEP$conv.time$month %in% l.seas[[seas]] &
-              datNCEP$conv.time$year %in% c(y1:y2))
-dat.m=datNCEP$anom[ISEAS,]
-dat.m = datNCEP$dat
+dat.m=ncvar_get(nc,varname)
+lon=ncvar_get(nc,'lon')
+lat=ncvar_get(nc,'lat')
+# time=ncvar_get(nc,'time')
+nc_close(nc)
 
-#Normalization by latitude by latitute
-lon=datNCEP$lon
-lat=datNCEP$lat
-time=datNCEP$time
+# Remise dans l'ordre lat-lon-temps
+nx=length(lon) #dim(dat.m)[1]; 
+ny=length(lat) # [2]
+dim(dat.m)=c(dim(dat.m)[3],nx*ny)
+
+# datNCEP=lirevarnc(nc,varname)
+
+#ISEAS=which(datNCEP$conv.time$month %in% l.seas[[seas]] &
+#              datNCEP$conv.time$year %in% c(y1:y2))
+#dat.m=datNCEP$anom[ISEAS,]
+# dat.m = datNCEP$dat
+# 
+# #Normalization by latitude by latitute
+# 
+# lon=datNCEP$lon
+# lat=datNCEP$lat
+# time=datNCEP$time
+
 pond.slp=1/sqrt(cos(lat*pi/180))
 scale.slp=rep(pond.slp,length(lon))
 
@@ -68,19 +89,20 @@ pc.dat=prcomp(dat.m,scale.=scale.slp)
 
 ## Saving the first 10 EOFs/PCs/variance
 # filout=paste(Results,varname,"_PC_",seas,"_clim.dat",sep="")
-npc=10
+# npc=10
 # write.table(file=filout,cbind(time[ISEAS],pc.dat$x[,1:npc]),quote=FALSE,
 #             col.names=FALSE,row.names=FALSE)
 # filout=paste(Results,varname,"_vap_",seas,"_clim.dat",sep="")
 # cat(file=filout,pc.dat$sdev^2)
-filout=paste(Results,varname,"_EOF_",seas,"_clim.dat",sep="")
-write.table(file=filout,pc.dat$rotation[,1:npc],quote=FALSE,
-            col.names=FALSE,row.names=FALSE)
+
+# filout=paste(Results,varname,"_EOF_",seas,"_clim.dat",sep="")
+# write.table(file=filout,pc.dat$rotation[,1:npc],quote=FALSE,
+#             col.names=FALSE,row.names=FALSE)
 
 ## Classification using k-means approach
 #iplot=TRUE for pre-visualization before save the plot
 nreg=4
-dat.class=classnorm(pc.dat,nreg=nreg,npc=10,lat=lat,lon=lon,iplot=TRUE)
+dat.class=classnorm(pc.dat,nreg=nreg,npc=10,lat=lat,lon=lon,iplot=FALSE)
 ## RMS related to the centroids
 dat.rms=c()
 for(i in 1:nrow(dat.m)){
@@ -97,7 +119,7 @@ for(i in 1:nrow(dat.m)){
 }
 
 # Plotting Weather regimes
-fname=paste('~/data/tests/',"NCEP_regimes_python_",y1,"-",y2,"_",seas,".pdf",sep="")
+fname=paste('~/data/tests/',"NCEP_regimes_PY-spline02_",y1,"-",y2,"_",seas,".pdf",sep="")
 pdf(file=fname)
 layout(matrix(1:(2*ceiling(nreg/2)),2,ceiling(nreg/2)))
 par(mar=c(4,6,2,2))

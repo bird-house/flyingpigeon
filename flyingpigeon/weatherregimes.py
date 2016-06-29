@@ -275,8 +275,9 @@ def get_anomalies(nc_file, frac=0.2, reference=None):
       for lon in range(vals.shape[2]):
         try:
           y = tile(vals[:,lat,lon], 3)
-          #ys = smooth(y,  window_size=91, order=2, deriv=0, rate=1)[ts:ts*2]
-          ys = sm.nonparametric.lowess(y, x, frac=frac )[ts:ts*2,1]
+          ys = smooth(y, window_size=91, order=2, deriv=0, rate=1)[ts:ts*2]
+          # ys = smooth(y,  window_size=91, order=2, deriv=0, rate=1)
+          # ys = sm.nonparametric.lowess(y, x, frac=frac )[ts:ts*2,1]
           vals_sm[:,lat,lon] = ys
         except Exception as e:
           msg = 'failed for lat %s lon %s  %s ' % (lat,lon,e)

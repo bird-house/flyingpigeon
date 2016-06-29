@@ -30,6 +30,7 @@
   invisible(datout)
 }
 
+
 # Extraction d'une matrice a partir d'un fichier netcdf
 "extractnc" <- function(nc,varnc,ISEAS=NULL,ndims,varsize=NULL)
 {
@@ -131,8 +132,8 @@
 
 # Soustraction de la moyenne saisonniere jour a jour pour une matrice
 # Le cycle saisonnier peut etre estime sur un sous ensemble d'annees
-"sousseasmean"<-function(dat,conv.time,l.mon=1:12,
-                         l.year=unique(conv.time$year),rprint=FALSE)
+"sousseasmean"<-function(dat, conv.time, l.mon=1:12,
+                         l.year=unique(conv.time$year), rprint=FALSE)
 {
   dat.m=dat
   seas.cyc=c()
@@ -152,9 +153,9 @@
   # Lissage par spline du cycle saisonnier avec preservation des derivees aux bords
   if(rprint) print("Seasonal cycle smoothing")
   seas.cyc.spl=rbind(seas.cyc,seas.cyc,seas.cyc)
+  seas.cyc.nois = seas.cyc.spl
   for(i in 1:ncol(seas.cyc)){
     seas.cyc.spl[,i]= smooth.spline(seas.cyc.spl[,i],spar=0.8)$y
-    # seas.cyc.spl[,i]= with(seas.cyc.spl[!is.na(seas.cyc.spl[,i]),i],smooth.spline(seas.cyc.spl[,i],spar=0.8)$y)
   }
   seas.cyc.spl=seas.cyc.spl[(nrow(seas.cyc)+1):(2*nrow(seas.cyc)),]
   
@@ -166,7 +167,7 @@
     ii= which(time.cyc$month %in% mon & time.cyc$day %in% day)
     dat.m[t,]=dat[t,]-seas.cyc.spl[ii,]
   }
-  datsub=list(anom=dat.m,seascyc=list(seascyc=seas.cyc.spl,timecyc=time.cyc))
+  datsub=list(anom=dat.m, seascyc=list(seascyc=seas.cyc.spl,  timecyc=time.cyc)) #, seanois=seas.cyc.nois 
 }# fin de la definition de fonction
 
 
