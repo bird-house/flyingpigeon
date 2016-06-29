@@ -6,7 +6,7 @@ library(ncdf4)
 library(mclust)
 library(maps)
 NCEPdir="/home/estimr2/calvarez/birdhouse/"
-Results=NCEPdir
+Results='~/data/tests'
 source(paste(NCEPdir,"classnorm.R",sep=""))
 varname="slp"
 modelname="NCEP"
@@ -72,7 +72,7 @@ for(i in 1:nrow(dat.m)){
 }
 
 # Plotting Weather regimes
-fname=paste(Results,"NCEP_regimes_py",y1,"-",y2,"_",seas,".pdf",sep="")
+fname=paste(Results,"NCEP_regimes_spline02",y1,"-",y2,"_",seas,".pdf",sep="")
 pdf(file=fname)
 layout(matrix(1:(2*ceiling(nreg/2)),2,ceiling(nreg/2)))
 par(mar=c(4,6,2,2))
