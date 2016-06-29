@@ -231,7 +231,7 @@ class WeatherRegimesRProcess(WPSProcess):
         time_range = [start, end]  
 
         model_subset = call(resource=model_nc, variable=variable, 
-          geom=bbox, time_range=time_range, # conform_units_to=conform_units_to
+          geom=bbox, spatial_wrapping='wrap', time_range=time_range, # conform_units_to=conform_units_to
           )
 
         logger.info('Dataset subset done: %s ' % model_subset)
@@ -309,10 +309,11 @@ class WeatherRegimesRProcess(WPSProcess):
           #args =shlex.split(cmd)
           
           args = ['Rscript', join(Rsrc,Rfile), '%s/' % curdir, 
-                  '%s/' % Rsrc, '%s'% infile, '%s' % variable,
-                  #'%s' % yr1, '%s' % yr2, 
+                  '%s/' % Rsrc, '%s'% infile, '%s' % variable, 
                   '%s' % output_graphics, '%s' % file_pca,
-                   '%s' % file_class, '%s' % time_region]
+                   '%s' % file_class, '%s' % time_region, 
+                   '%s' % start.year, '%s' % end.year,
+                   '%s' % model_var]
           logger.info('Rcall builded')
         except Exception as e: 
           msg = 'failed to build the R command %s' % e

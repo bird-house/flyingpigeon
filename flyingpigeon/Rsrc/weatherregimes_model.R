@@ -23,6 +23,9 @@ output_graphics <- args[5]
 file_pca <- args[6]
 file_classification <- args[7]
 season <- args[8]
+y1 <- args[9]
+y2 <- args[10]
+model_var <- args[11]
 
 print(' *** Here starts the R execution ***')
 
@@ -107,22 +110,33 @@ for(i in 1:nrow(dat.m)){
 ############################################################### plots
 ##### plot EOFs
 
-pdf(output_graphics)
+
 
 ## Plotting Weather regimes
+
+pdf(file=output_graphics)
 layout(matrix(1:(2*ceiling(nreg/2)),2,ceiling(nreg/2)))
 par(mar=c(4,6,2,2))
 for(i in 1:nreg){ 
-  image.cont.mc(lon,lat,dat.class$reg.var[,i],
-                xlab="",ylab="",mar=c(2.5,2,2,1),paquet="maps",
-                titre=paste("Reg.",i,"(",
-                            format(dat.class$perc.r[i],digits=2),"%)"))
+   champ=dat.class$reg.var[,i]/100                        
+    zlev=pretty(champ,20)
+    colplot=rainbow(length(zlev)-1,start=3/6,end=1)
+    par( mar=c(2.5,2,2,1))
+    
+    dum=t(matrix(champ,length(lat),length(lon)))
+    #dum=matrix(champ,length(lon),length(lat)) #if transpose
+    lat.sort=sort(lat,index.return=TRUE)
+    titleplot=paste(model_var," (",y1,"-",y2,") weather reg.: ",i,"(",
+                           format(dat.class$perc.r[i],digits=3),"%)")
+    contour(lon,sort(lat),dum[,lat.sort$ix],
+            xlab="Longitude",ylab="Latitude",main=titleplot,col=colplot,add=FALSE,nlevels=length(zlev),
+            levels=zlev,lty=1)
+    library(maps)
+    map(add=TRUE)
 }#end for i
 dev.off()
 
 ## Saving the classification of Weather Regimes that we will use for projections
-# timeout=datNCEP$time[ISEAS]
-#fname=paste(Results,"NCEP_regimes_",y1,"-",y2,"_",seas,".Rdat",sep="")
 
 save(file=file_classification,dat.class,lon,lat,time,nreg,dat.climatol,dat.rms,dat.cor,mean.clim.ref)
 proc.time() - ptm #ending time script
