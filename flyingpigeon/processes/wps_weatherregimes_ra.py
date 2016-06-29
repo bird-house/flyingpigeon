@@ -27,24 +27,26 @@ class WeatherRegimesRProcess(WPSProcess):
 
         # Literal Input Data
         # ------------------
-        self.BBox = self.addBBoxInput(
-            identifier="BBox",
-            title="Bounding Box",
-            abstract="coordinates to define the region for weather classification",
-            minOccurs=1,
-            maxOccurs=1,
-            crss=['EPSG:4326']
-            )
-
-        # self.BBox = self.addLiteralInput(
+        # self.BBox = self.addBBoxInput(
         #     identifier="BBox",
-        #     title="Region",
-        #     abstract="coordinates to define the region: (minlon,maxlon,minlat,maxlat)",
-        #     default='-80,22.5,50,70', #  cdo syntax: 'minlon,maxlon,minlat,maxlat' ; ocgis syntax (minlon,minlat,maxlon,maxlat)
-        #     type=type(''),
+        #     title="Bounding Box",
+        #     abstract="coordinates to define the region for weather classification",
         #     minOccurs=1,
         #     maxOccurs=1,
+        #     default=[-80,50,22.5,70],
+        #     crss=['EPSG:4326']
         #     )
+
+        self.BBox = self.addLiteralInput(
+            identifier="BBox",
+            title="Region",
+            abstract="coordinates to define the region: (minlon,maxlon,minlat,maxlat)",
+            default='-80,22.5,50,70', #  cdo syntax: 'minlon,maxlon,minlat,maxlat' ; ocgis syntax (minlon,minlat,maxlon,maxlat)
+            type=type(''),
+            minOccurs=1,
+            maxOccurs=1,
+            )
+
 
         self.time_region = self.addLiteralInput(
             identifier="time_region",
@@ -140,7 +142,7 @@ class WeatherRegimesRProcess(WPSProcess):
             logger.info('read in the arguments')
             # resources = self.getInputValues(identifier='resources')
             time_region = self.getInputValues(identifier='time_region')[0]
-            bbox = self.getInputValues(identifier='BBox')
+            bbox = self.getInputValues(identifier='BBox')[0]
             model_var = self.getInputValues(identifier='reanalyses')[0]
             period = self.getInputValues(identifier='period')[0]            
             #datemodelen = self.getInputValues(identifier='datemodelen')[0]
@@ -148,7 +150,10 @@ class WeatherRegimesRProcess(WPSProcess):
             
             model, var = model_var.split('_')
             
-            bbox = [float(b) for b in bbox]
+            bbox = [float(b) for b in bbox.split(',')]
+
+            start = dt.strptime(period.split('-')[0] , '%Y%m%d')
+            end = dt.strptime(period.split('-')[1] , '%Y%m%d')
             
             logger.info('bbox %s' % bbox)
             logger.info('period %s' % str(period))
@@ -162,12 +167,12 @@ class WeatherRegimesRProcess(WPSProcess):
         ###########################
         
         try:  
-          if datemodelst != None and datemodelen != None : 
-            startyr = dt.strptime(datemodelst, '%Y-%m-%d')
-            endyr = dt.strptime(datemodelen, '%Y-%m-%d')
-            time_range = [startyr,endyr]
-          else: 
-            time_range = None
+          # if datemodelst != None and datemodelen != None : 
+          #   startyr = dt.strptime(datemodelst, '%Y-%m-%d')
+          #   endyr = dt.strptime(datemodelen, '%Y-%m-%d')
+          #   time_range = [startyr,endyr]
+          # else: 
+          #   time_range = None
             
           if model == 'NCEP': 
             if 'z' in var:
@@ -201,9 +206,9 @@ class WeatherRegimesRProcess(WPSProcess):
 
         from flyingpigeon.datafetch import reanalyses as rl            
         try:
-          model_nc = rl(start=int(datemodelst.split('-')[0]), 
-                              end=int(datemodelen.split('-')[0]), 
-                              dataset=model, variable=var)
+          model_nc = rl(start=start.year , 
+                        end=end.year , 
+                        dataset=model, variable=var)
 
           logger.info('reanalyses data fetched')
         except Exception as e:
@@ -220,11 +225,10 @@ class WeatherRegimesRProcess(WPSProcess):
         from cdo import Cdo
         cdo = Cdo()
         
-        start = period.split('-')[0]
-        end = period.split('-')[1]
+        
         # fixing this as soon as possible :-)) 
 
-        time_range = [dt.strptime(start, '%Y%m%d'), dt.strptime(end, '%Y%m%d')]  
+        time_range = [start, end]  
 
         model_subset = call(resource=model_nc, variable=variable, 
           geom=bbox, time_range=time_range, # conform_units_to=conform_units_to
@@ -252,7 +256,7 @@ class WeatherRegimesRProcess(WPSProcess):
           time_region = {'month':[9,10,11]}
         elif time_region == 'DJF':
           time_region = {'month':[12,1,2]}
-        elif time_region == 'FAM'
+        elif time_region == 'FAM':
           time_region = {'month':[2,3,4]}
         elif time_region == 'MAM':
           time_region = {'month':[3,4,5]}
@@ -270,6 +274,9 @@ class WeatherRegimesRProcess(WPSProcess):
           time_region = {'month':[3,4,5,6,7,8]}
         elif time_region == 'all':
           time_region = None 
+        else:
+          logger.error('time_region %s not found' % time_region )
+          
 
         ############################
         ### ponderation by latitude
@@ -292,8 +299,8 @@ class WeatherRegimesRProcess(WPSProcess):
           
           infile = model_anomal  #model_subset #model_ponderate 
           modelname = model
-          yr1 = datemodelst.split('-')[0]
-          yr2 = datemodelen.split('-')[0]
+          yr1 = start.year
+          yr2 = end.year
           ip, output_graphics = mkstemp(dir=curdir ,suffix='.pdf')
           ip, file_pca = mkstemp(dir=curdir ,suffix='.dat')
           ip, file_class = mkstemp(dir=curdir ,suffix='.Rdat')
@@ -303,8 +310,9 @@ class WeatherRegimesRProcess(WPSProcess):
           
           args = ['Rscript', join(Rsrc,Rfile), '%s/' % curdir, 
                   '%s/' % Rsrc, '%s'% infile, '%s' % variable,
-                  '%s' % yr1, '%s' % yr2, 
-                  '%s' % output_graphics, '%s' % file_pca, '%s' % file_class, '%s' % time_region]
+                  #'%s' % yr1, '%s' % yr2, 
+                  '%s' % output_graphics, '%s' % file_pca,
+                   '%s' % file_class, '%s' % time_region]
           logger.info('Rcall builded')
         except Exception as e: 
           msg = 'failed to build the R command %s' % e

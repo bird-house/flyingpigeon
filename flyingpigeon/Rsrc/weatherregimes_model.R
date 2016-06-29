@@ -19,12 +19,12 @@ rworkspace <- args[1]
 Rsrc <- args[2]
 infile <- args[3]
 variable <- args[4]
-# y1 <- as.numeric(args[5]) #1948
-# y2 <- as.numeric(args[6]) #2014
-output_graphics <- args[7]
-file_pca <- args[8]
-file_classification <- args[9]
-season <- args[10]
+#y1 <- as.numeric(args[5]) #1948
+#y2 <- as.numeric(args[6]) #2014
+output_graphics <- args[5]
+file_pca <- args[6]
+file_classification <- args[7]
+season <- args[8]
 
 print(' *** Here starts the R execution ***')
 
@@ -43,8 +43,8 @@ varname=variable
 seas=season
 
 #reference period
-y1=1970
-y2=2010
+# y1=
+# y2=2010
 
 #open netcdf4
 # fname = paste(dirname,"slp.1948-2014_NA.nc",sep="")

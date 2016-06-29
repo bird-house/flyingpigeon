@@ -127,34 +127,34 @@ def smooth(y, window_size, order, deriv=0, rate=1):
 
 
 
-# def weight_by_lat(resource):
-#   """
-#   weight values according to their latitude
+def weight_by_lat(resource):
+  """
+  weight values according to their latitude
 
-#   :param resource: netCDF file containing sea searface pressure
-#   :returns : netCDF file with weighted values
-#   """
+  :param resource: netCDF file containing sea searface pressure
+  :returns : netCDF file with weighted values
+  """
 
-#   from netCDF4 import Dataset
-#   from numpy import meshgrid, sqrt, cos, pi, broadcast_arrays
+  from netCDF4 import Dataset
+  from numpy import meshgrid, sqrt, cos, pi, broadcast_arrays
 
-#   variable = utils.get_variable(resource)
-#   ds = Dataset(resource, mode='a')
-#   lat = ds.variables['lat']
-#   lon = ds.variables['lon']
-#   lons, lats = meshgrid(lon, lat)
+  variable = utils.get_variable(resource)
+  ds = Dataset(resource, mode='a')
+  lat = ds.variables['lat']
+  lon = ds.variables['lon']
+  lons, lats = meshgrid(lon, lat)
 
-#   vals = ds.variables[variable]
+  vals = ds.variables[variable]
 
-#   weights = 1/sqrt(cos(lats[:]*pi/180))
-#   weights3D = broadcast_arrays(vals,weights)[1]
+  weights = 1/sqrt(cos(lats[:]*pi/180))
+  weights3D = broadcast_arrays(vals,weights)[1]
 
-#   vals_weighted = vals[:] * weights3D
-#   vals[:,:,:] = vals_weighted[:,:,:]
+  vals_weighted = vals[:] * weights3D
+  vals[:,:,:] = vals_weighted[:,:,:]
   
-#   ds.close()
+  ds.close()
+  return resource
 
-#   return resource
 
 def score_pattern(pattern1, pattern2):
   """
@@ -302,20 +302,19 @@ def get_ponderate(nc_file):
   from netCDF4 import Dataset
   from numpy import meshgrid, sqrt, cos, pi, broadcast_arrays
 
-#  variable = utils.get_variable(nc_file)
-
+  variable = utils.get_variable(nc_file)
   ds = Dataset(nc_file, mode='a')
   
   lat = ds.variables['lat']
   lon = ds.variables['lon']
 
   lons, lats = meshgrid(lon, lat)
-# vals = ds.variables[variable]
+  vals = ds.variables[variable]
   ponderate = 1/sqrt(cos(lats[:]*pi/180))
 
-#  weights3D = broadcast_arrays(vals,weights)[1]
-#  vals_weighted = vals[:] * weights3D
-#  vals[:,:,:] = vals_weighted[:,:,:]  
+  weights3D = broadcast_arrays(vals,ponderate)[1]
+  vals_weighted = vals[:] * weights3D
+  vals[:,:,:] = vals_weighted[:,:,:]  
   ds.close()
   return ponderate
   
