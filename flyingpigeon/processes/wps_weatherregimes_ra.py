@@ -54,28 +54,28 @@ class WeatherRegimesRProcess(WPSProcess):
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
-            allowedValues= ['JJA','SON','DJF','SONDJF','MAM','all',
-            'JJAS','DJFM','MAMJ','FMA','DJFM','MAMJ',
-            'JJAS','SOND']
+            allowedValues= ['JJA','SON','DJF','MAM','all',
+            'JJAS','DJFM','MAMJ','FMA','SOND', 'SONDJF','MAMJJA']
             )
 
-        self.datemodelst = self.addLiteralInput(
-            identifier="datemodelst",
-            title="Start of period",
-            abstract="Date to start analysing the reanalyses data (if not set, the first date of the dataset will be taken)",
-            default="1970-01-01",
-            type=type(date(2013,01,01)),
-            minOccurs=0,
+
+        self.period = self.addLiteralInput(
+            identifier="period",
+            title="Period for weatherregime calculation",
+            abstract="Period for analysing the dataset",
+            default="19700101-20101231",
+            type=type(''),
+            minOccurs=1,
             maxOccurs=1,
             )
 
-        self.datemodelen = self.addLiteralInput(
-            identifier="datemodelen",
-            title="End of period",
-            abstract="Date to end analysing the reanalyses data (if not set, the first date of the dataset will be taken)",
-            default="2010-12-31",
-            type=type(date(2014,12,31)),
-            minOccurs=0,
+        self.anualcycle = self.addLiteralInput(
+            identifier="anualcycle",
+            title="Period for anualcycle calculation",
+            abstract="Period for anual cycle calculation",
+            default="19700101-19991231",
+            type=type(''),
+            minOccurs=1,
             maxOccurs=1,
             )
 
@@ -138,21 +138,21 @@ class WeatherRegimesRProcess(WPSProcess):
         ################################
         try: 
             logger.info('read in the arguments')
-           # resources = self.getInputValues(identifier='resources')
+            # resources = self.getInputValues(identifier='resources')
             time_region = self.getInputValues(identifier='time_region')[0]
             bbox = self.getInputValues(identifier='BBox')
             model_var = self.getInputValues(identifier='reanalyses')[0]
-            datemodelst = self.getInputValues(identifier='datemodelst')[0]            
-            datemodelen = self.getInputValues(identifier='datemodelen')[0]
+            period = self.getInputValues(identifier='period')[0]            
+            #datemodelen = self.getInputValues(identifier='datemodelen')[0]
+            anualcycle = self.getInputValues(identifier='anualcycle')[0]
             
             model, var = model_var.split('_')
-
+            
             bbox = [float(b) for b in bbox]
             
             logger.info('bbox %s' % bbox)
-            logger.info('datemodelst %s' % str(datemodelst))
+            logger.info('period %s' % str(period))
             logger.info('time_region %s' % str(time_region))
-            logger.info('bbox is set to %s' % bbox)
             
         except Exception as e: 
             logger.debug('failed to read in the arguments %s ' % e)
@@ -174,28 +174,19 @@ class WeatherRegimesRProcess(WPSProcess):
               variable='hgt'
               level=var.strip('z')
               conform_units_to=None
-#              vmin=-200
-#              vmax=200
             else:
               variable='slp'
               level=None
               conform_units_to='hPa'
-#              vmin=-35
-#              vmax=35
-
           elif '20CRV2' in model: 
             if 'z' in var:
               variable='hgt'
               level=var.strip('z')
               conform_units_to=None
-#              vmin=-200
-#              vmax=200
             else:
               variable='prmsl'
               level=None
               conform_units_to='hPa'
-#              vmin=-35
-#              vmax=35
           else:
             logger.error('Reanalyses dataset not known')          
           logger.info('environment set')
@@ -228,28 +219,57 @@ class WeatherRegimesRProcess(WPSProcess):
         from flyingpigeon.ocgis_module import call
         from cdo import Cdo
         cdo = Cdo()
-
+        
+        start = period.split('-')[0]
+        end = period.split('-')[1]
         # fixing this as soon as possible :-)) 
-#        time_region = {'month':[6,7,8]}
 
-        model_subset = call(resource=model_nc, variable=variable, geom=bbox, conform_units_to=conform_units_to)
-                        #time_region=time_region,
-        # ip, model_subset = mkstemp(dir='.',suffix='.nc')
-        
-        # model_subset  = cdo.sellonlatbox('%s' % bbox, 
-        #   input=model_grouped,
-        #   output=model_subset)
-        logger.info('subset done: %s ' % model_subset)
-        
-        #if level != None:
-        #  nc_level = get_level( nc_subset, level) 
-        #  nc_subset =  nc_level
+        time_range = [dt.strptime(start, '%Y%m%d'), dt.strptime(end, '%Y%m%d')]  
 
+        model_subset = call(resource=model_nc, variable=variable, 
+          geom=bbox, time_range=time_range, # conform_units_to=conform_units_to
+          )
+
+        logger.info('Dataset subset done: %s ' % model_subset)
+        
         ########################
         ### computing anomalies 
         ########################
-         
-#        model_anomal = wr.get_anomalies(model_subset)
+        
+        cycst = anualcycle.split('-')[0]
+        cycen = anualcycle.split('-')[0]
+        
+        reference = [dt.strptime(cycst,'%Y%m%d'), dt.strptime(cycen,'%Y%m%d')]         
+        model_anomal = wr.get_anomalies(model_subset, reference=reference)
+
+        ########################
+        ### extracting seasons
+        ########################
+
+        if time_region == 'JJA':
+          time_region = {'month':[5,6,7]}
+        elif time_region == 'SON':
+          time_region = {'month':[9,10,11]}
+        elif time_region == 'DJF':
+          time_region = {'month':[12,1,2]}
+        elif time_region == 'FAM'
+          time_region = {'month':[2,3,4]}
+        elif time_region == 'MAM':
+          time_region = {'month':[3,4,5]}
+        elif time_region == 'JJAS':
+          time_region = {'month':[6,7,8,9]}
+        elif time_region == 'DJFM':
+          time_region = {'month':[12,1,2,3]}
+        elif time_region == 'MAMJ':
+          time_region = {'month':[3,4,5,6]}
+        elif time_region == 'SOND':
+          time_region = {'month':[9,10,11,12]}
+        elif time_region == 'SONDJF':
+          time_region = {'month':[9,10,11,12,1,2]}
+        elif time_region == 'MAMJJA':
+          time_region = {'month':[3,4,5,6,7,8]}
+        elif time_region == 'all':
+          time_region = None 
 
         ############################
         ### ponderation by latitude
@@ -270,7 +290,7 @@ class WeatherRegimesRProcess(WPSProcess):
           Rsrc = config.Rsrc_dir() 
           Rfile = 'weatherregimes_model.R'
           
-          infile = model_subset # model_ponderate 
+          infile = model_anomal  #model_subset #model_ponderate 
           modelname = model
           yr1 = datemodelst.split('-')[0]
           yr2 = datemodelen.split('-')[0]

@@ -55,31 +55,37 @@ y2=2010
 # nc_anom = '/homel/nhempel/birdhouse/flyingpigeon/notebooks/d8cb7252-3df3-11e6-b034-0756a0266937.nc'
 
 nc_anom = '/homel/nhempel/birdhouse/flyingpigeon/notebooks/ea4e5ea8-3df9-11e6-b034-0756a0266937.nc'
+
+
+# dat.m=ncvar_get(nc,varname)
+# lon=ncvar_get(nc,'lon')
+# lat=ncvar_get(nc,'lat')
+# # time=ncvar_get(nc,'time')
+# nc_close(nc)
+# 
+# # Remise dans l'ordre lat-lon-temps
+# nx=length(lon) #dim(dat.m)[1]; 
+# ny=length(lat) # [2]
+# dim(dat.m)=c(dim(dat.m)[3],nx*ny)
+
 nc = nc_open(nc_anom)
 
-dat.m=ncvar_get(nc,varname)
-lon=ncvar_get(nc,'lon')
-lat=ncvar_get(nc,'lat')
-# time=ncvar_get(nc,'time')
+datNCEP=lirevarnc(nc,varname)
+
 nc_close(nc)
 
-# Remise dans l'ordre lat-lon-temps
-nx=length(lon) #dim(dat.m)[1]; 
-ny=length(lat) # [2]
-dim(dat.m)=c(dim(dat.m)[3],nx*ny)
-
-# datNCEP=lirevarnc(nc,varname)
 
 #ISEAS=which(datNCEP$conv.time$month %in% l.seas[[seas]] &
 #              datNCEP$conv.time$year %in% c(y1:y2))
 #dat.m=datNCEP$anom[ISEAS,]
-# dat.m = datNCEP$dat
-# 
-# #Normalization by latitude by latitute
-# 
-# lon=datNCEP$lon
-# lat=datNCEP$lat
-# time=datNCEP$time
+
+dat.m = datNCEP$dat
+
+#Normalization by latitude by latitute
+
+lon=datNCEP$lon
+lat=datNCEP$lat
+time=datNCEP$time
 
 pond.slp=1/sqrt(cos(lat*pi/180))
 scale.slp=rep(pond.slp,length(lon))
