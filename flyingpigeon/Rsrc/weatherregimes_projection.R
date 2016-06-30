@@ -5,8 +5,9 @@ ptm <- proc.time()# starting time script
 #library(mclust)
 library(ncdf4)
 library(maps)
-NCEPdir="/home/estimr2/calvarez/birdhouse/libraryregimes.R"
-Results=NCEPdir
+NCEPdir="/home/estimr2/calvarez/birdhouse/"
+Results='~/data/tests/'
+source(paste(NCEPdir,"classnorm.R",sep=""))
 source(paste(NCEPdir,"libraryregimes.R",sep=""))
 varname="slp"
 modelname="NCEP"
@@ -49,11 +50,11 @@ print(paste("Classification for",seas))
 ## SLP Climatology and ponderation by latitude
 dat.climatol=apply(datNCEP$dat[ISEAS,]/100,2,mean,na.rm=TRUE)
 mean.clim=mean(dat.climatol)
+
 #correction:removing spatial average. To be used with models or different datasets
 #mean.clim.ref=1013.96389304258  #NCEP(1970-2010)
 # dif.mean=mean.clim.ref-mean.clim
 # dat.m=dat.m+dif.mean
-
 
 ## Calculate projections for EOFs(PC empirics)
 ## Normalization by latitude
@@ -79,7 +80,7 @@ for(i in 1:nreg){
 best.reg=apply(rms.reg,1,which.min)
 dist.reg=sqrt(apply(rms.reg,1,min)/nrow(datNCEP$anom))
 
-## Save classification in Results
+# Save classification in Results
 timeout=datNCEP$time[ISEAS]
 varout=cbind(timeout,best.reg,dist.reg,cor.reg)
 fname=paste(Results,"NCEP_SLP_",seas,"_",yr1,"-",yr2,"_classif.dat",sep="")
@@ -122,7 +123,7 @@ par(mar=c(4,6,2,2))
 for(i in 1:nreg){ 
   image.cont.mc(lon,lat,dat.class$reg.var[,i]/100,
                 xlab="",ylab="",mar=c(2.5,2,2,1),paquet="maps",
-                titre=paste(modelname,"(",y1,"-",y2,")",name.reg[i],"(",
+                titre=paste(modelname,"(",seas," ",y1,"-",y2,")",name.reg[i],"(",
                             format(dat.class$perc.r[i],digits=3),"%)"))
 }#end for i
 dev.off()

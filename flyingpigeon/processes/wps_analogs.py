@@ -58,7 +58,7 @@ class AnalogsProcess(WPSProcess):
       identifier="region",
       title="Region",
       abstract="coordinates to define the region: (minlon,minlat,maxlon,maxlat)",
-      default='-80,50,22.5,70', #"-80,22.5,50,70",
+      default='-80,22.5,50,70', #"-80,22.5,50,70",
       minOccurs=1,
       maxOccurs=1,
       type=type(''),
@@ -203,14 +203,14 @@ class AnalogsProcess(WPSProcess):
     from os import path
     from tempfile import mkstemp
     from flyingpigeon import analogs
-    import datetime as dt
+    from datetime import datetime as dt
 
     from flyingpigeon.ocgis_module import call
     
     #from flyingpigeon.weatherregimes import get_NCEP
     from flyingpigeon.datafetch import reanalyses
     
-    self.status.set('execution started at : %s '  % dt.datetime.now(),5)
+    self.status.set('execution started at : %s '  % dt.now(),5)
 
     start_time = time.time() # measure init ...
     
@@ -218,6 +218,12 @@ class AnalogsProcess(WPSProcess):
     refEn = self.getInputValues(identifier='refEn')
     dateSt = self.getInputValues(identifier='dateSt')
     dateEn = self.getInputValues(identifier='dateEn')
+
+
+    refSt = dt.strptime(refSt[0],'%Y-%m-%d')
+    refEn = dt.strptime(refEn[0],'%Y-%m-%d')
+    dateSt = dt.strptime(dateSt[0],'%Y-%m-%d')
+    dateEn = dt.strptime(dateEn[0],'%Y-%m-%d')
     
     normalize = self.getInputValues(identifier='normalize')[0]
     if normalize == 'None': 
@@ -235,10 +241,7 @@ class AnalogsProcess(WPSProcess):
     else:
       logger.error('output format not valid')
     
-    refSt = dt.datetime.strptime(refSt[0],'%Y-%m-%d')
-    refEn = dt.datetime.strptime(refEn[0],'%Y-%m-%d')
-    dateSt = dt.datetime.strptime(dateSt[0],'%Y-%m-%d')
-    dateEn = dt.datetime.strptime(dateEn[0],'%Y-%m-%d')
+    
     timewin = int(self.getInputValues(identifier='timewin')[0])
     start = min( refSt, dateSt )
     end = max( refEn, dateEn )
@@ -341,7 +344,9 @@ class AnalogsProcess(WPSProcess):
         distfun=distance,
         outformat=outformat,
         calccor=True,
-        silent=False)
+        silent=False, 
+        period=[dt.strftime(refSt,'%Y-%m-%d'),dt.strftime(refEn,'%Y-%m-%d')], 
+        bbox="%s,%s,%s,%s" % (bbox[0],bbox[2],bbox[1],bbox[3]))
     except Exception as e:
       msg = 'failed to generate config file %s ' % e
       logger.debug(msg)

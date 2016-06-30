@@ -19,7 +19,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   calc_grouping= None, conform_units_to=None, memory_limit=None,  prefix=None, 
   regrid_destination=None, regrid_options='bil',
   geom=None, output_format_options=False, search_radius_mult=2., 
-  select_nearest=False, select_ugid=None, spatial_wrapping=None ,time_region=None, time_range=None,
+  select_nearest=False, select_ugid=None, spatial_wrapping=None, time_region=None, time_range=None,
   dir_output=curdir, output_format='nc'):
   '''
   ocgis operation call
@@ -48,7 +48,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   :param select_nearest: neares neighbour selection for point geometries
   :param select_ugid: ugid for appropriate poligons 
   :param spatial_wrapping: how to handle coordinates in case of subsets, options: None(default), 'wrap', 'unwrap'
-  :param time_region:
+  :param time_region: select single month 
   :param time_range: sequence of two datetime.datetime objects to mark start and end point 
   :param dir_output (default= curdir):
   :param output_format:
@@ -64,10 +64,12 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   env.OVERWRITE = True
   env.DIR_OUTPUT = dir_output
   
-  if spatial_wrapping != None:
+  if geom != None:
     spatial_reorder = True
+    spatial_wrapping = 'wrap'
   else: 
     spatial_reorder = False
+    spatial_wrapping = None
   
   
   if prefix == None:
@@ -155,7 +157,6 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
       nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
       element_in_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
       element_in_mb = element_in_kb / 1024.
-
       tile_dim = sqrt(mem_limit/(element_in_mb*nb_time_coordinates_rd)) # maximum chunk size 
       
       try:
@@ -191,7 +192,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         from tempfile import mkstemp
         from cdo import Cdo
         cdo = Cdo()
-        
+
         output = '%s.nc' % uuid.uuid1()
         remap = 'remap%s' % regrid_options  
         call = [op for op in dir(cdo) if remap in op]

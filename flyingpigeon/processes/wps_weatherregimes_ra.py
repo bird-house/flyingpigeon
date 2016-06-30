@@ -127,7 +127,15 @@ class WeatherRegimesRProcess(WPSProcess):
             abstract="Weather regime classification",
             formats=[{"mimeType":"text/plain"}],
             asReference=True,
-            )        
+            )
+
+        self.output_netcdf = self.addComplexOutput(
+            identifier="output_netcdf",
+            title="netCDF fiel",
+            abstract="Prepared netCDF file as input for weatherregime calculation",
+            formats=[{"mimeType":"application/x-netcdf"}],
+            asReference=True,
+            )
 
     def execute(self):
         logger.info('Start process')
@@ -290,3 +298,4 @@ class WeatherRegimesRProcess(WPSProcess):
         self.Routput_graphic.setValue( output_graphics )
         self.output_pca.setValue( file_pca )
         self.output_classification.setValue( file_class )
+        self.output_netcdf.setValue( model_season )

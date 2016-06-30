@@ -18,11 +18,11 @@ args <- commandArgs(trailingOnly = TRUE)
 rworkspace <- args[1]
 Rsrc <- args[2]
 infile <- args[3] # '/home/estimr2/nhempelmann/ea4e5ea8-3df9-11e6-b034-0756a0266937.nc' #args[3]
-variable <- args[4]
+varname <- args[4]
 output_graphics <- args[5]
 file_pca <- args[6]
 file_classification <- args[7]
-season <- args[8]
+seas <- args[8]
 y1 <- args[9]
 y2 <- args[10]
 model_var <- args[11]
@@ -32,12 +32,12 @@ print(' *** Here starts the R execution ***')
 print( rworkspace )
 print( Rsrc )
 print( infile)
-print( variable )
+print( varname )
+print( seas )
 print( output_graphics )
+print( kappa )
 
 source(paste(Rsrc,"classnorm.R",sep=""))
-varname=variable
-seas=season
 
 nc = nc_open(infile)
 
@@ -82,6 +82,7 @@ print( 'data table written' )
 
 ## Classification using k-means approach
 #iplot=TRUE for pre-visualization before save the plot
+
 nreg=kappa
 dat.class=classnorm(pc.dat,nreg=nreg,npc=10,lat=lat,lon=lon)
 print( 'classification done' )
@@ -90,7 +91,7 @@ print( 'classification done' )
 dat.rms=c()
 for(i in 1:nrow(dat.m)){
   diff=dat.m[i,]-dat.class$reg.var[,dat.class$kmeans$cluster[i]]
-  rms=sqrt(sum(diff^2)/ncol(dat.m)) #/100
+  rms=sqrt(sum(diff^2)/ncol(dat.m))/100
   dat.rms=c(dat.rms,rms)
 }
 ## Spatial Correlation to the centroids
@@ -101,34 +102,29 @@ for(i in 1:nrow(dat.m)){
   dat.cor=c(dat.cor,cor.r)
 }
 
-############################################################### plots
+###############
 ##### plot EOFs
-
-## Plotting Weather regimes
 
 pdf(file=output_graphics)
 layout(matrix(1:(2*ceiling(nreg/2)),2,ceiling(nreg/2)))
 par(mar=c(4,6,2,2))
 for(i in 1:nreg){ 
-   champ=dat.class$reg.var[,i]/100                        
+   champ=dat.class$reg.var[,i] #/100                        
     zlev=pretty(champ,20)
     colplot=rainbow(length(zlev)-1,start=3/6,end=1)
     par( mar=c(2.5,2,2,1))
-    
     dum=t(matrix(champ,length(lat),length(lon)))
-    #dum=matrix(champ,length(lon),length(lat)) #if transpose
     lat.sort=sort(lat,index.return=TRUE)
-    titleplot=paste(model_var," (",y1,"-",y2,") weather reg.: ",i,"(",
+    titleplot=paste(model_var," ", seas," ",y1,"-",y2," WR:",i,"(",
                            format(dat.class$perc.r[i],digits=3),"%)")
     contour(lon,sort(lat),dum[,lat.sort$ix],
             xlab="Longitude",ylab="Latitude",main=titleplot,col=colplot,add=FALSE,nlevels=length(zlev),
             levels=zlev,lty=1)
     library(maps)
     map(add=TRUE)
-}#end for i
+}
 dev.off()
 
 ## Saving the classification of Weather Regimes that we will use for projections
-
 save(file=file_classification,dat.class,lon,lat,time,nreg,dat.climatol,dat.rms,dat.cor,mean.clim.ref)
 proc.time() - ptm #ending time script
