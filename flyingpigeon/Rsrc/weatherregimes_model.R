@@ -53,9 +53,7 @@ for (i in 1:nt) dat[i,,] <- t(as.matrix(data[,,i]))
 # two dimentions
 dim(dat)=c(nt,nx*ny)
 nc_close(nc)
-
 dat.m=dat
-
 print( 'data sucessfully loaded' )
 
 ## SLP Climatology 
@@ -63,15 +61,12 @@ dat.climatol=apply(data/100,2,mean,na.rm=TRUE)
 mean.clim.ref=mean(dat.climatol)
 
 #Normalization by latitude by latitute
-
 pond.slp=1/sqrt(cos(lat*pi/180))
 scale.slp=rep(pond.slp,length(lon))
-
 print( 'ponderation calculated' )
 
 # Calculating PCs
 pc.dat=prcomp(dat.m, scale.=scale.slp)
-
 print( 'principal components calculated' )
 npc=10
 
@@ -83,20 +78,19 @@ npc=10
 
 write.table(file=file_pca,pc.dat$rotation[,1:npc],quote=FALSE,
             col.names=FALSE,row.names=FALSE)
-
 print( 'data table written' )
 
 ## Classification using k-means approach
 #iplot=TRUE for pre-visualization before save the plot
 nreg=4
 dat.class=classnorm(pc.dat,nreg=nreg,npc=10,lat=lat,lon=lon)
-
 print( 'classification done' )
+
 ## RMS related to the centroids
 dat.rms=c()
 for(i in 1:nrow(dat.m)){
   diff=dat.m[i,]-dat.class$reg.var[,dat.class$kmeans$cluster[i]]
-  rms=sqrt(sum(diff^2)/ncol(dat.m))/100
+  rms=sqrt(sum(diff^2)/ncol(dat.m)) #/100
   dat.rms=c(dat.rms,rms)
 }
 ## Spatial Correlation to the centroids
@@ -109,8 +103,6 @@ for(i in 1:nrow(dat.m)){
 
 ############################################################### plots
 ##### plot EOFs
-
-
 
 ## Plotting Weather regimes
 

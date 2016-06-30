@@ -1,5 +1,8 @@
 from datetime import date 
 from pywps.Process import WPSProcess
+
+from flyingpigeon.datafetch import _PRESSUREDATA_
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -37,7 +40,7 @@ class AnalogsProcess(WPSProcess):
       type=type(''),
       minOccurs=1,
       maxOccurs=1,
-      allowedValues=['None','NCEP']
+      allowedValues=_PRESSUREDATA_
       )
 
     #self.region = self.addBBoxInput(
@@ -144,15 +147,15 @@ class AnalogsProcess(WPSProcess):
       maxOccurs=1,
       )
 
-    self.variable = self.addLiteralInput(
-      identifier="variable",
-      title="Variable",
-      abstract="Variable name in resource",
-      default='slp',
-      type=type(''),
-      minOccurs=0,
-      maxOccurs=1,
-      )
+    # self.variable = self.addLiteralInput(
+    #   identifier="variable",
+    #   title="Variable",
+    #   abstract="Variable name in resource",
+    #   default='slp',
+    #   type=type(''),
+    #   minOccurs=0,
+    #   maxOccurs=1,
+    #   )
 
     # self.seacyc = self.addLiteralInput(
     #   identifier="seacyc",
@@ -221,7 +224,7 @@ class AnalogsProcess(WPSProcess):
       seacyc = False
     else: 
       seacyc = True
-      
+
     distance = self.getInputValues(identifier='dist')[0]
     outformat = self.getInputValues(identifier='outformat')[0]
     
@@ -236,15 +239,42 @@ class AnalogsProcess(WPSProcess):
     refEn = dt.datetime.strptime(refEn[0],'%Y-%m-%d')
     dateSt = dt.datetime.strptime(dateSt[0],'%Y-%m-%d')
     dateEn = dt.datetime.strptime(dateEn[0],'%Y-%m-%d')
-
     timewin = int(self.getInputValues(identifier='timewin')[0])
-    
     start = min( refSt, dateSt )
     end = max( refEn, dateEn )
+    region = self.getInputValues(identifier='region')[0]
+    bbox = [float(b) for b in region.split(',')]
+    experiment = self.getInputValues(identifier='experiment')[0]      
+    dataset , var = experiment.split('_')
+
+    try:            
+      if dataset == 'NCEP': 
+        if 'z' in var:
+          variable='hgt'
+          level=var.strip('z')
+          #conform_units_to=None
+        else:
+          variable='slp'
+          level=None
+          #conform_units_to='hPa'
+      elif '20CRV2' in var: 
+        if 'z' in level:
+          variable='hgt'
+          level=var.strip('z')
+          #conform_units_to=None
+        else:
+          variable='prmsl'
+          level=None
+          #conform_units_to='hPa'
+      else:
+        logger.error('Reanalyses dataset not known')          
+      logger.info('environment set')
+    except Exception as e: 
+      msg = 'failed to set environment %s ' % e
+      logger.error(msg)  
+      raise Exception(msg)
 
     logger.debug("init took %s seconds.", time.time() - start_time)
-
-
     self.status.set('Read in the arguments', 5)
     #################
     # get input data
@@ -253,33 +283,28 @@ class AnalogsProcess(WPSProcess):
     start_time = time.time()  # measure get_input_data ...
 
     self.status.set('fetching input data', 7)
-    try: 
-      experiment = self.getInputValues(identifier='experiment')[0]
-      if experiment == 'NCEP':
-        #input = get_NCEP(start = start.year, end = end.year )
-        input = reanalyses(start = start.year, end = end.year, variable='slp', dataset='NCEP')
-      elif   experiment == 'None':
-        input = self.getInputValues(identifier='resource')
-      else:
-        logger.error('input experiment not found')
+    try:
+      input = reanalyses(start = start.year, end = end.year, variable=var, dataset=dataset)
 
-      region = self.getInputValues(identifier='region')[0]
-      nc_subset = analogs.subset(resource=input, 
-                                 bbox=region)
+      # if experiment == 'NCEP':
+        
+      # elif   experiment == 'None':
+      #   input = self.getInputValues(identifier='resource')
+      # else:
+      #   logger.error('input experiment not found')
+      #nc_subset = analogs.subset(resource=input, )
+      nc_subset = call(resource=input, variable=variable, geom=bbox, spatial_wrapping='wrap')
     except Exception as e :
-      msg = 'failed to fetch input files %s' % e
+      msg = 'failed to fetch or subset input files %s' % e
       logger.error(msg)
       raise Exception(msg)
-
-    logger.debug("get_input_data took %s seconds.", time.time() - start_time)
-    
+    logger.debug("get_input_subset_dataset took %s seconds.", time.time() - start_time)
     self.status.set('**** Input data fetched', 10)
     
     ########################
     # input data preperation 
     ########################
     self.status.set('Start preparing input data', 12)
-
     start_time = time.time()  # mesure data preperation ...
     
     try: 
@@ -287,7 +312,6 @@ class AnalogsProcess(WPSProcess):
       simulation = call(resource=nc_subset, time_range=[dateSt , dateEn])
       if seacyc == True:
         analogs.seacyc(archive, simulation, method=normalize)
-
     except Exception as e:
       msg = 'failed to prepare archive and simulation files %s ' % e
       logger.debug(msg)
@@ -304,13 +328,12 @@ class AnalogsProcess(WPSProcess):
     ############################
     
     self.status.set('writing config file', 15)
-
     start_time = time.time() # measure write config ...
     
     try:  
       config_file = analogs.get_configfile(files=files, 
         timewin=timewin, 
-        varname='slp', 
+        varname=variable, 
         seacyc=seacyc, 
         cycsmooth=91, 
         nanalog=20, 

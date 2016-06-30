@@ -186,7 +186,6 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     ############################################
     # remapping according to regrid informations
     ############################################
-
     if not regrid_destination == None:
       try:
         from tempfile import mkstemp
