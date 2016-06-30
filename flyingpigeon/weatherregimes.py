@@ -115,25 +115,25 @@ def get_season(nc_file, season='DJF'):
     raise Exception(msg)
   return nc_season
 
-def get_ponderate(nc_file):
-  from netCDF4 import Dataset
-  from numpy import meshgrid, sqrt, cos, pi, broadcast_arrays
+# def get_ponderate(nc_file):
+#   from netCDF4 import Dataset
+#   from numpy import meshgrid, sqrt, cos, pi, broadcast_arrays
 
-  variable = utils.get_variable(nc_file)
-  ds = Dataset(nc_file, mode='a')
+#   variable = utils.get_variable(nc_file)
+#   ds = Dataset(nc_file, mode='a')
   
-  lat = ds.variables['lat']
-  lon = ds.variables['lon']
+#   lat = ds.variables['lat']
+#   lon = ds.variables['lon']
 
-  lons, lats = meshgrid(lon, lat)
-  vals = ds.variables[variable]
-  ponderate = 1/sqrt(cos(lats[:]*pi/180))
+#   lons, lats = meshgrid(lon, lat)
+#   vals = ds.variables[variable]
+#   ponderate = 1/sqrt(cos(lats[:]*pi/180))
 
-  weights3D = broadcast_arrays(vals,ponderate)[1]
-  vals_weighted = vals[:] * weights3D
-  vals[:,:,:] = vals_weighted[:,:,:]  
-  ds.close()
-  return ponderate
+#   weights3D = broadcast_arrays(vals,ponderate)[1]
+#   vals_weighted = vals[:] * weights3D
+#   vals[:,:,:] = vals_weighted[:,:,:]  
+#   ds.close()
+#   return ponderate
 
 #def smooth(y, window_size, order, deriv=0, rate=1):
 #     """Smooth (and optionally differentiate) data with a Savitzky-Golay filter.
