@@ -36,7 +36,7 @@ class AnalogsProcess(WPSProcess):
       identifier="experiment",
       title="Data experiment",
       abstract="Choose the experiment (if 'None' is selected, provide a resource)",
-      default="NCEP",
+      default="NCEP_slp",
       type=type(''),
       minOccurs=1,
       maxOccurs=1,
