@@ -26,9 +26,9 @@ season <- args[8]
 y1 <- args[9]
 y2 <- args[10]
 model_var <- args[11]
+kappa <- as.numeric(args[12])
 
 print(' *** Here starts the R execution ***')
-
 print( rworkspace )
 print( Rsrc )
 print( infile)
@@ -82,7 +82,7 @@ print( 'data table written' )
 
 ## Classification using k-means approach
 #iplot=TRUE for pre-visualization before save the plot
-nreg=4
+nreg=kappa
 dat.class=classnorm(pc.dat,nreg=nreg,npc=10,lat=lat,lon=lon)
 print( 'classification done' )
 

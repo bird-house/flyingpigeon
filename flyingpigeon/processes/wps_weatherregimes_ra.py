@@ -88,7 +88,19 @@ class WeatherRegimesRProcess(WPSProcess):
             maxOccurs=1,
             allowedValues= _PRESSUREDATA_ 
             )
+
+        self.kappa = self.addLiteralInput(
+            identifier="kappa",
+            title="Kappa Value",
+            abstract="Set the number of clusters",
+            default=4,
+            type=type(1),
+            minOccurs=1,
+            maxOccurs=1,
+            allowedValues=range(1,11)
+            )
         
+
         ######################
         ### define the outputs
         ######################
@@ -142,6 +154,8 @@ class WeatherRegimesRProcess(WPSProcess):
 
             start = dt.strptime(period.split('-')[0] , '%Y%m%d')
             end = dt.strptime(period.split('-')[1] , '%Y%m%d')
+
+            kappa = int(self.getInputValues(identifier='kappa')[0])
             
             logger.info('bbox %s' % bbox)
             logger.info('period %s' % str(period))
@@ -250,7 +264,7 @@ class WeatherRegimesRProcess(WPSProcess):
                   '%s' % output_graphics, '%s' % file_pca,
                    '%s' % file_class, '%s' % season, 
                    '%s' % start.year, '%s' % end.year,
-                   '%s' % model_var]
+                   '%s' % model_var, '%s' % kappa]
           logger.info('Rcall builded')
         except Exception as e: 
           msg = 'failed to build the R command %s' % e
