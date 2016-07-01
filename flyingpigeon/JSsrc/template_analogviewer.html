@@ -44,10 +44,10 @@
         var poiDates = [];
         var poiDates_manual = []; //filled by input date boxes
         var day = 60 * 60 * 24 * 1000; //day in milliseconds
-        //default date range for poiChart upon page load
-        var init_date0 = dateFormat.parse("20090101"),
-            init_date1 = dateFormat.parse("20111231");
-
+        
+        //initial date range selected on page load, computed one year from first date upon page load
+        var init_date0, init_date1, dateRange = 365;
+        
         //http://www.colourlovers.com/palette/3860796/Melting_Glaciers
         var decadeColours = d3.scale.ordinal()
             .range(["#67739F", "#67739F", "#67739F", "#67739F", "#B1CEF5",
@@ -63,10 +63,9 @@
             3: "SON"
         };
 
-
-        // vars for scatterPlot (not implemented in this branch)
-        var corrRange = [-0.08, 1.0];
-        var disRange = [280, 1400];
+        
+        // Data ranges for plots
+        var corrRange = [], disRange = [];
         var corrBinWidth = 0.1,
             disBinWidth = 100.;
         //====================================================================
@@ -77,6 +76,31 @@
 
                 minDate = dateFormat.parse(data[0].dateRef); //first date in file
                 maxDate = dateFormat.parse(data[Object.keys(data).length - 1].dateRef); //last date in file
+
+                //Set initial date range to display  
+                init_date0 = dateFormat.parse(data[0].dateRef);
+                //Add one year to initial date. If > maxDate, use maxDate
+                if (dateFormat.parse(data[0].dateRef).addDays(365).getTime() < maxDate.getTime()) {
+                  init_date1 = dateFormat.parse(data[0].dateRef).addDays(365);  
+                } else {
+                  init_date1 = maxDate;
+                }
+
+                //Sort by correlation to find correlation range
+                data.sort(function(a, b) {
+                  return parseFloat(a.Corr) - parseFloat(b.Corr);
+                });
+                //Save min and max correlation (rounded down/up)
+                corrRange = [Math.floor(data[0].Corr),
+                             Math.ceil(data[Object.keys(data).length - 1].Corr)];
+
+                //Sort by distance to find distance range
+                data.sort(function(a, b) {
+                  return parseFloat(a.Dis) - parseFloat(b.Dis);
+                });
+                //Save min and max distance (rounded down/up)
+                disRange = [Math.floor(data[0].Dis/100)*100, 
+                            Math.ceil(data[Object.keys(data).length - 1].Dis/100)*100];
 
                 data.forEach(function(d, idx) {
 
@@ -114,7 +138,12 @@
 
                 update1();
 
-            });
+            }); //end d3.tsv
+            
+            Date.prototype.addDays = function(days) {
+                this.setDate(this.getDate() + parseInt(days));
+                return this;
+            };
 
         }
 
