@@ -19,6 +19,9 @@ Makefile.config
 *.sqlite
 *.bak
 
+# R 
+*.Rhistory
+
 # Unit test / Coverage reports
 .cache
 .coverage
