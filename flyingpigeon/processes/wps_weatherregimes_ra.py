@@ -14,7 +14,7 @@ class WeatherRegimesRProcess(WPSProcess):
         WPSProcess.__init__(
             self,
             identifier = "weatherregimes_reanalyse",
-            title = "Weather Regimes -- Reanalyses data (R based)",
+            title = "Weather Regimes -- Reanalyses data",
             version = "0.1",
             metadata=[
                 {"title":"Weather Regimes -- Reanalyses data"},

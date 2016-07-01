@@ -13,11 +13,11 @@ class WeatherRegimesRProcess(WPSProcess):
     def __init__(self):
         WPSProcess.__init__(
             self,
-            identifier = "weatherregimes_reanalyse",
+            identifier = "weatherregimes_model",
             title = "Weather Regimes -- Climate model data",
             version = "0.1",
             metadata=[
-                {"title":"Weather Regimes -- Reanalyses data (R based)"},
+                {"title":"Weather Regimes -- Climate model data"},
                 ],
             abstract="Weather Regimes based on pressure patterns, fetching selected Realayses Datasets",
             statusSupported=True,
@@ -156,7 +156,7 @@ class WeatherRegimesRProcess(WPSProcess):
             #model_var = self.getInputValues(identifier='reanalyses')[0]
             period = self.getInputValues(identifier='period')[0]            
             anualcycle = self.getInputValues(identifier='anualcycle')[0]
-            model, var = model_var.split('_')
+            # model, var = model_var.split('_')
             
             bbox = [float(b) for b in bbox.split(',')]
 
@@ -226,7 +226,10 @@ class WeatherRegimesRProcess(WPSProcess):
         # from flyingpigeon.weatherregimes import get_level
         
         from flyingpigeon.ocgis_module import call 
+        from flyingpigeon.utils import get_variable
         time_range = [start, end]
+      
+        variable = get_variable(resource)
         model_subset = call(resource=resource, variable=variable, 
           geom=bbox, spatial_wrapping='wrap', time_range=time_range,  #conform_units_to=conform_units_to
           )
@@ -272,7 +275,7 @@ class WeatherRegimesRProcess(WPSProcess):
                   '%s' % output_graphics, '%s' % file_pca,
                    '%s' % file_class, '%s' % season, 
                    '%s' % start.year, '%s' % end.year,
-                   '%s' % model_var, '%s' % kappa]
+                   '%s' % 'MODEL', '%s' % kappa]
           logger.info('Rcall builded')
         except Exception as e: 
           msg = 'failed to build the R command %s' % e
