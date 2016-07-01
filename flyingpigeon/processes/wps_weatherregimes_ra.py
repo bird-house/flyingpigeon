@@ -17,7 +17,7 @@ class WeatherRegimesRProcess(WPSProcess):
             title = "Weather Regimes -- Reanalyses data (R based)",
             version = "0.1",
             metadata=[
-                {"title":"Weather Regimes -- Reanalyses data (R based)"},
+                {"title":"Weather Regimes -- Reanalyses data"},
                 ],
             abstract="Weather Regimes based on pressure patterns, fetching selected Realayses Datasets",
             statusSupported=True,
@@ -49,7 +49,7 @@ class WeatherRegimesRProcess(WPSProcess):
         self.season = self.addLiteralInput(
             identifier="season",
             title="Time region",
-            abstract="Select the months to define the time region (None == whole year will be analysed)",
+            abstract="Select the months to define the time region (all == whole year will be analysed)",
             default="DJF",
             type=type(''),
             minOccurs=1,
@@ -91,8 +91,8 @@ class WeatherRegimesRProcess(WPSProcess):
 
         self.kappa = self.addLiteralInput(
             identifier="kappa",
-            title="Kappa Value",
-            abstract="Set the number of clusters",
+            title="Nr of Weather regimes",
+            abstract="Set the number of clusters to be detected",
             default=4,
             type=type(1),
             minOccurs=1,
@@ -154,7 +154,6 @@ class WeatherRegimesRProcess(WPSProcess):
             bbox = self.getInputValues(identifier='BBox')[0]
             model_var = self.getInputValues(identifier='reanalyses')[0]
             period = self.getInputValues(identifier='period')[0]            
-            #datemodelen = self.getInputValues(identifier='datemodelen')[0]
             anualcycle = self.getInputValues(identifier='anualcycle')[0]
             model, var = model_var.split('_')
             
