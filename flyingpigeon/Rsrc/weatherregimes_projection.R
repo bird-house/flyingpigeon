@@ -18,38 +18,67 @@ seas="JJA"
 ## load weather regimes calculated in a reference period (1970-2010)
 y1=1970
 y2=2010
-fname=paste(NCEPdir,"NCEP_regimes_",y1,"-",y2,"_",seas,".Rdat",sep="")
-print(paste("Reading",fname,"for reference WR"))
-load(fname)
+# fname=paste(NCEPdir,"NCEP_regimes_",y1,"-",y2,"_",seas,".Rdat",sep="")
+
+birdhouse_output = '~/.conda/envs/birdhouse/var/lib/pywps/outputs/flyingpigeon/'
+Rdat=paste(birdhouse_output,'output_classification-9041c716-3f83-11e6-ae14-4f6097e9069b.Rdat',sep="")
+print(paste("Reading",Rdat,"for reference WR"))
+load(Rdat)
 
 ## load EOFs for the reference period (NCEP 1970-2010)
-fname=paste(NCEPdir,varname,"_EOF_",seas,"_clim.dat",sep="")
-print(paste("Reading",fname,"for EOFs"))
-EOF.r=read.table(file=fname)
+dat = paste(birdhouse_output,'output_pca-9041c716-3f83-11e6-ae14-4f6097e9069b.dat',sep="")
+# fname=paste(NCEPdir,varname,"_EOF_",seas,"_clim.dat",sep="")
+print(paste("Reading",dat,"for EOFs"))
+
+EOF.r=read.table(file=dat)
 n.eof=ncol(EOF.r)
 
 
+# #open netcdf4
+# fname = paste(NCEPdir,"slp.",yr1,"-",yr2,"_NA.nc",sep="")
+# nc = nc_open(fname)
+# datNCEP=lirevarnc(nc,varname)
+# dat.NCEP.dum=sousseasmean(datNCEP$dat,datNCEP$conv.time,l.year=c(1970:1999))
+# datNCEP$anom=dat.NCEP.dum$anom
+# datNCEP$seascyc=dat.NCEP.dum$seascyc
+# conv.time=datNCEP$conv.time
+# nc_close(nc)
+# 
+# #Define months and seasons
+# #seas=JJA
+# l.seas=list(JJA=6:8,SON=9:11,DJF=c(12,1,2),SONDJF=c(9:12,1,2),MAM=c(3,4,5),all=c(1:12),
+#             JJAS=6:9,DJFM=c(1:3,12),MAMJ=3:6,FMA=c(2,3,4),DJFM=c(12,1,2,3),MAMJ=c(3:6),JJAS=c(6:9),SOND=c(9:12))
+# ISEAS=which(datNCEP$conv.time$month %in% l.seas[[seas]])
+# dat.m=datNCEP$anom[ISEAS,]
+
 #open netcdf4
-fname = paste(NCEPdir,"slp.",yr1,"-",yr2,"_NA.nc",sep="")
-nc = nc_open(fname)
-datNCEP=lirevarnc(nc,varname)
-dat.NCEP.dum=sousseasmean(datNCEP$dat,datNCEP$conv.time,l.year=c(1970:1999))
-datNCEP$anom=dat.NCEP.dum$anom
-datNCEP$seascyc=dat.NCEP.dum$seascyc
-conv.time=datNCEP$conv.time
+
+infile = '~/birdhouse/flyingpigeon/notebooks/6f412034-3fa1-11e6-8fa8-25c1f77d80b4.nc'
+varname = 'psl'
+
+nc = nc_open(infile)
+data=ncvar_get(nc,varname)
+lon=ncvar_get(nc,'lon')
+lat=ncvar_get(nc,'lat')
+time=ncvar_get(nc,'time')
+nx=dim(data)[2];ny=dim(data)[1]
+nt=dim(data)[3]
+# reshape order lat-lon-time
+dat = data*NA; dim(dat) <- c(nt,ny,nx)
+for (i in 1:nt) dat[i,,] <- t(as.matrix(data[,,i]))
+# two dimentions
+dim(dat)=c(nt,nx*ny)
 nc_close(nc)
+dat.m=dat
+print( 'data sucessfully loaded' )
 
-#Define months and seasons
-#seas=JJA
-l.seas=list(JJA=6:8,SON=9:11,DJF=c(12,1,2),SONDJF=c(9:12,1,2),MAM=c(3,4,5),all=c(1:12),
-            JJAS=6:9,DJFM=c(1:3,12),MAMJ=3:6,FMA=c(2,3,4),DJFM=c(12,1,2,3),MAMJ=c(3:6),JJAS=c(6:9),SOND=c(9:12))
-ISEAS=which(datNCEP$conv.time$month %in% l.seas[[seas]])
-dat.m=datNCEP$anom[ISEAS,]
-print(paste("Classification for",seas))
 
-## SLP Climatology and ponderation by latitude
-dat.climatol=apply(datNCEP$dat[ISEAS,]/100,2,mean,na.rm=TRUE)
-mean.clim=mean(dat.climatol)
+
+# print(paste("Classification for",seas))
+# 
+# ## SLP Climatology and ponderation by latitude
+# dat.climatol=apply(datNCEP$dat[ISEAS,]/100,2,mean,na.rm=TRUE)
+# mean.clim=mean(dat.climatol)
 
 #correction:removing spatial average. To be used with models or different datasets
 #mean.clim.ref=1013.96389304258  #NCEP(1970-2010)
@@ -58,8 +87,8 @@ mean.clim=mean(dat.climatol)
 
 ## Calculate projections for EOFs(PC empirics)
 ## Normalization by latitude
-lon=datNCEP$lon
-lat=datNCEP$lat
+# lon=datNCEP$lon
+# lat=datNCEP$lat
 pond.slp=1/sqrt(cos(lat*pi/180))
 scale.slp=rep(pond.slp,length(lon))
 dat.scale=scale(dat.m,scale=scale.slp)
@@ -78,10 +107,10 @@ for(i in 1:nreg){
     cor.reg=cbind(cor.reg,dum)
 }
 best.reg=apply(rms.reg,1,which.min)
-dist.reg=sqrt(apply(rms.reg,1,min)/nrow(datNCEP$anom))
+dist.reg=sqrt(apply(rms.reg,1,min)/nrow(dat.m))
 
 # Save classification in Results
-timeout=datNCEP$time[ISEAS]
+timeout=time # datNCEP$time[ISEAS]
 varout=cbind(timeout,best.reg,dist.reg,cor.reg)
 fname=paste(Results,"NCEP_SLP_",seas,"_",yr1,"-",yr2,"_classif.dat",sep="")
 header=c("Time","Best.reg","rms","Cor1","Cor2","Cor3","Cor4")
