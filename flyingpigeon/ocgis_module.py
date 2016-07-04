@@ -19,7 +19,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   calc_grouping= None, conform_units_to=None, memory_limit=None,  prefix=None, 
   regrid_destination=None, regrid_options='bil',
   geom=None, output_format_options=False, search_radius_mult=2., 
-  select_nearest=False, select_ugid=None, spatial_wrapping=None ,time_region=None, time_range=None,
+  select_nearest=False, select_ugid=None, spatial_wrapping=None, time_region=None, time_range=None,
   dir_output=curdir, output_format='nc'):
   '''
   ocgis operation call
@@ -48,7 +48,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   :param select_nearest: neares neighbour selection for point geometries
   :param select_ugid: ugid for appropriate poligons 
   :param spatial_wrapping: how to handle coordinates in case of subsets, options: None(default), 'wrap', 'unwrap'
-  :param time_region:
+  :param time_region: select single month 
   :param time_range: sequence of two datetime.datetime objects to mark start and end point 
   :param dir_output (default= curdir):
   :param output_format:
@@ -63,10 +63,13 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   env.DIR_SHPCABINET = DIR_SHP
   env.OVERWRITE = True
   env.DIR_OUTPUT = dir_output
-  if spatial_wrapping != None:
+  
+  if geom != None:
     spatial_reorder = True
+    spatial_wrapping = 'wrap'
   else: 
     spatial_reorder = False
+    spatial_wrapping = None
   
   
   if prefix == None:
@@ -94,19 +97,19 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         dimension_map=dimension_map, conform_units_to=conform_units_to, 
         time_region=time_region, time_range=time_range)
       ops = OcgOperations(dataset=rd,
-          output_format_options=output_format_options,
-          spatial_wrapping=spatial_wrapping,
-          # spatial_reorder = spatial_reorder,
-          # options=options,
-          calc=calc,
-          calc_grouping=calc_grouping,
-          geom=geom,
-          output_format=output_format,
-          prefix=prefix,
-          search_radius_mult=search_radius_mult,
-          select_nearest=select_nearest,
-          select_ugid=select_ugid, 
-          add_auxiliary_files=False)
+        output_format_options=output_format_options,
+        spatial_wrapping=spatial_wrapping,
+        spatial_reorder=spatial_reorder,
+        # options=options,
+        calc=calc,
+        calc_grouping=calc_grouping,
+        geom=geom,
+        output_format=output_format,
+        prefix=prefix,
+        search_radius_mult=search_radius_mult,
+        select_nearest=select_nearest,
+        select_ugid=select_ugid, 
+        add_auxiliary_files=False)
       logger.info('OcgOperations set')
       
     except Exception as e: 
@@ -154,17 +157,17 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
       nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
       element_in_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
       element_in_mb = element_in_kb / 1024.
-
       tile_dim = sqrt(mem_limit/(element_in_mb*nb_time_coordinates_rd)) # maximum chunk size 
       
       try:
         logger.info('ocgis module call compute with chunks')
+        print 'ocgis module call compute with chunks'
         if calc == None:
           calc = '%s=%s*1' % (variable, variable)
           logger.info('calc set to = %s ' %  calc)
           ops = OcgOperations(dataset=rd,
             output_format_options=output_format_options,
-            # spatial_wrapping=spatial_wrapping,
+            spatial_wrapping=spatial_wrapping,
             # options=options,
             calc=calc,
             calc_grouping=calc_grouping,
@@ -179,24 +182,20 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
       except Exception as e: 
         logger.debug('failed to compute ocgis with chunks')
         raise
-
     logger.info('Succeeded with ocgis module call function')
 
     ############################################
     # remapping according to regrid informations
     ############################################
-
     if not regrid_destination == None:
       try:
         from tempfile import mkstemp
         from cdo import Cdo
         cdo = Cdo()
-        
+
         output = '%s.nc' % uuid.uuid1()
-        remap = 'remap%s' % regrid_options
-        
+        remap = 'remap%s' % regrid_options  
         call = [op for op in dir(cdo) if remap in op]
-        
         cmd = "output = cdo.%s('%s',input='%s', output='%s')" % (str(call[0]), regrid_destination, geom_file, output) 
         exec cmd
       except Exception as e: 
@@ -204,5 +203,4 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         raise 
     else:
       output = geom_file
-  
-  return output 
+  return output

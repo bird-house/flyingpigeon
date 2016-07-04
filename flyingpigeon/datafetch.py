@@ -16,16 +16,14 @@ _PRESSUREDATA_ = ['NCEP_slp', 'NCEP_z1000',   'NCEP_z925',   'NCEP_z850',   'NCE
          '20CRV2c_z200',   '20CRV2c_z150',   '20CRV2c_z100',    '20CRV2c_z70',    '20CRV2c_z50',    '20CRV2c_z30',    '20CRV2c_z20',    '20CRV2c_z10',
          ]
 
-
 _EOBSVARIABLES_ = ['tg', 'tx' , 'tn', 'rr']
-
 
 def reanalyses( start=1948, end=None, variable='slp', dataset='NCEP'):
   """
   fetching the reanalysis data (NCEP, 20CR or ERA_20C) to local file system
   :param start: int for start year to fetch source data
   :param end: int for end year to fetch source data (if None, current year will be the end)
-  :param variable: variable name (default='slp')
+  :param variable: variable name (default='slp'), geopotential hight is given as e.g. z700
   :param dataset: default='NCEP' 
   :return list: list of path/files.nc 
   """

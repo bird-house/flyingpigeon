@@ -106,6 +106,7 @@ class ClippingProcess(WPSProcess):
                 resource = urls,
                 polygons = regions, # self.region.getValue(),
                 mosaik = mosaik,
+                spatial_wrapping='wrap',
                 variable = variable, 
                 dir_output = os.path.abspath(os.curdir),
                 dimension_map=dimension_map,

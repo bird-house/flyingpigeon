@@ -351,11 +351,11 @@ def get_timerange(resources):
       s = num2date(time[0], time.units , time.calendar)
       e = num2date(time[-1], time.units , time.calendar)
     elif hasattr(time , 'units'):
-      s = num2date(time[0], time.units , time.calendar)
-      e = num2date(time[-1], time.units , time.calendar)
+      s = num2date(time[0], time.units )
+      e = num2date(time[-1], time.units )
     else: 
-      s = num2date(time[0], time.units , time.calendar)
-      e = num2date(time[-1], time.units , time.calendar)
+      s = num2date(time[0])
+      e = num2date(time[-1])
     # to do: include frequency
     start = '%s%s%s'  % (s.year, str(s.month).zfill(2) ,str(s.day).zfill(2)) 
     end = '%s%s%s'  %   (e.year,  str(e.month).zfill(2) ,str(e.day).zfill(2))
@@ -703,6 +703,7 @@ def unroate_pole(resource, write_to_file=True):
     lon[:] = lons
   
   ds.close()
+  
   return lats, lons
 
 class FreeMemory(object):

@@ -3,9 +3,8 @@ Processes for Weather Classification
 Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 """
 from flyingpigeon.datafetch import _PRESSUREDATA_
-
 from pywps.Process import WPSProcess
-from datetime import  date #datetime,
+# from datetime import  date 
 
 import logging
 logger = logging.getLogger(__name__)
@@ -15,10 +14,10 @@ class WeatherRegimesRProcess(WPSProcess):
         WPSProcess.__init__(
             self,
             identifier = "weatherregimes_reanalyse",
-            title = "Weather Regimes -- Reanalyses data (R based)",
+            title = "Weather Regimes -- Reanalyses data",
             version = "0.1",
             metadata=[
-                {"title":"Weather Regimes -- Reanalyses data (R based)"},
+                {"title":"Weather Regimes -- Reanalyses data"},
                 ],
             abstract="Weather Regimes based on pressure patterns, fetching selected Realayses Datasets",
             statusSupported=True,
@@ -27,55 +26,55 @@ class WeatherRegimesRProcess(WPSProcess):
 
         # Literal Input Data
         # ------------------
-        #self.BBox = self.addBBoxInput(
-            #identifier="BBox",
-            #title="Bounding Box",
-            #abstract="coordinates to define the region for weather classification",
-            #minOccurs=1,
-            #maxOccurs=1,
-            #crss=['EPSG:4326']
-            #)
+        # self.BBox = self.addBBoxInput(
+        #     identifier="BBox",
+        #     title="Bounding Box",
+        #     abstract="coordinates to define the region for weather classification",
+        #     minOccurs=1,
+        #     maxOccurs=1,
+        #     default=[-80,50,22.5,70],
+        #     crss=['EPSG:4326']
+        #     )
 
         self.BBox = self.addLiteralInput(
             identifier="BBox",
             title="Region",
             abstract="coordinates to define the region: (minlon,maxlon,minlat,maxlat)",
-            default='-80,50,22.5,70', #  cdo syntax: 'minlon,maxlon,minlat,maxlat' ; ocgis syntax (minlon,minlat,maxlon,maxlat)
+            default='-80,22.5,50,70', #  cdo syntax: 'minlon,maxlon,minlat,maxlat' ; ocgis syntax (minlon,minlat,maxlon,maxlat)
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
             )
 
-        self.time_region = self.addLiteralInput(
-            identifier="time_region",
+        self.season = self.addLiteralInput(
+            identifier="season",
             title="Time region",
-            abstract="Select the months to define the time region (None == whole year will be analysed)",
+            abstract="Select the months to define the time region (all == whole year will be analysed)",
             default="DJF",
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
-            allowedValues= ['JJA','SON','DJF','SONDJF','MAM','all',
-            'JJAS','DJFM','MAMJ','FMA','DJFM','MAMJ',
-            'JJAS','SOND']
+            allowedValues= ['JJA','SON','DJF','MAM','all',
+            'JJAS','DJFM','MAMJ','FMA','SOND', 'SONDJF','MAMJJA']
             )
 
-        self.datemodelst = self.addLiteralInput(
-            identifier="datemodelst",
-            title="Start of period",
-            abstract="Date to start analysing the reanalyses data (if not set, the first date of the dataset will be taken)",
-            default="1970-01-01",
-            type=type(date(2013,01,01)),
-            minOccurs=0,
+        self.period = self.addLiteralInput(
+            identifier="period",
+            title="Period for weatherregime calculation",
+            abstract="Period for analysing the dataset",
+            default="19700101-20101231",
+            type=type(''),
+            minOccurs=1,
             maxOccurs=1,
             )
 
-        self.datemodelen = self.addLiteralInput(
-            identifier="datemodelen",
-            title="End of period",
-            abstract="Date to end analysing the reanalyses data (if not set, the first date of the dataset will be taken)",
-            default="2010-12-31",
-            type=type(date(2014,12,31)),
-            minOccurs=0,
+        self.anualcycle = self.addLiteralInput(
+            identifier="anualcycle",
+            title="Period for anualcycle calculation",
+            abstract="Period for anual cycle calculation",
+            default="19700101-19991231",
+            type=type(''),
+            minOccurs=1,
             maxOccurs=1,
             )
 
@@ -89,7 +88,19 @@ class WeatherRegimesRProcess(WPSProcess):
             maxOccurs=1,
             allowedValues= _PRESSUREDATA_ 
             )
+
+        self.kappa = self.addLiteralInput(
+            identifier="kappa",
+            title="Nr of Weather regimes",
+            abstract="Set the number of clusters to be detected",
+            default=4,
+            type=type(1),
+            minOccurs=1,
+            maxOccurs=1,
+            allowedValues=range(1,11)
+            )
         
+
         ######################
         ### define the outputs
         ######################
@@ -117,14 +128,14 @@ class WeatherRegimesRProcess(WPSProcess):
             formats=[{"mimeType":"text/plain"}],
             asReference=True,
             )
-        
-        #self.output_info = self.addComplexOutput(
-            #identifier="output_info",
-            #title="Weather Regime per date",
-            #abstract="Tar file containing tables of dates with appropriate weather regime association",
-            #formats=[{"mimeType":"application/x-tar"}],
-            #asReference=True,
-            #)         
+
+        self.output_netcdf = self.addComplexOutput(
+            identifier="output_netcdf",
+            title="netCDF fiel",
+            abstract="Prepared netCDF file as input for weatherregime calculation",
+            formats=[{"mimeType":"application/x-netcdf"}],
+            asReference=True,
+            )
 
     def execute(self):
         logger.info('Start process')
@@ -138,19 +149,24 @@ class WeatherRegimesRProcess(WPSProcess):
         ################################
         try: 
             logger.info('read in the arguments')
-           # resources = self.getInputValues(identifier='resources')
-            time_region = self.getInputValues(identifier='time_region')[0]
+            # resources = self.getInputValues(identifier='resources')
+            season = self.getInputValues(identifier='season')[0]
             bbox = self.getInputValues(identifier='BBox')[0]
             model_var = self.getInputValues(identifier='reanalyses')[0]
-            datemodelst = self.getInputValues(identifier='datemodelst')[0]            
-            datemodelen = self.getInputValues(identifier='datemodelen')[0]
-            
+            period = self.getInputValues(identifier='period')[0]            
+            anualcycle = self.getInputValues(identifier='anualcycle')[0]
             model, var = model_var.split('_')
             
+            bbox = [float(b) for b in bbox.split(',')]
+
+            start = dt.strptime(period.split('-')[0] , '%Y%m%d')
+            end = dt.strptime(period.split('-')[1] , '%Y%m%d')
+
+            kappa = int(self.getInputValues(identifier='kappa')[0])
+            
             logger.info('bbox %s' % bbox)
-            logger.info('datemodelst %s' % str(datemodelst))
-            logger.info('time_region %s' % str(time_region))
-            logger.info('bbox is set to %s' % bbox)
+            logger.info('period %s' % str(period))
+            logger.info('season %s' % str(season))
             
         except Exception as e: 
             logger.debug('failed to read in the arguments %s ' % e)
@@ -159,41 +175,25 @@ class WeatherRegimesRProcess(WPSProcess):
         ### set the environment
         ###########################
         
-        try:  
-          if datemodelst != None and datemodelen != None : 
-            startyr = dt.strptime(datemodelst, '%Y-%m-%d')
-            endyr = dt.strptime(datemodelen, '%Y-%m-%d')
-            time_range = [startyr,endyr]
-          else: 
-            time_range = None
-            
+        try:            
           if model == 'NCEP': 
             if 'z' in var:
               variable='hgt'
               level=var.strip('z')
               conform_units_to=None
-#              vmin=-200
-#              vmax=200
             else:
               variable='slp'
               level=None
               conform_units_to='hPa'
-#              vmin=-35
-#              vmax=35
-
           elif '20CRV2' in model: 
             if 'z' in var:
               variable='hgt'
               level=var.strip('z')
               conform_units_to=None
-#              vmin=-200
-#              vmax=200
             else:
               variable='prmsl'
               level=None
               conform_units_to='hPa'
-#              vmin=-35
-#              vmax=35
           else:
             logger.error('Reanalyses dataset not known')          
           logger.info('environment set')
@@ -208,9 +208,9 @@ class WeatherRegimesRProcess(WPSProcess):
 
         from flyingpigeon.datafetch import reanalyses as rl            
         try:
-          model_nc = rl(start=int(datemodelst.split('-')[0]), 
-                              end=int(datemodelen.split('-')[0]), 
-                              dataset=model, variable=var)
+          model_nc = rl(start=start.year , 
+                        end=end.year , 
+                        dataset=model, variable=var)
 
           logger.info('reanalyses data fetched')
         except Exception as e:
@@ -223,41 +223,31 @@ class WeatherRegimesRProcess(WPSProcess):
         ############################################################
         
         # from flyingpigeon.weatherregimes import get_level
-        from flyingpigeon.ocgis_module import call
-        from cdo import Cdo
-        cdo = Cdo()
+        from flyingpigeon.ocgis_module import call 
 
-        # fixing this as soon as possible :-)) 
-#        time_region = {'month':[6,7,8]}
-
-        model_grouped = call(resource=model_nc, variable=variable, conform_units_to=conform_units_to)
-                        #time_region=time_region,
-        ip, model_subset = mkstemp(dir='.',suffix='.nc')
+        time_range = [start, end]
+        model_subset = call(resource=model_nc, variable=variable, 
+          geom=bbox, spatial_wrapping='wrap', time_range=time_range, # conform_units_to=conform_units_to
+          )
+        logger.info('Dataset subset done: %s ' % model_subset)
         
-        model_subset  = cdo.sellonlatbox('%s' % bbox, 
-          input=model_grouped,
-          output=model_subset)
-        logger.info('subset done: %s ' % model_subset)
-        
-        #if level != None:
-        #  nc_level = get_level( nc_subset, level) 
-        #  nc_subset =  nc_level
-
-        ########################
+        ##############################################
         ### computing anomalies 
-        ########################
-         
-#        model_anomal = wr.get_anomalies(model_subset)
+        ##############################################
+        
+        cycst = anualcycle.split('-')[0]
+        cycen = anualcycle.split('-')[0]
+        reference = [dt.strptime(cycst,'%Y%m%d'), dt.strptime(cycen,'%Y%m%d')]
+        model_anomal = wr.get_anomalies(model_subset, reference=reference)
 
-        ############################
-        ### ponderation by latitude
-        ############################
+        #####################
+        ### extracting season
+        #####################
+        model_season = wr.get_season(model_anomal, season=season)
 
-#        model_ponderate = wr.get_ponderate(model_anomal)
-
-        ############################################
+        #######################
         ### call the R scripts
-        ############################################
+        #######################
         import shlex
         import subprocess
         from flyingpigeon import config
@@ -268,21 +258,20 @@ class WeatherRegimesRProcess(WPSProcess):
           Rsrc = config.Rsrc_dir() 
           Rfile = 'weatherregimes_model.R'
           
-          infile = model_subset # model_ponderate 
+          infile = model_season  #model_subset #model_ponderate 
           modelname = model
-          yr1 = datemodelst.split('-')[0]
-          yr2 = datemodelen.split('-')[0]
+          yr1 = start.year
+          yr2 = end.year
           ip, output_graphics = mkstemp(dir=curdir ,suffix='.pdf')
           ip, file_pca = mkstemp(dir=curdir ,suffix='.dat')
           ip, file_class = mkstemp(dir=curdir ,suffix='.Rdat')
-          
-          # cmd = 'Rscipt  %s %s/ %s/ %s %s %s %s %s %s' % (join(Rsrc,Rfile), curdir, Rsrc, infile, variable, modelname, yr1,yr2, output_graphics)
-          #args =shlex.split(cmd)
-          
+                    
           args = ['Rscript', join(Rsrc,Rfile), '%s/' % curdir, 
-                  '%s/' % Rsrc, '%s'% infile, '%s' % variable,
-                  '%s' % yr1, '%s' % yr2, 
-                  '%s' % output_graphics, '%s' % file_pca, '%s' % file_class, '%s' % time_region]
+                  '%s/' % Rsrc, '%s'% infile, '%s' % variable, 
+                  '%s' % output_graphics, '%s' % file_pca,
+                   '%s' % file_class, '%s' % season, 
+                   '%s' % start.year, '%s' % end.year,
+                   '%s' % model_var, '%s' % kappa]
           logger.info('Rcall builded')
         except Exception as e: 
           msg = 'failed to build the R command %s' % e
@@ -290,10 +279,8 @@ class WeatherRegimesRProcess(WPSProcess):
           raise Exception(msg)
         try:
           output,error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE).communicate() #, shell=True
-          
           logger.info('R outlog info:\n %s ' % output)
           logger.debug('R outlog errors:\n %s ' % error)
-          
           if len(output) > 0:            
             self.status.set('**** weatherregime in R suceeded', 90)
           else:
@@ -310,3 +297,4 @@ class WeatherRegimesRProcess(WPSProcess):
         self.Routput_graphic.setValue( output_graphics )
         self.output_pca.setValue( file_pca )
         self.output_classification.setValue( file_class )
+        self.output_netcdf.setValue( model_season )

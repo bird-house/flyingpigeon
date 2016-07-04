@@ -17,82 +17,76 @@ args <- commandArgs(trailingOnly = TRUE)
 
 rworkspace <- args[1]
 Rsrc <- args[2]
-infile <- args[3]
-variable <- args[4]
-yr1 <- as.numeric(args[5]) #1948
-yr2 <- as.numeric(args[6]) #2014
-output_graphics <- args[7]
-file_pca <- args[8]
-file_classification <- args[9]
-season <- args[10]
+infile <- args[3] # '/home/estimr2/nhempelmann/ea4e5ea8-3df9-11e6-b034-0756a0266937.nc' #args[3]
+varname <- args[4]
+output_graphics <- args[5]
+file_pca <- args[6]
+file_classification <- args[7]
+seas <- args[8]
+y1 <- args[9]
+y2 <- args[10]
+model_var <- args[11]
+kappa <- as.numeric(args[12])
 
 print(' *** Here starts the R execution ***')
-
 print( rworkspace )
 print( Rsrc )
 print( infile)
-print( variable )
-print( yr1 )
-print( yr2 )
+print( varname )
+print( seas )
 print( output_graphics )
+print( kappa )
 
-source(paste(Rsrc,"libraryregimes.R",sep=""))
-varname=variable
-yr1=yr1
-yr2=yr2
-seas=season
-
-#reference period
-y1=1970
-y2=2010
-
-#open netcdf4
-# fname = paste(dirname,"slp.1948-2014_NA.nc",sep="")
+source(paste(Rsrc,"classnorm.R",sep=""))
 
 nc = nc_open(infile)
-datNCEP=lirevarnc(nc,variable)
-dat.NCEP.dum=sousseasmean(datNCEP$dat,datNCEP$conv.time,l.year=c(y1:y2))
-datNCEP$anom=dat.NCEP.dum$anom
-datNCEP$seascyc=dat.NCEP.dum$seascyc
-conv.time=datNCEP$conv.time
-nc_close(nc)
 
-# Define months and seasons
-l.seas=list(JJA=6:8,SON=9:11,DJF=c(12,1,2),SONDJF=c(9:12,1,2),MAM=c(3,4,5),all=c(1:12),
-            JJAS=6:9,DJFM=c(1:3,12),MAMJ=3:6,FMA=c(2,3,4),DJFM=c(12,1,2,3),MAMJ=c(3:6),
-            JJAS=c(6:9),SOND=c(9:12))
-ISEAS=which(datNCEP$conv.time$month %in% l.seas[[seas]] &
-              datNCEP$conv.time$year %in% c(y1:y2))
-dat.m=datNCEP$anom[ISEAS,]
-print(paste("Classification for",seas))
+data=ncvar_get(nc,varname)
+lon=ncvar_get(nc,'lon')
+lat=ncvar_get(nc,'lat')
+time=ncvar_get(nc,'time')
+nx=dim(data)[2];ny=dim(data)[1]
+nt=dim(data)[3]
+# reshape order lat-lon-time
+dat = data*NA; dim(dat) <- c(nt,ny,nx)
+for (i in 1:nt) dat[i,,] <- t(as.matrix(data[,,i]))
+# two dimentions
+dim(dat)=c(nt,nx*ny)
+nc_close(nc)
+dat.m=dat
+print( 'data sucessfully loaded' )
 
 ## SLP Climatology 
-dat.climatol=apply(datNCEP$dat[ISEAS,]/100,2,mean,na.rm=TRUE)
+dat.climatol=apply(data/100,2,mean,na.rm=TRUE)
 mean.clim.ref=mean(dat.climatol)
 
 #Normalization by latitude by latitute
-lon=datNCEP$lon
-lat=datNCEP$lat
-time=datNCEP$time
 pond.slp=1/sqrt(cos(lat*pi/180))
 scale.slp=rep(pond.slp,length(lon))
+print( 'ponderation calculated' )
 
 # Calculating PCs
-pc.dat=prcomp(dat.m,scale.=scale.slp)
-
+pc.dat=prcomp(dat.m, scale.=scale.slp)
+print( 'principal components calculated' )
 npc=10
+
 # write.table(file=filout,cbind(time[ISEAS],pc.dat$x[,1:npc]),quote=FALSE,
 #             col.names=FALSE,row.names=FALSE)
 # filout=paste(Results,varname,"_vap_",seas,"_clim.dat",sep="")
 # cat(file=filout,pc.dat$sdev^2)
 #filout='/home/nils/birdhouse/flyingpigeon/textfile.txt'
+
 write.table(file=file_pca,pc.dat$rotation[,1:npc],quote=FALSE,
             col.names=FALSE,row.names=FALSE)
+print( 'data table written' )
 
 ## Classification using k-means approach
 #iplot=TRUE for pre-visualization before save the plot
-nreg=4
-dat.class=classnorm(pc.dat,nreg=nreg,npc=10,lat=lat,lon=lon,iplot=TRUE)
+
+nreg=kappa
+dat.class=classnorm(pc.dat,nreg=nreg,npc=10,lat=lat,lon=lon)
+print( 'classification done' )
+
 ## RMS related to the centroids
 dat.rms=c()
 for(i in 1:nrow(dat.m)){
@@ -108,27 +102,29 @@ for(i in 1:nrow(dat.m)){
   dat.cor=c(dat.cor,cor.r)
 }
 
-
-############################################################### plots
+###############
 ##### plot EOFs
 
-pdf(output_graphics)
-
-## Plotting Weather regimes
+pdf(file=output_graphics)
 layout(matrix(1:(2*ceiling(nreg/2)),2,ceiling(nreg/2)))
 par(mar=c(4,6,2,2))
 for(i in 1:nreg){ 
-  image.cont.mc(lon,lat,dat.class$reg.var[,i],
-                xlab="",ylab="",mar=c(2.5,2,2,1),paquet="maps",
-                titre=paste("Reg.",i,"(",
-                            format(dat.class$perc.r[i],digits=2),"%)"))
-}#end for i
+   champ=dat.class$reg.var[,i] #/100                        
+    zlev=pretty(champ,20)
+    colplot=rainbow(length(zlev)-1,start=3/6,end=1)
+    par( mar=c(2.5,2,2,1))
+    dum=t(matrix(champ,length(lat),length(lon)))
+    lat.sort=sort(lat,index.return=TRUE)
+    titleplot=paste(model_var," ", seas," ",y1,"-",y2," WR:",i,"(",
+                           format(dat.class$perc.r[i],digits=3),"%)")
+    contour(lon,sort(lat),dum[,lat.sort$ix],
+            xlab="Longitude",ylab="Latitude",main=titleplot,col=colplot,add=FALSE,nlevels=length(zlev),
+            levels=zlev,lty=1)
+    library(maps)
+    map(add=TRUE)
+}
 dev.off()
 
 ## Saving the classification of Weather Regimes that we will use for projections
-timeout=datNCEP$time[ISEAS]
-#fname=paste(Results,"NCEP_regimes_",y1,"-",y2,"_",seas,".Rdat",sep="")
-
-save(file=file_classification,dat.class,lon,lat,timeout,nreg,dat.climatol,dat.rms,dat.cor,mean.clim.ref)
+save(file=file_classification,dat.class,nreg,dat.climatol,dat.rms,dat.cor,mean.clim.ref) #lon,lat,time,
 proc.time() - ptm #ending time script
-

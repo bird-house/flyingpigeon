@@ -129,6 +129,7 @@
   invisible(julday)
 } 
 
+
 # Soustraction de la moyenne saisonniere jour a jour pour une matrice
 # Le cycle saisonnier peut etre estime sur un sous ensemble d'annees
 "sousseasmean"<-function(dat,conv.time,l.mon=1:12,
