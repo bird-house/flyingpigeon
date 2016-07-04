@@ -71,7 +71,6 @@
         function init() {
 
             d3.tsv("analogues_placeholder.json", function(data) {
-                console.log("data")
 
                 minDate = dateFormat.parse(data[0].dateRef); //first date in file
                 maxDate = dateFormat.parse(data[Object.keys(data).length - 1].dateRef); //last date in file
@@ -233,17 +232,16 @@
             function useManualDates(poiDates_manual) {
                 d3.select("#dateReset").style("display", "block");
 
-                if (poiDates_manual[0] && poiDates_manual[1]) { //there are manual dates
-                    d0 = makeDateObj($("#datepicker0"));
-                    d1 = makeDateObj($("#datepicker1"));      
-                    //Reset poiDate chart filter
-                    poiDimension.filterAll();
-                    resetChart(poiChart);
-                    poiDimension.filter(poiDates_manual);
-                    poiChart.filter(dc.filters.RangedFilter(d0, d1));
-                    dc.redrawAll();
-                }
+                d0 = makeDateObj($("#datepicker0"));
+                d1 = makeDateObj($("#datepicker1"));
+             
+                poiDimension.filterAll();
+                resetChart(poiChart);
+                poiDimension.filter([d0, d1]);
+                poiChart.filter(dc.filters.RangedFilter(d0, d1));
+                dc.redrawAll();
             }
+
 
             function makeDateObj(dateRaw) {
                 var dateString = dateRaw.val().split("/");
