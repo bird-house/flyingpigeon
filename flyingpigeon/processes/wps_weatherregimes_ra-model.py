@@ -3,9 +3,8 @@ Processes for Weather Classification
 Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 """
 from flyingpigeon.datafetch import _PRESSUREDATA_
-
 from pywps.Process import WPSProcess
-from datetime import  date #datetime,
+# from datetime import  date 
 
 import logging
 logger = logging.getLogger(__name__)
@@ -14,93 +13,118 @@ class WeatherRegimesRProcess(WPSProcess):
     def __init__(self):
         WPSProcess.__init__(
             self,
-            identifier = "weatherregimes_compare",
-            title = "Weather Regimes -- Compare climate model datat with reanalyses data",
+            identifier = "weatherregimes_projection",
+            title = "Weather Regimes -- Projection of Weather Regimes",
             version = "0.1",
             metadata=[
-                {"title":"Weather Regimes -- Compare climate model datat with reanalyses data"},
+                {"title":"Weather Regimes -- Projection of Weather Regimes"},
                 ],
-            abstract="Weather Regimes based on pressure patterns, fetching selected Realayses Datasets",
+            abstract="Weather Regimes detection based on trained reference statistics",
             statusSupported=True,
             storeSupported=True
             )
 
+
+        self.resource = self.addComplexInput(
+            identifier="resource",
+            title="Resource",
+            abstract="NetCDF File",
+            minOccurs=1,
+            maxOccurs=1000,
+            maxmegabites=5000,
+            formats=[{"mimeType":"application/x-netcdf"}],
+            )
+
+        self.Rdat = self.addLiteralInput(
+            identifier="Rdat",
+            title="R - workspace",
+            abstract="R workspace as outputed from weatherregieme reference process",
+            type=type(''),
+            minOccurs=1,
+            maxOccurs=1,
+            # default=' http://api.gbif.org/v1/occurrence/download/request/0013848-160118175350007.zip'
+            # maxmegabites=50,
+            # formats=[{"mimeType":"application/zip"}],
+            )
+
+        self.dat = self.addLiteralInput(
+            identifier="dat",
+            title="R - datafile",
+            abstract="R datafile as outputed from weatherregieme reference process",
+            type=type(''),
+            minOccurs=1,
+            maxOccurs=1,
+            # default=' http://api.gbif.org/v1/occurrence/download/request/0013848-160118175350007.zip'
+            # maxmegabites=50,
+            # formats=[{"mimeType":"application/zip"}],
+            )
+
+        self.netCDF = self.addLiteralInput(
+            identifier="netCDF",
+            title="netCDF reference",
+            abstract="netCDF file as outputed from weatherregieme reference process",
+            type=type(''),
+            minOccurs=1,
+            maxOccurs=1,
+            # default=' http://api.gbif.org/v1/occurrence/download/request/0013848-160118175350007.zip'
+            # maxmegabites=50,
+            # formats=[{"mimeType":"application/zip"}],
+            )
+
         # Literal Input Data
         # ------------------
-        #self.BBox = self.addBBoxInput(
-            #identifier="BBox",
-            #title="Bounding Box",
-            #abstract="coordinates to define the region for weather classification",
-            #minOccurs=1,
-            #maxOccurs=1,
-            #crss=['EPSG:4326']
-            #)
+        # self.BBox = self.addBBoxInput(
+        #     identifier="BBox",
+        #     title="Bounding Box",
+        #     abstract="coordinates to define the region for weather classification",
+        #     minOccurs=1,
+        #     maxOccurs=1,
+        #     default=[-80,50,22.5,70],
+        #     crss=['EPSG:4326']
+        #     )
 
-        self.BBox = self.addLiteralInput(
-            identifier="BBox",
-            title="Region",
-            abstract="coordinates to define the region: (minlon,maxlon,minlat,maxlat)",
-            default='-80,50,22.5,70', #  cdo syntax: 'minlon,maxlon,minlat,maxlat' ; ocgis syntax (minlon,minlat,maxlon,maxlat)
-            type=type(''),
-            minOccurs=1,
-            maxOccurs=1,
-            )
+        # self.BBox = self.addLiteralInput(
+        #     identifier="BBox",
+        #     title="Region",
+        #     abstract="coordinates to define the region: (minlon,maxlon,minlat,maxlat)",
+        #     default='-80,22.5,50,70', #  cdo syntax: 'minlon,maxlon,minlat,maxlat' ; ocgis syntax (minlon,minlat,maxlon,maxlat)
+        #     type=type(''),
+        #     minOccurs=1,
+        #     maxOccurs=1,
+        #     )
 
-        self.time_region = self.addLiteralInput(
-            identifier="time_region",
+        self.season = self.addLiteralInput(
+            identifier="season",
             title="Time region",
-            abstract="Select the months to define the time region (None == whole year will be analysed)",
-            default="JJA",
+            abstract="Select the months to define the time region (all == whole year will be analysed)",
+            default="DJF",
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
-            allowedValues= ['JJA','SON','DJF','SONDJF','MAM','all',
-            'JJAS','DJFM','MAMJ','FMA','DJFM','MAMJ',
-            'JJAS','SOND']
-	     )
-
-        self.dateobsst = self.addLiteralInput(
-            identifier="dateobsst",
-            title="Start of period",
-            abstract="Date to start analysing the observation data (if not set, the first date of the dataset will be taken)",
-            default="1970-01-01",
-            type=type(date(2013,01,01)),
-            minOccurs=0,
-            maxOccurs=1,
+            allowedValues= ['JJA','SON','DJF','MAM','all',
+            'JJAS','DJFM','MAMJ','FMA','SOND', 'SONDJF','MAMJJA']
             )
 
-        self.dateobsen = self.addLiteralInput(
-            identifier="dateobsen",
-            title="End of period",
-            abstract="Date to end analysing the observation data (if not set, the first date of the dataset will be taken)",
-            default="2010-12-31",
-            type=type(date(2014,12,31)),
-            minOccurs=0,
-            maxOccurs=1,
-            )
-
-
-        self.observation = self.addLiteralInput(
-            identifier="observation",
-            title="Observation Data",
-            abstract="Choose an observation dataset for comparison",
-            default="NCEP_slp",
+        self.period = self.addLiteralInput(
+            identifier="period",
+            title="Period for weatherregime calculation",
+            abstract="Period for analysing the dataset",
+            default="19700101-20101231",
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
-            allowedValues= _PRESSUREDATA_ #['NCEP_slp', 'NCEP_z1000',   'NCEP_z925',   'NCEP_z850',   'NCEP_z700',   'NCEP_z600',   'NCEP_z500',   'NCEP_z400',   'NCEP_z300',
-         # 'NCEP_z250', 'NCEP_z200',   'NCEP_z150',   'NCEP_z100',    'NCEP_z70',    'NCEP_z50',    'NCEP_z30',    'NCEP_z20', 'NCEP_z10',
-         # '20CRV2_prmsl',
-         # '20CRV2_z1000',   '20CRV2_z950',   '20CRV2_z900',   '20CRV2_z850',   '20CRV2_z800',   '20CRV2_z750',   '20CRV2_z700',   '20CRV2_z650',
-         # '20CRV2_z600',   '20CRV2_z550',   '20CRV2_z500',   '20CRV2_z450',   '20CRV2_z400',   '20CRV2_z350',   '20CRV2_z300',   '20CRV2_z250',
-         # '20CRV2_z200',   '20CRV2_z150',   '20CRV2_z100',    '20CRV2_z70',    '20CRV2_z50',    '20CRV2_z30',    '20CRV2_z20',    '20CRV2_z10',
-         # '20CRV2c_prmsl',
-         # '20CRV2c_z1000',   '20CRV2c_z950',   '20CRV2c_z900',   '20CRV2c_z850',   '20CRV2c_z800',   '20CRV2c_z750',   '20CRV2c_z700',   '20CRV2c_z650',
-         # '20CRV2c_z600',   '20CRV2c_z550',   '20CRV2c_z500',   '20CRV2c_z450',   '20CRV2c_z400',   '20CRV2c_z350',   '20CRV2c_z300',   '20CRV2c_z250',
-         # '20CRV2c_z200',   '20CRV2c_z150',   '20CRV2c_z100',    '20CRV2c_z70',    '20CRV2c_z50',    '20CRV2c_z30',    '20CRV2c_z20',    '20CRV2c_z10',
-         # ] #  '', '20CR_z200', '20CR_z500', '20CR_z1000'
             )
-        
+
+        self.anualcycle = self.addLiteralInput(
+            identifier="anualcycle",
+            title="Period for anualcycle calculation",
+            abstract="Period for anual cycle calculation",
+            default="19700101-19991231",
+            type=type(''),
+            minOccurs=1,
+            maxOccurs=1,
+            )
+
         ######################
         ### define the outputs
         ######################
@@ -113,13 +137,29 @@ class WeatherRegimesRProcess(WPSProcess):
             asReference=True,
             )
         
-        #self.output_info = self.addComplexOutput(
-            #identifier="output_info",
-            #title="Weather Regime per date",
-            #abstract="Tar file containing tables of dates with appropriate weather regime association",
-            #formats=[{"mimeType":"application/x-tar"}],
-            #asReference=True,
-            #)         
+        self.output_pca = self.addComplexOutput(
+            identifier="output_pca",
+            title="PCA",
+            abstract="Principal components",
+            formats=[{"mimeType":"text/plain"}],
+            asReference=True,
+            )
+
+        self.output_classification = self.addComplexOutput(
+            identifier="output_classification",
+            title="classification",
+            abstract="Weather regime classification",
+            formats=[{"mimeType":"text/plain"}],
+            asReference=True,
+            )
+
+        self.output_netcdf = self.addComplexOutput(
+            identifier="output_netcdf",
+            title="netCDF fiel",
+            abstract="Prepared netCDF file as input for weatherregime calculation",
+            formats=[{"mimeType":"application/x-netcdf"}],
+            asReference=True,
+            )
 
     def execute(self):
         logger.info('Start process')
@@ -127,113 +167,114 @@ class WeatherRegimesRProcess(WPSProcess):
         from flyingpigeon import weatherregimes as wr
         from tempfile import mkstemp
         
-      
         ################################
         # reading in the input arguments
         ################################
         try: 
             logger.info('read in the arguments')
-           # resources = self.getInputValues(identifier='resources')
-            time_region = self.getInputValues(identifier='time_region')[0]
-            bbox = self.getInputValues(identifier='BBox')[0]
-            obs_var = self.getInputValues(identifier='observation')[0]
-            dateobsst = self.getInputValues(identifier='dateobsst')[0]            
-            dateobsen = self.getInputValues(identifier='dateobsen')[0]
+            resource = self.getInputValues(identifier='resource')
+            Rdat = self.getInputValues(identifier='Rdat')[0]
+            dat = self.getInputValues(identifier='dat')[0]
+            netCDF = self.getInputValues(identifier='netCDF')[0]
+            season = self.getInputValues(identifier='season')[0]
+            # bbox = self.getInputValues(identifier='BBox')[0]
+            # model_var = self.getInputValues(identifier='reanalyses')[0]
+            period = self.getInputValues(identifier='period')[0]            
+            anualcycle = self.getInputValues(identifier='anualcycle')[0]
             
-            obs, var = obs_var.split('_')
+            # bbox = [float(b) for b in bbox.split(',')]
+
+            start = dt.strptime(period.split('-')[0] , '%Y%m%d')
+            end = dt.strptime(period.split('-')[1] , '%Y%m%d')
+
+            kappa = int(self.getInputValues(identifier='kappa')[0])
             
             logger.info('bbox %s' % bbox)
-            logger.info('dateobsst %s' % str(dateobsst))
-            logger.info('time_region %s' % str(time_region))
-            logger.info('bbox is set to %s' % bbox)
+            logger.info('period %s' % str(period))
+            logger.info('season %s' % str(season))
             
         except Exception as e: 
             logger.debug('failed to read in the arguments %s ' % e)
         
+        # ###########################
+        # ### set the environment
+        # ###########################
         
-        ###########################
-        ### set the environment
-        ###########################
-        try:  
-          if dateobsst != None and dateobsen != None : 
-            startyr = dt.strptime(dateobsst, '%Y-%m-%d')
-            endyr = dt.strptime(dateobsen, '%Y-%m-%d')
-            time_range = [startyr,endyr]
-          else: 
-            time_range = None
-            
-          if obs == 'NCEP': 
-            if 'z' in var:
-              variable='hgt'
-              level=var.strip('z')
-              conform_units_to=None
-              vmin=-200
-              vmax=200
-            else:
-              variable='slp'
-              level=None
-              conform_units_to='hPa'
-              vmin=-35
-              vmax=35
-
-          elif '20CRV2' in obs: 
-            if 'z' in var:
-              variable='hgt'
-              level=var.strip('z')
-              conform_units_to=None
-              vmin=-200
-              vmax=200
-            else:
-              variable='prmsl'
-              level=None
-              conform_units_to='hPa'
-              vmin=-35
-              vmax=35
-          else:
-            logger.error('Reanalyses dataset not known')
-          
-          logger.info('environment set')
-        except Exception as e: 
-          msg = 'failed to set environment %s ' % e
-          logger.error(msg)  
-          raise Exception(msg)
+        # try:            
+        #   if model == 'NCEP': 
+        #     if 'z' in var:
+        #       variable='hgt'
+        #       level=var.strip('z')
+        #       conform_units_to=None
+        #     else:
+        #       variable='slp'
+        #       level=None
+        #       conform_units_to='hPa'
+        #   elif '20CRV2' in model: 
+        #     if 'z' in var:
+        #       variable='hgt'
+        #       level=var.strip('z')
+        #       conform_units_to=None
+        #     else:
+        #       variable='prmsl'
+        #       level=None
+        #       conform_units_to='hPa'
+        #   else:
+        #     logger.error('Reanalyses dataset not known')          
+        #   logger.info('environment set')
+        # except Exception as e: 
+        #   msg = 'failed to set environment %s ' % e
+        #   logger.error(msg)  
+        #   raise Exception(msg)
 
         ##########################################
         ### fetch Data from original data archive
         ##########################################
-                
-        try:
-          nc_obs = wr.get_OBS(start=int(dateobsst.split('-')[0]), 
-                              end=int(dateobsen.split('-')[0]), 
-                              dataset=obs, variable=var)
 
-          logger.info('observation data fetched')
-        except Exception as e:
-          msg = 'failed to get Observation data  %s' % e
-          logger.debug(msg)
-          raise Exception(msg)
+        # from flyingpigeon.datafetch import reanalyses as rl            
+        # try:
+        #   model_nc = rl(start=start.year , 
+        #                 end=end.year , 
+        #                 dataset=model, variable=var)
+
+        #   logger.info('reanalyses data fetched')
+        # except Exception as e:
+        #   msg = 'failed to get reanalyses data  %s' % e
+        #   logger.debug(msg)
+        #   raise Exception(msg)
                 
-        ############################################    
-        ### get the required bbox from resource data
-        ############################################
+        ############################################################    
+        ### get the required bbox and time region from resource data
+        ############################################################        
+        # from flyingpigeon.weatherregimes import get_level
         
-        from flyingpigeon.weatherregimes import get_level
-        from flyingpigeon.ocgis_module import call
-        from cdo import Cdo
-        cdo = Cdo()
+        from flyingpigeon.ocgis_module import call 
+        from flyingpigeon.utils import get_variable
+        time_range = [start, end]
 
-        nc_grouped = call(resource=nc_obs, variable=variable, conform_units_to='hPa')
+        variable = get_variable(resource)
+        model_subset = call(resource=resource, variable=variable, 
+          time_range=time_range,  # conform_units_to=conform_units_to, geom=bbox, spatial_wrapping='wrap',
+          regrid_destination=ref_file, regrid_options='bil')
+        logger.info('Dataset subset done: %s ' % model_subset)
+        
+        ##############################################
+        ### computing anomalies 
+        ##############################################
+        
+        cycst = anualcycle.split('-')[0]
+        cycen = anualcycle.split('-')[0]
+        reference = [dt.strptime(cycst,'%Y%m%d'), dt.strptime(cycen,'%Y%m%d')]
+        model_anomal = wr.get_anomalies(model_subset, reference=reference)
 
-        ip, nc_subset = mkstemp(dir='.',suffix='.nc')
-        nc_subset  = cdo.sellonlatbox('%s' % bbox, input=nc_grouped, output=nc_subset)
-        logger.info('subset done: %s ' % nc_subset)
-        if level != None:
-          nc_level = get_level( nc_subset, level) 
-          nc_subset =  nc_level
-             
-        ############################################
+        #####################
+        ### extracting season
+        #####################
+        model_season = wr.get_season(model_anomal, season=season)
+
+        #######################
         ### call the R scripts
-        ############################################
+        #######################
         import shlex
         import subprocess
         from flyingpigeon import config
@@ -242,22 +283,25 @@ class WeatherRegimesRProcess(WPSProcess):
         try:
           rworkspace = curdir
           Rsrc = config.Rsrc_dir() 
-          Rfile = 'regimes_ref_NCEP.R'
+          Rfile = 'weatherregimes_projection.R'
           
-          infile = nc_subset
-          modelname = obs
-          yr1 = dateobsst.split('-')[0]
-          yr2 = dateobsen.split('-')[0]
+          infile = model_season  #model_subset #model_ponderate 
+          modelname = model
+          yr1 = start.year
+          yr2 = end.year
           ip, output_graphics = mkstemp(dir=curdir ,suffix='.pdf')
-          
-          #cmd = 'Rscipt  %s %s/ %s/ %s %s %s %s %s %s' % (join(Rsrc,Rfile), curdir, Rsrc, infile, variable, modelname, yr1,yr2, output_graphics)
-          #args =shlex.split(cmd)
-          
+          ip, file_pca = mkstemp(dir=curdir ,suffix='.dat')
+          ip, file_class = mkstemp(dir=curdir ,suffix='.Rdat')
+                    
           args = ['Rscript', join(Rsrc,Rfile), '%s/' % curdir, 
                   '%s/' % Rsrc, '%s'% infile, '%s' % variable, 
-                  '%s' % modelname, '%s' % yr1, '%s' % yr2, 
-                  '%s' % output_graphics, '%s' % time_region]
-
+                  '%s' % output_graphics,
+                  '%s' % dat, 
+                  '%s' % Rdat, 
+                  '%s' % file_pca,
+                  '%s' % file_class, '%s' % season, 
+                  '%s' % start.year, '%s' % end.year,
+                  '%s' % 'MODEL']
           logger.info('Rcall builded')
         except Exception as e: 
           msg = 'failed to build the R command %s' % e
@@ -265,10 +309,8 @@ class WeatherRegimesRProcess(WPSProcess):
           raise Exception(msg)
         try:
           output,error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE).communicate() #, shell=True
-          
           logger.info('R outlog info:\n %s ' % output)
           logger.debug('R outlog errors:\n %s ' % error)
-          
           if len(output) > 0:            
             self.status.set('**** weatherregime in R suceeded', 90)
           else:
@@ -283,3 +325,6 @@ class WeatherRegimesRProcess(WPSProcess):
         ############################################
 
         self.Routput_graphic.setValue( output_graphics )
+        self.output_pca.setValue( file_pca )
+        self.output_classification.setValue( file_class )
+        self.output_netcdf.setValue( model_season )

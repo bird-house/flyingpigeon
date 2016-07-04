@@ -13,16 +13,28 @@ class WeatherRegimesRProcess(WPSProcess):
     def __init__(self):
         WPSProcess.__init__(
             self,
-            identifier = "weatherregimes_reanalyse",
-            title = "Weather Regimes -- Reanalyses data (R based)",
+            identifier = "weatherregimes_model",
+            title = "Weather Regimes -- Climate model data",
             version = "0.1",
             metadata=[
-                {"title":"Weather Regimes -- Reanalyses data (R based)"},
+                {"title":"Weather Regimes -- Climate model data"},
                 ],
             abstract="Weather Regimes based on pressure patterns, fetching selected Realayses Datasets",
             statusSupported=True,
             storeSupported=True
             )
+
+
+        self.resource = self.addComplexInput(
+            identifier="resource",
+            title="Resource",
+            abstract="NetCDF File",
+            minOccurs=1,
+            maxOccurs=1000,
+            maxmegabites=5000,
+            formats=[{"mimeType":"application/x-netcdf"}],
+            )
+
 
         # Literal Input Data
         # ------------------
@@ -49,7 +61,7 @@ class WeatherRegimesRProcess(WPSProcess):
         self.season = self.addLiteralInput(
             identifier="season",
             title="Time region",
-            abstract="Select the months to define the time region (None == whole year will be analysed)",
+            abstract="Select the months to define the time region (all == whole year will be analysed)",
             default="DJF",
             type=type(''),
             minOccurs=1,
@@ -78,21 +90,10 @@ class WeatherRegimesRProcess(WPSProcess):
             maxOccurs=1,
             )
 
-        self.reanalyses = self.addLiteralInput(
-            identifier="reanalyses",
-            title="Reanalyses Data",
-            abstract="Choose an reanalyses dataset for comparison",
-            default="NCEP_slp",
-            type=type(''),
-            minOccurs=1,
-            maxOccurs=1,
-            allowedValues= _PRESSUREDATA_ 
-            )
-
         self.kappa = self.addLiteralInput(
             identifier="kappa",
-            title="Kappa Value",
-            abstract="Set the number of clusters",
+            title="Nr of Weather regimes",
+            abstract="Set the number of clusters to be detected",
             default=4,
             type=type(1),
             minOccurs=1,
@@ -149,14 +150,13 @@ class WeatherRegimesRProcess(WPSProcess):
         ################################
         try: 
             logger.info('read in the arguments')
-            # resources = self.getInputValues(identifier='resources')
+            resource = self.getInputValues(identifier='resource')
             season = self.getInputValues(identifier='season')[0]
             bbox = self.getInputValues(identifier='BBox')[0]
-            model_var = self.getInputValues(identifier='reanalyses')[0]
+            #model_var = self.getInputValues(identifier='reanalyses')[0]
             period = self.getInputValues(identifier='period')[0]            
-            #datemodelen = self.getInputValues(identifier='datemodelen')[0]
             anualcycle = self.getInputValues(identifier='anualcycle')[0]
-            model, var = model_var.split('_')
+            # model, var = model_var.split('_')
             
             bbox = [float(b) for b in bbox.split(',')]
 
@@ -172,63 +172,66 @@ class WeatherRegimesRProcess(WPSProcess):
         except Exception as e: 
             logger.debug('failed to read in the arguments %s ' % e)
         
-        ###########################
-        ### set the environment
-        ###########################
+        # ###########################
+        # ### set the environment
+        # ###########################
         
-        try:            
-          if model == 'NCEP': 
-            if 'z' in var:
-              variable='hgt'
-              level=var.strip('z')
-              conform_units_to=None
-            else:
-              variable='slp'
-              level=None
-              conform_units_to='hPa'
-          elif '20CRV2' in model: 
-            if 'z' in var:
-              variable='hgt'
-              level=var.strip('z')
-              conform_units_to=None
-            else:
-              variable='prmsl'
-              level=None
-              conform_units_to='hPa'
-          else:
-            logger.error('Reanalyses dataset not known')          
-          logger.info('environment set')
-        except Exception as e: 
-          msg = 'failed to set environment %s ' % e
-          logger.error(msg)  
-          raise Exception(msg)
+        # try:            
+        #   if model == 'NCEP': 
+        #     if 'z' in var:
+        #       variable='hgt'
+        #       level=var.strip('z')
+        #       conform_units_to=None
+        #     else:
+        #       variable='slp'
+        #       level=None
+        #       conform_units_to='hPa'
+        #   elif '20CRV2' in model: 
+        #     if 'z' in var:
+        #       variable='hgt'
+        #       level=var.strip('z')
+        #       conform_units_to=None
+        #     else:
+        #       variable='prmsl'
+        #       level=None
+        #       conform_units_to='hPa'
+        #   else:
+        #     logger.error('Reanalyses dataset not known')          
+        #   logger.info('environment set')
+        # except Exception as e: 
+        #   msg = 'failed to set environment %s ' % e
+        #   logger.error(msg)  
+        #   raise Exception(msg)
 
         ##########################################
         ### fetch Data from original data archive
         ##########################################
 
-        from flyingpigeon.datafetch import reanalyses as rl            
-        try:
-          model_nc = rl(start=start.year , 
-                        end=end.year , 
-                        dataset=model, variable=var)
+        # from flyingpigeon.datafetch import reanalyses as rl            
+        # try:
+        #   model_nc = rl(start=start.year , 
+        #                 end=end.year , 
+        #                 dataset=model, variable=var)
 
-          logger.info('reanalyses data fetched')
-        except Exception as e:
-          msg = 'failed to get reanalyses data  %s' % e
-          logger.debug(msg)
-          raise Exception(msg)
+        #   logger.info('reanalyses data fetched')
+        # except Exception as e:
+        #   msg = 'failed to get reanalyses data  %s' % e
+        #   logger.debug(msg)
+        #   raise Exception(msg)
                 
         ############################################################    
         ### get the required bbox and time region from resource data
         ############################################################
         
         # from flyingpigeon.weatherregimes import get_level
+        
         from flyingpigeon.ocgis_module import call 
-
+        from flyingpigeon.utils import get_variable
         time_range = [start, end]
-        model_subset = call(resource=model_nc, variable=variable, 
-          geom=bbox, spatial_wrapping='wrap', time_range=time_range, # conform_units_to=conform_units_to
+      
+        variable = get_variable(resource)
+        model_subset = call(resource=resource, variable=variable, 
+          geom=bbox, spatial_wrapping='wrap', time_range=time_range,  #conform_units_to=conform_units_to
           )
         logger.info('Dataset subset done: %s ' % model_subset)
         
@@ -272,7 +275,7 @@ class WeatherRegimesRProcess(WPSProcess):
                   '%s' % output_graphics, '%s' % file_pca,
                    '%s' % file_class, '%s' % season, 
                    '%s' % start.year, '%s' % end.year,
-                   '%s' % model_var, '%s' % kappa]
+                   '%s' % 'MODEL', '%s' % kappa]
           logger.info('Rcall builded')
         except Exception as e: 
           msg = 'failed to build the R command %s' % e
