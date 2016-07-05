@@ -17,7 +17,7 @@ def has_Lambert_Conformal(nc):
 
 def call(resource=[], variable=None, dimension_map=None, calc=None,  
   calc_grouping= None, conform_units_to=None, memory_limit=None,  prefix=None, 
-  regrid_destination=None, regrid_options='bil',
+  regrid_destination=None, regrid_options='bil', level_range=None,
   geom=None, output_format_options=False, search_radius_mult=2., 
   select_nearest=False, select_ugid=None, spatial_wrapping=None, time_region=None, time_range=None,
   dir_output=curdir, output_format='nc'):
@@ -31,6 +31,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   :param calc_grouping: time aggregate grouping 
   :param conform_units_to: 
   :param memory_limit: limit the amout of data to be loaded into the memory at once if None(default) free memory is detected by birdhouse
+  :param level_range: subset of given levels
   :param prefix: string for the file base name 
   :param regrid_destination: file path with netCDF file with grid for outout file
 
@@ -93,7 +94,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     output = None
   else:
     try:
-      rd = RequestDataset(resource, variable=variable, 
+      rd = RequestDataset(resource, variable=variable, level_range=level_range,
         dimension_map=dimension_map, conform_units_to=conform_units_to, 
         time_region=time_region, time_range=time_range)
       ops = OcgOperations(dataset=rd,
