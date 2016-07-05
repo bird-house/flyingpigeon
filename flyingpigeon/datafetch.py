@@ -94,7 +94,7 @@ def reanalyses( start=1948, end=None, variable='slp', dataset='NCEP'):
     data = obs_data
   else:
     print ('get level')
-    data = get_level(obs_data, level=level)
+    data = [get_level(obs_data, level=level)]
   
   return data
 
@@ -105,8 +105,7 @@ def get_level(resource, level):
   from numpy import squeeze
 
   try:
-    level_data = call(resource, level_range=[level,level])
-    
+    level_data = call(resource, level_range=[int(level),int(level)])
     variable = get_variable(level_data)
     print 'found %s in file' % variable
     ds = Dataset(level_data, mode='a')
@@ -117,7 +116,9 @@ def get_level(resource, level):
     new_var[:,:,:] = squeeze(var[:,0,:,:])
     ds.close()
     logger.info('level %s extracted' % level)
+
+    data = call(level_data , variable = 'z%s'%level)
   except Exception as e:
     print e
     logger.error('failed to extract level %s ' % e)
-  return level_data
+  return data

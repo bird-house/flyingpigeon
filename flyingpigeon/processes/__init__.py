@@ -9,7 +9,7 @@ __all__ = [
         "wps_weatherregimes_model",
         "wps_weatherregimes_ra-model",
 #        "wps_robustness",
-        "wps_analogs",
+        "wps_analogs_detection",
         "wps_analogs_viewer",
         "wps_segetalflora",
         "wps_sdm_gbif",
