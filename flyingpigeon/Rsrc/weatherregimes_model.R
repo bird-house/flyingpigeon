@@ -126,5 +126,5 @@ for(i in 1:nreg){
 dev.off()
 
 ## Saving the classification of Weather Regimes that we will use for projections
-save(file=file_classification,dat.class,lon,lat,time,nreg,dat.climatol,dat.rms,dat.cor,mean.clim.ref)
+save(file=file_classification,dat.class,nreg,dat.climatol,dat.rms,dat.cor,mean.clim.ref) #lon,lat,time,
 proc.time() - ptm #ending time script

@@ -50,3 +50,35 @@
   detach(package:mclust)
   invisible(classif.out)
 }#end function
+
+
+"image.cont.mc" <-
+  function(lonF,latF,champ,titre="",Ichange=numeric(0),
+           zlev=pretty(champ,20),
+           #         zlev=seq(min(champ,na.rm=TRUE),max(champ,na.rm=TRUE),length=11),
+           transpose=TRUE,mar=c(5,5,5,6),xlab="Longitude",
+           ylab="Latitude",add=FALSE,paquet="fields",lty=1)
+  {
+    #zlev=seq(-0.85,0.6,length=11)
+    col10=rainbow(length(zlev)-1,start=3/6,end=1)
+    #par( mar=c(10,5,5,5))
+    par( mar=mar)
+    if(length(Ichange)>0) champ[Ichange]=1
+    if (transpose)
+      dum=t(matrix(champ,length(latF),length(lonF)))
+    else
+      dum=matrix(champ,length(lonF),length(latF))
+    latF.sort=sort(latF,index.return=TRUE)
+    nlev=length(zlev)
+    contour(lonF,sort(latF),dum[,latF.sort$ix],
+            xlab=xlab,ylab=ylab,main=titre,col=col10,add=add,nlevels=nlev,
+            levels=zlev,lty=lty)
+    if(paquet=="fields"){
+      library(fields)
+      world(xlim=range(lonF),ylim=range(latF),add=TRUE)}
+    if(paquet=="maps"){
+      library(maps)
+      map(add=TRUE)
+    }
+    #world(xlim=range(lonF),ylim=range(latF),add=TRUE)
+  }

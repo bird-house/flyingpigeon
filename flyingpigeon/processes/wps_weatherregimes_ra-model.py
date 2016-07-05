@@ -173,17 +173,13 @@ class WeatherRegimesRProcess(WPSProcess):
         try: 
             logger.info('read in the arguments')
             resource = self.getInputValues(identifier='resource')
-            Rdat = self.getInputValues(identifier='Rdat')[0]
-            dat = self.getInputValues(identifier='dat')[0]
-            netCDF = self.getInputValues(identifier='netCDF')[0]
+            url_Rdat = self.getInputValues(identifier='Rdat')[0]
+            url_dat = self.getInputValues(identifier='dat')[0]
+            url_ref_file = self.getInputValues(identifier='netCDF')[0]
             season = self.getInputValues(identifier='season')[0]
-            # bbox = self.getInputValues(identifier='BBox')[0]
-            # model_var = self.getInputValues(identifier='reanalyses')[0]
             period = self.getInputValues(identifier='period')[0]            
             anualcycle = self.getInputValues(identifier='anualcycle')[0]
             
-            # bbox = [float(b) for b in bbox.split(',')]
-
             start = dt.strptime(period.split('-')[0] , '%Y%m%d')
             end = dt.strptime(period.split('-')[1] , '%Y%m%d')
 
@@ -195,54 +191,22 @@ class WeatherRegimesRProcess(WPSProcess):
             
         except Exception as e: 
             logger.debug('failed to read in the arguments %s ' % e)
+           
+        ############################
+        # fetching trainging data 
+        ############################
         
-        # ###########################
-        # ### set the environment
-        # ###########################
+        from flyingpigeon.utils import download
+        from os.path import abspath
         
-        # try:            
-        #   if model == 'NCEP': 
-        #     if 'z' in var:
-        #       variable='hgt'
-        #       level=var.strip('z')
-        #       conform_units_to=None
-        #     else:
-        #       variable='slp'
-        #       level=None
-        #       conform_units_to='hPa'
-        #   elif '20CRV2' in model: 
-        #     if 'z' in var:
-        #       variable='hgt'
-        #       level=var.strip('z')
-        #       conform_units_to=None
-        #     else:
-        #       variable='prmsl'
-        #       level=None
-        #       conform_units_to='hPa'
-        #   else:
-        #     logger.error('Reanalyses dataset not known')          
-        #   logger.info('environment set')
-        # except Exception as e: 
-        #   msg = 'failed to set environment %s ' % e
-        #   logger.error(msg)  
-        #   raise Exception(msg)
-
-        ##########################################
-        ### fetch Data from original data archive
-        ##########################################
-
-        # from flyingpigeon.datafetch import reanalyses as rl            
-        # try:
-        #   model_nc = rl(start=start.year , 
-        #                 end=end.year , 
-        #                 dataset=model, variable=var)
-
-        #   logger.info('reanalyses data fetched')
-        # except Exception as e:
-        #   msg = 'failed to get reanalyses data  %s' % e
-        #   logger.debug(msg)
-        #   raise Exception(msg)
-                
+        try:
+          dat = abspath(download(url_dat))
+          Rdat = abspath(download(url_Rdat))
+          ref_file = download(url_ref_file)
+          logger.info('training data fetched')
+        except Exception as e:
+          logger.error('failed to fethch training data %s' % e)
+          
         ############################################################    
         ### get the required bbox and time region from resource data
         ############################################################        
@@ -286,7 +250,7 @@ class WeatherRegimesRProcess(WPSProcess):
           Rfile = 'weatherregimes_projection.R'
           
           infile = model_season  #model_subset #model_ponderate 
-          modelname = model
+          modelname = 'MODELDATA'
           yr1 = start.year
           yr2 = end.year
           ip, output_graphics = mkstemp(dir=curdir ,suffix='.pdf')

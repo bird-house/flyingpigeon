@@ -23,16 +23,17 @@ output_Rdat <- args[9]
 seas <- args[10]
 y1 <- args[11]
 y2 <- args[12]
-model_var <- args[13]
+modelname <- args[13]
 
 source(paste(Rsrc,"classnorm.R",sep=""))
+source(paste(Rsrc,"libraryregimes.R",sep=""))
 
 #birdhouse_output = '~/.conda/envs/birdhouse/var/lib/pywps/outputs/flyingpigeon/'
 #Rdat=paste(birdhouse_output,'output_classification-9041c716-3f83-11e6-ae14-4f6097e9069b.Rdat',sep="")
 #print(paste("Reading",Rdat,"for reference WR"))
 
 load(file_Rdat)
-
+# 
 ## load EOFs for the reference period (NCEP 1970-2010)
 #dat = paste(birdhouse_output,'output_pca-9041c716-3f83-11e6-ae14-4f6097e9069b.dat',sep="")
 # fname=paste(NCEPdir,varname,"_EOF_",seas,"_clim.dat",sep="")
