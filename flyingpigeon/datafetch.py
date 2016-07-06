@@ -44,7 +44,14 @@ def reanalyses( start=1948, end=None, variable='slp', dataset='NCEP'):
     msg = "get_OBS module failed to get start end dates %s " % e
     logger.debug(msg)
     raise Exception(msg)
-  
+
+  if 'z' in variable:
+    level = variable.strip('z')
+  else:
+    level = None
+
+  print level
+
   try:
     for year in range(start, end + 1):
       try:
@@ -52,7 +59,7 @@ def reanalyses( start=1948, end=None, variable='slp', dataset='NCEP'):
           if variable == 'slp':
             url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/%s.%s.nc' % (variable, year)
           elif 'z' in variable:
-            url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/pressure/hgt.%s.nc' % ( year)          
+            url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/pressure/hgt.%s.nc' % ( year)
         elif dataset == '20CRV2':
           if variable == 'prmsl':
             url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2/monolevel/prmsl.%s.nc' % year
@@ -69,21 +76,49 @@ def reanalyses( start=1948, end=None, variable='slp', dataset='NCEP'):
         msg = "could not set url: %s " % e
         logger.debug(msg)
         raise Exception(msg)
+      
       try:  
         obs_data.append(utils.download(url, cache=True))
       except:
         msg = "wget failed on {0}.".format(url)
         logger.debug(msg)
         raise Exception(msg)
+
     logger.info('Obseration data fetched for %s files' % len(obs_data))
   except Exception as e:
     msg = "get_OBS module failed to fetch data %s " % e
     logger.debug(msg)
     raise Exception(msg)
-  return obs_data
 
-def get_level(obs_data, level):
-  from cdo import Cdo 
-  cdo = Cdo()
-  level_data = cdo.sellevel(level, input = obs_data, output ='NCEP_level.nc')
-  return level_data
+  if level == None: 
+    data = obs_data
+  else:
+    print ('get level')
+    data = [get_level(obs_data, level=level)]
+  
+  return data
+
+def get_level(resource, level):
+  from flyingpigeon.ocgis_module import call
+  from netCDF4 import Dataset
+  from flyingpigeon.utils import get_variable
+  from numpy import squeeze
+
+  try:
+    level_data = call(resource, level_range=[int(level),int(level)])
+    variable = get_variable(level_data)
+    print 'found %s in file' % variable
+    ds = Dataset(level_data, mode='a')
+    var = ds.variables.pop(variable)
+    dims = var.dimensions
+    new_var = ds.createVariable('z%s'% level, var.dtype, dimensions=(dims[0],dims[2],dims[3]))
+    # i = where(var[:]==level)
+    new_var[:,:,:] = squeeze(var[:,0,:,:])
+    ds.close()
+    logger.info('level %s extracted' % level)
+
+    data = call(level_data , variable = 'z%s'%level)
+  except Exception as e:
+    print e
+    logger.error('failed to extract level %s ' % e)
+  return data

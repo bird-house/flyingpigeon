@@ -11,7 +11,7 @@ class AnalogsProcess(WPSProcess):
   def __init__(self):
     # definition of this process
     WPSProcess.__init__(self, 
-      identifier = "analogs",
+      identifier = "analogs_detection",
       title="Analogs -- Detection",
       version = "0.2",
       metadata= [
@@ -290,13 +290,12 @@ class AnalogsProcess(WPSProcess):
       input = reanalyses(start = start.year, end = end.year, variable=var, dataset=dataset)
 
       # if experiment == 'NCEP':
-        
       # elif   experiment == 'None':
       #   input = self.getInputValues(identifier='resource')
       # else:
       #   logger.error('input experiment not found')
       #nc_subset = analogs.subset(resource=input, )
-      nc_subset = call(resource=input, variable=variable, geom=bbox, spatial_wrapping='wrap')
+      nc_subset = call(resource=input, variable=var, geom=bbox, spatial_wrapping='wrap')
     except Exception as e :
       msg = 'failed to fetch or subset input files %s' % e
       logger.error(msg)
@@ -336,7 +335,7 @@ class AnalogsProcess(WPSProcess):
     try:  
       config_file = analogs.get_configfile(files=files, 
         timewin=timewin, 
-        varname=variable, 
+        varname=var, 
         seacyc=seacyc, 
         cycsmooth=91, 
         nanalog=20, 
