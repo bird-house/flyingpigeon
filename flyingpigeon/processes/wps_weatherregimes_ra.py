@@ -155,7 +155,7 @@ class WeatherRegimesRProcess(WPSProcess):
             model_var = self.getInputValues(identifier='reanalyses')[0]
             period = self.getInputValues(identifier='period')[0]            
             anualcycle = self.getInputValues(identifier='anualcycle')[0]
-            model, var = model_var.split('_')
+            model, variable = model_var.split('_')
             
             bbox = [float(b) for b in bbox.split(',')]
 
@@ -177,21 +177,17 @@ class WeatherRegimesRProcess(WPSProcess):
         
         try:            
           if model == 'NCEP': 
-            if 'z' in var:
-              variable='hgt'
-              level=var.strip('z')
+            if 'z' in variable:
+              level=variable.strip('z')
               conform_units_to=None
             else:
-              variable='slp'
               level=None
               conform_units_to='hPa'
           elif '20CRV2' in model: 
-            if 'z' in var:
-              variable='hgt'
-              level=var.strip('z')
+            if 'z' in variable:
+              level=variable.strip('z')
               conform_units_to=None
             else:
-              variable='prmsl'
               level=None
               conform_units_to='hPa'
           else:
@@ -210,7 +206,7 @@ class WeatherRegimesRProcess(WPSProcess):
         try:
           model_nc = rl(start=start.year , 
                         end=end.year , 
-                        dataset=model, variable=var)
+                        dataset=model, variable=variable)
 
           logger.info('reanalyses data fetched')
         except Exception as e:
