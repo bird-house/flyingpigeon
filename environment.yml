@@ -2,12 +2,34 @@ name: flyingpigeon
 channels:
 - defaults
 - birdhouse
+- nesii
+- ioos
 dependencies:
-- ipython
+- python=2.7.12
+- ipython=4.2.0
+- pytest
+- nose
+- mako
+- sphinx
+- pyyaml
+- pywget
+- numpy=1.10.4
 - gcc=4.8.2
-- pywps=3.2.6
-- cryptography=1.4
-- nginx
+- nginx=1.10.1
 - supervisor
+- pywps=3.2.6
+- castf90=0.1.2
+- pycdo=1.2.6
+- cdo=1.7.0
+- nco=4.5.5
+- pandas=0.18.1
+- ocgis-next=1.4.0
+- statsmodels=0.6.1
+- scikit-learn=0.17.1
+- cartopy=0.14.2
+- iris=1.9.2
+- pyopenssl=0.16.0
+- cryptography=1.4
 - pip:
   - genshi==0.7
+  - pygbif
