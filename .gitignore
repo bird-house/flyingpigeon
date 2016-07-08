@@ -6,6 +6,7 @@
 
 # custom configs
 custom.cfg
+Makefile.config
 
 # Python / Extensions etc.
 *~
@@ -18,15 +19,15 @@ custom.cfg
 *.sqlite
 *.bak
 
-# R 
-*.Rhistory
-
 # Unit test / Coverage reports
 .cache
 .coverage
 .tox
 nosetests.xml
 unit_tests/testdata.json
+
+# R 
+*.Rhistory
 
 # Eclipse / PyDev
 .project
