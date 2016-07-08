@@ -217,7 +217,7 @@ clean: srcclean envclean
 .PHONY: envclean
 envclean: stop
 	@echo "Removing conda env $(CONDA_ENV)"
-	@-"$(ANACONDA_HOME)/bin/conda" remove -n $(CONDA_ENV) --yes --all
+	@-test -d $(CONDA_ENV_PATH) && "$(ANACONDA_HOME)/bin/conda" remove -n $(CONDA_ENV) --yes --all
 
 .PHONY: srcclean
 srcclean:
