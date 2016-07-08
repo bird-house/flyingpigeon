@@ -152,7 +152,7 @@ anaconda:
 .PHONY: conda_config
 conda_config: anaconda
 	@echo "Update ~/.condarc"
-	@"$(ANACONDA_HOME)/bin/conda" install conda=$(CONDA_VERSION)
+	@"$(ANACONDA_HOME)/bin/conda" install -y conda=$(CONDA_VERSION)
 	@"$(ANACONDA_HOME)/bin/conda" config --add envs_dirs $(CONDA_ENVS_DIR)
 	@"$(ANACONDA_HOME)/bin/conda" config --set ssl_verify true
 	@"$(ANACONDA_HOME)/bin/conda" config --set update_dependencies true
@@ -217,7 +217,7 @@ clean: srcclean envclean
 .PHONY: envclean
 envclean: stop
 	@echo "Removing conda env $(CONDA_ENV)"
-	@-"$(ANACONDA_HOME)/bin/conda" remove -n $(CONDA_ENV) --yes --all
+	@-test -d $(CONDA_ENV_PATH) && "$(ANACONDA_HOME)/bin/conda" remove -n $(CONDA_ENV) --yes --all
 
 .PHONY: srcclean
 srcclean:

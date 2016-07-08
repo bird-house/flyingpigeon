@@ -5,7 +5,12 @@ extends = buildout.cfg
 [settings]
 hostname = localhost
 http-port = 8093
-log-level = INFO
+output-port = 8090
+log-level = WARN
 
-[pywps]
-maxoperations = 100
+## deployment options
+#prefix =  /opt/birdhouse
+#user = www-data
+#etc-user = root
+
+
