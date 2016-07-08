@@ -1,6 +1,5 @@
 cartopy
 cdo
-ocgis
 pandas
 pygbif>=0.1.4
 pyyaml
