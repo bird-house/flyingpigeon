@@ -31,6 +31,10 @@ dependencies:
 # misc
 - pywget
 - pyyaml
+- expat= 2.1.0
+- geos=3.4.2
+- libuuid=1.0.3
+- pyproj=1.9.5.1=py27_0
 # cdo
 - cdo=1.7.0
 # numeric
@@ -46,6 +50,7 @@ dependencies:
 - ocgis-next=1.4.0
 - esmpy=7.0.0 
 - icclim=4.1.1
+- gdal=1.11.4
 # analogue
 - castf90=0.1.2
 - nco=4.5.5
