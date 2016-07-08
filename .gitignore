@@ -19,15 +19,15 @@ Makefile.config
 *.sqlite
 *.bak
 
-# R 
-*.Rhistory
-
 # Unit test / Coverage reports
 .cache
 .coverage
 .tox
 nosetests.xml
 unit_tests/testdata.json
+
+# R 
+*.Rhistory
 
 # Eclipse / PyDev
 .project
