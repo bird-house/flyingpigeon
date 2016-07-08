@@ -60,8 +60,8 @@ def has_Lambert_Conformal(nc):
     lc_ckeck = False
   return lc_ckeck
 
-def clipping(resource=[], variable=None, dimension_map=None, calc=None,  
-  calc_grouping= None, historical_concatination=True, prefix=None, spatial_wrapping='wrap', polygons=None, mosaik=False, dir_output=None, memory_limit=None):
+def clipping(resource=[], variable=None, dimension_map=None, calc=None,  output_format='nc',
+  calc_grouping= None, time_range=None, time_region=None,  historical_concatination=True, prefix=None, spatial_wrapping='wrap', polygons=None, mosaik=False, dir_output=None, memory_limit=None):
   """ returns list of clipped netCDF files
   possible entries: 
   :param resource: list of input netCDF files
@@ -91,7 +91,6 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
   ncs = sort_by_filename(resource, historical_concatination=historical_concatination) #  historical_concatination=True
   geom_files = []
   if mosaik == True :
-    
     try:
       nameadd = '_'
       for polygon in polygons: 
@@ -113,8 +112,8 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
           name = key + nameadd
         else:
           name = prefix[i]
-        geom_file = call(resource=ncs[key], variable=variable, calc=calc, calc_grouping=calc_grouping, 
-                         prefix=name, geom=geom, select_ugid=ugids,
+        geom_file = call(resource=ncs[key], variable=variable, calc=calc, calc_grouping=calc_grouping, output_format=output_format,
+                         prefix=name, geom=geom, select_ugid=ugids, time_range=time_range, time_region=time_region, 
                          spatial_wrapping=spatial_wrapping, memory_limit=memory_limit,
                          dir_output=dir_output, dimension_map=dimension_map)
         geom_files.append( geom_file )  
@@ -135,8 +134,8 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,
               name = key + '_' + polygon
             else:
               name = prefix[i]
-            geom_file = call(resource=ncs[key], variable=variable,  calc=calc, calc_grouping=calc_grouping,
-              prefix=name, geom=geom, select_ugid=ugid, dir_output=dir_output, dimension_map=dimension_map, spatial_wrapping=spatial_wrapping, memory_limit=memory_limit,
+            geom_file = call(resource=ncs[key], variable=variable,  calc=calc, calc_grouping=calc_grouping,output_format=output_format,
+              prefix=name, geom=geom, select_ugid=ugid, dir_output=dir_output, dimension_map=dimension_map, spatial_wrapping=spatial_wrapping, memory_limit=memory_limit,time_range=time_range, time_region=time_region,
               )
             geom_files.append( geom_file )
           except Exception as e:

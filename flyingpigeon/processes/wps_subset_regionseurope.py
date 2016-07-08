@@ -68,7 +68,7 @@ class subset_regionseuropeProcess(WPSProcess):
         self.mosaik = self.addLiteralInput(
             identifier="mosaik",
             title="Mosaik",
-            abstract="If Mosaik is checked, selected polygons will be merged to one Mosaik for each input file",
+            abstract="If Mosaik is checked, selected polygons be clipped as a mosaik for each input file",
             default=False,
             type=type(False),
             minOccurs=0,

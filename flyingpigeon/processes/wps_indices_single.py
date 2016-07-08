@@ -12,9 +12,9 @@ class SingleIndicesProcess(WPSProcess):
         WPSProcess.__init__(
             self, 
             identifier = "indices_single",
-            title="Climate indices",
+            title="Climate indices -- Single",
             version = "0.3",
-            abstract="This process calculates climate indices based on one single input variable.",
+            abstract="Climate indices based on one single input variable.",
             statusSupported=True,
             storeSupported=True
             )
@@ -61,6 +61,16 @@ class SingleIndicesProcess(WPSProcess):
             maxOccurs=len(countries()),
             allowedValues=countries()
             )
+        
+        self.mosaik = self.addLiteralInput(
+            identifier="mosaik",
+            title="Mosaik",
+            abstract="If Mosaik is checked, selected polygons be clipped as a mosaik for each input file",
+            default=False,
+            type=type(False),
+            minOccurs=0,
+            maxOccurs=1,
+            )
 
         # complex output
         # -------------
@@ -81,7 +91,8 @@ class SingleIndicesProcess(WPSProcess):
         
         ncs       = self.getInputValues(identifier='resource')
         indices   = self.indices.getValue()
-        polygons  = self.polygons.getValue() 
+        polygons  = self.polygons.getValue()
+        mosaik    = self.mosaik.getValue()
         groupings = self.groupings.getValue() # getInputValues(identifier='groupings')
 
         polygons = self.polygons.getValue()
@@ -93,6 +104,7 @@ class SingleIndicesProcess(WPSProcess):
 
         results = calc_indice_single(
             resource = ncs,
+            mosaik=mosaik,
             indices = indices,
             polygons= polygons,
             groupings = groupings,
