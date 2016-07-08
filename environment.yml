@@ -2,7 +2,7 @@ name: flyingpigeon
 channels:
 - defaults
 - birdhouse
-# cartopy nco etc
+# cartopy nco cdo ... etc
 - ioos
 # ocgis
 - nesii
