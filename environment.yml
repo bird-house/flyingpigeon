@@ -11,7 +11,7 @@ channels:
 - bioconda
 dependencies:
 - python=2.7.12
-- gcc=4.8.2
+- gcc=4.8.5
 - pyopenssl=0.16.0
 - cryptography=1.4
 - icu=54.1
