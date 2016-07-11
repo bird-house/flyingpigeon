@@ -22,6 +22,7 @@ dependencies:
 - nose
 # docs
 - sphinx
+- sphinx_rtd_theme
 # ipython
 - ipython=4.2.0
 # wps
