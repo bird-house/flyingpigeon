@@ -7,7 +7,8 @@ import dateutil.parser
 from datetime import datetime
 import os
 from os.path import expanduser
-from mkdir_p import *
+
+from flyingpigeon.utils import make_dirs
 
 transfer_limit_Mb = 100
 
@@ -18,9 +19,13 @@ class ProcessSimpleIndice(WPSProcess):
     def __init__(self):
         WPSProcess.__init__(self,
                             identifier = 'wps_simple_indice', # only mandatary attribute = same file name
-                            title = 'SimpleIndices',
+                            title = 'SimpleIndices (Climate4Impact)',
                             abstract = 'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfal: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50.',
                             version = "1.0",
+                            metadata = [
+                                {"title": "ICCLIM" , "href": "http://icclim.readthedocs.io/en/latest/"},
+                                {"title": "Climate4Impact", "href": "http://climate4impact.eu/impactportal/general/index.jsp"},
+                            ],
                             storeSupported = True,
                             statusSupported = True,
                             grassLocation =False)
@@ -49,13 +54,22 @@ class ProcessSimpleIndice(WPSProcess):
                                                default = None)
 
        
-        self.filesIn = self.addLiteralInput(identifier = 'files',
-                                               title = 'Input netCDF files list',
-                                               abstract="application/netcdf",
-                                               type=type("S"),
-                                               minOccurs=0,
-                                               maxOccurs=1024,
-                                               default = 'http://aims3.llnl.gov/thredds/dodsC/cmip5_css02_data/cmip5/output1/CMCC/CMCC-CM/rcp85/day/atmos/day/r1i1p1/tasmax/1/tasmax_day_CMCC-CM_rcp85_r1i1p1_20060101-20061231.nc')
+        ## self.filesIn = self.addLiteralInput(identifier = 'files',
+        ##                                        title = 'Input netCDF files list',
+        ##                                        abstract="application/netcdf",
+        ##                                        type=type("S"),
+        ##                                        minOccurs=0,
+        ##                                        maxOccurs=1024,
+        ##                                        default = 'http://aims3.llnl.gov/thredds/dodsC/cmip5_css02_data/cmip5/output1/CMCC/CMCC-CM/rcp85/day/atmos/day/r1i1p1/tasmax/1/tasmax_day_CMCC-CM_rcp85_r1i1p1_20060101-20061231.nc')
+
+        self.filesIn = self.addComplexInput(identifier="resources",
+                                            title="URL to your NetCDF File",
+                                            abstract="You may provide a URL or upload a NetCDF file.",
+                                            minOccurs=1,
+                                            maxOccurs=1024,
+                                            maxmegabites=50000,
+                                            formats=[{"mimeType":"application/x-netcdf"}],
+                                            )
         
                                                 
         self.varNameIn = self.addLiteralInput(identifier = 'varName',
@@ -78,7 +92,7 @@ class ProcessSimpleIndice(WPSProcess):
         self.NLevelIn = self.addLiteralInput(identifier = 'NLevel', 
                                                title = 'Number of level (if 4D variable)',
                                                type="String",
-                                               default = None)
+                                               default = 'None')
 
         self.opendapURL = self.addLiteralOutput(identifier = "opendapURL",title = "opendapURL");   
         
@@ -88,21 +102,20 @@ class ProcessSimpleIndice(WPSProcess):
     
     def execute(self):
         # Very important: This allows the NetCDF library to find the users credentials (X509 cert)
-        homedir = os.environ['HOME']
-        os.chdir(homedir)
+        #homedir = os.environ['HOME']
+        #os.chdir(homedir)
         
         def callback(b):
           self.callback("Processing",b)
          
-        files = [];
-        files.extend(self.filesIn.getValue())
+        files = self.getInputValues(identifier='resources')
         var = self.varNameIn.getValue()
         indice_name = self.indiceNameIn.getValue()
         slice_mode = self.sliceModeIn.getValue()
         time_range = self.timeRangeIn.getValue()
         out_file_name = self.outputFileNameIn.getValue()
         level = self.NLevelIn.getValue()
-        thresholdlist = self.thresholdIn.getValue()
+        thresholdlist = self.getInputValues(identifier='threshold')
         thresh = None
         
         if(level == "None"):
@@ -117,11 +130,10 @@ class ProcessSimpleIndice(WPSProcess):
             time_range = [startdate,stopdate]
             
           
-        if(thresholdlist != "None"):
-            if(thresholdlist[0]!="None"):
-                thresh = []
-                for threshold in thresholdlist:
-                    thresh.append(float(threshold))
+        if(thresholdlist):
+            thresh = []
+            for threshold in thresholdlist:
+                thresh.append(float(threshold))
         
       
         self.status.set("Preparing....", 0)
@@ -129,13 +141,17 @@ class ProcessSimpleIndice(WPSProcess):
         pathToAppendToOutputDirectory = "/WPS_"+self.identifier+"_" + datetime.now().strftime("%Y%m%dT%H%M%SZ")
         
         """ URL output path """
-        fileOutURL  = os.environ['POF_OUTPUT_URL']  + pathToAppendToOutputDirectory+"/"
+        from flyingpigeon import config
+        
+        #fileOutURL  = os.environ['POF_OUTPUT_URL']  + pathToAppendToOutputDirectory+"/"
+        fileOutURL  = config.outputUrl_path()  + pathToAppendToOutputDirectory+"/"
         
         """ Internal output path"""
-        fileOutPath = os.environ['POF_OUTPUT_PATH']  + pathToAppendToOutputDirectory +"/"
+        #fileOutPath = os.environ['POF_OUTPUT_PATH']  + pathToAppendToOutputDirectory +"/"
+        fileOutPath = config.output_path()  + pathToAppendToOutputDirectory +"/"
 
         """ Create output directory """
-        mkdir_p(fileOutPath)
+        make_dirs(fileOutPath)
         
 
         self.status.set("Processing input list: "+str(files),0)
