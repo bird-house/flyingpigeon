@@ -17,4 +17,5 @@ __all__ = [
         "wps_plot_timeseries",
 #        "wps_eobs2cordex",
         "wps_fetch",
+        "wps_c4i_simple_indice",
         ]
