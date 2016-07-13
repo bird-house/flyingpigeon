@@ -1,10 +1,7 @@
-import nose.tools
+import pytest
 from unittest import TestCase
-from nose import SkipTest
-from nose.plugins.attrib import attr
 
-from tests.common import prepare_env, TESTDATA
-prepare_env()
+from .common import TESTDATA
 
 import os.path
 import tempfile
@@ -37,39 +34,36 @@ class UtilsTestCase(TestCase):
         assert len(zipf.namelist()) == 2
     
     def test_local_path(self):
-        nose.tools.ok_(utils.local_path('file:///tmp/test.nc') == '/tmp/test.nc')
-        nose.tools.ok_(utils.local_path('/tmp/test.nc') == '/tmp/test.nc')
+        assert utils.local_path('file:///tmp/test.nc') == '/tmp/test.nc'
+        assert utils.local_path('/tmp/test.nc') == '/tmp/test.nc'
 
     def test_sort_by_time(self):
         result = utils.sort_by_time( [utils.local_path(TESTDATA['cmip5_tasmax_2007_nc']),
                                       utils.local_path(TESTDATA['cmip5_tasmax_2006_nc'])] )
-        nose.tools.ok_('200601' in result[0], result)
-        nose.tools.ok_('200701' in result[1], result)
+        assert '200601' in result[0]
+        assert '200701' in result[1]
 
-        
     def test_get_timestamps(self):
         start,end = utils.get_timestamps(utils.local_path(TESTDATA['cmip5_tasmax_nc']))
-        nose.tools.ok_("20060116" == start, start)
-        nose.tools.ok_("20061216" == end, end)
-
+        assert "20060116" == start
+        assert "20061216" == end
         
     def test_get_variable(self):
         variable = utils.get_variable(utils.local_path(TESTDATA['cmip5_tasmax_nc']))
-        nose.tools.ok_("tasmax" == variable, variable)
-
+        assert "tasmax" == variable
 
     def test_drs_filename(self):
         # cordex
         filename = utils.drs_filename(utils.local_path(TESTDATA['cordex_tasmax_nc']))
-        nose.tools.ok_(filename == "tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon_20060215-20061216.nc", filename)
+        assert filename == "tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon_20060215-20061216.nc"
 
         # cordex ... skip timestamp
         filename = utils.drs_filename(utils.local_path(TESTDATA['cordex_tasmax_nc']), skip_timestamp=True)
-        nose.tools.ok_(filename == "tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon.nc", filename)
+        assert filename == "tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon.nc"
         
         # cmip5
         filename = utils.drs_filename(utils.local_path(TESTDATA['cmip5_tasmax_nc']))
-        nose.tools.ok_(filename == "tasmax_MPI-ESM-MR_RCP4.5_r1i1p1_20060116-20061216.nc", filename)
+        assert filename == "tasmax_MPI-ESM-MR_RCP4.5_r1i1p1_20060116-20061216.nc"
 
     def test_aggregations(self):
         nc_files = []
@@ -78,41 +72,37 @@ class UtilsTestCase(TestCase):
 
         aggs = utils.aggregations(nc_files)
         
-        nose.tools.ok_(len(aggs) == 1, len(aggs))
-        nose.tools.ok_("tasmax_MPI-ESM-MR_RCP4.5_r1i1p1" in aggs, aggs)
+        assert len(aggs) == 1
+        assert "tasmax_MPI-ESM-MR_RCP4.5_r1i1p1" in aggs
         agg = aggs["tasmax_MPI-ESM-MR_RCP4.5_r1i1p1"]
 
         # check aggregation files
         agg_files = agg['files']
-        nose.tools.ok_(len(agg_files) == 2, agg)
-        nose.tools.ok_("tasmax_Amon_MPI-ESM-MR_rcp45_r1i1p1_200601-200612.nc" in agg_files[0], agg)
-        nose.tools.ok_("tasmax_Amon_MPI-ESM-MR_rcp45_r1i1p1_200701-200712.nc" in agg_files[1], agg)
+        assert len(agg_files) == 2
+        assert "tasmax_Amon_MPI-ESM-MR_rcp45_r1i1p1_200601-200612.nc" in agg_files[0]
+        assert "tasmax_Amon_MPI-ESM-MR_rcp45_r1i1p1_200701-200712.nc" in agg_files[1]
 
         # check timestamps
-        nose.tools.ok_(agg['from_timestamp'] == '20060116', agg['from_timestamp'])
-        nose.tools.ok_(agg['to_timestamp'] == '20071216', agg['to_timestamp'])
+        assert agg['from_timestamp'] == '20060116'
+        assert agg['to_timestamp'] == '20071216'
 
         # check variable
-        nose.tools.ok_(agg['variable'] == "tasmax", agg['variable'])
+        assert agg['variable'] == "tasmax"
 
         # check filename
-        nose.tools.ok_(agg['filename'] == 'tasmax_MPI-ESM-MR_RCP4.5_r1i1p1_20060116-20071216.nc', agg['filename'])
+        assert agg['filename'] == 'tasmax_MPI-ESM-MR_RCP4.5_r1i1p1_20060116-20071216.nc'
 
     def test_has_variable(self):
-        nose.tools.ok_(utils.has_variable(utils.local_path(TESTDATA['cmip5_tasmax_nc']), 'tasmax') == True)
-
+        assert utils.has_variable(utils.local_path(TESTDATA['cmip5_tasmax_nc']), 'tasmax') == True
         
     def test_calc_grouping(self):
-        nose.tools.ok_(utils.calc_grouping('year') == ['year'])
-        nose.tools.ok_(utils.calc_grouping('month') == ['month'])
-        nose.tools.ok_(utils.calc_grouping('sem') == [ [12,1,2], [3,4,5], [6,7,8], [9,10,11], 'unique'] )
+        assert utils.calc_grouping('year') == ['year']
+        assert utils.calc_grouping('month') == ['month']
+        assert utils.calc_grouping('sem') == [ [12,1,2], [3,4,5], [6,7,8], [9,10,11], 'unique']
 
         # check invalid value: should raise an exception
-        try:
-            nose.tools.ok_(indices.calc_grouping('unknown') == ['year'])
-            assert False
-        except:
-            assert True
+        with pytest.raises(Exception) as e_info:
+            indices.calc_grouping('unknown') == ['year']
 
         
         
