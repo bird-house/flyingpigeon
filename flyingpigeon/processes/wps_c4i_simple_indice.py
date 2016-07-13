@@ -68,15 +68,14 @@ class ProcessSimpleIndice(WPSProcess):
         self.sliceModeIn.values = ["year","month","ONDJFM","AMJJAS","DJF","MAM","JJA","SON"]
 
 
-        self.thresholdIn = self.addLiteralInput(identifier = 'threshold', 
-                                               title = 'Optional threshold(s) for certain indices (SU, CSU and TR). Can be a comma separated list, e.g. 20,21,22',
-                                               type=type("S"),
-                                               minOccurs=0,
-                                               maxOccurs=50)
+        self.thresholdIn = self.addLiteralInput(
+            identifier = 'threshold', 
+            title = "Threshold",
+            abstract = "Optional threshold(s) for certain indices (SU, CSU and TR). Can be a comma separated list, e.g. 20,21,22",
+            type=type("S"),
+            minOccurs=0,
+            maxOccurs=50)
 
-       
-      
-        
                                                 
         self.varNameIn = self.addLiteralInput(identifier = 'varName',
                                                title = 'Variable name to process',
@@ -86,11 +85,13 @@ class ProcessSimpleIndice(WPSProcess):
                                                default = 'tasmax')
         
 
-        self.timeRangeIn = self.addLiteralInput(identifier = 'timeRange', 
-                                               title = 'Optional time range, e.g. 2010-01-01/2012-12-31. If no time range is given then all dates in the file are taken.',
-                                               type=type("String"),
-                                               minOccurs=0,
-                                               maxOccurs=1)
+        self.timeRangeIn = self.addLiteralInput(
+            identifier = 'timeRange', 
+            title = "Time range",
+            abstract = "Optional time range, e.g. 2010-01-01/2012-12-31. If no time range is given then all dates in the file are taken.",
+            type=type("String"),
+            minOccurs=0,
+            maxOccurs=1)
         
         ## self.outputFileNameIn = self.addLiteralInput(identifier = 'outputFileName', 
         ##                                        title = 'Name of output netCDF file',
