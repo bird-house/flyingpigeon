@@ -23,6 +23,10 @@ class ProcessCompoundIndice(WPSProcess):
                             title = 'c4i - Rain Temperature Indices',
                             abstract = 'Computes dual input indices of rain and temperature: CD, CW, WD, WW.',
                             version = "1.0",
+                            metadata = [
+                                {"title": "ICCLIM" , "href": "http://icclim.readthedocs.io/en/latest/"},
+                                {"title": "Climate4Impact", "href": "http://climate4impact.eu/impactportal/general/index.jsp"},
+                            ],
                             storeSupported = True,
                             statusSupported = True,
                             grassLocation =False)
@@ -64,9 +68,11 @@ class ProcessCompoundIndice(WPSProcess):
                                                            'http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/pr_day_EC-EARTH_rcp26_r8i1p1_20760101-21001231.nc')
 
         self.timeRangeBasePeriodIn = self.addLiteralInput(identifier = 'timeRangeBasePeriod', 
-                                                title = 'Time range of base (reference) period, e.g. 1961-01-01/1990-12-31',
-                                                type=type("String"),
-                                                default = 'Please Fill-in')                                                 
+                                                title = 'Time range of base (reference) period',
+                                                abstract = 'Mandatory time range of base (reference) period, e.g. 1961-01-01/1990-12-31. Please fill-in',
+                                                type = type("String"),
+                                                minOccurs = 1,
+                                                default = '1961-01-01/1990-12-31')                                                 
 
                                                 
         self.varNameTemperatureIn = self.addLiteralInput(identifier = 'varNameTemperature',
@@ -104,12 +110,12 @@ class ProcessCompoundIndice(WPSProcess):
         
         self.timeRangeStudyPeriodIn = self.addLiteralInput(identifier = 'timeRangeStudyPeriod', 
                                                 title = 'Time range',
-                                                abstract = 'Time range is mandatory, e.g. 2010-01-01/2012-12-31. Please fill-in.'
+                                                abstract = 'Time range is mandatory, e.g. 2010-01-01/2012-12-31. Please fill-in.',
                                                 type=type("String"),
                                                 minOccurs = 1,
                                                 default = '2010-01-01/2012-12-31')                                                 
 
-         self.leapNonLeapYearsIn = self.addLiteralInput(
+        self.leapNonLeapYearsIn = self.addLiteralInput(
             identifier = 'leapNonLeapYears',
             title = 'Take only leap years?',
             abstract = "Method for computing a percentile value for the calendar day of February 29th. Default: take all years (leap and non-leap)",
