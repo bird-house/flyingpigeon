@@ -6,7 +6,7 @@ import icclim.util.callback as callback
 import dateutil.parser
 from datetime import datetime
 import os
-from os.path import expanduser
+#from os.path import expanduser
 
 from flyingpigeon.utils import make_dirs
 
