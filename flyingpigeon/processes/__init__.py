@@ -16,6 +16,8 @@ __all__ = [
         "wps_sdm_csv",
         "wps_plot_timeseries",
 #        "wps_eobs2cordex",
+# climate for impact processes
         "wps_fetch",
         "wps_c4i_simple_indice",
+        "wps_c4i_percentile_indice",
         ]
