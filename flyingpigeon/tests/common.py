@@ -33,14 +33,16 @@ TESTDATA = {
 
 def prepare_env():
     pywps_path = os.path.dirname(pywps.__file__)
-    home_path = os.path.abspath(os.path.join(pywps_path, '..', '..', '..', '..'))
+    #home_path = os.path.abspath(os.path.join(pywps_path, '..', '..', '..', '..'))
+    home_path = os.path.abspath(os.path.join(os.environ['HOME'], 'birdhouse'))
     os.environ['PATH'] = "{0}:{1}".format(os.path.join(home_path, 'bin'), os.environ['PATH'])
     os.environ['GDAL_DATA'] = os.path.join(home_path, 'share', 'gdal')
     
 class WpsTestClient(object):
     def __init__(self):
         pywps_path = os.path.dirname(pywps.__file__)
-        home_path = os.path.abspath(os.path.join(pywps_path, '..', '..', '..', '..'))
+        #home_path = os.path.abspath(os.path.join(pywps_path, '..', '..', '..', '..'))
+        home_path = os.path.abspath(os.path.join(os.environ['HOME'], 'birdhouse'))
         os.environ['PYWPS_CFG'] = os.path.join(home_path, 'etc', 'pywps', 'flyingpigeon.cfg')
         os.environ['REQUEST_METHOD'] = pywps.METHOD_GET
         os.environ['PATH'] = "{0}:{1}".format(os.path.join(home_path, 'bin'), os.environ['PATH'])
