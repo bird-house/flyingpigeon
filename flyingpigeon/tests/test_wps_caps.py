@@ -1,5 +1,4 @@
-import nose.tools
-from tests.common import WpsTestClient
+from .common import WpsTestClient
 
 def test_caps():
     wps = WpsTestClient()
@@ -9,6 +8,25 @@ def test_caps():
                             '/wps:Process'
                             '/ows:Identifier')
     sorted_names = sorted(names.split())
-    expected_names = ['analogs', 'ensembleRobustness', 'eobs_to_cordex', 'extractpoints', 'fetch', 'indices_percentile', 'indices_single', 'sdm', 'segetalflora', 'subset_countries', 'visualisation', 'weatherregimes']
-    nose.tools.ok_(sorted_names == expected_names, "Expected: {0}, Got: {1}".format(expected_names, sorted_names))
+    expected_names = [
+        'analogs_detection',
+        'analogs_viewer',
+        'fetch',
+        'indices_percentile',
+        'indices_single',
+        'plot_timeseries',
+        'sdm_csv',
+        'sdm_gbifsearch',
+        'segetalflora',
+        'subset_continents',
+        'subset_countries',
+        'subset_points',
+        'subset_regionseurope',
+        'weatherregimes_model',
+        'weatherregimes_projection',
+        'weatherregimes_reanalyse',
+        'wps_c4i_simple_indice',
+        ]
+
+    assert sorted_names == expected_names
 
