@@ -21,4 +21,5 @@ __all__ = [
         "wps_c4i_simple_indice",
         "wps_c4i_multivar_indice",
         "wps_c4i_percentile_indice",
+        "wps_c4i_compound_indice",
         ]
