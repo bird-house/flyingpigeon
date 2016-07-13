@@ -11,6 +11,10 @@ logger = logging.getLogger(__name__)
 GROUPING = [ "day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON" ,
             "Jan", 'Feb', "Mar", "Apr", "May", "Jun", 'Jul', "Aug", 'Sep', 'Okt', 'Nov', 'Dec' ]
 
+def make_dirs(directory):
+  if not os.path.exists(directory):
+    os.makedirs(directory)
+
 def download(url, cache=False):
     """
     Downloads URL using the Python wget module to the current directory.

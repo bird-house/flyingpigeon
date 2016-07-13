@@ -5,6 +5,7 @@ from flyingpigeon.subset import countries, countries_longname
 from flyingpigeon.utils import GROUPING
 
 import logging
+logger = logging.getLogger(__name__)
 
 class SingleIndicesProcess(WPSProcess):
     """This process calculates a climate indice for the given input netcdf files."""
@@ -15,6 +16,10 @@ class SingleIndicesProcess(WPSProcess):
             title="Climate indices -- Single",
             version = "0.3",
             abstract="Climate indices based on one single input variable.",
+            metadata = [
+                {'title': 'Documentation', 'href': 'http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#climate-indices'},
+                {"title": "ICCLIM" , "href": "http://icclim.readthedocs.io/en/latest/"},
+                ],
             statusSupported=True,
             storeSupported=True
             )
@@ -116,14 +121,17 @@ class SingleIndicesProcess(WPSProcess):
             (fp_tarf, tarf) = mkstemp(dir=".", suffix='.tar')
             tar = tarfile.open(tarf, "w")
 
-            for result in results:
-                p , f = path.split(result) 
-                tar.add( result , arcname = result.replace(p, ""))
+            if results:
+                for result in results[0]:
+                    logger.debug("result = %s", result)
+                    tar.add( result , arcname = os.path.basename(result))
             tar.close()
 
-            logging.info('Tar file prepared')
+            logger.info('Tar file prepared')
         except Exception as e:
-            logging.error('Tar file preparation failed %s' % e)
+            msg = "Tar file preparation failed"
+            logger.exception(msg)
+            raise Exception(msg)
 
         self.output.setValue( tarf )
         self.status.set('done: indice=%s, num_files=%s' % (indices, len(ncs)), 100)
