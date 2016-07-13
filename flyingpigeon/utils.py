@@ -231,7 +231,9 @@ def drs_filename(nc_file, skip_timestamp=False, skip_format=False ,
 
         # add from/to timestamp if not skipped
         if skip_timestamp == False:
+            logger.debug("add timestamp")
             from_timestamp, to_timestamp = get_timerange(nc_file)
+            logger.debug("from_timestamp %s", from_timestamp)
             filename = "%s_%s-%s" % (filename, int(from_timestamp), int(to_timestamp))
 
         # add format extension
@@ -349,7 +351,7 @@ def get_timerange(resources):
   :returns netcdf.dateime.dateime: start, end
   """
   try:  
-    ds = MFDataset(resources)
+    ds = Dataset(resources)
     time = ds.variables['time']
     if (hasattr(time , 'units') and hasattr(time , 'calendar')) == True:
       s = num2date(time[0], time.units , time.calendar)
@@ -365,8 +367,8 @@ def get_timerange(resources):
     end = '%s%s%s'  %   (e.year,  str(e.month).zfill(2) ,str(e.day).zfill(2))
     ds.close()
   except Exception as e: 
-    msg = 'failed to get time: %s' % e
-    logger.debug(msg)
+    msg = 'failed to get timerange'
+    logger.exception(msg)
     raise Exception(msg)
   return start, end
 
@@ -380,9 +382,10 @@ def get_timestamps(nc_file):
         
         from_timestamp = '%s%s%s'  % (start.year, str(start.month).zfill(2) ,str(start.day).zfill(2)) 
         to_timestamp = '%s%s%s'  %   (end.year,  str(end.month).zfill(2) ,str(end.day).zfill(2))
-    except Exception as e: 
-      #logger.debug('failed to get_timestamps %s't % e)
-      raise Exception
+    except Exception as e:
+      msg = 'failed to get_timestamps' 
+      logger.exception(msg)
+      raise Exception(msg)
      
     return (from_timestamp, to_timestamp)
 
@@ -438,9 +441,9 @@ def aggregations(nc_files):
         # sort files by time
         aggregations[key]['files'] = sort_by_time(aggregations[key]['files'])
         # start timestamp of first file
-        start, end = get_timerange(aggregations[key]['files'])
+        start, _ = get_timerange(aggregations[key]['files'][0])
         # end timestamp of last file
-        #_, end = get_timestamps(aggregations[key]['files'][-1])
+        _, end = get_timestamps(aggregations[key]['files'][-1])
         aggregations[key]['from_timestamp'] = start
         aggregations[key]['to_timestamp'] = end
         aggregations[key]['start_year'] = int(start[0:4])
