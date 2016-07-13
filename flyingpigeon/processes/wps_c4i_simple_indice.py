@@ -99,12 +99,10 @@ class ProcessSimpleIndice(WPSProcess):
         ##                                        maxOccurs=1,
         ##                                        default = 'out_icclim.nc')
         
-        
         self.NLevelIn = self.addLiteralInput(identifier = 'NLevel', 
-                                               title = 'Number of level (if 4D variable)',
-                                               type = type("String"),
-                                               minOccurs=0,
-                                               maxOccurs=1)
+                                                title = 'Number of level (if 4D variable)',
+                                                minOccurs = 0,
+                                                type=type(1))
 
         self.output = self.addComplexOutput(
             identifier="output",
@@ -193,9 +191,9 @@ class ProcessSimpleIndice(WPSProcess):
                         out_unit='days')
         
         """ Set output """
-        #url = fileOutURL+"/"+out_file_name;
-        #self.opendapURL.setValue(url);
-        self.output.setValue(out_file_name);
-        self.status.set("ready",100);
+        #url = fileOutURL+"/"+out_file_name
+        #self.opendapURL.setValue(url)
+        self.output.setValue(out_file_name)
+        self.status.set("ready",100)
         
         
