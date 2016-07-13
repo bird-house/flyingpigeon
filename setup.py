@@ -31,7 +31,7 @@ setup(name='flyingpigeon',
       packages=find_packages(),
       include_package_data=True,
       zip_safe=False,
-      test_suite='nose.collector',
+      test_suite='flyingpigeon',
       install_requires=reqs,
       entry_points = {
           'console_scripts': [
