@@ -27,6 +27,7 @@ class ProcessSimpleIndice(WPSProcess):
                             metadata = [
                                 {"title": "ICCLIM" , "href": "http://icclim.readthedocs.io/en/latest/"},
                                 {"title": "Climate4Impact", "href": "http://climate4impact.eu/impactportal/general/index.jsp"},
+                                {'title': "Simple Indices", "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/indices.html"}
                             ],
                             storeSupported = True,
                             statusSupported = True,
@@ -53,16 +54,18 @@ class ProcessSimpleIndice(WPSProcess):
 
         self.indiceNameIn = self.addLiteralInput(identifier = 'indiceName',
                                                title = 'Indice name',
+                                               abstract = 'E.g. indice=TG (Mean of mean temperature, variable=tas)',
                                                type = type("String"),
                                                minOccurs=1,
                                                maxOccurs=1,
-                                               default = 'SU')        
+                                               default = 'TG')        
 
         self.indiceNameIn.values = ["TG","TX","TN","TXx","TXn","TNx","TNn","SU","TR","CSU","GD4","FD","CFD","ID","HD17","CDD","CWD","PRCPTOT","RR1","SDII","R10mm","R20mm","RX1day","RX5day","SD","SD1","SD5cm","SD50cm"]
 
 
         self.sliceModeIn = self.addLiteralInput(identifier = 'sliceMode',
-                                              title = 'Slice mode (temporal grouping to apply for calculations)',
+                                              title = 'Slice mode (temporal grouping)',
+                                              abstract = 'Slice mode (temporal grouping to apply for calculations)',
                                               type = type("String"),
                                               default = 'year')
         self.sliceModeIn.values = ["year","month","ONDJFM","AMJJAS","DJF","MAM","JJA","SON"]
@@ -79,10 +82,11 @@ class ProcessSimpleIndice(WPSProcess):
                                                 
         self.varNameIn = self.addLiteralInput(identifier = 'varName',
                                                title = 'Variable name to process',
+                                               abstract = 'E.g. tas=temperature at surface.',
                                                type=type("String"),
                                                minOccurs=1,
                                                maxOccurs=1,
-                                               default = 'tasmax')
+                                               default = 'tas')
         
 
         self.timeRangeIn = self.addLiteralInput(
@@ -101,7 +105,8 @@ class ProcessSimpleIndice(WPSProcess):
         ##                                        default = 'out_icclim.nc')
         
         self.NLevelIn = self.addLiteralInput(identifier = 'NLevel', 
-                                                title = 'Number of level (if 4D variable)',
+                                                title = 'Number of level',
+                                                abstract = 'Optional number of level (if 4D variable)',
                                                 minOccurs = 0,
                                                 type=type(1))
 
