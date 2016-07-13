@@ -19,5 +19,6 @@ __all__ = [
 # climate for impact processes
         "wps_fetch",
         "wps_c4i_simple_indice",
+        "wps_c4i_multivar_indice",
         "wps_c4i_percentile_indice",
         ]
