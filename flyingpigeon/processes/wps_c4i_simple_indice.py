@@ -22,7 +22,7 @@ class ProcessSimpleIndice(WPSProcess):
         WPSProcess.__init__(self,
                             identifier = 'wps_simple_indice', # only mandatary attribute = same file name
                             title = 'c4i - Simple Climate Indices',
-                            abstract = 'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfal: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50.',
+                            abstract = 'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfal: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50. This processes is also available in Climate4Impact and uses ICCLIM.',
                             version = "1.0",
                             metadata = [
                                 {"title": "ICCLIM" , "href": "http://icclim.readthedocs.io/en/latest/"},
