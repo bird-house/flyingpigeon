@@ -31,12 +31,12 @@ TESTDATA = {
     'cordex_tasmax_2007_nc': "file://{0}".format(os.path.join(TESTS_HOME, 'testdata', 'cordex', 'tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon_200602-200612.nc')),
     }
 
-def prepare_env():
-    pywps_path = os.path.dirname(pywps.__file__)
-    #home_path = os.path.abspath(os.path.join(pywps_path, '..', '..', '..', '..'))
-    home_path = os.path.abspath(os.path.join(os.environ['HOME'], 'birdhouse'))
-    os.environ['PATH'] = "{0}:{1}".format(os.path.join(home_path, 'bin'), os.environ['PATH'])
-    os.environ['GDAL_DATA'] = os.path.join(home_path, 'share', 'gdal')
+## def prepare_env():
+##     pywps_path = os.path.dirname(pywps.__file__)
+##     #home_path = os.path.abspath(os.path.join(pywps_path, '..', '..', '..', '..'))
+##     home_path = os.path.abspath(os.path.join(os.environ['HOME'], 'birdhouse'))
+##     os.environ['PATH'] = "{0}:{1}".format(os.path.join(home_path, 'bin'), os.environ['PATH'])
+##     os.environ['GDAL_DATA'] = os.path.join(home_path, 'share', 'gdal')
     
 class WpsTestClient(object):
     def __init__(self):
