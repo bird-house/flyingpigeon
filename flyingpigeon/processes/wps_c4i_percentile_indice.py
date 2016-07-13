@@ -90,22 +90,24 @@ class ProcessPercentileIndice(WPSProcess):
                                                abstract="application/netcdf",
                                                type=type("S"),
                                                minOccurs=0,
-                                               maxOccurs=1024,
-                                               default = 'http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20060101-20251231.nc,' +
-                                                          'http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20260101-20501231.nc,' +
-                                                          'http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20510101-20751231.nc,' +
-                                                          'http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20760101-21001231.nc')
+                                               maxOccurs=100,
+                                               default = 'http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20060101-20251231.nc' )
+    #'http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20260101-20501231.nc',
+    #'http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20510101-20751231.nc',
+    #'http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20760101-21001231.nc'
 
         self.timeRangeStudyPeriodIn = self.addLiteralInput(identifier = 'timeRangeStudyPeriod', 
                                                title = 'Time range, e.g. 2010-01-01/2012-12-31',
                                                abstract = "Time range is mandatory. Please fill in.",
                                                type=type("String"),
+                                               minOccurs=1,
                                                default = '2010-01-01/2012-12-31')                                                 
         
         
         self.varNameIn = self.addLiteralInput(identifier = 'varName',
                                                title = 'Variable name to process',
                                                type=type("String"),
+                                               minOccurs=1,
                                                default = 'tas')
 
         
@@ -166,7 +168,7 @@ class ProcessPercentileIndice(WPSProcess):
 
         slice_mode = self.sliceModeIn.getValue()
         #out_file_name = self.outputFileNameIn.getValue()
-        out_file_name = out.nc
+        out_file_name = 'out.nc'
         level = self.NLevelIn.getValue()
           
         if time_range_base_period:
