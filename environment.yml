@@ -19,7 +19,6 @@ dependencies:
 - libiconv=1.14
 # tests
 - pytest
-- nose
 # docs
 - sphinx
 - sphinx_rtd_theme
