@@ -1,10 +1,16 @@
-from pywps.Process import WPSProcess
+import os
+import tarfile
+from tempfile import mkstemp
+from os import path
 
 from flyingpigeon.indices import indices, indices_description
 from flyingpigeon.subset import countries, countries_longname
 from flyingpigeon.utils import GROUPING
 
+from pywps.Process import WPSProcess
+
 import logging
+logger = logging.getLogger(__name__)
 
 class IndicesPercentileProcess(WPSProcess):
     """This process calculates a climate indice for the given input netcdf files."""
@@ -37,11 +43,11 @@ class IndicesPercentileProcess(WPSProcess):
             identifier="indices",
             title="Indice",
             abstract='Select an indice',
-            default='TG_p',
+            default='TG',
             type=type(''),
             minOccurs=1,
             maxOccurs=1, # len(indices()),
-            allowedValues=['TG_p', 'TN_p', 'TX_p'], # indices()
+            allowedValues=['TG', 'TN', 'TX'], # indices()
             )
 
         self.percentile = self.addLiteralInput(
@@ -122,22 +128,17 @@ class IndicesPercentileProcess(WPSProcess):
             )
 
     def execute(self):
-        from flyingpigeon.indices import calc_indice_percentile   
-        import os
-        import tarfile
-        from tempfile import mkstemp
-        from os import path
-        
         ncs        = self.getInputValues(identifier='resource')
         indices    = self.indices.getValue()
         polygons   = self.polygons.getValue()
         percentile = int(self.percentile.getValue())
         groupings  = self.groupings.getValue() #
         mosaik = self.mosaik.getValue()
-        refperiod     = self.refperiod.getValue()
+        refperiod = self.refperiod.getValue()
        
         self.status.set('starting: indices=%s, refperiod=%s, groupings=%s, num_files=%s' % (indices, refperiod, groupings, len(ncs)), 0)
 
+        from flyingpigeon.indices import calc_indice_percentile   
         results = calc_indice_percentile(
             resources = ncs,
             indices = indices,
@@ -161,7 +162,9 @@ class IndicesPercentileProcess(WPSProcess):
 
             logging.info('Tar file prepared')
         except Exception as e:
-            logging.error('Tar file preparation failed %s' % e)
+            msg = "Tar file preparation failed."
+            logging.exception(msg)
+            raise Exception(msg)
 
         self.output.setValue( tarf )
         self.status.set('done: indice=%s, num_files=%s' % (indices, len(ncs)), 100)
