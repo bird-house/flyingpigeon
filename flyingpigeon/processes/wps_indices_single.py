@@ -122,7 +122,7 @@ class SingleIndicesProcess(WPSProcess):
             tar = tarfile.open(tarf, "w")
 
             if results:
-                for result in results[0]:
+                for result in results:
                     logger.debug("result = %s", result)
                     tar.add( result , arcname = os.path.basename(result))
             tar.close()
