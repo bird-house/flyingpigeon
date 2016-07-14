@@ -271,7 +271,7 @@ class WeatherRegimesRProcess(WPSProcess):
           logger.info('Rcall builded')
         except Exception as e: 
           msg = 'failed to build the R command %s' % e
-          logger.error(msg)  
+          logger.debug(msg)  
           raise Exception(msg)
         try:
           output,error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE).communicate() #, shell=True

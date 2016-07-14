@@ -24,7 +24,6 @@ class WeatherRegimesRProcess(WPSProcess):
             storeSupported=True
             )
 
-
         self.resource = self.addComplexInput(
             identifier="resource",
             title="Resource",
@@ -34,7 +33,6 @@ class WeatherRegimesRProcess(WPSProcess):
             maxmegabites=5000,
             formats=[{"mimeType":"application/x-netcdf"}],
             )
-
 
         # Literal Input Data
         # ------------------
@@ -171,53 +169,7 @@ class WeatherRegimesRProcess(WPSProcess):
             
         except Exception as e: 
             logger.debug('failed to read in the arguments %s ' % e)
-        
-        # ###########################
-        # ### set the environment
-        # ###########################
-        
-        # try:            
-        #   if model == 'NCEP': 
-        #     if 'z' in var:
-        #       variable='hgt'
-        #       level=var.strip('z')
-        #       conform_units_to=None
-        #     else:
-        #       variable='slp'
-        #       level=None
-        #       conform_units_to='hPa'
-        #   elif '20CRV2' in model: 
-        #     if 'z' in var:
-        #       variable='hgt'
-        #       level=var.strip('z')
-        #       conform_units_to=None
-        #     else:
-        #       variable='prmsl'
-        #       level=None
-        #       conform_units_to='hPa'
-        #   else:
-        #     logger.error('Reanalyses dataset not known')          
-        #   logger.info('environment set')
-        # except Exception as e: 
-        #   msg = 'failed to set environment %s ' % e
-        #   logger.error(msg)  
-        #   raise Exception(msg)
-
-        ##########################################
-        ### fetch Data from original data archive
-        ##########################################
-
-        # from flyingpigeon.datafetch import reanalyses as rl            
-        # try:
-        #   model_nc = rl(start=start.year , 
-        #                 end=end.year , 
-        #                 dataset=model, variable=var)
-
-        #   logger.info('reanalyses data fetched')
-        # except Exception as e:
-        #   msg = 'failed to get reanalyses data  %s' % e
-        #   logger.debug(msg)
-        #   raise Exception(msg)
+       
                 
         ############################################################    
         ### get the required bbox and time region from resource data
@@ -263,7 +215,7 @@ class WeatherRegimesRProcess(WPSProcess):
           Rfile = 'weatherregimes_model.R'
           
           infile = model_season  #model_subset #model_ponderate 
-          modelname = model
+          modelname = 'MODEL'
           yr1 = start.year
           yr2 = end.year
           ip, output_graphics = mkstemp(dir=curdir ,suffix='.pdf')
