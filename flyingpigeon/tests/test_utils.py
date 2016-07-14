@@ -73,10 +73,6 @@ def test_get_timestamps():
     assert "20060116" == start
     assert "20061216" == end
 
-def test_get_variable():
-    variable = utils.get_variable(local_path(TESTDATA['cmip5_tasmax_2006_nc']))
-    assert "tasmax" == variable
-
 def test_get_timerange():
     start,end = utils.get_timerange(local_path(TESTDATA['cmip5_tasmax_2006_nc']))
     assert "20060116" == start
