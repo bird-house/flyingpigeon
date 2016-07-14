@@ -45,7 +45,7 @@ def test_indice_percentile():
     ds = Dataset(output[0])
     # SU variable must be in result
     assert 'TX' in ds.variables
-    # 1 years
+    # 1 year
     assert len(ds.variables['time']) == 1
 
 

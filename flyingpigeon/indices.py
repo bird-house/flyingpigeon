@@ -346,16 +346,18 @@ def calc_indice_percentile(resources=[], variable='tas',
           
           if polygons == None:
             nc_indices.append(call(resource=resource, 
-                prefix=key.replace(variable,name).replace('_day_', '_%s_' % grouping), 
-                                calc=calc, 
-                                calc_grouping=calc_group, 
-                                output_format='nc'))
-          else: 
-            nc_indices.extend(clipping(resource=resource, 
-                prefix=key.replace(variable,name).replace('_day_', '_%s_' % grouping), 
+                                prefix=key.replace(variable,name).replace('_day_', '_%s_' % grouping), 
                                 calc=calc, 
                                 calc_grouping=calc_group, 
                                 output_format='nc',
+                                dir_output=dir_output))
+          else: 
+            nc_indices.extend(clipping(resource=resource, 
+                                prefix=key.replace(variable,name).replace('_day_', '_%s_' % grouping), 
+                                calc=calc, 
+                                calc_grouping=calc_group, 
+                                output_format='nc',
+                                dir_output=dir_output,
                                 polygons=polygons, 
                                 mosaik = mosaik,
                                 ))
