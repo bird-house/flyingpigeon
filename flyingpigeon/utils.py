@@ -404,16 +404,23 @@ def get_timestamps(nc_file):
      
     return (from_timestamp, to_timestamp)
 
-def get_time(nc_file):
+def get_time(nc_files):
     """
     returns all timestamps of given netcdf file as datetime list.
     
     :param nc_file: NetCDF file(s)
     :return format: netcdftime._datetime.datetime
     """
+    if type(nc_files) != list:
+        nc_files = [nc_files]
+    timestamps = []
+    for nc_file in nc_files:
+        timestamps.extend(_time(nc_file))
+    return timestamps
+
+def _time(nc_file):
     try:
-      from netCDF4 import MFDataset
-      ds = MFDataset(nc_file)
+      ds = Dataset(nc_file)
       time = ds.variables['time']
       if (hasattr(time , 'units') and hasattr(time , 'calendar')) == True:
         timestamps = num2date(time[:], time.units , time.calendar)
@@ -422,9 +429,10 @@ def get_time(nc_file):
       else: 
         timestamps = num2date(time[:])
       ds.close()
-    except: 
-      logger.debug('failed to get time')
-      raise Exception
+    except:
+      msg = 'failed to get time'
+      logger.exception(msg)
+      raise Exception(msg)
     return timestamps
     
 def aggregations(nc_files):

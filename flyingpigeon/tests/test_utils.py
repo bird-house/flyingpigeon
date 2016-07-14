@@ -44,6 +44,17 @@ def test_get_values():
                                 local_path(TESTDATA['cordex_tasmax_2007_nc'])] )
     assert 23 == len(values)
 
+def test_get_time():
+    timestamps = utils.get_time( local_path(TESTDATA['cmip5_tasmax_2007_nc']) )
+    assert 12 == len(timestamps)
+
+    timestamps = utils.get_time( local_path(TESTDATA['cordex_tasmax_2007_nc']) )
+    assert 12 == len(timestamps)
+
+    values = utils.get_values( [local_path(TESTDATA['cordex_tasmax_2006_nc']),
+                                local_path(TESTDATA['cordex_tasmax_2007_nc'])] )
+    assert 23 == len(values)
+
 def test_sort_by_time():
     result = utils.sort_by_time( [local_path(TESTDATA['cmip5_tasmax_2007_nc']),
                                   local_path(TESTDATA['cmip5_tasmax_2006_nc'])] )
