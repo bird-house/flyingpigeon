@@ -236,7 +236,7 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
         raise Exception(msg)
     return outputs
 
-def calc_indice_percentile(resources=[], variable='tas', 
+def calc_indice_percentile(resources=[], variable=None, 
     prefix=None, indices='TG90p', refperiod=None,
     groupings='yr', polygons=None, percentile=90, mosaik = False, 
     dir_output=None, dimension_map = None):
@@ -298,6 +298,8 @@ def calc_indice_percentile(resources=[], variable='tas',
       calc_group = calc_grouping(grouping)
       for key in nc_dic.keys():
         resource = nc_dic[key]
+        if variable == None: 
+          variable = get_variable(resource)
         if polygons == None:
           nc_reference = call(resource=resource, 
             prefix=str(uuid.uuid4()), 
