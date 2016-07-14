@@ -260,12 +260,18 @@ def get_variable(nc_file):
     :param nc_file: NetCDF file
     """
     ds = Dataset(nc_file)
-    variables = set( ds.variables.keys() )
-    variables = variables - set(ds.dimensions.keys())
-    variables = variables - set(['time', 'time_bnds', 'rlat', 'rlon', 'rotated_latitude_longitude', 'lon_bnds', 'lat_bnds', 'latitude_longitude'])
-    if len(variables) != 1:
-        raise Exception("could not guess variable")
-    return variables.pop()
+    variable = None
+    if ds.data_model == 'NETCDF4':
+        variables = set( ds.variables.keys() )
+        variables = variables - set(ds.dimensions.keys())
+        variables = variables - set(['time', 'time_bnds', 'rlat', 'rlon', 'rotated_latitude_longitude', 'lon_bnds', 'lat_bnds', 'latitude_longitude'])
+        if len(variables) != 1:
+            raise Exception("could not guess variable")
+        variable = variables.pop()
+    else:
+        rds = RequestDataset(nc_file)
+        variable = rds.variable
+    return variable
 
 def get_coordinates(nc_file): 
   """
