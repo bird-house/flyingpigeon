@@ -311,7 +311,7 @@ def calc_indice_percentile(resources=[], variable='tas',
             output_format='nc', 
             polygons=polygons,
             dir_output=dir_output, 
-            mosaik = mosaik,)
+            mosaik = mosaik)
           
         arr = get_values(nc_files=nc_reference)
         dt_arr = get_time(nc_files=nc_reference)

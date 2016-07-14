@@ -259,7 +259,11 @@ def get_variable(nc_file):
     returns the variable name (str)
     :param nc_file: NetCDF file
     """
-    ds = Dataset(nc_file)
+    ds = None
+    if type(nc_file) == list:
+        ds = Dataset(nc_file[0])
+    else:
+        ds = Dataset(nc_file)
     variable = None
     if ds.data_model == 'NETCDF4':
         variables = set( ds.variables.keys() )
