@@ -10,6 +10,7 @@ import zipfile
 from netCDF4 import Dataset
 
 from flyingpigeon import utils
+from flyingpigeon.utils import local_path
 
 class UtilsTestCase(TestCase):
 
@@ -51,6 +52,11 @@ class UtilsTestCase(TestCase):
     def test_get_variable(self):
         variable = utils.get_variable(utils.local_path(TESTDATA['cmip5_tasmax_nc']))
         assert "tasmax" == variable
+
+    def test_get_timerange(self):
+        start,end = utils.get_timerange(local_path(TESTDATA['cmip5_tasmax_nc']))
+        assert "20060116" == start
+        assert "20061216" == end
 
     def test_drs_filename(self):
         # cordex
