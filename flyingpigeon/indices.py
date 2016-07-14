@@ -198,8 +198,10 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
                      dir_output=dir_output,
                      output_format='nc')
                     outputs.extend( [tmp] )
-                  except Exception as e: 
-                    logger.exception('could not calc indice %s for domain in %s' %( indice, key) )   
+                  except Exception as e:
+                    msg = 'could not calc indice %s for domain in %s' %( indice, key)
+                    logger.exception( msg )
+                    raise Exception(msg)   
                 else:
                   try:
                     if prefix == None:   
@@ -215,17 +217,23 @@ def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
                      dir_output=dir_output,
                      output_format='nc')
                     outputs.extend( [tmp] )
-                  except Exception as e: 
-                    logger.exception('could not calc indice %s for domain in %s' %( indice, key) )
-                    
-                    
+                  except Exception as e:
+                    msg = 'could not calc indice %s for domain in %s' %( indice, key)
+                    logger.exception( msg )
+                    raise Exception(msg)
                 logger.info('indice file calculated')      
               except Exception as e:
-                logger.exception('could not calc indice %s for key %s and grouping %s' %  (indice, key, grouping))  
+                msg = 'could not calc indice %s for key %s and grouping %s' %  (indice, key, grouping)
+                logger.exception(msg)
+                raise Exception(msg)  
           except Exception as e:
-            logger.exception('could not calc indice %s for key %s' % ( indice, key))        
+            msg = 'could not calc indice %s for key %s' % ( indice, key)
+            logger.exception(msg)
+            raise Exception(msg)        
       except Exception as e:
-        logger.exception('could not calc key %s' % key)
+        msg = 'could not calc key %s' % key
+        logger.exception(msg)
+        raise Exception(msg)
     return outputs
 
 def calc_indice_percentile(resources=[], variable='tas', 

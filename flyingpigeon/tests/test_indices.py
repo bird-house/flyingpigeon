@@ -15,20 +15,20 @@ def test_indices():
 def test_indices_description():
     assert 'TG: ' in indices.indices_description()
 
-@pytest.mark.skip(reason="no way of currently testing this")
+#@pytest.mark.skip(reason="no way of currently testing this")
 def test_indice_su_tasmax():
     # SU expects tasmax
     output = indices.calc_indice_single(
         [local_path(TESTDATA['cordex_tasmax_2006_nc'])],
         indices=['SU'], groupings='year', dir_output=tempfile.mkdtemp())
 
-    assert os.path.basename(output) == 'TG_EUR-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day.nc'
+    assert os.path.basename(output[0]) == 'SU_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon_20060215-20061216.nc'
 
-    ds = Dataset(output)
+    ds = Dataset(output[0])
     # SU variable must be in result
     assert 'SU' in ds.variables
-    # 5 years
-    assert len(ds.variables['time']) == 5
+    # 1 years
+    assert len(ds.variables['time']) == 1
 
 
 
