@@ -331,18 +331,19 @@ def get_values(nc_files, variable=None):
   :param nc_files: list of files
   :param variable: variable to be picked from the files (if not set, variable will be detected)
   """
-  
+  if type(nc_files) != list:
+    nc_files = [nc_files]
+  values = []
+  for nc_file in nc_files:
+    values.extend(_values(nc_file, variable))
+  return values
+
+def _values(nc_file, variable=None):
   from numpy import squeeze
   if variable == None:
-    if type(nc_files) == str:
-      variable = get_variable(nc_files)
-    else:
-      variable = get_variable(nc_files[0])
-
-  from netCDF4 import MFDataset
-  mds = MFDataset(nc_files)
+      variable = get_variable(nc_file)
+  mds = Dataset(nc_file)
   vals = squeeze(mds.variables[variable][:])
-  
   return vals
 
 def get_timerange(resources):
