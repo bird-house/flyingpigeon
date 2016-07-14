@@ -88,7 +88,7 @@ class AnalogsProcess(WPSProcess):
       identifier="refSt",
       title="Start reference period",
       abstract="Start YEAR of reference period",
-      default="1955-01-01",
+      default="2013-01-01",
       type=type(date(1955,01,01)),
       minOccurs=1,
       maxOccurs=1,
@@ -98,7 +98,7 @@ class AnalogsProcess(WPSProcess):
       identifier="refEn",
       title="End reference period",
       abstract="End YEAR of reference period",
-      default="1957-12-31",
+      default="2014-12-31",
       type=type(date(1957,12,31)),
       minOccurs=1,
       maxOccurs=1,
@@ -218,7 +218,6 @@ class AnalogsProcess(WPSProcess):
     refEn = self.getInputValues(identifier='refEn')
     dateSt = self.getInputValues(identifier='dateSt')
     dateEn = self.getInputValues(identifier='dateEn')
-
 
     refSt = dt.strptime(refSt[0],'%Y-%m-%d')
     refEn = dt.strptime(refEn[0],'%Y-%m-%d')
