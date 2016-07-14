@@ -1,19 +1,23 @@
-from flyingpigeon import config
 from os.path import join, abspath, dirname, getsize, curdir
 
+from netCDF4 import Dataset
+
+from flyingpigeon import config
+
 DIR_SHP = config.shapefiles_dir()
+
 
 import logging
 logger = logging.getLogger(__name__)
 
-def has_Lambert_Conformal(nc):
-  from netCDF4 import MFDataset
-  ds = MFDataset(nc)
-  if 'Lambert_Conformal' in ds.variables.keys():
-    lc_ckeck = True
-  else: 
-    lc_ckeck = False
-  return lc_ckeck
+def has_Lambert_Conformal(nc_files):
+  if type(nc_files) != list:
+      nc_files = [nc_files]
+  for nc_file in nc_files:
+    ds = Dataset(nc_file)
+    if not 'Lambert_Conformal' in ds.variables.keys():
+      return False
+  return True
 
 def call(resource=[], variable=None, dimension_map=None, calc=None,  
   calc_grouping= None, conform_units_to=None, memory_limit=None,  prefix=None, 

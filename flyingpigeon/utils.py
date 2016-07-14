@@ -2,7 +2,7 @@ import urlparse
 import os
 import wget
 from ocgis import RequestDataset
-from netCDF4 import Dataset, MFDataset, num2date
+from netCDF4 import Dataset, num2date
 from flyingpigeon import config
 
 import logging
@@ -312,14 +312,15 @@ def get_frequency(nc_file):
   :param nc_file: NetCDF file
   :return: frequency
   """
-  ds = MFDataset(nc_file)
+  ds = Dataset(nc_file)
 
   try:
     frequency = ds.frequency
-    logger.info('frequency written in the meta data:  %s ' % (frequency))
+    logger.info('frequency written in the meta data:  %s', frequency)
   except Exception as e :
-      logger.exception('Could not specify frequency for %s' % nc_file)
-      raise
+      msg = "Could not specify frequency for %s" % (nc_file)
+      logger.exception(msg)
+      raise Exception(msg)
   else:
     ds.close()
     return frequency
@@ -330,18 +331,19 @@ def get_values(nc_files, variable=None):
   :param nc_files: list of files
   :param variable: variable to be picked from the files (if not set, variable will be detected)
   """
-  
- # from netCDF4 import MFDataset
+  if type(nc_files) != list:
+    nc_files = [nc_files]
+  values = []
+  for nc_file in nc_files:
+    values.extend(_values(nc_file, variable))
+  return values
+
+def _values(nc_file, variable=None):
   from numpy import squeeze
   if variable == None:
-    if type(nc_files) == str:
-      variable = get_variable(nc_files)
-    else:
-      variable = get_variable(nc_files[0])
-      
-  mds = MFDataset(nc_files)
+      variable = get_variable(nc_file)
+  mds = Dataset(nc_file)
   vals = squeeze(mds.variables[variable][:])
-  
   return vals
 
 def get_timerange(resources):
@@ -350,8 +352,21 @@ def get_timerange(resources):
   :param resources: path to netCDF file(s)
   :returns netcdf.dateime.dateime: start, end
   """
-  try:  
-    ds = Dataset(resources)
+  if type(resources) != list:
+    resources = [resources]
+
+  start = end = None
+  for resource in resources:
+    _start, _end = _timerange(resource)
+    if not start or _start < start:
+      start = _start
+    if not end or _end > end:
+      end = _end
+  return start, end
+
+def _timerange(resource):
+  try:
+    ds = Dataset(resource)
     time = ds.variables['time']
     if (hasattr(time , 'units') and hasattr(time , 'calendar')) == True:
       s = num2date(time[0], time.units , time.calendar)
@@ -389,15 +404,23 @@ def get_timestamps(nc_file):
      
     return (from_timestamp, to_timestamp)
 
-def get_time(nc_file):
+def get_time(nc_files):
     """
     returns all timestamps of given netcdf file as datetime list.
     
     :param nc_file: NetCDF file(s)
     :return format: netcdftime._datetime.datetime
     """
-    try:  
-      ds = MFDataset(nc_file)
+    if type(nc_files) != list:
+        nc_files = [nc_files]
+    timestamps = []
+    for nc_file in nc_files:
+        timestamps.extend(_time(nc_file))
+    return timestamps
+
+def _time(nc_file):
+    try:
+      ds = Dataset(nc_file)
       time = ds.variables['time']
       if (hasattr(time , 'units') and hasattr(time , 'calendar')) == True:
         timestamps = num2date(time[:], time.units , time.calendar)
@@ -406,9 +429,10 @@ def get_time(nc_file):
       else: 
         timestamps = num2date(time[:])
       ds.close()
-    except: 
-      logger.debug('failed to get time')
-      raise Exception
+    except:
+      msg = 'failed to get time'
+      logger.exception(msg)
+      raise Exception(msg)
     return timestamps
     
 def aggregations(nc_files):
@@ -483,9 +507,9 @@ def sort_by_filename(resource, historical_concatination = False):
           n = f.split('_')
           bn = '_'.join(n[0:-1]) # skipping the date information in the filename
           ndic[bn] = [] # dictionary containing all datasets names
-        logger.info('found %s datasets' % len(ndic.keys()))
+        logger.info('found %s datasets', len(ndic.keys()))
       except Exception as e: 
-        logger.debug('failed to find names of datasets: %s ' % e)
+        logger.exception('failed to find names of datasets!')
       
       logger.info('check for historical / rcp datasets')
       try:
@@ -499,7 +523,7 @@ def sort_by_filename(resource, historical_concatination = False):
           else: 
             logger.info('no rcp dataset names found in dictionary')
       except Exception as e:
-        logger.debug('failed to pop historical data set names: %s ' % e )  
+        logger.exception('failed to pop historical data set names!')  
       
       logger.info('start sorting the files')
       try:  
@@ -516,12 +540,12 @@ def sort_by_filename(resource, historical_concatination = False):
                 if '%s_' % key in n or '%s_' % key_hist in n: 
                   ndic[key].append(path.join(p,n))
             else:
-              logger.debug('append filespathes to dictionary for key %s failed' % (key))
+              logger.error('append filespathes to dictionary for key %s failed', key)
             ndic[key].sort()
           except Exception as e: 
-            logger.debug('failed for %s : %s' % (key, e))  
+            logger.exception('failed for %s', key)  
       except Exception as e:
-        logger.debug('failed to populate the dictionary with approriate files: %s' % e) 
+        logger.exception('failed to populate the dictionary with approriate files!') 
 
       try:
         # add date information to the key:
@@ -530,9 +554,10 @@ def sort_by_filename(resource, historical_concatination = False):
           start, end = get_timerange(ndic[key])
           newkey = key+'_'+start+'-'+end
           tmp_dic[newkey] = ndic[key]
-      except Exception as e: 
-        logger.debug('failed to sort the list of resources and add dates to keyname: %s' % e)
-        raise
+      except Exception as e:
+        msg = 'failed to sort the list of resources and add dates to keyname.'
+        logger.exception(msg)
+        raise Exception(msg)
 
     elif type(resource) == str:
       p, f = path.split(path.abspath(resource))
@@ -540,9 +565,10 @@ def sort_by_filename(resource, historical_concatination = False):
     else:      
       logger.debug('sort_by_filename module failed: resource is not str or list')
     logger.info('sort_by_filename module done: %s Datasets found' % len(ndic))  
-  except Exception as e: 
-    logger.debug('failed to sort files by filename')
-    raise
+  except Exception as e:
+    msg = 'failed to sort files by filename' 
+    logger.exception(msg)
+    raise Exception(msg)
 
   return tmp_dic # rndic
 
