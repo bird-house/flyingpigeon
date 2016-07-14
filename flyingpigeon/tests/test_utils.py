@@ -45,16 +45,16 @@ class UtilsTestCase(TestCase):
         assert '200701' in result[1]
 
     def test_get_timestamps(self):
-        start,end = utils.get_timestamps(utils.local_path(TESTDATA['cmip5_tasmax_nc']))
+        start,end = utils.get_timestamps(utils.local_path(TESTDATA['cmip5_tasmax_2006_nc']))
         assert "20060116" == start
         assert "20061216" == end
         
     def test_get_variable(self):
-        variable = utils.get_variable(utils.local_path(TESTDATA['cmip5_tasmax_nc']))
+        variable = utils.get_variable(utils.local_path(TESTDATA['cmip5_tasmax_2006_nc']))
         assert "tasmax" == variable
 
     def test_get_timerange(self):
-        start,end = utils.get_timerange(local_path(TESTDATA['cmip5_tasmax_nc']))
+        start,end = utils.get_timerange(local_path(TESTDATA['cmip5_tasmax_2006_nc']))
         assert "20060116" == start
         assert "20061216" == end
 
@@ -68,7 +68,7 @@ class UtilsTestCase(TestCase):
         assert filename == "tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon.nc"
         
         # cmip5
-        filename = utils.drs_filename(utils.local_path(TESTDATA['cmip5_tasmax_nc']), skip_timestamp=False)
+        filename = utils.drs_filename(utils.local_path(TESTDATA['cmip5_tasmax_2006_nc']), skip_timestamp=False)
         assert filename == "tasmax_MPI-ESM-MR_RCP4.5_r1i1p1_20060116-20061216.nc"
 
     def test_aggregations(self):
@@ -99,7 +99,7 @@ class UtilsTestCase(TestCase):
         assert agg['filename'] == 'tasmax_MPI-ESM-MR_RCP4.5_r1i1p1_20060116-20071216.nc'
 
     def test_has_variable(self):
-        assert utils.has_variable(utils.local_path(TESTDATA['cmip5_tasmax_nc']), 'tasmax') == True
+        assert utils.has_variable(utils.local_path(TESTDATA['cmip5_tasmax_2006_nc']), 'tasmax') == True
         
     def test_calc_grouping(self):
         assert utils.calc_grouping('year') == ['year']
