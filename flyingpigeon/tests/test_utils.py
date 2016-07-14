@@ -17,8 +17,8 @@ class UtilsTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.resources = []
-        cls.resources.append( utils.local_path(TESTDATA['cmip5_tasmax_2006_nc']) )
-        cls.resources.append( utils.local_path(TESTDATA['cmip5_tasmax_2007_nc']) )
+        cls.resources.append( local_path(TESTDATA['cmip5_tasmax_2006_nc']) )
+        cls.resources.append( local_path(TESTDATA['cmip5_tasmax_2007_nc']) )
 
     def test_download_with_cache(self):
         filename = utils.download(TESTDATA['cmip5_tasmax_2006_nc'], cache=True)
@@ -35,22 +35,22 @@ class UtilsTestCase(TestCase):
         assert len(zipf.namelist()) == 2
     
     def test_local_path(self):
-        assert utils.local_path('file:///tmp/test.nc') == '/tmp/test.nc'
-        assert utils.local_path('/tmp/test.nc') == '/tmp/test.nc'
+        assert local_path('file:///tmp/test.nc') == '/tmp/test.nc'
+        assert local_path('/tmp/test.nc') == '/tmp/test.nc'
 
     def test_sort_by_time(self):
-        result = utils.sort_by_time( [utils.local_path(TESTDATA['cmip5_tasmax_2007_nc']),
-                                      utils.local_path(TESTDATA['cmip5_tasmax_2006_nc'])] )
+        result = utils.sort_by_time( [local_path(TESTDATA['cmip5_tasmax_2007_nc']),
+                                      local_path(TESTDATA['cmip5_tasmax_2006_nc'])] )
         assert '200601' in result[0]
         assert '200701' in result[1]
 
     def test_get_timestamps(self):
-        start,end = utils.get_timestamps(utils.local_path(TESTDATA['cmip5_tasmax_2006_nc']))
+        start,end = utils.get_timestamps(local_path(TESTDATA['cmip5_tasmax_2006_nc']))
         assert "20060116" == start
         assert "20061216" == end
         
     def test_get_variable(self):
-        variable = utils.get_variable(utils.local_path(TESTDATA['cmip5_tasmax_2006_nc']))
+        variable = utils.get_variable(local_path(TESTDATA['cmip5_tasmax_2006_nc']))
         assert "tasmax" == variable
 
     def test_get_timerange(self):
@@ -60,21 +60,21 @@ class UtilsTestCase(TestCase):
 
     def test_drs_filename(self):
         # cordex
-        filename = utils.drs_filename(utils.local_path(TESTDATA['cordex_tasmax_2006_nc']), skip_timestamp=False)
+        filename = utils.drs_filename(local_path(TESTDATA['cordex_tasmax_2006_nc']), skip_timestamp=False)
         assert filename == "tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon_20060215-20061216.nc"
 
         # cordex ... skip timestamp
-        filename = utils.drs_filename(utils.local_path(TESTDATA['cordex_tasmax_2006_nc']), skip_timestamp=True)
+        filename = utils.drs_filename(local_path(TESTDATA['cordex_tasmax_2006_nc']), skip_timestamp=True)
         assert filename == "tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon.nc"
         
         # cmip5
-        filename = utils.drs_filename(utils.local_path(TESTDATA['cmip5_tasmax_2006_nc']), skip_timestamp=False)
+        filename = utils.drs_filename(local_path(TESTDATA['cmip5_tasmax_2006_nc']), skip_timestamp=False)
         assert filename == "tasmax_MPI-ESM-MR_RCP4.5_r1i1p1_20060116-20061216.nc"
 
     def test_aggregations(self):
         nc_files = []
-        nc_files.append(utils.local_path(TESTDATA['cmip5_tasmax_2007_nc']))
-        nc_files.append(utils.local_path(TESTDATA['cmip5_tasmax_2006_nc']))
+        nc_files.append(local_path(TESTDATA['cmip5_tasmax_2007_nc']))
+        nc_files.append(local_path(TESTDATA['cmip5_tasmax_2006_nc']))
 
         aggs = utils.aggregations(nc_files)
         
@@ -99,7 +99,7 @@ class UtilsTestCase(TestCase):
         assert agg['filename'] == 'tasmax_MPI-ESM-MR_RCP4.5_r1i1p1_20060116-20071216.nc'
 
     def test_has_variable(self):
-        assert utils.has_variable(utils.local_path(TESTDATA['cmip5_tasmax_2006_nc']), 'tasmax') == True
+        assert utils.has_variable(local_path(TESTDATA['cmip5_tasmax_2006_nc']), 'tasmax') == True
         
     def test_calc_grouping(self):
         assert utils.calc_grouping('year') == ['year']
