@@ -51,15 +51,6 @@ def masking(resource, mask, prefix=None, dir_output=None):
   os.system(call)
   return resource_masked
 
-def has_Lambert_Conformal(nc):
-  from netCDF4 import MFDataset
-  ds = MFDataset(nc)
-  if 'Lambert_Conformal' in ds.variables.keys():
-    lc_ckeck = True
-  else: 
-    lc_ckeck = False
-  return lc_ckeck
-
 def clipping(resource=[], variable=None, dimension_map=None, calc=None,  output_format='nc',
   calc_grouping= None, time_range=None, time_region=None,  historical_concatination=True, prefix=None, spatial_wrapping='wrap', polygons=None, mosaik=False, dir_output=None, memory_limit=None):
   """ returns list of clipped netCDF files

@@ -259,9 +259,13 @@ def get_variable(nc_file):
     returns the variable name (str)
     :param nc_file: NetCDF file
     """
-    rd = RequestDataset(nc_file)
-    
-    return rd.variable
+    ds = Dataset(nc_file)
+    variables = set( ds.variables.keys() )
+    variables = variables - set(ds.dimensions.keys())
+    variables = variables - set(['time', 'time_bnds', 'rlat', 'rlon', 'rotated_latitude_longitude', 'lon_bnds', 'lat_bnds', 'latitude_longitude'])
+    if len(variables) != 1:
+        raise Exception("could not guess variable")
+    return variables.pop()
 
 def get_coordinates(nc_file): 
   """
