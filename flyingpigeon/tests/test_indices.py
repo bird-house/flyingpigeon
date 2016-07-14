@@ -20,7 +20,7 @@ def test_indice_su_tasmax():
     out_dir = tempfile.mkdtemp()
     # SU expects tasmax
     output = indices.calc_indice_single(
-        [local_path(TESTDATA['cordex_tasmax_nc'])],
+        [local_path(TESTDATA['cordex_tasmax_2006_nc'])],
         indices=['SU'], groupings='year', dir_output=out_dir)
 
     assert os.path.basename(output) == 'TG_EUR-44_MPI-M-MPI-ESM-LR_historical_r1i1p1_CLMcom-CCLM4-8-17_v1_day.nc'

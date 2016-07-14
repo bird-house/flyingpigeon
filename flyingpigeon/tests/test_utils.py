@@ -54,11 +54,11 @@ class UtilsTestCase(TestCase):
 
     def test_drs_filename(self):
         # cordex
-        filename = utils.drs_filename(utils.local_path(TESTDATA['cordex_tasmax_nc']), skip_timestamp=False)
+        filename = utils.drs_filename(utils.local_path(TESTDATA['cordex_tasmax_2006_nc']), skip_timestamp=False)
         assert filename == "tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon_20060215-20061216.nc"
 
         # cordex ... skip timestamp
-        filename = utils.drs_filename(utils.local_path(TESTDATA['cordex_tasmax_nc']), skip_timestamp=True)
+        filename = utils.drs_filename(utils.local_path(TESTDATA['cordex_tasmax_2006_nc']), skip_timestamp=True)
         assert filename == "tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon.nc"
         
         # cmip5
