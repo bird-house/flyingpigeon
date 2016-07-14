@@ -9,9 +9,9 @@ install:
   - make install
   - make start
 before_script:
-  - sleep 15
+  - sleep 10
 script:
-  - export GDAL_DATA=/home/travis/.conda/envs/birdhouse/share/gdal 
+  - export GDAL_DATA=/home/travis/.conda/envs/flyingpigeon/share/gdal 
   - make docs
   - make testall
 #after_success:
