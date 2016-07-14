@@ -6,7 +6,6 @@ from flyingpigeon import config
 
 DIR_SHP = config.shapefiles_dir()
 
-
 import logging
 logger = logging.getLogger(__name__)
 

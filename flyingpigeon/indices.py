@@ -314,7 +314,7 @@ def calc_indice_percentile(resources=[], variable='tas',
             mosaik = mosaik,)
           
         arr = get_values(nc_files=nc_reference)
-        dt_arr = get_time(nc_file=nc_reference)
+        dt_arr = get_time(nc_files=nc_reference)
         arr = ma.masked_array(arr)
         dt_arr = ma.masked_array(dt_arr)
         percentile = percentile
@@ -323,7 +323,8 @@ def calc_indice_percentile(resources=[], variable='tas',
         for indice in indices:
           name = indice.replace('_', str(percentile))
           var = indice.split('_')[0]
-          
+
+          operation = None
           if 'T' in var: 
             if percentile >= 50: 
               operation = 'Icclim%s90p' % var
@@ -335,8 +336,10 @@ def calc_indice_percentile(resources=[], variable='tas',
           ################################
           # load the appropriate operation
           ################################
-          
+
           ops = [op for op in dir(lic) if operation in op]
+          if len(ops) == 0:
+              raise Exception("operator does not exist %s", operation)
           
           exec "percentile_dict = lic.%s.get_percentile_dict(arr, dt_arr, percentile, window_width)" % ops[0]
           calc = [{'func': func, 'name': name, 'kwds': {'percentile_dict': percentile_dict}}]
