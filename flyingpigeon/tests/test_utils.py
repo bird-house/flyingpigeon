@@ -58,6 +58,10 @@ class UtilsTestCase(TestCase):
         assert "20060116" == start
         assert "20061216" == end
 
+        start,end = utils.get_timerange(local_path(TESTDATA['cordex_tasmax_2007_nc']))
+        assert "20070116" == start
+        assert "20071216" == end
+
     def test_drs_filename(self):
         # cordex
         filename = utils.drs_filename(local_path(TESTDATA['cordex_tasmax_2006_nc']), skip_timestamp=False)
