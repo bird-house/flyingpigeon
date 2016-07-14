@@ -29,6 +29,10 @@ def test_archive_zip():
     zipf = zipfile.ZipFile(result)
     assert len(zipf.namelist()) == 1
 
+def test_get_frequency():
+    freq = utils.get_frequency(local_path(TESTDATA['cmip5_tasmax_2007_nc']))
+    assert 'mon' == freq
+
 def test_sort_by_time():
     result = utils.sort_by_time( [local_path(TESTDATA['cmip5_tasmax_2007_nc']),
                                   local_path(TESTDATA['cmip5_tasmax_2006_nc'])] )

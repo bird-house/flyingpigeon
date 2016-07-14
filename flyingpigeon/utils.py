@@ -2,7 +2,7 @@ import urlparse
 import os
 import wget
 from ocgis import RequestDataset
-from netCDF4 import Dataset, MFDataset, num2date
+from netCDF4 import Dataset, num2date
 from flyingpigeon import config
 
 import logging
@@ -312,14 +312,15 @@ def get_frequency(nc_file):
   :param nc_file: NetCDF file
   :return: frequency
   """
-  ds = MFDataset(nc_file)
+  ds = Dataset(nc_file)
 
   try:
     frequency = ds.frequency
-    logger.info('frequency written in the meta data:  %s ' % (frequency))
+    logger.info('frequency written in the meta data:  %s', frequency)
   except Exception as e :
-      logger.exception('Could not specify frequency for %s' % nc_file)
-      raise
+      msg = "Could not specify frequency for %s" % (nc_file)
+      logger.exception(msg)
+      raise Exception(msg)
   else:
     ds.close()
     return frequency
@@ -337,7 +338,8 @@ def get_values(nc_files, variable=None):
       variable = get_variable(nc_files)
     else:
       variable = get_variable(nc_files[0])
-      
+
+  from netCDF4 import MFDataset
   mds = MFDataset(nc_files)
   vals = squeeze(mds.variables[variable][:])
   
@@ -408,7 +410,8 @@ def get_time(nc_file):
     :param nc_file: NetCDF file(s)
     :return format: netcdftime._datetime.datetime
     """
-    try:  
+    try:
+      from netCDF4 import MFDataset
       ds = MFDataset(nc_file)
       time = ds.variables['time']
       if (hasattr(time , 'units') and hasattr(time , 'calendar')) == True:
