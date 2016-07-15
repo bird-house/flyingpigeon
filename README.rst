@@ -16,4 +16,4 @@ Flyingpigeon is a Python package with a collection of algorithms for the climate
 
 For installation and configuration read the `documentation <http://flyingpigeon.readthedocs.org>`_.
 
-Malleefowl is part of the `Birdhouse <http://bird-house.github.io>`_ project.
+Flyingpigeon is part of the `Birdhouse <http://bird-house.github.io>`_ project.
