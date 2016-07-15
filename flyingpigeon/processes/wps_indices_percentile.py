@@ -132,12 +132,11 @@ class IndicesPercentileProcess(WPSProcess):
         indices    = self.indices.getValue()
         polygons   = self.polygons.getValue()
         percentile = int(self.percentile.getValue())
-        groupings  = self.groupings.getValue() #
+        groupings  = self.groupings.getValue()
         mosaik = self.mosaik.getValue()
         refperiod = self.refperiod.getValue()
        
         self.status.set('starting: indices=%s, refperiod=%s, groupings=%s, num_files=%s' % (indices, refperiod, groupings, len(ncs)), 0)
-
         from flyingpigeon.indices import calc_indice_percentile   
         results = calc_indice_percentile(
             resources = ncs,
@@ -149,15 +148,17 @@ class IndicesPercentileProcess(WPSProcess):
             groupings = groupings,
             dir_output = path.curdir,
             )
+
+        if not results:
+            raise Exception("failed to produce results")
         
-        self.status.set('result %s' % results, 90)
+        self.status.set('num results %s' % len(results), 90)
         try: 
             (fp_tarf, tarf) = mkstemp(dir=".", suffix='.tar')
             tar = tarfile.open(tarf, "w")
 
             for result in results:
-                p , f = path.split(result) 
-                tar.add( result , arcname = result.replace(p, ""))
+                tar.add( result , arcname=os.path.basename(result))
             tar.close()
 
             logging.info('Tar file prepared')
