@@ -345,7 +345,7 @@ def get_timerange(nc_files):
   :returns netcdf.dateime.dateime: start, end
   """
   start = end = None
-  
+ 
   try:
     mds = MFDataset(nc_files)
     time = mds.variables['time']
@@ -392,6 +392,9 @@ def get_time(nc_files):
     :param nc_file: NetCDF file(s)
     :return format: netcdftime._datetime.datetime
     """
+    if type(nc_files) != list:
+        nc_files = [nc_files]
+  
     try:
       mds = MFDataset(nc_files)
       time = mds.variables['time']

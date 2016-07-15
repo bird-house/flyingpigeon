@@ -44,8 +44,8 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
   logger.debug('Start visualisation spagetti plot')
   
   # === prepare invironment
-  if type(resouces) == str: 
-    resouces = list([resouces])    
+  if type(resouces) != list: 
+    resouces = [resouces]    
   if variable == None:
     variable = utils.get_variable(resouces[0])
   if title == None:
@@ -72,7 +72,9 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
         plt.plot( dt,ts )
         #fig.line( dt,ts )
       except Exception as e:
-        logger.debug('lineplot failed for %s: %s\n' % (nc, e))
+        msg = "lineplot failed for %s" % (nc)
+        logger.exception(msg)
+        raise Exception(msg)
 
       # plot into current figure
       # , legend= nc 
@@ -92,8 +94,8 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
     logger.debug('timesseries spagetti plot done for %s with %s lines.'% (variable, c)) 
   except Exception as e:
     msg = 'matplotlib spagetti plot failed for %s' % variable
-    logger.debug(msg)
-    #raise Exception(msg) 
+    logger.exception(msg)
+    raise Exception(msg) 
   return output_png 
 
 def uncertainty(resouces , variable=None, ylim=None, title=None, dir_out=None): 
