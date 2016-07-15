@@ -12,7 +12,7 @@ before_script:
   - sleep 10
 script:
   - export GDAL_DATA=/home/travis/.conda/envs/flyingpigeon/share/gdal 
-  - make docs
+#  - make docs
   - make testall
 #after_success:
 # - coveralls
