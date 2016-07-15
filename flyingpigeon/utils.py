@@ -338,28 +338,17 @@ def get_values(nc_files, variable=None):
   vals = squeeze(mds.variables[variable][:])
   return vals
 
-def get_timerange(resources):
+def get_timerange(nc_files):
   """
   returns from/to timestamp of given netcdf file(s).
-  :param resources: path to netCDF file(s)
+  :param nc_files: path to netCDF file(s)
   :returns netcdf.dateime.dateime: start, end
   """
-  if type(resources) != list:
-    resources = [resources]
-
   start = end = None
-  for resource in resources:
-    _start, _end = _timerange(resource)
-    if not start or _start < start:
-      start = _start
-    if not end or _end > end:
-      end = _end
-  return start, end
-
-def _timerange(resource):
+  
   try:
-    ds = Dataset(resource)
-    time = ds.variables['time']
+    mds = MFDataset(nc_files)
+    time = mds.variables['time']
     if (hasattr(time , 'units') and hasattr(time , 'calendar')) == True:
       s = num2date(time[0], time.units , time.calendar)
       e = num2date(time[-1], time.units , time.calendar)
@@ -372,7 +361,7 @@ def _timerange(resource):
     # to do: include frequency
     start = '%s%s%s'  % (s.year, str(s.month).zfill(2) ,str(s.day).zfill(2)) 
     end = '%s%s%s'  %   (e.year,  str(e.month).zfill(2) ,str(e.day).zfill(2))
-    ds.close()
+    mds.close()
   except Exception as e: 
     msg = 'failed to get timerange'
     logger.exception(msg)
