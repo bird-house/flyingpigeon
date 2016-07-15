@@ -1,6 +1,6 @@
 from pywps.Process import WPSProcess
 
-from flyingpigeon.indices import indices, indices_description, calc_indice_single
+from flyingpigeon.indices import indices, indices_description, calc_indice_simple
 from flyingpigeon.subset import countries, countries_longname
 from flyingpigeon.utils import GROUPING
 
@@ -12,13 +12,14 @@ class SingleIndicesProcess(WPSProcess):
     def __init__(self):
         WPSProcess.__init__(
             self, 
-            identifier = "indices_single",
-            title="Climate indices -- Single",
+            identifier = "indices_simple",
+            title="Climate indices -- Simple",
             version = "0.3",
             abstract="Climate indices based on one single input variable.",
             metadata = [
                 {'title': 'Documentation', 'href': 'http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#climate-indices'},
                 {"title": "ICCLIM" , "href": "http://icclim.readthedocs.io/en/latest/"},
+                {"title": "Simple Indices", "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/indices.html"}
                 ],
             statusSupported=True,
             storeSupported=True
@@ -107,7 +108,7 @@ class SingleIndicesProcess(WPSProcess):
         self.status.set('starting: indices=%s, groupings=%s, countries=%s, num_files=%s' % (indices, 
             groupings, polygons, len(ncs)), 0)
 
-        results = calc_indice_single(
+        results = calc_indice_simple(
             resource = ncs,
             mosaik=mosaik,
             indices = indices,
@@ -116,15 +117,16 @@ class SingleIndicesProcess(WPSProcess):
             dir_output = path.curdir,
             )
         
-        self.status.set('result %s' % results, 90)
+        if not results:
+            raise Exception("failed to produce results")
+        
+        self.status.set('num results %s' % len(results), 90)
         try: 
             (fp_tarf, tarf) = mkstemp(dir=".", suffix='.tar')
             tar = tarfile.open(tarf, "w")
 
-            if results:
-                for result in results:
-                    logger.debug("result = %s", result)
-                    tar.add( result , arcname = os.path.basename(result))
+            for result in results:
+                tar.add( result , arcname = os.path.basename(result))
             tar.close()
 
             logger.info('Tar file prepared')

@@ -16,10 +16,10 @@ def test_indices_description():
     assert 'TG: ' in indices.indices_description()
 
 #@pytest.mark.skip(reason="no way of currently testing this")
-def test_indice():
+def test_indice_simple():
     # SU expects tasmax
     resources = [local_path(TESTDATA['cordex_tasmax_2006_nc'])]
-    output = indices.calc_indice_single(
+    output = indices.calc_indice_simple(
         resources,
         indices=['SU'], groupings='year', dir_output=tempfile.mkdtemp())
 

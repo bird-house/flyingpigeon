@@ -13,7 +13,7 @@ def test_caps():
         'analogs_viewer',
         'fetch',
         'indices_percentile',
-        'indices_single',
+        'indices_simple',
         'plot_timeseries',
         'sdm_csv',
         'sdm_gbifsearch',

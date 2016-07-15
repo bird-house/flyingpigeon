@@ -207,7 +207,7 @@ def get_PAmask(coordinates=[], domain='EUR-11'):
 def get_indices(resources, indices):
   from flyingpigeon.utils import sort_by_filename, calc_grouping, drs_filename
   from flyingpigeon.ocgis_module import call
-  from flyingpigeon.indices import indice_variable, calc_indice_single
+  from flyingpigeon.indices import indice_variable, calc_indice_simple
 
   #names = [drs_filename(nc, skip_timestamp=False, skip_format=False, 
   #               variable=None, rename_file=True, add_file_path=True) for nc in resources]
@@ -224,7 +224,7 @@ def get_indices(resources, indices):
         if variable == indice_variable(name):
           logger.info('calculating indice %s ' % indice)
           prefix=key.replace(variable, name).replace('_day_','_%s_' % month)
-          nc = calc_indice_single(resource=ncs[key], variable=variable, prefix=prefix, indices=name,  groupings=month, memory_limit=500)
+          nc = calc_indice_simple(resource=ncs[key], variable=variable, prefix=prefix, indices=name,  groupings=month, memory_limit=500)
           
           #grouping = calc_grouping(month)
           #calc = [{'func' : 'icclim_' + name, 'name' : name}] 

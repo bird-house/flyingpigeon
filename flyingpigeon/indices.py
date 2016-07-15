@@ -109,10 +109,10 @@ def indice_variable(indice):
         logger.error('unknown indice %s', indice)
     return variable
 
-def calc_indice_single(resource=[], variable=None, prefix=None,indices=None,
+def calc_indice_simple(resource=[], variable=None, prefix=None,indices=None,
     polygons=None, mosaik = False, groupings='yr', dir_output=None, dimension_map = None, memory_limit=None):
     """
-    Calculates given indices for suitable files in the appopriate time grouping and polygon.
+    Calculates given simple indices for suitable files in the appopriate time grouping and polygon.
 
     :param resource: list of filenames in drs convention (netcdf)
     :param variable: variable name to be selected in the in netcdf file (default=None)

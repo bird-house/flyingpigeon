@@ -3,7 +3,7 @@ __all__ = [
         "wps_subset_countries",
         "wps_subset_regionseurope",
         "wps_subset_points",
-        "wps_indices_single",
+        "wps_indices_simple",
         "wps_indices_percentile",
         "wps_weatherregimes_ra",
         "wps_weatherregimes_model",
