@@ -1,7 +1,7 @@
 import urlparse
 import os
 import wget
-from ocgis import RequestDataset
+from ocgis import RequestDataset  # does not support NETCDF4
 from netCDF4 import Dataset, num2date
 from flyingpigeon import config
 
@@ -254,28 +254,13 @@ def drs_filename(nc_file, skip_timestamp=False, skip_format=False ,
     
     return filename
 
-def get_variable(nc_file):
+def get_variable(nc_files):
     """
     returns the variable name (str)
-    :param nc_file: NetCDF file
+    :param nc_files: NetCDF file(s)
     """
-    ds = None
-    if type(nc_file) == list:
-        ds = Dataset(nc_file[0])
-    else:
-        ds = Dataset(nc_file)
-    variable = None
-    if ds.data_model == 'NETCDF4':
-        variables = set( ds.variables.keys() )
-        variables = variables - set(ds.dimensions.keys())
-        variables = variables - set(['time', 'time_bnds', 'rlat', 'rlon', 'rotated_latitude_longitude', 'lon_bnds', 'lat_bnds', 'latitude_longitude'])
-        if len(variables) != 1:
-            raise Exception("could not guess variable")
-        variable = variables.pop()
-    else:
-        rds = RequestDataset(nc_file)
-        variable = rds.variable
-    return variable
+    rds = RequestDataset(nc_files)
+    return rds.variable
 
 def get_coordinates(nc_file): 
   """
