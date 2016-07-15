@@ -15,7 +15,8 @@ class AnalogsProcess(WPSProcess):
       title="Analogs -- Detection",
       version = "0.2",
       metadata= [
-              {"title": "Institut Pierre Simon Laplace", "href": "https://www.ipsl.fr/en/"}
+              {"title": "Institut Pierre Simon Laplace", "href": "https://www.ipsl.fr/en/"},
+              {"title": "Dokumentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#analog-pressure-pattern"}
               ],
       abstract="Search for days with analog pressure pattern",
       statusSupported=True,
