@@ -392,24 +392,16 @@ def get_time(nc_files):
     :param nc_file: NetCDF file(s)
     :return format: netcdftime._datetime.datetime
     """
-    if type(nc_files) != list:
-        nc_files = [nc_files]
-    timestamps = []
-    for nc_file in nc_files:
-        timestamps.extend(_time(nc_file))
-    return timestamps
-
-def _time(nc_file):
     try:
-      ds = Dataset(nc_file)
-      time = ds.variables['time']
+      mds = MFDataset(nc_files)
+      time = mds.variables['time']
       if (hasattr(time , 'units') and hasattr(time , 'calendar')) == True:
         timestamps = num2date(time[:], time.units , time.calendar)
       elif hasattr(time , 'units'):
         timestamps = num2date(time[:], time.units) 
       else: 
         timestamps = num2date(time[:])
-      ds.close()
+      mds.close()
     except:
       msg = 'failed to get time'
       logger.exception(msg)
