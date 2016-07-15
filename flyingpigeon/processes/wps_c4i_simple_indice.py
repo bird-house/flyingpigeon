@@ -10,7 +10,7 @@ import os
 
 from flyingpigeon.utils import make_dirs
 
-transfer_limit_Mb = 100
+transfer_limit_Mb = 500
 
 import logging
 logger = logging.getLogger()

@@ -24,6 +24,7 @@ class IndicesPercentileProcess(WPSProcess):
             metadata = [
                 {'title': 'Documentation', 'href': 'http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#climate-indices'},
                 {"title": "ICCLIM" , "href": "http://icclim.readthedocs.io/en/latest/"},
+                {"title": "Percentile-based indices", "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/indices.html#percentile-based-indices"},
                 ],
             statusSupported=True,
             storeSupported=True
