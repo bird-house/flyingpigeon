@@ -150,6 +150,7 @@ names(WR.freq) <- c(name.reg,"year")
 
 ## Save frequencies of Weather Regimes per seas in Results
 fname=output_Rdat  # paste(Results,"frec_percent_WR_",modelname,"_SLP_",seas,"_",yr1,"-",yr2,".dat",sep="")
+
 write.table(file=fname,WR.freq,quote=FALSE,row.names=FALSE)
 
 ## Plotting Weather regimes

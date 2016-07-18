@@ -249,8 +249,6 @@ class WeatherRegimesRProcess(WPSProcess):
           Rsrc = config.Rsrc_dir() 
           Rfile = 'weatherregimes_projection.R'
           
-          infile = model_season  #model_subset #model_ponderate 
-          modelname = 'MODELDATA'
           yr1 = start.year
           yr2 = end.year
           ip, output_graphics = mkstemp(dir=curdir ,suffix='.pdf')
@@ -258,7 +256,9 @@ class WeatherRegimesRProcess(WPSProcess):
           ip, file_class = mkstemp(dir=curdir ,suffix='.Rdat')
                     
           args = ['Rscript', join(Rsrc,Rfile), '%s/' % curdir, 
-                  '%s/' % Rsrc, '%s'% infile, '%s' % variable, 
+                  '%s/' % Rsrc, 
+                  '%s' % model_season, 
+                  '%s' % variable, 
                   '%s' % output_graphics,
                   '%s' % dat, 
                   '%s' % Rdat, 
