@@ -33,7 +33,9 @@ yr2 = as.numeric(y2)
 source(paste(Rsrc,"classnorm.R",sep=""))
 source(paste(Rsrc,"libraryregimes.R",sep=""))
 
-## load EOFs for the reference period 
+print(' Arguments functions loaded ')
+
+## load EOFs for thereference period 
 load(file_Rdat)
 EOF.r=read.table(file=file_pca)
 n.eof=ncol(EOF.r)
@@ -184,6 +186,8 @@ WR.freq[total,] <- c(reg.freq.total,"total")
 
 write.table(file=output_frec_percent,WR.freq,quote=FALSE,row.names=FALSE)
 
+print ('frequencies saved to file')
+
 ## Plotting Weather regimes of the model
 # fname=paste(Results,"projNCEP_regimes_",modelname,"_",yr1,"-",yr2,"_",seas,".pdf",sep="")
 pdf(file=output_graphics)
@@ -205,6 +209,7 @@ for(i in 1:nreg){
           levels=zlev,lty=1, cex.main=0.95)
   
   world(xlim=range(lon),ylim=range(lat),add=TRUE)
+}
 
 ## Plotting Weather regimes of NCEP during the reference period to compare with the models
 layout(matrix(1:(2*ceiling(nreg/2)),2,ceiling(nreg/2)))
@@ -225,7 +230,7 @@ for(i in 1:nreg){
           levels=zlev,lty=1, cex.main=0.95)
   library(fields)
   world(xlim=range(lon),ylim=range(lat),add=TRUE)
-
+}
 dev.off()
 proc.time() - ptm 
 
