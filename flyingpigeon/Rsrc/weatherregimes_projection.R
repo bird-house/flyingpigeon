@@ -79,7 +79,75 @@ nc_close(nc)
 dat.m=dat
 print( 'data sucessfully loaded' )
 
+#reproduce the time
+if(ical==366){
+  year=c()
+  month=c()
+  day=c()
+  monthdum=c(rep(1,31),rep(2,28),rep(3,31),rep(4,30),rep(5,31),rep(6,30),
+             rep(7,31),rep(8,31),rep(9,30),rep(10,31),rep(11,30),rep(12,31))
+  monthdumB=c(rep(1,31),rep(2,29),rep(3,31),rep(4,30),rep(5,31),rep(6,30),
+              rep(7,31),rep(8,31),rep(9,30),rep(10,31),rep(11,30),rep(12,31))
+  daydum=c((1:31),(1:28),(1:31),(1:30),(1:31),(1:30),(1:31),(1:31),(1:30),(1:31),(1:30),(1:31))
+  daydumB=c((1:31),(1:29),(1:31),(1:30),(1:31),(1:30),(1:31),(1:31),(1:30),(1:31),(1:30),(1:31))
+  yr=c(yr1:yr2)
+  bi=c(1:(yr2-yr1+1))
+  for(i in 1:(yr2-yr1+1)){
+    if ((yr[i]/4)==trunc(yr[i]/4)){
+      bi[i]=yr[i]
+      year=c(year,rep(yr[i],length=length(monthdumB)))
+      month=c(month,monthdumB)
+      day=c(day,daydumB)}
+    
+    else{
+      bi[i]=NaN
+      year=c(year,rep(yr[i],length=length(monthdum)))
+      month=c(month,monthdum)
+      day=c(day,daydum)}
+  }
+  month=array(month[1:(length(month))])
+  day=array(day[1:(length(day))])
+  year=array(year[1:(length(year))])
+  conv.time=list(month=month,day=day,year=year)
+  time=array((year)*10000+month*100+day)
+}
+if(ical==365){
+  year=c()
+  month=c()
+  day=c()
+  monthdum=c(rep(1,31),rep(2,28),rep(3,31),rep(4,30),rep(5,31),rep(6,30),
+             rep(7,31),rep(8,31),rep(9,30),rep(10,31),rep(11,30),rep(12,31))
+  daydum=c((1:31),(1:28),(1:31),(1:30),(1:31),(1:30),(1:31),(1:31),(1:30),(1:31),(1:30),(1:31))
+  yr=c(yr1:yr2)
+  for(i in 1:(yr2-yr1+1)){
+    year=c(year,rep(yr[i],length=length(monthdum)))
+      month=c(month,monthdum)
+      day=c(day,daydum)}
+  month=array(month[1:(length(month))])
+  day=array(day[1:(length(day))])
+  year=array(year[1:(length(year))])
+  conv.time=list(month=month,day=day,year=year)
+  time=array((year)*10000+month*100+day)
+}
+if (ical==360){
+  ndyear=360
+  nmyear=12
+  lmo=1:12
+  nyear=yr2-yr1+1
+  day=rep(1:30,times=nmyear*nyear)
+  month=rep(rep(lmo,each=30),times=nyear)
+  year=rep(y1:y2,each=ndyear)
+  conv.time=list(year=year,month=month,day=day)
+  time=array((year)*10000+month*100+day)
+}
 
+#select season
+seas="JJA"
+l.seas=list(JJA=6:8,SON=9:11,MAM=3:5,DJF=c(12,1,2))
+ISEAS=which(conv.time$month %in% l.seas[[seas]] &
+              conv.time$year %in% c(yr1:yr2))
+#time during the selected period and season
+timeout=time[ISEAS]
 
 # print(paste("Classification for",seas))
 # 
@@ -116,56 +184,95 @@ for(i in 1:nreg){
 best.reg=apply(rms.reg,1,which.min)
 dist.reg=sqrt(apply(rms.reg,1,min)/nrow(dat.m))
 
-# Save classification in Results
-timeout=time # datNCEP$time[ISEAS]
-varout=cbind(timeout,best.reg,dist.reg,cor.reg)
-
-fname= output_pca # paste(Results,"NCEP_SLP_",seas,"_",yr1,"-",yr2,"_classif.dat",sep="")
-header=c("Time","Best.reg","rms","Cor1","Cor2","Cor3","Cor4")
-write.table(file=fname,varout,quote=FALSE,row.names=FALSE,col.names=header)
-
 #Frequencies of Weather regimes for each "seas"
-R=read.table(fname,header=TRUE)
-yyyy=floor(R$Time/10000)
-mm=floor(R$Time/100) %% 100
+timeout=time[ISEAS]
+yyyy=floor(timeout/10000)
+mm=floor(timeout/100) %% 100
 yyyy[mm==12]=yyyy[mm==12]+1
 uyyyy=sort(unique(yyyy))
 yyyymm=yyyy*100+mm
 dum=rep(1,length=length(yyyymm))
 reg.freq=c()
+reg.freq.total=c()
 for(i in 1:nreg){
-  tdum=tapply(dum[R$Best.reg==i],yyyy[R$Best.reg==i],length)
+  tdum=tapply(dum[best.reg==i],yyyy[best.reg==i],length)
   ldum=tapply(dum,yyyy,length)
   rdum=rep(0,length=length(uyyyy))
   rdum[uyyyy %in% as.numeric(names(tdum))]=tdum
   rdum=rdum/ldum
   reg.freq=cbind(reg.freq,rdum)
+  reg.freq.total[i]=(sum(reg.freq[,i])/length(uyyyy))*100
 }
 WR.freq <- as.data.frame(reg.freq*100)
 WR.freq$year <- uyyyy
 #imposing names. Attention!! check names!
-name.reg=c("NAO-","AL","BLO","AR")
+if(seas=="JJA"){name.reg=c("AR","BLO","NAO-","AL")}
+if(seas=="DJF"){name.reg=c("AR","NAO+","BLO","NAO-")}
 #name.reg=c("Reg.1","Reg.2","Reg.3","Reg.4")
 names(WR.freq) <- c(name.reg,"year")
+total=nrow(WR.freq)+1
+WR.freq[total,] <- c(reg.freq.total,"total")
 
 ## Save frequencies of Weather Regimes per seas in Results
-fname=output_Rdat  # paste(Results,"frec_percent_WR_",modelname,"_SLP_",seas,"_",yr1,"-",yr2,".dat",sep="")
-
+fname=paste(Results,"frec_percent_WR_",varname,"_",modelname,"_",seas,"_",yr1,"-",yr2,".dat",sep="")
 write.table(file=fname,WR.freq,quote=FALSE,row.names=FALSE)
 
-## Plotting Weather regimes
-
-fname=output_graphics # paste(Results,"projcted_regimes_",yr1,"-",yr2,"_",seas,".pdf",sep="")
+## Plotting Weather regimes of the model
+fname=paste(Results,"projNCEP_regimes_",modelname,"_",yr1,"-",yr2,"_",seas,".pdf",sep="")
 pdf(file=fname)
 layout(matrix(1:(2*ceiling(nreg/2)),2,ceiling(nreg/2)))
-par(mar=c(4,6,2,2))
+par(mar=c(4,5,2,2.5))
 for(i in 1:nreg){ 
-  image.cont.mc(lon,lat,dat.class$reg.var[,i]/100,
-                xlab="",ylab="",mar=c(2.5,2,2,1),paquet="maps",
-                titre=paste(modelname,"(",seas," ",y1,"-",y2,")",name.reg[i],"(",
-                            format(dat.class$perc.r[i],digits=3),"%)"))
+  champ=dat.class$reg.var[,i]/100                        
+  zlev=pretty(champ,20)
+  colplot=rainbow(length(zlev)-1,start=3/6,end=1)
+  par( mar=c(2.5,2,2,1.5))
+  
+  dum=t(matrix(champ,length(lat),length(lon)))
+  #dum=matrix(champ,length(lon),length(lat)) #if transpose
+  lat.sort=sort(lat,index.return=TRUE)
+  titleplot=paste(modelname,"(",yr1,"-",yr2,")",seas,"",name.reg[i],"(",
+                  format(reg.freq.total[i],digits=3),"%)")
+  contour(lon,sort(lat),dum[,lat.sort$ix],
+          xlab="Longitude",ylab="Latitude",main=titleplot,col=colplot,add=FALSE,nlevels=length(zlev),
+          levels=zlev,lty=1, cex.main=0.95)
+  library(fields)
+  world(xlim=range(lon),ylim=range(lat),add=TRUE)
+#   library(maps)
+#   map(add=TRUE)
 }#end for i
 dev.off()
+#
+## Plotting Weather regimes of NCEP during the reference period to compare with the models
+fname=paste(Results,"NCEP_regimes_",y1,"-",y2,"_",seas,".pdf",sep="")
+pdf(file=fname)
+layout(matrix(1:(2*ceiling(nreg/2)),2,ceiling(nreg/2)))
+par(mar=c(4,5,2,2.5))
+for(i in 1:nreg){ 
+  champ=dat.class$reg.var[,i]/100                        
+  zlev=pretty(champ,20)
+  colplot=rainbow(length(zlev)-1,start=3/6,end=1)
+  par( mar=c(2.5,2,2,1.5))
+  
+  dum=t(matrix(champ,length(lat),length(lon)))
+  #dum=matrix(champ,length(lon),length(lat)) #if transpose
+  lat.sort=sort(lat,index.return=TRUE)
+  titleplot=paste("NCEP(",y1,"-",y2,")",seas,"",name.reg[i],"(",
+                  format(dat.class$perc.r[i],digits=3),"%)")
+  contour(lon,sort(lat),dum[,lat.sort$ix],
+          xlab="Longitude",ylab="Latitude",main=titleplot,col=colplot,add=FALSE,nlevels=length(zlev),
+          levels=zlev,lty=1, cex.main=0.95)
+  library(fields)
+  world(xlim=range(lon),ylim=range(lat),add=TRUE)
+  #   library(maps)
+  #   map(add=TRUE)
+}#end for i
+dev.off()
+
+#end
 proc.time() - ptm #ending time script
 #end
+
+
+
 
