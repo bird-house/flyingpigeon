@@ -7,6 +7,7 @@ ptm <- proc.time()# starting time script
 library(ncdf4)
 library(mclust)
 library(maps)
+library(fields)
 
 # fetching the arguments
 args <- commandArgs(trailingOnly = TRUE) 
@@ -20,49 +21,24 @@ file_pca <- args[6]
 file_Rdat <- args[7]
 output_pca <- args[8]
 output_Rdat <- args[9]
-seas <- args[10]
-y1 <- args[11]
-y2 <- args[12]
-modelname <- args[13]
+output_frec_percent <- args[10]
+seas <- args[11]
+y1 <- as.numeric(args[12])
+y2 <- as.numeric(args[13])
+modelname <- args[14]
+
+yr1 = as.numeric(y1)
+yr2 = as.numeric(y2)
 
 source(paste(Rsrc,"classnorm.R",sep=""))
 source(paste(Rsrc,"libraryregimes.R",sep=""))
 
-#birdhouse_output = '~/.conda/envs/birdhouse/var/lib/pywps/outputs/flyingpigeon/'
-#Rdat=paste(birdhouse_output,'output_classification-9041c716-3f83-11e6-ae14-4f6097e9069b.Rdat',sep="")
-#print(paste("Reading",Rdat,"for reference WR"))
-
+## load EOFs for the reference period 
 load(file_Rdat)
-# 
-## load EOFs for the reference period (NCEP 1970-2010)
-#dat = paste(birdhouse_output,'output_pca-9041c716-3f83-11e6-ae14-4f6097e9069b.dat',sep="")
-# fname=paste(NCEPdir,varname,"_EOF_",seas,"_clim.dat",sep="")
-#print(paste("Reading",dat,"for EOFs"))
-
 EOF.r=read.table(file=file_pca)
 n.eof=ncol(EOF.r)
 
-# #open netcdf4
-# fname = paste(NCEPdir,"slp.",yr1,"-",yr2,"_NA.nc",sep="")
-# nc = nc_open(fname)
-# datNCEP=lirevarnc(nc,varname)
-# dat.NCEP.dum=sousseasmean(datNCEP$dat,datNCEP$conv.time,l.year=c(1970:1999))
-# datNCEP$anom=dat.NCEP.dum$anom
-# datNCEP$seascyc=dat.NCEP.dum$seascyc
-# conv.time=datNCEP$conv.time
-# nc_close(nc)
-# 
-# #Define months and seasons
-# #seas=JJA
-# l.seas=list(JJA=6:8,SON=9:11,DJF=c(12,1,2),SONDJF=c(9:12,1,2),MAM=c(3,4,5),all=c(1:12),
-#             JJAS=6:9,DJFM=c(1:3,12),MAMJ=3:6,FMA=c(2,3,4),DJFM=c(12,1,2,3),MAMJ=c(3:6),JJAS=c(6:9),SOND=c(9:12))
-# ISEAS=which(datNCEP$conv.time$month %in% l.seas[[seas]])
-# dat.m=datNCEP$anom[ISEAS,]
-
-#open netcdf4
-#infile = '~/birdhouse/flyingpigeon/notebooks/6f412034-3fa1-11e6-8fa8-25c1f77d80b4.nc'
-#varname = 'psl'
-
+# open prepared netCDF file for projection
 nc = nc_open(infile)
 data=ncvar_get(nc,varname)
 lon=ncvar_get(nc,'lon')
@@ -80,6 +56,8 @@ dat.m=dat
 print( 'data sucessfully loaded' )
 
 #reproduce the time
+ical=366 
+
 if(ical==366){
   year=c()
   month=c()
@@ -142,28 +120,16 @@ if (ical==360){
 }
 
 #select season
-seas="JJA"
+# seas="JJA"
+
 l.seas=list(JJA=6:8,SON=9:11,MAM=3:5,DJF=c(12,1,2))
 ISEAS=which(conv.time$month %in% l.seas[[seas]] &
               conv.time$year %in% c(yr1:yr2))
 #time during the selected period and season
 timeout=time[ISEAS]
 
-# print(paste("Classification for",seas))
-# 
-# ## SLP Climatology and ponderation by latitude
-# dat.climatol=apply(datNCEP$dat[ISEAS,]/100,2,mean,na.rm=TRUE)
-# mean.clim=mean(dat.climatol)
-
-#correction:removing spatial average. To be used with models or different datasets
-#mean.clim.ref=1013.96389304258  #NCEP(1970-2010)
-# dif.mean=mean.clim.ref-mean.clim
-# dat.m=dat.m+dif.mean
-
 ## Calculate projections for EOFs(PC empirics)
 ## Normalization by latitude
-# lon=datNCEP$lon
-# lat=datNCEP$lat
 pond.slp=1/sqrt(cos(lat*pi/180))
 scale.slp=rep(pond.slp,length(lon))
 dat.scale=scale(dat.m,scale=scale.slp)
@@ -205,21 +171,22 @@ for(i in 1:nreg){
 }
 WR.freq <- as.data.frame(reg.freq*100)
 WR.freq$year <- uyyyy
+
 #imposing names. Attention!! check names!
-if(seas=="JJA"){name.reg=c("AR","BLO","NAO-","AL")}
-if(seas=="DJF"){name.reg=c("AR","NAO+","BLO","NAO-")}
-#name.reg=c("Reg.1","Reg.2","Reg.3","Reg.4")
+#if(seas=="JJA"){name.reg=c("AR","BLO","NAO-","AL")}
+#if(seas=="DJF"){name.reg=c("AR","NAO+","BLO","NAO-")}
+name.reg=c("Reg.1","Reg.2","Reg.3","Reg.4")
 names(WR.freq) <- c(name.reg,"year")
 total=nrow(WR.freq)+1
 WR.freq[total,] <- c(reg.freq.total,"total")
 
 ## Save frequencies of Weather Regimes per seas in Results
-fname=paste(Results,"frec_percent_WR_",varname,"_",modelname,"_",seas,"_",yr1,"-",yr2,".dat",sep="")
-write.table(file=fname,WR.freq,quote=FALSE,row.names=FALSE)
+
+write.table(file=output_frec_percent,WR.freq,quote=FALSE,row.names=FALSE)
 
 ## Plotting Weather regimes of the model
-fname=paste(Results,"projNCEP_regimes_",modelname,"_",yr1,"-",yr2,"_",seas,".pdf",sep="")
-pdf(file=fname)
+# fname=paste(Results,"projNCEP_regimes_",modelname,"_",yr1,"-",yr2,"_",seas,".pdf",sep="")
+pdf(file=output_graphics)
 layout(matrix(1:(2*ceiling(nreg/2)),2,ceiling(nreg/2)))
 par(mar=c(4,5,2,2.5))
 for(i in 1:nreg){ 
@@ -236,16 +203,10 @@ for(i in 1:nreg){
   contour(lon,sort(lat),dum[,lat.sort$ix],
           xlab="Longitude",ylab="Latitude",main=titleplot,col=colplot,add=FALSE,nlevels=length(zlev),
           levels=zlev,lty=1, cex.main=0.95)
-  library(fields)
+  
   world(xlim=range(lon),ylim=range(lat),add=TRUE)
-#   library(maps)
-#   map(add=TRUE)
-}#end for i
-dev.off()
-#
+
 ## Plotting Weather regimes of NCEP during the reference period to compare with the models
-fname=paste(Results,"NCEP_regimes_",y1,"-",y2,"_",seas,".pdf",sep="")
-pdf(file=fname)
 layout(matrix(1:(2*ceiling(nreg/2)),2,ceiling(nreg/2)))
 par(mar=c(4,5,2,2.5))
 for(i in 1:nreg){ 
@@ -264,14 +225,9 @@ for(i in 1:nreg){
           levels=zlev,lty=1, cex.main=0.95)
   library(fields)
   world(xlim=range(lon),ylim=range(lat),add=TRUE)
-  #   library(maps)
-  #   map(add=TRUE)
-}#end for i
-dev.off()
 
-#end
-proc.time() - ptm #ending time script
-#end
+dev.off()
+proc.time() - ptm 
 
 
 

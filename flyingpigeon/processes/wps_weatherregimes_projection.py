@@ -153,6 +153,14 @@ class WeatherRegimesRProcess(WPSProcess):
             asReference=True,
             )
 
+        self.output_frequency = self.addComplexOutput(
+            identifier="output_frequency",
+            title="Frequency",
+            abstract="Weather regime frequency per year",
+            formats=[{"mimeType":"text/plain"}],
+            asReference=True,
+            )        
+
         self.output_netcdf = self.addComplexOutput(
             identifier="output_netcdf",
             title="netCDF fiel",
@@ -254,6 +262,7 @@ class WeatherRegimesRProcess(WPSProcess):
           ip, output_graphics = mkstemp(dir=curdir ,suffix='.pdf')
           ip, file_pca = mkstemp(dir=curdir ,suffix='.dat')
           ip, file_class = mkstemp(dir=curdir ,suffix='.Rdat')
+          ip, output_frec = mkstemp(dir=curdir ,suffix='.dat')
                     
           args = ['Rscript', join(Rsrc,Rfile), '%s/' % curdir, 
                   '%s/' % Rsrc, 
@@ -263,8 +272,11 @@ class WeatherRegimesRProcess(WPSProcess):
                   '%s' % dat, 
                   '%s' % Rdat, 
                   '%s' % file_pca,
-                  '%s' % file_class, '%s' % season, 
-                  '%s' % start.year, '%s' % end.year,
+                  '%s' % file_class, 
+                  '%s' % output_frec,      
+                  '%s' % season, 
+                  '%s' % start.year, 
+                  '%s' % end.year,
                   '%s' % 'MODEL']
           logger.info('Rcall builded')
         except Exception as e: 
@@ -292,3 +304,5 @@ class WeatherRegimesRProcess(WPSProcess):
         self.output_pca.setValue( file_pca )
         self.output_classification.setValue( file_class )
         self.output_netcdf.setValue( model_season )
+        self.output_frequency.setValue( output_frec )
+        

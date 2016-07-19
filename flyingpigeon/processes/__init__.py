@@ -7,7 +7,7 @@ __all__ = [
         "wps_indices_percentile",
         "wps_weatherregimes_ra",
         "wps_weatherregimes_model",
-        "wps_weatherregimes_ra-model",
+        "wps_weatherregimes_projection",
 #        "wps_robustness",
         "wps_analogs_detection",
         "wps_analogs_viewer",
