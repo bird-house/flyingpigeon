@@ -117,7 +117,7 @@ for(i in 1:nreg){
     lat.sort=sort(lat,index.return=TRUE)
     titleplot=paste(model_var," ", seas," ",y1,"-",y2," WR:",i,"(",
                            format(dat.class$perc.r[i],digits=3),"%)")
-    contour(lon,sort(lat),dum[,lat.sort$ix],
+    contour(lon,sort(lat), dum[,lat.sort$ix],
             xlab="Longitude",ylab="Latitude",main=titleplot,col=colplot,add=FALSE,nlevels=length(zlev),
             levels=zlev,lty=1)
     library(maps)
