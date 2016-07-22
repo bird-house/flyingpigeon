@@ -29,7 +29,7 @@ _INDICES_ = dict(
     CWD=dict(variable='pr', description='Consecutive wet days (pr as input files)'),
     CDD=dict(variable='pr', description='Consecutive dry days (pr as input files)'),
     SDII=dict(variable='pr', description='Simple daily intensity index for wet days [mm/wet day] (pr as input files)'),
-    R10mm=dict(variable='pr', description='Nr of days >10mm (pr as input files)'),
+    R10mm=dict(variable='pr', description='Nr of days > 10mm (pr as input files)'),
     R20mm=dict(variable='pr', description='Nr of days with precipitation >= 20 mm (pr as input files)'),
     RX1day=dict(variable='pr', description='Highest 1-day precipitation amount (pr as input files)'),
     RX5day=dict(variable='pr', description='Highest 5-day precipitation amount (pr as input files)'),
