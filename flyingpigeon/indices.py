@@ -8,19 +8,19 @@ import logging
 logger = logging.getLogger(__name__)
 
 _INDICES_ = dict(
-    TG=dict(variable='tas', description='Mean of mean temperatur (tas as input files)'),
-    TX=dict(variable='tasmax', description='Mean of max temperatur (tasmax as input files)'),
-    TN=dict(variable='tasmin', description='Mean of daily min temperatur (tasmin as input files)'),
-    TXn=dict(variable='tasmax', description='Min of daily min temperatur (tasmax as input files)'),
-    TXx=dict(variable='tasmax', description='Max of daily max temperatur (tasmax as input files)'),
-    TNn=dict(variable='tasmin', description='Min of daily min temperatur (tasmin as input files)'),
-    TNx=dict(variable='tasmin', description='Max of daily min temperatur (tasmin as input files)'),
+    TG=dict(variable='tas', description='Mean of mean temperature (tas as input files)'),
+    TX=dict(variable='tasmax', description='Mean of max temperature (tasmax as input files)'),
+    TN=dict(variable='tasmin', description='Mean of daily min temperature (tasmin as input files)'),
+    TXn=dict(variable='tasmax', description='Min of daily min temperature (tasmax as input files)'),
+    TXx=dict(variable='tasmax', description='Max of daily max temperature (tasmax as input files)'),
+    TNn=dict(variable='tasmin', description='Min of daily min temperature (tasmin as input files)'),
+    TNx=dict(variable='tasmin', description='Max of daily min temperature (tasmin as input files)'),
     SU=dict(variable='tasmax', description='Nr of summer days (tasmax as input files)'),
     CSU=dict(variable='tasmax', description='Nr of consecutive summer days (tasmax as input files)'),
     FD=dict(variable='tasmin', description='Nr of frost days (tasmin as input files)'),
     CFD=dict(variable='tasmin', description='Nr of consecutive frost days (tasmin as input files)'),
     TR=dict(variable='tasmin', description='Tropical nights - number of days where daily minimum temperature >= 20 degrees.(tasmin as input files)'),
-    ID=dict(variable='tasmax', description='Nr of Ice days (tasmax as input files)'),
+    ID=dict(variable='tasmax', description='Nr of ice days (tasmax as input files)'),
     HD17=dict(variable='tas', description='Heating degree days [sum of 17 degrees - mean temperature] (tas as input files)'),
     GD4=dict(variable='tas', description='Growing degree days [sum of TG >= 4 degrees] (tas as input files)'),
     #RR=dict(variable='pr', description='Precipitation flux mean (mon / year) (pr as input files)'),
@@ -29,7 +29,7 @@ _INDICES_ = dict(
     CWD=dict(variable='pr', description='Consecutive wet days (pr as input files)'),
     CDD=dict(variable='pr', description='Consecutive dry days (pr as input files)'),
     SDII=dict(variable='pr', description='Simple daily intensity index for wet days [mm/wet day] (pr as input files)'),
-    R10mm=dict(variable='pr', description='Nr of days >10mm (pr as input files)'),
+    R10mm=dict(variable='pr', description='Nr of days > 10mm (pr as input files)'),
     R20mm=dict(variable='pr', description='Nr of days with precipitation >= 20 mm (pr as input files)'),
     RX1day=dict(variable='pr', description='Highest 1-day precipitation amount (pr as input files)'),
     RX5day=dict(variable='pr', description='Highest 5-day precipitation amount (pr as input files)'),
@@ -112,7 +112,7 @@ def indice_variable(indice):
 def calc_indice_simple(resource=[], variable=None, prefix=None,indices=None,
     polygons=None, mosaik = False, groupings='yr', dir_output=None, dimension_map = None, memory_limit=None):
     """
-    Calculates given simple indices for suitable files in the appopriate time grouping and polygon.
+    Calculates given simple indices for suitable files in the appropriate time grouping and polygon.
 
     :param resource: list of filenames in drs convention (netcdf)
     :param variable: variable name to be selected in the in netcdf file (default=None)
@@ -241,7 +241,7 @@ def calc_indice_percentile(resources=[], variable=None,
     groupings='yr', polygons=None, percentile=90, mosaik = False, 
     dir_output=None, dimension_map = None):
     """
-    Calculates given indices for suitable files in the appopriate time grouping and polygon.
+    Calculates given indices for suitable files in the appropriate time grouping and polygon.
 
     :param resource: list of filenames in drs convention (netcdf)
     :param variable: variable name to be selected in the in netcdf file (default=None)
@@ -369,7 +369,7 @@ def calc_indice_percentile(resources=[], variable=None,
   #indices=None, polygons=None,  groupings=None, 
   #dir_output=None, dimension_map = None):
     #"""
-    #Calculates given indices for suitable files in the appopriate time grouping and polygon.
+    #Calculates given indices for suitable files in the appropriate time grouping and polygon.
 
     #:param resource: list of filenames in drs convention (netcdf)
     #:param variable: variable name to be selected in the in netcdf file (default=None)

@@ -20,7 +20,7 @@ class IndicesPercentileProcess(WPSProcess):
             identifier = "indices_percentile",
             title="Climate indices -- Percentile",
             version = "0.1",
-            abstract="Climate indices based on one single input variable and the percentile of a referece refperiod.",
+            abstract="Climate indices based on one single input variable and the percentile of a reference period.",
             metadata = [
                 {'title': 'Documentation', 'href': 'http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#climate-indices'},
                 {"title": "ICCLIM" , "href": "http://icclim.readthedocs.io/en/latest/"},
