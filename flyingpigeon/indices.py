@@ -112,7 +112,7 @@ def indice_variable(indice):
 def calc_indice_simple(resource=[], variable=None, prefix=None,indices=None,
     polygons=None, mosaik = False, groupings='yr', dir_output=None, dimension_map = None, memory_limit=None):
     """
-    Calculates given simple indices for suitable files in the appopriate time grouping and polygon.
+    Calculates given simple indices for suitable files in the appropriate time grouping and polygon.
 
     :param resource: list of filenames in drs convention (netcdf)
     :param variable: variable name to be selected in the in netcdf file (default=None)
@@ -241,7 +241,7 @@ def calc_indice_percentile(resources=[], variable=None,
     groupings='yr', polygons=None, percentile=90, mosaik = False, 
     dir_output=None, dimension_map = None):
     """
-    Calculates given indices for suitable files in the appopriate time grouping and polygon.
+    Calculates given indices for suitable files in the appropriate time grouping and polygon.
 
     :param resource: list of filenames in drs convention (netcdf)
     :param variable: variable name to be selected in the in netcdf file (default=None)
@@ -369,7 +369,7 @@ def calc_indice_percentile(resources=[], variable=None,
   #indices=None, polygons=None,  groupings=None, 
   #dir_output=None, dimension_map = None):
     #"""
-    #Calculates given indices for suitable files in the appopriate time grouping and polygon.
+    #Calculates given indices for suitable files in the appropriate time grouping and polygon.
 
     #:param resource: list of filenames in drs convention (netcdf)
     #:param variable: variable name to be selected in the in netcdf file (default=None)
