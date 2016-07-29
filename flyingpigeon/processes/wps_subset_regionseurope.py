@@ -19,7 +19,7 @@ class subset_regionseuropeProcess(WPSProcess):
             identifier = "subset_regionseurope",
             title="Subset European Regions",
             version = "0.3",
-            abstract="Returns only the selected polygon for each input dataset",
+            abstract="Returns the selected European administrative region defined in the GADM database (v2.5) for each input dataset.",
             statusSupported=True,
             storeSupported=True
             )
@@ -49,7 +49,7 @@ class subset_regionseuropeProcess(WPSProcess):
         self.dimension_map = self.addLiteralInput(
             identifier="dimension_map",
             title="Dimension Map",
-            abstract= 'if not ordered in lon/lat a dimension map has to be provided',
+            abstract= 'If not ordered in lon/lat, a dimension map has to be provided.',
             type=type(''),
             minOccurs=0,
             maxOccurs=1
@@ -58,7 +58,7 @@ class subset_regionseuropeProcess(WPSProcess):
         self.variable = self.addLiteralInput(
             identifier="variable",
             title="Variable",
-            abstract="Variable to be expected in the input files (Variable will be detected if not set, )",
+            abstract="Variable to be expected in the input files (variable will be detected if not set).",
             default=None,
             type=type(''),
             minOccurs=0,
@@ -68,7 +68,7 @@ class subset_regionseuropeProcess(WPSProcess):
         self.mosaik = self.addLiteralInput(
             identifier="mosaik",
             title="Mosaik",
-            abstract="If Mosaik is checked, selected polygons be clipped as a mosaik for each input file",
+            abstract="If Mosaik is checked, selected polygons will be clipped as a mosaik for each input file.",
             default=False,
             type=type(False),
             minOccurs=0,
