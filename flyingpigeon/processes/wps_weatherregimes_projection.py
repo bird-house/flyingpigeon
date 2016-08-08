@@ -131,8 +131,8 @@ class WeatherRegimesRProcess(WPSProcess):
 
         self.Routput_graphic = self.addComplexOutput(
             identifier="Routput_graphic",
-            title="Weather Classification output",
-            abstract="Weather Classification",
+            title="Graphics and Tables",
+            abstract="Weather classification pressure map and frequency table",
             formats=[{"mimeType":"image/pdf"}],
             asReference=True,
             )
@@ -149,14 +149,14 @@ class WeatherRegimesRProcess(WPSProcess):
             identifier="output_classification",
             title="classification",
             abstract="Weather regime classification",
-            formats=[{"mimeType":"text/plain"}],
+            formats=[{"mimeType":"application/octet-stream"}],
             asReference=True,
             )
 
         self.output_frequency = self.addComplexOutput(
             identifier="output_frequency",
             title="Frequency",
-            abstract="Weather regime frequency per year",
+            abstract="Weather regime frequency values per year",
             formats=[{"mimeType":"text/plain"}],
             asReference=True,
             )        
@@ -260,7 +260,7 @@ class WeatherRegimesRProcess(WPSProcess):
           yr1 = start.year
           yr2 = end.year
           ip, output_graphics = mkstemp(dir=curdir ,suffix='.pdf')
-          ip, file_pca = mkstemp(dir=curdir ,suffix='.dat')
+          ip, file_pca = mkstemp(dir=curdir ,suffix='.txt')
           ip, file_class = mkstemp(dir=curdir ,suffix='.Rdat')
           ip, output_frec = mkstemp(dir=curdir ,suffix='.dat')
                     
