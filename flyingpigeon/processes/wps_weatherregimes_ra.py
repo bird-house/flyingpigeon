@@ -115,15 +115,15 @@ class WeatherRegimesRProcess(WPSProcess):
         
         self.output_pca = self.addComplexOutput(
             identifier="output_pca",
-            title="PCA",
-            abstract="Principal components",
+            title="R - datafile",
+            abstract="Principal components (PCA)",
             formats=[{"mimeType":"text/plain"}],
             asReference=True,
             )
 
         self.output_classification = self.addComplexOutput(
             identifier="output_classification",
-            title="classification",
+            title="R - workspace",
             abstract="Weather regime classification",
             formats=[{"mimeType":"application/octet-stream"}],
             asReference=True,
@@ -131,7 +131,7 @@ class WeatherRegimesRProcess(WPSProcess):
 
         self.output_netcdf = self.addComplexOutput(
             identifier="output_netcdf",
-            title="netCDF fiel",
+            title="netCDF reference",
             abstract="Prepared netCDF file as input for weatherregime calculation",
             formats=[{"mimeType":"application/x-netcdf"}],
             asReference=True,

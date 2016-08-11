@@ -163,7 +163,7 @@ class WeatherRegimesRProcess(WPSProcess):
 
         self.output_netcdf = self.addComplexOutput(
             identifier="output_netcdf",
-            title="netCDF fiel",
+            title="netCDF file",
             abstract="Prepared netCDF file as input for weatherregime calculation",
             formats=[{"mimeType":"application/x-netcdf"}],
             asReference=True,
