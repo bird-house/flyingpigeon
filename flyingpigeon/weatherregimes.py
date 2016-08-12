@@ -5,6 +5,22 @@ from tempfile import mkstemp
 import logging
 logger = logging.getLogger(__name__)
 
+
+_TIMEREGIONS_ = {'JJA' : {'month':[6,7,8]},
+                 'SON' : {'month':[9,10,11]},
+                 'OND' : {'month':[10,11,12]},
+                 'DJF' : {'month':[12,1,2]},
+                 'FMA' : {'month':[2,3,4]},
+                 'MAM' : {'month':[3,4,5]},
+                 'JJAS' : {'month':[6,7,8,9]},
+                 'DJFM' : {'month':[12,1,2,3]},
+                 'MAMJ' : {'month':[3,4,5,6]},
+                 'SOND' : {'month':[9,10,11,12]},
+                 'SONDJF': {'month':[9,10,11,12,1,2]},
+                 'MAMJJA': {'month':[3,4,5,6,7,8]},
+                 'all' : None}
+
+
 def get_anomalies(nc_file, frac=0.2, reference=None):
   '''
   anomalisation of data subsets for weather classification. 
@@ -81,36 +97,39 @@ def get_season(nc_file, season='DJF'):
   :returns str: netCDF with time subset
   """
   try: 
-    if season == 'JJA':
-      time_region = {'month':[6,7,8]}
-    elif season == 'SON':
-      time_region = {'month':[9,10,11]}
-    elif season == 'DJF':
-      time_region = {'month':[12,1,2]}
-    elif season == 'FAM':
-      time_region = {'month':[2,3,4]}
-    elif season == 'MAM':
-      time_region = {'month':[3,4,5]}
-    elif season == 'JJAS':
-      time_region = {'month':[6,7,8,9]}
-    elif season == 'DJFM':
-      time_region = {'month':[12,1,2,3]}
-    elif season == 'MAMJ':
-      time_region = {'month':[3,4,5,6]}
-    elif season == 'SOND':
-      time_region = {'month':[9,10,11,12]}
-    elif season == 'SONDJF':
-      time_region = {'month':[9,10,11,12,1,2]}
-    elif season == 'MAMJJA':
-      time_region = {'month':[3,4,5,6,7,8]}
-    elif season == 'all':
-      time_region = None 
-    else:
-      logger.error('sesason %s not found' % season )
+    time_region = _TIMEREGIONS_[season]
+    
+  #try: 
+    #if season == 'JJA':
+      #time_region = {'month':[6,7,8]}
+    #elif season == 'SON':
+      #time_region = {'month':[9,10,11]}
+    #elif season == 'DJF':
+      #time_region = {'month':[12,1,2]}
+    #elif season == 'FAM':
+      #time_region = {'month':[2,3,4]}
+    #elif season == 'MAM':
+      #time_region = {'month':[3,4,5]}
+    #elif season == 'JJAS':
+      #time_region = {'month':[6,7,8,9]}
+    #elif season == 'DJFM':
+      #time_region = {'month':[12,1,2,3]}
+    #elif season == 'MAMJ':
+      #time_region = {'month':[3,4,5,6]}
+    #elif season == 'SOND':
+      #time_region = {'month':[9,10,11,12]}
+    #elif season == 'SONDJF':
+      #time_region = {'month':[9,10,11,12,1,2]}
+    #elif season == 'MAMJJA':
+      #time_region = {'month':[3,4,5,6,7,8]}
+    #elif season == 'all':
+      #time_region = None 
+    #else:
+      #logger.error('sesason %s not found' % season )
     nc_season = call(nc_file, time_region=time_region)
-    logger.info('seson exction done %s ' % nc_season)
+    logger.info('seson selection done %s ' % nc_season)
   except Exception as e:
-    msg = 'failed extract season %s ' % e
+    msg = 'failed select season %s' % e
     logger.error(msg)
     raise Exception(msg)
   return nc_season

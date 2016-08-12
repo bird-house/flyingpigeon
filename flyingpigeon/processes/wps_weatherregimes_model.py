@@ -3,6 +3,7 @@ Processes for Weather Classification
 Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 """
 from flyingpigeon.datafetch import _PRESSUREDATA_
+from flyingpigeon.weatherregimes import _TIMEREGIONS_
 from pywps.Process import WPSProcess
 # from datetime import  date 
 
@@ -64,8 +65,7 @@ class WeatherRegimesRProcess(WPSProcess):
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
-            allowedValues= ['JJA','SON','DJF','MAM','all',
-            'JJAS','DJFM','MAMJ','FMA','SOND', 'SONDJF','MAMJJA']
+            allowedValues= _TIMEREGIONS_.keys() 
             )
 
         self.period = self.addLiteralInput(
@@ -186,8 +186,7 @@ class WeatherRegimesRProcess(WPSProcess):
         model_subset = call(resource=resource, variable=variable, 
           geom=bbox, spatial_wrapping='wrap', time_range=time_range,  #conform_units_to=conform_units_to
           )
-        logger.info('Dataset subset done: %s ' % model_subset)
-        
+        logger.info('Dataset subset done: %s ' % model_subset) 
         self.status.set('dataset subsetted',15)
         
         ##############################################

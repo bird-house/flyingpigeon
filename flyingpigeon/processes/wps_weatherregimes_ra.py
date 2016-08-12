@@ -4,6 +4,7 @@ Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 """
 
 from flyingpigeon.datafetch import _PRESSUREDATA_
+from flyingpigeon.weatherregimes import _TIMEREGIONS_
 from pywps.Process import WPSProcess
 # from datetime import  date 
 
@@ -55,8 +56,7 @@ class WeatherRegimesRProcess(WPSProcess):
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
-            allowedValues= ['JJA','SON','DJF','MAM','all',
-            'JJAS','DJFM','MAMJ','FMA','SOND', 'SONDJF','MAMJJA']
+            allowedValues= _TIMEREGIONS_.keys()
             )
 
         self.period = self.addLiteralInput(
