@@ -142,7 +142,8 @@ class WeatherRegimesRProcess(WPSProcess):
         from flyingpigeon import weatherregimes as wr
         from tempfile import mkstemp
         
-      
+        self.status.set('execution started at : %s '  % dt.now(),5)
+
         ################################
         # reading in the input arguments
         ################################
@@ -187,6 +188,8 @@ class WeatherRegimesRProcess(WPSProcess):
           )
         logger.info('Dataset subset done: %s ' % model_subset)
         
+        self.status.set('dataset subsetted',15)
+        
         ##############################################
         ### computing anomalies 
         ##############################################
@@ -200,10 +203,14 @@ class WeatherRegimesRProcess(WPSProcess):
         ### extracting season
         #####################
         model_season = wr.get_season(model_anomal, season=season)
-
+        
+        
+        self.status.set('values normalized',20)
+        
         #######################
         ### call the R scripts
         #######################
+        self.status.set('Start weather regime clustering ',25)
         import shlex
         import subprocess
         from flyingpigeon import config
@@ -245,11 +252,13 @@ class WeatherRegimesRProcess(WPSProcess):
           msg = 'weatherregime in R %s ' % e
           logger.error(msg)  
           raise Exception(msg)
-
+        
+        
+        self.status.set('Weather regime clustering done ',80)
         ############################################
         ### set the outputs
         ############################################
-
+        self.status.set('Set the process outputs ',95)
         self.Routput_graphic.setValue( output_graphics )
         self.output_pca.setValue( file_pca )
         self.output_classification.setValue( file_class )
