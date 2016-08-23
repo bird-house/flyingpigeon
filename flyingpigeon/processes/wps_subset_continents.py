@@ -79,6 +79,14 @@ class subset_continentsProcess(WPSProcess):
             identifier="output",
             )
 
+        self.output_netcdf = self.addComplexOutput(
+            title="Subsets for one dataset",
+            abstract="NetCDF file with subsets of one dataset.",
+            formats=[{"mimeType":"application/x-netcdf"}],
+            asReference=True,
+            identifier="ncout",
+            )
+
     def execute(self):
         from ast import literal_eval
 
@@ -112,18 +120,24 @@ class subset_continentsProcess(WPSProcess):
                 dir_output = os.path.abspath(os.curdir),
                 dimension_map=dimension_map,
                 )
-
         except Exception as e:
-            logger.exception('clipping failed')
-            self.status.set('clipping failed')
+            msg = 'clipping failed'
+            logger.exception(msg)
+            raise Exception(msg)
+
+        if not results:
+            raise Exception('no results produced.')
+
         # prepare tar file 
         try: 
             from flyingpigeon.utils import archive
             tarf = archive(results)
             logger.info('Tar file prepared')
         except Exception as e:
-            logger.exception('Tar file preparation failed')
-            raise
+            msg = 'Tar file preparation failed'
+            logger.exception(msg)
+            raise Exception(msg)
 
         self.output.setValue( tarf )
+        self.output_netcdf.setValue(results[0])
         self.status.set('done', 100)
