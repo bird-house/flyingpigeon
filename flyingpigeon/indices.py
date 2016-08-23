@@ -201,8 +201,7 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
                     raise Exception(msg)   
                 else:
                   try:
-                    if prefix == None:   
-                      prefix = key.replace(variable, indice).replace('_day_','_%s_' % grouping )
+                    prefix = key.replace(variable, indice).replace('_day_','_%s_' % grouping )
                     tmp = clipping(resource=ncs,
                      variable=variable,
                      dimension_map=dimension_map, 

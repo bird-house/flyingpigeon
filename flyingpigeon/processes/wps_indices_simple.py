@@ -95,6 +95,7 @@ class SingleIndicesProcess(WPSProcess):
         # import tarfile
         from tempfile import mkstemp
         from os import path
+        from numpy import squeeze
         
         ncs       = self.getInputValues(identifier='resource')
         indices   = self.indices.getValue()
@@ -109,14 +110,14 @@ class SingleIndicesProcess(WPSProcess):
         self.status.set('starting: indices=%s, groupings=%s, countries=%s, num_files=%s' % (indices, 
             groupings, polygons, len(ncs)), 0)
 
-        results = calc_indice_simple(
+        results = squeeze(calc_indice_simple(
             resource = ncs,
             mosaik=mosaik,
             indices = indices,
             polygons= polygons,
             groupings = groupings,
             dir_output = path.curdir,
-            )
+            ))
          
         #if not results:
             #raise Exception("failed to produce results")
