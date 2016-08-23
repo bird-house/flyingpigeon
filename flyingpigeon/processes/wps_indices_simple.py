@@ -61,7 +61,7 @@ class SingleIndicesProcess(WPSProcess):
             identifier="polygons",
             title="Country subset",
             abstract= str(countries_longname()), 
-            #default='FRA',
+            default='DEU',
             type=type(''),
             minOccurs=0,
             maxOccurs=len(countries()),
@@ -91,7 +91,8 @@ class SingleIndicesProcess(WPSProcess):
 
     def execute(self):
         import os
-        import tarfile
+        from flyingpigeon.utils import archive
+        # import tarfile
         from tempfile import mkstemp
         from os import path
         
@@ -116,24 +117,29 @@ class SingleIndicesProcess(WPSProcess):
             groupings = groupings,
             dir_output = path.curdir,
             )
-        
-        if not results:
-            raise Exception("failed to produce results")
+         
+        #if not results:
+            #raise Exception("failed to produce results")
         
         self.status.set('num results %s' % len(results), 90)
+        logger.debug('indices files: %s ' % results)
+        
         try: 
-            (fp_tarf, tarf) = mkstemp(dir=".", suffix='.tar')
-            tar = tarfile.open(tarf, "w")
+            
+            archive_indices = archive(results)
+            
+            #(fp_tarf, tarf) = mkstemp(dir=".", suffix='.tar')
+            #tar = tarfile.open(tarf, "w")
 
-            for result in results:
-                tar.add( result , arcname = os.path.basename(result))
-            tar.close()
+            #for result in results:
+                #tar.add( result , arcname = os.path.basename(result))
+            #tar.close()
 
-            logger.info('Tar file prepared')
+            logger.info('archive prepared')
         except Exception as e:
-            msg = "Tar file preparation failed"
+            msg = "archive preparation failed"
             logger.exception(msg)
             raise Exception(msg)
 
-        self.output.setValue( tarf )
+        self.output.setValue( archive_indices )
         self.status.set('done: indice=%s, num_files=%s' % (indices, len(ncs)), 100)

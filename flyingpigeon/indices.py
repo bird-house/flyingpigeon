@@ -109,7 +109,7 @@ def indice_variable(indice):
         logger.error('unknown indice %s', indice)
     return variable
 
-def calc_indice_simple(resource=[], variable=None, prefix=None,indices=None,
+def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
     polygons=None, mosaik = False, groupings='yr', dir_output=None, dimension_map = None, memory_limit=None):
     """
     Calculates given simple indices for suitable files in the appropriate time grouping and polygon.
@@ -150,7 +150,6 @@ def calc_indice_simple(resource=[], variable=None, prefix=None,indices=None,
     #    tile_dim = 25
     output = None
 
-
     experiments = sort_by_filename(resource)
     outputs = []
     
@@ -172,8 +171,7 @@ def calc_indice_simple(resource=[], variable=None, prefix=None,indices=None,
                      dir_output=dir_output,
                      output_format='nc')
 
-        else:
-          
+        else:         
           ncs = experiments[key]         
         for indice in indices:
           logger.info('indice: %s' % indice)
@@ -187,8 +185,7 @@ def calc_indice_simple(resource=[], variable=None, prefix=None,indices=None,
                 logger.info('calc_group: %s' % calc_group)
                 if polygons == None:
                   try:
-                    if prefix == None:   
-                      prefix = key.replace(variable, indice).replace('_day_','_%s_' % grouping )
+                    prefix = key.replace(variable, indice).replace('_day_','_%s_' % grouping )
                     tmp = ocgis_module.call(resource=ncs,
                      variable=variable,
                      dimension_map=dimension_map, 
@@ -197,7 +194,7 @@ def calc_indice_simple(resource=[], variable=None, prefix=None,indices=None,
                      prefix=prefix, 
                      dir_output=dir_output,
                      output_format='nc')
-                    outputs.extend( [tmp] )
+                    outputs.append( tmp )
                   except Exception as e:
                     msg = 'could not calc indice %s for domain in %s' %( indice, key)
                     logger.exception( msg )
@@ -216,7 +213,7 @@ def calc_indice_simple(resource=[], variable=None, prefix=None,indices=None,
                      mosaik=mosaik,
                      dir_output=dir_output,
                      output_format='nc')
-                    outputs.extend( [tmp] )
+                    outputs.append( tmp )
                   except Exception as e:
                     msg = 'could not calc indice %s for domain in %s' %( indice, key)
                     logger.exception( msg )
