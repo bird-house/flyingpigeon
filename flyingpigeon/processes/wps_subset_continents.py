@@ -139,5 +139,6 @@ class subset_continentsProcess(WPSProcess):
             raise Exception(msg)
 
         self.output.setValue( tarf )
-        self.output_netcdf.setValue(results[0])
+        i = next((i for i, x in enumerate(results) if x), None)
+        self.output_netcdf.setValue(results[i])
         self.status.set('done', 100)

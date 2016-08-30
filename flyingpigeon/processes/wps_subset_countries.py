@@ -119,6 +119,7 @@ class ClippingProcess(WPSProcess):
                 dir_output = os.path.abspath(os.curdir),
                 # dimension_map=dimension_map,
                 )
+            logger.info('results %s' % results )
         except Exception as e:
             msg = 'clipping failed'
             logger.exception(msg)
@@ -138,5 +139,8 @@ class ClippingProcess(WPSProcess):
             raise Exception(msg)
 
         self.output.setValue(tarf)
-        self.output_netcdf.setValue(results[0])
+        
+        i = next((i for i, x in enumerate(results) if x), None)
+        self.output_netcdf.setValue(results[i])
+            
         self.status.set('done', 100)
