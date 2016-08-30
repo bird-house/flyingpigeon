@@ -1,22 +1,26 @@
 from pywps.Process import WPSProcess
 
-from flyingpigeon.indices import indices, indices_description, calc_indice_simple
+from flyingpigeon.indices import indices, indices_description
+from flyingpigeon.indices import calc_indice_simple
 from flyingpigeon.subset import countries, countries_longname
 from flyingpigeon.utils import GROUPING
 
 import logging
 logger = logging.getLogger(__name__)
 
+
 class SingleIndicesProcess(WPSProcess):
-    """This process calculates a climate indice for the given input netcdf files."""
+    """
+    This process calculates a climate indice for the given input netcdf files.
+    """
     def __init__(self):
         WPSProcess.__init__(
-            self, 
-            identifier = "indices_simple",
+            self,
+            identifier="indices_simple",
             title="Climate indices -- Simple",
-            version = "0.3",
+            version="0.3",
             abstract="Climate indices based on one single input variable.",
-            metadata = [
+            metadata=[
                 {'title': 'Documentation', 'href': 'http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#climate-indices'},
                 {"title": "ICCLIM" , "href": "http://icclim.readthedocs.io/en/latest/"},
                 {"title": "Simple Indices", "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/indices.html"}
@@ -32,9 +36,9 @@ class SingleIndicesProcess(WPSProcess):
             minOccurs=1,
             maxOccurs=100,
             maxmegabites=5000,
-            formats=[{"mimeType":"application/x-netcdf"}],
+            formats=[{"mimeType": "application/x-netcdf"}],
             )
-    
+
         self.groupings = self.addLiteralInput(
             identifier="groupings",
             title="Grouping",
@@ -56,18 +60,18 @@ class SingleIndicesProcess(WPSProcess):
             maxOccurs=len(indices()),
             allowedValues=indices()
             )
-        
+
         self.polygons = self.addLiteralInput(
             identifier="polygons",
             title="Country subset",
-            abstract= str(countries_longname()), 
+            abstract=str(countries_longname()),
             default='DEU',
             type=type(''),
             minOccurs=0,
             maxOccurs=len(countries()),
             allowedValues=countries()
             )
-        
+
         self.mosaik = self.addLiteralInput(
             identifier="mosaik",
             title="Mosaik",
@@ -85,7 +89,7 @@ class SingleIndicesProcess(WPSProcess):
             title="Indice",
             abstract="Calculated indice as NetCDF file",
             metadata=[],
-            formats=[{"mimeType":"application/x-tar"}],
+            formats=[{"mimeType": "application/x-tar"}],
             asReference=True
             )
 
@@ -96,39 +100,42 @@ class SingleIndicesProcess(WPSProcess):
         from tempfile import mkstemp
         from os import path
         from numpy import squeeze
-        
-        ncs       = self.getInputValues(identifier='resource')
-        indices   = self.indices.getValue()
-        polygons  = self.polygons.getValue()
-        mosaik    = self.mosaik.getValue()
-        groupings = self.groupings.getValue() # getInputValues(identifier='groupings')
+
+        ncs = self.getInputValues(identifier='resource')
+        indices = self.indices.getValue()
+        polygons = self.polygons.getValue()
+        mosaik = self.mosaik.getValue()
+        groupings = self.groupings.getValue()  # getInputValues(identifier='groupings')
 
         polygons = self.polygons.getValue()
-        # if len(polygons)==0: 
+        # if len(polygons)==0:
         #     polygons = None
 
-        self.status.set('starting: indices=%s, groupings=%s, countries=%s, num_files=%s' % (indices, 
-            groupings, polygons, len(ncs)), 0)
+        logger.debug('indices=%s', indices)
+        logger.debug('groupings=%s', groupings)
+        logger.debug('num files=%s', len(ncs))
+        self.status.set('starting: indices=%s' % indices, 0)
 
         results = squeeze(calc_indice_simple(
-            resource = ncs,
+            resource=ncs,
             mosaik=mosaik,
-            indices = indices,
-            polygons= polygons,
-            groupings = groupings,
-            dir_output = path.curdir,
+            indices=indices,
+            polygons=polygons,
+            groupings=groupings,
+            dir_output=path.curdir,
             ))
-         
-        #if not results:
-            #raise Exception("failed to produce results")
-        
-        self.status.set('num results %s' % len(results), 90)
-        logger.debug('indices files: %s ' % results)
-        
-        try: 
-            
-            archive_indices = archive(results)
-            
+
+        if not results:
+            raise Exception("failed to produce results")
+
+        self.status.set('indices calculated', 90)
+        logger.debug('results type: %s', type(results))
+        logger.debug('indices files: %s ' % results.tolist())
+
+        try:
+
+            archive_indices = archive(results.tolist())
+
             #(fp_tarf, tarf) = mkstemp(dir=".", suffix='.tar')
             #tar = tarfile.open(tarf, "w")
 
@@ -142,5 +149,5 @@ class SingleIndicesProcess(WPSProcess):
             logger.exception(msg)
             raise Exception(msg)
 
-        self.output.setValue( archive_indices )
-        self.status.set('done: indice=%s, num_files=%s' % (indices, len(ncs)), 100)
+        self.output.setValue(archive_indices)
+        self.status.set('done', 100)
