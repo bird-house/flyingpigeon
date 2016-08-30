@@ -129,13 +129,13 @@ class WeatherRegimesRProcess(WPSProcess):
         ### define the outputs
         ######################
 
-        self.Routput_graphic = self.addComplexOutput(
-            identifier="Routput_graphic",
-            title="Graphics and Tables",
-            abstract="Weather classification pressure map and frequency table",
-            formats=[{"mimeType":"image/pdf"}],
-            asReference=True,
-            )
+        # self.Routput_graphic = self.addComplexOutput(
+        #     identifier="Routput_graphic",
+        #     title="Graphics and Tables",
+        #     abstract="Weather classification pressure map and frequency table",
+        #     formats=[{"mimeType":"image/pdf"}],
+        #     asReference=True,
+        #     )
         
         self.output_pca = self.addComplexOutput(
             identifier="output_pca",
@@ -259,16 +259,16 @@ class WeatherRegimesRProcess(WPSProcess):
           
           yr1 = start.year
           yr2 = end.year
-          ip, output_graphics = mkstemp(dir=curdir ,suffix='.pdf')
+          #ip, output_graphics = mkstemp(dir=curdir ,suffix='.pdf')
           ip, file_pca = mkstemp(dir=curdir ,suffix='.txt')
           ip, file_class = mkstemp(dir=curdir ,suffix='.Rdat')
-          ip, output_frec = mkstemp(dir=curdir ,suffix='.dat')
+          ip, output_frec = mkstemp(dir=curdir ,suffix='.txt')
                     
           args = ['Rscript', join(Rsrc,Rfile), '%s/' % curdir, 
                   '%s/' % Rsrc, 
                   '%s' % model_season, 
                   '%s' % variable, 
-                  '%s' % output_graphics,
+            #      '%s' % output_graphics,
                   '%s' % dat, 
                   '%s' % Rdat, 
                   '%s' % file_pca,
@@ -300,7 +300,7 @@ class WeatherRegimesRProcess(WPSProcess):
         ### set the outputs
         ############################################
 
-        self.Routput_graphic.setValue( output_graphics )
+        #self.Routput_graphic.setValue( output_graphics )
         self.output_pca.setValue( file_pca )
         self.output_classification.setValue( file_class )
         self.output_netcdf.setValue( model_season )

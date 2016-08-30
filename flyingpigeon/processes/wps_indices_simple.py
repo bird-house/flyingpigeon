@@ -72,10 +72,10 @@ class SingleIndicesProcess(WPSProcess):
             allowedValues=countries()
             )
 
-        self.mosaik = self.addLiteralInput(
-            identifier="mosaik",
-            title="Mosaik",
-            abstract="If Mosaik is checked, selected polygons be clipped as a mosaik for each input file",
+        self.mosaic = self.addLiteralInput(
+            identifier="mosaic",
+            title="Mosaic",
+            abstract="If Mosaic is checked, selected polygons be clipped as a mosaic for each input file",
             default=False,
             type=type(False),
             minOccurs=0,
@@ -104,7 +104,7 @@ class SingleIndicesProcess(WPSProcess):
         ncs = self.getInputValues(identifier='resource')
         indices = self.indices.getValue()
         polygons = self.polygons.getValue()
-        mosaik = self.mosaik.getValue()
+        mosaic = self.mosaic.getValue()
         groupings = self.groupings.getValue()  # getInputValues(identifier='groupings')
 
         polygons = self.polygons.getValue()
@@ -118,7 +118,7 @@ class SingleIndicesProcess(WPSProcess):
 
         results = squeeze(calc_indice_simple(
             resource=ncs,
-            mosaik=mosaik,
+            mosaic=mosaic,
             indices=indices,
             polygons=polygons,
             groupings=groupings,

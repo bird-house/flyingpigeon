@@ -110,7 +110,7 @@ def indice_variable(indice):
     return variable
 
 def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
-    polygons=None, mosaik = False, groupings='yr', dir_output=None, dimension_map = None, memory_limit=None):
+    polygons=None, mosaic = False, groupings='yr', dir_output=None, dimension_map = None, memory_limit=None):
     """
     Calculates given simple indices for suitable files in the appropriate time grouping and polygon.
 
@@ -209,7 +209,7 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
                      calc_grouping= calc_group, 
                      prefix=prefix, 
                      polygons=polygons,
-                     mosaik=mosaik,
+                     mosaic=mosaic,
                      dir_output=dir_output,
                      output_format='nc')
                     outputs.append( tmp )
@@ -234,7 +234,7 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
 
 def calc_indice_percentile(resources=[], variable=None, 
     prefix=None, indices='TG90p', refperiod=None,
-    groupings='yr', polygons=None, percentile=90, mosaik = False, 
+    groupings='yr', polygons=None, percentile=90, mosaic = False, 
     dir_output=None, dimension_map = None):
     """
     Calculates given indices for suitable files in the appropriate time grouping and polygon.
@@ -309,7 +309,7 @@ def calc_indice_percentile(resources=[], variable=None,
             output_format='nc', 
             polygons=polygons,
             dir_output=dir_output, 
-            mosaik = mosaik)
+            mosaic = mosaic)
           
         arr = get_values(nc_files=nc_reference)
         dt_arr = get_time(nc_files=nc_reference)
@@ -357,7 +357,7 @@ def calc_indice_percentile(resources=[], variable=None,
                                 output_format='nc',
                                 dir_output=dir_output,
                                 polygons=polygons, 
-                                mosaik = mosaik,
+                                mosaic = mosaic,
                                 ))
     return nc_indices
 

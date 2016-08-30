@@ -106,10 +106,10 @@ class IndicesPercentileProcess(WPSProcess):
             allowedValues=countries()
             )
         
-        self.mosaik = self.addLiteralInput(
-            identifier="mosaik",
-            title="Mosaik",
-            abstract="If Mosaik is checked, selected polygons be clipped as a mosaik for each input file",
+        self.mosaic = self.addLiteralInput(
+            identifier="mosaic",
+            title="Mosaic",
+            abstract="If Mosaic is checked, selected polygons be clipped as a mosaic for each input file",
             default=False,
             type=type(False),
             minOccurs=0,
@@ -134,7 +134,7 @@ class IndicesPercentileProcess(WPSProcess):
         polygons   = self.polygons.getValue()
         percentile = int(self.percentile.getValue())
         groupings  = self.groupings.getValue()
-        mosaik = self.mosaik.getValue()
+        mosaic = self.mosaic.getValue()
         refperiod = self.refperiod.getValue()
        
         self.status.set('starting: indices=%s, refperiod=%s, groupings=%s, num_files=%s' % (indices, refperiod, groupings, len(ncs)), 0)
@@ -143,7 +143,7 @@ class IndicesPercentileProcess(WPSProcess):
             resources = ncs,
             indices = indices,
             percentile = percentile,
-            mosaik = mosaik,
+            mosaic = mosaic,
             polygons = polygons,
             refperiod = refperiod,
             groupings = groupings,

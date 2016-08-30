@@ -16,16 +16,16 @@ rworkspace <- args[1]
 Rsrc <- args[2]
 infile <- args[3] # '/home/estimr2/nhempelmann/ea4e5ea8-3df9-11e6-b034-0756a0266937.nc' #args[3]
 varname <- args[4]
-output_graphics <- args[5]
-file_pca <- args[6]
-file_Rdat <- args[7]
-output_pca <- args[8]
-output_Rdat <- args[9]
-output_frec_percent <- args[10]
-seas <- args[11]
-y1 <- as.numeric(args[12])
-y2 <- as.numeric(args[13])
-modelname <- args[14]
+#output_graphics <- args[5]
+file_pca <- args[5]
+file_Rdat <- args[6]
+output_pca <- args[7]
+output_Rdat <- args[8]
+output_frec_percent <- args[9]
+seas <- args[10]
+y1 <- as.numeric(args[11])
+y2 <- as.numeric(args[12])
+modelname <- args[13]
 
 yr1 = as.numeric(y1)
 yr2 = as.numeric(y2)
@@ -190,47 +190,41 @@ write.table(file=output_frec_percent,WR.freq,quote=FALSE,row.names=FALSE)
 ## Saving the workspace 
 save.image(file=output_Rdat) #lon,lat,time,
 
-print ('frequencies saved to file')
+# print ('frequencies saved to file')
 
-## Plotting Weather regimes of the model
-# fname=paste(Results,"projNCEP_regimes_",modelname,"_",yr1,"-",yr2,"_",seas,".pdf",sep="")
-pdf(file=output_graphics, height=8, width=11)
-
-layout(matrix(1:(2*ceiling(nreg/2)),2,ceiling(nreg/2)))
-
-for(i in 1:nreg){ 
+# ## Plotting Weather regimes of the model
+# # fname=paste(Results,"projNCEP_regimes_",modelname,"_",yr1,"-",yr2,"_",seas,".pdf",sep="")
+# pdf(file=output_graphics, height=8, width=11)
+# layout(matrix(1:(2*ceiling(nreg/2)),2,ceiling(nreg/2)))
+# for(i in 1:nreg){ 
+#   champ=dat.class$reg.var[,i]/100                        
   
-  champ=dat.class$reg.var[,i]/100                        
+#   zlev=pretty(champ,20)
+#   colplot=rainbow(length(zlev)-1,start=3/6,end=1)
+#   par( mar=c(2.5,2,2,1.5))
   
-  zlev=pretty(champ,20)
-  colplot=rainbow(length(zlev)-1,start=3/6,end=1)
-  par( mar=c(2.5,2,2,1.5))
+#   dum=t(matrix(champ,length(lat),length(lon)))
+#   #dum=matrix(champ,length(lon),length(lat)) #if transpose
+#   lat.sort=sort(lat,index.return=TRUE)
+#   titleplot=paste("NCEP(",y1,"-",y2,")",seas,"",name.reg[i],"(",
+#                   format(dat.class$perc.r[i],digits=3),"%)")
   
-  dum=t(matrix(champ,length(lat),length(lon)))
-  #dum=matrix(champ,length(lon),length(lat)) #if transpose
-  lat.sort=sort(lat,index.return=TRUE)
-  titleplot=paste("NCEP(",y1,"-",y2,")",seas,"",name.reg[i],"(",
-                  format(dat.class$perc.r[i],digits=3),"%)")
-  
-  contour(lon,sort(lat), dum[,lat.sort$ix],
-          xlab="Longitude",ylab="Latitude",main=titleplot,col=colplot,
-          add=FALSE,nlevels=length(zlev),
-          levels=zlev,lty=1, cex.main=0.95)
-  library(fields)
-  world(xlim=range(lon),ylim=range(lat),add=TRUE)
-}
-
+#   contour(lon,sort(lat), dum[,lat.sort$ix],
+#           xlab="Longitude",ylab="Latitude",main=titleplot,col=colplot,
+#           add=FALSE,nlevels=length(zlev),
+#           levels=zlev,lty=1, cex.main=0.95)
+#   library(fields)
+#   world(xlim=range(lon),ylim=range(lat),add=TRUE)
+# }
 # pdf(file='test.pdf')
 # library(gridExtra)
 # pdf("trade.pdf", height=11, width=8.5)
+# library(grid)
+# library(gridExtra)
+# grid.newpage()
+# grid.table(WR.freq)
 
-
-library(grid)
-library(gridExtra)
-grid.newpage()
-grid.table(WR.freq)
-
-dev.off()
+# dev.off()
 
 proc.time() - ptm 
 

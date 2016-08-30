@@ -106,8 +106,10 @@ for(i in 1:nrow(dat.m)){
 ##### plot EOFs
 
 pdf(file=output_graphics)
-layout(matrix(1:(2*ceiling(nreg/2)),2,ceiling(nreg/2)))
+
+# layout(matrix(1:(2*ceiling(nreg/2)),2,ceiling(nreg/2)))
 par(mar=c(4,6,2,2))
+
 for(i in 1:nreg){ 
    champ=dat.class$reg.var[,i] #/100                        
     zlev=pretty(champ,20)
@@ -118,11 +120,14 @@ for(i in 1:nreg){
     titleplot=paste(model_var," ", seas," ",y1,"-",y2," WR:",i,"(",
                            format(dat.class$perc.r[i],digits=3),"%)")
     contour(lon,sort(lat), dum[,lat.sort$ix],
-            xlab="Longitude",ylab="Latitude",main=titleplot,col=colplot,add=FALSE,nlevels=length(zlev),
-            levels=zlev,lty=1)
+            xlab="Longitude",ylab="Latitude",main=titleplot,
+            col=colplot,add=FALSE,nlevels=length(zlev),
+            levels=zlev,lty=1, 
+            cex.axis=1.5, cex.main=1.0 )
     library(maps)
     map(add=TRUE)
 }
+
 dev.off()
 
 ## Saving the classification of Weather Regimes that we will use for projections

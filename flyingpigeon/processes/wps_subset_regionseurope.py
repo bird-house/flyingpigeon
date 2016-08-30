@@ -46,14 +46,14 @@ class subset_regionseuropeProcess(WPSProcess):
             )
 
 
-        self.dimension_map = self.addLiteralInput(
-            identifier="dimension_map",
-            title="Dimension Map",
-            abstract= 'If not ordered in lon/lat, a dimension map has to be provided.',
-            type=type(''),
-            minOccurs=0,
-            maxOccurs=1
-            )
+        # self.dimension_map = self.addLiteralInput(
+        #     identifier="dimension_map",
+        #     title="Dimension Map",
+        #     abstract= 'If not ordered in lon/lat, a dimension map has to be provided.',
+        #     type=type(''),
+        #     minOccurs=0,
+        #     maxOccurs=1
+        #     )
 
         self.variable = self.addLiteralInput(
             identifier="variable",
@@ -65,10 +65,10 @@ class subset_regionseuropeProcess(WPSProcess):
             maxOccurs=1,
             )
 
-        self.mosaik = self.addLiteralInput(
-            identifier="mosaik",
-            title="Mosaik",
-            abstract="If Mosaik is checked, selected polygons will be clipped as a mosaik for each input file.",
+        self.mosaic = self.addLiteralInput(
+            identifier="mosaic",
+            title="Mosaic",
+            abstract="If Mosaic is checked, selected polygons will be clipped as a mosaic for each input file.",
             default=False,
             type=type(False),
             minOccurs=0,
@@ -87,20 +87,20 @@ class subset_regionseuropeProcess(WPSProcess):
         from ast import literal_eval
 
         urls = self.getInputValues(identifier='resource')
-        mosaik = self.mosaik.getValue()
+        mosaic = self.mosaic.getValue()
         regions = self.region.getValue()
         variable = self.variable.getValue()
         
         #logger.info('regions: %s' % regions)
 
-        dimension_map = self.dimension_map.getValue()
-        if dimension_map != None: 
-            dimension_map = literal_eval(dimension_map)
+        # dimension_map = self.dimension_map.getValue()
+        # if dimension_map != None: 
+        #     dimension_map = literal_eval(dimension_map)
 
         logger.info('urls = %s', urls)
         logger.info('regions = %s', regions)
-        logger.info('mosaik = %s', mosaik)
-        logger.info('dimension_map = %s', dimension_map)
+        logger.info('mosaic = %s', mosaic)
+        # logger.info('dimension_map = %s', dimension_map)
     
         self.status.set('Arguments set for subset process', 0)
 
@@ -110,10 +110,10 @@ class subset_regionseuropeProcess(WPSProcess):
             results = clipping(
                 resource = urls,
                 polygons = regions, # self.region.getValue(),
-                mosaik = mosaik,
+                mosaic = mosaic,
                 variable = variable, 
                 dir_output = os.path.abspath(os.curdir),
-                dimension_map=dimension_map,
+              #  dimension_map=dimension_map,
                 )
 
         except Exception as e:

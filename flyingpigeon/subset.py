@@ -53,7 +53,7 @@ def masking(resource, mask, prefix=None, dir_output=None):
   return resource_masked
 
 def clipping(resource=[], variable=None, dimension_map=None, calc=None,  output_format='nc',
-  calc_grouping= None, time_range=None, time_region=None,  historical_concatination=True, prefix=None, spatial_wrapping='wrap', polygons=None, mosaik=False, dir_output=None, memory_limit=None):
+  calc_grouping= None, time_range=None, time_region=None,  historical_concatination=True, prefix=None, spatial_wrapping='wrap', polygons=None, mosaic=False, dir_output=None, memory_limit=None):
   """ returns list of clipped netCDF files
   possible entries: 
   :param resource: list of input netCDF files
@@ -63,7 +63,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  output_
   :param calc_grouping: ocgis calculation grouping 
   :param historical_concatination: concat files of RCPs with appropriate historical runs to one timeseries 
   :param prefix: perfix for output file name
-  :param polygons: list of polygons to be used. if more than 1 in the list, a appropriate mosaik will be clipped
+  :param polygons: list of polygons to be used. if more than 1 in the list, a appropriate mosaic will be clipped
   :param output_format: output_format (default='nc')
   :param dir_output: specify a output location
   """
@@ -82,14 +82,14 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  output_
   geoms = set()
   ncs = sort_by_filename(resource, historical_concatination=historical_concatination) #  historical_concatination=True
   geom_files = []
-  if mosaik == True :
+  if mosaic == True :
     try:
       nameadd = '_'
       for polygon in polygons: 
         geoms.add(get_geom(polygon))
         nameadd = nameadd + '-' + polygon  
       if len(geoms) > 1: 
-        logger.error('polygons belong to differnt shapefiles! mosaik option is not possible %s', geoms)
+        logger.error('polygons belong to differnt shapefiles! mosaic option is not possible %s', geoms)
       else: 
         geom = geoms.pop()
       ugids = get_ugid(polygons=polygons, geom=geom)
