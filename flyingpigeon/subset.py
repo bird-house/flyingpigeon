@@ -15,8 +15,8 @@ def countries():
     """
     :return: a list of all countries codes.
     """
-    #countries = _COUNTRIES_.keys()
-    countries = ['DEU', 'FRA', 'GBR', 'ESP', 'ITA']
+    countries = _COUNTRIES_.keys()
+    #countries = ['DEU', 'FRA', 'GBR', 'ESP', 'ITA']
     countries.sort()
     return countries  
 
