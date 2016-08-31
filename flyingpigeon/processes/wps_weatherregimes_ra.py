@@ -34,7 +34,6 @@ class WeatherRegimesRProcess(WPSProcess):
             abstract="coordinates to define the region for weather classification ('EPSG:4326')",
             minOccurs=1,
             maxOccurs=1,
-            #default=[-80,50,22.5,70],
             crss=['EPSG:4326']
             )
 
