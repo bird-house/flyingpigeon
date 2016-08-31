@@ -9,7 +9,7 @@ class AnalogsviewerProcess(WPSProcess):
     def __init__(self):
         WPSProcess.__init__(self,
             identifier="analogs_viewer",
-            title="Analogs -- Viewer",
+            title="Analogues -- Viewer",
             version = "0.1",
             abstract="Visualisation of text output of analogue process",
             statusSupported=True,
@@ -28,15 +28,15 @@ class AnalogsviewerProcess(WPSProcess):
         self.output_html = self.addComplexOutput(
             identifier="output_html",
             title="html viewer",
-            abstract="web browser compatible hmtl file",
+            abstract="web browser compatible html file",
             formats=[{"mimeType":"text/html"}],
             asReference=True,
             )
 
         self.output_txt = self.addLiteralOutput(
             identifier="output_txt",
-            title="modified analogs txt file",
-            abstract="txt file for analog viewer",
+            title="modified analogues txt file",
+            abstract="txt file for analogue viewer",
             default=None,
             type=type(''),
             )
