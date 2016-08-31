@@ -13,7 +13,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class IndicesPercentileProcess(WPSProcess):
-    """This process calculates a climate indice for the given input netcdf files."""
+    """This process calculates climate indices for the given input netcdf files."""
     def __init__(self):
         WPSProcess.__init__(
             self, 
@@ -42,8 +42,8 @@ class IndicesPercentileProcess(WPSProcess):
     
         self.indices = self.addLiteralInput(
             identifier="indices",
-            title="Indice",
-            abstract='Select an indice',
+            title="Index",
+            abstract='Select an index',
             default='TG',
             type=type(''),
             minOccurs=1,
@@ -121,8 +121,8 @@ class IndicesPercentileProcess(WPSProcess):
         # -------------
         self.output = self.addComplexOutput(
             identifier="output",
-            title="Indice",
-            abstract="Calculated indice as NetCDF file",
+            title="Index",
+            abstract="Calculated index as NetCDF file",
             metadata=[],
             formats=[{"mimeType":"application/x-tar"}],
             asReference=True
