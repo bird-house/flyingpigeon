@@ -11,7 +11,7 @@ class plottimeseriesProcess(WPSProcess):
             metadata= [
                     {"title": 'Plot timeseries'}
                     ],
-            abstract="Plots of the filesmeans over time. Spagetti and uncertainty plot",
+            abstract="Plots of the file means over time. Spaghetti and uncertainty plot",
             statusSupported=True,
             storeSupported=True
             )
@@ -29,7 +29,7 @@ class plottimeseriesProcess(WPSProcess):
         self.variableIn = self.addLiteralInput(
             identifier="variable",
             title="Variable",
-            abstract="Variable to be expected in the input files (Variable will be detected if not set, )",
+            abstract="Variable to be expected in the input files (variable will be detected if not set)",
             default=None,
             type=type(''),
             minOccurs=0,
@@ -38,8 +38,8 @@ class plottimeseriesProcess(WPSProcess):
     
         self.plotout_spagetti = self.addComplexOutput(
             identifier="plotout_spagetti",
-            title="Visualisation, Spagetti plot",
-            abstract="Visualisation of single variables as a spagetti plot",
+            title="Visualisation, Spaghetti plot",
+            abstract="Visualisation of single variables as a spaghetti plot",
             formats=[{"mimeType":"application/html"}],
             asReference=True,
             )         
