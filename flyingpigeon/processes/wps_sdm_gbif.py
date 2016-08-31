@@ -131,7 +131,7 @@ class SDMProcess(WPSProcess):
         self.output_prediction = self.addComplexOutput(
             identifier="output_prediction",
             title="predicted growth conditions",
-            abstract="Archive (tar/zip) containing the netCDF files of the predicted growing conditions",
+            abstract="Archive (tar/zip) containing the netCDF files of the predicted growth conditions",
             formats=[{"mimeType":"application/x-tar"}, {"mimeType":"application/zip"}],
             asReference=True,
             )
