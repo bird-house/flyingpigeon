@@ -38,7 +38,7 @@ class WeatherRegimesRProcess(WPSProcess):
         self.Rdat = self.addLiteralInput(
             identifier="Rdat",
             title="R - workspace",
-            abstract="R workspace as outputed from weatherregieme reference process",
+            abstract="R workspace as output from weather regime reference process",
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
@@ -50,7 +50,7 @@ class WeatherRegimesRProcess(WPSProcess):
         self.dat = self.addLiteralInput(
             identifier="dat",
             title="R - datafile",
-            abstract="R datafile as outputed from weatherregieme reference process",
+            abstract="R datafile as output from weather regime reference process",
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
@@ -62,7 +62,7 @@ class WeatherRegimesRProcess(WPSProcess):
         self.netCDF = self.addLiteralInput(
             identifier="netCDF",
             title="netCDF reference",
-            abstract="netCDF file as outputed from weatherregieme reference process",
+            abstract="netCDF file as output from weather regime reference process",
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
@@ -107,7 +107,7 @@ class WeatherRegimesRProcess(WPSProcess):
 
         self.period = self.addLiteralInput(
             identifier="period",
-            title="Period for weatherregime calculation",
+            title="Period for weather regime calculation",
             abstract="Period for analysing the dataset",
             default="19700101-20101231",
             type=type(''),
@@ -117,8 +117,8 @@ class WeatherRegimesRProcess(WPSProcess):
 
         self.anualcycle = self.addLiteralInput(
             identifier="anualcycle",
-            title="Period for anualcycle calculation",
-            abstract="Period for anual cycle calculation",
+            title="Period for annual cycle calculation",
+            abstract="Period for annual cycle calculation",
             default="19700101-19991231",
             type=type(''),
             minOccurs=1,
@@ -164,7 +164,7 @@ class WeatherRegimesRProcess(WPSProcess):
         self.output_netcdf = self.addComplexOutput(
             identifier="output_netcdf",
             title="netCDF file",
-            abstract="Prepared netCDF file as input for weatherregime calculation",
+            abstract="Prepared netCDF file as input for weather regime calculation",
             formats=[{"mimeType":"application/x-netcdf"}],
             asReference=True,
             )
