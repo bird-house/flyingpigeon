@@ -108,7 +108,7 @@ class AnalogsProcess(WPSProcess):
     self.normalize = self.addLiteralInput(
       identifier="normalize",
       title="normalisation",
-      abstract="Normalize by substraction of annual cycle",
+      abstract="Normalize by subtraction of annual cycle",
       default='base',
       type=type(''),
       minOccurs=1,
