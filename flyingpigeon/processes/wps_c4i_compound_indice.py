@@ -20,7 +20,7 @@ class ProcessCompoundIndice(WPSProcess):
     def __init__(self):
         WPSProcess.__init__(self,
                             identifier = 'wps_c4i_compound_indice', # only mandatory attribute = same file name
-                            title = 'c4i - Rain Temperature Indices',
+                            title = 'c4i - Rain and Temperature Indices',
                             abstract = 'Computes dual input indices of rain and temperature: CD, CW, WD, WW.',
                             version = "1.0",
                             metadata = [
@@ -33,14 +33,14 @@ class ProcessCompoundIndice(WPSProcess):
         
         
         self.indiceNameIn = self.addLiteralInput(identifier = 'indiceName',
-                                                title = 'Indice name',
+                                                title = 'Index name',
                                                 type=type("String"),
                                                 default = 'CW')
         self.indiceNameIn.values = ['CD', 'CW', 'WD', 'WW']
         
         
         self.sliceModeIn = self.addLiteralInput(identifier = 'sliceMode',
-                                               title = 'Slice mode (temporal grouping to applay for calculations)',
+                                               title = 'Slice mode (temporal grouping to apply to calculations)',
                                                type=type("String"),
                                                default = 'year')
         self.sliceModeIn.values = ["year","month","ONDJFM","AMJJAS","DJF","MAM","JJA","SON"]        
@@ -69,7 +69,7 @@ class ProcessCompoundIndice(WPSProcess):
 
         self.timeRangeBasePeriodIn = self.addLiteralInput(identifier = 'timeRangeBasePeriod', 
                                                 title = 'Time range of base (reference) period',
-                                                abstract = 'Mandatory time range of base (reference) period, e.g. 1961-01-01/1990-12-31. Please fill-in',
+                                                abstract = 'Mandatory time range of base (reference) period, e.g. 1961-01-01/1990-12-31. Please fill in.',
                                                 type = type("String"),
                                                 minOccurs = 1,
                                                 default = '1961-01-01/1990-12-31')                                                 
@@ -110,7 +110,7 @@ class ProcessCompoundIndice(WPSProcess):
         
         self.timeRangeStudyPeriodIn = self.addLiteralInput(identifier = 'timeRangeStudyPeriod', 
                                                 title = 'Time range',
-                                                abstract = 'Time range is mandatory, e.g. 2010-01-01/2012-12-31. Please fill-in.',
+                                                abstract = 'Time range is mandatory, e.g. 2010-01-01/2012-12-31. Please fill in.',
                                                 type=type("String"),
                                                 minOccurs = 1,
                                                 default = '2010-01-01/2012-12-31')                                                 
@@ -132,15 +132,15 @@ class ProcessCompoundIndice(WPSProcess):
         ##                                         default = './out_icclim.nc')
         
         self.NLevelIn = self.addLiteralInput(identifier = 'NLevel', 
-                                                title = 'Number of level (if 4D variable)',
+                                                title = 'Number of levels (if 4D variable)',
                                                 minOccurs = 0,
                                                 type=type(1))
 
         #self.opendapURL = self.addLiteralOutput(identifier = "opendapURL",title = "opendapURL");
         self.output = self.addComplexOutput(
             identifier="output",
-            title="Climate Indice",
-            abstract="Calculated climate indice with icclim.",
+            title="Climate Index",
+            abstract="Calculated climate index with icclim.",
             formats=[{"mimeType":"application/x-netcdf"}],
             asReference=True,
         )
