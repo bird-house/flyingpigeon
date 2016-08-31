@@ -33,14 +33,14 @@ class ProcessMultivarIndice(WPSProcess):
 
 
         self.indiceNameIn = self.addLiteralInput(identifier = 'indiceName',
-                                               title = 'Indice name',
+                                               title = 'Index name',
                                                type = type("String"),
                                                minOccurs = 1,
                                                default='ETR')
         self.indiceNameIn.values = ['DTR', 'ETR', 'vDTR']
         
         self.sliceModeIn = self.addLiteralInput(identifier = 'sliceMode',
-                                               title = 'Slice mode (temporal grouping to applay for calculations)',
+                                               title = 'Slice mode (temporal grouping to apply to calculations)',
                                                type=type("String"),
                                                minOccurs = 1,
                                                default = 'year')
@@ -95,7 +95,7 @@ class ProcessMultivarIndice(WPSProcess):
         ##                                        default = './out_icclim.nc')
         
         self.NLevelIn = self.addLiteralInput(identifier = 'NLevel', 
-                                               title = 'Number of level (if 4D variable)',
+                                               title = 'Number of levels (if 4D variable)',
                                                type=type(1),
                                                minOccurs=0)
 
@@ -103,8 +103,8 @@ class ProcessMultivarIndice(WPSProcess):
 
         self.output = self.addComplexOutput(
             identifier="output",
-            title="Climate Indice",
-            abstract="Calculated climate indice with icclim.",
+            title="Climate Index",
+            abstract="Calculated climate index with icclim.",
             formats=[{"mimeType":"application/x-netcdf"}],
             asReference=True)
         
