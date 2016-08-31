@@ -234,6 +234,7 @@ class WeatherRegimesRProcess(WPSProcess):
         ### get the required bbox and time region from resource data
         ############################################################
         
+        self.status.set('start subsetting',17)
         # from flyingpigeon.weatherregimes import get_level
         from flyingpigeon.ocgis_module import call 
 
@@ -243,11 +244,12 @@ class WeatherRegimesRProcess(WPSProcess):
           )
         logger.info('Dataset subset done: %s ' % model_subset)
         
-        self.status.set('dataset subsetted',15)
+        self.status.set('dataset subsetted',19)
         ##############################################
         ### computing anomalies 
         ##############################################
-        
+        self.status.set('computing anomalies ',19)
+
         cycst = anualcycle.split('-')[0]
         cycen = anualcycle.split('-')[0]
         reference = [dt.strptime(cycst,'%Y%m%d'), dt.strptime(cycen,'%Y%m%d')]
