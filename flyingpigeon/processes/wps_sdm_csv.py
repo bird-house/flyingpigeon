@@ -24,7 +24,7 @@ class sdmcsvProcess(WPSProcess):
 	        {"title":"Paper in Journal of Climatology", "href":"http://www.hindawi.com/journals/jcli/2013/787250/"},
 	        {"title":"Tutorial", "href":"http://flyingpigeon.readthedocs.io/en/latest/tutorials/sdm.html"},
                 ],
-            abstract="Species distribution model for tree species based on GBIF presens/absence data and climate indices",
+            abstract="Species distribution model for tree species based on GBIF presence/absence data and climate indices",
             statusSupported=True,
             storeSupported=True
             )
@@ -44,7 +44,7 @@ class sdmcsvProcess(WPSProcess):
         self.gbif = self.addLiteralInput(
             identifier="gbif",
             title="GBIF zip file",
-            abstract="GBIF zip url containing a CSV files with tree locations (e.g.: http://api.gbif.org/v1/occurrence/download/request/0013848-160118175350007.zip)",
+            abstract="GBIF zip url containing CSV files with tree locations (e.g.: http://api.gbif.org/v1/occurrence/download/request/0013848-160118175350007.zip)",
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
@@ -56,7 +56,7 @@ class sdmcsvProcess(WPSProcess):
         self.input_indices = self.addLiteralInput(
             identifier="input_indices",
             title="Indices",
-            abstract="Climate indices related to growth condition of tree species",
+            abstract="Climate indices related to growth conditions of tree species",
             default=['TG_JJA', 'TNn_Jan'],
             type=type(''),
             minOccurs=1,
@@ -67,7 +67,7 @@ class sdmcsvProcess(WPSProcess):
         self.period = self.addLiteralInput(
             identifier="period",
             title="Reference period",
-            abstract="Reference period for climate condition (all = entire timeserie)",
+            abstract="Reference period for climate conditions (all = entire timeseries)",
             default="all",
             type=type(''),
             minOccurs=1,
@@ -94,7 +94,7 @@ class sdmcsvProcess(WPSProcess):
         self.output_csv = self.addComplexOutput(
             identifier="output_csv",
             title="Tree species table",
-            abstract="Extracted CSV file containing the tree species table ",
+            abstract="Extracted CSV file containing the tree species table",
             formats=[{"mimeType":"text/csv"}],
             asReference=True,
             )
@@ -102,7 +102,7 @@ class sdmcsvProcess(WPSProcess):
         self.output_gbif = self.addComplexOutput(
             identifier="output_gbif",
             title="Graphic of GBIF coordinates",
-            abstract="PNG graphic file showing the presents of tree species acording to CSV file",
+            abstract="PNG graphic file showing the presence of tree species according to the CSV file",
             formats=[{"mimeType":"image/png"}],
             asReference=True,
             )
@@ -117,7 +117,7 @@ class sdmcsvProcess(WPSProcess):
              
         self.output_indices = self.addComplexOutput(
             identifier="output_indices",
-            title="Climate indices for growth condition over all timestepps (3D)",
+            title="Climate indices for growth conditions over all timesteps (3D)",
             abstract="Archive (tar/zip) containing calculated climate indices as netCDF files",
             formats=[{"mimeType":"application/x-tar"}, {"mimeType":"application/zip"}],
             asReference=True,
@@ -125,7 +125,7 @@ class sdmcsvProcess(WPSProcess):
          
         self.output_reference = self.addComplexOutput(
             identifier="output_reference",
-            title="Climate indices for growth condition of reference period (2D)",
+            title="Climate indices for growth conditions of reference period (2D)",
             abstract="Archive (tar/zip) containing calculated climate indices as netCDF files",
             formats=[{"mimeType":"application/x-tar"}, {"mimeType":"application/zip"}],
             asReference=True,
@@ -133,8 +133,8 @@ class sdmcsvProcess(WPSProcess):
         
         self.output_prediction = self.addComplexOutput(
             identifier="output_prediction",
-            title="predicted growth condition",
-            abstract="Archive (tar/zip) containing the netCDF files of the predicted growing condition",
+            title="predicted growth conditions",
+            abstract="Archive (tar/zip) containing the netCDF files of the predicted growth conditions",
             formats=[{"mimeType":"application/x-tar"}, {"mimeType":"application/zip"}],
             asReference=True,
             )
