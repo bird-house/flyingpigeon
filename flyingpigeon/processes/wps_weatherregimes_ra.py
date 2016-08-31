@@ -82,7 +82,7 @@ class WeatherRegimesRProcess(WPSProcess):
         self.reanalyses = self.addLiteralInput(
             identifier="reanalyses",
             title="Reanalyses Data",
-            abstract="Choose an reanalyses dataset for comparison",
+            abstract="Choose a reanalyses dataset for comparison",
             default="NCEP_slp",
             type=type(''),
             minOccurs=1,
