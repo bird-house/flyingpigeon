@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class SingleIndicesProcess(WPSProcess):
     """
-    This process calculates a climate indice for the given input netcdf files.
+    This process calculates climate indices for the given input netcdf files.
     """
     def __init__(self):
         WPSProcess.__init__(
@@ -52,7 +52,7 @@ class SingleIndicesProcess(WPSProcess):
 
         self.indices = self.addLiteralInput(
             identifier="indices",
-            title="Indice",
+            title="Index",
             abstract=indices_description(),
             default='SU',
             type=type(''),
@@ -86,8 +86,8 @@ class SingleIndicesProcess(WPSProcess):
         # -------------
         self.output = self.addComplexOutput(
             identifier="output",
-            title="Indice",
-            abstract="Calculated indice as NetCDF file",
+            title="Index",
+            abstract="Calculated index as NetCDF file",
             metadata=[],
             formats=[{"mimeType": "application/x-tar"}],
             asReference=True
