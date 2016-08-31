@@ -153,30 +153,37 @@ class WeatherRegimesRProcess(WPSProcess):
             logger.info('read in the arguments')
             # resources = self.getInputValues(identifier='resources')
             season = self.getInputValues(identifier='season')[0]
-            BBOXObject = self.getInputValues(identifier='BBox')[0]
+            bbox_obj = self.BBox.getValue()
             model_var = self.getInputValues(identifier='reanalyses')[0]
             period = self.getInputValues(identifier='period')[0]            
             anualcycle = self.getInputValues(identifier='anualcycle')[0]
             model, variable = model_var.split('_')
-            
-            
-            bbox = [ BBOXObject.coords[0][0], BOXObject.coords[0][1] , 
-                    BBOXObject.coords[1][0], BBOXObject.coords[1][1] ]
-
-            #bbox = [float(b) for b in bbox.split(',')]
-
-            start = dt.strptime(period.split('-')[0] , '%Y%m%d')
-            end = dt.strptime(period.split('-')[1] , '%Y%m%d')
 
             kappa = int(self.getInputValues(identifier='kappa')[0])
             
-            logger.info('bbox %s' % bbox)
             logger.info('period %s' % str(period))
             logger.info('season %s' % str(season))
             
         except Exception as e: 
             logger.debug('failed to read in the arguments %s ' % e)
         
+
+        try: 
+            start = dt.strptime(period.split('-')[0] , '%Y%m%d')
+            end = dt.strptime(period.split('-')[1] , '%Y%m%d')
+
+            if bbox_obj is not None:
+                logger.info("bbox_obj={0}".format(bbox_obj.coords))
+                bbox = [bbox_obj.coords[0][0], bbox_obj.coords[0][1],bbox_obj.coords[1][0],bbox_obj.coords[1][1]]
+                logger.info("bbox={0}".format(bbox))
+            else:
+                bbox=None
+            
+        except Exception as e: 
+            logger.debug('failed to transform BBOXObject  %s ' % e)
+
+                    
+
         ###########################
         ### set the environment
         ###########################

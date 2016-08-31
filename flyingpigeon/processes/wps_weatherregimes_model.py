@@ -35,27 +35,27 @@ class WeatherRegimesRProcess(WPSProcess):
             formats=[{"mimeType":"application/x-netcdf"}],
             )
 
-        # Literal Input Data
-        # ------------------
-        # self.BBox = self.addBBoxInput(
-        #     identifier="BBox",
-        #     title="Bounding Box",
-        #     abstract="coordinates to define the region for weather classification",
-        #     minOccurs=1,
-        #     maxOccurs=1,
-        #     default=[-80,50,22.5,70],
-        #     crss=['EPSG:4326']
-        #     )
-
-        self.BBox = self.addLiteralInput(
+        Literal Input Data
+        ------------------
+        self.BBox = self.addBBoxInput(
             identifier="BBox",
-            title="Region",
-            abstract="coordinates to define the region: (minlon,maxlon,minlat,maxlat)",
-            default='-80,22.5,50,70', #  cdo syntax: 'minlon,maxlon,minlat,maxlat' ; ocgis syntax (minlon,minlat,maxlon,maxlat)
-            type=type(''),
+            title="Bounding Box",
+            abstract="coordinates to define the region for weather classification",
             minOccurs=1,
             maxOccurs=1,
+            default=[-80,50,22.5,70],
+            crss=['EPSG:4326']
             )
+
+        # self.BBox = self.addLiteralInput(
+        #     identifier="BBox",
+        #     title="Region",
+        #     abstract="coordinates to define the region: (minlon,maxlon,minlat,maxlat)",
+        #     default='-80,22.5,50,70', #  cdo syntax: 'minlon,maxlon,minlat,maxlat' ; ocgis syntax (minlon,minlat,maxlon,maxlat)
+        #     type=type(''),
+        #     minOccurs=1,
+        #     maxOccurs=1,
+        #     )
 
         self.season = self.addLiteralInput(
             identifier="season",
@@ -151,14 +151,10 @@ class WeatherRegimesRProcess(WPSProcess):
             logger.info('read in the arguments')
             resource = self.getInputValues(identifier='resource')
             season = self.getInputValues(identifier='season')[0]
-            bbox = self.getInputValues(identifier='BBox')[0]
-            #model_var = self.getInputValues(identifier='reanalyses')[0]
+            bbox_obj = self.BBox.getValue()
             period = self.getInputValues(identifier='period')[0]            
             anualcycle = self.getInputValues(identifier='anualcycle')[0]
-            # model, var = model_var.split('_')
-            
-            bbox = [float(b) for b in bbox.split(',')]
-
+  
             start = dt.strptime(period.split('-')[0] , '%Y%m%d')
             end = dt.strptime(period.split('-')[1] , '%Y%m%d')
 
@@ -171,11 +167,26 @@ class WeatherRegimesRProcess(WPSProcess):
         except Exception as e: 
             logger.debug('failed to read in the arguments %s ' % e)
        
-                
+
+        try: 
+            start = dt.strptime(period.split('-')[0] , '%Y%m%d')
+            end = dt.strptime(period.split('-')[1] , '%Y%m%d')
+            
+            if bbox_obj is not None:
+                logger.info("bbox_obj={0}".format(bbox_obj.coords))
+                bbox = [bbox_obj.coords[0][0], bbox_obj.coords[0][1],bbox_obj.coords[1][0],bbox_obj.coords[1][1]]
+                logger.info("bbox={0}".format(bbox))
+            else:
+                bbox=None
+            
+        except Exception as e: 
+            logger.debug('failed to transform BBOXObject  %s ' % e)
+
+
         ############################################################    
         ### get the required bbox and time region from resource data
         ############################################################
-        
+        self.status.set('start subsetting',17)
         # from flyingpigeon.weatherregimes import get_level
         
         from flyingpigeon.ocgis_module import call 
@@ -187,11 +198,13 @@ class WeatherRegimesRProcess(WPSProcess):
           geom=bbox, spatial_wrapping='wrap', time_range=time_range,  #conform_units_to=conform_units_to
           )
         logger.info('Dataset subset done: %s ' % model_subset) 
-        self.status.set('dataset subsetted',15)
+        self.status.set('dataset subsetted',19)
         
         ##############################################
         ### computing anomalies 
         ##############################################
+        
+        self.status.set('computing anomalies ',19)
         
         cycst = anualcycle.split('-')[0]
         cycen = anualcycle.split('-')[0]
