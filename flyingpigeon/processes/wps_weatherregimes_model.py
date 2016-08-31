@@ -35,15 +35,14 @@ class WeatherRegimesRProcess(WPSProcess):
             formats=[{"mimeType":"application/x-netcdf"}],
             )
 
-        Literal Input Data
-        ------------------
+        # Literal Input Data
+        # ------------------
         self.BBox = self.addBBoxInput(
             identifier="BBox",
             title="Bounding Box",
             abstract="coordinates to define the region for weather classification",
             minOccurs=1,
             maxOccurs=1,
-            default=[-80,50,22.5,70],
             crss=['EPSG:4326']
             )
 
