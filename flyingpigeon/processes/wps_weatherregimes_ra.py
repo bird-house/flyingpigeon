@@ -28,25 +28,25 @@ class WeatherRegimesRProcess(WPSProcess):
 
         # Literal Input Data
         # ------------------
-        # self.BBox = self.addBBoxInput(
-        #     identifier="BBox",
-        #     title="Bounding Box",
-        #     abstract="coordinates to define the region for weather classification",
-        #     minOccurs=1,
-        #     maxOccurs=1,
-        #     default=[-80,50,22.5,70],
-        #     crss=['EPSG:4326']
-        #     )
-
-        self.BBox = self.addLiteralInput(
+        self.BBox = self.addBBoxInput(
             identifier="BBox",
-            title="Region",
-            abstract="coordinates to define the region: (minlon,maxlon,minlat,maxlat)",
-            default='-80,22.5,50,70', #  cdo syntax: 'minlon,maxlon,minlat,maxlat' ; ocgis syntax (minlon,minlat,maxlon,maxlat)
-            type=type(''),
+            title="Bounding Box",
+            abstract="coordinates to define the region for weather classification ('EPSG:4326')",
             minOccurs=1,
             maxOccurs=1,
+            #default=[-80,50,22.5,70],
+            crss=['EPSG:4326']
             )
+
+        # self.BBox = self.addLiteralInput(
+        #     identifier="BBox",
+        #     title="Region",
+        #     abstract="coordinates to define the region: (minlon,maxlon,minlat,maxlat)",
+        #     default='-80,22.5,50,70', #  cdo syntax: 'minlon,maxlon,minlat,maxlat' ; ocgis syntax (minlon,minlat,maxlon,maxlat)
+        #     type=type(''),
+        #     minOccurs=1,
+        #     maxOccurs=1,
+        #     )
 
         self.season = self.addLiteralInput(
             identifier="season",
@@ -153,13 +153,17 @@ class WeatherRegimesRProcess(WPSProcess):
             logger.info('read in the arguments')
             # resources = self.getInputValues(identifier='resources')
             season = self.getInputValues(identifier='season')[0]
-            bbox = self.getInputValues(identifier='BBox')[0]
+            BBOXObject = self.getInputValues(identifier='BBox')[0]
             model_var = self.getInputValues(identifier='reanalyses')[0]
             period = self.getInputValues(identifier='period')[0]            
             anualcycle = self.getInputValues(identifier='anualcycle')[0]
             model, variable = model_var.split('_')
             
-            bbox = [float(b) for b in bbox.split(',')]
+            
+            bbox = [ BBOXObject.coords[0][0], BOXObject.coords[0][1] , 
+                    BBOXObject.coords[1][0], BBOXObject.coords[1][1] ]
+
+            #bbox = [float(b) for b in bbox.split(',')]
 
             start = dt.strptime(period.split('-')[0] , '%Y%m%d')
             end = dt.strptime(period.split('-')[1] , '%Y%m%d')
