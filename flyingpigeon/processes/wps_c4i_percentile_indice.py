@@ -56,7 +56,7 @@ class ProcessPercentileIndice(WPSProcess):
             )
 
         self.indiceNameIn = self.addLiteralInput(identifier = 'indiceName',
-                                               title = 'Indice name',
+                                               title = 'Index name',
                                                type=type("String"),
                                                minOccurs = 1,
                                                maxOccurs = 1,
@@ -66,7 +66,7 @@ class ProcessPercentileIndice(WPSProcess):
 
 
         self.sliceModeIn = self.addLiteralInput(identifier = 'sliceMode',
-                                               title = 'Slice mode (temporal grouping to apply for calculations)',
+                                               title = 'Slice mode (temporal grouping to apply to calculations)',
                                                type=type("String"),
                                                minOccurs = 1,
                                                maxOccurs = 1,
@@ -78,7 +78,7 @@ class ProcessPercentileIndice(WPSProcess):
         
         self.timeRangeBasePeriodIn = self.addLiteralInput(identifier = 'timeRangeBasePeriod', 
                                                title = 'Time range of base (reference) period, e.g. 1961-01-01/1990-12-31',
-                                               abstract = "Time range is mandatory. Please fill-in.",
+                                               abstract = "Time range is mandatory. Please fill in.",
                                                type=type("String"),
                                                minOccurs = 1,
                                                maxOccurs = 1,
@@ -129,7 +129,7 @@ class ProcessPercentileIndice(WPSProcess):
         
         self.NLevelIn = self.addLiteralInput(
             identifier = 'NLevel', 
-            title = 'Number of level (if 4D variable)',
+            title = 'Number of levels (if 4D variable)',
             type=type(1),
             minOccurs = 0)
 
@@ -137,8 +137,8 @@ class ProcessPercentileIndice(WPSProcess):
 
         self.output = self.addComplexOutput(
             identifier="output",
-            title="Climate Indice",
-            abstract="Calculated climate indice with icclim.",
+            title="Climate Index",
+            abstract="Calculated climate index with icclim.",
             formats=[{"mimeType":"application/x-netcdf"}],
             asReference=True)
         
