@@ -12,13 +12,13 @@ class AnalogsProcess(WPSProcess):
     # definition of this process
     WPSProcess.__init__(self, 
       identifier = "analogs_detection",
-      title="Analogs -- Detection",
+      title="Analogues -- Detection",
       version = "0.2",
       metadata= [
               {"title": "Institut Pierre Simon Laplace", "href": "https://www.ipsl.fr/en/"},
               {"title": "Dokumentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#analog-pressure-pattern"}
               ],
-      abstract="Search for days with analog pressure pattern",
+      abstract="Search for days with analogue pressure pattern",
       statusSupported=True,
       storeSupported=True
       )
@@ -108,7 +108,7 @@ class AnalogsProcess(WPSProcess):
     self.normalize = self.addLiteralInput(
       identifier="normalize",
       title="normalisation",
-      abstract="Normalize by substraction of annual cycle",
+      abstract="Normalize by subtraction of annual cycle",
       default='base',
       type=type(''),
       minOccurs=1,
@@ -130,7 +130,7 @@ class AnalogsProcess(WPSProcess):
     self.outformat = self.addLiteralInput(
       identifier="outformat",
       title="output file format",
-      abstract="Choose the output format for the analog output file",
+      abstract="Choose the output format for the analogue output file",
       default="ascii",
       type=type(''),
       minOccurs=1,
@@ -141,7 +141,7 @@ class AnalogsProcess(WPSProcess):
     self.timewin = self.addLiteralInput(
       identifier="timewin",
       title="Time window",
-      abstract="Nr of days following the analog day",
+      abstract="Nr of days following the analogue day",
       default=30,
       type=type(1),
       minOccurs=0,
@@ -191,7 +191,7 @@ class AnalogsProcess(WPSProcess):
 
     self.analogs = self.addComplexOutput(
       identifier="analogs",
-      title="Analogs File",
+      title="Analogues File",
       abstract="mulit-column text file",
       formats=[{"mimeType":"text/plain"}],
       asReference=True,
