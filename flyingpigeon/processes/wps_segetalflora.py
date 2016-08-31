@@ -46,7 +46,7 @@ class SegetalfloraProcess(WPSProcess):
       type=type(''),
       minOccurs=1,
       maxOccurs=8,
-      allowedValues=["fallow", "intensiv", "extensiv"] # sem
+      allowedValues=["fallow", "intensive", "extensive"] # sem
       )
     
     #self.region = self.addLiteralInput(
