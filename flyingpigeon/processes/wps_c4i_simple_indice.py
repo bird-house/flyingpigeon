@@ -22,7 +22,7 @@ class ProcessSimpleIndice(WPSProcess):
         WPSProcess.__init__(self,
                             identifier = 'wps_c4i_simple_indice', # only mandatary attribute = same file name
                             title = 'c4i -- Simple Climate Indices',
-                            abstract = 'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfal: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50. This processes is also available in Climate4Impact and uses ICCLIM.',
+                            abstract = 'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfall: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50. This processes is also available in Climate4Impact and uses ICCLIM.',
                             version = "1.0",
                             metadata = [
                                 {"title": "ICCLIM" , "href": "http://icclim.readthedocs.io/en/latest/"},
@@ -53,8 +53,8 @@ class ProcessSimpleIndice(WPSProcess):
             )
 
         self.indiceNameIn = self.addLiteralInput(identifier = 'indiceName',
-                                               title = 'Indice name',
-                                               abstract = 'E.g. indice=TG (Mean of mean temperature, variable=tas)',
+                                               title = 'Index name',
+                                               abstract = 'E.g. index=TG (Mean of mean temperature, variable=tas)',
                                                type = type("String"),
                                                minOccurs=1,
                                                maxOccurs=1,
@@ -65,7 +65,7 @@ class ProcessSimpleIndice(WPSProcess):
 
         self.sliceModeIn = self.addLiteralInput(identifier = 'sliceMode',
                                               title = 'Slice mode (temporal grouping)',
-                                              abstract = 'Slice mode (temporal grouping to apply for calculations)',
+                                              abstract = 'Slice mode (temporal grouping to apply to calculations)',
                                               type = type("String"),
                                               default = 'year')
         self.sliceModeIn.values = ["year","month","ONDJFM","AMJJAS","DJF","MAM","JJA","SON"]
@@ -92,7 +92,7 @@ class ProcessSimpleIndice(WPSProcess):
         self.timeRangeIn = self.addLiteralInput(
             identifier = 'timeRange', 
             title = "Time range",
-            abstract = "Optional time range, e.g. 2010-01-01/2012-12-31. If no time range is given then all dates in the file are taken.",
+            abstract = "Optional time range, e.g. 2010-01-01/2012-12-31. If no time range is given, all dates in the file are taken.",
             type=type("String"),
             minOccurs=0,
             maxOccurs=1)
@@ -105,15 +105,15 @@ class ProcessSimpleIndice(WPSProcess):
         ##                                        default = 'out_icclim.nc')
         
         self.NLevelIn = self.addLiteralInput(identifier = 'NLevel', 
-                                                title = 'Number of level',
-                                                abstract = 'Optional number of level (if 4D variable)',
+                                                title = 'Number of levels',
+                                                abstract = 'Optional number of levels (if 4D variable)',
                                                 minOccurs = 0,
                                                 type=type(1))
 
         self.output = self.addComplexOutput(
             identifier="output",
-            title="Climate Indice",
-            abstract="Calculated climate indice with icclim.",
+            title="Climate Index",
+            abstract="Calculated climate index with icclim.",
             formats=[{"mimeType":"application/x-netcdf"}],
             asReference=True,
         )
