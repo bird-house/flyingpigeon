@@ -65,7 +65,6 @@ class SingleIndicesProcess(WPSProcess):
             identifier="polygons",
             title="Country subset",
             abstract=str(countries_longname()),
-            default='DEU',
             type=type(''),
             minOccurs=0,
             maxOccurs=len(countries()),
@@ -93,6 +92,14 @@ class SingleIndicesProcess(WPSProcess):
             asReference=True
             )
 
+        self.output_netcdf = self.addComplexOutput(
+            title="one dataset as example",
+            abstract="NetCDF file to be dispayed on WMS",
+            formats=[{"mimeType":"application/x-netcdf"}],
+            asReference=True,
+            identifier="ncout",
+            )
+
     def execute(self):
         import os
         from flyingpigeon.utils import archive
@@ -106,15 +113,15 @@ class SingleIndicesProcess(WPSProcess):
         polygons = self.polygons.getValue()
         mosaic = self.mosaic.getValue()
         groupings = self.groupings.getValue()  # getInputValues(identifier='groupings')
-
         polygons = self.polygons.getValue()
-        # if len(polygons)==0:
-        #     polygons = None
+        
+        if polygons==None:
+            self.status.set('No countries selected, entire domain will be calculated' , 10)
 
         logger.debug('indices=%s', indices)
         logger.debug('groupings=%s', groupings)
         logger.debug('num files=%s', len(ncs))
-        self.status.set('starting: indices=%s' % indices, 0)
+        self.status.set('processing indices : %s' % indices, 12)
 
         results = squeeze(calc_indice_simple(
             resource=ncs,
@@ -125,8 +132,8 @@ class SingleIndicesProcess(WPSProcess):
             dir_output=path.curdir,
             ))
 
-        if not results:
-            raise Exception("failed to produce results")
+        # if not results:
+        #     raise Exception("failed to produce results")
 
         self.status.set('indices calculated', 90)
         logger.debug('results type: %s', type(results))
@@ -150,4 +157,8 @@ class SingleIndicesProcess(WPSProcess):
             raise Exception(msg)
 
         self.output.setValue(archive_indices)
+
+        i = next((i for i, x in enumerate(results.tolist()) if x), None)
+        self.output_netcdf.setValue(str(results[i]))
+        
         self.status.set('done', 100)
