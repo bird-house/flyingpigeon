@@ -119,7 +119,7 @@ class AnalogsProcess(WPSProcess):
     self.distance = self.addLiteralInput(
       identifier="dist",
       title="Distance",
-      abstract="Distance function to define analogues",
+      abstract="Distance function to define analogs",
       default='euclidean',
       type=type(''),
       minOccurs=1,
