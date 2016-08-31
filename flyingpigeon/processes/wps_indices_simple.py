@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class SingleIndicesProcess(WPSProcess):
     """
-    This process calculates climate indices for the given input netcdf files.
+    This process calculates climate indices for the given input datasets.
     """
     def __init__(self):
         WPSProcess.__init__(
@@ -112,8 +112,8 @@ class SingleIndicesProcess(WPSProcess):
         indices = self.indices.getValue()
         polygons = self.polygons.getValue()
         mosaic = self.mosaic.getValue()
-        groupings = self.groupings.getValue()  # getInputValues(identifier='groupings')
-        polygons = self.polygons.getValue()
+        groupings = self.groupings.getValue() 
+
         
         if polygons==None:
             self.status.set('No countries selected, entire domain will be calculated' , 10)
@@ -132,9 +132,6 @@ class SingleIndicesProcess(WPSProcess):
             dir_output=path.curdir,
             ))
 
-        # if not results:
-        #     raise Exception("failed to produce results")
-
         self.status.set('indices calculated', 90)
         logger.debug('results type: %s', type(results))
         logger.debug('indices files: %s ' % results.tolist())
@@ -142,13 +139,6 @@ class SingleIndicesProcess(WPSProcess):
         try:
 
             archive_indices = archive(results.tolist())
-
-            #(fp_tarf, tarf) = mkstemp(dir=".", suffix='.tar')
-            #tar = tarfile.open(tarf, "w")
-
-            #for result in results:
-                #tar.add( result , arcname = os.path.basename(result))
-            #tar.close()
 
             logger.info('archive prepared')
         except Exception as e:
