@@ -55,7 +55,7 @@ class ClippingProcess(WPSProcess):
         self.variable = self.addLiteralInput(
             identifier="variable",
             title="Variable",
-            abstract="Variable to be expected in the input files (Variable will be detected if not set, )",
+            abstract="Variable to be expected in the input files (Variable will be detected if not set)",
             default=None,
             type=type(''),
             minOccurs=0,
