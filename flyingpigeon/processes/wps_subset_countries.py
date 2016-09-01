@@ -41,7 +41,16 @@ class ClippingProcess(WPSProcess):
             maxOccurs=len(countries()),
             allowedValues=countries() #REGION_EUROPE #COUNTRIES # 
             )
-
+        
+        self.mosaic = self.addLiteralInput(
+            identifier="mosaic",
+            title="Mosaic",
+            abstract="If Mosaic is checked, selected polygons will be merged to one Mosaic for each input file",
+            default=False,
+            type=type(False),
+            minOccurs=0,
+            maxOccurs=1,
+            )
 
         # self.dimension_map = self.addLiteralInput(
         #     identifier="dimension_map",
@@ -58,16 +67,6 @@ class ClippingProcess(WPSProcess):
             abstract="Variable to be expected in the input files (Variable will be detected if not set)",
             default=None,
             type=type(''),
-            minOccurs=0,
-            maxOccurs=1,
-            )
-
-        self.mosaic = self.addLiteralInput(
-            identifier="mosaic",
-            title="Mosaic",
-            abstract="If Mosaic is checked, selected polygons will be merged to one Mosaic for each input file",
-            default=False,
-            type=type(False),
             minOccurs=0,
             maxOccurs=1,
             )
