@@ -234,8 +234,19 @@
 
                 d0 = makeDateObj($("#datepicker0"));
                 d1 = makeDateObj($("#datepicker1"));
+
+                console.log("d0, d1: ", d0, d1)
+                console.log("RangedFilter: ", dc.filters.RangedFilter(d0, d1))
+
+                //ageChart.filterAll();ageChart.filter(dc.filters.RangedFilter([-2.5, -2.5], [6.5, 6.5]));dc.redrawAll();
+
+                // //poiChart.filterAll();
+                // poiChart.filter(null);
+                // poiChart.filter(dc.filters.RangedFilter(d0, d1));
+                // console.log("poiChart.filter() after range: ", poiChart.filter())
+                // dc.redrawAll();
              
-                poiDimension.filterAll();
+                poiDimension.resetAll();
                 resetChart(poiChart);
                 poiDimension.filter([d0, d1]);
                 poiChart.filter(dc.filters.RangedFilter(d0, d1));
@@ -246,6 +257,9 @@
             function makeDateObj(dateRaw) {
                 var dateString = dateRaw.val().split("/");
                 var dateObj = new Date(dateString[2], dateString[1] - 1, dateString[0]);
+
+                console.log("dateString: ", dateString)
+                console.log("dateObj: ", dateObj)
 
                 return dateObj;
 
@@ -283,6 +297,9 @@
                 .on("filtered", getBrushDates)
                 .on('zoomed', function(chart, filter) {
 
+                    console.log("chart.filters(): ", chart.filters())
+                    console.log("chart.filters()[0][0]: ", chart.filters()[0][0])
+
                     deltaYear = chart.filters()[0][1].getFullYear() - chart.filters()[0][0].getFullYear();
 
                     //handle weird case where zoom is stuck at same deltaYear 
@@ -314,9 +331,6 @@
                     //Put poiChart brush dates in manual datepicker text boxes
                     $("#datepicker0").val(datepickerDateFormat(poiChart.filters()[0][0]));
                     $("#datepicker1").val(datepickerDateFormat(poiChart.filters()[0][1]));
-
-                    poiDates[0] = slpDateFormat(poiChart.filters()[0][0]).toUpperCase();
-                    poiDates[1] = slpDateFormat(poiChart.filters()[0][1]).toUpperCase();
                 }
             }
 
@@ -415,10 +429,14 @@
                 .dimension(filter)
                 .group(filter.groupAll())
                 .html({
-                    some: '<strong>%filter-count</strong> selected out of <strong>%total-count</strong> records' +
-                        ' | <a href=\'javascript: resetAll();\'>Reset All</a>',
+                    some: '<strong>%filter-count</strong> selected out of <strong>%total-count</strong> records',
                     all: 'All records selected. Please click on the graph to apply filters.'
                 });
+                // .html({
+                //     some: '<strong>%filter-count</strong> selected out of <strong>%total-count</strong> records' +
+                //         + ' | <a href=\'javascript: resetAll();\'>Reset All</a>',
+                //     all: 'All records selected. Please click on the graph to apply filters.'
+                // });
 
             //-----------------------------------
             dc.renderAll();
@@ -539,7 +557,7 @@
             <div class="row">
                 <div class="dc-chart col-md-8">
                     <div class="dc-chart-title">Period of Interest (manual selection, format dd/mm/yyyy)</div>
-                    <a id="dateReset" class="reset" href="javascript:poiChart.filterAll();dc.redrawAll();resetChart(poiChart);" style="display: none;">reset</a>
+                    <a id="dateReset" class="reset" href="javascript:poiChart.filterAll();dc.redrawAll();resetChart(poiChart);" style="display: none;">reset</a>                    
                     <span class="reset" style="display: none;"></span>
                     <br>
                     <p>
@@ -552,9 +570,12 @@
                 <div class="dc-chart col-md-8" id="chart-poi">
                     <div class="dc-chart-title">Period of Interest (chart selection)</div>
                     <a class="reset" href="javascript:poiChart.filterAll();dc.redrawAll();resetChart(poiChart);" style="display: none;">reset</a>
+                    <!--<a class="preset" href="javascript:poiChart.filterAll();poiChart.filter((dc.filters.RangedFilter(new Date(2014,06,10), new Date(2014,06,15))));dc.redrawAll();">10/07/2014:15/07/2014</a><!--same as using datePicker--> -->
                     <span class="reset" style="display: none;"><span class="filter"></span></span>
                     <br>
                 </div>
+
+                <!--new Date(dateString[2], dateString[1] - 1, dateString[0]);-->
 
                 <div class="dc-chart col-md-1" id="chart-seasons">
                     <div class="dc-chart-title">Season</div>
