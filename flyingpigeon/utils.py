@@ -391,7 +391,7 @@ def get_time(nc_files, format = None):
 
     :param nc_file: NetCDF file(s)
     :param fromat: if a fromat is provided (e.g format='%Y%d%m') values will be converted to string  
-    :return format: netcdftime._datetime.datetime
+    :return : list of timesteps 
     """
     if type(nc_files) != list:
         nc_files = [nc_files]
