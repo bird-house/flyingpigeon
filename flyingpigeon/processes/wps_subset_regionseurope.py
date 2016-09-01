@@ -45,6 +45,16 @@ class subset_regionseuropeProcess(WPSProcess):
             allowedValues=europeanregions
             )
 
+        self.mosaic = self.addLiteralInput(
+            identifier="mosaic",
+            title="Mosaic",
+            abstract="If Mosaic is checked, selected polygons will be clipped as a mosaic for each input file.",
+            default=False,
+            type=type(False),
+            minOccurs=0,
+            maxOccurs=1,
+            )
+
 
         # self.dimension_map = self.addLiteralInput(
         #     identifier="dimension_map",
@@ -61,16 +71,6 @@ class subset_regionseuropeProcess(WPSProcess):
             abstract="Variable to be expected in the input files (variable will be detected if not set).",
             default=None,
             type=type(''),
-            minOccurs=0,
-            maxOccurs=1,
-            )
-
-        self.mosaic = self.addLiteralInput(
-            identifier="mosaic",
-            title="Mosaic",
-            abstract="If Mosaic is checked, selected polygons will be clipped as a mosaic for each input file.",
-            default=False,
-            type=type(False),
             minOccurs=0,
             maxOccurs=1,
             )
