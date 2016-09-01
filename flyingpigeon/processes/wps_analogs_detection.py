@@ -13,7 +13,7 @@ class AnalogsProcess(WPSProcess):
     WPSProcess.__init__(self, 
       identifier = "analogs_detection",
       title="Analogues -- Detection",
-      version = "0.2",
+      version = "0.9",
       metadata= [
               {"title": "Institut Pierre Simon Laplace", "href": "https://www.ipsl.fr/en/"},
               {"title": "Documentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#analog-pressure-pattern"}

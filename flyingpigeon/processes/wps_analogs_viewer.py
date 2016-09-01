@@ -10,7 +10,7 @@ class AnalogsviewerProcess(WPSProcess):
         WPSProcess.__init__(self,
             identifier="analogs_viewer",
             title="Analogues -- Viewer",
-            version = "0.1",
+            version = "0.9",
             abstract="Visualisation of text output of analogue process",
             statusSupported=True,
             storeSupported=True)

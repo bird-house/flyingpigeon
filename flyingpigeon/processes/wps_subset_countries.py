@@ -15,7 +15,7 @@ class ClippingProcess(WPSProcess):
             self, 
             identifier = "subset_countries",
             title="Subset countries",
-            version = "0.4",
+            version = "0.9",
             abstract="Returns only the selected polygon for each input dataset",
             statusSupported=True,
             storeSupported=True

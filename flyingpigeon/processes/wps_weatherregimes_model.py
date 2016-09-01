@@ -16,7 +16,7 @@ class WeatherRegimesRProcess(WPSProcess):
             self,
             identifier = "weatherregimes_model",
             title = "Weather Regimes -- Climate model data",
-            version = "0.1",
+            version = "0.9",
             metadata=[
                 {"title":"Weather Regimes -- Climate model data"},
                 ],

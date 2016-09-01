@@ -7,7 +7,7 @@ class plottimeseriesProcess(WPSProcess):
         WPSProcess.__init__(self, 
             identifier = "plot_timeseries",
             title="Timeseries plots",
-            version = "0.3",
+            version = "0.9",
             metadata= [
                     {"title": 'Plot timeseries'}
                     ],

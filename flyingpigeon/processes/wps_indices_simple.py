@@ -18,7 +18,7 @@ class SingleIndicesProcess(WPSProcess):
             self,
             identifier="indices_simple",
             title="Climate indices -- Simple",
-            version="0.3",
+            version="0.9",
             abstract="Climate indices based on one single input variable.",
             metadata=[
                 {'title': 'Documentation', 'href': 'http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#climate-indices'},
