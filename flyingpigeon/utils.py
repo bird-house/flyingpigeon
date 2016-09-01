@@ -385,11 +385,12 @@ def get_timestamps(nc_file):
 
     return (from_timestamp, to_timestamp)
 
-def get_time(nc_files):
+def get_time(nc_files, format = None):
     """
     returns all timestamps of given netcdf file as datetime list.
 
     :param nc_file: NetCDF file(s)
+    :param fromat: if a fromat is provided (e.g format='%Y%d%m') values will be converted to string  
     :return format: netcdftime._datetime.datetime
     """
     if type(nc_files) != list:
@@ -398,6 +399,12 @@ def get_time(nc_files):
     try:
       mds = MFDataset(nc_files)
       time = mds.variables['time']
+    except:
+      msg = 'failed to get time'
+      logger.exception(msg)
+      raise Exception(msg)
+    
+    try:
       if (hasattr(time , 'units') and hasattr(time , 'calendar')) == True:
         timestamps = num2date(time[:], time.units , time.calendar)
       elif hasattr(time , 'units'):
@@ -405,8 +412,15 @@ def get_time(nc_files):
       else:
         timestamps = num2date(time[:])
       mds.close()
+      try: 
+        if format != None:
+          timestamps = [t.strftime(format = format) for t in timestamps ]
+      except:
+        msg = 'failed to convert times to string'
+        print msg
+        logger.debug(msg)    
     except:
-      msg = 'failed to get time'
+      msg = 'failed to convert time'
       logger.exception(msg)
       raise Exception(msg)
     return timestamps
