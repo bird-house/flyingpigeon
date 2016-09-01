@@ -16,7 +16,7 @@ class AnalogsProcess(WPSProcess):
       version = "0.2",
       metadata= [
               {"title": "Institut Pierre Simon Laplace", "href": "https://www.ipsl.fr/en/"},
-              {"title": "Dokumentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#analog-pressure-pattern"}
+              {"title": "Documentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#analog-pressure-pattern"}
               ],
       abstract="Search for days with analogue pressure pattern",
       statusSupported=True,
@@ -67,7 +67,7 @@ class AnalogsProcess(WPSProcess):
          
     self.dateSt = self.addLiteralInput(
       identifier="dateSt",
-      title="Start date of analyse period",
+      title="Start date of analysis period",
       abstract="This is a Date: 2013-07-15",
       default="2013-07-15",
       type=type(date(2013,7,15)),
@@ -77,7 +77,7 @@ class AnalogsProcess(WPSProcess):
     
     self.dateEn = self.addLiteralInput(
       identifier="dateEn",
-      title="End date of analyse period",
+      title="End date of analysis period",
       abstract="This is a Date: 2013-12-31",
       default="2014-12-31",
       type=type(date(2014,12,31)),
@@ -107,7 +107,7 @@ class AnalogsProcess(WPSProcess):
     
     self.normalize = self.addLiteralInput(
       identifier="normalize",
-      title="normalisation",
+      title="normalization",
       abstract="Normalize by subtraction of annual cycle",
       default='base',
       type=type(''),
@@ -130,7 +130,7 @@ class AnalogsProcess(WPSProcess):
     self.outformat = self.addLiteralInput(
       identifier="outformat",
       title="output file format",
-      abstract="Choose the output format for the analogue output file",
+      abstract="Choose the format for the analogue output file",
       default="ascii",
       type=type(''),
       minOccurs=1,
@@ -141,7 +141,7 @@ class AnalogsProcess(WPSProcess):
     self.timewin = self.addLiteralInput(
       identifier="timewin",
       title="Time window",
-      abstract="Nr of days following the analogue day",
+      abstract="Number of days following the analogue day",
       default=30,
       type=type(1),
       minOccurs=0,

@@ -51,22 +51,22 @@ class subset_continentsProcess(WPSProcess):
         #     maxOccurs=1
         #     )
 
-        self.variable = self.addLiteralInput(
-            identifier="variable",
-            title="Variable",
-            abstract="Variable to be expected in the input files (Variable will be detected if not set)",
-            default=None,
-            type=type(''),
-            minOccurs=0,
-            maxOccurs=1,
-            )
-
         self.mosaic = self.addLiteralInput(
             identifier="mosaic",
             title="Mosaic",
             abstract="If Mosaic is checked, selected polygons will be merged to one Mosaic for each input file",
             default=False,
             type=type(False),
+            minOccurs=0,
+            maxOccurs=1,
+            )
+
+        self.variable = self.addLiteralInput(
+            identifier="variable",
+            title="Variable",
+            abstract="Variable to be expected in the input files (Variable will be detected if not set)",
+            default=None,
+            type=type(''),
             minOccurs=0,
             maxOccurs=1,
             )

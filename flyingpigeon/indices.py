@@ -197,8 +197,8 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
                     outputs.append( tmp )
                   except Exception as e:
                     msg = 'could not calc indice %s for domain in %s' %( indice, key)
-                    logger.exception( msg )
-                    raise Exception(msg)   
+                    logger.debug( msg )
+                    # raise Exception(msg)   
                 else:
                   try:
                     prefix = key.replace(variable, indice).replace('_day_','_%s_' % grouping )
@@ -215,21 +215,22 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
                     outputs.append( tmp )
                   except Exception as e:
                     msg = 'could not calc indice %s for domain in %s' %( indice, key)
-                    logger.exception( msg )
-                    raise Exception(msg)
-                logger.info('indice file calculated')      
+                    logger.debug( msg )
+                    # raise Exception(msg)
+                logger.info('indice file calculated: %s' % tmp)      
               except Exception as e:
                 msg = 'could not calc indice %s for key %s and grouping %s' %  (indice, key, grouping)
-                logger.exception(msg)
-                raise Exception(msg)  
+                logger.debug(msg)
+                # raise Exception(msg)  
           except Exception as e:
             msg = 'could not calc indice %s for key %s' % ( indice, key)
-            logger.exception(msg)
-            raise Exception(msg)        
+            logger.debug(msg)
+            # raise Exception(msg)        
       except Exception as e:
         msg = 'could not calc key %s' % key
-        logger.exception(msg)
-        raise Exception(msg)
+        logger.debug(msg)
+        # raise Exception(msg)
+    logger.info('indice outputs %s ' % outputs)    
     return outputs
 
 def calc_indice_percentile(resources=[], variable=None, 
@@ -478,11 +479,11 @@ def calc_indice_percentile(resources=[], variable=None,
                     #outputs.append(tmp)
                     #logger.info('indice file calcualted %s ' % (tmp))
                   #except Exception as e:
-                    #logger.exception('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s' %  (indice, key, polygon, grouping, e ))
+                    #logger.debug('could not calc indice %s for key %s, polygon %s and calc_grouping %s : %s' %  (indice, key, polygon, grouping, e ))
               #except Exception as e:
-                #logger.exception('could not calc indice %s for key %s and calc_grouping %s : %s' % ( indice, key, polygon, e ))
+                #logger.debug('could not calc indice %s for key %s and calc_grouping %s : %s' % ( indice, key, polygon, e ))
           #except Exception as e:
-            #logger.exception('could not calc indice %s for key %s: %s'%  (indice, key, e ))
+            #logger.debug('could not calc indice %s for key %s: %s'%  (indice, key, e ))
       #except Exception as e:
-        #logger.exception('could not calc key %s: %s' % (key, e))
+        #logger.debug('could not calc key %s: %s' % (key, e))
     #return outputs
