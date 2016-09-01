@@ -130,7 +130,7 @@
 
                 });
                 points = data;
-                fullRange = (maxDate - minDate) / (1000 * 60 * 60 * 24); //range in days
+                fullRange = (maxDate - minDate) / (1000 * 60 * 60 * 24); //range in days                
 
                 initCrossfilter();
 
@@ -235,8 +235,8 @@
                 d0 = makeDateObj($("#datepicker0"));
                 d1 = makeDateObj($("#datepicker1"));
 
-                console.log("d0, d1: ", d0, d1)
-                console.log("RangedFilter: ", dc.filters.RangedFilter(d0, d1))
+                // console.log("d0, d1: ", d0, d1)
+                // console.log("RangedFilter: ", dc.filters.RangedFilter(d0, d1))
 
                 //ageChart.filterAll();ageChart.filter(dc.filters.RangedFilter([-2.5, -2.5], [6.5, 6.5]));dc.redrawAll();
 
@@ -258,8 +258,8 @@
                 var dateString = dateRaw.val().split("/");
                 var dateObj = new Date(dateString[2], dateString[1] - 1, dateString[0]);
 
-                console.log("dateString: ", dateString)
-                console.log("dateObj: ", dateObj)
+                // console.log("dateString: ", dateString)
+                // console.log("dateObj: ", dateObj)
 
                 return dateObj;
 
@@ -271,6 +271,14 @@
             var saveLevel = 0;
             var init_domain0 = dateFormat.parse("21000101"),
                 init_domain1 = dateFormat.parse("2100101");
+
+            //Determine date resolution of poiChart
+            //http://stackoverflow.com/questions/23953019/dc-js-group-top5-not-working-in-chart
+            function getDateGrouping() {
+                return fullRange < 365 ? poiDayGrouping : poiGrouping;
+            }
+            var dateGroup = getDateGrouping();
+
             poiChart
                 .width(780)
                 .height(200)
@@ -282,8 +290,8 @@
                 })
                 .mouseZoomable(true)
                 //.brushOn(false)    
-                .dimension(poiDimension)
-                .group(poiGrouping)
+                .dimension(poiDimension)                
+                .group(dateGroup)                
                 .transitionDuration(500)
                 .centerBar(true)
                 .filter(dc.filters.RangedFilter(init_date0, init_date1))
@@ -297,14 +305,16 @@
                 .on("filtered", getBrushDates)
                 .on('zoomed', function(chart, filter) {
 
-                    console.log("chart.filters(): ", chart.filters())
-                    console.log("chart.filters()[0][0]: ", chart.filters()[0][0])
-
                     deltaYear = chart.filters()[0][1].getFullYear() - chart.filters()[0][0].getFullYear();
+
+                    //if analysis period < 1 year, set poiChart in day grouping mode
+                    if (deltaYear === 0) {                        
+                        chart.group(poiDayGrouping);
+                    }
 
                     //handle weird case where zoom is stuck at same deltaYear 
                     //while user keeps zooming out
-                    if (saveLevel - deltaYear === 0) {
+                    else if (saveLevel - deltaYear === 0) {                        
                         //only reset to default domain when no change in domain is happening at either ends
                         if (init_domain0.getTime() === chart.filters()[0][0].getTime() &&
                             init_domain1.getTime() === chart.filters()[0][1].getTime()) {
@@ -314,7 +324,7 @@
                             chart.render();
                         }
                     } else if (deltaYear < 3) {
-                        chart.group(poiDayGrouping)
+                        chart.group(poiDayGrouping);
                     } else if (deltaYear > 3) {
                         chart.group(poiGrouping);
                     }
@@ -326,7 +336,7 @@
                 })
                 .xAxis().tickFormat();
 
-            function getBrushDates() {
+            function getBrushDates() {                
                 if (poiChart.filters().length > 0) {
                     //Put poiChart brush dates in manual datepicker text boxes
                     $("#datepicker0").val(datepickerDateFormat(poiChart.filters()[0][0]));
@@ -570,7 +580,7 @@
                 <div class="dc-chart col-md-8" id="chart-poi">
                     <div class="dc-chart-title">Period of Interest (chart selection)</div>
                     <a class="reset" href="javascript:poiChart.filterAll();dc.redrawAll();resetChart(poiChart);" style="display: none;">reset</a>
-                    <!--<a class="preset" href="javascript:poiChart.filterAll();poiChart.filter((dc.filters.RangedFilter(new Date(2014,06,10), new Date(2014,06,15))));dc.redrawAll();">10/07/2014:15/07/2014</a><!--same as using datePicker--> -->
+                    <!--<a class="preset" href="javascript:poiChart.filterAll();poiChart.filter((dc.filters.RangedFilter(new Date(2014,06,10), new Date(2014,06,15))));dc.redrawAll();">10/07/2014:15/07/2014</a><!--same as using datePicker-->
                     <span class="reset" style="display: none;"><span class="filter"></span></span>
                     <br>
                 </div>
