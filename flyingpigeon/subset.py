@@ -55,7 +55,7 @@ def masking(resource, mask, prefix=None, dir_output=None):
 def clipping(resource=[], variable=None, dimension_map=None, calc=None,  output_format='nc',
   calc_grouping= None, time_range=None, time_region=None,  historical_concatination=True, prefix=None, spatial_wrapping='wrap', polygons=None, mosaic=False, dir_output=None, memory_limit=None):
   """ returns list of clipped netCDF files
-  possible entries: 
+  
   :param resource: list of input netCDF files
   :param variable: variable (string) to be used in netCDF
   :param dimesion_map: specify a dimension map input netCDF has unconventional dimension
