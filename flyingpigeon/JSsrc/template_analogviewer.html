@@ -438,15 +438,15 @@
             dataCount
                 .dimension(filter)
                 .group(filter.groupAll())
+                // .html({
+                //     some: '<strong>%filter-count</strong> selected out of <strong>%total-count</strong> records',
+                //     all: 'All records selected. Please click on the graph to apply filters.'
+                // })
                 .html({
-                    some: '<strong>%filter-count</strong> selected out of <strong>%total-count</strong> records',
+                    some: '<strong>%filter-count</strong> selected out of <strong>%total-count</strong> records'
+                        + ' | <a href=\'javascript: resetAll();\'>Reset All</a>',
                     all: 'All records selected. Please click on the graph to apply filters.'
                 });
-                // .html({
-                //     some: '<strong>%filter-count</strong> selected out of <strong>%total-count</strong> records' +
-                //         + ' | <a href=\'javascript: resetAll();\'>Reset All</a>',
-                //     all: 'All records selected. Please click on the graph to apply filters.'
-                // });
 
             //-----------------------------------
             dc.renderAll();
