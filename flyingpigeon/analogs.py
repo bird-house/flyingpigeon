@@ -24,6 +24,7 @@ def get_configfile(files, timewin=1, varname='slp', seacyc=False,
   :param bbox: cooridates for the region to be analysed
   :param calccor:
   :param silent: handling of log file output
+
   :returns: configuration file
   """
   from datetime import datetime as dt
@@ -78,8 +79,11 @@ def get_configfile(files, timewin=1, varname='slp', seacyc=False,
 def subset(resource=[], bbox='-80,50,22.5,70'):
   """
   returns a subset
+
   :param resource: netCDF input files of one dataset
   :param bbox: bounding box
+
+  :return: subset netCDF file 
   """
   from tempfile import mkstemp
   from cdo import Cdo 
@@ -98,6 +102,7 @@ def subset(resource=[], bbox='-80,50,22.5,70'):
 def seacyc(archive, simulation, method='base'):
   """
   substracts the seasonal cycle
+
   :param archive: netCDF file containing the reference period
   :param simulation: netCDF file containg the period to be analysed
   :param method: method to generat the seasonal cycle files
@@ -105,6 +110,7 @@ def seacyc(archive, simulation, method='base'):
                  sim = seasonal cycle generated from period to be analysed
                  own = seasonal cycle generated for both time windows
                  
+  :returns: two netCDF files for analyse and reference period     
   """
   from shutil import copy
   from cdo import Cdo 
