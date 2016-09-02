@@ -17,6 +17,10 @@ class ClippingProcess(WPSProcess):
             title="Subset countries",
             version = "0.9",
             abstract="Returns only the selected polygon for each input dataset",
+            metadata= [
+                {"title": "Le Laboratoire des Sciences du Climat et de l'Environnement", "href": "http://www.lsce.ipsl.fr/en/index.php"},
+                {"title": "Documentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
+                ],
             statusSupported=True,
             storeSupported=True
             )

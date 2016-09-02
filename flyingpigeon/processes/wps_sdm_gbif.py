@@ -19,10 +19,11 @@ class SDMProcess(WPSProcess):
             identifier = "sdm_gbifsearch",
             title = "SDM -- GBIF search",
             version = "0.9",
-            metadata=[
-                {"title":"SDM with GBIF search", "href":"http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#species-distribution-model"},
-                {"title":"Paper in Journal of Climatology", "href":"http://www.hindawi.com/journals/jcli/2013/787250/"},
+            metadata= [
+                {"title": "Bayerische Landesanstalt für Wald und Forstwirtschaft", "href": "http://www.lwf.bayern.de/"},
+                {"title": "Documentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
                 ],
+
             abstract="Species distribution model for tree species based on GBIF presence/absence data and climate indices",
             statusSupported=True,
             storeSupported=True

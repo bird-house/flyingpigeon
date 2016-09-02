@@ -18,7 +18,6 @@ class WeatherRegimesRProcess(WPSProcess):
             title = "Weather Regimes -- Projection of Weather Regimes",
             version = "0.9",
             metadata=[
-                {"title":"Weather Regimes -- Projection of Weather Regimes"},
                 {"title": "Le Laboratoire des Sciences du Climat et de l'Environnement", "href": "http://www.lsce.ipsl.fr/en/index.php"},
                 {"title": "Documentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
                 ],

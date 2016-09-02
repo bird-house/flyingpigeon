@@ -12,6 +12,10 @@ class AnalogsviewerProcess(WPSProcess):
             title="Analogues -- Viewer",
             version = "0.9",
             abstract="Visualisation of text output of analogue process",
+            metadata=[
+                {"title": "Le Laboratoire des Sciences du Climat et de l'Environnement", "href": "http://www.lsce.ipsl.fr/en/index.php"},
+                {"title": "Documentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
+                ]
             statusSupported=True,
             storeSupported=True)
 

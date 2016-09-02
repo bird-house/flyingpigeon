@@ -11,7 +11,11 @@ class SegetalfloraProcess(WPSProcess):
       identifier = "segetalflora",
       title="Segetal Flora",
       version = "0.9",
-      metadata=[{"title": "Institut Pierre Simon Laplace", "href": "https://www.ipsl.fr/en/"}],
+      
+      metadata= [
+                {"title": "Julius Kühn Institut", "href": "http://www.jki.bund.de/"},
+                {"title": "Documentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
+                ],
       abstract="Species biodiversity of segetal flora. Imput files: variable:tas , domain: EUR-11 or EUR-44",
       statusSupported=True,
       storeSupported=True
