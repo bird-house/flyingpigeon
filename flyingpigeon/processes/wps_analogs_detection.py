@@ -141,8 +141,8 @@ class AnalogsProcess(WPSProcess):
     self.timewin = self.addLiteralInput(
       identifier="timewin",
       title="Time window",
-      abstract="Number of days following the analogue day",
-      default=30,
+      abstract="Number of days following the analogue day the distance will be averaged",
+      default=1,
       type=type(1),
       minOccurs=0,
       maxOccurs=1,
