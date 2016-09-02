@@ -13,16 +13,18 @@ def get_configfile(files, timewin=1, varname='slp', seacyc=False,
   Generating the configuration file for CASTf90 calculation
 
   :param files: input files (reference period and period for analyses)
-  :param timewin:
+  :param timewin: number of days the distance is averaged
   :param varname: variable name in input files
-  :param seacyc:
-  :param cycsmooth:
+  :param seacyc: remove the smoothed seasonal cycle from the input fields (True/False)
+  :param cycsmooth: smoothing window for the seasonal cycle in days (should be an odd integer)
   :param nanalog: Number of analogs to be detect
-  :param distfun:
+  :param distfun: Name of the distance function used to calculate the analogs. 
+   (Supported values: 'rms' 'mahalanobis', 'S1' (Teweles and wobus), 'cosine' (correlation) 
+   and - still experimental - 'of' (displacement and amplitude score based on optical flow image distortion)
   :param outformat: file format for output ('txt' or 'nc' (default))
-  :param period: reference period for analogs to be picked
+  :param period: reference period for analogs to be picked (for netcdf output attributes)
   :param bbox: cooridates for the region to be analysed
-  :param calccor:
+  :param calccor: calculate rank correlation for analog fields (True/False)
   :param silent: handling of log file output
 
   :returns: configuration file
