@@ -20,7 +20,7 @@ class SDMProcess(WPSProcess):
             title = "SDM -- GBIF search",
             version = "0.9",
             metadata= [
-                {"title": "Bayerische Landesanstalt für Wald und Forstwirtschaft", "href": "http://www.lwf.bayern.de/"},
+                {"title": "Bayerische Landesanstalt fuer Wald und Forstwirtschaft", "href": "http://www.lwf.bayern.de/"},
                 {"title": "Documentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
                 ],
 

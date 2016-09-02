@@ -20,7 +20,7 @@ class sdmcsvProcess(WPSProcess):
             title = "SDM -- csv table",
             version = "0.9",
             metadata=[
-                {"title":"Bayerische Landesanstalt für Wald und Forstwirtschaft", "href": "http://www.lwf.bayern.de/"},
+                {"title":"Bayerische Landesanstalt fuer Wald und Forstwirtschaft", "href": "http://www.lwf.bayern.de/"},
                 {"title":"Documentation", "href":"http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#species-distribution-model"},
 	              {"title":"Paper in Journal of Climatology", "href":"http://www.hindawi.com/journals/jcli/2013/787250/"},
 	              {"title":"Tutorial", "href":"http://flyingpigeon.readthedocs.io/en/latest/tutorials/sdm.html"},

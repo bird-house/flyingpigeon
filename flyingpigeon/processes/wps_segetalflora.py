@@ -13,7 +13,7 @@ class SegetalfloraProcess(WPSProcess):
       version = "0.9",
       
       metadata= [
-                {"title": "Julius Kühn Institut", "href": "http://www.jki.bund.de/"},
+                {"title": "Julius Kuehn Institut", "href": "http://www.jki.bund.de/"},
                 {"title": "Documentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
                 ],
       abstract="Species biodiversity of segetal flora. Imput files: variable:tas , domain: EUR-11 or EUR-44",
