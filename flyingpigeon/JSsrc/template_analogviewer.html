@@ -72,6 +72,8 @@
 
             d3.tsv("analogues_placeholder.json", function(data) {
 
+                //console.log("data: ", data)
+
                 minDate = dateFormat.parse(data[0].dateRef); //first date in file
                 maxDate = dateFormat.parse(data[Object.keys(data).length - 1].dateRef); //last date in file
 
@@ -100,6 +102,7 @@
                 disRange = [Math.floor(data[0].Dis/100)*100, 
                             Math.ceil(data[Object.keys(data).length - 1].Dis/100)*100];
 
+                var posCount = 0, negCount = 0;            
                 data.forEach(function(d, idx) {
 
                     d.dateRef = dateFormat.parse(d.dateRef); //resolution = day
@@ -118,9 +121,18 @@
                     //else if (yr == 2016) d.dateAnlg = "2016";
 
                     //bin correlation and distance
-                    d.Corr = d3.format(",.1f")(corrBinWidth * Math.round(d.Corr / corrBinWidth));
-                    d.Dis = disBinWidth * Math.round(d.Dis / disBinWidth);
-
+                    //d.Corr = d3.format(",.1f")(corrBinWidth * Math.round(d.Corr / corrBinWidth));
+//                    d.Corr = (corrBinWidth * Math.round(d.Corr / corrBinWidth));
+                    // d.Dis = disBinWidth * Math.round(d.Dis / disBinWidth);
+                    // if (d.Corr <= 0 && d.Corr >= -0.05) {
+                    //     negCount = negCount + 1;
+                    // } else if (d.Corr >= 0 && d.Corr <= 0.05) {
+                    //     posCount = posCount + 1;
+                    // }
+                    d.Corr = (corrBinWidth * Math.round(d.Corr / corrBinWidth)).toFixed(1)/1;
+                    
+                    //d.Corr = +d.Corr; //necessary if using d3.format(",.1f")
+               
                     //seasons
                     month = d.dateRef.getMonth() + 1; //Jan is 0    
                     if (month === 12 || month === 1 || month === 2) d.Season = 0; //DJF
@@ -129,6 +141,8 @@
                     else if (month >= 9 && month <= 11) d.Season = 3; //SON
 
                 });
+                // console.log("posCount: ", posCount)
+                // console.log("negCount: ", negCount)
                 points = data;
                 fullRange = (maxDate - minDate) / (1000 * 60 * 60 * 24); //range in days                
 
@@ -174,6 +188,7 @@
 
             //-----------------------------------  
             corrDimension = filter.dimension(function(d) {
+                //console.log("d.Corr in corrDimension: ", d.Corr)
                 return d.Corr;
             });
             corrGrouping = corrDimension.group();
@@ -439,14 +454,10 @@
                 .dimension(filter)
                 .group(filter.groupAll())
                 .html({
-                    some: '<strong>%filter-count</strong> selected out of <strong>%total-count</strong> records',
+                    some: '<strong>%filter-count</strong> selected out of <strong>%total-count</strong> records'
+                        + ' | <a href=\'javascript: resetAll();\'>Reset All</a>',
                     all: 'All records selected. Please click on the graph to apply filters.'
                 });
-                // .html({
-                //     some: '<strong>%filter-count</strong> selected out of <strong>%total-count</strong> records' +
-                //         + ' | <a href=\'javascript: resetAll();\'>Reset All</a>',
-                //     all: 'All records selected. Please click on the graph to apply filters.'
-                // });
 
             //-----------------------------------
             dc.renderAll();
