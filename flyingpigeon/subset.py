@@ -31,11 +31,14 @@ def countries_longname():
 
 def masking(resource, mask, prefix=None, dir_output=None):
   """
-  Returns a list of masked netCDF file(s) path(es).  
+  Returns a list of masked netCDF file(s) path(es).
+
   :param resource: string path to netCDF resource
   :param mask: predifined mask ('EUR-11', 'EUR-44')
   :param prefix:  prefix for filename. If prefix is not set, a filename will be created
   :param dir_output: directory for output file. If dir_output is not set, a tempdir will be created
+
+  :returns str: path to netCDF file
   """
   cdo = Cdo()
   
@@ -66,6 +69,10 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  output_
   :param polygons: list of polygons to be used. if more than 1 in the list, a appropriate mosaic will be clipped
   :param output_format: output_format (default='nc')
   :param dir_output: specify a output location
+  :param time_range: [start,end] of time subset
+  :param time_region: year months or days to be extracted in the time series
+
+  :returns list: path to clipped files 
   """
   
   from flyingpigeon.utils import get_variable, drs_filename
@@ -142,8 +149,12 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  output_
 def get_dimension_map(resource): 
   """ returns the dimension map for a file, required for ocgis processing. 
   file must have a DRS conform filename (see: utils.drs_filename())
-  
+
+  OBSOLETE!
+
   :param resource: str input file path
+
+  :returns dic: dimension map dictionary
   """
 
   file_name = os.path.basename(resource)
@@ -188,8 +199,11 @@ def get_dimension_map(resource):
 
 def get_shp_column_values(geom, columnname): 
   """ returns a list of all entries the shapefile columnname
+
   :param geom: name of the shapefile
   :param columnname: Column name to be intereted
+
+  returns list: columnnames
   """
   from ocgis import env, ShpCabinetIterator
   #import ocgis
@@ -207,8 +221,11 @@ def get_shp_column_values(geom, columnname):
 def get_ugid(polygons=None, geom=None):
     """
     returns geometry id of given polygon in a given shapefile.
+
     :param polygons: string or list of the region polygons 
     :param geom: available shapefile possible entries: '50m_country', 'NUTS2'
+
+    :returns list: ugids used by ocgis
     """
     from ocgis import env, ShpCabinetIterator
     #from ocgis import env
@@ -249,7 +266,10 @@ def get_ugid(polygons=None, geom=None):
 def get_geom(polygon=None):
   """ retuns the approriate shapefile (geom) for one given polygon abbreviation
   
-  :param polygon: polygon shortname"""
+  :param polygon: polygon shortname
+
+  returns str: name of shapefile (geom)
+  """
   
   if polygon == None:
     geom = None

@@ -39,7 +39,6 @@ def get_configfile(files, timewin=1, varname='slp', seacyc=False,
   calccor=str(calccor)
   silent=str(silent)
 
-
   # write stuff to configuration file
   ip, config_file = mkstemp(dir='.',suffix='.txt')
 
@@ -109,13 +108,12 @@ def seacyc(archive, simulation, method='base'):
                  base = seasonal cycle generated from reference period
                  sim = seasonal cycle generated from period to be analysed
                  own = seasonal cycle generated for both time windows
-                 
+
   :returns: two netCDF files for analyse and reference period     
   """
   from shutil import copy
   from cdo import Cdo 
   cdo = Cdo()
-
 
   if method == 'base':
     seasoncyc_base = cdo.ydaymean(input=archive, output='seasoncyc_base.nc' )

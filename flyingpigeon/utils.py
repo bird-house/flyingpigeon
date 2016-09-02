@@ -13,6 +13,11 @@ GROUPING = [ "day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA",
             "Jan", 'Feb', "Mar", "Apr", "May", "Jun", 'Jul', "Aug", 'Sep', 'Okt', 'Nov', 'Dec' ]
 
 def make_dirs(directory):
+  """
+  creates a dictionary if not already existing
+
+  :param direcory: direcory path
+  """
   if not os.path.exists(directory):
     os.makedirs(directory)
 
@@ -55,7 +60,8 @@ def archive(resources, format='tar', dir_output='.', mode='w'):
 
                   for foramt='zip':
                   read "r", write "w" or append "a"
-  :return archive: archive path/filname.ext
+
+  :return str: archive path/filname.ext
   """
   from tempfile import mkstemp
   from os.path import basename
@@ -120,7 +126,8 @@ def calc_grouping(grouping):
   translate time grouping abreviation (e.g 'JJA') into the apprpriate ocgis calc_grouping syntax
 
   :param grouping: time  group abreviation allowed values: "yr", "mon", "sem", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON"
-  :return: calc_grouping
+  
+  :returns list: calc_grouping conform to ocgis syntax
   """
   calc_grouping = ['year'] # default year
   if grouping == 'yr':
@@ -193,7 +200,8 @@ def drs_filename(nc_file, skip_timestamp=False, skip_format=False ,
                       the variable parameter has to be defined (default: )
                       example: variable='tas'
     :param rename_file: rename the file. (default: False)
-    :return: DRS filename
+
+    :returns str: DRS filename
     """
     from os import path, rename
 
@@ -257,17 +265,22 @@ def drs_filename(nc_file, skip_timestamp=False, skip_format=False ,
 
 def get_variable(nc_files):
     """
-    returns the variable name (str)
+    detects processable varable name in netCDF file
+
     :param nc_files: NetCDF file(s)
+
+    :returns str: variable name
     """
     rds = RequestDataset(nc_files)
     return rds.variable
 
 def get_coordinates(nc_file):
   """
-  returns the values of latitude and longitude
+  reads out the values of latitude and longitude in a netCDF file
+
   :param nc_file: netCDF resource file
-  :returns lats, lons: netCDF4 data objectes
+
+  :returns list, list: latitudes , longitudes
   """
   lats = None
   lons = None
@@ -285,9 +298,11 @@ def get_coordinates(nc_file):
 
 def get_domain(nc_file):
   """
-  returns the domain
-  :param nc_file: NetCDF file
-  :return: domain
+  returns the domain of a netCDF file
+
+  :param nc_file: netCDF file (metadata quality checked!)
+  
+  :return str: domain
   """
   ds = Dataset(nc_file)
 
@@ -308,9 +323,11 @@ def get_domain(nc_file):
 
 def get_frequency(nc_file):
   """
-  returns the frequency (see also metadata.get_frequency)
+  returns the frequency as set in the metadata (see also metadata.get_frequency)
+
   :param nc_file: NetCDF file
-  :return: frequency
+  
+  :return str: frequency
   """
   ds = Dataset(nc_file)
 
@@ -328,8 +345,11 @@ def get_frequency(nc_file):
 def get_values(nc_files, variable=None):
   """
   returns the values for a list of files of files belonging to one Dataset
+
   :param nc_files: list of files
   :param variable: variable to be picked from the files (if not set, variable will be detected)
+  
+  :returs numpy.array: values
   """
   from numpy import squeeze
   if variable == None:
@@ -341,8 +361,11 @@ def get_values(nc_files, variable=None):
 def get_timerange(nc_files):
   """
   returns from/to timestamp of given netcdf file(s).
+
   :param nc_files: path to netCDF file(s)
+  
   :returns netcdf.dateime.dateime: start, end
+
   """
   start = end = None
 

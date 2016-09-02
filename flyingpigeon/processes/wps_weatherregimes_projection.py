@@ -3,6 +3,7 @@ Processes for Weather Classification
 Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 """
 from flyingpigeon.datafetch import _PRESSUREDATA_
+from flyingpigeon.weatherregimes import _TIMEREGIONS_
 from pywps.Process import WPSProcess
 # from datetime import  date 
 
@@ -18,6 +19,8 @@ class WeatherRegimesRProcess(WPSProcess):
             version = "0.9",
             metadata=[
                 {"title":"Weather Regimes -- Projection of Weather Regimes"},
+                {"title": "Le Laboratoire des Sciences du Climat et de l'Environnement", "href": "http://www.lsce.ipsl.fr/en/index.php"},
+                {"title": "Documentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
                 ],
             abstract="Weather Regimes detection based on trained reference statistics",
             statusSupported=True,
@@ -101,8 +104,7 @@ class WeatherRegimesRProcess(WPSProcess):
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
-            allowedValues= ['JJA','SON','DJF','MAM','all',
-            'JJAS','DJFM','MAMJ','FMA','SOND', 'SONDJF','MAMJJA']
+            allowedValues= _TIMEREGIONS_.keys()
             )
 
         self.period = self.addLiteralInput(
