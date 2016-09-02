@@ -121,6 +121,13 @@
                     d.Corr = d3.format(",.1f")(corrBinWidth * Math.round(d.Corr / corrBinWidth));
                     d.Dis = disBinWidth * Math.round(d.Dis / disBinWidth);
 
+                    d.Corr = +d.Corr; //necessary otherwise becomes string and data obj will not crossfilter
+
+                    if (d.Corr === -0.0) {
+                        console.log("d.Corr: ", d.Corr)
+                        console.log("d.dateRef: ", d.dateRef)
+                    }
+               
                     //seasons
                     month = d.dateRef.getMonth() + 1; //Jan is 0    
                     if (month === 12 || month === 1 || month === 2) d.Season = 0; //DJF
@@ -438,10 +445,6 @@
             dataCount
                 .dimension(filter)
                 .group(filter.groupAll())
-                // .html({
-                //     some: '<strong>%filter-count</strong> selected out of <strong>%total-count</strong> records',
-                //     all: 'All records selected. Please click on the graph to apply filters.'
-                // })
                 .html({
                     some: '<strong>%filter-count</strong> selected out of <strong>%total-count</strong> records'
                         + ' | <a href=\'javascript: resetAll();\'>Reset All</a>',
