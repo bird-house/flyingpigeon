@@ -18,7 +18,7 @@ class subset_regionseuropeProcess(WPSProcess):
             self, 
             identifier = "subset_regionseurope",
             title="Subset European Regions",
-            version = "0.3",
+            version = "0.9",
             abstract="Returns the selected European administrative region defined in the GADM database (v2.5) for each input dataset.",
             statusSupported=True,
             storeSupported=True

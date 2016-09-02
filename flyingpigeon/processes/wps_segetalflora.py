@@ -10,7 +10,7 @@ class SegetalfloraProcess(WPSProcess):
     WPSProcess.__init__(self, 
       identifier = "segetalflora",
       title="Segetal Flora",
-      version = "0.3",
+      version = "0.9",
       metadata=[{"title": "Institut Pierre Simon Laplace", "href": "https://www.ipsl.fr/en/"}],
       abstract="Species biodiversity of segetal flora. Imput files: variable:tas , domain: EUR-11 or EUR-44",
       statusSupported=True,

@@ -14,26 +14,31 @@ args <- commandArgs(trailingOnly = TRUE)
 
 rworkspace <- args[1]
 Rsrc <- args[2]
-infile <- args[3] # '/home/estimr2/nhempelmann/ea4e5ea8-3df9-11e6-b034-0756a0266937.nc' #args[3]
+infile <- args[3] 
 varname <- args[4]
+time <- args[5]
 #output_graphics <- args[5]
-file_pca <- args[5]
-file_Rdat <- args[6]
-output_pca <- args[7]
-output_Rdat <- args[8]
-output_frec_percent <- args[9]
-seas <- args[10]
-y1 <- as.numeric(args[11])
-y2 <- as.numeric(args[12])
-modelname <- args[13]
+file_pca <- args[6]
+file_Rdat <- args[7]
+output_pca <- args[8]
+output_Rdat <- args[9]
+output_frec_percent <- args[10]
+seas <- args[11]
+y1 <- as.numeric(args[12])
+y2 <- as.numeric(args[13])
+modelname <- args[14]
 
+# Convert variables 
 yr1 = as.numeric(y1)
 yr2 = as.numeric(y2)
+timeout  <- as.integer(unlist(strsplit(time,",")))
 
 source(paste(Rsrc,"classnorm.R",sep=""))
 source(paste(Rsrc,"libraryregimes.R",sep=""))
 
 print(' Arguments functions loaded ')
+print('Time from netCDF:')
+print(timeout)
 
 ## load EOFs for thereference period 
 load(file_Rdat)
@@ -45,7 +50,10 @@ nc = nc_open(infile)
 data=ncvar_get(nc,varname)
 lon=ncvar_get(nc,'lon')
 lat=ncvar_get(nc,'lat')
-time=ncvar_get(nc,'time')
+# time=ncvar_get(nc,'time')
+# print('Time from netCDF R:')
+# print(time)
+
 nx=dim(data)[2];ny=dim(data)[1]
 nt=dim(data)[3]
 # reshape order lat-lon-time
@@ -57,78 +65,78 @@ nc_close(nc)
 dat.m=dat
 print( 'data sucessfully loaded' )
 
-#reproduce the time
-ical=366 
-
-if(ical==366){
-  year=c()
-  month=c()
-  day=c()
-  monthdum=c(rep(1,31),rep(2,28),rep(3,31),rep(4,30),rep(5,31),rep(6,30),
-             rep(7,31),rep(8,31),rep(9,30),rep(10,31),rep(11,30),rep(12,31))
-  monthdumB=c(rep(1,31),rep(2,29),rep(3,31),rep(4,30),rep(5,31),rep(6,30),
-              rep(7,31),rep(8,31),rep(9,30),rep(10,31),rep(11,30),rep(12,31))
-  daydum=c((1:31),(1:28),(1:31),(1:30),(1:31),(1:30),(1:31),(1:31),(1:30),(1:31),(1:30),(1:31))
-  daydumB=c((1:31),(1:29),(1:31),(1:30),(1:31),(1:30),(1:31),(1:31),(1:30),(1:31),(1:30),(1:31))
-  yr=c(yr1:yr2)
-  bi=c(1:(yr2-yr1+1))
-  for(i in 1:(yr2-yr1+1)){
-    if ((yr[i]/4)==trunc(yr[i]/4)){
-      bi[i]=yr[i]
-      year=c(year,rep(yr[i],length=length(monthdumB)))
-      month=c(month,monthdumB)
-      day=c(day,daydumB)}
-    
-    else{
-      bi[i]=NaN
-      year=c(year,rep(yr[i],length=length(monthdum)))
-      month=c(month,monthdum)
-      day=c(day,daydum)}
-  }
-  month=array(month[1:(length(month))])
-  day=array(day[1:(length(day))])
-  year=array(year[1:(length(year))])
-  conv.time=list(month=month,day=day,year=year)
-  time=array((year)*10000+month*100+day)
-}
-if(ical==365){
-  year=c()
-  month=c()
-  day=c()
-  monthdum=c(rep(1,31),rep(2,28),rep(3,31),rep(4,30),rep(5,31),rep(6,30),
-             rep(7,31),rep(8,31),rep(9,30),rep(10,31),rep(11,30),rep(12,31))
-  daydum=c((1:31),(1:28),(1:31),(1:30),(1:31),(1:30),(1:31),(1:31),(1:30),(1:31),(1:30),(1:31))
-  yr=c(yr1:yr2)
-  for(i in 1:(yr2-yr1+1)){
-    year=c(year,rep(yr[i],length=length(monthdum)))
-      month=c(month,monthdum)
-      day=c(day,daydum)}
-  month=array(month[1:(length(month))])
-  day=array(day[1:(length(day))])
-  year=array(year[1:(length(year))])
-  conv.time=list(month=month,day=day,year=year)
-  time=array((year)*10000+month*100+day)
-}
-if (ical==360){
-  ndyear=360
-  nmyear=12
-  lmo=1:12
-  nyear=yr2-yr1+1
-  day=rep(1:30,times=nmyear*nyear)
-  month=rep(rep(lmo,each=30),times=nyear)
-  year=rep(y1:y2,each=ndyear)
-  conv.time=list(year=year,month=month,day=day)
-  time=array((year)*10000+month*100+day)
-}
+# #reproduce the time
+# ical=366 
+# 
+# if(ical==366){
+#   year=c()
+#   month=c()
+#   day=c()
+#   monthdum=c(rep(1,31),rep(2,28),rep(3,31),rep(4,30),rep(5,31),rep(6,30),
+#              rep(7,31),rep(8,31),rep(9,30),rep(10,31),rep(11,30),rep(12,31))
+#   monthdumB=c(rep(1,31),rep(2,29),rep(3,31),rep(4,30),rep(5,31),rep(6,30),
+#               rep(7,31),rep(8,31),rep(9,30),rep(10,31),rep(11,30),rep(12,31))
+#   daydum=c((1:31),(1:28),(1:31),(1:30),(1:31),(1:30),(1:31),(1:31),(1:30),(1:31),(1:30),(1:31))
+#   daydumB=c((1:31),(1:29),(1:31),(1:30),(1:31),(1:30),(1:31),(1:31),(1:30),(1:31),(1:30),(1:31))
+#   yr=c(yr1:yr2)
+#   bi=c(1:(yr2-yr1+1))
+#   for(i in 1:(yr2-yr1+1)){
+#     if ((yr[i]/4)==trunc(yr[i]/4)){
+#       bi[i]=yr[i]
+#       year=c(year,rep(yr[i],length=length(monthdumB)))
+#       month=c(month,monthdumB)
+#       day=c(day,daydumB)}
+#     
+#     else{
+#       bi[i]=NaN
+#       year=c(year,rep(yr[i],length=length(monthdum)))
+#       month=c(month,monthdum)
+#       day=c(day,daydum)}
+#   }
+#   month=array(month[1:(length(month))])
+#   day=array(day[1:(length(day))])
+#   year=array(year[1:(length(year))])
+#   conv.time=list(month=month,day=day,year=year)
+#   time=array((year)*10000+month*100+day)
+# }
+# if(ical==365){
+#   year=c()
+#   month=c()
+#   day=c()
+#   monthdum=c(rep(1,31),rep(2,28),rep(3,31),rep(4,30),rep(5,31),rep(6,30),
+#              rep(7,31),rep(8,31),rep(9,30),rep(10,31),rep(11,30),rep(12,31))
+#   daydum=c((1:31),(1:28),(1:31),(1:30),(1:31),(1:30),(1:31),(1:31),(1:30),(1:31),(1:30),(1:31))
+#   yr=c(yr1:yr2)
+#   for(i in 1:(yr2-yr1+1)){
+#     year=c(year,rep(yr[i],length=length(monthdum)))
+#       month=c(month,monthdum)
+#       day=c(day,daydum)}
+#   month=array(month[1:(length(month))])
+#   day=array(day[1:(length(day))])
+#   year=array(year[1:(length(year))])
+#   conv.time=list(month=month,day=day,year=year)
+#   time=array((year)*10000+month*100+day)
+# }
+# if (ical==360){
+#   ndyear=360
+#   nmyear=12
+#   lmo=1:12
+#   nyear=yr2-yr1+1
+#   day=rep(1:30,times=nmyear*nyear)
+#   month=rep(rep(lmo,each=30),times=nyear)
+#   year=rep(y1:y2,each=ndyear)
+#   conv.time=list(year=year,month=month,day=day)
+#   time=array((year)*10000+month*100+day)
+# }
 
 #select season
 # seas="JJA"
 
-l.seas=list(JJA=6:8,SON=9:11,MAM=3:5,DJF=c(12,1,2))
-ISEAS=which(conv.time$month %in% l.seas[[seas]] &
-              conv.time$year %in% c(yr1:yr2))
-#time during the selected period and season
-timeout=time[ISEAS]
+# l.seas=list(JJA=6:8,SON=9:11,MAM=3:5,DJF=c(12,1,2))
+# ISEAS=which(conv.time$month %in% l.seas[[seas]] &
+#               conv.time$year %in% c(yr1:yr2))
+# time during the selected period and season
+# timeout=time[ISEAS]
 
 ## Calculate projections for EOFs(PC empirics)
 ## Normalization by latitude
@@ -154,7 +162,8 @@ best.reg=apply(rms.reg,1,which.min)
 dist.reg=sqrt(apply(rms.reg,1,min)/nrow(dat.m))
 
 #Frequencies of Weather regimes for each "seas"
-timeout=time[ISEAS]
+# timeout=time[ISEAS]
+
 yyyy=floor(timeout/10000)
 mm=floor(timeout/100) %% 100
 yyyy[mm==12]=yyyy[mm==12]+1
@@ -176,9 +185,6 @@ for(i in 1:nreg){
 WR.freq <- as.data.frame(reg.freq*100)
 WR.freq$year <- uyyyy
 
-#imposing names. Attention!! check names!
-#if(seas=="JJA"){name.reg=c("AR","BLO","NAO-","AL")}
-#if(seas=="DJF"){name.reg=c("AR","NAO+","BLO","NAO-")}
 name.reg=c("Reg.1","Reg.2","Reg.3","Reg.4")
 names(WR.freq) <- c(name.reg,"year")
 total=nrow(WR.freq)+1
@@ -190,8 +196,9 @@ write.table(file=output_frec_percent,WR.freq,quote=FALSE,row.names=FALSE)
 ## Saving the workspace 
 save.image(file=output_Rdat) #lon,lat,time,
 
-# print ('frequencies saved to file')
+proc.time() - ptm
 
+# print ('frequencies saved to file')
 # ## Plotting Weather regimes of the model
 # # fname=paste(Results,"projNCEP_regimes_",modelname,"_",yr1,"-",yr2,"_",seas,".pdf",sep="")
 # pdf(file=output_graphics, height=8, width=11)
@@ -223,10 +230,9 @@ save.image(file=output_Rdat) #lon,lat,time,
 # library(gridExtra)
 # grid.newpage()
 # grid.table(WR.freq)
-
 # dev.off()
 
-proc.time() - ptm 
+# proc.time() - ptm 
 
 
 

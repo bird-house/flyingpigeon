@@ -10,7 +10,7 @@ class FetchProcess(WPSProcess):
         WPSProcess.__init__(self,
             identifier="fetch",
             title="Download Resources",
-            version = "0.1",
+            version = "0.9",
             abstract="This process downloads resources (limited to 50GB) \
             to the local file system of the birdhouse compute provider",
             statusSupported=True,

@@ -15,7 +15,7 @@ class subset_continentsProcess(WPSProcess):
             self, 
             identifier = "subset_continents",
             title="Subset continents",
-            version = "0.3",
+            version = "0.9",
             abstract="Returns only the selected polygon for each input dataset",
             statusSupported=True,
             storeSupported=True

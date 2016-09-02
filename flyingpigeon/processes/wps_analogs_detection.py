@@ -13,7 +13,7 @@ class AnalogsProcess(WPSProcess):
     WPSProcess.__init__(self, 
       identifier = "analogs_detection",
       title="Analogues -- Detection",
-      version = "0.2",
+      version = "0.9",
       metadata= [
               {"title": "Institut Pierre Simon Laplace", "href": "https://www.ipsl.fr/en/"},
               {"title": "Documentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#analog-pressure-pattern"}
@@ -180,7 +180,6 @@ class AnalogsProcess(WPSProcess):
     # define the outputs
     ### ###################
 
-
     self.config = self.addComplexOutput(
       identifier="config",
       title="Config File",
@@ -196,6 +195,15 @@ class AnalogsProcess(WPSProcess):
       formats=[{"mimeType":"text/plain"}],
       asReference=True,
       )
+    
+    self.output_netcdf = self.addComplexOutput(
+      title="prepared netCDF",
+      abstract="NetCDF file with subset and normaized values",
+      formats=[{"mimeType":"application/x-netcdf"}],
+      asReference=True,
+      identifier="ncout",
+      )
+
 
   def execute(self):
     import time # performance test
@@ -289,12 +297,6 @@ class AnalogsProcess(WPSProcess):
     try:
       input = reanalyses(start = start.year, end = end.year, variable=var, dataset=dataset)
 
-      # if experiment == 'NCEP':
-      # elif   experiment == 'None':
-      #   input = self.getInputValues(identifier='resource')
-      # else:
-      #   logger.error('input experiment not found')
-      #nc_subset = analogs.subset(resource=input, )
       nc_subset = call(resource=input, variable=var, geom=bbox, spatial_wrapping='wrap')
     except Exception as e :
       msg = 'failed to fetch or subset input files %s' % e
@@ -381,6 +383,8 @@ class AnalogsProcess(WPSProcess):
     self.status.set('preparting output', 99)
     self.config.setValue( config_file )
     self.analogs.setValue( output_file )
+    self.output_netcdf.setValue( simulation )
+    
     self.status.set('execution ended', 100)
 
     logger.debug("total execution took %s seconds.", time.time() - process_start_time)

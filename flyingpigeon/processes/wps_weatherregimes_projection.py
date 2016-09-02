@@ -15,7 +15,7 @@ class WeatherRegimesRProcess(WPSProcess):
             self,
             identifier = "weatherregimes_projection",
             title = "Weather Regimes -- Projection of Weather Regimes",
-            version = "0.1",
+            version = "0.9",
             metadata=[
                 {"title":"Weather Regimes -- Projection of Weather Regimes"},
                 ],
@@ -204,7 +204,7 @@ class WeatherRegimesRProcess(WPSProcess):
         # fetching trainging data 
         ############################
         
-        from flyingpigeon.utils import download
+        from flyingpigeon.utils import download, get_time
         from os.path import abspath
         
         try:
@@ -259,6 +259,8 @@ class WeatherRegimesRProcess(WPSProcess):
           
           yr1 = start.year
           yr2 = end.year
+          time = get_time(model_season, format='%Y%m%d')
+
           #ip, output_graphics = mkstemp(dir=curdir ,suffix='.pdf')
           ip, file_pca = mkstemp(dir=curdir ,suffix='.txt')
           ip, file_class = mkstemp(dir=curdir ,suffix='.Rdat')
@@ -267,7 +269,8 @@ class WeatherRegimesRProcess(WPSProcess):
           args = ['Rscript', join(Rsrc,Rfile), '%s/' % curdir, 
                   '%s/' % Rsrc, 
                   '%s' % model_season, 
-                  '%s' % variable, 
+                  '%s' % variable,
+                  '%s' % str(time).strip("[]").replace("'","").replace(" ",""),
             #      '%s' % output_graphics,
                   '%s' % dat, 
                   '%s' % Rdat, 
@@ -276,8 +279,9 @@ class WeatherRegimesRProcess(WPSProcess):
                   '%s' % output_frec,      
                   '%s' % season, 
                   '%s' % start.year, 
-                  '%s' % end.year,
+                  '%s' % end.year,                  
                   '%s' % 'MODEL']
+
           logger.info('Rcall builded')
         except Exception as e: 
           msg = 'failed to build the R command %s' % e

@@ -18,7 +18,7 @@ class SDMProcess(WPSProcess):
             self,
             identifier = "sdm_gbifsearch",
             title = "SDM -- GBIF search",
-            version = "0.4",
+            version = "0.9",
             metadata=[
                 {"title":"SDM with GBIF search", "href":"http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#species-distribution-model"},
                 {"title":"Paper in Journal of Climatology", "href":"http://www.hindawi.com/journals/jcli/2013/787250/"},

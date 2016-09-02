@@ -10,7 +10,7 @@ class SubsetPointsProcess(WPSProcess):
     WPSProcess.__init__(self, 
       identifier = "subset_points",
       title="Subset Points",
-      version = "0.3",
+      version = "0.9",
       metadata= [
               {"title": "Institut Pierre Simon Laplace", "href": "https://www.ipsl.fr/en/"}
               ],
