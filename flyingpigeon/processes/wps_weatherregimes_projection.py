@@ -26,7 +26,6 @@ class WeatherRegimesRProcess(WPSProcess):
             storeSupported=True
             )
 
-
         self.resource = self.addComplexInput(
             identifier="resource",
             title="Resource",

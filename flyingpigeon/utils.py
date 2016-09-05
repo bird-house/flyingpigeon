@@ -489,6 +489,31 @@ def aggregations(nc_files):
         aggregations[key]['filename'] = "%s_%s-%s.nc" % (key, start, end)
     return aggregations
 
+
+def rename_variable(resource, oldname=None, newname='newname'):
+  """
+  Change the variable name of a netCDF variable
+  
+  :param resource: path to netCDF input file
+  :param oldname: Varaible name to be changed
+  :param newname: variable name to be given
+  :retunrs str: path to resource
+  """
+  try:
+    if oldname == None:
+      oldname = get_variable(resource)
+    if oldname != newname:
+      from netCDF4 import Dataset
+      ds = Dataset(resource, mode='a')
+      ds.renameVariable(oldname, newname)
+      ds.close()
+      logger.info('varname %s in netCDF renamed to %s' % (oldname, newname))
+  except Exception as e:
+    msg = 'failed to rename variable in target files %s ' % e
+    logger.debug(msg)
+    raise Exception(msg)
+
+
 def sort_by_time(resource):
     from ocgis.util.helpers import get_sorted_uris_by_time_dimension
 
