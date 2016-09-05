@@ -72,16 +72,16 @@
 
             d3.tsv("analogues_placeholder.json", function(data) {
 
-                //console.log("data: ", data)
-
                 minDate = dateFormat.parse(data[0].dateRef); //first date in file
                 maxDate = dateFormat.parse(data[Object.keys(data).length - 1].dateRef); //last date in file
 
-                //Set initial date range to display  
+                //Set initial date range to display
+                //All reference dates should be shifted from midnight to noon
                 init_date0 = dateFormat.parse(data[0].dateRef);
+                init_date0.setHours(12);
                 //Add one year to initial date. If > maxDate, use maxDate
                 if (dateFormat.parse(data[0].dateRef).addDays(365).getTime() < maxDate.getTime()) {
-                  init_date1 = dateFormat.parse(data[0].dateRef).addDays(365);  
+                  init_date1 = dateFormat.parse(data[0].dateRef).addDays(365);
                 } else {
                   init_date1 = maxDate;
                 }
@@ -102,10 +102,10 @@
                 disRange = [Math.floor(data[0].Dis/100)*100, 
                             Math.ceil(data[Object.keys(data).length - 1].Dis/100)*100];
 
-                var posCount = 0, negCount = 0;            
                 data.forEach(function(d, idx) {
 
                     d.dateRef = dateFormat.parse(d.dateRef); //resolution = day
+                    d.dateRef.setHours(12);
                     d.Dis = +d.Dis;
                     d.Corr = +d.Corr;
 
@@ -117,21 +117,12 @@
                     else if (yr >= 1976 && yr <= 1985) d.dateAnlg = "1976-1985";
                     else if (yr >= 1986 && yr <= 1995) d.dateAnlg = "1986-1995";
                     else if (yr >= 1996 && yr <= 2005) d.dateAnlg = "1996-2005";
-                    else if (yr >= 2006 && yr <= 2015) d.dateAnlg = "2006-2015";                    
-                    //else if (yr == 2016) d.dateAnlg = "2016";
+                    else if (yr >= 2006 && yr <= 2015) d.dateAnlg = "2006-2015";
+                    else if (yr == 2016) d.dateAnlg = "2016";
 
                     //bin correlation and distance
-                    //d.Corr = d3.format(",.1f")(corrBinWidth * Math.round(d.Corr / corrBinWidth));
-//                    d.Corr = (corrBinWidth * Math.round(d.Corr / corrBinWidth));
-                    // d.Dis = disBinWidth * Math.round(d.Dis / disBinWidth);
-                    // if (d.Corr <= 0 && d.Corr >= -0.05) {
-                    //     negCount = negCount + 1;
-                    // } else if (d.Corr >= 0 && d.Corr <= 0.05) {
-                    //     posCount = posCount + 1;
-                    // }
                     d.Corr = (corrBinWidth * Math.round(d.Corr / corrBinWidth)).toFixed(1)/1;
-                    
-                    //d.Corr = +d.Corr; //necessary if using d3.format(",.1f")
+                    d.Dis = disBinWidth * Math.round(d.Dis / disBinWidth).toFixed(1)/1;
                
                     //seasons
                     month = d.dateRef.getMonth() + 1; //Jan is 0    
@@ -141,8 +132,9 @@
                     else if (month >= 9 && month <= 11) d.Season = 3; //SON
 
                 });
-                // console.log("posCount: ", posCount)
-                // console.log("negCount: ", negCount)
+                minDate.setHours(12);
+                maxDate.setHours(12);
+
                 points = data;
                 fullRange = (maxDate - minDate) / (1000 * 60 * 60 * 24); //range in days                
 
@@ -188,7 +180,6 @@
 
             //-----------------------------------  
             corrDimension = filter.dimension(function(d) {
-                //console.log("d.Corr in corrDimension: ", d.Corr)
                 return d.Corr;
             });
             corrGrouping = corrDimension.group();
@@ -211,8 +202,6 @@
             //Datepicker
             //https://jqueryui.com/datepicker/#multiple-calendars
             $(function() {
-                //datepickerDateFormat(init_date0)
-                //$("#datepicker0").val("").prop('disabled', false); //clear after page reload
                 $("#datepicker0").val(datepickerDateFormat(init_date0)).prop('disabled', false); //clear after page reload
                 $("#datepicker0").datepicker({
                     numberOfMonths: 3,
@@ -232,15 +221,13 @@
 
             $("#datepicker0").on('change', function() {
                 var dateObj = makeDateObj($("#datepicker0"));
-                //shift forward one day
-                poiDates_manual[0] = new Date(dateObj.getTime() + day);
+                poiDates_manual[0] = new Date( dateObj.getTime() );
                 useManualDates(poiDates_manual);
             });
 
             $("#datepicker1").on('change', function() {
                 var dateObj = makeDateObj($("#datepicker1"));
-                //shift forward one day
-                poiDates_manual[1] = new Date(dateObj.getTime() + day);
+                poiDates_manual[1] = new Date( dateObj.getTime() );
                 useManualDates(poiDates_manual);
             });
 
@@ -250,22 +237,19 @@
                 d0 = makeDateObj($("#datepicker0"));
                 d1 = makeDateObj($("#datepicker1"));
 
-                // console.log("d0, d1: ", d0, d1)
-                // console.log("RangedFilter: ", dc.filters.RangedFilter(d0, d1))
+                d0.setHours(10);
+                d1.setHours(14);    
 
-                //ageChart.filterAll();ageChart.filter(dc.filters.RangedFilter([-2.5, -2.5], [6.5, 6.5]));dc.redrawAll();
+                  //poiChart.filterAll();
+                  poiChart.filter(null);
+                  poiChart.filter(dc.filters.RangedFilter(d0, d1));
+                  dc.redrawAll();
 
-                // //poiChart.filterAll();
-                // poiChart.filter(null);
-                // poiChart.filter(dc.filters.RangedFilter(d0, d1));
-                // console.log("poiChart.filter() after range: ", poiChart.filter())
-                // dc.redrawAll();
-             
-                poiDimension.resetAll();
-                resetChart(poiChart);
-                poiDimension.filter([d0, d1]);
-                poiChart.filter(dc.filters.RangedFilter(d0, d1));
-                dc.redrawAll();
+                  // poiDimension.filterAll();
+                  // resetChart(poiChart);
+                  // poiDimension.filter([d0, d1]);
+                  // poiChart.filter(dc.filters.RangedFilter(d0, d1));
+                  // dc.redrawAll();
             }
 
 
@@ -273,11 +257,7 @@
                 var dateString = dateRaw.val().split("/");
                 var dateObj = new Date(dateString[2], dateString[1] - 1, dateString[0]);
 
-                // console.log("dateString: ", dateString)
-                // console.log("dateObj: ", dateObj)
-
                 return dateObj;
-
             }
 
             //-----------------------------------
@@ -294,6 +274,9 @@
             }
             var dateGroup = getDateGrouping();
 
+            //CANNOT do this in RangedFilter
+            minDate.setHours(10);
+            init_date1.setHours(14);
             poiChart
                 .width(780)
                 .height(200)
@@ -305,15 +288,16 @@
                 })
                 .mouseZoomable(true)
                 //.brushOn(false)    
-                .dimension(poiDimension)                
-                .group(dateGroup)                
+                .dimension(poiDimension)
+                .group(dateGroup)
                 .transitionDuration(500)
                 .centerBar(true)
-                .filter(dc.filters.RangedFilter(init_date0, init_date1))
+                .filter(dc.filters.RangedFilter(minDate, init_date1))
                 .gap(10)
-                .x(d3.time.scale().domain(d3.extent(points, function(d) {
-                    return d.dateRef;
-                })))
+                //Subtract an hour from the minDate and add an hour to the maxDate to get an hour worth of 
+                //padding on each side of your min and max data.
+                //http://stackoverflow.com/questions/31808718/dc-js-barchart-first-and-last-bar-not-displaying-fully
+                .x(d3.time.scale().domain([d3.time.hour.offset(minDate, -10), d3.time.hour.offset(maxDate, 10)]))
                 .elasticY(true)
                 .elasticX(false)
                 .renderHorizontalGridLines(true)
@@ -323,25 +307,24 @@
                     deltaYear = chart.filters()[0][1].getFullYear() - chart.filters()[0][0].getFullYear();
 
                     //if analysis period < 1 year, set poiChart in day grouping mode
-                    if (deltaYear === 0) {                        
-                        chart.group(poiDayGrouping);
+                    if (deltaYear === 0) {
+                      chart.group(poiDayGrouping);
                     }
-
                     //handle weird case where zoom is stuck at same deltaYear 
                     //while user keeps zooming out
-                    else if (saveLevel - deltaYear === 0) {                        
-                        //only reset to default domain when no change in domain is happening at either ends
-                        if (init_domain0.getTime() === chart.filters()[0][0].getTime() &&
-                            init_domain1.getTime() === chart.filters()[0][1].getTime()) {
-                            chart.x().domain(chart.xOriginalDomain());
-                            // dc.refocusAll()
-                            // chart.filterAll();
-                            chart.render();
-                        }
+                    else if (saveLevel - deltaYear === 0) {
+                      //only reset to default domain when no change in domain is happening at either ends
+                      if (init_domain0.getTime() === chart.filters()[0][0].getTime() &&
+                          init_domain1.getTime() === chart.filters()[0][1].getTime()) {
+                        chart.x().domain(chart.xOriginalDomain());
+                        // dc.refocusAll()
+                        // chart.filterAll();
+                        chart.render();
+                      }
                     } else if (deltaYear < 3) {
-                        chart.group(poiDayGrouping);
+                      chart.group(poiDayGrouping);
                     } else if (deltaYear > 3) {
-                        chart.group(poiGrouping);
+                      chart.group(poiGrouping);
                     }
 
                     //reset to current values for comparison with next iteration through zoom handler
@@ -351,11 +334,14 @@
                 })
                 .xAxis().tickFormat();
 
-            function getBrushDates() {                
+            function getBrushDates() {
                 if (poiChart.filters().length > 0) {
                     //Put poiChart brush dates in manual datepicker text boxes
                     $("#datepicker0").val(datepickerDateFormat(poiChart.filters()[0][0]));
                     $("#datepicker1").val(datepickerDateFormat(poiChart.filters()[0][1]));
+
+                    poiDates[0] = slpDateFormat(poiChart.filters()[0][0]).toUpperCase();
+                    poiDates[1] = slpDateFormat(poiChart.filters()[0][1]).toUpperCase();
                 }
             }
 
@@ -503,8 +489,8 @@
         //====================================================================
         // Reset all
         function resetAll() {
-            $("#datepicker0").val("").prop("disabled", false);
-            $("#datepicker1").val("").prop("disabled", false);
+            $("#datepicker0").val(datepickerDateFormat(minDate)).prop("disabled", false);
+            $("#datepicker1").val(datepickerDateFormat(maxDate)).prop("disabled", false);
 
             poiChart.filterAll();
             seasonsChart.filterAll();
@@ -590,8 +576,8 @@
             <div class="row">
                 <div class="dc-chart col-md-8" id="chart-poi">
                     <div class="dc-chart-title">Period of Interest (chart selection)</div>
-                    <a class="reset" href="javascript:poiChart.filterAll();dc.redrawAll();resetChart(poiChart);" style="display: none;">reset</a>
-                    <!--<a class="preset" href="javascript:poiChart.filterAll();poiChart.filter((dc.filters.RangedFilter(new Date(2014,06,10), new Date(2014,06,15))));dc.redrawAll();">10/07/2014:15/07/2014</a><!--same as using datePicker-->
+                    <a id="dateReset" class="reset" href="javascript:poiChart.filterAll();dc.redrawAll();resetChart(poiChart);" 
+             style="display: none;">reset</a>                    
                     <span class="reset" style="display: none;"><span class="filter"></span></span>
                     <br>
                 </div>
