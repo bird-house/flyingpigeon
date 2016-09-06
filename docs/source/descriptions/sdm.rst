@@ -1,5 +1,38 @@
-Indices for SDM:
-................
+Species Distribution Model
+--------------------------
+
+Prediction of growth favourability for tree species. 
+
+
+Method:
+.......
+
+
+  * fetching selected data (GBIF zip file) and climate model data. 
+  * extraction of GBIF Data
+  * based on GBIF Data coordinates a presents/absence mask is generated
+  * calculation of selected climate indices in appropriate time aggregations
+  * calculation of mean values of climate indices for the given reference period
+  * statistical training (GAM) based on presents / absence maks and climate indices of reference period
+  * prediction of favourability based on traind GAM and projected as yearly timeseries for the whole proided time series
+  * plotting information and storing netCDF files in archive files (tar or zip)
+
+  
+Further reading: `Species Favourability Shift in Europe due to Climate Change: A Case Study for Fagus sylvatica L. and Picea abies (L.) Karst. Based on an Ensemble of Climate Models <http://www.hindawi.com/journals/jcli/2013/787250/>`_.
+
+
+Processes identifiers:
+.....................
+
+  * **SDM_csv**
+    species Distribution coordinates are provied by a csv table to be uplaoded
+  * **SDM_gbif**
+    species distribution coordinates are fetched from GBIF database based on a scientific name 
+
+Input Paramter: 
+...............
+
+**Indices**
 
 +----------------+----------------+--------------------------------------------------------------------------------+
 | Index          | Input Variable | Definition                                                                     |
@@ -51,14 +84,15 @@ Indices for SDM:
 | CDD_AMJJAS     | pr             | Consecutive dry days precipitation < 1 mm in summer half                       |
 +----------------+----------------+--------------------------------------------------------------------------------+
 
+Outputs: 
 
-The process is performing the following steps:
+to be checked
 
-* fetching selected data (GBIF zip file) and climate model data. 
-* extraction of GBIF Data
-* based on GBIF Data coordinates a presents/absence mask is generated
-* calculation of selected climate indices in appropriate time aggregations
-* calculation of mean values of climate indices for the given reference period
-* statistical training (GAM) based on presents / absence maks and climate indices of reference period
-* prediction of favourability based on traind GAM and projected as yearly timeseries for the whole proided time series
-* plotting information and storing netCDF files in archive files (tar or zip)
+Examples:
+..........
+
+
+.. toctree::
+   :maxdepth: 1
+   
+   /tutorials/sdm

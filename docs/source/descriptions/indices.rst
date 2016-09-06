@@ -7,11 +7,27 @@ The climate indices processes in flyingpigeon are based on the `python package i
 They are subclassed to:
 
 
+Process identifiers: 
+....................
 
-Simple indices:
-===============
+  * **Simple indices**
+    Simple indices are based on a single input variable, and with and an simple calculation algorithm.
 
-Simple indices are based on a single input variable, and with and an simple calculation algorithm.
+  * **Percentile indices**
+    Percentile-based indices are calculated based on an given percentile of a reference period. 
+    The calculation of percentile-based indices is done in two steps:
+
+    Calculation of the percentile value for a given reference period
+    Cumulative sum of the number of days beyond the threshold 
+    
+  * **Multivariable indices**
+  * **User defined indices**
+  
+
+Input Parameter:
+................    
+    
+*for simple indices*
 
 +--------+----------------+--------------------------------------------------------------------------------+
 | Index  | Input Variable | Definition                                                                     |
@@ -74,14 +90,8 @@ Simple indices are based on a single input variable, and with and an simple calc
 +--------+----------------+--------------------------------------------------------------------------------+
 
 
-Percentile-based indices:
-=========================
+*Percentile-based indices*
 
-Percentile-based indices are calculated based on an given percentile of a reference period. 
-The calculation of percentile-based indices is done in two steps:
-
-* Calculation of the percentile value for a given reference period
-* Cumulative sum of the number of days beyond the threshold 
 
 +------------+----------------+--------------------------------------------------------------------------------+
 | Index      | Input Variable | Definition                                                                     |
@@ -116,8 +126,8 @@ The calculation of percentile-based indices is done in two steps:
 +------------+----------------+--------------------------------------------------------------------------------+
 
 
-Multivariable Indices
-=====================
+*for Multivariable Indices*
+
 
 +------------+----------------+--------------------------------------------------------------------------------+
 | Index      | Input Variable | Definition                                                                     |
@@ -135,7 +145,7 @@ Multivariable Indices
 |            |                | PRCPTOT > 75th percentile of daily precipitation sum (warm/wet days)           |
 +------------+----------------+--------------------------------------------------------------------------------+
 
-Climate indices have to be calculated for a time aggregation:
+*Climate indices have to be calculated for a time aggregation*
 
 +-------------+-------------+---------+
 | Time        |Description  |values   |
@@ -183,3 +193,18 @@ Climate indices have to be calculated for a time aggregation:
 +-------------+-------------+---------+
 | Dec         | December    | 1       |
 +-------------+-------------+---------+
+
+
+**Mosaic**
+
+To be checked if multiple polygons should be merged to one polygon.
+
+
+Output: 
+.......
+
+**tar archive**
+  Tar archive containing all netCDF files. subsetting is performed for each input dataset. 
+
+**netCDF example**
+  one netCDF file is picked out and provides as an example file to be displyed on the web mapping service. 

@@ -1,5 +1,5 @@
-Tutorial: weatherregimes
-........................
+GUI for Weatherregimes
+......................
 
 Weatherregimes comparison NCEP to CMIP5
 
