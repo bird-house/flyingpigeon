@@ -22,7 +22,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   calc_grouping= None, conform_units_to=None, memory_limit=None,  prefix=None, 
   regrid_destination=None, regrid_options='bil', level_range=None,
   geom=None, output_format_options=False, search_radius_mult=2., 
-  select_nearest=False, select_ugid=None, spatial_wrapping=None, time_region=None, time_range=None,
+  select_nearest=False, select_ugid=None, spatial_wrapping=None, t_calendar=None, time_region=None, time_range=None,
   dir_output=curdir, output_format='nc'):
   '''
   ocgis operation call
@@ -99,7 +99,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     try:
       rd = RequestDataset(resource, variable=variable, level_range=level_range,
         dimension_map=dimension_map, conform_units_to=conform_units_to, 
-        time_region=time_region, time_range=time_range)
+        time_region=time_region,t_calendar=t_calendar, time_range=time_range)
       ops = OcgOperations(dataset=rd,
         output_format_options=output_format_options,
         spatial_wrapping=spatial_wrapping,

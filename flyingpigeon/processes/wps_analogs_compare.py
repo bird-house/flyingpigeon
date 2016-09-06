@@ -327,7 +327,7 @@ class AnalogsProcess(WPSProcess):
       var_target = get_variable(resource)
       #var_simulation = get_variable(simulation)
       archive = call(resource=resource, variable=var_target, 
-          time_range=[refSt , refEn],  geom=bbox, # conform_units_to=conform_units_to,  spatial_wrapping='wrap',
+          time_range=[refSt , refEn],  geom=bbox, t_calendar='standard',# conform_units_to=conform_units_to,  spatial_wrapping='wrap',
           regrid_destination=simulation, regrid_options='bil')
     except Exception as e:
       msg = 'failed subset archive dataset %s ' % e
