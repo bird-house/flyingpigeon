@@ -1,3 +1,13 @@
+Climate indices
+---------------
+
+Climate indices are values that describe the state the climate system for a certain parameter. Climate indices as timeseries can be used to describe or estimate the change in climte over time.
+
+The climate indices processes in flyingpigeon are based on the `python package icclim <http://icclim.readthedocs.io/en/latest/>`_
+They are subclassed to:
+
+
+
 Simple indices:
 ===============
 
@@ -125,3 +135,51 @@ Multivariable Indices
 |            |                | PRCPTOT > 75th percentile of daily precipitation sum (warm/wet days)           |
 +------------+----------------+--------------------------------------------------------------------------------+
 
+Climate indices have to be calculated for a time aggregation:
+
++-------------+-------------+---------+
+| Time        |Description  |values   |
+| aggregation |             |per year | 
++-------------+-------------+---------+
+| mon         | monthly     | 12      |
++-------------+-------------+---------+
+| sem         | seasonal    | 4       |          
++-------------+-------------+---------+
+| yr          | yearly      | 1       |
++-------------+-------------+---------+
+| ONDJFM      | winter half | 1       |
++-------------+-------------+---------+ 
+| AMJJAS      | summer half | 1       |
++-------------+-------------+---------+
+| DJF         | winter      | 1       |                
++-------------+-------------+---------+ 
+| MAM         | Spring      | 1       |
++-------------+-------------+---------+ 
+| JJA         | Summer      | 1       |
++-------------+-------------+---------+ 
+| SON         | Autumn      | 1       |
++-------------+-------------+---------+ 
+| Jan         | Januar      | 1       |
++-------------+-------------+---------+
+| Feb         | Februar     | 1       |
++-------------+-------------+---------+
+| Mar         | March       | 1       |
++-------------+-------------+---------+
+| April       | April       | 1       |
++-------------+-------------+---------+
+| May         | May         | 1       |
++-------------+-------------+---------+
+| Jun         | June        | 1       |
++-------------+-------------+---------+
+| Jul         | July        | 1       |
++-------------+-------------+---------+
+| Aug         | August      | 1       |
++-------------+-------------+---------+
+| Sep         | September   | 1       |
++-------------+-------------+---------+
+| Oct         | October     | 1       |
++-------------+-------------+---------+
+| Nov         | November    | 1       |
++-------------+-------------+---------+
+| Dec         | December    | 1       |
++-------------+-------------+---------+

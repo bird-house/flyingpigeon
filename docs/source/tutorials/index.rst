@@ -15,7 +15,7 @@ Tutorials
 
    robustness_solr
    sdm
-   castf90
+   analogues
    weatherregimes
 
      
