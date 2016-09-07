@@ -15,7 +15,7 @@ class AnalogsProcess(WPSProcess):
       title="Analogues -- Detection",
       version = "0.9",
       metadata= [
-              {"title": "Le Laboratoire des Sciences du Climat et de l'Environnement", "href": "http://www.lsce.ipsl.fr/en/index.php"},
+              {"title": "LSCE", "href": "http://www.lsce.ipsl.fr/en/index.php"},
               {"title": "Documentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#analog-pressure-pattern"}
               ],
       abstract="Search for days with analogue pressure pattern",

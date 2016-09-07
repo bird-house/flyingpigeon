@@ -19,7 +19,7 @@ class WeatherRegimesRProcess(WPSProcess):
             title = "Weather Regimes -- Reanalyses data",
             version = "0.9",
             metadata=[
-                {"title": "Le Laboratoire des Sciences du Climat et de l'Environnement", "href": "http://www.lsce.ipsl.fr/en/index.php"},
+                {"title": "LSCE", "href": "http://www.lsce.ipsl.fr/en/index.php"},
                 {"title": "Documentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
                 ],
             abstract="Weather Regimes based on pressure patterns, fetching selected Realayses Datasets",
