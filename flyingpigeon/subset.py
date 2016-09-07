@@ -140,10 +140,8 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  output_
           except Exception as e:
             msg = 'ocgis calculations failed for %s ' % (key)
             logger.debug(msg)
-            raise
       except Exception as e:
           logger.debug('geom identification failed')
-          raise
   return  geom_files
 
 def get_dimension_map(resource): 
