@@ -199,7 +199,11 @@
       disChart = dc.barChart("#chart-dis");
 
       //-----------------------------------
-      //Manual date selection   
+      //Manual date selection
+      var calendarFlag = 0; //1 = dates come from datePicker calendar
+      var calendarDate0, calendarDate1; //global, for datePicker text box
+      var zoomFlag = 0; //1 = dates come from poiChart zoom
+
       //Datepicker
       //https://jqueryui.com/datepicker/#multiple-calendars
       $(function() {
@@ -221,15 +225,12 @@
       });
 
       $("#datepicker0").on('change', function() {
-        var dateObj = makeDateObj($("#datepicker0"));
-        poiDates_manual[0] = new Date(dateObj.getTime());
-        useManualDates(poiDates_manual);
+        //Do not trigger poiChart if dates come from sliding brush
+        useManualDates();
       });
 
       $("#datepicker1").on('change', function() {
-        var dateObj = makeDateObj($("#datepicker1"));
-        poiDates_manual[1] = new Date(dateObj.getTime());
-        useManualDates(poiDates_manual);
+        useManualDates();
       });
 
       function useManualDates(poiDates_manual) {
@@ -238,25 +239,26 @@
         d0 = makeDateObj($("#datepicker0"));
         d1 = makeDateObj($("#datepicker1"));
 
+        //Offset by 2h on either side of brush
         d0.setHours(10);
         d1.setHours(14);
+
+        //global vars read by getBrushDates()
+        calendarFlag = 1;
+        calendarDate0 = d0;
+        calendarDate1 = d1;
 
         //poiChart.filterAll();
         poiChart.filter(null);
         poiChart.filter(dc.filters.RangedFilter(d0, d1));
         dc.redrawAll();
-
-        // poiDimension.filterAll();
-        // resetChart(poiChart);
-        // poiDimension.filter([d0, d1]);
-        // poiChart.filter(dc.filters.RangedFilter(d0, d1));
-        // dc.redrawAll();
       }
 
 
       function makeDateObj(dateRaw) {
         var dateString = dateRaw.val().split("/");
-        var dateObj = new Date(dateString[2], dateString[1] - 1, dateString[0]);
+        var dateStringFormat = dateString[2] + dateString[1] + dateString[0] + "1200";
+        dateObj = dateFormat.parse(dateStringFormat);
 
         return dateObj;
       }
@@ -265,8 +267,9 @@
       //https://github.com/dc-js/dc.js/wiki/Zoom-Behaviors-Combined-with-Brush-and-Range-Chart
       var currentGranularity = 'month';
       var saveLevel = 0;
-      var init_domain0 = dateFormat.parse("21000101"),
-        init_domain1 = dateFormat.parse("2100101");
+      var dateFormatForZoom = d3.time.format('%Y%m%d');
+      var init_domain0 = dateFormatForZoom.parse("21000101"), 
+          init_domain1 = dateFormatForZoom.parse("2100101");
 
       //Determine date resolution of poiChart
       //http://stackoverflow.com/questions/23953019/dc-js-group-top5-not-working-in-chart
@@ -275,6 +278,8 @@
       }
       var dateGroup = getDateGrouping();
 
+      //Set time for brush (10:00 to capture first date in brush window, 
+      //14:00 to capture last date in window)
       //CANNOT do this in RangedFilter
       minDate.setHours(10);
       init_date1.setHours(14);
@@ -287,8 +292,7 @@
           bottom: 30,
           left: 40
         })
-        .mouseZoomable(true)
-        //.brushOn(false)    
+        .mouseZoomable(true) 
         .dimension(poiDimension)
         .group(dateGroup)
         .transitionDuration(500)
@@ -296,7 +300,7 @@
         .filter(dc.filters.RangedFilter(minDate, init_date1))
         .gap(10)
         //Subtract an hour from the minDate and add an hour to the maxDate to get an hour worth of 
-        //padding on each side of your min and max data.
+        //padding on x-axis on each side of your min and max data.
         //http://stackoverflow.com/questions/31808718/dc-js-barchart-first-and-last-bar-not-displaying-fully
         .x(d3.time.scale().domain([d3.time.hour.offset(minDate, -10), d3.time.hour.offset(maxDate, 10)]))
         .elasticY(true)
@@ -305,18 +309,21 @@
         .on("filtered", getBrushDates)
         .on('zoomed', function(chart, filter) {
 
-          deltaYear = chart.filters()[0][1].getFullYear() - chart.filters()[0][0].getFullYear();
+          zoomFlag = 1;
+
+          deltaYear = chart.filter()[1].getFullYear() - chart.filter()[0].getFullYear();
 
           //if analysis period < 1 year, set poiChart in day grouping mode
           if (deltaYear === 0) {
             chart.group(poiDayGrouping);
           }
+
           //handle weird case where zoom is stuck at same deltaYear 
           //while user keeps zooming out
           else if (saveLevel - deltaYear === 0) {
             //only reset to default domain when no change in domain is happening at either ends
             if (init_domain0.getTime() === chart.filters()[0][0].getTime() &&
-              init_domain1.getTime() === chart.filters()[0][1].getTime()) {
+                init_domain1.getTime() === chart.filters()[0][1].getTime()) {
               chart.x().domain(chart.xOriginalDomain());
               // dc.refocusAll()
               // chart.filterAll();
@@ -330,24 +337,92 @@
 
           //reset to current values for comparison with next iteration through zoom handler
           saveLevel = deltaYear;
-          init_domain0 = chart.filters()[0][0];
-          init_domain1 = chart.filters()[0][1];
+          init_domain0 = chart.filter()[0];
+          init_domain1 = chart.filter()[1];
+
         })
         .xAxis().tickFormat();
 
-      function getBrushDates() {
-        if (poiChart.filters().length > 0) {
-          //NOTE: brush limits not necessarily same as date limits
-          //So get dates within brush from chart.data()
-          var numBars = poiChart.data()[0].values.length; //number of bars displayed
-          var firstDate = poiChart.data()[0].values[0].x; //first date in brush window
-          var lastDate = poiChart.data()[0].values[numBars - 1].x; //last date in brush window
+        function getBrushDates() {
+          if (poiChart.filters().length > 0) {
 
+            if (calendarFlag === 1) { //dates come from calendar
+        
+              changeTextboxDates(calendarDate0, calendarDate1);
+              calendarFlag = 0; //reset
+
+            } else if (zoomFlag === 1) {//dates come from poiChart zoom
+
+              //NOTE: brush limits not necessarily same as date limits
+              //So get dates within brush from chart.data()
+              var numBars = poiChart.data()[0].values.length; //number of bars displayed
+              var firstDate = poiChart.data()[0].values[0].x; //first date in brush window
+              var lastDate = poiChart.data()[0].values[numBars - 1].x; //last date in brush window
+
+              changeTextboxDates(firstDate, lastDate);
+              zoomFlag = 0; //reset
+
+            } else {//dates to come from sliding brush
+
+                //Determine resolution of poiChart
+                var monthResoln = false;
+                if ( (poiChart.group().all()[1].key - poiChart.group().all()[0].key) / ( 1000*60*60*24 ) > 1) {
+                  monthResoln = true;
+                }
+                
+                if (!monthResoln) {//resoln = day; custom code to find date in brush window
+                  
+                  //Store initial filter endpt dates
+                  var date0_init = new Date(poiChart.filter()[0].getFullYear(),
+                                      poiChart.filter()[0].getMonth(),
+                                      poiChart.filter()[0].getDay());
+
+                  var date1_init = new Date(poiChart.filter()[1].getFullYear(),
+                                      poiChart.filter()[1].getMonth(),
+                                      poiChart.filter()[1].getDay());
+                  
+                  //Find date(s) in brush window (not necessarily same as filter endpts)
+                  var start_day = poiChart.filter()[0].getHours() > 12 ? 
+                                  shiftDay("addDay") : 
+                                  poiChart.filter()[0];
+
+                  var end_day = poiChart.filter()[1].getHours() < 12 ? 
+                                  shiftDay("subtractDay") : 
+                                  poiChart.filter()[1];
+
+                  //Update date display in calendar text boxes
+                  changeTextboxDates(start_day, end_day);
+
+              } else {//resoln = month; take dates from chart filters
+
+                //Update date display in calendar text boxes
+                changeTextboxDates(poiChart.filter()[0], poiChart.filter()[1]);
+
+              }//end monthResoln check
+
+            } //end flag check for picking dates
+            
+          } //end check of poiChart filters length
+
+        } //end fn getBrushDates
+
+        function changeTextboxDates(d1, d2) {
           //Put poiChart brush dates in manual datepicker text boxes
-          $("#datepicker0").val(datepickerDateFormat(firstDate));
-          $("#datepicker1").val(datepickerDateFormat(lastDate));
+          $("#datepicker0").val(datepickerDateFormat(d1));
+          $("#datepicker1").val(datepickerDateFormat(d2));
         }
-      }
+
+        function shiftDay(whichSign) {
+          if (whichSign === "addDay") {
+            return new Date ( poiChart.filter()[0].getFullYear(),
+                              poiChart.filter()[0].getMonth(),
+                              (poiChart.filter()[0].getDate()+1) )
+          } else if (whichSign === "subtractDay") {
+            return new Date ( poiChart.filter()[1].getFullYear(),
+                              poiChart.filter()[1].getMonth(),
+                              (poiChart.filter()[1].getDate()-1) )
+          }
+        }
 
       //-----------------------------------
       seasonsChart
@@ -493,10 +568,14 @@
     //====================================================================
     // Reset all
     function resetAll() {
-      $("#datepicker0").val(datepickerDateFormat(minDate)).prop("disabled", false);
-      $("#datepicker1").val(datepickerDateFormat(maxDate)).prop("disabled", false);
+      $("#datepicker0").val(datepickerDateFormat(minDate));
+      $("#datepicker1").val(datepickerDateFormat(maxDate));
 
-      poiChart.filterAll();
+      //poiChart.filterAll();
+      
+      //poiDimension.filterAll();
+      resetChart(poiChart);
+
       seasonsChart.filterAll();
       decadeChart.filterAll();
       corrChart.filterAll();
