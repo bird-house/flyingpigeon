@@ -34,7 +34,7 @@ class AnalogsProcess(WPSProcess):
       allowedValues=_PRESSUREDATA_
       )
    
-   self.BBox = self.addBBoxInput(
+    self.BBox = self.addBBoxInput(
       identifier="BBox",
       title="Bounding Box",
       abstract="coordinates to define the region to be analysed",
