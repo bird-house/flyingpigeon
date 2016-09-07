@@ -11,14 +11,14 @@ class AnalogsProcess(WPSProcess):
   def __init__(self):
     # definition of this process
     WPSProcess.__init__(self, 
-      identifier = "analogs_compare",
-      title="Analogues -- Comparison",
+      identifier = "analogs_model",
+      title="Analogues -- Detection",
       version = "0.9",
       metadata= [
               {"title": "LSCE", "href": "http://www.lsce.ipsl.fr/en/index.php"},
               {"title": "Documentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/analogues.html#analogues-of-circulation"}
               ],
-      abstract="Search in a dataset for days with analogue pressure pattern for a given period in a reanalyses dataset",
+      abstract="Search for days with analogue pressure pattern in a climate model data set",
       statusSupported=True,
       storeSupported=True
       )
@@ -26,41 +26,29 @@ class AnalogsProcess(WPSProcess):
     self.resource = self.addComplexInput(
       identifier="resource",
       title="Resource",
-      abstract="URL to netCDF file for dataset where analogs are being picked",
-      minOccurs=0,
+      abstract="URL to netCDF file",
+      minOccurs=1,
       maxOccurs=1000,
       maxmegabites=5000,
       formats=[{"mimeType":"application/x-netcdf"}],
       )
 
-    self.experiment = self.addLiteralInput(
-      identifier="experiment",
-      title="Data experiment",
-      abstract="Choose the experiment (if 'None' is selected, provide a resource)",
-      default="NCEP_slp",
-      type=type(''),
-      minOccurs=1,
-      maxOccurs=1,
-      allowedValues=_PRESSUREDATA_
-      )
-
     self.BBox = self.addBBoxInput(
-      identifier="BBox",
-      title="Bounding Box",
-      abstract="coordinates to define the region to be analysed",
-      minOccurs=1,
-      maxOccurs=1,
-      crss=['EPSG:4326']
-      )
-
- 
+        identifier="BBox",
+        title="Bounding Box",
+        abstract="coordinates to define the region to be analysed",
+        minOccurs=1,
+        maxOccurs=1,
+        crss=['EPSG:4326']
+        )
+         
     self.dateSt = self.addLiteralInput(
       identifier="dateSt",
       title="Start date of analysis period",
       abstract="This is a Date: 2013-07-15",
       default="2013-07-15",
       type=type(date(2013,7,15)),
-      minOccurs=1,
+      minOccurs=0,
       maxOccurs=1,
       )
     
@@ -70,7 +58,7 @@ class AnalogsProcess(WPSProcess):
       abstract="This is a Date: 2013-12-31",
       default="2014-12-31",
       type=type(date(2014,12,31)),
-      minOccurs=1,
+      minOccurs=0,
       maxOccurs=1,
       )
 
@@ -80,7 +68,7 @@ class AnalogsProcess(WPSProcess):
       abstract="Start YEAR of reference period",
       default="2013-01-01",
       type=type(date(1955,01,01)),
-      minOccurs=1,
+      minOccurs=0,
       maxOccurs=1,
       )
     
@@ -90,7 +78,7 @@ class AnalogsProcess(WPSProcess):
       abstract="End YEAR of reference period",
       default="2014-12-31",
       type=type(date(1957,12,31)),
-      minOccurs=1,
+      minOccurs=0,
       maxOccurs=1,
       )
     
@@ -113,7 +101,6 @@ class AnalogsProcess(WPSProcess):
       minOccurs=0,
       maxOccurs=1,
       )
-
 
     self.normalize = self.addLiteralInput(
       identifier="normalize",
@@ -158,33 +145,7 @@ class AnalogsProcess(WPSProcess):
       maxOccurs=1,
       )
 
-    # self.variable = self.addLiteralInput(
-    #   identifier="variable",
-    #   title="Variable",
-    #   abstract="Variable name in resource",
-    #   default='slp',
-    #   type=type(''),
-    #   minOccurs=0,
-    #   maxOccurs=1,
-    #   )
 
-    # self.seacyc = self.addLiteralInput(
-    #   identifier="seacyc",
-    #   title="Seasonal Cycle",
-    #   abstract="normalized by the Seasonal Cycle",
-    #   default=True,
-    #   type=type(boolean),
-    #   minOccurs=0,
-    #   maxOccurs=1,
-    #   )
-
-      # #seacyc=True, 
-      # cycsmooth=91, 
-      # nanalog=20, 
-      # seasonwin=30, 
-      # distfun='rms', 
-      # calccor=True,
-      # silent=False)
 
     ### ###################
     # define the outputs
@@ -206,106 +167,91 @@ class AnalogsProcess(WPSProcess):
       asReference=True,
       )
     
-    self.simulation_netcdf = self.addComplexOutput(
+    self.output_netcdf = self.addComplexOutput(
       title="prepared netCDF",
-      abstract="NetCDF file with subset and normaized values of simulation dataset",
+      abstract="NetCDF file with subset and normaized values",
       formats=[{"mimeType":"application/x-netcdf"}],
       asReference=True,
-      identifier="simulation_netcdf",
+      identifier="ncout",
       )
 
-    self.target_netcdf = self.addComplexOutput(
-      title="Target netCDF",
-      abstract="NetCDF file with subset and normaized values of target dataset",
-      formats=[{"mimeType":"application/x-netcdf"}],
-      asReference=True,
-      identifier="target_netcdf",
-      )
-    
+
   def execute(self):
     import time # performance test
     process_start_time = time.time() # measure process execution time ...
      
     from os import path
     from tempfile import mkstemp
-    from flyingpigeon import analogs
     from datetime import datetime as dt
 
+    from flyingpigeon import analogs
     from flyingpigeon.ocgis_module import call
     from flyingpigeon.datafetch import reanalyses
-    from flyingpigeon.utils import get_variable, rename_variable
-    
-    self.status.set('execution started at : %s '  % dt.now(),5)
+    from flyingpigeon.utils import get_variable
 
+    self.status.set('execution started at : %s '  % dt.now(),5)
     start_time = time.time() # measure init ...
     
-    resource = self.getInputValues(identifier='resource')
-    bbox_obj = self.BBox.getValue()
-    refSt = self.getInputValues(identifier='refSt')
-    refEn = self.getInputValues(identifier='refEn')
-    dateSt = self.getInputValues(identifier='dateSt')
-    dateEn = self.getInputValues(identifier='dateEn')
-    normalize = self.getInputValues(identifier='normalize')[0]
-    distance = self.getInputValues(identifier='dist')[0]
-    outformat = self.getInputValues(identifier='outformat')[0]
-    timewin = int(self.getInputValues(identifier='timewin')[0])
-    experiment = self.getInputValues(identifier='experiment')[0]      
-    dataset , var = experiment.split('_')
-
-
-
-    refSt = dt.strptime(refSt[0],'%Y-%m-%d')
-    refEn = dt.strptime(refEn[0],'%Y-%m-%d')
-    dateSt = dt.strptime(dateSt[0],'%Y-%m-%d')
-    dateEn = dt.strptime(dateEn[0],'%Y-%m-%d')
-    
-    
-    if normalize == 'None': 
-      seacyc = False
-    else: 
-      seacyc = True
+    #######################
+    ### read input paramert
+    #######################
+    try:
+      self.status.set('read input parameter : %s '  % dt.now(),5) 
+      resource = self.getInputValues(identifier='resource')
+      refSt = self.getInputValues(identifier='refSt')
+      refEn = self.getInputValues(identifier='refEn')
+      dateSt = self.getInputValues(identifier='dateSt')
+      dateEn = self.getInputValues(identifier='dateEn')
+      normalize = self.getInputValues(identifier='normalize')[0]
+      distance = self.getInputValues(identifier='dist')[0]
+      outformat = self.getInputValues(identifier='outformat')[0]
+      timewin = int(self.getInputValues(identifier='timewin')[0])
+      bbox_obj = self.BBox.getValue()
+      seasonwin = int(self.getInputValues(identifier='seasonwin')[0])
+      nanalog = int(self.getInputValues(identifier='nanalog')[0])
       
-    
-    if outformat == 'ascii': 
-      outformat = '.txt'
-    elif outformat == 'netCDF':
-      outformat = '.nc'
-    else:
-      logger.error('output format not valid')
-    
-    if bbox_obj is not None:
-      logger.info("bbox_obj={0}".format(bbox_obj.coords))
-      bbox = [bbox_obj.coords[0][0], bbox_obj.coords[0][1],bbox_obj.coords[1][0],bbox_obj.coords[1][1]]
-      logger.info("bbox={0}".format(bbox))
-    else:
-      bbox=None
+      # region = self.getInputValues(identifier='region')[0]
+      # bbox = [float(b) for b in region.split(',')]
+      # experiment = self.getInputValues(identifier='experiment')[0] 
+      # dataset , var = experiment.split('_')
+      
+      logger.info('input paramert set')
+    except Exception as e: 
+      msg = 'failed to read input prameter %s ' % e
+      logger.error(msg)  
+      raise Exception(msg)
 
-     #start = min( refSt, dateSt )
-    #end = max( refEn, dateEn )
-    # region = self.getInputValues(identifier='region')[0]
-    # bbox = [float(b) for b in region.split(',')]
+    ######################################
+    ### convert types and set environment
+    ######################################
+    try:  
+      refSt = dt.strptime(refSt[0],'%Y-%m-%d')
+      refEn = dt.strptime(refEn[0],'%Y-%m-%d')
+      dateSt = dt.strptime(dateSt[0],'%Y-%m-%d')
+      dateEn = dt.strptime(dateEn[0],'%Y-%m-%d')
 
-    try:            
-      if dataset == 'NCEP': 
-        if 'z' in var:
-          variable='hgt'
-          level=var.strip('z')
-          #conform_units_to=None
-        else:
-          variable='slp'
-          level=None
-          #conform_units_to='hPa'
-      elif '20CRV2' in var: 
-        if 'z' in level:
-          variable='hgt'
-          level=var.strip('z')
-          #conform_units_to=None
-        else:
-          variable='prmsl'
-          level=None
-          #conform_units_to='hPa'
+      if normalize == 'None': 
+        seacyc = False
+      else: 
+        seacyc = True         
+      
+      if outformat == 'ascii': 
+        outformat = '.txt'
+      elif outformat == 'netCDF':
+        outformat = '.nc'
       else:
-        logger.error('Reanalyses dataset not known')          
+        logger.error('output format not valid')
+
+      start = min( refSt, dateSt )
+      end = max( refEn, dateEn )
+
+      if bbox_obj is not None:
+        logger.info("bbox_obj={0}".format(bbox_obj.coords))
+        bbox = [bbox_obj.coords[0][0], bbox_obj.coords[0][1],bbox_obj.coords[1][0],bbox_obj.coords[1][1]]
+        logger.info("bbox={0}".format(bbox))
+      else:
+        bbox=None
+
       logger.info('environment set')
     except Exception as e: 
       msg = 'failed to set environment %s ' % e
@@ -313,61 +259,27 @@ class AnalogsProcess(WPSProcess):
       raise Exception(msg)
 
     logger.debug("init took %s seconds.", time.time() - start_time)
-    self.status.set('Read in the arguments', 5)
-    #################
-    # get input data
-    #################
+    self.status.set('Read in and convert the arguments', 5)
+   
 
-    start_time = time.time()  # measure get_input_data ...
-    self.status.set('fetching input data', 7)
-    try:
-      input = reanalyses(start = dateSt.year, end = dateEn.year, variable=var, dataset=dataset)
-      nc_subset = call(resource=input, variable=var, geom=bbox)
-    except Exception as e :
-      msg = 'failed to fetch or subset input files %s' % e
-      logger.error(msg)
-      raise Exception(msg)
-    logger.debug("get_input_subset_dataset took %s seconds.", time.time() - start_time)
-    self.status.set('**** Input data fetched', 10)
-    
     ########################
     # input data preperation 
     ########################
+
+    ##TODO: Check if files containing more than one dataset
+
     self.status.set('Start preparing input data', 12)
     start_time = time.time()  # mesure data preperation ...
-    try:
-      self.status.set('Preparing simulation data', 15)
-      simulation = call(resource=nc_subset, time_range=[dateSt , dateEn])
-    except:
-      msg = 'failed to prepare simulation period'
-      logger.debug(msg)
-      
-    try:
-      self.status.set('Preparing target data', 17)
-      var_target = get_variable(resource)
-      #var_simulation = get_variable(simulation)
-      archive = call(resource=resource, variable=var_target, 
-          time_range=[refSt , refEn],  geom=bbox, t_calendar='standard',# conform_units_to=conform_units_to,  spatial_wrapping='wrap',
-          regrid_destination=simulation, regrid_options='bil')
-    except Exception as e:
-      msg = 'failed subset archive dataset %s ' % e
-      logger.debug(msg)
-      raise Exception(msg)
     
-    try:     
-      if var != var_target:
-        rename_variable(archive, oldname=var_target, newname=var)
-        logger.info('varname %s in netCDF renamed to %s' %(var_target, var))
-    except Exception as e:
-      msg = 'failed to rename variable in target files %s ' % e
-      logger.debug(msg)
-      raise Exception(msg)
-    
-    try:          
+    try:
+      variable = get_variable(resource)
+
+      archive = call(resource=resource, time_range=[refSt , refEn], geom=bbox, spatial_wrapping='wrap') 
+      simulation = call(resource=resource, time_range=[dateSt , dateEn], geom=bbox, spatial_wrapping='wrap')
       if seacyc == True:
         analogs.seacyc(archive, simulation, method=normalize)
     except Exception as e:
-      msg = 'failed to prepare seasonal cycle reference files %s ' % e
+      msg = 'failed to prepare archive and simulation files %s ' % e
       logger.debug(msg)
       raise Exception(msg)
       
@@ -387,7 +299,7 @@ class AnalogsProcess(WPSProcess):
     try:  
       config_file = analogs.get_configfile(files=files, 
         timewin=timewin, 
-        varname=var, 
+        varname=variable, 
         seacyc=seacyc, 
         cycsmooth=91, 
         nanalog=nanalog, 
@@ -433,8 +345,7 @@ class AnalogsProcess(WPSProcess):
     self.status.set('preparting output', 99)
     self.config.setValue( config_file )
     self.analogs.setValue( output_file )
-    self.simulation_netcdf.setValue( simulation )
-    self.target_netcdf.setValue( archive )
+    self.output_netcdf.setValue( simulation )
     
     self.status.set('execution ended', 100)
 

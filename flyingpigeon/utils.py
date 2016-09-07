@@ -182,6 +182,7 @@ def calc_grouping(grouping):
       raise Exception(msg)
   return calc_grouping
 
+
 def drs_filename(nc_file, skip_timestamp=False, skip_format=False ,
                  variable=None, rename_file=False, add_file_path=False ):
     """
@@ -364,7 +365,7 @@ def get_timerange(nc_files):
 
   :param nc_files: path to netCDF file(s)
   
-  :returns netcdf.dateime.dateime: start, end
+  :returns netcdf.datetime.datetime: start, end
 
   """
   start = end = None
@@ -393,6 +394,7 @@ def get_timerange(nc_files):
 
 def get_timestamps(nc_file):
     """
+    !OBSOLETE!
     replaced by get_timerange
     """
     try:

@@ -1,7 +1,5 @@
 from os.path import join, abspath, dirname, getsize, curdir
-
 from netCDF4 import Dataset
-
 from flyingpigeon import config
 
 DIR_SHP = config.shapefiles_dir()
@@ -92,6 +90,8 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   # execute ocgis 
   logger.info('Execute ocgis module call function')
   
+  time_range = eval_timerange(resource, time_range)
+
   if has_Lambert_Conformal(resource) == True and not geom == None:
     logger.debug('input has Lambert_Conformal projection and can not subsetted with geom')
     output = None
@@ -208,3 +208,37 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     else:
       output = geom_file
   return output
+
+  
+def eval_timerange(resource, time_range):
+  """
+  quality checker if given time_range is covered by timesteps in resource files
+
+  :param resource: input netCDF files 
+  :param time_range: start and end date of time range [datetime,datetime]
+
+  :retuns [datetime,datetime]: time_range
+  """
+  from flyingpigeon.utils import get_time
+
+  logger.info('time_range: %s' % time_range)
+
+  if type(resource) != str: 
+    resource.sort()
+  time = get_time(resource)
+  start = time[0]
+  end = time[-1]
+
+  if (time_range[0] >= start or time_range[0] <= end ):
+    logger.debug('time range start %s not in input dataset covering: %s to %s' %  (time_range[0] , start, end))
+    time_range[0] = start
+    logger.debug('time_range start changed to first timestep of dataset')
+  if (time_range[1] >= end or time_range[1] <= start ):
+    logger.debug('time range end %s not in input dataset covering: %s to %s' %  (time_range[0] , start, end))
+    time_range[1] = end
+    logger.debug('time_range end changed to last timestep of dataset')
+  if (time_range[0] > time_range[1]):
+    time_range = reversed(time_range)
+    logger.debug('time range reversed! start was later than end ')
+  logger.info('time range start and end set')
+  return time_range

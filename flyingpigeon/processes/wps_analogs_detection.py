@@ -16,22 +16,12 @@ class AnalogsProcess(WPSProcess):
       version = "0.9",
       metadata= [
               {"title": "LSCE", "href": "http://www.lsce.ipsl.fr/en/index.php"},
-              {"title": "Documentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#analog-pressure-pattern"}
+              {"title": "Documentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/analogues.html#analogues-of-circulation"}
               ],
-      abstract="Search for days with analogue pressure pattern",
+      abstract="Search for days with analogue pressure pattern for reanalyses data sets",
       statusSupported=True,
       storeSupported=True
       )
-
-    #self.resource = self.addComplexInput(
-      #identifier="resource",
-      #title="Resource",
-      #abstract="URL to netCDF file",
-      #minOccurs=0,
-      #maxOccurs=1000,
-      #maxmegabites=5000,
-      #formats=[{"mimeType":"application/x-netcdf"}],
-      #)
 
     self.experiment = self.addLiteralInput(
       identifier="experiment",
@@ -43,26 +33,14 @@ class AnalogsProcess(WPSProcess):
       maxOccurs=1,
       allowedValues=_PRESSUREDATA_
       )
-
-    #self.region = self.addBBoxInput(
-      #identifier="region",
-      #title="Region",
-      #abstract="coordinates to define the region: (minlon,minlat,maxlon,maxlat)",
-      ##default='-80,50,22.5,70', #"-80,22.5,50,70",
-      ##type=type(''),
-      #minOccurs=1,
-      #maxOccurs=1,
-      #crss=["EPSG:4326"]
-      #)
-
-    self.region = self.addLiteralInput(
-      identifier="region",
-      title="Region",
-      abstract="coordinates to define the region: (minlon,minlat,maxlon,maxlat)",
-      default='-80,22.5,50,70', #"-80,22.5,50,70",
+   
+   self.BBox = self.addBBoxInput(
+      identifier="BBox",
+      title="Bounding Box",
+      abstract="coordinates to define the region to be analysed",
       minOccurs=1,
       maxOccurs=1,
-      type=type(''),
+      crss=['EPSG:4326']
       )
          
     self.dateSt = self.addLiteralInput(
@@ -116,6 +94,26 @@ class AnalogsProcess(WPSProcess):
       allowedValues=['None','base','sim','own']
         )
 
+    self.seasonwin = self.addLiteralInput(
+      identifier="seasonwin",
+      title="Seasonal window",
+      abstract="Number of days befor and after the date to be analysed",
+      default=30,
+      type=type(1),
+      minOccurs=0,
+      maxOccurs=1,
+      )
+
+    self.nanalog = self.addLiteralInput(
+      identifier="nanalog",
+      title="Nr of analogues",
+      abstract="Number of analogues to be detected",
+      default=20,
+      type=type(1),
+      minOccurs=0,
+      maxOccurs=1,
+      )    
+
     self.distance = self.addLiteralInput(
       identifier="dist",
       title="Distance",
@@ -148,33 +146,6 @@ class AnalogsProcess(WPSProcess):
       maxOccurs=1,
       )
 
-    # self.variable = self.addLiteralInput(
-    #   identifier="variable",
-    #   title="Variable",
-    #   abstract="Variable name in resource",
-    #   default='slp',
-    #   type=type(''),
-    #   minOccurs=0,
-    #   maxOccurs=1,
-    #   )
-
-    # self.seacyc = self.addLiteralInput(
-    #   identifier="seacyc",
-    #   title="Seasonal Cycle",
-    #   abstract="normalized by the Seasonal Cycle",
-    #   default=True,
-    #   type=type(boolean),
-    #   minOccurs=0,
-    #   maxOccurs=1,
-    #   )
-
-      # #seacyc=True, 
-      # cycsmooth=91, 
-      # nanalog=20, 
-      # seasonwin=30, 
-      # distfun='rms', 
-      # calccor=True,
-      # silent=False)
 
     ### ###################
     # define the outputs
@@ -211,52 +182,84 @@ class AnalogsProcess(WPSProcess):
      
     from os import path
     from tempfile import mkstemp
-    from flyingpigeon import analogs
     from datetime import datetime as dt
 
     from flyingpigeon.ocgis_module import call
-    
-    #from flyingpigeon.weatherregimes import get_NCEP
+    from flyingpigeon import analogs
     from flyingpigeon.datafetch import reanalyses
     
     self.status.set('execution started at : %s '  % dt.now(),5)
 
     start_time = time.time() # measure init ...
     
-    refSt = self.getInputValues(identifier='refSt')
-    refEn = self.getInputValues(identifier='refEn')
-    dateSt = self.getInputValues(identifier='dateSt')
-    dateEn = self.getInputValues(identifier='dateEn')
 
-    refSt = dt.strptime(refSt[0],'%Y-%m-%d')
-    refEn = dt.strptime(refEn[0],'%Y-%m-%d')
-    dateSt = dt.strptime(dateSt[0],'%Y-%m-%d')
-    dateEn = dt.strptime(dateEn[0],'%Y-%m-%d')
-    
-    normalize = self.getInputValues(identifier='normalize')[0]
-    if normalize == 'None': 
-      seacyc = False
-    else: 
-      seacyc = True
+    #######################
+    ### read input paramert
+    #######################
 
-    distance = self.getInputValues(identifier='dist')[0]
-    outformat = self.getInputValues(identifier='outformat')[0]
-    
-    if outformat == 'ascii': 
-      outformat = '.txt'
-    elif outformat == 'netCDF':
-      outformat = '.nc'
-    else:
-      logger.error('output format not valid')
-    
-    
-    timewin = int(self.getInputValues(identifier='timewin')[0])
-    start = min( refSt, dateSt )
-    end = max( refEn, dateEn )
-    region = self.getInputValues(identifier='region')[0]
-    bbox = [float(b) for b in region.split(',')]
-    experiment = self.getInputValues(identifier='experiment')[0]      
-    dataset , var = experiment.split('_')
+    try:
+      self.status.set('read input parameter : %s '  % dt.now(),5) 
+      refSt = self.getInputValues(identifier='refSt')
+      refEn = self.getInputValues(identifier='refEn')
+      dateSt = self.getInputValues(identifier='dateSt')
+      dateEn = self.getInputValues(identifier='dateEn')
+      seasonwin = int(self.getInputValues(identifier='seasonwin')[0])
+      nanalog = int(self.getInputValues(identifier='nanalog')[0])
+      bbox_obj = self.BBox.getValue()
+      normalize = self.getInputValues(identifier='normalize')[0]
+      distance = self.getInputValues(identifier='dist')[0]
+      outformat = self.getInputValues(identifier='outformat')[0]
+      timewin = int(self.getInputValues(identifier='timewin')[0])
+      experiment = self.getInputValues(identifier='experiment')[0]      
+
+      logger.info('input paramert set')
+    except Exception as e: 
+      msg = 'failed to read input prameter %s ' % e
+      logger.error(msg)  
+      raise Exception(msg)
+
+    ######################################
+    ### convert types and set environment
+    ######################################
+    try:
+      refSt = dt.strptime(refSt[0],'%Y-%m-%d')
+      refEn = dt.strptime(refEn[0],'%Y-%m-%d')
+      dateSt = dt.strptime(dateSt[0],'%Y-%m-%d')
+      dateEn = dt.strptime(dateEn[0],'%Y-%m-%d')
+      
+      if normalize == 'None': 
+        seacyc = False
+      else: 
+        seacyc = True
+
+      if outformat == 'ascii': 
+        outformat = '.txt'
+      elif outformat == 'netCDF':
+        outformat = '.nc'
+      else:
+        logger.error('output format not valid')
+      
+      start = min( refSt, dateSt )
+      end = max( refEn, dateEn )
+
+      if bbox_obj is not None:
+        logger.info("bbox_obj={0}".format(bbox_obj.coords))
+        bbox = [bbox_obj.coords[0][0], bbox_obj.coords[0][1],bbox_obj.coords[1][0],bbox_obj.coords[1][1]]
+        logger.info("bbox={0}".format(bbox))
+      else:
+        bbox=None
+
+      # region = self.getInputValues(identifier='region')[0]
+      # bbox = [float(b) for b in region.split(',')]
+      dataset , var = experiment.split('_')
+      logger.info('environment set')
+    except Exception as e: 
+      msg = 'failed to set environment %s ' % e
+      logger.error(msg)  
+      raise Exception(msg)
+
+    logger.debug("init took %s seconds.", time.time() - start_time)
+    self.status.set('Read in and convert the arguments', 5)
 
     try:            
       if dataset == 'NCEP': 
@@ -333,15 +336,14 @@ class AnalogsProcess(WPSProcess):
     
     self.status.set('writing config file', 15)
     start_time = time.time() # measure write config ...
-    
     try:  
       config_file = analogs.get_configfile(files=files, 
         timewin=timewin, 
         varname=var, 
         seacyc=seacyc, 
         cycsmooth=91, 
-        nanalog=20, 
-        seasonwin=30, 
+        nanalog=nanalog, 
+        seasonwin=seasonwin, 
         distfun=distance,
         outformat=outformat,
         calccor=True,

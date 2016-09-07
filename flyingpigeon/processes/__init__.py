@@ -9,6 +9,7 @@ __all__ = [
         "wps_weatherregimes_model",
         "wps_weatherregimes_projection",
         "wps_analogs_detection",
+        "wps_analogs_model",
         "wps_analogs_compare",
         "wps_analogs_viewer",
         "wps_segetalflora",
@@ -18,7 +19,7 @@ __all__ = [
         "wps_fetch",
 # climate for impact processes
         "wps_c4i_simple_indice",
-# processes to be development     
+# processes under development     
 #        "wps_eobs2cordex",
 #        "wps_robustness",
 # TODO: c4i processes with multiple input sources
