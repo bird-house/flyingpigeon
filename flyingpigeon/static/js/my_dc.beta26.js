@@ -523,8 +523,9 @@ dc.printers.filter = function (filter) {
 
     if (typeof filter !== 'undefined' && filter !== null) {
         if (filter instanceof Array) {
-            if (filter.length >= 2) {                
-                s = '[' + dc.utils.printSingleValue(filter[0]) + ' -> ' + dc.utils.printSingleValue(filter[1]) + ']';
+            if (filter.length >= 2) {
+                //CN edit
+                //s = '[' + dc.utils.printSingleValue(filter[0]) + ' -> ' + dc.utils.printSingleValue(filter[1]) + ']';
             } else if (filter.length >= 1) {
                 s = dc.utils.printSingleValue(filter[0]);
             }
