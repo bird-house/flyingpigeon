@@ -90,7 +90,8 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
   # execute ocgis 
   logger.info('Execute ocgis module call function')
   
-  time_range = eval_timerange(resource, time_range)
+  if time_range != None:
+    time_range = eval_timerange(resource, time_range)
 
   if has_Lambert_Conformal(resource) == True and not geom == None:
     logger.debug('input has Lambert_Conformal projection and can not subsetted with geom')
