@@ -58,10 +58,9 @@ class SDMProcess(WPSProcess):
           default="2.356138, 48.846450",
           type=type(''),
           minOccurs=1,
-          maxOccurs=100,
+          maxOccurs=1,
           )
 
-        
         self.input_indices = self.addLiteralInput(
             identifier="input_indices",
             title="Indices",
@@ -109,13 +108,13 @@ class SDMProcess(WPSProcess):
             asReference=True,
             )         
          
-        # self.output_analog = self.addComplexOutput(
-        #     identifier="output_analog",
-        #     title="Climate Analog",
-        #     abstract="Archive (tar/zip) containing calculated climate indices as netCDF files",
-        #     formats=[{"mimeType":"application/x-tar"}, {"mimeType":"application/zip"}],
-        #     asReference=True,
-        #     )
+        self.output_analogs = self.addComplexOutput(
+            identifier="output_analogs",
+            title="Spatial Analogs",
+            abstract="Archive (tar/zip) containing calculated climate indices as netCDF files",
+            formats=[{"mimeType":"application/x-tar"}, {"mimeType":"application/zip"}],
+            asReference=True,
+            )
 
         self.output_example = self.addComplexOutput(
             identifier="output_example",
@@ -125,13 +124,13 @@ class SDMProcess(WPSProcess):
             asReference=True,
             )
 
-        # self.output_info = self.addComplexOutput(
-        #     identifier="output_info",
-        #     title="GAM statistics information",
-        #     abstract="Graphics and information of the learning statistics",
-        #     formats=[{"mimeType":"image/png"}],
-        #     asReference=True,
-        #     )
+        self.output_info = self.addComplexOutput(
+            identifier="output_info",
+            title="GAM statistics information",
+            abstract="Graphics and information of the learning statistics",
+            formats=[{"mimeType":"image/png"}],
+            asReference=True,
+            )
 
     def execute(self):
       from os.path import basename
@@ -146,9 +145,9 @@ class SDMProcess(WPSProcess):
         resources = self.getInputValues(identifier='resources')
         #taxon_name = self.getInputValues(identifier='taxon_name')[0]
         #period = self.period.getValue()
-        coords = self.getInputValues(identifier='coords')
+        coords = self.getInputValues(identifier='coords')[0]
         period = self.getInputValues(identifier='period')[0]
-        
+        coordinate = [float(n) for n in coords.split(',')]
         
         #indices = self.input_indices.getValue()
         indices = self.getInputValues(identifier='input_indices')
@@ -191,66 +190,31 @@ class SDMProcess(WPSProcess):
         logger.exception(msg)
         raise Exception(msg)
 
-      # try:
-      #   # open tar files
-      #   tar_reference = tarfile.open('reference.tar', "w")
-      #   tar_indices = tarfile.open('indices.tar', "w")
+      ncs_references = []
+      analogs = []
+      statistics_info = []
 
-      #   tar_info = tarfile.open('info.tar', "w")
-      #   tar_prediction = tarfile.open('prediction.tar', "w")
-        
-      #   logger.info('tar files prepared')
-      # except:
-      #   msg = 'tar file preparation failed'
-      #   logger.exception(msg)
-      #   raise Exception(msg)
+      for count, key in enumerate(indices_dic.keys()):
+        try:
+          self.status.set('Start processing of %s ' % key, 40 + count * 10)
+          ncs = indices_dic[key]
+          logger.info('with %s files' % len(ncs))
 
+          gam_model, statistic_plot = sa.get_gam(ncs, coordinate)
+          statistics_info.append(statistic_plot)
+          self.status.set('GAM sucessfully trained', 70)
+        except:
+          msg = 'failed to train GAM'  
+          logger.exception(msg)
+          raise Exception(msg)
 
-      # ncs_references = []
-      # analogs = []
-      # statistics_info = []
-
-      # for count, key in enumerate(indices_dic.keys()):
-      #   # try:
-      #   #   self.status.set('Start processing of %s ' % key, 40 + count * 10)
-      #   #   ncs = indices_dic[key]
-      #   #   logger.info('with %s files' % len(ncs))
-            
-      #   #   # try: 
-      #   #   #   ncs_references.extend(sdm.get_reference(ncs_indices=ncs, period=period))
-      #   #   #   logger.info('reference indice calculated %s ' % ncs_references)
-      #   #   # except:
-      #   #   #   msg = 'failed adding ref indices to tar'
-      #   #   #   logger.exception(msg)
-      #   #   #   raise Exception(msg)
-          
-      #   #   # for nc_reference in ncs_references:
-      #   #   #   tar_reference.add(nc_reference, 
-      #   #   #       arcname = basename(nc_reference))# nc_reference.replace(os.path.abspath(os.path.curdir), ""))
-          
-      #   #   # logger.info('reference indices added to tarfile')
-          
-      #   # except:
-      #   #   msg = 'failed to calculate reference indices.'
-      #   #   logger.exception(msg)
-      #   #   raise Exception(msg)
-
-      #   try:
-      #     gam_model, predict_gam, gam_info = sdm.get_gam(ncs_references,PAmask)
-      #     statistics_info.append(gam_info)
-      #     self.status.set('GAM sucessfully trained', 70)
-      #   except:
-      #     msg = 'failed to train GAM'  
-      #     logger.exception(msg)
-      #     raise Exception(msg)
-
-      #   try:
-      #     prediction = sdm.get_prediction(gam_model, ncs_indices)
-      #     self.status.set('prediction done', 80)
-      #   except:
-      #     msg = 'failed to predict'   
-      #     logger.exception(msg)
-      #     raise Exception(msg)
+        try:
+          prediction = sdm.get_prediction(gam_model, ncs_indices)
+          self.status.set('prediction done', 80)
+        except:
+          msg = 'failed to predict'   
+          logger.exception(msg)
+          raise Exception(msg)
           
       #   try:
       #     from numpy import invert, isnan, nan, broadcast_arrays, array, zeros, linspace, meshgrid
@@ -261,25 +225,25 @@ class SDMProcess(WPSProcess):
       #   except: 
       #     logger.exception('failed to mask predicted data')
 
-      #   try: 
-      #     analogs.append(sdm.write_to_file(ncs_indices[0], prediction))
+        try: 
+          analogs.append(sdm.write_to_file(ncs_indices[0], prediction))
 
-      #     logger.info('Favourabillity written to file')
-      #     #tar_prediction.add(species_file, 
-      #      #               arcname = basename(species_file))#.replace(os.path.abspath(os.path.curdir), ""))
-      #   except:
-      #     msg = 'failed to write species file'
-      #     logger.exception(msg)
-      #     raise Exception(msg)
+          logger.info('Analog written to file')
+          #tar_prediction.add(species_file, 
+           #               arcname = basename(species_file))#.replace(os.path.abspath(os.path.curdir), ""))
+        except:
+          msg = 'failed to write species file'
+          logger.exception(msg)
+          raise Exception(msg)
 
-      # # from flyingpigeon.visualisation import concat_images
-      # # statistics_infos = None
-      # # try: 
-      # #   statistics_infos = concat_images(statistics_info, orientation='v')
-      # # except:
-      # #   msg = 'failed to concat images'  
-      # #   logger.exception(msg)
-      # #   raise Exception(msg)  
+      from flyingpigeon.visualisation import concat_images
+      statistics_infos = None
+      try: 
+        statistics_infos = concat_images(statistics_info, orientation='v')
+      except:
+        msg = 'failed to concat images'  
+        logger.exception(msg)
+        raise Exception(msg)  
 
       # # archive_references = None
       # # try:
@@ -291,21 +255,20 @@ class SDMProcess(WPSProcess):
       # #   raise Exception(msg)  
 
       # archive_analogs = None
-      # try:
-      #   archive_analogs = archive(analogs , format=archive_format)
-      #   logger.info('analog file added to archive')
-      # except:
-      #   msg = 'failed adding analog file to archive'  
-      #   logger.exception(msg)
-      #   raise Exception(msg)  
-
-
+      
+      try:
+        archive_analogs = archive(analogs , format=archive_format)
+        logger.info('analog file added to archive')
+      except:
+        msg = 'failed adding analog file to archive'  
+        logger.exception(msg)
+        raise Exception(msg)  
 
       self.output_indices.setValue( archive_indices )
-      # self.output_analogs.setValue (archive_analogs)
-      i = next((i for i, x in enumerate(ncs_indices) if x), None)
-      self.output_example.setValue (ncs_indices[i])
-      # self.output_info.setValue(statistics_infos)
+      self.output_analogs.setValue( archive_analogs )
+      i = next((i for i, x in enumerate(analogs) if x), None)
+      self.output_example.setValue (analogs[i])
+      self.output_info.setValue(statistics_infos)
 
       self.status.set('done', 100)
       

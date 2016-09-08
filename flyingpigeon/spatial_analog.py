@@ -47,8 +47,6 @@ def get_gam(ncs_indices, coordinate):
     dif = max(vals) - min(vals)
     a = append(vals - dif ,vals)
     vals = append(a, vals+dif)
-          
-    data[str(indice)] = ro.FloatVector(vals)
     
     if i == 0 :
       from numpy import zeros, ones
@@ -60,33 +58,36 @@ def get_gam(ncs_indices, coordinate):
     else: 
       form = form + ' + s(%s, k=3)' % indice
 
+    data[str(indice)] = ro.FloatVector(vals)
+  
   dataf = ro.DataFrame(data)
   eq = ro.Formula(str(form))
   gam_model = mgcv.gam(base.eval(eq), data=dataf, family=stats.binomial(), scale=-1, na_action=stats.na_exclude) # 
-  grdevices = importr('grDevices')
+  
   
   # ### ###########################
   # # plot response curves
   # ### ###########################
 
-  # from flyingpigeon.visualisation import concat_images
-  # from tempfile import mkstemp
-  # infos = []
+  from flyingpigeon.visualisation import concat_images
+  from tempfile import mkstemp
+  grdevices = importr('grDevices')
+  infos = []
 
-  # for i in range(1,len(ncs_reference)+1):
-  #   #ip, info =  mkstemp(dir='.',suffix='.pdf')
-  #   ip, info =  mkstemp(dir='.',suffix='.png')
-  #   infos.append(info)
-  #   grdevices.png(filename=info)
-  #   #grdevices.pdf(filename=info)
-  #   #ylim = ro.IntVector([-6,6])
-  #   trans = ro.r('function(x){exp(x)/(1+exp(x))}')
-  #   mgcv.plot_gam(gam_model, trans=trans, shade='T', col='black',select=i,ylab='Predicted Probability',rug=False , cex_lab = 1.4, cex_axis = 1.4, ) #
-  #   #ylim=ylim,  ,
-  #   grdevices.dev_off()
+  for i in range(1,len(ncs_indices)+1):
+    #ip, info =  mkstemp(dir='.',suffix='.pdf')
+    ip, info =  mkstemp(dir='.',suffix='.png')
+    infos.append(info)
+    grdevices.png(filename=info)
+    #grdevices.pdf(filename=info)
+    #ylim = ro.IntVector([-6,6])
+    trans = ro.r('function(x){exp(x)/(1+exp(x))}')
+    mgcv.plot_gam(gam_model, trans=trans, shade='T', col='black',select=i,ylab='Predicted Probability',rug=False , cex_lab = 1.4, cex_axis = 1.4, ) #
+    #ylim=ylim,  ,
+    grdevices.dev_off()
     
-  # infos_concat = concat_images(infos, orientation='h')
-  # predict_gam = mgcv.predict_gam(gam_model, type="response", progress="text", na_action=stats.na_exclude) #, 
-  # prediction = array(predict_gam).reshape(domain)
+  infos_concat = concat_images(infos, orientation='h')
+  #predict_gam = mgcv.predict_gam(gam_model, type="response", progress="text", na_action=stats.na_exclude) #, 
+  #prediction = array(predict_gam).reshape(domain)
     
-  return timeseries, vals, gam_model 
+  return  gam_model , infos_concat 
