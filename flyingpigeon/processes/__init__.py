@@ -15,6 +15,7 @@ __all__ = [
         "wps_segetalflora",
         "wps_sdm_gbif",
         "wps_sdm_csv",
+        "wps_spatial_analog",
         "wps_plot_timeseries",
         "wps_fetch",
 # climate for impact processes
