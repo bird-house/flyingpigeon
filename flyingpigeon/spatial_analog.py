@@ -27,9 +27,7 @@ def get_gam(ncs_indices, coordinate):
     logger.debug(msg)
     raise Exception(msg)
 
-  data = {}
-
-  for ncs in ncs_indices:
+  for i, ncs in enumerate(ncs_indices):
     # ocgis need unrotated coordinates to extract points
     # unrotate_pole writes lats lons into the file. 
     # ACHTUNG: will fail if the data is stored on a file system with no write permissions 
@@ -45,39 +43,27 @@ def get_gam(ncs_indices, coordinate):
     
     ts = Dataset(timeseries)
     vals = squeeze(ts.variables[variable][:])
+    from numpy import min, max, mean, append, zeros, ones
+    dif = max(vals) - min(vals)
+    a = append(vals - dif ,vals)
+    vals = append(a, vals+dif)
+          
+    data[str(indice)] = ro.FloatVector(vals)
     
-    data[str(indice)] = ro.FloatVector(ravel(vals))
+    if i == 0 :
+      from numpy import zeros, ones
+      a = append (zeros(len(vals)) , ones(len(vals)) )
+      PA = append(a , zeros(len(vals)))
+      data = {'PA': ro.FloatVector(PA)}
+      form = 'PA ~ '
+      form = form + 's(%s, k=3)' % indice 
+    else: 
+      form = form + ' + s(%s, k=3)' % indice
 
-
-  # try: 
-  #   data = {'PA': ro.FloatVector(ravel(PAmask))}
-  #   domain = PAmask.shape
-  #   logger.info('mask data converted to R float vector')
-  # except Exception as e: 
-  #   msg = 'failed to convert mask to R vector'
-  # form = 'PA ~ '
-  # ncs_reference.sort()
-  # try:
-  #   for i , nc in enumerate(ncs_reference):
-  #     var = get_variable(nc)
-  #     agg = basename(nc).split('_')[-2]
-  #     ds = Dataset(nc)
-  #     vals = squeeze(ds.variables[var])
-  #     vals[vals > 1000 ] = 0 
-  #     vals[isnan(PAmask)] = nan 
-  #     indice = '%s_%s' % (var, agg)
-  #     data[str(indice)] = ro.FloatVector(ravel(vals))
-  #     if i == 0:
-  #       form = form + 's(%s, k=3)' % indice 
-  #     else: 
-  #       form = form + ' + s(%s, k=3)' % indice
-  # except Exception as e:
-  #   logger.debug('form string generation for gam failed')
-  
-  # dataf = ro.DataFrame(data)
-  # eq = ro.Formula(str(form))
-  # gam_model = mgcv.gam(base.eval(eq), data=dataf, family=stats.binomial(), scale=-1, na_action=stats.na_exclude) # 
-  # grdevices = importr('grDevices')
+  dataf = ro.DataFrame(data)
+  eq = ro.Formula(str(form))
+  gam_model = mgcv.gam(base.eval(eq), data=dataf, family=stats.binomial(), scale=-1, na_action=stats.na_exclude) # 
+  grdevices = importr('grDevices')
   
   # ### ###########################
   # # plot response curves
@@ -103,4 +89,4 @@ def get_gam(ncs_indices, coordinate):
   # predict_gam = mgcv.predict_gam(gam_model, type="response", progress="text", na_action=stats.na_exclude) #, 
   # prediction = array(predict_gam).reshape(domain)
     
-  return timeseries , vals 
+  return timeseries, vals, gam_model 
