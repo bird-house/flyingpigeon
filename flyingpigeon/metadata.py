@@ -266,7 +266,7 @@ def get_extent(resource):
   else: 
     ds.close()
     from flyingpigeon import utils 
-    lats, lons = utils.unroate_pole(resource)
+    lats, lons = utils.unrotate_pole(resource)
 
   min_lat = lats[:].min() 
   max_lat = lats[:].max()

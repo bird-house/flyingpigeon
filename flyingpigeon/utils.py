@@ -287,13 +287,21 @@ def get_coordinates(nc_file):
   lons = None
   try:
     ds = Dataset(nc_file)
-    lats = ds.variables['lat']
-    lons = ds.variables['lon']
-  except:
-    msg = 'failed to extract coordinates'
+
+    if 'lat' in ds.variables.keys():
+      lats = ds.variables['lat']
+      lons = ds.variables['lon']
+    elif 'rlat' in ds.variables.keys():
+      ds.close()
+      unrotate_pole(nc_file, write_to_file=True)
+      ds = Dataset(nc_file)
+      lats = ds.variables['lat']
+      lons = ds.variables['lon']
+
+  except Exception as e:
+    msg = 'failed to extract coordinates: %s ' % e 
     logger.debug(msg)
     raise Exception(msg)
-
   return lats, lons
 
 
@@ -723,57 +731,62 @@ def get_dimension_map(resource):
     dimension_map = None
   return dimension_map
 
-def unroate_pole(resource, write_to_file=True):
+def unrotate_pole(resource, write_to_file=True):
   from numpy import reshape, repeat
   from iris.analysis import cartography  as ct
-
   ds = Dataset(resource, mode='a')
 
-  try:
-    if 'rotated_latitude_longitude' in ds.variables:
-      rp = ds.variables['rotated_latitude_longitude']
-    elif 'rotated_pole' in ds.variables:
-      rp = ds.variables['rotated_pole']
-    else:
-      logger.debug('rotated pole variable not found')
-    pole_lat = rp.grid_north_pole_latitude
-    pole_lon = rp.grid_north_pole_longitude
-  except Exception as e:
-    logger.debug('failed to find rotated_pole coorinates: %s' % e)
-  try:
-    if 'rlat' in ds.variables:
-      rlats = ds.variables['rlat']
-      rlons = ds.variables['rlon']
+  if 'lat' in ds.variables.keys(): 
+    logger.info('coordinates already unrotated')
+    lats = ds.variables['lat'][:]
+    lons = ds.variables['lon'][:]
 
-    if 'x' in ds.variables:
-      rlats = ds.variables['y']
-      rlons = ds.variables['x']
-  except Exception as e:
-    logger.debug('failed to read in rotated coordiates %s '% e)
+  else: 
+    try:
+      if 'rotated_latitude_longitude' in ds.variables:
+        rp = ds.variables['rotated_latitude_longitude']
+      elif 'rotated_pole' in ds.variables:
+        rp = ds.variables['rotated_pole']
+      else:
+        logger.debug('rotated pole variable not found')
+      pole_lat = rp.grid_north_pole_latitude
+      pole_lon = rp.grid_north_pole_longitude
+    except Exception as e:
+      logger.debug('failed to find rotated_pole coorinates: %s' % e)
+    try:
+      if 'rlat' in ds.variables:
+        rlats = ds.variables['rlat']
+        rlons = ds.variables['rlon']
 
-  try:
-    rlons_i = reshape(rlons,(1,len(rlons)))
-    rlats_i = reshape(rlats,(len(rlats),1))
-    grid_rlats = repeat(rlats_i, (len(rlons)), axis=1)
-    grid_rlons = repeat(rlons_i, (len(rlats)), axis=0)
-  except Exception as e:
-    logger.debug('failed to repeat coordinates %s'% e)
+      if 'x' in ds.variables:
+        rlats = ds.variables['y']
+        rlons = ds.variables['x']
+    except Exception as e:
+      logger.debug('failed to read in rotated coordiates %s '% e)
 
-  lons, lats = ct.unrotate_pole(grid_rlons, grid_rlats, pole_lon, pole_lat)
+    try:
+      rlons_i = reshape(rlons,(1,len(rlons)))
+      rlats_i = reshape(rlats,(len(rlats),1))
+      grid_rlats = repeat(rlats_i, (len(rlons)), axis=1)
+      grid_rlons = repeat(rlons_i, (len(rlats)), axis=0)
+    except Exception as e:
+      logger.debug('failed to repeat coordinates %s'% e)
 
-  if write_to_file == True:
-    lat = ds.createVariable('lat','f8',('rlat','rlon'))
-    lon = ds.createVariable('lon','f8',('rlat','rlon'))
+    lons, lats = ct.unrotate_pole(grid_rlons, grid_rlats, pole_lon, pole_lat)
 
-    lon.standard_name = "longitude" ;
-    lon.long_name = "longitude coordinate" ;
-    lon.units = 'degrees_east'
-    lat.standard_name = "latitude" ;
-    lat.long_name = "latitude coordinate" ;
-    lat.units = 'degrees_north'
+    if write_to_file == True:
+      lat = ds.createVariable('lat','f8',('rlat','rlon'))
+      lon = ds.createVariable('lon','f8',('rlat','rlon'))
 
-    lat[:] = lats
-    lon[:] = lons
+      lon.standard_name = "longitude" ;
+      lon.long_name = "longitude coordinate" ;
+      lon.units = 'degrees_east'
+      lat.standard_name = "latitude" ;
+      lat.long_name = "latitude coordinate" ;
+      lat.units = 'degrees_north'
+
+      lat[:] = lats
+      lon[:] = lons
 
   ds.close()
 
