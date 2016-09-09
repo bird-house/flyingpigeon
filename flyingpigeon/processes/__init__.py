@@ -15,12 +15,12 @@ __all__ = [
         "wps_segetalflora",
         "wps_sdm_gbif",
         "wps_sdm_csv",
-        "wps_spatial_analog",
         "wps_plot_timeseries",
         "wps_fetch",
 # climate for impact processes
         "wps_c4i_simple_indice",
 # processes under development     
+       "wps_spatial_analog",
 #        "wps_eobs2cordex",
 #        "wps_robustness",
 # TODO: c4i processes with multiple input sources
