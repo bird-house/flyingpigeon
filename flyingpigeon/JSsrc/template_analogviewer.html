@@ -83,8 +83,9 @@
         //Set initial date range to display
         init_date0 = dateFormat.parse(data[0].dateRef + dataHour);
         //Add one year to initial date. If > maxDate, use maxDate
-        if (dateFormat.parse(data[0].dateRef + dataHour).addDays(365).getTime() < maxDate.getTime()) {
-          init_date1 = dateFormat.parse(data[0].dateRef + dataHour).addDays(365);
+        if (dateFormat.parse(data[0].dateRef + dataHour).addDays(364).getTime() < maxDate.getTime()) {
+          init_date1 = dateFormat.parse(data[0].dateRef + dataHour).addDays(364);
+          init_date1.setHours(14); //to catch last day of month at 12:00
         } else {
           init_date1 = maxDate;
         }
@@ -416,9 +417,11 @@
                   changeTextboxDates(start_day, end_day);
 
               } else {//resoln = month; take dates from chart filters
+                //Subtract 1 day from filter limit
+                var end_day = shiftDay("subtractDay");
 
                 //Update date display in calendar text boxes
-                changeTextboxDates(poiChart.filter()[0], poiChart.filter()[1]);
+                changeTextboxDates(poiChart.filter()[0], end_day);
 
               }//end monthResoln check
 
