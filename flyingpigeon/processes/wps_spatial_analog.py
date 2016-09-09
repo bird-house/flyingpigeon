@@ -169,16 +169,16 @@ class SDMProcess(WPSProcess):
         logger.info('indice calculation done')
       except:
         msg = 'failed to calculate indices'
-        logger.exception(msg)
-        raise Exception(msg)
+        logger.debug(msg)
+        # raise Exception(msg)
 
       try:
         archive_indices = archive(ncs_indices , format=archive_format)
         logger.info('indices 3D added to tarfile')
       except:
         msg = 'failed adding indices to tar'  
-        logger.exception(msg)
-        raise Exception(msg)  
+        logger.debug(msg)
+        # raise Exception(msg)  
 
       indices_dic = None
       try: 
@@ -187,8 +187,8 @@ class SDMProcess(WPSProcess):
         logger.info('indice files sorted for %s Datasets' % len(indices_dic.keys()))
       except:
         msg = 'failed to sort indices'
-        logger.exception(msg)
-        raise Exception(msg)
+        logger.debug(msg)
+        # raise Exception(msg)
 
       ncs_references = []
       analogs = []
@@ -205,16 +205,16 @@ class SDMProcess(WPSProcess):
           self.status.set('GAM sucessfully trained', 70)
         except:
           msg = 'failed to train GAM'  
-          logger.exception(msg)
-          raise Exception(msg)
+          logger.debug(msg)
+          # raise Exception(msg)
 
         try:
           prediction = sdm.get_prediction(gam_model, ncs_indices)
           self.status.set('prediction done', 80)
         except:
           msg = 'failed to predict'   
-          logger.exception(msg)
-          raise Exception(msg)
+          logger.debug(msg)
+          # raise Exception(msg)
           
       #   try:
       #     from numpy import invert, isnan, nan, broadcast_arrays, array, zeros, linspace, meshgrid
@@ -223,7 +223,7 @@ class SDMProcess(WPSProcess):
       #     prediction[mask==False] = nan
       #     self.status.set('land sea mask for predicted data', 90)
       #   except: 
-      #     logger.exception('failed to mask predicted data')
+      #     logger.debug('failed to mask predicted data')
 
         try: 
           analogs.append(sdm.write_to_file(ncs_indices[0], prediction))
@@ -233,17 +233,18 @@ class SDMProcess(WPSProcess):
            #               arcname = basename(species_file))#.replace(os.path.abspath(os.path.curdir), ""))
         except:
           msg = 'failed to write species file'
-          logger.exception(msg)
-          raise Exception(msg)
+          logger.debug(msg)
+          # raise Exception(msg)
 
       from flyingpigeon.visualisation import concat_images
       statistics_infos = None
       try: 
         statistics_infos = concat_images(statistics_info, orientation='v')
+        logger.info('statistc graphics concatinated')
       except:
         msg = 'failed to concat images'  
-        logger.exception(msg)
-        raise Exception(msg)  
+        logger.debug(msg)
+        # raise Exception(msg)  
 
       # # archive_references = None
       # # try:
@@ -251,9 +252,8 @@ class SDMProcess(WPSProcess):
       # #   logger.info('indices 2D added to archive')
       # # except:
       # #   msg = 'failed adding 2D indices to archive'  
-      # #   logger.exception(msg)
-      # #   raise Exception(msg)  
-
+      # #   logger.debug(msg)
+      # #   # raise Exception(msg) 
       # archive_analogs = None
       
       try:
@@ -261,8 +261,8 @@ class SDMProcess(WPSProcess):
         logger.info('analog file added to archive')
       except:
         msg = 'failed adding analog file to archive'  
-        logger.exception(msg)
-        raise Exception(msg)  
+        logger.debug(msg)
+        # raise Exception(msg)  
 
       self.output_indices.setValue( archive_indices )
       self.output_analogs.setValue( archive_analogs )

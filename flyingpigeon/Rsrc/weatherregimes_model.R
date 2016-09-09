@@ -105,7 +105,9 @@ for(i in 1:nrow(dat.m)){
 ###############
 ##### plot EOFs
 
-pdf(file=output_graphics)
+library("Cairo")
+#pdf(file=output_graphics)
+CairoPDF(output_graphics, width = 7, height = 7, pointsize = 12)
 
 # layout(matrix(1:(2*ceiling(nreg/2)),2,ceiling(nreg/2)))
 par(mar=c(4,6,2,2))
@@ -128,7 +130,7 @@ for(i in 1:nreg){
     map(add=TRUE)
 }
 
-dev.off()
+#dev.off()
 
 ## Saving the classification of Weather Regimes that we will use for projections
 save(file=file_classification,dat.class,nreg,dat.climatol,dat.rms,dat.cor,mean.clim.ref,lon,lat,time) #

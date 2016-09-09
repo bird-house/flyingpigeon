@@ -31,63 +31,84 @@ def get_gam(ncs_indices, coordinate):
     # ocgis need unrotated coordinates to extract points
     # unrotate_pole writes lats lons into the file. 
     # ACHTUNG: will fail if the data is stored on a file system with no write permissions 
+    try: 
+      lats, lons = unrotate_pole(ncs, write_to_file=True)
+      point = Point(float(coordinate[0]), float(coordinate[1]))
+      # get the values
+      variable = get_variable(ncs)
+      agg = basename(ncs).split('_')[-2]
+      indice = '%s_%s' % (variable, agg)
+      timeseries = call(resource=ncs, geom=point, select_nearest=True)
+      ts = Dataset(timeseries)
+      vals = squeeze(ts.variables[variable][:])
+      from numpy import min, max, mean, append, zeros, ones
+      dif = max(vals) - min(vals)
+      a = append(vals - dif ,vals)
+      vals = append(a, vals+dif)
+      
+      if i == 0 :
+        from numpy import zeros, ones
+        a = append (zeros(len(vals)) , ones(len(vals)) )
+        PA = append(a , zeros(len(vals)))
+        data = {'PA': ro.FloatVector(PA)}
+        data[str(indice)] = ro.FloatVector(vals)
+        form = 'PA ~ '
+        form = form + 's(%s, k=3)' % indice 
+      else: 
+        form = form + ' + s(%s, k=3)' % indice
+        data[str(indice)] = ro.FloatVector(vals)
 
-    lats, lons = unrotate_pole(ncs, write_to_file=True)
-    point = Point(float(coordinate[0]), float(coordinate[1]))
-    # get the values
-    variable = get_variable(ncs)
-    agg = basename(ncs).split('_')[-2]
-    indice = '%s_%s' % (variable, agg)
-    
-    timeseries = call(resource=ncs, geom=point, select_nearest=True)
-    
-    ts = Dataset(timeseries)
-    vals = squeeze(ts.variables[variable][:])
-    from numpy import min, max, mean, append, zeros, ones
-    dif = max(vals) - min(vals)
-    a = append(vals - dif ,vals)
-    vals = append(a, vals+dif)
-    
-    if i == 0 :
-      from numpy import zeros, ones
-      a = append (zeros(len(vals)) , ones(len(vals)) )
-      PA = append(a , zeros(len(vals)))
-      data = {'PA': ro.FloatVector(PA)}
-      form = 'PA ~ '
-      form = form + 's(%s, k=3)' % indice 
-    else: 
-      form = form + ' + s(%s, k=3)' % indice
+    except Exception as e: 
+      msg = 'Failed to prepare data %s' % e
+      logger.debug(msg)
 
-    data[str(indice)] = ro.FloatVector(vals)
-  
-  dataf = ro.DataFrame(data)
-  eq = ro.Formula(str(form))
-  gam_model = mgcv.gam(base.eval(eq), data=dataf, family=stats.binomial(), scale=-1, na_action=stats.na_exclude) # 
-  
+  try: 
+      
+    logger.info(data)  
+    dataf = ro.DataFrame(data)
+    eq = ro.Formula(str(form))
+    gam_model = mgcv.gam(base.eval(eq), data=dataf, family=stats.binomial(), scale=-1, na_action=stats.na_exclude) # 
+    logger.info('GAM model trained')
+  except Exception as e: 
+    msg = 'Failed to generate GAM model %s' % e
+    logger.debug(msg)
   
   # ### ###########################
   # # plot response curves
   # ### ###########################
-
-  from flyingpigeon.visualisation import concat_images
-  from tempfile import mkstemp
-  grdevices = importr('grDevices')
-  infos = []
-
-  for i in range(1,len(ncs_indices)+1):
-    #ip, info =  mkstemp(dir='.',suffix='.pdf')
-    ip, info =  mkstemp(dir='.',suffix='.png')
-    infos.append(info)
-    grdevices.png(filename=info)
-    #grdevices.pdf(filename=info)
-    #ylim = ro.IntVector([-6,6])
-    trans = ro.r('function(x){exp(x)/(1+exp(x))}')
-    mgcv.plot_gam(gam_model, trans=trans, shade='T', col='black',select=i,ylab='Predicted Probability',rug=False , cex_lab = 1.4, cex_axis = 1.4, ) #
-    #ylim=ylim,  ,
-    grdevices.dev_off()
+  try: 
+    from flyingpigeon.visualisation import concat_images
+    from tempfile import mkstemp
+    grdevices = importr('grDevices')
+    graphicDev = importr('Cairo')
+    infos = []    
+    for i in range(1,len(ncs_indices)+1):
+      
+      ip, info =  mkstemp(dir='.',suffix='.png')
+      #grdevices.png(filename=info)
+      #graphicDev.CairoPDF(info, width = 7, height = 7, pointsize = 12)
+      graphicDev.CairoPNG(info, width = 640 , height = 480, pointsize = 12) # 640, 480) #,  pointsize = 12  width = 30, height = 30,
+      print 'file opened!'
+      
+      infos.append(info)
+      #grdevices.png(filename=info)
+            
+      ylim = ro.IntVector([-6,6])
+      trans = ro.r('function(x){exp(x)/(1+exp(x))}')
+      mgcv.plot_gam(gam_model, trans=trans, shade='T',
+                    col='black',select=i,ylab='Predicted Probability',rug=False ,
+                    cex_lab = 1.4, cex_axis = 1.4, ) #
+      print 'gam plotted ;-)'
+      #ylim=ylim,  ,
+      grdevices.dev_off()
+      #graphicDev.dev_off()
+      #graphicDev.Cairo_onSave( dev_cur(), onSave=True )
+      
+    print(' %s plots generated ' % len(infos))
+    infos_concat = concat_images(infos, orientation='h')
+  except Exception as e: 
+    msg = 'Failed to plot statistical graphic %s' % e
+    logger.debug(msg)
+    raise Exception(msg)
     
-  infos_concat = concat_images(infos, orientation='h')
-  #predict_gam = mgcv.predict_gam(gam_model, type="response", progress="text", na_action=stats.na_exclude) #, 
-  #prediction = array(predict_gam).reshape(domain)
-    
-  return  gam_model , infos_concat 
+  return  gam_model, infos_concat 
