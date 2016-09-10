@@ -230,11 +230,11 @@ def eval_timerange(resource, time_range):
   start = time[0]
   end = time[-1]
 
-  if (time_range[0] >= start or time_range[0] <= end ):
+  if (time_range[0] > start or time_range[0] < end ):
     logger.debug('time range start %s not in input dataset covering: %s to %s' %  (time_range[0] , start, end))
     time_range[0] = start
     logger.debug('time_range start changed to first timestep of dataset')
-  if (time_range[1] >= end or time_range[1] <= start ):
+  if (time_range[1] > end or time_range[1] < start ):
     logger.debug('time range end %s not in input dataset covering: %s to %s' %  (time_range[0] , start, end))
     time_range[1] = end
     logger.debug('time_range end changed to last timestep of dataset')
