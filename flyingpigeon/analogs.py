@@ -2,13 +2,19 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def get_configfile(files, timewin=1, varname='slp', seacyc=False,
-                   cycsmooth=91, nanalog=20, 
+def get_configfile(files, 
+                   timewin=1, 
+                   varname='slp',
+                   seacyc=False,
+                   cycsmooth=91, 
+                   nanalog=20, 
                    seasonwin=30, 
-                   distfun='rms', outformat='.txt',
+                   distfun='rms', 
+                   outformat='.txt',
                    period=["1973-01-01","2012-12-31"], 
-                   bbox="-80.0,50.0,22.5,70.0",
-                   calccor=True, silent=False, ): 
+                   bbox="-180.0,-90.0,180,90.0",
+                   calccor=True, 
+                   silent=False, ): 
   """
   Generating the configuration file for CASTf90 calculation
 
@@ -71,7 +77,7 @@ def get_configfile(files, timewin=1, varname='slp', seacyc=False,
   config.write('my_atts%predictorvar = "{varname}" \n'.format(varname=varname))
   config.write('my_atts%archisource = "NCEP" \n')
   config.write('my_atts%archiperiod = "{start},{end}" \n'.format(start=period[0], end=period[1]))
-  config.write('my_atts%predictordom = "-80.0,50.0,22.5,70.0" \n') # .format(bbox))
+  config.write('my_atts%predictordom = "{bbox}" \n'.format(bbox=bbox))
   config.write('/\n')
   
   config.close()
