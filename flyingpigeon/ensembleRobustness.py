@@ -6,7 +6,7 @@ from flyingpigeon.utils import get_time
 import logging
 logger = logging.getLogger(__name__)
 
-def worker(resource=[], start=None, end=None, timeslice=20, 
+def method_A(resource=[], start=None, end=None, timeslice=20, 
   variable=None, title=None, cmap='seismic' ):
   """retuns the result
   
@@ -35,6 +35,7 @@ def worker(resource=[], start=None, end=None, timeslice=20,
     msg = 'failed to sort the input files'
     logger.exception(msg)
     raise Exception(msg)
+  
 
   try:
     mergefiles = []
@@ -170,24 +171,24 @@ def worker(resource=[], start=None, end=None, timeslice=20,
     logger.exception(msg)
     raise Exception(msg)
   
-  try: 
+  #try: 
+    #if variable == None: 
+      #variable = get_variable(signal)
+    #logger.info('variable to be plotted: %s' % variable)
     
-    if variable == None: 
-      variable = get_variable(signal)
-
-    if title == None: 
-      title='Change of %s (difference of mean %s-%s to %s-%s)' % (variable, end1, end2, start1, start2)  
+    #if title == None: 
+      #title='Change of %s (difference of mean %s-%s to %s-%s)' % (variable, end1, end2, start1, start2)  
     
-    logger.info('variable to be plotted: %s' % variable)
-    graphic = None
-    graphic = map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, 
-              variable=variable, 
-              cmap=cmap,
-              title = title)
-
-  except Exception as e:
-    print 'graphic generation failed'
-    #msg = 'graphic generation failed'
+    #graphic = None
+    #graphic = map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, 
+              #variable=variable, 
+              #cmap=cmap,
+              #title = title)
+    
+    #logger.info('graphic generated')
+  #except Exception as e:
+    #logger.debug('graphic generation failed: %s' % e)
+    ##msg = 'graphic generation failed'
     #logger.exception(msg)
     #raise Exception(msg)
-  return signal, low_agreement_mask, high_agreement_mask, graphic, text_src
+  return signal, low_agreement_mask, high_agreement_mask, text_src # graphic,
