@@ -15,6 +15,7 @@ __all__ = [
         "wps_segetalflora",
         "wps_sdm_gbif",
         "wps_sdm_csv",
+        "wps_robustness",
         "wps_plot_timeseries",
         "wps_fetch",
 # climate for impact processes
@@ -22,7 +23,7 @@ __all__ = [
 # processes under development     
        "wps_spatial_analog",
 #        "wps_eobs2cordex",
-#        "wps_robustness",
+
 # TODO: c4i processes with multiple input sources
         #"wps_c4i_multivar_indice",
         #"wps_c4i_percentile_indice",
