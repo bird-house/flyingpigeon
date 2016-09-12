@@ -20,27 +20,66 @@ def make_dirs(directory):
   """
   if not os.path.exists(directory):
     os.makedirs(directory)
+    
+def check_creationtime(path, url): 
+  """
+  Compares the creation time of am archive file with the file creation time of the local disc space. 
+  
+  :param path: Path to the local file
+  :param url: Url to the archive file
+  
+  :returns boolean: True/False (True if archive file is newer)
+  """
+  import urllib2
+  import os, datetime, time
+  
+
+  u = urllib2.urlopen(url)
+  meta = u.info()
+  logger.info("Last Modified: " + str(meta.getheaders("Last-Modified")[0]))
+
+  # CONVERTING HEADER TIME TO UTC TIMESTAMP 
+  # ASSUMING 'Sun, 28 Jun 2015 06:30:17 GMT' FORMAT
+  meta_modifiedtime = time.mktime(datetime.datetime.strptime( \
+                      meta.getheaders("Last-Modified")[0], "%a, %d %b %Y %X GMT").timetuple())
+
+  #file = 'C:\Path\ToFile\somefile.xml'
+  if os.path.getmtime(path) > meta_modifiedtime:
+    logger.info("CPU file is older than server file.")
+    newer = True
+  else:
+    logger.info("CPU file is NOT older than server file.")
+    newer = False
+  
+  return newer  
 
 def download(url, cache=False):
     """
     Downloads URL using the Python wget module to the current directory.
     :param cache: if True then files will be downloaded to a cache directory.
     """
-    if cache:
-        parsed_url = urlparse.urlparse(url)
-        filename = os.path.join(config.cache_path(), parsed_url.netloc, parsed_url.path.strip('/'))
-        if os.path.exists(filename):
-            logger.debug('file already in cache: %s', filename)
-        else:
-            if not os.path.exists(os.path.dirname(filename)):
-                os.makedirs(os.path.dirname(filename))
-            logger.info('downloading: %s', url)
-            filename = wget.download(url, out=filename, bar=None)
-        # make softlink to current dir
-        #os.symlink(filename, os.path.basename(filename))
-        #filename = os.path.basename(filename)
-    else:
-        filename = wget.download(url, bar=None)
+    try:
+      if cache:
+          parsed_url = urlparse.urlparse(url)
+          filename = os.path.join(config.cache_path(), parsed_url.netloc, parsed_url.path.strip('/'))
+          if os.path.exists(filename):
+              logger.info('file already in cache: %s', os.path.basename(filename))
+              if check_creationtime(filename, url):
+                logger.info('file in cache older than archive file, downloading: %s ', os.path.basename(filename))
+                os.remove(filename)
+                filename = wget.download(url, out=filename, bar=None)
+          else:
+              if not os.path.exists(os.path.dirname(filename)):
+                  os.makedirs(os.path.dirname(filename))
+              logger.info('downloading: %s', url)
+              filename = wget.download(url, out=filename, bar=None)
+          # make softlink to current dir
+          #os.symlink(filename, os.path.basename(filename))
+          #filename = os.path.basename(filename)
+      else:
+          filename = wget.download(url, bar=None)
+    except Exception as e: 
+      logger.debug('failed to download data %s' % e)
     return filename
 
 def archive(resources, format='tar', dir_output='.', mode='w'):

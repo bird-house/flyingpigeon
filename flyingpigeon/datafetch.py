@@ -50,7 +50,7 @@ def reanalyses( start=1948, end=None, variable='slp', dataset='NCEP'):
   else:
     level = None
 
-  print level
+  logger.info('level: %s' % level)
 
   try:
     for year in range(start, end + 1):
