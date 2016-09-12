@@ -45,14 +45,6 @@ class AnalogsviewerProcess(WPSProcess):
             type=type(''),
             )
 
-        # self.output_txt = self.addComplexOutput(
-        #     identifier="output_txt",
-        #     title="modified analogs txt file",
-        #     abstract="txt file for analog viewer",
-        #     formats=[{"mimeType":"text/txt"}],
-        #     asReference=True,
-        #     )
-
     def execute(self):
         ######################
         # start execution 
@@ -61,8 +53,12 @@ class AnalogsviewerProcess(WPSProcess):
         from flyingpigeon.config import JSsrc_dir
         tmpl = JSsrc_dir() + '/template_analogviewer.html'
 
-        #Output csv file of analogs process
-        analogs = self.getInputValues(identifier='resource')[0]     
+        #Get the output csv file of analogs process (input by user in text box)
+        analogs = self.getInputValues(identifier='resource')[0]
+
+        #Get the output config file of analogs process using name of analogs file
+        #(They share the same name tag)
+        configfile = analogs.replace('analogs-', 'config-')
 
         ###########################################
         # reorganize analog txt file for javascript
@@ -73,7 +69,6 @@ class AnalogsviewerProcess(WPSProcess):
         from flyingpigeon.config import www_url
         #my_css_url = www_url() + "/static/css/style.css"
 
-        #begin CN
         #use as test input file: http://birdhouse-lsce.extra.cea.fr:8090/wpsoutputs/flyingpigeon/output_txt-0797016c-378e-11e6-91dd-41d8cd554993.txt
         import numpy as np
         import pandas as pd
@@ -138,24 +133,16 @@ class AnalogsviewerProcess(WPSProcess):
         from os.path import basename
         
         ip, output_av = mkstemp(suffix='.html', prefix='analogviewer', dir='.', text=False)
-        #copyfile(tmpl, output_av) 
 
         tmpl_file = open(tmpl).read()
         
         out = open(output_av, 'w')
 
-        #replacements = {'analogues_placeholder.json':basename(f)}
-        #for i in replacements.keys():
-
+        #Insert reformatted analogue file and config file into placeholders in the js script
         tmpl_file = tmpl_file.replace('analogues_placeholder.json', basename(f) )
+        tmpl_file = tmpl_file.replace('analogues_config_placeholder.txt', configfile )
         out.write(tmpl_file)
         out.close()
-
-        # with open(output_av, 'r+') as f:
-        #     content = f.read()
-        #     f.seek(0)
-        #     f.truncate()
-        #     f.write(content.replace('analogues_placeholder.json', basename(f)))
 
 
         ################################
