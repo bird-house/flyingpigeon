@@ -7,11 +7,11 @@ DIR_SHP = config.shapefiles_dir()
 import logging
 logger = logging.getLogger(__name__)
 
-def has_Lambert_Conformal(nc_files):
-  if type(nc_files) != list:
-      nc_files = [nc_files]
-  for nc_file in nc_files:
-    ds = Dataset(nc_file)
+def has_Lambert_Conformal(resource):
+  if type(resource) != list:
+      resource = [resource]
+  for nc in resource:
+    ds = Dataset(nc)
     if not 'Lambert_Conformal' in ds.variables.keys():
       return False
   return True

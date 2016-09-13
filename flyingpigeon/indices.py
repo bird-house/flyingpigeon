@@ -312,8 +312,8 @@ def calc_indice_percentile(resources=[], variable=None,
             dir_output=dir_output, 
             mosaic = mosaic)
           
-        arr = get_values(nc_files=nc_reference)
-        dt_arr = get_time(nc_files=nc_reference)
+        arr = get_values(resource=nc_reference)
+        dt_arr = get_time(resource=nc_reference)
         arr = ma.masked_array(arr)
         dt_arr = ma.masked_array(dt_arr)
         percentile = percentile

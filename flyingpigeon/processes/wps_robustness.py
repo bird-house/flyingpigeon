@@ -107,13 +107,13 @@ class robustnessProcess(WPSProcess):
             asReference=True,
             ) 
 
-        #self.output_graphic = self.addComplexOutput(
-            #identifier="output_graphic",
-            #title="Graphic",
-            #abstract="PNG graphic file showing the signal difference with high and low ensemble agreement marked out",
-            #formats=[{"mimeType":"image/png"}],
-            #asReference=True,
-            #)
+        self.output_graphic = self.addComplexOutput(
+            identifier="output_graphic",
+            title="Graphic",
+            abstract="PNG graphic file showing the signal difference with high and low ensemble agreement marked out",
+            formats=[{"mimeType":"image/png"}],
+            asReference=True,
+            )
 
         self.output_text = self.addComplexOutput(
             identifier="output_text",
@@ -136,14 +136,14 @@ class robustnessProcess(WPSProcess):
       self.status.set('arguments read', 5) 
       
       if method == 'Method_A':
-        signal, low_agreement_mask, high_agreement_mask,  text_src  = erob.method_A(resource=ncfiles, start=start, end=end, timeslice=timeslice, variable=variable)#graphic,
+        signal, low_agreement_mask, high_agreement_mask,  graphic, text_src  = erob.method_A(resource=ncfiles, start=start, end=end, timeslice=timeslice, variable=variable)#graphic,
       
       self.status.set('process worker done', 95)
 
       self.output_signal.setValue( signal )
       self.output_high.setValue( high_agreement_mask )
       self.output_low.setValue( low_agreement_mask )
-      # self.output_graphic.setValue( graphic )
+      self.output_graphic.setValue( graphic )
       self.output_text.setValue( text_src )
       
       self.status.set('uncertainty process done', 100)

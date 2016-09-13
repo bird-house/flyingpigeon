@@ -525,18 +525,19 @@ def aggregations(resource):
     Time axis is sorted by time.
 
     :param resource: list of netcdf files
+    
     :return: dictonary with key=experiment
     """
 
     aggregations = {}
-    for resource in resource:
-        key = drs_filename(resource, skip_timestamp=True, skip_format=True)
+    for nc in resource:
+        key = drs_filename(nc, skip_timestamp=True, skip_format=True)
 
         # collect files of each aggregation (time axis)
         if aggregations.has_key(key):
-            aggregations[key]['files'].append(resource)
+            aggregations[key]['files'].append(nc)
         else:
-            aggregations[key] = dict(files=[resource])
+            aggregations[key] = dict(files=[nc])
 
     # collect aggregation metadata
     for key in aggregations.keys():
@@ -562,6 +563,7 @@ def rename_variable(resource, oldname=None, newname='newname'):
   :param resource: path to netCDF input file
   :param oldname: Varaible name to be changed
   :param newname: variable name to be given
+
   :retunrs str: path to resource
   """
   try:

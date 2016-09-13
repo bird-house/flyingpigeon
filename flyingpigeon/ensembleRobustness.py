@@ -171,24 +171,24 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
     logger.exception(msg)
     raise Exception(msg)
   
-  #try: 
-    #if variable == None: 
-      #variable = get_variable(signal)
-    #logger.info('variable to be plotted: %s' % variable)
+  try: 
+    if variable == None: 
+      variable = get_variable(signal)
+    logger.info('variable to be plotted: %s' % variable)
     
-    #if title == None: 
-      #title='Change of %s (difference of mean %s-%s to %s-%s)' % (variable, end1, end2, start1, start2)  
+    if title == None: 
+      title='Change of %s (difference of mean %s-%s to %s-%s)' % (variable, end1, end2, start1, start2)  
     
-    #graphic = None
-    #graphic = map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, 
-              #variable=variable, 
-              #cmap=cmap,
-              #title = title)
+    graphic = None
+    graphic = map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, 
+              variable=variable, 
+              cmap=cmap,
+              title = title)
     
-    #logger.info('graphic generated')
-  #except Exception as e:
-    #logger.debug('graphic generation failed: %s' % e)
-    ##msg = 'graphic generation failed'
-    #logger.exception(msg)
-    #raise Exception(msg)
-  return signal, low_agreement_mask, high_agreement_mask, text_src # graphic,
+    logger.info('graphic generated')
+  except Exception as e:
+    msg('graphic generation failed: %s' % e)
+    logger.debug(msg)
+    raise Exception(msg)
+
+  return signal, low_agreement_mask, high_agreement_mask, graphic, text_src # 
