@@ -48,6 +48,8 @@ def get_configfile(files,
   silent=str(silent)
 
   # write stuff to configuration file
+  # NB: if order or format or number changes, need to edit wps_analogs_viewer.py
+  # and template_analogviewer.html where these scripts read in the config params
   ip, config_file = mkstemp(dir='.',suffix='.txt')
 
   config = open(config_file, "w")

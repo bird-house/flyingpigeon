@@ -74,9 +74,27 @@ class AnalogsviewerProcess(WPSProcess):
         import pandas as pd
         import collections
         import os
+
+        outputUrl_path = config.outputUrl_path()
+
+        try:
+            #Config file with path
+            configfile_with_path = outputUrl_path  + '/' + configfile
+
+            #Create dataframe and read in output config file of analogs process
+            dfC = pd.DataFrame()
+            dfC = pd.read_csv(configfile_with_path, delimiter="none", skiprows=[15], index_col=0)
+            num_analogues = dfC.index[12]
+            num_analogues = int(num_analogues.split( )[2])
+
+        except Exception as e: 
+            msg = 'failed to read number of analogues from config file %s ' % e
+            logger.debug(msg)
+            logger.debug('filepath: %s' % configfile )
+            logger.debug('configfile_with_path: %s' %  configfile_with_path)
         
         try: 
-            num_analogues = 20 #number of analogues searched for
+            #num_analogues = 20 #number of analogues searched for
             num_cols = 3 #dateAnlg, Dis, Corr
 
             #Create dataframe and read in output csv file of analogs process
@@ -84,9 +102,9 @@ class AnalogsviewerProcess(WPSProcess):
             dfS = pd.read_csv(analogs, delimiter=r"\s+", index_col=0)
             
             #Define temporary df
-            df_anlg = dfS.iloc[:, 0:20] #store only anlg dates
-            df_dis = dfS.iloc[:, 20:40] #store only dis
-            df_corr = dfS.iloc[:, 40:60] #store only corr
+            df_anlg = dfS.iloc[:, 0:num_analogues] #store only anlg dates
+            df_dis = dfS.iloc[:, num_analogues:2*num_analogues] #store only dis
+            df_corr = dfS.iloc[:, 2*num_analogues:3*num_analogues] #store only corr
 
             #remove index name before stacking
             df_anlg.index.name = ""
@@ -148,8 +166,6 @@ class AnalogsviewerProcess(WPSProcess):
         ################################
         # set the outputs
         ################################
-        
-        outputUrl_path = config.outputUrl_path()
 
         output_data = outputUrl_path  + '/' + basename(f)
         
