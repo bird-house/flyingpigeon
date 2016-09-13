@@ -32,7 +32,7 @@ class robustnessProcess(WPSProcess):
           title="Method of robustness calculation",
           abstract="Detailed information about the methodes can be found in the documentation",
           type=type(''),
-          default=['Method_A'],
+          default='Method_A',
           minOccurs=1,
           maxOccurs=1,
           allowedValues=['Method_A', 'Method_B', 'Method_C']

@@ -36,10 +36,10 @@ def set_dynamic_md(resource):
   Dynamic meta data like time frequency, spatial extend, start end time etc.
   :param resource: netCDF file where basic meta data should be set
   """
-  from flyingpigeon.utils import get_timestamps, get_time
+  from flyingpigeon.utils import get_timerange, get_time
   frequency = get_frequency(resource)
   
-  time_coverage_start, time_coverage_end = get_timestamps(resource)
+  time_coverage_start, time_coverage_end = get_timerange(resource)
   time_number_steps = len(get_time(resource))
   
   # max_lat, min_lat, max_lon, min_lat = get_extent(resource)

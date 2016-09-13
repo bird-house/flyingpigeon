@@ -68,10 +68,10 @@ def test_sort_by_time():
     assert '200601' in result[0]
     assert '200701' in result[1]
 
-def test_get_timestamps():
-    start,end = utils.get_timestamps(local_path(TESTDATA['cmip5_tasmax_2006_nc']))
-    assert "20060116" == start
-    assert "20061216" == end
+# def test_get_timestamps():
+#     start,end = utils.get_timestamps(local_path(TESTDATA['cmip5_tasmax_2006_nc']))
+#     assert "20060116" == start
+#     assert "20061216" == end
 
 def test_get_timerange():
     start,end = utils.get_timerange(local_path(TESTDATA['cmip5_tasmax_2006_nc']))
@@ -138,8 +138,3 @@ def test_calc_grouping():
     # check invalid value: should raise an exception
     with pytest.raises(Exception) as e_info:
         indices.calc_grouping('unknown') == ['year']
-
-
-
-
-
