@@ -83,16 +83,18 @@
         archivesource = text_array[23].toString().split("=").pop();
         bbox = text_array[25].toString().split("=").pop();
 
-        startdate = text_array[24].toString().split("=").pop().split(",").splice(0)[0] + '"';
-        enddate = '"' + text_array[24].toString().split("=").pop().split(",").splice(0)[1];
+        startref = text_array[24][0].split('= "')[1];
+        startref = startref.slice(8,10) + "/" + startref.slice(5,7) + "/" + startref.slice(0,4);
+  
+        endref = text_array[24][1];
+        endref = endref.slice(8,10) + "/" + endref.slice(5,7) + "/" + endref.slice(0,4);
         
         $(".content .value-nanalog").html(nanalog);
         $(".content .value-varname").html(varname);
         $(".content .value-simsource").html(simsource);
         $(".content .value-archivesource").html(archivesource);
         $(".content .value-bbox").html(bbox);
-        $(".value-sdate").html(startdate);
-        $(".value-edate").html(enddate);
+        $(".value-ref").html(startref + " - " + endref);
       });
 
       //read analogues data file produced by analogues detection process
@@ -102,6 +104,10 @@
         var lastDate = data[Object.keys(data).length - 1].dateRef + dataHour;
         minDate = dateFormat.parse(firstDate);
         maxDate = dateFormat.parse(data[Object.keys(data).length - 1].dateRef + dataHour);
+
+        //Display for user
+        $(".value-sdate").html(datepickerDateFormat(minDate));
+        $(".value-edate").html(datepickerDateFormat(maxDate));
 
         //Set initial date range to display
         init_date0 = dateFormat.parse(data[0].dateRef + dataHour);
@@ -680,6 +686,7 @@
           <div class="content">Simulation source: <span class='value-simsource'></span></div>
           <div class="content">Archive source: <span class='value-archivesource'></span></div>
           <div class="content">bbox: <span class='value-bbox'></span></div>
+          <div class="content">Reference period: <span class='value-ref'></span></div>
           <div>Full config file: <a href="analogues_config_placeholder.txt" target="_blank">click here</a></div>
         </div>
       </div>
@@ -701,8 +708,8 @@
           <span class="reset" style="display: none;"></span>
           <br>
           <p>
-            Start Date (min <span class='value-sdate'></span>): <input type="text" id="datepicker0">
-            End Date (max <span class='value-edate'></span>) : <input type="text" id="datepicker1">
+            Start Date (min: <span class='value-sdate'></span>) <input type="text" id="datepicker0">
+            End Date (max: <span class='value-edate'></span>) <input type="text" id="datepicker1">
           </p>
         </div>
       </div>
