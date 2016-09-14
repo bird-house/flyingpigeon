@@ -28,7 +28,8 @@ def get_configfile(files,
    (Supported values: 'rms' 'mahalanobis', 'S1' (Teweles and wobus), 'cosine' (correlation) 
    and - still experimental - 'of' (displacement and amplitude score based on optical flow image distortion)
   :param outformat: file format for output ('txt' or 'nc' (default))
-  :param period: reference period for analogs to be picked (for netcdf output attributes)
+  :param analysis_period: dates for which analogs are desired
+  :param period: reference period in which analogs are picked (for netcdf output attributes)
   :param bbox: cooridates for the region to be analysed
   :param calccor: calculate rank correlation for analog fields (True/False)
   :param silent: handling of log file output
@@ -76,10 +77,10 @@ def get_configfile(files,
   config.write('/\n')
   config.write('&ATTS\n')
   config.write(' my_atts%simsource = "NCEP" \n') # model name
-  config.write('my_atts%predictorvar = "{varname}" \n'.format(varname=varname))
-  config.write('my_atts%archisource = "NCEP" \n')
-  config.write('my_atts%archiperiod = "{start},{end}" \n'.format(start=period[0], end=period[1]))
-  config.write('my_atts%predictordom = "{bbox}" \n'.format(bbox=bbox))
+  config.write(' my_atts%predictorvar = "{varname}" \n'.format(varname=varname))
+  config.write(' my_atts%archisource = "NCEP" \n')
+  config.write(' my_atts%archiperiod = "{start},{end}" \n'.format(start=period[0], end=period[1]))
+  config.write(' my_atts%predictordom = "{bbox}" \n'.format(bbox=bbox))
   config.write('/\n')
   
   config.close()
