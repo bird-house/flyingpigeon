@@ -76,10 +76,10 @@ def get_configfile(files,
   config.write('/\n')
   config.write('&ATTS\n')
   config.write(' my_atts%simsource = "NCEP" \n') # model name
-  config.write('my_atts%predictorvar = "{varname}" \n'.format(varname=varname))
-  config.write('my_atts%archisource = "NCEP" \n')
-  config.write('my_atts%archiperiod = "{start},{end}" \n'.format(start=period[0], end=period[1]))
-  config.write('my_atts%predictordom = "{bbox}" \n'.format(bbox=bbox))
+  config.write(' my_atts%predictorvar = "{varname}" \n'.format(varname=varname))
+  config.write(' my_atts%archisource = "NCEP" \n')
+  config.write(' my_atts%archiperiod = "{start},{end}" \n'.format(start=period[0], end=period[1]))
+  config.write(' my_atts%predictordom = "{bbox}" \n'.format(bbox=bbox))
   config.write('/\n')
   
   config.close()
