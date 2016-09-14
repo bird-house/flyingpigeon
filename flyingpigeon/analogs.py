@@ -28,6 +28,7 @@ def get_configfile(files,
    (Supported values: 'rms' 'mahalanobis', 'S1' (Teweles and wobus), 'cosine' (correlation) 
    and - still experimental - 'of' (displacement and amplitude score based on optical flow image distortion)
   :param outformat: file format for output ('txt' or 'nc' (default))
+  :param analysis_period: dates for which analogs are desired
   :param period: reference period in which analogs are picked (for netcdf output attributes)
   :param bbox: cooridates for the region to be analysed
   :param calccor: calculate rank correlation for analog fields (True/False)
