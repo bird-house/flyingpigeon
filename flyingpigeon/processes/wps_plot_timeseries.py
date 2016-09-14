@@ -6,12 +6,12 @@ class plottimeseriesProcess(WPSProcess):
         # definition of this process
         WPSProcess.__init__(self, 
             identifier = "plot_timeseries",
-            title="Timeseries plots",
+            title="Plots -- timeseries",
             version = "0.9",
             metadata= [
-                    {"title": 'Plot timeseries'}
+                    {"title": 'Plots timeseries'}
                     ],
-            abstract="Plots of the file means over time. Spaghetti and uncertainty plot",
+            abstract="Outputs some timeseries of the file field means. Spaghetti and uncertainty plot",
             statusSupported=True,
             storeSupported=True
             )
@@ -40,7 +40,7 @@ class plottimeseriesProcess(WPSProcess):
             identifier="plotout_spagetti",
             title="Visualisation, Spaghetti plot",
             abstract="Visualisation of single variables as a spaghetti plot",
-            formats=[{"mimeType":"application/html"}],
+            formats=[{"mimeType":"image/png"}],
             asReference=True,
             )         
 
@@ -48,7 +48,7 @@ class plottimeseriesProcess(WPSProcess):
             identifier="plotout_uncertainty",
             title="Visualisation, Uncertainty plot",
             abstract="Visualisation of single variables ensemble mean with uncertainty",
-            formats=[{"mimeType":"application/html"}],
+            formats=[{"mimeType":"image/png"}],
             asReference=True,
             )         
             
@@ -58,11 +58,11 @@ class plottimeseriesProcess(WPSProcess):
 
         self.status.set('plotting variable %s' % var, 10)
 
-        plotout_spagetti_file = vs.spaghetti(ncfiles , variable=var, title=var, dir_out=None)
+        plotout_spagetti_file = vs.spaghetti(ncfiles , variable=var, title='Fieldmean of %s ' % var, dir_out=None)
         
         self.status.set('Spagetti plot for %s %s files done' % (len(ncfiles), var), 50)
         
-        plotout_uncertainty_file = vs.uncertainty(ncfiles , variable=var, title=var, dir_out=None)
+        plotout_uncertainty_file = vs.uncertainty(ncfiles , variable=var, title='Ensemble uncertainty for %s ' % , dir_out=None)
 
         self.status.set('Uncertainty plot for %s %s files done' % (len(ncfiles), var), 90)
         

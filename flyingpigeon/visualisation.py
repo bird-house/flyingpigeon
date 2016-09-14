@@ -31,27 +31,34 @@ class MidpointNormalize(Normalize):
 
 def spaghetti(resouces, variable=None, title=None, dir_out=None):
   """
-  retunes a png file containing the appropriate spaghetti plot. 
+  creates a png file containing the appropriate spaghetti plot as a field mean of the values. 
   
   :param resouces: list of files containing the same variable 
   :param variable: variable to be visualised, if None (default) variable will be detected
   :param title: sting to be used as title
   :param dir_out: directory for output files
-  """
-
-  fig = plt.figure(figsize=(20,10), dpi=600, facecolor='w', edgecolor='k')
-
-  logger.debug('Start visualisation spagetti plot')
   
-  # === prepare invironment
-  if type(resouces) != list: 
-    resouces = [resouces]    
-  if variable == None:
-    variable = utils.get_variable(resouces[0])
-  if title == None:
-    title = "Field mean of %s " % variable
-  if dir_out == None: 
-    dir_out = os.curdir
+  :retruns str: path to png file
+  """
+  
+  try:
+    fig = plt.figure(figsize=(20,10), dpi=600, facecolor='w', edgecolor='k')
+    logger.debug('Start visualisation spagetti plot')
+    
+    # === prepare invironment
+    if type(resouces) != list: 
+      resouces = [resouces]    
+    if variable == None:
+      variable = utils.get_variable(resouces[0])
+    if title == None:
+      title = "Field mean of %s " % variable
+    if dir_out == None: 
+      dir_out = os.curdir
+    logger.info('plot values preparation done')  
+  except Exception as e:
+    msg = "plot values preparation failed: %s" % (e)
+    logger.exception(msg)
+    raise Exception(msg)
 
   try: 
     o1 , output_png = mkstemp(dir=dir_out, suffix='.png')
@@ -75,41 +82,30 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
         msg = "lineplot failed for %s" % (nc)
         logger.exception(msg)
         raise Exception(msg)
-
-      # plot into current figure
-      # , legend= nc 
-    
-    #fig.legend()[0].orientation = "bottom_left"
-    # fig.legend().orientation = "bottom_left"
+      
     plt.title(title, fontsize=20)
-    plt.grid()# .grid_line_alpha=0.3
-    #lt.rcParams.update({'font.size': 22})
-    #window_size = 30
-    #window = np.ones(window_size)/float(window_size)
+    plt.grid()
     fig.savefig(output_png)
-    #bplt.hold('off')
-    
     plt.close()
-    
-    logger.debug('timesseries spagetti plot done for %s with %s lines.'% (variable, c)) 
+    logger.info('timesseries spagetti plot done for %s with %s lines.'% (variable, c)) 
   except Exception as e:
-    msg = 'matplotlib spagetti plot failed for %s' % variable
+    msg = 'matplotlib spagetti plot failed: %s' % e
     logger.exception(msg)
     raise Exception(msg) 
   return output_png 
 
 def uncertainty(resouces , variable=None, ylim=None, title=None, dir_out=None): 
   """
-  returnes a png file containing the appropriate uncertainty plot. 
+  creates a png file containing the appropriate uncertainty plot. 
   
   :param resouces: list of files containing the same variable 
   :param variable: variable to be visualised, if None (default) variable will be detected
   :param title: sting to be used as title
+
   :returns str: path/to/file.png
   """
   logger.debug('Start visualisation uncertainty plot')
 
-  import pandas as pd
   import pandas as pd
   import numpy as np
   import netCDF4
@@ -130,47 +126,57 @@ def uncertainty(resouces , variable=None, ylim=None, title=None, dir_out=None):
     o1 , output_png = mkstemp(dir=dir_out, suffix='.png')
     variable = utils.get_variable(resouces[0])
     df = pd.DataFrame()
+    
+    logger.info('variable %s found in resources.' % variable)
     for f in resouces:
-      ds = Dataset(f)
-      data = np.squeeze(ds.variables[variable][:])
-      if len(data.shape) == 3: 
-        meanData = np.mean(data,axis=1)
-        ts = np.mean(meanData,axis=1)
-      else: 
-        ts = data[:]
+      try:
+        ds = Dataset(f)
+        data = np.squeeze(ds.variables[variable][:])
+        if len(data.shape) == 3: 
+          meanData = np.mean(data,axis=1)
+          ts = np.mean(meanData,axis=1)
+        else: 
+          ts = data[:]
 
-      times = ds.variables['time']
-      jd = netCDF4.num2date(times[:],times.units)
+        times = ds.variables['time']
+        jd = netCDF4.num2date(times[:],times.units)
+        
+        hs = pd.Series(ts, index=jd, name=basename(f))
+        hd = hs.to_frame()
+        df[basename(f)] = hs#     
+        
+      except Exception as e: 
+        logger.debug('failed to calculate timeseries for%s :  %s ' %(f, e))
+
+    try: 
+      rollmean = df.rolling(window=30,center=True).mean()
+      logger.info('rolling mean calculated for all input data')
+      rmean = rollmean.median(axis=1, skipna=False)#  quantile([0.5], axis=1, numeric_only=False )
+      q05 = rollmean.quantile([0.05], axis=1,)# numeric_only=False)
+      q33 = rollmean.quantile([0.33], axis=1,)# numeric_only=False)
+      q66 = rollmean.quantile([0.66], axis=1, )#numeric_only=False)
+      q95 = rollmean.quantile([0.95], axis=1, )#numeric_only=False)
+    
+      logger.info('quantile calculated for all input data')
+    except Exception as e: 
+      logger.debug('failed to calculate quantiles %s ' % e)
+    
+    try:
+      plt.fill_between(rollmean.index.values,  np.squeeze(q05.values), np.squeeze( q95.values), alpha=0.5, color='grey')
+      plt.fill_between(rollmean.index.values, np.squeeze( q33.values),np.squeeze( q66.values), alpha=0.5, color='grey')
+      plt.plot(rollmean.index.values, np.squeeze(rmean.values), c='r', lw=3)
       
-      hs = pd.Series(ts, index=jd, name=basename(f))
-      hd = hs.to_frame()
-      df[basename(f)] = hs# 
+      plt.xlim(min(df.index.values), max(df.index.values))
+      plt.ylim(ylim)
+      plt.title(title, fontsize=20)
+      plt.grid()# .grid_line_alpha=0.3
+    
+      fig.savefig(output_png)
+      plt.close()    
+      logger.debug('timesseries uncertainty plot done for %s'% variable) 
+    except Exception as e: 
+      logger.debug('failed to calculate quantiles %s ' % e)
 
-    rollmean = df.rolling(window=30,center=True).mean()
-    
-    rmean = rollmean.median(axis=1, skipna=False)#  quantile([0.5], axis=1, numeric_only=False )
-    q05 = rollmean.quantile([0.05], axis=1,)# numeric_only=False)
-    q33 = rollmean.quantile([0.33], axis=1,)# numeric_only=False)
-    q66 = rollmean.quantile([0.66], axis=1, )#numeric_only=False)
-    q95 = rollmean.quantile([0.95], axis=1, )#numeric_only=False)
-    
-    plt.fill_between(rollmean.index.values,  np.squeeze(q05.values), np.squeeze( q95.values), alpha=0.5, color='grey')
-    plt.fill_between(rollmean.index.values, np.squeeze( q33.values),np.squeeze( q66.values), alpha=0.5, color='grey')
-    plt.plot(rollmean.index.values, np.squeeze(rmean.values), c='r', lw=3)
-    
-    plt.xlim(min(df.index.values), max(df.index.values))
-    plt.ylim(ylim)
-    plt.title(title, fontsize=20)
-    plt.grid()# .grid_line_alpha=0.3
-    #lt.rcParams.update({'font.size': 22})
-    #window_size = 30
-    #window = np.ones(window_size)/float(window_size)
-    fig.savefig(output_png)
-    #bplt.hold('off')
-    
-    plt.close()
-    
-    logger.debug('timesseries uncertainty plot done for %s'% variable) 
   except Exception as e:
     logger.exception('uncertainty plot failed for %s' % variable)
     raise  
