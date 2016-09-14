@@ -193,7 +193,7 @@ class AnalogsProcess(WPSProcess):
     start_time = time.time() # measure init ...
     
     #######################
-    ### read input paramert
+    ### read input parameters
     #######################
     try:
       self.status.set('read input parameter : %s '  % dt.now(),5) 
@@ -215,7 +215,7 @@ class AnalogsProcess(WPSProcess):
       # experiment = self.getInputValues(identifier='experiment')[0] 
       # dataset , var = experiment.split('_')
       
-      logger.info('input paramert set')
+      logger.info('input parameters set')
     except Exception as e: 
       msg = 'failed to read input prameter %s ' % e
       logger.error(msg)  

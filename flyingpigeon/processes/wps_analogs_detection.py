@@ -194,7 +194,7 @@ class AnalogsProcess(WPSProcess):
     
 
     #######################
-    ### read input paramert
+    ### read input parameters
     #######################
 
     try:
@@ -212,7 +212,7 @@ class AnalogsProcess(WPSProcess):
       timewin = int(self.getInputValues(identifier='timewin')[0])
       experiment = self.getInputValues(identifier='experiment')[0]      
 
-      logger.info('input paramert set')
+      logger.info('input parameters set')
     except Exception as e: 
       msg = 'failed to read input prameter %s ' % e
       logger.error(msg)  
