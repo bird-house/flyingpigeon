@@ -30,26 +30,31 @@ def check_creationtime(path, url):
   
   :returns boolean: True/False (True if archive file is newer)
   """
-  import urllib2
-  import os, datetime, time
   
+  try:
+    import urllib2
+    import os, datetime, time
+    
+    u = urllib2.urlopen(url)
+    meta = u.info()
+    logger.info("Last Modified: " + str(meta.getheaders("Last-Modified")[0]))
 
-  u = urllib2.urlopen(url)
-  meta = u.info()
-  logger.info("Last Modified: " + str(meta.getheaders("Last-Modified")[0]))
+    # CONVERTING HEADER TIME TO UTC TIMESTAMP 
+    # ASSUMING 'Sun, 28 Jun 2015 06:30:17 GMT' FORMAT
+    meta_modifiedtime = time.mktime(datetime.datetime.strptime( \
+                        meta.getheaders("Last-Modified")[0], "%a, %d %b %Y %X GMT").timetuple())
 
-  # CONVERTING HEADER TIME TO UTC TIMESTAMP 
-  # ASSUMING 'Sun, 28 Jun 2015 06:30:17 GMT' FORMAT
-  meta_modifiedtime = time.mktime(datetime.datetime.strptime( \
-                      meta.getheaders("Last-Modified")[0], "%a, %d %b %Y %X GMT").timetuple())
-
-  #file = 'C:\Path\ToFile\somefile.xml'
-  if os.path.getmtime(path) > meta_modifiedtime:
-    logger.info("CPU file is older than server file.")
-    newer = True
-  else:
-    logger.info("CPU file is NOT older than server file.")
-    newer = False
+    #file = 'C:\Path\ToFile\somefile.xml'
+    if os.path.getmtime(path) < meta_modifiedtime:
+      logger.info("local file is older than archive file.")
+      newer = True
+    else:
+      logger.info("local file is up to date. Nothing to fetch.")
+      newer = False
+  except Exception as e: 
+    msg = 'failed to download data: %s' % e
+    logger.debug(msg)
+    raise Exception(msg)
   
   return newer  
 
