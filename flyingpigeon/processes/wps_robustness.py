@@ -30,7 +30,7 @@ class robustnessProcess(WPSProcess):
         self.method = self.addLiteralInput(
           identifier="method",
           title="Method of robustness calculation",
-          abstract="Detailed information about the methodes can be found in the documentation",
+          abstract="Detailed information about the methods can be found in the documentation",
           type=type(''),
           default='Method_A',
           minOccurs=1,
