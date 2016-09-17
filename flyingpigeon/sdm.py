@@ -169,7 +169,7 @@ def get_latlon( csv_file ):
 
 def get_PAmask(coordinates=[], domain='EUR-11'):
   """
-  generates a matrix with 1/0 values over land areas. (nan for water regions)
+  generates a matrix with 1/0 values over land areas. (NaN for water regions)
   
   :param coordinates: 2D array with lat lon coordinates representing tree observation
   :param domain: region (default='EUR-11') 
@@ -376,7 +376,7 @@ def get_gam(ncs_reference, PAmask):
 
 def get_prediction(gam_model, ncs_indices ): #mask=None
   """
-  predict the probabillity based on the gam_model and the given climate indice datasets
+  predict the probabillity based on the gam_model and the given climate index datasets
   
   :param gam_model: fitted gam (output from sdm.get_gam)
   :pram nsc_indices: list of netCDF files containing climate indices of one dataset

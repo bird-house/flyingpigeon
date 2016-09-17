@@ -34,8 +34,8 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
   creates a png file containing the appropriate spaghetti plot as a field mean of the values. 
   
   :param resouces: list of files containing the same variable 
-  :param variable: variable to be visualised, if None (default) variable will be detected
-  :param title: sting to be used as title
+  :param variable: variable to be visualised. If None (default), variable will be detected
+  :param title: string to be used as title
   :param dir_out: directory for output files
   
   :retruns str: path to png file
@@ -43,7 +43,7 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
   
   try:
     fig = plt.figure(figsize=(20,10), dpi=600, facecolor='w', edgecolor='k')
-    logger.debug('Start visualisation spagetti plot')
+    logger.debug('Start visualisation spaghetti plot')
     
     # === prepare invironment
     if type(resouces) != list: 
@@ -87,9 +87,9 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
     plt.grid()
     fig.savefig(output_png)
     plt.close()
-    logger.info('timesseries spagetti plot done for %s with %s lines.'% (variable, c)) 
+    logger.info('timeseries spaghetti plot done for %s with %s lines.'% (variable, c)) 
   except Exception as e:
-    msg = 'matplotlib spagetti plot failed: %s' % e
+    msg = 'matplotlib spaghetti plot failed: %s' % e
     logger.exception(msg)
     raise Exception(msg) 
   return output_png 
@@ -99,8 +99,8 @@ def uncertainty(resouces , variable=None, ylim=None, title=None, dir_out=None):
   creates a png file containing the appropriate uncertainty plot. 
   
   :param resouces: list of files containing the same variable 
-  :param variable: variable to be visualised, if None (default) variable will be detected
-  :param title: sting to be used as title
+  :param variable: variable to be visualised. If None (default), variable will be detected
+  :param title: string to be used as title
 
   :returns str: path/to/file.png
   """
@@ -173,7 +173,7 @@ def uncertainty(resouces , variable=None, ylim=None, title=None, dir_out=None):
     
       fig.savefig(output_png)
       plt.close()    
-      logger.debug('timesseries uncertainty plot done for %s'% variable) 
+      logger.debug('timeseries uncertainty plot done for %s'% variable) 
     except Exception as e: 
       logger.debug('failed to calculate quantiles %s ' % e)
 
@@ -184,14 +184,14 @@ def uncertainty(resouces , variable=None, ylim=None, title=None, dir_out=None):
 
 def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, variable, cmap='seismic', title=None):
   """
-  generating a graphic for the output of the ensembleRobustness process for a lat/long file. 
+  generates a graphic for the output of the ensembleRobustness process for a lat/long file. 
 
-  :param signal: netCDF file containing the signal differnce over time
+  :param signal: netCDF file containing the signal difference over time
   :param highagreement: 
   :param lowagreement: 
   :param variable:
   :param cmap: default='seismic',
-  :param title: default='Modelagreement of Signal'
+  :param title: default='Model agreement of signal'
   :returns str: path/to/file.png
   """
 
@@ -342,9 +342,9 @@ def plot_pressuremap(data, lats=None, lons=None,
                     sub_title='plotted in birdhouse'):
   """
   plots pressure data
-  :param data: 2D or 3D array of pressure data. if data == 3D a mean will be calculated
-  :param lats: 1D or 2D array for latitude coordinates (geographcal map will be plotted if lats / lons are provided)
-  :param lons: 1D or 2D array for longitude coordinates (geographcal map will be plotted if lats / lons are provided)
+  :param data: 2D or 3D array of pressure data. if data == 3D, a mean will be calculated
+  :param lats: 1D or 2D array for latitude coordinates (geographcal map will be plotted if lats/lons are provided)
+  :param lons: 1D or 2D array for longitude coordinates (geographcal map will be plotted if lats/lons are provided)
   :param title: string for title
   :param sub_title: string for sub_title
   """
@@ -392,9 +392,9 @@ def plot_pressuremap(data, lats=None, lons=None,
 
 def concat_images(images, orientation='v'): 
   """ 
-  concatination of images.
+  concatenation of images.
   :param images: list of images
-  :param orientation: vertical ('v' default) or horizontal ('h') concatination
+  :param orientation: vertical ('v' default) or horizontal ('h') concatenation
   :return string: path to image  
   """
   from PIL import Image

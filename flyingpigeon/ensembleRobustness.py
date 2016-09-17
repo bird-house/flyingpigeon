@@ -10,13 +10,13 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
   variable=None, title=None, cmap='seismic' ):
   """retuns the result
   
-  :param resource: list of pathes to netCDF files
-  :param start: beginning of reference period (if None (default), the firs year of consistent ensemble will be detected)
+  :param resource: list of paths to netCDF files
+  :param start: beginning of reference period (if None (default), the first year of the consistent ensemble will be detected)
   :param end: end of comparison period (if None (default), the last year of the consistent ensemble will be detected)
-  :param timeslice: period lenght for mean calculation of reference and comparison period
-  :param variable: variable name to be detected in the netCDF file. If not set (not recommended) the variable name will be detected
+  :param timeslice: period length for mean calculation of reference and comparison period
+  :param variable: variable name to be detected in the netCDF file. If not set (not recommended), the variable name will be detected
   :param title: str to be used as title for the signal mal
-  :param cmap: define the color sceem for signal map plotting 
+  :param cmap: define the color scheme for signal map plotting 
 
   :return: signal.nc, low_agreement_mask.nc, high_agreement_mask.nc, graphic.png, text.txt
   """

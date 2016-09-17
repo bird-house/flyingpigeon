@@ -33,7 +33,7 @@ def set_basic_md(resource):
 
 def set_dynamic_md(resource):
   """
-  Dynamic meta data like time frequency, spatial extend, start end time etc.
+  Dynamic meta data like time frequency, spatial extent, start/end time, etc.
   :param resource: netCDF file where basic meta data should be set
   """
   from flyingpigeon.utils import get_timerange, get_time
@@ -197,7 +197,7 @@ def set_dynamic_md(resource):
                 
     
   except Exception as e: 
-    logger.error('failed to populate dynamic metadata dictionay')
+    logger.error('failed to populate dynamic metadata dictionary')
     
   try:
     ds = Dataset(resource, mode='a')
@@ -312,8 +312,8 @@ def set_metadata_segetalflora(resource):
     '3' : 'moderate warm-toned species group',
     '4' : 'moderate warm-toned to mediterranean species group',
     '5' : 'mediterranean species group',
-    '6' : 'climate indiffernet species',
-    '7' : 'climate undefinable species',
+    '6' : 'climate-indifferent species',
+    '7' : 'climate-undefinable species',
     'all' : 'species of all climate types'
       }
   

@@ -7,7 +7,7 @@ import ocgis
 def get_equation(culture_type='fallow', climate_type=2):
   """ 
   returns the equation as basis to calculate the segetal flora
-  :param culture_type: Type of culture. possible values are
+  :param culture_type: Type of culture. Possible values are
                        'fallow', 'intensive', 'extensive' (default:'fallow')
   :param climate_type: Type of climate: number 1 to 7 or 'all' (default: 2)
   :example: eq = get_equation(culture_type= 'fallow', climate_type=2)
@@ -151,11 +151,11 @@ def plot_ascii(infile):
 
 def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate_type=2, region=None, dimension_map=None): 
   """productive worker for segetalflora jobs
-  :param resources: list of tas netCDF files. (any time aggregation is possible)
-  :param culture_type: Type of culture. possible values are
+  :param resources: list of tas netCDF files. (Any time aggregation is possible)
+  :param culture_type: Type of culture. Possible values are:
                        'fallow', 'intensive', 'extensive' (default:'fallow')
   :param climate_type: Type of climate: number 1 to 7 or 'all' (default: 2)
-  :param region: Region for subset. If 'None' (default) the values will be calculated for Europe
+  :param region: Region for subset. If 'None' (default), the values will be calculated for Europe
   """
   from flyingpigeon.subset import clipping
   from flyingpigeon.utils import calc_grouping, sort_by_filename 
@@ -218,7 +218,7 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
         else: 
           print 'clipping failed for %s: No output file exists' % (key)
       else :
-        print 'netCDF file allready exists %s' % (key)
+        print 'netCDF file already exists %s' % (key)
         nc_tas = os.path.join(dir_netCDF_tas,prefix+'.nc')
     except Exception as e:
       print 'clipping failed for %s: %s' % (key, e)
@@ -235,9 +235,9 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
         print ('tanslation to ascii done')
         remove_rows(tmp, asc_tas)
         remove(tmp)
-        print ('rows with missing Values removed')
+        print ('rows with missing values removed')
       else: 
-        print ('tas ascii allready exists')
+        print ('tas ascii already exists')
       plot_ascii(asc_tas)  
     except Exception as e: 
       print 'translation to ascii failed %s: %s' % (key, e)
@@ -263,7 +263,7 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
                 os.makedirs(dir_sf)
               if os.path.exists(os.path.join(dir_sf, prefix + '.nc')):
                 nc_sf = os.path.join(dir_sf, prefix + '.nc')
-                print 'netCDF file allready exists: %s %s ' % (dir_sf, prefix) 
+                print 'netCDF file already exists: %s %s ' % (dir_sf, prefix) 
               else:
                 rd = RequestDataset(name, variable='tas', dimension_map=dimension_map,)
                 op = OcgOperations(dataset=rd, calc=calc, prefix=prefix, output_format='nc', 
@@ -282,12 +282,12 @@ def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate
                 #cdo.outputtab('name,date,lon,lat,value', input = nc_sf , output = tmp)
                 cmd = 'cdo outputtab,name,date,lon,lat,value %s > %s' % (nc_sf, tmp)
                 os.system(cmd)
-                print ('tanslation to ascii done')
+                print ('translation to ascii done')
                 remove_rows(tmp, asc_sf)
                 remove(tmp)
-                print ('rows with missing Values removed')
+                print ('rows with missing values removed')
               else:
-                print 'ascii file allready exists'
+                print 'ascii file already exists'
               plot_ascii(asc_sf)
             except Exception as e: 
               print 'failed for ascii file: %s %s ' % (name, e)

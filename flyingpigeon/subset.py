@@ -31,10 +31,10 @@ def countries_longname():
 
 def masking(resource, mask, prefix=None, dir_output=None):
   """
-  Returns a list of masked netCDF file(s) path(es).
+  Returns a list of masked netCDF file(s) path(s).
 
   :param resource: string path to netCDF resource
-  :param mask: predifined mask ('EUR-11', 'EUR-44')
+  :param mask: pre-defined mask ('EUR-11', 'EUR-44')
   :param prefix:  prefix for filename. If prefix is not set, a filename will be created
   :param dir_output: directory for output file. If dir_output is not set, a tempdir will be created
 
@@ -61,16 +61,16 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  output_
   
   :param resource: list of input netCDF files
   :param variable: variable (string) to be used in netCDF
-  :param dimesion_map: specify a dimension map input netCDF has unconventional dimension
+  :param dimesion_map: specify a dimension map if input netCDF has unconventional dimension
   :param calc: ocgis calculation argument
   :param calc_grouping: ocgis calculation grouping 
-  :param historical_concatination: concat files of RCPs with appropriate historical runs to one timeseries 
-  :param prefix: perfix for output file name
-  :param polygons: list of polygons to be used. if more than 1 in the list, a appropriate mosaic will be clipped
+  :param historical_concatination: concat files of RCPs with appropriate historical runs into one timeseries 
+  :param prefix: prefix for output file name
+  :param polygons: list of polygons to be used. If more than 1 in the list, an appropriate mosaic will be clipped
   :param output_format: output_format (default='nc')
-  :param dir_output: specify a output location
-  :param time_range: [start,end] of time subset
-  :param time_region: year months or days to be extracted in the time series
+  :param dir_output: specify an output location
+  :param time_range: [start, end] of time subset
+  :param time_region: year, months or days to be extracted in the timeseries
 
   :returns list: path to clipped files 
   """
@@ -146,7 +146,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  output_
 
 def get_dimension_map(resource): 
   """ returns the dimension map for a file, required for ocgis processing. 
-  file must have a DRS conform filename (see: utils.drs_filename())
+  file must have a DRS-conformant filename (see: utils.drs_filename())
 
   OBSOLETE!
 
@@ -196,12 +196,12 @@ def get_dimension_map(resource):
   
 
 def get_shp_column_values(geom, columnname): 
-  """ returns a list of all entries the shapefile columnname
+  """ returns a list of all entries the shapefile column name
 
   :param geom: name of the shapefile
-  :param columnname: Column name to be intereted
+  :param columnname: Column name to be intepreted
 
-  returns list: columnnames
+  returns list: column names
   """
   from ocgis import env, ShpCabinetIterator
   #import ocgis
@@ -221,7 +221,7 @@ def get_ugid(polygons=None, geom=None):
     returns geometry id of given polygon in a given shapefile.
 
     :param polygons: string or list of the region polygons 
-    :param geom: available shapefile possible entries: '50m_country', 'NUTS2'
+    :param geom: available shapefile. Possible entries: '50m_country', 'NUTS2'
 
     :returns list: ugids used by ocgis
     """
@@ -258,11 +258,11 @@ def get_ugid(polygons=None, geom=None):
       else:
         from ocgis import ShpCabinet
         sc = ShpCabinet(DIR_SHP)
-        logger.debug('geom: %s not found in ShapeCabinet. Available geoms are: %s ', geom, sc)
+        logger.debug('geom: %s not found in shape cabinet. Available geoms are: %s ', geom, sc)
     return result
 
 def get_geom(polygon=None):
-  """ retuns the approriate shapefile (geom) for one given polygon abbreviation
+  """ retuns the approriate shapefile (geom) for a given polygon abbreviation
   
   :param polygon: polygon shortname
 
