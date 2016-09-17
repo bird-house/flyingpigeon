@@ -3,9 +3,9 @@ def regionalize(infile, basedir, variable, aggregate, scenario ):
 
 	:param infile: netCDF infile with DRS name convention
 	:param basedir: path to base directory
-	:param variable: varable name 
-	:param aggregate: time aggregartion
-	:param scenario: scenarion name (e.g 'rcp45')"""
+	:param variable: variable name 
+	:param aggregate: time aggregation
+	:param scenario: scenario name (e.g 'rcp45')"""
 
 	from flyingpigeon import subset
 	from flyingpigeon.subset import _POLYGONS_EXTREMOSCOPE_

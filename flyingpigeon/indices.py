@@ -80,7 +80,7 @@ def indices():
 
 def indices_description():
     """
-    :return: a discription of all climate indices.
+    :return: a description of all climate indices.
     """
     description = ''
     for indice in indices():
@@ -89,7 +89,7 @@ def indices_description():
 
 def indice_description(indice):
     """
-    :return: a discription of given climate indices.
+    :return: a description of given climate indices.
     """
     desc = None
     try:
@@ -114,7 +114,7 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
     """
     Calculates given simple indices for suitable files in the appropriate time grouping and polygon.
 
-    :param resource: list of filenames in drs convention (netcdf)
+    :param resource: list of filenames in data reference syntax (DRS) convention (netcdf)
     :param variable: variable name to be selected in the in netcdf file (default=None)
     :param indices: list of indices (default ='SU')
     :param polygons: list of polgons (default ='FRA')
@@ -122,7 +122,7 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
     :param out_dir: output directory for result file (netcdf)
     :param dimension_map: optional dimension map if different to standard (default=None)
 
-    :return: list of netcdf files with calculated indices. Files are saved into out_dir
+    :return: list of netcdf files with calculated indices. Files are saved into out_dir.
     """
     from os.path import join, dirname, exists
     from flyingpigeon import ocgis_module
@@ -240,16 +240,16 @@ def calc_indice_percentile(resources=[], variable=None,
     """
     Calculates given indices for suitable files in the appropriate time grouping and polygon.
 
-    :param resource: list of filenames in drs convention (netcdf)
+    :param resource: list of filenames in data reference syntax (DRS) convention (netcdf)
     :param variable: variable name to be selected in the in netcdf file (default=None)
     :param indices: list of indices (default ='TG90p')
     :param prefix: filename prefix 
-    :param refperiod: reference refperiod touple = (start,end)
+    :param refperiod: reference period tuple = (start,end)
     :param grouping: indices time aggregation (default='yr')
     :param dir_output: output directory for result file (netcdf)
     :param dimension_map: optional dimension map if different to standard (default=None)
 
-    :return: list of netcdf files with calculated indices. Files are saved into out_dir
+    :return: list of netcdf files with calculated indices. Files are saved into out_dir.
     """
     from os.path import join, dirname, exists
     from os import remove
@@ -368,7 +368,7 @@ def calc_indice_percentile(resources=[], variable=None,
     #"""
     #Calculates given indices for suitable files in the appropriate time grouping and polygon.
 
-    #:param resource: list of filenames in drs convention (netcdf)
+    #:param resource: list of filenames in data reference syntax (DRS) convention (netcdf)
     #:param variable: variable name to be selected in the in netcdf file (default=None)
     #:param indices: list of indices (default ='TGx')
     #:param polygons: list of polygons (default =None)

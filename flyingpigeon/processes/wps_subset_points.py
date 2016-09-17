@@ -15,7 +15,7 @@ class SubsetPointsProcess(WPSProcess):
                 {"title": "LSCE", "href": "http://www.lsce.ipsl.fr/en/index.php"},
                 {"title": "Documentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
                 ],
-      abstract="Extract Timeseries for specified coordinates from gridded datasets",
+      abstract="Extract timeseries for specified coordinates from gridded datasets",
       statusSupported=True,
       storeSupported=True
       )
@@ -33,7 +33,7 @@ class SubsetPointsProcess(WPSProcess):
     self.coords = self.addLiteralInput(
       identifier="coords",
       title="Coordinates",
-      abstract="a comma seperated touple of WGS85 lon,lat decimal coorinate",
+      abstract="a comma-seperated tuple of WGS85 lon,lat decimal coordinates",
       default="2.356138, 48.846450",
       type=type(''),
       minOccurs=1,
@@ -87,7 +87,7 @@ class SubsetPointsProcess(WPSProcess):
             timeseries = call(resource=ncs, geom=point, select_nearest=True)
             vals = get_values(timeseries)
             
-            # concatination of values 
+            # concatenation of values 
             header = header + ',%s-%s' % (p[0], p[1])
             concat_vals = column_stack([concat_vals, vals])
           except Exception as e: 

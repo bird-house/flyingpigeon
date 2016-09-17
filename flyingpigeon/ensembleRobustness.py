@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 def method_A(resource=[], start=None, end=None, timeslice=20, 
   variable=None, title=None, cmap='seismic' ):
-  """retuns the result
+  """returns the result
   
   :param resource: list of paths to netCDF files
   :param start: beginning of reference period (if None (default), the first year of the consistent ensemble will be detected)

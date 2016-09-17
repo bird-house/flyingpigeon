@@ -218,7 +218,7 @@ def eval_timerange(resource, time_range):
   :param resource: input netCDF files 
   :param time_range: start and end date of time range [datetime,datetime]
 
-  :retuns [datetime,datetime]: time_range
+  :returns [datetime,datetime]: time_range
   """
   from flyingpigeon.utils import get_time
 

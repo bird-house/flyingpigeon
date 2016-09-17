@@ -16,21 +16,21 @@ def get_configfile(files,
                    calccor=True, 
                    silent=False, ): 
   """
-  Generating the configuration file for CASTf90 calculation
+  Generates the configuration file for CASTf90 calculation.
 
   :param files: input files (reference period and period for analyses)
   :param timewin: number of days the distance is averaged
   :param varname: variable name in input files
   :param seacyc: remove the smoothed seasonal cycle from the input fields (True/False)
   :param cycsmooth: smoothing window for the seasonal cycle in days (should be an odd integer)
-  :param nanalog: Number of analogs to be detect
+  :param nanalog: Number of analogs to detect
   :param distfun: Name of the distance function used to calculate the analogs. 
    (Supported values: 'rms' 'mahalanobis', 'S1' (Teweles and wobus), 'cosine' (correlation) 
    and - still experimental - 'of' (displacement and amplitude score based on optical flow image distortion)
   :param outformat: file format for output ('txt' or 'nc' (default))
   :param analysis_period: dates for which analogs are desired
   :param period: reference period in which analogs are picked (for netcdf output attributes)
-  :param bbox: cooridates for the region to be analysed
+  :param bbox: coordinates for the region to be analysed
   :param calccor: calculate rank correlation for analog fields (True/False)
   :param silent: handling of log file output
 
@@ -41,7 +41,7 @@ def get_configfile(files,
   from tempfile import mkstemp
   
   date_stamp = dt.strftime(dt.now(), format='%Y%m%d_%H%M%S')
-  logger.info('start configuraion file preparation at: %s' %(date_stamp))
+  logger.info('start configuration file preparation at: %s' %(date_stamp))
 
   # convert True/False to Fortran syntax
   seacyc=str(seacyc)
@@ -114,13 +114,13 @@ def seacyc(archive, simulation, method='base'):
   substracts the seasonal cycle
 
   :param archive: netCDF file containing the reference period
-  :param simulation: netCDF file containg the period to be analysed
-  :param method: method to generat the seasonal cycle files
+  :param simulation: netCDF file containing the period to be analysed
+  :param method: method to generate the seasonal cycle files
                  base = seasonal cycle generated from reference period
                  sim = seasonal cycle generated from period to be analysed
                  own = seasonal cycle generated for both time windows
 
-  :returns: two netCDF files for analyse and reference period     
+  :returns: two netCDF files for analysis and reference period     
   """
   from shutil import copy
   from cdo import Cdo 

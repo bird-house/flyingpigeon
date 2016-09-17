@@ -167,7 +167,7 @@ def local_path(url):
 
 def calc_grouping(grouping):
   """
-  translate time grouping abbreviation (e.g 'JJA') into the apprpriate ocgis calc_grouping syntax
+  translate time grouping abbreviation (e.g 'JJA') into the appropriate ocgis calc_grouping syntax
 
   :param grouping: time group abbreviation allowed values: "yr", "mon", "sem", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON"
   
@@ -531,7 +531,7 @@ def aggregations(resource):
 
     :param resource: list of netcdf files
     
-    :return: dictonary with key=experiment
+    :return: dictionary with key=experiment
     """
 
     aggregations = {}
@@ -566,7 +566,7 @@ def rename_variable(resource, oldname=None, newname='newname'):
   Change the variable name of a netCDF variable
   
   :param resource: path to netCDF input file
-  :param oldname: varaible name to be changed
+  :param oldname: variable name to be changed
   :param newname: variable name to be given
 
   :retunrs str: path to resource

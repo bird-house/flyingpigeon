@@ -13,7 +13,7 @@ DIR_SHP = config.shapefiles_dir()
 
 def countries():
     """
-    :return: a list of all countries codes.
+    :return: a list of all country codes.
     """
     countries = _COUNTRIES_.keys()
     #countries = ['DEU', 'FRA', 'GBR', 'ESP', 'ITA']
@@ -22,7 +22,7 @@ def countries():
 
 def countries_longname():
     """
-    :return: the longname of all countries.
+    :return: the long name of all countries.
     """
     longname = ''
     for country in countries(): 
@@ -87,7 +87,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  output_
       prefix = list([prefix])
   
   geoms = set()
-  ncs = sort_by_filename(resource, historical_concatination=historical_concatination) #  historical_concatination=True
+  ncs = sort_by_filename(resource, historical_concatination=historical_concatination) #  historical_concatenation=True
   geom_files = []
   if mosaic == True :
     try:
@@ -96,7 +96,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  output_
         geoms.add(get_geom(polygon))
         nameadd = nameadd + '-' + polygon  
       if len(geoms) > 1: 
-        logger.error('polygons belong to differnt shapefiles! mosaic option is not possible %s', geoms)
+        logger.error('polygons belong to different shapefiles! mosaic option is not possible %s', geoms)
       else: 
         geom = geoms.pop()
       ugids = get_ugid(polygons=polygons, geom=geom)
@@ -262,9 +262,9 @@ def get_ugid(polygons=None, geom=None):
     return result
 
 def get_geom(polygon=None):
-  """ retuns the approriate shapefile (geom) for a given polygon abbreviation
+  """ returns the approriate shapefile (geom) for a given polygon abbreviation
   
-  :param polygon: polygon shortname
+  :param polygon: polygon short name
 
   returns str: name of shapefile (geom)
   """
