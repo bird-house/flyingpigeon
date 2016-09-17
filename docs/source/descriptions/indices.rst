@@ -1,7 +1,7 @@
 Climate indices
 ---------------
 
-Climate indices are values that describe the state the climate system for a certain parameter. Climate indices as timeseries can be used to describe or estimate the change in climte over time.
+Climate indices are values that describe the state the climate system for a certain parameter. Climate indices as timeseries can be used to describe or estimate the change in climate over time.
 
 The climate indices processes in flyingpigeon are based on the `python package icclim <http://icclim.readthedocs.io/en/latest/>`_
 They are subclassed to:
@@ -11,7 +11,7 @@ Process identifiers:
 ....................
 
   * **Simple indices**
-    Simple indices are based on a single input variable, and with and an simple calculation algorithm.
+    Simple indices are based on a single input variable, and with and a simple calculation algorithm.
 
   * **Percentile indices**
     Percentile-based indices are calculated based on an given percentile of a reference period. 
@@ -197,14 +197,14 @@ Input Parameter:
 
 **Mosaic**
 
-To be checked if multiple polygons should be merged to one polygon.
+To be checked if multiple polygons should be merged into one polygon.
 
 
 Output: 
 .......
 
 **tar archive**
-  Tar archive containing all netCDF files. subsetting is performed for each input dataset. 
+  Tar archive containing all netCDF files. Subsetting is performed for each input dataset. 
 
 **netCDF example**
-  one netCDF file is picked out and provides as an example file to be displyed on the web mapping service. 
+  One netCDF file is picked out as an example file to be displayed on the web mapping service. 
