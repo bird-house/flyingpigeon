@@ -1,26 +1,26 @@
 Analogues of circulation
 ------------------------
 
-Analogues of circulation provide a versatile tool to investigate the relation between climate variables (such as temperature or precipitation) and large-scale atmospheric circulation patterns (SLP or Zg (h)). The depoyed software in the analogues processes are the circulation analogue simulation tool (`CASTf90 <https://github.com/sradanov/castf90>`_). 
+Analogues of circulation provide a versatile tool to investigate the relation between climate variables (such as temperature or precipitation) and large-scale atmospheric circulation patterns (SLP or Zg (h)). The deployed software in the analogues processes are the circulation analogue simulation tool (`CASTf90 <https://github.com/sradanov/castf90>`_). 
 
-Methode: 
+Method: 
 ........
 
 Here should come a bit of a method description. 
 
 
-Processes identifiers:
+Process identifiers:
 .....................
 
   * **Analogues_reanalyses:** 
-      Includes a preselection of reanalyses pressure data ( sea surface or geopotential hight)
-      This process fetches the data based on the selected reanalyses dataset and variable, so no input files has to be provided by the user. 
+      Includes a preselection of reanalyses pressure data (sea surface or geopotential height)
+      This process fetches the data based on the selected reanalyses dataset and variable, so no input file has to be provided by the user. 
   * **Analogues_model:** 
-      Is designed to analyse a climte model data set. The location of the input files has to be provided by the user (using the ESGF serach interface is possible). 
+      Is designed to analyse a climte model data set. The location of the input files has to be provided by the user (using the ESGF search interface is possible). 
   * **Analogues_compare:** 
       To search analogue days in a climte model dataset for given days in a reanalyses dataset.
   * **Analogues_viewer:** 
-      Analougs data output as an txt file can be visualized in a html page with interactive graphics.  
+      Analogues data output as a text file can be visualized in an html page with interactive graphics.  
  
 
 Input parameter: 
@@ -32,36 +32,35 @@ Input parameter:
 **Region** 
  Region to be analysed
 
-**Start data of anayse period** 
+**Start data of analysis period** 
  Starting date of the period to be analysed
 
-**End date of analyse period** 
+**End date of analysis period** 
  End date of the period to be analyzed
 
 **Start reference period** 
- Start day of period where analogues days will be picked
+ Start day of period where analogue days will be picked
 
 **End reference period** 
- End day of period where analogues days will be picked
+ End day of period where analogue days will be picked
 
 **Nr of analogues** 
- Number of analogues to be detected and written out as results. They are ordered with increasing distance to the original pressure pattern.
+ Number of analogues to be detected and written out as results. They are ordered with increasing distance from the original pressure pattern.
 
 **Seasonal window** 
- Number of day for a calendar proximity. 
- It defines the time window around the given date in all years except the year of the given day.
+ Number of days defining the calendar proximity, i.e. the time window around the given date in all years except the year of the given day.
 
 **normalisation** 
- Pressure values can be normalized (substraction of average value over the whole period). possible options are:
+ Pressure values can be normalized (substraction of average value over the whole period). Possible options are:
 
  * None 
     No normalisation 
  * based 
     normalisation based on reference period
  * sim 
-    normalisation based on analyse period
+    normalisation based on analysis period
  * own 
-    normalisation of reference and analyse data values by there own average
+    normalisation of reference and analysis data values by their own average
    
 **Distance** 
  Method to calculate the distance
@@ -78,30 +77,30 @@ Input parameter:
      output values will be provided as an ascii file
   
 **Time window** 
-  Values of analyse period can be smoothed by averaging with the values of the following days. 'time window' is giving the number of days averaging.  
-  (default=1)
+  Values of the analysis period can be smoothed by averaging with the values of the following days given in 'time window'.  
+  (default = 1)
 
 
 Outputs: 
 ........
 
 **Config File**
-  Configuration file use by the CASTf90 software
+  Configuration file used by the CASTf90 software
   
 **Analogs File**
-  list of analogues days
+  list of analogue days
   
 **Target netCDF**
-  pressure values as input for CASTf90 for analogues days to be picked
+  pressure values as input for CASTf90 for analogue days to be picked
   
 **prepared netCDF**
-  pressure values as input for CASTf90 for analogues days to be searched format
+  pressure values as input for CASTf90 for analogue days to be searched
   
 **html viewer**
   output of the analogues_viewer process for data visualisation
 
 **modified analogues txt file**
-  output of the analogues_viewer process. input data for viewer generation.
+  output analogue days formatted for the analogues_viewer process.
 
 Examples: 
 .........

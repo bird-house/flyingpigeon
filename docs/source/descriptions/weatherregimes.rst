@@ -3,7 +3,7 @@
 Weather Regimes
 ---------------
 
-Calculation of weatherregimes based on pressure patterns (kmean method). The processes is performing a pattern clusterfication for observations data ( NCEP ) as well as to model data. both results are compared
+Calculation of weather regimes based on pressure patterns (k-means clustering method). The processes is performing a pattern classification for observations data (NCEP) as well as model data. Both results are compared.
  
 Method:
 .......
@@ -13,16 +13,16 @@ Method:
 * subset the selected geographical region 
 * selection of month to be analyzed
 * unit conversion to hPa (if necessary)
-* regridding (biliniar) to the grid of observation (if necessary)
-* comuting of pricipal componets for dimension reduction
+* regridding (bilinear) to the grid of the observation data (if necessary)
+* computing of principal components for dimension reduction
 
 Process identifiers:
 ....................
 
  * **weatherregimes_reanalyses**
-     to perform weatherregime cluster analyses on predifined datasets of weatherregimes
+     to perform weather regime cluster analyses on pre-defined datasets of weather regimes
  * **weatherregimes_models**
-     to perform weatherregime cluster analyses on climate model data
+     to perform weather regime cluster analyses on climate model data
  * **weatherregimes_projection**
      project trained weather regime clusters on a second dataset 
     
@@ -40,7 +40,7 @@ Input Parameter:
   Region for weather regimes classification specified by coordinate bounding box 
   
 **Nr. of clusters**
-  defining the number of Weatherregies to be detected
+  defines the number of weather regimes to be detected
   
 
 Outputs: 

@@ -10,11 +10,11 @@ Method:
 
   * fetching selected data (GBIF zip file) and climate model data. 
   * extraction of GBIF Data
-  * based on GBIF Data coordinates a presents/absence mask is generated
+  * based on GBIF data coordinates, a presence/absence mask is generated
   * calculation of selected climate indices in appropriate time aggregations
   * calculation of mean values of climate indices for the given reference period
-  * statistical training (GAM) based on presents / absence maks and climate indices of reference period
-  * prediction of favourability based on traind GAM and projected as yearly timeseries for the whole proided time series
+  * statistical training (GAM) based on presence/absence mask and climate indices of reference period
+  * prediction of favourability based on trained GAM and projected as yearly timeseries for the provided time series
   * plotting information and storing netCDF files in archive files (tar or zip)
 
   
@@ -25,7 +25,7 @@ Processes identifiers:
 .....................
 
   * **SDM_csv**
-    species Distribution coordinates are provied by a csv table to be uplaoded
+    species distribution coordinates are provided by a csv table to be uploaded
   * **SDM_gbif**
     species distribution coordinates are fetched from GBIF database based on a scientific name 
 
@@ -51,7 +51,7 @@ Input Paramter:
 +----------------+----------------+--------------------------------------------------------------------------------+
 | TNn_ONDJFM     | tasmin         | Minimum of minimum temperature October to March                                |
 +----------------+----------------+--------------------------------------------------------------------------------+
-| TNn_Jan        | tasmin         | Minimum of minimum temperature in Januar                                       |
+| TNn_Jan        | tasmin         | Minimum of minimum temperature in January                                      |
 +----------------+----------------+--------------------------------------------------------------------------------+
 | SU_yr          | tasmax         | Summer days [tasmax > = 25°C] per year                                         |
 +----------------+----------------+--------------------------------------------------------------------------------+
@@ -65,7 +65,7 @@ Input Paramter:
 +----------------+----------------+--------------------------------------------------------------------------------+
 | CFD_ONDJFM     | tasmin         | Longest period of consecutive frost days in October to March                   |
 +----------------+----------------+--------------------------------------------------------------------------------+
-| ID_yr          | tasmax         |  Nr of Ice days [tasmax < 0°C] per year                                        |
+| ID_yr          | tasmax         |  Nr of ice days [tasmax < 0°C] per year                                        |
 +----------------+----------------+--------------------------------------------------------------------------------+
 | GD4_yr         | tas            | Growing degree days [sum of TG >= 4 degrees] per year                          |
 +----------------+----------------+--------------------------------------------------------------------------------+
