@@ -62,7 +62,7 @@ This produced a simplified map, shown here (purple) superimposed on the original
 Simplify using mapshaper (GUI)
 ==============================
 
-Ÿou can test the different simplify options using the `mapshaper GUI <http://www.mapshaper.org/>`_ instead of the command line version. Namely:
+You can test the different simplify options using the `mapshaper GUI <http://www.mapshaper.org/>`_ instead of the command line version. Namely:
 
 Visvalingam Weighted Area | Effective Area
 
@@ -92,7 +92,7 @@ The figure below shows the original (cyan), NoSnapVertices-WeightedArea (magenta
 Customize shapefile
 ====================
 
-The shapefile produced from the adm1 level of the ESRI shapefile as described above shows all regions of the selected countries, but when displayed on the screen, some regions were too small both visually and for the resolution of our models (~100km):
+The shapefile produced from the adm1 level of the ESRI shapefile as described above shows all regions of the selected countries, but when displayed on the screen, some regions were too small both visually and for the resolution of our models (~100 km):
 
 .. image:: ../pics/Europe_too_many_regions.png
    :alt: alternate text

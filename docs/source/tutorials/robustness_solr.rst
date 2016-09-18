@@ -8,7 +8,7 @@ Note for administrators:
 To index files run: 
 birdfeeder from-walker --start-dir /path/to/local/folder/
 
-* login to a Phoenix GUI (e.g. `Compute provider DKRZ <https://mouflon.dkrz.de/>`_)
+* Login to a Phoenix GUI (e.g. `Compute provider DKRZ <https://mouflon.dkrz.de/>`_)
 (`Detailed descritions for login options <http://pyramid-phoenix.readthedocs.io/en/latest/user_guide.html#login>`_ )
  
 - Menu option: Wizard
