@@ -2,10 +2,10 @@
 Processes in Flyingpigeon can be executed in various ways: 
 
 * with terminal command line using birdy
-* Within a script in a language like python
+* within a script in a language like python
 * :ref: `via the web browser GUI Phoenix <phoenix:introduction>`_ : 
 
-:ref: `Tutorials to get familiar with general usage of Pheonix <phoenix:tutorial>`_
+:ref: `Tutorials to get familiar with general usage of Phoenix <phoenix:tutorial>`_
 
 Tutorials 
 =========

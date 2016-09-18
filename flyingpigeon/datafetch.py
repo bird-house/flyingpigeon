@@ -20,7 +20,7 @@ _EOBSVARIABLES_ = ['tg', 'tx' , 'tn', 'rr']
 
 def reanalyses( start=1948, end=None, variable='slp', dataset='NCEP'):
   """
-  fetching the reanalysis data (NCEP, 20CR or ERA_20C) to local file system
+  Fetches the reanalysis data (NCEP, 20CR or ERA_20C) to local file system
   :param start: int for start year to fetch source data
   :param end: int for end year to fetch source data (if None, current year will be the end)
   :param variable: variable name (default='slp'), geopotential height is given as e.g. z700

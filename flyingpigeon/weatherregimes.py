@@ -23,14 +23,14 @@ _TIMEREGIONS_ = {'JJA' : {'month':[6,7,8]},
 
 def get_anomalies(nc_file, frac=0.2, reference=None):
   """
-  anomalisation of data subsets for weather classification. 
-  Anomalisation is done by substrcting a smoothed anual cycle 
+  Anomalisation of data subsets for weather classification. 
+  Anomalisation is done by subtracting a smoothed annual cycle 
 
   :param nc_file: input netCDF file 
-  :param frac: Number between 0-1 for stregth of smoothing 
-               (0 = close to the original data, 1=flat line)
-               default=0.2
-  :param reference: Period to calulate anual cycle
+  :param frac: Number between 0-1 for strength of smoothing 
+               (0 = close to the original data, 1 = flat line)
+               default = 0.2
+  :param reference: Period to calculate annual cycle
 
   :returns str: path to output netCDF file
   """
@@ -39,9 +39,9 @@ def get_anomalies(nc_file, frac=0.2, reference=None):
     calc = [{'func': 'mean', 'name': variable}]
     calc_grouping = calc_grouping = ['day','year']
     nc_anual_cycle = call(nc_file, calc=calc, calc_grouping=calc_grouping, time_range=reference)
-    logger.info('anual cycle calculated')  
+    logger.info('annual cycle calculated')  
   except Exception as e:
-    msg = 'failed to calcualte anual cycle %s' % e
+    msg = 'failed to calcualte annual cycle %s' % e
     logger.error(msg)
     raise Exception(msg)
 
@@ -74,9 +74,9 @@ def get_anomalies(nc_file, frac=0.2, reference=None):
       print 'done for %s - %s ' % (lat, lon)    
     vals[:,:,:] = vals_sm[:,:,:]
     ds.close()
-    logger.info('smothing of anual cycle done')
+    logger.info('smothing of annual cycle done')
   except Exception as e:
-    msg = 'failed smothing of anual cycle %s ' % e
+    msg = 'failed smothing of annual cycle %s ' % e
     logger.error(msg)
     raise Exception(msg)
   try:   
@@ -84,7 +84,7 @@ def get_anomalies(nc_file, frac=0.2, reference=None):
     nc_anomal = cdo.sub(input=[nc_file, nc_anual_cycle], output= nc_anomal )
     logger.info('anomalisation done: %s ' % nc_anomal)
   except Exception as e:
-    msg = 'failed substraction of anual cycle %s ' % e
+    msg = 'failed substraction of annual cycle %s ' % e
     logger.error(msg)
     raise Exception(msg)    
   return nc_anomal
@@ -94,7 +94,7 @@ def get_season(nc_file, season='DJF'):
   extacting of selected months
 
   :param nc_file: input netCDF
-  :param season: month to be extrected default='DJF'
+  :param season: month to be extracted (default = 'DJF')
 
   :returns str: netCDF with time subset
   """
@@ -102,9 +102,9 @@ def get_season(nc_file, season='DJF'):
     time_region = _TIMEREGIONS_[season]
    
     nc_season = call(nc_file, time_region=time_region)
-    logger.info('seson selection done %s ' % nc_season)
+    logger.info('season selection done %s ' % nc_season)
   except Exception as e:
-    msg = 'failed select season %s' % e
+    msg = 'failed to select season %s' % e
     logger.error(msg)
     raise Exception(msg)
   return nc_season

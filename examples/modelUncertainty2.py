@@ -2,7 +2,7 @@ from malleefowl import wpslogging as logging
 logger = logging.getLogger(__name__)
 
 def modelUncertaintyWorker(resource):
-  """retuns the result
+  """returns the result
   
   :param resource: list of pathes to netCDF files
   """

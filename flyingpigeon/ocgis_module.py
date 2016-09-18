@@ -27,29 +27,29 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
 
   :param resource:
   :param variable: variable in the input file to be picked
-  :param dimension_map: dimension map in case of unconventional starage of data 
-  :param calc: ocgis calc syntax for calcultion opartion 
+  :param dimension_map: dimension map in case of unconventional storage of data 
+  :param calc: ocgis calc syntax for calculation partion 
   :param calc_grouping: time aggregate grouping 
   :param conform_units_to: 
-  :param memory_limit: limit the amout of data to be loaded into the memory at once if None(default) free memory is detected by birdhouse
+  :param memory_limit: limit the amount of data to be loaded into the memory at once if None (default) free memory is detected by birdhouse
   :param level_range: subset of given levels
   :param prefix: string for the file base name 
-  :param regrid_destination: file path with netCDF file with grid for outout file
+  :param regrid_destination: file path with netCDF file with grid for output file
 
   :param geom: name of shapefile stored in birdhouse shape cabinet
   :param output_format_options: output options for netCDF e.g compression level()
   :param regrid_destination: file containing the targed grid (griddes.txt or netCDF file)
   :param regrid_options: methods for regridding: 
-                          'bil' = Biliniar interpolation 
+                          'bil' = Bilinear interpolation 
                           'bic' = Bicubic interpolation 
-                          'dis' = Distance weighted average remapping
+                          'dis' = Distance-weighted average remapping
                           'nn' = nearest neighbour
-                          'con' = First order concerative remapping
+                          'con' = First-order conservative remapping
                           'laf' = largest area fraction reamapping
   :param search_radius_mult: search radius for point geometries. All included gridboxes will be returned
-  :param select_nearest: neares neighbour selection for point geometries
-  :param select_ugid: ugid for appropriate poligons 
-  :param spatial_wrapping: how to handle coordinates in case of subsets, options: None(default), 'wrap', 'unwrap'
+  :param select_nearest: nearest neighbour selection for point geometries
+  :param select_ugid: ugid for appropriate polygons 
+  :param spatial_wrapping: how to handle coordinates in case of subsets, options: None (default), 'wrap', 'unwrap'
   :param time_region: select single month 
   :param time_range: sequence of two datetime.datetime objects to mark start and end point 
   :param dir_output (default= curdir):
@@ -218,7 +218,7 @@ def eval_timerange(resource, time_range):
   :param resource: input netCDF files 
   :param time_range: start and end date of time range [datetime,datetime]
 
-  :retuns [datetime,datetime]: time_range
+  :returns [datetime,datetime]: time_range
   """
   from flyingpigeon.utils import get_time
 
