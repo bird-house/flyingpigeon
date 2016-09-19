@@ -59,6 +59,7 @@ class AnalogsviewerProcess(WPSProcess):
         #Get the output config file of analogs process using name of analogs file
         #(They share the same name tag)
         configfile = analogs.replace('analogs-', 'config-')
+        
 
         ###########################################
         # reorganize analog txt file for javascript
@@ -96,21 +97,42 @@ class AnalogsviewerProcess(WPSProcess):
             else:
                 logger.debug('f does not exist')
                 logger.debug('outputUrl_path: %s' % outputUrl_path)
-                logger.debug('configfile: %s' % configfile)
-                configfile = 'config-' + analogs
-                logger.debug('configfile: %s' % configfile)
+                
+                configfile = 'config_' + analogs        
+                configfile_dods = 'file:////home/estimr2/dods/A2C2/' + 'config_' + analogs
+                
 
-                num_analogues = 20
-                #create a config file containing analogue input file name
-                #f = open( 'file.py', 'w' )
-                #f.write( 'dict = ' + repr(dict) + '\n' )
-                #f.close()
+                output_path = config.output_path()
+                logger.debug('output_path: %s' % output_path)
+
+                #Create dataframe and read in config file output by analogs detection process
+                dfC = pd.DataFrame()
+                dfC = pd.read_csv(configfile_dods, delimiter="none", skiprows=[15], index_col=0)
+                logger.debug('read dfC: %s' % dfC.index[9])
+
+                num_analogues = dfC.index[9]
+                num_analogues = int(num_analogues.split( )[2])
+
+                #output_path = config.output_path()
+
+                # #TRYING TO COPY TO outputUrl_path WHERE analogs LIVES
+
+                # #No such file or directory: 'file:////home/estimr2/dods/A2C2/config_ana_slp...'
+                # from shutil import copyfile
+                # copyfile(configfile_dods, outputUrl_path)
+
+                # #No such file or directory: 'config_ana_slp...'
+                # from shutil import copyfile
+                # copyfile(configfile, outputUrl_path)
+
+
+                logger.debug('end else')
 
         except Exception as e: 
             msg = 'failed to read number of analogues from config file %s ' % e
             logger.debug(msg)
-            logger.debug('filepath: %s' % configfile )
-            logger.debug('configfile_with_path: %s' %  configfile_with_path)
+            logger.debug('configfile msg: %s' % configfile )
+            logger.debug('configfile_with_path msg: %s' %  configfile_with_path)
             logger.debug('analog: %s' %  analogs)
         
         try: 
@@ -178,6 +200,8 @@ class AnalogsviewerProcess(WPSProcess):
 
         #Insert reformatted analogue file and config file into placeholders in the js script
         tmpl_file = tmpl_file.replace('analogues_placeholder.json', basename(f) )
+        logger.info('basename down here: %s' % basename(f))
+        logger.info('configfile down here: %s' % configfile)
         tmpl_file = tmpl_file.replace('analogues_config_placeholder.txt', configfile )
         out.write(tmpl_file)
         out.close()

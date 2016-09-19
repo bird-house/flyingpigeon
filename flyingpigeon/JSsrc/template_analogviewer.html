@@ -74,6 +74,7 @@
     function init() {
       //read config file produced by analogues detection process
       d3.text("analogues_config_placeholder.txt", function(text) {
+        console.log("text: ", text)
         text_array = d3.csv.parseRows(text);
 
         //Parameters to display in html
