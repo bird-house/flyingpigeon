@@ -74,6 +74,7 @@ class AnalogsviewerProcess(WPSProcess):
         import pandas as pd
         import collections
         import os
+        import requests
 
         outputUrl_path = config.outputUrl_path()
 
@@ -81,17 +82,36 @@ class AnalogsviewerProcess(WPSProcess):
             #Config file with path
             configfile_with_path = outputUrl_path  + '/' + configfile
 
-            #Create dataframe and read in output config file of analogs process
-            dfC = pd.DataFrame()
-            dfC = pd.read_csv(configfile_with_path, delimiter="none", skiprows=[15], index_col=0)
-            num_analogues = dfC.index[12]
-            num_analogues = int(num_analogues.split( )[2])
+            #Check if config file exists
+            r = requests.get(configfile_with_path)
+            if r.status_code != 404:
+                logger.debug('f exists')
+
+                #Create dataframe and read in config file output by analogs detection process
+                dfC = pd.DataFrame()
+                dfC = pd.read_csv(configfile_with_path, delimiter="none", skiprows=[15], index_col=0)          
+                num_analogues = dfC.index[12]
+                num_analogues = int(num_analogues.split( )[2])
+
+            else:
+                logger.debug('f does not exist')
+                logger.debug('outputUrl_path: %s' % outputUrl_path)
+                logger.debug('configfile: %s' % configfile)
+                configfile = 'config-' + analogs
+                logger.debug('configfile: %s' % configfile)
+
+                num_analogues = 20
+                #create a config file containing analogue input file name
+                #f = open( 'file.py', 'w' )
+                #f.write( 'dict = ' + repr(dict) + '\n' )
+                #f.close()
 
         except Exception as e: 
             msg = 'failed to read number of analogues from config file %s ' % e
             logger.debug(msg)
             logger.debug('filepath: %s' % configfile )
             logger.debug('configfile_with_path: %s' %  configfile_with_path)
+            logger.debug('analog: %s' %  analogs)
         
         try: 
             #num_analogues = 20 #number of analogues searched for
