@@ -1,4 +1,4 @@
-fAnalogues of circulation
+Analogues of circulation
 ------------------------
 
 Analogues of circulation provide a versatile tool to investigate the relation between climate variables (such as temperature or precipitation) and large-scale atmospheric circulation patterns (SLP or Zg (h)). The deployed software in the analogues processes are the circulation analogue simulation tool (`CASTf90 <https://github.com/sradanov/castf90>`_). 
