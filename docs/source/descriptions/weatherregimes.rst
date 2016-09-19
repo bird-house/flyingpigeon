@@ -3,7 +3,7 @@
 Weather Regimes
 ---------------
 
-Calculation of weather regimes based on pressure patterns (k-means clustering method). The processes is performing a pattern classification for observations data (NCEP) as well as model data. Both results are compared.
+Calculation of weather regimes based on pressure patterns (k-means clustering method). The processes performs a pattern classification for observations data (NCEP) as well as model data. Both results are compared.
  
 Method:
 .......
