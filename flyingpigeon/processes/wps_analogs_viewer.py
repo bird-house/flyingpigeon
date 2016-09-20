@@ -80,51 +80,46 @@ class AnalogsviewerProcess(WPSProcess):
         outputUrl_path = config.outputUrl_path()
 
         try:
-            #Config file with path
-            configfile_with_path = outputUrl_path  + '/' + configfile
+            #Config file with path (server URL address)
+            configfile_with_path = os.path.join(outputUrl_path, configfile)
 
             #Check if config file exists
             r = requests.get(configfile_with_path)
             if r.status_code != 404:
-                logger.debug('f exists')
+                logger.debug('Config file exists on server address.')
 
                 #Create dataframe and read in config file output by analogs detection process
+                #and stored on server URL address outputUrl_path()
                 dfC = pd.DataFrame()
                 dfC = pd.read_csv(configfile_with_path, delimiter="none", skiprows=[15], index_col=0)          
                 num_analogues = dfC.index[12]
                 num_analogues = int(num_analogues.split( )[2])
 
             else:
-                logger.debug('f does not exist')
-                logger.debug('outputUrl_path: %s' % outputUrl_path)
+                logger.debug('Config file does not exist on server address. Read from local disk.')
+               
+                #Make config file name and get its path on local disk
+                configfile = 'config_' + analogs
+                p , name = os.path.split(os.path.realpath(analogs))
+                configfile_localAddress = os.path.join(p, configfile)
                 
-                configfile = 'config_' + analogs        
-                configfile_dods = 'file:////home/estimr2/dods/A2C2/' + 'config_' + analogs
-                
-
+                #output_path (~/birdhouse/var/lib/pywps/outputs/flyingpigeon):
                 output_path = config.output_path()
-                logger.debug('output_path: %s' % output_path)
 
-                #Create dataframe and read in config file output by analogs detection process
+                #Create dataframe and read in config file stored on server URL address
                 dfC = pd.DataFrame()
-                dfC = pd.read_csv(configfile_dods, delimiter="none", skiprows=[15], index_col=0)
-                logger.debug('read dfC: %s' % dfC.index[9])
-
+                dfC = pd.read_csv(configfile_localAddress, delimiter="none", skiprows=[15], index_col=0)
+              
                 num_analogues = dfC.index[9]
                 num_analogues = int(num_analogues.split( )[2])
 
-                #COPY TO output_path
+                #Copy config file to output_path (~/birdhouse/var/lib/pywps/outputs/flyingpigeon)
                 from shutil import copyfile
-                copyfile('/home/estimr2/dods/A2C2/' + configfile, output_path + '/' + configfile)
-
-                logger.debug('end else')
+                copyfile(configfile_localAddress, output_path + '/' + configfile)
 
         except Exception as e: 
             msg = 'failed to read number of analogues from config file %s ' % e
             logger.debug(msg)
-            logger.debug('configfile msg: %s' % configfile )
-            logger.debug('configfile_with_path msg: %s' %  configfile_with_path)
-            logger.debug('analog: %s' %  analogs)
         
         try: 
             #num_analogues = 20 #number of analogues searched for
@@ -191,8 +186,6 @@ class AnalogsviewerProcess(WPSProcess):
 
         #Insert reformatted analogue file and config file into placeholders in the js script
         tmpl_file = tmpl_file.replace('analogues_placeholder.json', basename(f) )
-        logger.info('basename down here: %s' % basename(f))
-        logger.info('configfile down here: %s' % configfile)
         tmpl_file = tmpl_file.replace('analogues_config_placeholder.txt', configfile )
         out.write(tmpl_file)
         out.close()

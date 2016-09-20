@@ -73,29 +73,55 @@
     //====================================================================
     function init() {
       //read config file produced by analogues detection process
+      var flag_simsource = 0, //temporary until config files from weekly castf90 are same as in anlg detn process
+          flag_archivesource = 0,
+          flag_bbox = 0,
+          flag_refperiod = 0;
       d3.text("analogues_config_placeholder.txt", function(text) {
-        console.log("text: ", text)
         text_array = d3.csv.parseRows(text);
 
-        //Parameters to display in html
-        varname = text_array[10].toString().split("=").pop();
-        nanalog = text_array[13].toString().split("=").pop();
-        simsource = text_array[21].toString().split("=").pop();
-        archivesource = text_array[23].toString().split("=").pop();
-        bbox = text_array[25].toString().split("=").pop();
+        //Find element containing param string
+        for (idx = 0; idx < text_array.length; idx++) {
+          t = text_array[idx].toString();
+          
+          if (t.indexOf('nanalog') != -1) idx_nanalog = idx;
+          if (t.indexOf('varname') != -1) idx_varname = idx;
+          if (t.indexOf('simsource') != -1) { idx_simsource = idx; flag_simsource = 1; }
+          if (t.indexOf('archisource') != -1) { idx_archivesource = idx; flag_archivesource = 1; }
+          if (t.indexOf('predictordom') != -1) { idx_bbox = idx; flag_bbox = 1; }
+          if (t.indexOf('archiperiod') != -1) { idx_refperiod = idx; flag_refperiod = 1; }
+        }
 
-        startref = text_array[24][0].split('= "')[1];
-        startref = startref.slice(8,10) + "/" + startref.slice(5,7) + "/" + startref.slice(0,4);
+        //Parameters to display in html (hard-coded)
+        //varname = text_array[10].toString().split("=").pop();
+        //nanalog = text_array[13].toString().split("=").pop();
+        //simsource = text_array[21].toString().split("=").pop();
+        //archivesource = text_array[23].toString().split("=").pop();
+        //bbox = text_array[25].toString().split("=").pop();
+        // startref = text_array[24][0].split('= "')[1];
+        // endref = text_array[24][1];
+
+        //Parameters to display in html (find by string match)
+        nanalog = text_array[idx_nanalog].toString().split("=").pop();
+        varname = text_array[idx_varname].toString().split("=").pop();
+        if (flag_simsource === 1) simsource = text_array[idx_simsource].toString().split("=").pop();
+        if (flag_archivesource === 1) archivesource = text_array[idx_archivesource].toString().split("=").pop();
+        if (flag_bbox === 1) bbox = text_array[idx_bbox].toString().split("=").pop();
+
+        if (flag_bbox === 1) {
+          startref = text_array[idx_refperiod][0].split('= "')[1];
+          startref = startref.slice(8,10) + "/" + startref.slice(5,7) + "/" + startref.slice(0,4);
   
-        endref = text_array[24][1];
-        endref = endref.slice(8,10) + "/" + endref.slice(5,7) + "/" + endref.slice(0,4);
+          endref = text_array[idx_refperiod][1];
+          endref = endref.slice(8,10) + "/" + endref.slice(5,7) + "/" + endref.slice(0,4);
+        }
         
         $(".content .value-nanalog").html(nanalog);
         $(".content .value-varname").html(varname);
-        $(".content .value-simsource").html(simsource);
-        $(".content .value-archivesource").html(archivesource);
-        $(".content .value-bbox").html(bbox);
-        $(".value-ref").html(startref + " - " + endref);
+        if (flag_simsource === 1) $(".content .value-simsource").html(simsource);
+        if (flag_archivesource === 1) $(".content .value-archivesource").html(archivesource);
+        if (flag_bbox === 1) $(".content .value-bbox").html(bbox);
+        if (flag_refperiod === 1) $(".value-ref").html(startref + " - " + endref);
       });
 
       //read analogues data file produced by analogues detection process
