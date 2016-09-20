@@ -76,10 +76,12 @@ class AnalogsviewerProcess(WPSProcess):
         import collections
         import os
         import requests
-
-        outputUrl_path = config.outputUrl_path()
+        from shutil import copyfile
 
         try:
+            outputUrl_path = config.outputUrl_path()
+            output_path = config.output_path()
+            
             #Config file with path (server URL address)
             configfile_with_path = os.path.join(outputUrl_path, configfile)
 
@@ -91,7 +93,9 @@ class AnalogsviewerProcess(WPSProcess):
                 #Create dataframe and read in config file output by analogs detection process
                 #and stored on server URL address outputUrl_path()
                 dfC = pd.DataFrame()
+                
                 dfC = pd.read_csv(configfile_with_path, delimiter="none", skiprows=[15], index_col=0)          
+                
                 num_analogues = dfC.index[12]
                 num_analogues = int(num_analogues.split( )[2])
 
@@ -100,7 +104,8 @@ class AnalogsviewerProcess(WPSProcess):
                
                 #Make config file name and get its path on local disk
                 configfile = 'config_' + analogs
-                ######configfile = 'configggg_' + analogs
+                
+                #configfile = 'configggg_' + analogs
                 p , name = os.path.split(os.path.realpath(analogs))
                 configfile_localAddress = os.path.join(p, configfile)
 
@@ -111,7 +116,7 @@ class AnalogsviewerProcess(WPSProcess):
                     logger.debug('Config file exists on local disk.')
 
                     #output_path (~/birdhouse/var/lib/pywps/outputs/flyingpigeon):
-                    output_path = config.output_path()
+                    
 
                     #Create dataframe and read in config file stored on server URL address
                     dfC = pd.DataFrame()
@@ -119,13 +124,27 @@ class AnalogsviewerProcess(WPSProcess):
                   
                     num_analogues = dfC.index[9]
                     num_analogues = int(num_analogues.split( )[2])
-
                     #Copy config file to output_path (~/birdhouse/var/lib/pywps/outputs/flyingpigeon)
-                    from shutil import copyfile
+
                     copyfile(configfile_localAddress, output_path + '/' + configfile)
                 else:
-                    logger.debug('There is no config file on local disk. Set num_analogues = 20.')
-                    num_analogues = 20
+                    logger.debug('There is no config file on local disk. Generating a default one')
+                    from flyingpigeon.analogs import get_configfile
+
+                    ##TODO: count number of analogs form file
+                    num_analogues=20
+
+                    configfile_wkdir = get_configfile(
+                        files=['dummyconfig', 'dummyconfig','dummyconfig'],
+                        nanalog=num_analogues, 
+                        varname='DUMMY!!!'
+                        )
+                    configfile = os.path.basename(configfile_wkdir) #just file name
+
+                    configfile_inplace = os.path.join(output_path, configfile)
+                    
+                    #Copy out of local working dir to output_path
+                    copyfile(configfile_wkdir, configfile_inplace)      
                     
 
         except Exception as e: 
