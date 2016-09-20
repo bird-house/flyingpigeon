@@ -59,6 +59,7 @@ class AnalogsviewerProcess(WPSProcess):
         #Get the output config file of analogs process using name of analogs file
         #(They share the same name tag)
         configfile = analogs.replace('analogs-', 'config-')
+        
 
         ###########################################
         # reorganize analog txt file for javascript
@@ -74,24 +75,62 @@ class AnalogsviewerProcess(WPSProcess):
         import pandas as pd
         import collections
         import os
+        import requests
 
         outputUrl_path = config.outputUrl_path()
 
         try:
-            #Config file with path
-            configfile_with_path = outputUrl_path  + '/' + configfile
+            #Config file with path (server URL address)
+            configfile_with_path = os.path.join(outputUrl_path, configfile)
 
-            #Create dataframe and read in output config file of analogs process
-            dfC = pd.DataFrame()
-            dfC = pd.read_csv(configfile_with_path, delimiter="none", skiprows=[15], index_col=0)
-            num_analogues = dfC.index[12]
-            num_analogues = int(num_analogues.split( )[2])
+            #Check if config file exists
+            r = requests.get(configfile_with_path)
+            if r.status_code != 404:
+                logger.debug('Config file exists on server URL address.')
+
+                #Create dataframe and read in config file output by analogs detection process
+                #and stored on server URL address outputUrl_path()
+                dfC = pd.DataFrame()
+                dfC = pd.read_csv(configfile_with_path, delimiter="none", skiprows=[15], index_col=0)          
+                num_analogues = dfC.index[12]
+                num_analogues = int(num_analogues.split( )[2])
+
+            else:
+                logger.debug('Config file does not exist on server address. Check local disk.')
+               
+                #Make config file name and get its path on local disk
+                configfile = 'config_' + analogs
+                ######configfile = 'configggg_' + analogs
+                p , name = os.path.split(os.path.realpath(analogs))
+                configfile_localAddress = os.path.join(p, configfile)
+
+                #Check if config file exists
+                logger.debug('request: %s' % os.path.isfile(configfile_localAddress) )
+
+                if os.path.isfile(configfile_localAddress):
+                    logger.debug('Config file exists on local disk.')
+
+                    #output_path (~/birdhouse/var/lib/pywps/outputs/flyingpigeon):
+                    output_path = config.output_path()
+
+                    #Create dataframe and read in config file stored on server URL address
+                    dfC = pd.DataFrame()
+                    dfC = pd.read_csv(configfile_localAddress, delimiter="none", skiprows=[15], index_col=0)
+                  
+                    num_analogues = dfC.index[9]
+                    num_analogues = int(num_analogues.split( )[2])
+
+                    #Copy config file to output_path (~/birdhouse/var/lib/pywps/outputs/flyingpigeon)
+                    from shutil import copyfile
+                    copyfile(configfile_localAddress, output_path + '/' + configfile)
+                else:
+                    logger.debug('There is no config file on local disk. Set num_analogues = 20.')
+                    num_analogues = 20
+                    
 
         except Exception as e: 
             msg = 'failed to read number of analogues from config file %s ' % e
             logger.debug(msg)
-            logger.debug('filepath: %s' % configfile )
-            logger.debug('configfile_with_path: %s' %  configfile_with_path)
         
         try: 
             #num_analogues = 20 #number of analogues searched for
