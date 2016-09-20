@@ -113,18 +113,9 @@ class AnalogsviewerProcess(WPSProcess):
                 num_analogues = dfC.index[9]
                 num_analogues = int(num_analogues.split( )[2])
 
-                #output_path = config.output_path()
-
-                # #TRYING TO COPY TO outputUrl_path WHERE analogs LIVES
-
-                # #No such file or directory: 'file:////home/estimr2/dods/A2C2/config_ana_slp...'
-                # from shutil import copyfile
-                # copyfile(configfile_dods, outputUrl_path)
-
-                # #No such file or directory: 'config_ana_slp...'
-                # from shutil import copyfile
-                # copyfile(configfile, outputUrl_path)
-
+                #COPY TO output_path
+                from shutil import copyfile
+                copyfile('/home/estimr2/dods/A2C2/' + configfile, output_path + '/' + configfile)
 
                 logger.debug('end else')
 
