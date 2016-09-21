@@ -1,6 +1,5 @@
 # http://conda.pydata.org/docs/faq.html
 python <3
 pywps 3.2.*
-netcdf4 1.2.2
 #numpy 1.10.*
 
