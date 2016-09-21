@@ -135,9 +135,19 @@ class AnalogsviewerProcess(WPSProcess):
                     num_analogues=20
 
                     configfile_wkdir = get_configfile(
-                        files=['dummyconfig', 'dummyconfig','dummyconfig'],
+                        files=['dummyconfig', 'dummyconfig',analogs],
                         nanalog=num_analogues, 
-                        varname='DUMMY!!!'
+                        varname='DUMMY!!!',
+                        seacyc='DUMMY!!!',
+                        cycsmooth='DUMMY!!!',
+                        timewin='DUMMY!!!',
+                        seasonwin='DUMMY!!!',
+                        distfun='DUMMY!!!',
+                        calccor='DUMMY!!!',
+                        outformat='DUMMY!!!',
+                        silent='DUMMY!!!',
+                        period=['dummy','dummy'],
+                        bbox='DUMMY!!!'
                         )
                     configfile = os.path.basename(configfile_wkdir) #just file name
 
