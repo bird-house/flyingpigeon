@@ -25,8 +25,8 @@ dependencies:
 #docs
 - sphinx
 - sphinx_rtd_theme
-#ipython
-- ipython # =5.1.     # comes with ??
+# ipython
+- ipython
 # wps
 - nginx=1.10.1
 - supervisor=3.3.1
@@ -67,7 +67,7 @@ dependencies:
 #- libspatialindex=1.8.5  # comes with ocgis
 #- munch=2.0.4       # comes with ocgis
 #- rtree=0.8.2       # comes with ocgis
-# # analogue
+# analogue
 - castf90=0.1.2
 - netcdf-fortran=4.4.3
 - nco=4.5.5
