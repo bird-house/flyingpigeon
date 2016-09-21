@@ -110,8 +110,6 @@ class AnalogsviewerProcess(WPSProcess):
                 configfile_localAddress = os.path.join(p, configfile)
 
                 #Check if config file exists
-                logger.debug('request: %s' % os.path.isfile(configfile_localAddress) )
-
                 if os.path.isfile(configfile_localAddress):
                     logger.debug('Config file exists on local disk.')
 
@@ -122,7 +120,7 @@ class AnalogsviewerProcess(WPSProcess):
                     dfC = pd.DataFrame()
                     dfC = pd.read_csv(configfile_localAddress, delimiter="none", skiprows=[15], index_col=0)
                   
-                    num_analogues = dfC.index[9]
+                    num_analogues = dfC.index[11]
                     num_analogues = int(num_analogues.split( )[2])
                     #Copy config file to output_path (~/birdhouse/var/lib/pywps/outputs/flyingpigeon)
 
