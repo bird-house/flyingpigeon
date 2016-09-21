@@ -90,22 +90,12 @@ class AnalogsviewerProcess(WPSProcess):
             if r.status_code != 404:
                 logger.debug('Config file exists on server URL address.')
 
-                #Create dataframe and read in config file output by analogs detection process
-                #and stored on server URL address outputUrl_path()
-                dfC = pd.DataFrame()
-                
-                dfC = pd.read_csv(configfile_with_path, delimiter="none", skiprows=[15], index_col=0)          
-                
-                num_analogues = dfC.index[12]
-                num_analogues = int(num_analogues.split( )[2])
-
             else:
                 logger.debug('Config file does not exist on server address. Check local disk.')
                
                 #Make config file name and get its path on local disk
                 configfile = 'config_' + analogs
                 
-                #configfile = 'configggg_' + analogs
                 p , name = os.path.split(os.path.realpath(analogs))
                 configfile_localAddress = os.path.join(p, configfile)
 
@@ -113,28 +103,18 @@ class AnalogsviewerProcess(WPSProcess):
                 if os.path.isfile(configfile_localAddress):
                     logger.debug('Config file exists on local disk.')
 
-                    #output_path (~/birdhouse/var/lib/pywps/outputs/flyingpigeon):
-                    
-
-                    #Create dataframe and read in config file stored on server URL address
-                    dfC = pd.DataFrame()
-                    dfC = pd.read_csv(configfile_localAddress, delimiter="none", skiprows=[15], index_col=0)
-                  
-                    num_analogues = dfC.index[11]
-                    num_analogues = int(num_analogues.split( )[2])
                     #Copy config file to output_path (~/birdhouse/var/lib/pywps/outputs/flyingpigeon)
-
                     copyfile(configfile_localAddress, output_path + '/' + configfile)
+
                 else:
-                    logger.debug('There is no config file on local disk. Generating a default one')
+                    logger.debug('There is no config file on local disk. Generating a default one.')
                     from flyingpigeon.analogs import get_configfile
 
-                    ##TODO: count number of analogs form file
-                    num_analogues=20
-
+                    #Insert analogs filename into config file.
+                    #The rest of the params are unknown.
                     configfile_wkdir = get_configfile(
                         files=['dummyconfig', 'dummyconfig',analogs],
-                        nanalog=num_analogues, 
+                        nanalog='DUMMY!!!', 
                         varname='DUMMY!!!',
                         seacyc='DUMMY!!!',
                         cycsmooth='DUMMY!!!',
@@ -146,26 +126,29 @@ class AnalogsviewerProcess(WPSProcess):
                         silent='DUMMY!!!',
                         period=['dummy','dummy'],
                         bbox='DUMMY!!!'
-                        )
+                    )
                     configfile = os.path.basename(configfile_wkdir) #just file name
 
+                    #Add server path to file name
                     configfile_inplace = os.path.join(output_path, configfile)
                     
                     #Copy out of local working dir to output_path
-                    copyfile(configfile_wkdir, configfile_inplace)      
-                    
+                    copyfile(configfile_wkdir, configfile_inplace)
 
-        except Exception as e: 
+        except Exception as e:
             msg = 'failed to read number of analogues from config file %s ' % e
             logger.debug(msg)
         
-        try: 
-            #num_analogues = 20 #number of analogues searched for
+        try:
             num_cols = 3 #dateAnlg, Dis, Corr
 
             #Create dataframe and read in output csv file of analogs process
             dfS = pd.DataFrame()
             dfS = pd.read_csv(analogs, delimiter=r"\s+", index_col=0)
+
+            #Find number of analogues
+            num_analogues = (dfS.shape[1])/3
+            logger.debug('num_analogues: %s ' % num_analogues)
             
             #Define temporary df
             df_anlg = dfS.iloc[:, 0:num_analogues] #store only anlg dates
