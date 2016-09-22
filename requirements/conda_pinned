@@ -1,8 +1,3 @@
 # http://conda.pydata.org/docs/faq.html
 python <3
 pywps 3.2.*
-<<<<<<< HEAD
-#numpy 1.10.*
-=======
->>>>>>> 6adfdbf833b95e1b9573429d5fcd093b8c99cb00
-
