@@ -60,14 +60,14 @@ class plottimeseriesProcess(WPSProcess):
 
         plotout_spagetti_file = vs.spaghetti(ncfiles , 
                                              variable=var, 
-                                             title='Fieldmean of %s '% (var)
-                                             ,dir_out=None)
+                                             title='Fieldmean of %s '% (var),
+                                             dir_out=None)
         
         self.status.set('Spagetti plot for %s %s files done' % (len(ncfiles), var), 50)
         
         plotout_uncertainty_file = vs.uncertainty(ncfiles , 
                                                   variable=var, 
-                                                  title='Ensemble uncertainty for %s ' %, 
+                                                  title='Ensemble uncertainty for %s ' % (var), 
                                                   dir_out=None)
 
         self.status.set('Uncertainty plot for %s %s files done' % (len(ncfiles), var), 90)
