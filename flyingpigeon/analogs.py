@@ -1,5 +1,6 @@
 import logging
 logger = logging.getLogger(__name__)
+from tempfile import mkstemp
 
 
 def get_configfile(files, 
@@ -38,7 +39,7 @@ def get_configfile(files,
   """
   from datetime import datetime as dt
   from os.path import abspath
-  from tempfile import mkstemp
+  
   
   date_stamp = dt.strftime(dt.now(), format='%Y%m%d_%H%M%S')
   logger.info('start configuration file preparation at: %s' %(date_stamp))
@@ -120,7 +121,7 @@ def seacyc(archive, simulation, method='base'):
                  sim = seasonal cycle generated from period to be analysed
                  own = seasonal cycle generated for both time windows
 
-  :returns: two netCDF files for analysis and reference period     
+  :return [str,str]: two netCDF filenames for analysis and reference period (located in working directory)
   """
   from shutil import copy
   from cdo import Cdo 
@@ -138,3 +139,32 @@ def seacyc(archive, simulation, method='base'):
     seasoncyc_base = cdo.ydaymean(input=archive, output='seasoncyc_base.nc' )
     seasoncyc_sim  = cdo.ydaymean(input=simulation, output='seasoncyc_sim.nc' )
   return seasoncyc_base, seasoncyc_sim
+
+
+def config_edits(configfile):
+  """
+  edits the CASTf90 configuration file. removes filepaths.
+
+  :param configfile: configfile name with its path
+
+  :return str: modified_configfile name
+  """
+  try:
+    
+    # Read in the file
+    filedata = None
+    with open(configfile, 'r') as file :
+      filedata = file.read()
+    
+    # Replace the target string
+    filedata = filedata.replace('/home/scratch01/sradanov/A2C2/NCEP/', '').replace('/home/estimr2/sradanov/Operational/', '')
+
+    # Write the file out again
+    with open(configfile, 'w') as file:
+      file.write(filedata)
+  
+    logger.info('configfile modified')
+  except Exception as e: 
+    logger.debug('failed to modify configfile: %s ' % e)
+
+  return configfile
