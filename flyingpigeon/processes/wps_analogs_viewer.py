@@ -56,6 +56,8 @@ class AnalogsviewerProcess(WPSProcess):
         #Get the output csv file of analogs process (input by user in text box)
         analogs = self.getInputValues(identifier='resource')[0]
 
+
+        
         #Get the output config file of analogs process using name of analogs file
         #(They share the same name tag)
         configfile = analogs.replace('analogs-', 'config-')
@@ -68,6 +70,9 @@ class AnalogsviewerProcess(WPSProcess):
         from flyingpigeon import config
         from tempfile import mkstemp
         from flyingpigeon.config import www_url
+        
+        from flyingpigeon.analogs import get_configfile , config_edits
+
         #my_css_url = www_url() + "/static/css/style.css"
 
         #use as test input file: http://birdhouse-lsce.extra.cea.fr:8090/wpsoutputs/flyingpigeon/output_txt-0797016c-378e-11e6-91dd-41d8cd554993.txt
@@ -102,13 +107,21 @@ class AnalogsviewerProcess(WPSProcess):
                 #Check if config file exists
                 if os.path.isfile(configfile_localAddress):
                     logger.debug('Config file exists on local disk.')
-
                     #Copy config file to output_path (~/birdhouse/var/lib/pywps/outputs/flyingpigeon)
-                    copyfile(configfile_localAddress, output_path + '/' + configfile)
+                    
+                    configfile_outputlocation = os.path.join(output_path , configfile)
+
+                    copyfile(configfile_localAddress, configfile_outputlocation)
+                    logger.info(' time for coffee ')
+
+                    configfile_outputlocation_edited = config_edits(configfile_outputlocation)
+                    logger.info('outputlocation_edited: %s' % configfile_outputlocation_edited)
+
+                    configfile = os.path.basename(configfile_outputlocation_edited)
+                    logger.info('  configfile %s  ' % configfile)
 
                 else:
                     logger.debug('There is no config file on local disk. Generating a default one.')
-                    from flyingpigeon.analogs import get_configfile
 
                     #Insert analogs filename into config file.
                     #The rest of the params are unknown.
@@ -127,8 +140,8 @@ class AnalogsviewerProcess(WPSProcess):
                         period=['dummy','dummy'],
                         bbox='DUMMY!!!'
                     )
-                    configfile = os.path.basename(configfile_wkdir) #just file name
 
+                    configfile = os.path.basename(configfile_wkdir) #just file name
                     #Add server path to file name
                     configfile_inplace = os.path.join(output_path, configfile)
                     
