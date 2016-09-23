@@ -9,23 +9,23 @@ Method:
 Integrated ocgis performs the subsetting. 
 
 
-Process idetifiers:
+Process identifiers:
 ...................
 
   * **subset_continents**
-      subsetting continents
+      subsets continents
   * **subset_countries**
-      subsetting countries
+      subsets countries
   * **subset_europeanregions**
-      subsetting European regions
+      subsets European regions
   * **subset_points**    
-      extracting of timeseries for given coordinate subset_points
+      extracts timeseries for given coordinate subset_points
 
 Input parameter: 
 ................
 
 **Polygons**
-  Abbreviation of the appropriate polygon
+  Abbreviation of the appropriate polygon.
   
 **Mosaic**
   The option 'MOSAIC' as a checkbox allows you to decide, in the case of multiple polygon selection, if the polygons should be stitched together into one polygon (e.g. shape of Germany and France as one polygon) or calculated as separate output files. 
