@@ -8,6 +8,17 @@ from ocgis import RequestDataset, OcgOperations
 rd = RequestDataset(resource[0])
 print rd.inspect() # works fine
 
-# print '**********************'
-# rd = RequestDataset(resource)
-# print rd.inspect() 
+from netCDF4 import MFDataset
+mdf = MFDataset(resource)
+
+print '**********************'
+print mdf.variables.keys()
+
+var = mdf.variables['slp']
+
+
+print '**********************'
+rd = RequestDataset(resource)
+print rd.inspect() 
+
+
