@@ -65,8 +65,8 @@ dependencies:
 - rtree=0.8.2
 # analogue
 - castf90=0.1.5
-- netcdf-fortran#=4.4.3
-- nco#=4.5.5
+- netcdf-fortran=4.4.3
+- nco=4.5.5
 # r
 - r=3.2.2 
 - rpy2=2.7.0
