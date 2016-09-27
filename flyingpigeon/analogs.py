@@ -123,21 +123,29 @@ def seacyc(archive, simulation, method='base'):
 
   :return [str,str]: two netCDF filenames for analysis and reference period (located in working directory)
   """
-  from shutil import copy
-  from cdo import Cdo 
-  cdo = Cdo()
+  try:
 
-  if method == 'base':
-    seasoncyc_base = cdo.ydaymean(input=archive, output='seasoncyc_base.nc' )
-    seasoncyc_sim = 'seasoncyc_sim.nc'
-    copy(seasoncyc_base, seasoncyc_sim)
-  if method == 'sim':
-    seasoncyc_sim  = cdo.ydaymean(input=simulation, output='seasoncyc_sim.nc' )
-    seasoncyc_base = 'seasoncyc_base.nc'
-    copy(seasoncyc_sim, seasoncyc_base)
-  if method == 'own':
-    seasoncyc_base = cdo.ydaymean(input=archive, output='seasoncyc_base.nc' )
-    seasoncyc_sim  = cdo.ydaymean(input=simulation, output='seasoncyc_sim.nc' )
+    from shutil import copy
+    from cdo import Cdo 
+    cdo = Cdo()
+
+    if method == 'base':
+      seasoncyc_base = cdo.ydaymean(input=archive, output='seasoncyc_base.nc' )
+      seasoncyc_sim = 'seasoncyc_sim.nc'
+      copy(seasoncyc_base, seasoncyc_sim)
+    if method == 'sim':
+      seasoncyc_sim  = cdo.ydaymean(input=simulation, output='seasoncyc_sim.nc' )
+      seasoncyc_base = 'seasoncyc_base.nc'
+      copy(seasoncyc_sim, seasoncyc_base)
+    if method == 'own':
+      seasoncyc_base = cdo.ydaymean(input=archive, output='seasoncyc_base.nc' )
+      seasoncyc_sim  = cdo.ydaymean(input=simulation, output='seasoncyc_sim.nc' )
+
+  except Exception as e: 
+    msg = 'seacyc function failed : %s ' % e 
+    logger.debug(msg)
+    raise Exception(msg)
+
   return seasoncyc_base, seasoncyc_sim
 
 

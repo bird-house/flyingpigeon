@@ -213,6 +213,7 @@ class AnalogsProcess(WPSProcess):
       experiment = self.getInputValues(identifier='experiment')[0]      
 
       logger.info('input parameters set')
+      self.status.set('Read in and convert the arguments', 5)
     except Exception as e: 
       msg = 'failed to read input prameter %s ' % e
       logger.error(msg)  
@@ -222,6 +223,7 @@ class AnalogsProcess(WPSProcess):
     ### convert types and set environment
     ######################################
     try:
+      self.status.set('Start preparing enviroment converting arguments', 7)
       refSt = dt.strptime(refSt[0],'%Y-%m-%d')
       refEn = dt.strptime(refEn[0],'%Y-%m-%d')
       dateSt = dt.strptime(dateSt[0],'%Y-%m-%d')
@@ -258,9 +260,6 @@ class AnalogsProcess(WPSProcess):
       logger.error(msg)  
       raise Exception(msg)
 
-    logger.debug("init took %s seconds.", time.time() - start_time)
-    self.status.set('Read in and convert the arguments', 5)
-
     try:            
       if dataset == 'NCEP': 
         if 'z' in var:
@@ -289,7 +288,8 @@ class AnalogsProcess(WPSProcess):
       raise Exception(msg)
 
     logger.debug("init took %s seconds.", time.time() - start_time)
-    self.status.set('Read in the arguments', 5)
+    self.status.set('Read in and convert the arguments done', 8)
+
     #################
     # get input data
     #################
@@ -306,6 +306,7 @@ class AnalogsProcess(WPSProcess):
       logger.error(msg)
       raise Exception(msg)
     logger.debug("get_input_subset_dataset took %s seconds.", time.time() - start_time)
+    
     self.status.set('**** Input data fetched', 10)
     
     ########################
@@ -317,10 +318,17 @@ class AnalogsProcess(WPSProcess):
     try: 
       archive = call(resource=nc_subset, time_range=[refSt , refEn]) 
       simulation = call(resource=nc_subset, time_range=[dateSt , dateEn])
+      logger.info('archive and simulation files generated: %s, %s' % (archive, simulation))
+    except Exception as e:
+      msg = 'failed to prepare archive and simulation files %s ' % e
+      logger.debug(msg)
+      raise Exception(msg)
+
+    try:  
       if seacyc == True:
         analogs.seacyc(archive, simulation, method=normalize)
     except Exception as e:
-      msg = 'failed to prepare archive and simulation files %s ' % e
+      msg = 'failed to generate normalization files %s ' % e
       logger.debug(msg)
       raise Exception(msg)
       
