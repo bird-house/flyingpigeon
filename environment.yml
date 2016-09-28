@@ -1,4 +1,4 @@
-name: flyingpigeon
+name: castf90 # flyingpigeon
 channels:
 - defaults
 - birdhouse
@@ -68,7 +68,7 @@ dependencies:
 #- munch=2.0.4       # comes with ocgis
 #- rtree=0.8.2       # comes with ocgis
 # analogue
-- castf90=0.1.2
+- castf90=0.1.5
 - nco
 - netcdf-fortran
 # - expat=2.1.0=2
