@@ -71,13 +71,13 @@ class AnalogsviewerProcess(WPSProcess):
         from tempfile import mkstemp
         from flyingpigeon.config import www_url
         
-        from flyingpigeon.analogs import get_configfile , config_edits
+        from flyingpigeon.analogs import get_configfile, config_edits, format_analog_output
 
         #my_css_url = www_url() + "/static/css/style.css"
 
         #use as test input file: http://birdhouse-lsce.extra.cea.fr:8090/wpsoutputs/flyingpigeon/output_txt-0797016c-378e-11e6-91dd-41d8cd554993.txt
         import numpy as np
-        import pandas as pd
+        #import pandas as pd
         import collections
         import os
         import requests
@@ -89,6 +89,7 @@ class AnalogsviewerProcess(WPSProcess):
             
             #Config file with path (server URL address)
             configfile_with_path = os.path.join(outputUrl_path, configfile)
+            logger.debug('configfile_with_path: %s' % configfile_with_path)
 
             #Check if config file exists
             r = requests.get(configfile_with_path)
@@ -100,9 +101,11 @@ class AnalogsviewerProcess(WPSProcess):
                
                 #Make config file name and get its path on local disk
                 configfile = 'config_' + analogs
+                logger.debug('local disk configfile: %s' % configfile)
                 
                 p , name = os.path.split(os.path.realpath(analogs))
                 configfile_localAddress = os.path.join(p, configfile)
+                logger.debug('local disk configfile_localAddress: %s' % configfile_localAddress)
 
                 #Check if config file exists
                 if os.path.isfile(configfile_localAddress):
@@ -151,59 +154,63 @@ class AnalogsviewerProcess(WPSProcess):
         except Exception as e:
             msg = 'failed to read number of analogues from config file %s ' % e
             logger.debug(msg)
+
+        #Reformat data file output by the analogs detection process so that it can be
+        #read by the analogues viewer template.
+        f = format_analog_output(analogs, config)
         
-        try:
-            num_cols = 3 #dateAnlg, Dis, Corr
+        # try:
+        #     num_cols = 3 #dateAnlg, Dis, Corr
 
-            #Create dataframe and read in output csv file of analogs process
-            dfS = pd.DataFrame()
-            dfS = pd.read_csv(analogs, delimiter=r"\s+", index_col=0)
+        #     #Create dataframe and read in output csv file of analogs process
+        #     dfS = pd.DataFrame()
+        #     dfS = pd.read_csv(analogs, delimiter=r"\s+", index_col=0)
 
-            #Find number of analogues
-            num_analogues = (dfS.shape[1])/3
-            logger.debug('num_analogues: %s ' % num_analogues)
+        #     #Find number of analogues
+        #     num_analogues = (dfS.shape[1])/3
+        #     logger.debug('num_analogues: %s ' % num_analogues)
             
-            #Define temporary df
-            df_anlg = dfS.iloc[:, 0:num_analogues] #store only anlg dates
-            df_dis = dfS.iloc[:, num_analogues:2*num_analogues] #store only dis
-            df_corr = dfS.iloc[:, 2*num_analogues:3*num_analogues] #store only corr
+        #     #Define temporary df
+        #     df_anlg = dfS.iloc[:, 0:num_analogues] #store only anlg dates
+        #     df_dis = dfS.iloc[:, num_analogues:2*num_analogues] #store only dis
+        #     df_corr = dfS.iloc[:, 2*num_analogues:3*num_analogues] #store only corr
 
-            #remove index name before stacking
-            df_anlg.index.name = ""
-            df_dis.index.name = ""
-            df_corr.index.name = ""
+        #     #remove index name before stacking
+        #     df_anlg.index.name = ""
+        #     df_dis.index.name = ""
+        #     df_corr.index.name = ""
 
-            #Stack (transpose)into single col
-            dateStack = df_anlg.stack()
-            disStack = df_dis.stack().abs() #raw values < 0 so take abs
-            corrStack = df_corr.stack()
+        #     #Stack (transpose)into single col
+        #     dateStack = df_anlg.stack()
+        #     disStack = df_dis.stack().abs() #raw values < 0 so take abs
+        #     corrStack = df_corr.stack()
 
-            # #BUILD NEW DF IN CORRECT FORMAT
+        #     #BUILD NEW DF IN CORRECT FORMAT
 
-            #Create df of correct dimensions (n x num_cols) using dfS
-            df_all = dfS.iloc[:, 0:num_cols] #NB data are placeholders
-            #Rename cols
-            df_all.columns = ['dateAnlg', 'Dis', 'Corr']
-            #Replicate each row 20 times (for dcjs format)
-            df_all = df_all.loc[np.repeat(df_all.index.values,num_analogues)]
-            #Replace data placeholders with correct values
-            df_all['dateAnlg'] = list(dateStack)
-            df_all['Dis'] = list(disStack)
-            df_all['Corr'] = list(corrStack)
-            #Name index col
-            df_all.index.name = 'dateRef'
+        #     #Create df of correct dimensions (n x num_cols) using dfS
+        #     df_all = dfS.iloc[:, 0:num_cols] #NB data are placeholders
+        #     #Rename cols
+        #     df_all.columns = ['dateAnlg', 'Dis', 'Corr']
+        #     #Replicate each row 20 times (for dcjs format)
+        #     df_all = df_all.loc[np.repeat(df_all.index.values,num_analogues)]
+        #     #Replace data placeholders with correct values
+        #     df_all['dateAnlg'] = list(dateStack)
+        #     df_all['Dis'] = list(disStack)
+        #     df_all['Corr'] = list(corrStack)
+        #     #Name index col
+        #     df_all.index.name = 'dateRef'
 
-            # #SAVE TO TSV FILE
-            output_path = config.output_path()
-            ip , f = mkstemp(suffix='.tsv', prefix='modified-analogfile', dir=output_path, text=False)
-            df_all.to_csv(f, sep='\t')
-            logger.info('successfully reformatted analog file')
-            self.status.set('successfully reformatted analog file', 90)
+        #     #SAVE TO TSV FILE
+        #     output_path = config.output_path()
+        #     ip , f = mkstemp(suffix='.tsv', prefix='modified-analogfile', dir=output_path, text=False)
+        #     df_all.to_csv(f, sep='\t')
+        #     logger.info('successfully reformatted analog file')
+        #     self.status.set('successfully reformatted analog file', 90)
 
-        except Exception as e: 
-            msg = 'failed to reformat analog file %s ' % e
-            logger.debug(msg)  
-            # raise Exception(msg)
+        # except Exception as e: 
+        #     msg = 'failed to reformat analog file %s ' % e
+        #     logger.debug(msg)  
+        #     # raise Exception(msg)
 
 
         ################################
