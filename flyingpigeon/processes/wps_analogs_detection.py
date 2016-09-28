@@ -175,6 +175,14 @@ class AnalogsProcess(WPSProcess):
       identifier="ncout",
       )
 
+    self.output_html = self.addComplexOutput(
+      identifier="output_html",
+      title="html viewer",
+      abstract="web browser compatible html file",
+      formats=[{"mimeType":"text/html"}],
+      asReference=True,
+      )
+
 
   def execute(self):
     import time # performance test
@@ -389,12 +397,37 @@ class AnalogsProcess(WPSProcess):
       raise Exception(msg)
 
     logger.debug("castf90 took %s seconds.", time.time() - start_time)
-    
+
+
+    ########################
+    # generate analog viewer
+    ########################
+
+
+    try:
+
+      f = analogs.refomat_analogs(output_file)
+      logger.info('analogs reformated')
+      self.status.set('successfully reformatted analog file', 50)
+      
+      output_av = analogs.get_viewer(f, config_file)
+      logger.info('viewer generated')
+      self.status.set('successfully generated analogs viewer', 90)
+
+      logger.info('output_av: %s ' % output_av)
+
+    except Exception as e:
+      msg = 'failed to reformat analogs file or generate viewer%s ' % e
+      logger.debug(msg)
+
+
     self.status.set('preparting output', 99)
+
     self.config.setValue( config_file )
     self.analogs.setValue( output_file )
     self.output_netcdf.setValue( simulation )
-    
+    self.output_html.setValue( output_av )
+
     self.status.set('execution ended', 100)
 
     logger.debug("total execution took %s seconds.", time.time() - process_start_time)

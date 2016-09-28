@@ -79,14 +79,14 @@ dependencies:
 # - sqlite=3.13.0=1
 # - tk=8.5.19=0
 # r
-- r#=3.2.2 
-- rpy2#=2.8.1
-- r-mclust#=5.1
-- r-ncdf4#=1.13
-- r-fields#=8.4_1
+# - r#=3.2.2 
+# - rpy2#=2.8.1
+# - r-mclust#=5.1
+# - r-ncdf4#=1.13
+#- r-fields#=8.4_1
 #- r-base=3.3.1
 #- r-gridextra=2.2.1 # in conflict with python 2.7.12
-- r-cairo=1.5_9
+#- r-cairo=1.5_9
 - pip:
   - genshi==0.7
   - pygbif==0.1.4  # comes with scipy?

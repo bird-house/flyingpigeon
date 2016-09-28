@@ -50,8 +50,8 @@ class AnalogsviewerProcess(WPSProcess):
         # start execution 
         ######################
 
-        from flyingpigeon.config import JSsrc_dir
-        tmpl = JSsrc_dir() + '/template_analogviewer.html'
+        # from flyingpigeon.config import JSsrc_dir
+        # tmpl = JSsrc_dir() + '/template_analogviewer.html'
 
         #Get the output csv file of analogs process (input by user in text box)
         analogs = self.getInputValues(identifier='resource')[0]
@@ -71,15 +71,16 @@ class AnalogsviewerProcess(WPSProcess):
         from tempfile import mkstemp
         from flyingpigeon.config import www_url
         
-        from flyingpigeon.analogs import get_configfile , config_edits
+        from flyingpigeon.analogs import get_configfile , config_edits, refomat_analogs , get_viewer
 
         #my_css_url = www_url() + "/static/css/style.css"
 
         #use as test input file: http://birdhouse-lsce.extra.cea.fr:8090/wpsoutputs/flyingpigeon/output_txt-0797016c-378e-11e6-91dd-41d8cd554993.txt
         import numpy as np
         import pandas as pd
-        import collections
+        #import collections
         import os
+        from os.path import basename
         import requests
         from shutil import copyfile
 
@@ -153,86 +154,47 @@ class AnalogsviewerProcess(WPSProcess):
             logger.debug(msg)
         
         try:
-            num_cols = 3 #dateAnlg, Dis, Corr
+            f = refomat_analogs(analogs)
+            logger.info('analogs reformated')
+            self.status.set('successfully reformatted analog file', 50)
+            output_av = get_viewer(f, configfile)
+            logger.info('viewer generated')
+            self.status.set('successfully generated analogs viewer', 90)
 
-            #Create dataframe and read in output csv file of analogs process
-            dfS = pd.DataFrame()
-            dfS = pd.read_csv(analogs, delimiter=r"\s+", index_col=0)
+            output_data = outputUrl_path  + '/' + basename(f)
+            logger.info('Data url: %s ' % output_data)
+            logger.info('output_av: %s ' % output_av)
 
-            #Find number of analogues
-            num_analogues = (dfS.shape[1])/3
-            logger.debug('num_analogues: %s ' % num_analogues)
-            
-            #Define temporary df
-            df_anlg = dfS.iloc[:, 0:num_analogues] #store only anlg dates
-            df_dis = dfS.iloc[:, num_analogues:2*num_analogues] #store only dis
-            df_corr = dfS.iloc[:, 2*num_analogues:3*num_analogues] #store only corr
-
-            #remove index name before stacking
-            df_anlg.index.name = ""
-            df_dis.index.name = ""
-            df_corr.index.name = ""
-
-            #Stack (transpose)into single col
-            dateStack = df_anlg.stack()
-            disStack = df_dis.stack().abs() #raw values < 0 so take abs
-            corrStack = df_corr.stack()
-
-            # #BUILD NEW DF IN CORRECT FORMAT
-
-            #Create df of correct dimensions (n x num_cols) using dfS
-            df_all = dfS.iloc[:, 0:num_cols] #NB data are placeholders
-            #Rename cols
-            df_all.columns = ['dateAnlg', 'Dis', 'Corr']
-            #Replicate each row 20 times (for dcjs format)
-            df_all = df_all.loc[np.repeat(df_all.index.values,num_analogues)]
-            #Replace data placeholders with correct values
-            df_all['dateAnlg'] = list(dateStack)
-            df_all['Dis'] = list(disStack)
-            df_all['Corr'] = list(corrStack)
-            #Name index col
-            df_all.index.name = 'dateRef'
-
-            # #SAVE TO TSV FILE
-            output_path = config.output_path()
-            ip , f = mkstemp(suffix='.tsv', prefix='modified-analogfile', dir=output_path, text=False)
-            df_all.to_csv(f, sep='\t')
-            logger.info('successfully reformatted analog file')
-            self.status.set('successfully reformatted analog file', 90)
-
-        except Exception as e: 
-            msg = 'failed to reformat analog file %s ' % e
-            logger.debug(msg)  
-            # raise Exception(msg)
+        except Exception as e:
+            msg = 'failed to reformat analogs file or generate viewer%s ' % e
+            logger.debug(msg)
 
 
         ################################
         # modify JS template
         ################################
 
-        from os.path import basename
-        
-        ip, output_av = mkstemp(suffix='.html', prefix='analogviewer', dir='.', text=False)
 
-        tmpl_file = open(tmpl).read()
-        
-        out = open(output_av, 'w')
 
-        #Insert reformatted analogue file and config file into placeholders in the js script
-        tmpl_file = tmpl_file.replace('analogues_placeholder.json', basename(f) )
-        tmpl_file = tmpl_file.replace('analogues_config_placeholder.txt', configfile )
-        out.write(tmpl_file)
-        out.close()
+        # 
+        
+        # ip, output_av = mkstemp(suffix='.html', prefix='analogviewer', dir='.', text=False)
+
+        # tmpl_file = open(tmpl).read()
+        
+        # out = open(output_av, 'w')
+
+        # #Insert reformatted analogue file and config file into placeholders in the js script
+        # tmpl_file = tmpl_file.replace('analogues_placeholder.json', basename(f) )
+        # tmpl_file = tmpl_file.replace('analogues_config_placeholder.txt', configfile )
+        # out.write(tmpl_file)
+        # out.close()
 
 
         ################################
         # set the outputs
         ################################
 
-        output_data = outputUrl_path  + '/' + basename(f)
-        
-        logger.info('Data url: %s ' % output_data)
-        logger.info('output_av: %s ' % output_av)
 
         self.output_txt.setValue( output_data )     
         self.output_html.setValue( output_av )
