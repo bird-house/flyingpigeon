@@ -192,16 +192,18 @@ def refomat_analogs(analogs):
   import pandas as pd
 
   try:
+
     num_cols = 3 #dateAnlg, Dis, Corr
 
     #Create dataframe and read in output csv file of analogs process
     dfS = pd.DataFrame()
     dfS = pd.read_csv(analogs, delimiter=r"\s+", index_col=0)
 
+
     #Find number of analogues
     num_analogues = (dfS.shape[1])/3
     logger.debug('num_analogues: %s ' % num_analogues)
-    
+
     #Define temporary df
     df_anlg = dfS.iloc[:, 0:num_analogues] #store only anlg dates
     df_dis = dfS.iloc[:, num_analogues:2*num_analogues] #store only dis
@@ -212,12 +214,12 @@ def refomat_analogs(analogs):
     df_dis.index.name = ""
     df_corr.index.name = ""
 
-    #Stack (transpose)into single col
+
     dateStack = df_anlg.stack()
     disStack = df_dis.stack().abs() #raw values < 0 so take abs
     corrStack = df_corr.stack()
 
-    # #BUILD NEW DF IN CORRECT FORMAT
+
 
     #Create df of correct dimensions (n x num_cols) using dfS
     df_all = dfS.iloc[:, 0:num_cols] #NB data are placeholders
@@ -273,11 +275,5 @@ def get_viewer(analogs_mod, configfile ):
   viewer.close()
 
   return viewer
-
-
-
-
-
-
 
 

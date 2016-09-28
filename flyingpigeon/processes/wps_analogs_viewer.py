@@ -71,14 +71,23 @@ class AnalogsviewerProcess(WPSProcess):
         from tempfile import mkstemp
         from flyingpigeon.config import www_url
         
+<<<<<<< HEAD
         from flyingpigeon.analogs import get_configfile , config_edits, refomat_analogs , get_viewer
+=======
+        from flyingpigeon.analogs import get_configfile, config_edits, format_analog_output
+>>>>>>> ecc818eb6caabc6f05f12a59797807d1e47f7651
 
         #my_css_url = www_url() + "/static/css/style.css"
 
         #use as test input file: http://birdhouse-lsce.extra.cea.fr:8090/wpsoutputs/flyingpigeon/output_txt-0797016c-378e-11e6-91dd-41d8cd554993.txt
         import numpy as np
+<<<<<<< HEAD
         import pandas as pd
         #import collections
+=======
+        #import pandas as pd
+        import collections
+>>>>>>> ecc818eb6caabc6f05f12a59797807d1e47f7651
         import os
         from os.path import basename
         import requests
@@ -90,6 +99,7 @@ class AnalogsviewerProcess(WPSProcess):
             
             #Config file with path (server URL address)
             configfile_with_path = os.path.join(outputUrl_path, configfile)
+            logger.debug('configfile_with_path: %s' % configfile_with_path)
 
             #Check if config file exists
             r = requests.get(configfile_with_path)
@@ -101,9 +111,11 @@ class AnalogsviewerProcess(WPSProcess):
                
                 #Make config file name and get its path on local disk
                 configfile = 'config_' + analogs
+                logger.debug('local disk configfile: %s' % configfile)
                 
                 p , name = os.path.split(os.path.realpath(analogs))
                 configfile_localAddress = os.path.join(p, configfile)
+                logger.debug('local disk configfile_localAddress: %s' % configfile_localAddress)
 
                 #Check if config file exists
                 if os.path.isfile(configfile_localAddress):
@@ -152,7 +164,12 @@ class AnalogsviewerProcess(WPSProcess):
         except Exception as e:
             msg = 'failed to read number of analogues from config file %s ' % e
             logger.debug(msg)
+
+        #Reformat data file output by the analogs detection process so that it can be
+        #read by the analogues viewer template.
+        f = format_analog_output(analogs, config)
         
+
         try:
             f = refomat_analogs(analogs)
             logger.info('analogs reformated')
@@ -168,27 +185,6 @@ class AnalogsviewerProcess(WPSProcess):
         except Exception as e:
             msg = 'failed to reformat analogs file or generate viewer%s ' % e
             logger.debug(msg)
-
-
-        ################################
-        # modify JS template
-        ################################
-
-
-
-        # 
-        
-        # ip, output_av = mkstemp(suffix='.html', prefix='analogviewer', dir='.', text=False)
-
-        # tmpl_file = open(tmpl).read()
-        
-        # out = open(output_av, 'w')
-
-        # #Insert reformatted analogue file and config file into placeholders in the js script
-        # tmpl_file = tmpl_file.replace('analogues_placeholder.json', basename(f) )
-        # tmpl_file = tmpl_file.replace('analogues_config_placeholder.txt', configfile )
-        # out.write(tmpl_file)
-        # out.close()
 
 
         ################################
