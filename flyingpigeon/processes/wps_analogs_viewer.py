@@ -89,6 +89,7 @@ class AnalogsviewerProcess(WPSProcess):
             
             #Config file with path (server URL address)
             configfile_with_path = os.path.join(outputUrl_path, configfile)
+            logger.debug('configfile_with_path: %s' % configfile_with_path)
 
             #Check if config file exists
             r = requests.get(configfile_with_path)
@@ -100,9 +101,11 @@ class AnalogsviewerProcess(WPSProcess):
                
                 #Make config file name and get its path on local disk
                 configfile = 'config_' + analogs
+                logger.debug('local disk configfile: %s' % configfile)
                 
                 p , name = os.path.split(os.path.realpath(analogs))
                 configfile_localAddress = os.path.join(p, configfile)
+                logger.debug('local disk configfile_localAddress: %s' % configfile_localAddress)
 
                 #Check if config file exists
                 if os.path.isfile(configfile_localAddress):
