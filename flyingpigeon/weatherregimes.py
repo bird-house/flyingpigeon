@@ -37,7 +37,7 @@ def get_anomalies(nc_file, frac=0.2, reference=None):
   try: 
     variable = utils.get_variable(nc_file)
     calc = [{'func': 'mean', 'name': variable}]
-    calc_grouping = calc_grouping = ['day','year']
+    calc_grouping = calc_grouping = ['day','month']
     nc_anual_cycle = call(nc_file, calc=calc, calc_grouping=calc_grouping, time_range=reference)
     logger.info('annual cycle calculated')  
   except Exception as e:

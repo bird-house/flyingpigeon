@@ -140,7 +140,7 @@ def seacyc(archive, simulation, method='base'):
         variable=variable, 
         prefix='seasoncyc_base', 
         calc=[{'func': 'mean', 'name': variable}], 
-        calc_grouping=['day','year'] ) 
+        calc_grouping=['day','month'] ) 
 
       logger.debug('seasoncyc_base calculated : %s' % seasoncyc_base)  
       # cdo.ydaymean(input=archive, output='seasoncyc_base.nc' )
@@ -151,7 +151,7 @@ def seacyc(archive, simulation, method='base'):
         variable=variable, 
         prefix='seasoncyc_sim', 
         calc=[{'func': 'mean', 'name': variable}], 
-        calc_grouping=['day','year'] )
+        calc_grouping=['day','month'] )
       #cdo.ydaymean(input=simulation, output='seasoncyc_sim.nc' )
       seasoncyc_base = 'seasoncyc_base.nc'
       copy(seasoncyc_sim, seasoncyc_base)
@@ -160,13 +160,13 @@ def seacyc(archive, simulation, method='base'):
         variable=variable, 
         prefix='seasoncyc_base', 
         calc=[{'func': 'mean', 'name': variable}], 
-        calc_grouping=['day','year'] )
+        calc_grouping=['day','month'] )
       #= cdo.ydaymean(input=archive, output='seasoncyc_base.nc' )
       seasoncyc_sim  = call(resource=archive, 
         variable=variable, 
         prefix='seasoncyc_sim', 
         calc=[{'func': 'mean', 'name': variable}], 
-        calc_grouping=['day','year'] )
+        calc_grouping=['day','month'] )
       #seasoncyc_sim  = cdo.ydaymean(input=simulation, output='seasoncyc_sim.nc' )
     else:
       raise Exception('normalisation method not found')
