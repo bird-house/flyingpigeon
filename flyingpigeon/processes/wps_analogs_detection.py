@@ -334,7 +334,10 @@ class AnalogsProcess(WPSProcess):
 
     try:  
       if seacyc == True:
-        analogs.seacyc(archive, simulation, method=normalize)
+        logger.info('normalization function with method: %s ' % normalize)
+        seasoncyc_base, seasoncyc_sim = analogs.seacyc(archive, simulation, method=normalize)
+      else:
+        pass
     except Exception as e:
       msg = 'failed to generate normalization files %s ' % e
       logger.debug(msg)
