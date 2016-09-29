@@ -50,13 +50,8 @@ class AnalogsviewerProcess(WPSProcess):
         # start execution 
         ######################
 
-        # from flyingpigeon.config import JSsrc_dir
-        # tmpl = JSsrc_dir() + '/template_analogviewer.html'
-
         #Get the output csv file of analogs process (input by user in text box)
         analogs = self.getInputValues(identifier='resource')[0]
-
-
         
         #Get the output config file of analogs process using name of analogs file
         #(They share the same name tag)
@@ -65,34 +60,22 @@ class AnalogsviewerProcess(WPSProcess):
 
         ###########################################
         # reorganize analog txt file for javascript
+        # and find associated config file
         ###########################################
 
         from flyingpigeon import config
         from tempfile import mkstemp
         from flyingpigeon.config import www_url
-        
-<<<<<<< HEAD
-        from flyingpigeon.analogs import get_configfile , config_edits, refomat_analogs , get_viewer
-=======
-        from flyingpigeon.analogs import get_configfile, config_edits, format_analog_output
->>>>>>> ecc818eb6caabc6f05f12a59797807d1e47f7651
-
-        #my_css_url = www_url() + "/static/css/style.css"
-
-        #use as test input file: http://birdhouse-lsce.extra.cea.fr:8090/wpsoutputs/flyingpigeon/output_txt-0797016c-378e-11e6-91dd-41d8cd554993.txt
+        from flyingpigeon.analogs import get_configfile, config_edits, refomat_analogs, get_viewer
+     
         import numpy as np
-<<<<<<< HEAD
-        import pandas as pd
-        #import collections
-=======
-        #import pandas as pd
-        import collections
->>>>>>> ecc818eb6caabc6f05f12a59797807d1e47f7651
         import os
         from os.path import basename
         import requests
         from shutil import copyfile
 
+        #Get config file from either 1) working dir, 2) same local disk as analog file,
+        #or 3) create a dummy config if none exists
         try:
             outputUrl_path = config.outputUrl_path()
             output_path = config.output_path()
@@ -120,8 +103,8 @@ class AnalogsviewerProcess(WPSProcess):
                 #Check if config file exists
                 if os.path.isfile(configfile_localAddress):
                     logger.debug('Config file exists on local disk.')
-                    #Copy config file to output_path (~/birdhouse/var/lib/pywps/outputs/flyingpigeon)
                     
+                    #Copy config file to output_path (~/birdhouse/var/lib/pywps/outputs/flyingpigeon)                    
                     configfile_outputlocation = os.path.join(output_path , configfile)
 
                     copyfile(configfile_localAddress, configfile_outputlocation)
@@ -167,30 +150,26 @@ class AnalogsviewerProcess(WPSProcess):
 
         #Reformat data file output by the analogs detection process so that it can be
         #read by the analogues viewer template.
-        f = format_analog_output(analogs, config)
-        
-
         try:
             f = refomat_analogs(analogs)
-            logger.info('analogs reformated')
-            self.status.set('successfully reformatted analog file', 50)
+            logger.info('Analog file reformatted')
+            self.status.set('Successfully reformatted analog file', 50)
             output_av = get_viewer(f, configfile)
-            logger.info('viewer generated')
-            self.status.set('successfully generated analogs viewer', 90)
+            logger.info('Viewer html page generated')
+            self.status.set('Successfully generated analogs viewer html page', 90)
 
             output_data = outputUrl_path  + '/' + basename(f)
             logger.info('Data url: %s ' % output_data)
             logger.info('output_av: %s ' % output_av)
 
         except Exception as e:
-            msg = 'failed to reformat analogs file or generate viewer%s ' % e
+            msg = 'Failed to reformat analogs file or generate viewer%s ' % e
             logger.debug(msg)
 
 
         ################################
         # set the outputs
         ################################
-
 
         self.output_txt.setValue( output_data )     
         self.output_html.setValue( output_av )
