@@ -98,6 +98,12 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     output = None
   else:
     try:
+      if regrid_destination != None: 
+        rd_regrid = RequestDataset(uri=regrid_destination)
+      else:
+        rd_regrid = None
+
+
       rd = RequestDataset(resource, variable=variable, level_range=level_range,
         dimension_map=dimension_map, conform_units_to=conform_units_to, 
         time_region=time_region,t_calendar=t_calendar, time_range=time_range)
@@ -105,6 +111,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         output_format_options=output_format_options,
         spatial_wrapping=spatial_wrapping,
         spatial_reorder=spatial_reorder,
+        regrid_destination=rd_regrid,
         # options=options,
         calc=calc,
         calc_grouping=calc_grouping,
@@ -123,6 +130,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     # check memory load
     from numpy import sqrt 
     from flyingpigeon.utils import FreeMemory
+    from os import stat
     
     if memory_limit == None: 
       f = FreeMemory()
@@ -136,7 +144,11 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
       mem_limit = 1024. * 4
       # 475.0 MB for openDAP 
     
-    data_kb = ops.get_base_request_size()['total']
+    if type(resource) == list : 
+      data_kb =  stat(resource[0]).st_size * len(resource)
+    else: 
+      data_kb =  stat(resource).st_size
+    # ops.get_base_request_size()['total']
     data_mb = data_kb / 1024.
 
     if variable == None: 
@@ -171,18 +183,20 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
           calc = '%s=%s*1' % (variable, variable)
           logger.info('calc set to = %s ' %  calc)
           ops = OcgOperations(dataset=rd,
-            output_format_options=output_format_options,
-            spatial_wrapping=spatial_wrapping,
-            # options=options,
-            calc=calc,
-            calc_grouping=calc_grouping,
-            geom=geom,
-            output_format=output_format,
-            prefix=prefix,
-            search_radius_mult=search_radius_mult,
-            select_nearest=select_nearest,
-            select_ugid=select_ugid, 
-            add_auxiliary_files=False)
+                    output_format_options=output_format_options,
+                    spatial_wrapping=spatial_wrapping,
+                    spatial_reorder=spatial_reorder,
+                    regrid_destination=rd_regrid,
+                    # options=options,
+                    calc=calc,
+                    calc_grouping=calc_grouping,
+                    geom=geom,
+                    output_format=output_format,
+                    prefix=prefix,
+                    search_radius_mult=search_radius_mult,
+                    select_nearest=select_nearest,
+                    select_ugid=select_ugid, 
+                    add_auxiliary_files=False)          
         geom_file = compute(ops, tile_dimension=int(tile_dim) , verbose=True)
       except Exception as e: 
         logger.debug('failed to compute ocgis with chunks')
@@ -192,22 +206,22 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     ############################################
     # remapping according to regrid informations
     ############################################
-    if not regrid_destination == None:
-      try:
-        from tempfile import mkstemp
-        from cdo import Cdo
-        cdo = Cdo()
+    # if not regrid_destination == None:
+    #   try:
+    #     from tempfile import mkstemp
+    #     from cdo import Cdo
+    #     cdo = Cdo()
 
-        output = '%s.nc' % uuid.uuid1()
-        remap = 'remap%s' % regrid_options  
-        call = [op for op in dir(cdo) if remap in op]
-        cmd = "output = cdo.%s('%s',input='%s', output='%s')" % (str(call[0]), regrid_destination, geom_file, output) 
-        exec cmd
-      except Exception as e: 
-        logger.debug('failed to remap')
-        raise 
-    else:
-      output = geom_file
+    #     output = '%s.nc' % uuid.uuid1()
+    #     remap = 'remap%s' % regrid_options  
+    #     call = [op for op in dir(cdo) if remap in op]
+    #     cmd = "output = cdo.%s('%s',input='%s', output='%s')" % (str(call[0]), regrid_destination, geom_file, output) 
+    #     exec cmd
+    #   except Exception as e: 
+    #     logger.debug('failed to remap')
+    #     raise 
+    # else:
+    output = geom_file
   return output
 
   

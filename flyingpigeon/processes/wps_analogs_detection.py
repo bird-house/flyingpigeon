@@ -2,7 +2,6 @@ from datetime import date
 from pywps.Process import WPSProcess
 
 from flyingpigeon.datafetch import _PRESSUREDATA_
-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -341,7 +340,7 @@ class AnalogsProcess(WPSProcess):
       raise Exception(msg)
       
     ip, output = mkstemp(dir='.',suffix='.txt')
-    output_file =  path.abspath(output)
+    
     files=[path.abspath(archive), path.abspath(simulation), output_file]
 
     logger.debug("data preperation took %s seconds.", time.time() - start_time)

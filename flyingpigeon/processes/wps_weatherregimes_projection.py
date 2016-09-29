@@ -65,7 +65,7 @@ class WeatherRegimesRProcess(WPSProcess):
             title="netCDF reference",
             abstract="netCDF file as output from weather regime reference process",
             type=type(''),
-            minOccurs=1,
+            minOccurs=0,
             maxOccurs=1,
             # default=' http://api.gbif.org/v1/occurrence/download/request/0013848-160118175350007.zip'
             # maxmegabites=50,
@@ -179,26 +179,29 @@ class WeatherRegimesRProcess(WPSProcess):
         # reading in the input arguments
         ################################
         try: 
-            logger.info('read in the arguments')
             resource = self.getInputValues(identifier='resource')
             url_Rdat = self.getInputValues(identifier='Rdat')[0]
             url_dat = self.getInputValues(identifier='dat')[0]
-            url_ref_file = self.getInputValues(identifier='netCDF')[0]
+            url_ref_file = self.getInputValues(identifier='netCDF') # can be None
             season = self.getInputValues(identifier='season')[0]
             period = self.getInputValues(identifier='period')[0]            
             anualcycle = self.getInputValues(identifier='anualcycle')[0]
-            
-            start = dt.strptime(period.split('-')[0] , '%Y%m%d')
-            end = dt.strptime(period.split('-')[1] , '%Y%m%d')
-
-            kappa = int(self.getInputValues(identifier='kappa')[0])
-            
-            logger.info('bbox %s' % bbox)
-            logger.info('period %s' % str(period))
-            logger.info('season %s' % str(season))
-            
         except Exception as e: 
             logger.debug('failed to read in the arguments %s ' % e)
+        
+        try: 
+            start = dt.strptime(period.split('-')[0] , '%Y%m%d')
+            end = dt.strptime(period.split('-')[1] , '%Y%m%d')
+            # kappa = int(self.getInputValues(identifier='kappa')[0])
+            
+            logger.info('period %s' % str(period))
+            logger.info('season %s' % str(season))
+            logger.info('read in the arguments')
+            logger.info('url_ref_file: %s' % url_ref_file)
+            logger.info('url_Rdat: %s' % url_Rdat)
+            logger.info('url_dat: %s' % url_dat)
+        except Exception as e: 
+            logger.debug('failed to convert arguments %s ' % e)
            
         ############################
         # fetching trainging data 
@@ -210,10 +213,9 @@ class WeatherRegimesRProcess(WPSProcess):
         try:
           dat = abspath(download(url_dat))
           Rdat = abspath(download(url_Rdat))
-          ref_file = download(url_ref_file)
           logger.info('training data fetched')
         except Exception as e:
-          logger.error('failed to fethch training data %s' % e)
+          logger.error('failed to fetch training data %s' % e)
           
         ############################################################    
         ### get the required bbox and time region from resource data
@@ -225,10 +227,19 @@ class WeatherRegimesRProcess(WPSProcess):
         time_range = [start, end]
 
         variable = get_variable(resource)
-        model_subset = call(resource=resource, variable=variable, 
-          time_range=time_range,  # conform_units_to=conform_units_to, geom=bbox, spatial_wrapping='wrap',
-          regrid_destination=ref_file, regrid_options='bil')
-        logger.info('Dataset subset done: %s ' % model_subset)
+
+        if len(url_ref_file) > 0:
+            ref_file = download(url_ref_file[0])  
+            model_subset = call(resource=resource, variable=variable, 
+                time_range=time_range,  # conform_units_to=conform_units_to, geom=bbox, spatial_wrapping='wrap',
+                regrid_destination=ref_file, regrid_options='bil')
+            logger.info('Dataset subset with regridding done: %s ' % model_subset)
+        else:
+            model_subset = call(resource=resource, variable=variable, 
+                time_range=time_range,  # conform_units_to=conform_units_to, geom=bbox, spatial_wrapping='wrap',
+                )
+            logger.info('Dataset time period extracted: %s ' % model_subset)
+            
         
         ##############################################
         ### computing anomalies 
