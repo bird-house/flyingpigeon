@@ -87,28 +87,29 @@ def get_configfile(files,
   config.close()
   return abspath(config_file)
 
-def subset(resource=[], bbox='-80,50,22.5,70'):
-  """
-  Returns a subset.
+# def subset(resource=[], bbox='-80,50,22.5,70'):
+#   """
+#    OBSOLETE
+#   Returns a subset.
+     
+#   :param resource: netCDF input files of one dataset
+#   :param bbox: bounding box
 
-  :param resource: netCDF input files of one dataset
-  :param bbox: bounding box
+#   :return: subset netCDF file 
+#   """
+#   from tempfile import mkstemp
+#   from cdo import Cdo 
+#   cdo = Cdo()
+#   resource.sort()
 
-  :return: subset netCDF file 
-  """
-  from tempfile import mkstemp
-  from cdo import Cdo 
-  cdo = Cdo()
-  resource.sort()
+#   ip, nc_concat = mkstemp(dir='.',suffix='.nc')
+#   nc_concat = cdo.cat(input=resource, output=nc_concat)
 
-  ip, nc_concat = mkstemp(dir='.',suffix='.nc')
-  nc_concat = cdo.cat(input=resource, output=nc_concat)
-
-  ip, nc_subset = mkstemp(dir='.',suffix='.nc')
-  nc_subset = cdo.sellonlatbox('%s' % bbox, input=nc_concat, output=nc_subset)
-  logger.info('subset done: %s ' % nc_subset)
+#   ip, nc_subset = mkstemp(dir='.',suffix='.nc')
+#   nc_subset = cdo.sellonlatbox('%s' % bbox, input=nc_concat, output=nc_subset)
+#   logger.info('subset done: %s ' % nc_subset)
   
-  return nc_subset
+#   return nc_subset
 
 def seacyc(archive, simulation, method='base'):
   """
@@ -124,22 +125,51 @@ def seacyc(archive, simulation, method='base'):
   :return [str,str]: two netCDF filenames for analysis and reference period (located in working directory)
   """
   try:
+    logger.debug('seacyc started with method: %s' % method)
 
     from shutil import copy
-    from cdo import Cdo 
-    cdo = Cdo()
+    from flyingpigeon.ocgis_module import call
+    from flyingpigeon.utils import get_variable
+    #from cdo import Cdo 
+    #cdo = Cdo()
 
     if method == 'base':
-      seasoncyc_base = cdo.ydaymean(input=archive, output='seasoncyc_base.nc' )
+      #seasoncyc_base = cdo.ydaymean(input=archive, output='seasoncyc_base.nc' )
+      variable = get_variable(archive)
+      seasoncyc_base = call(resource=archive, 
+        variable=variable, 
+        prefix='seasoncyc_base', 
+        calc=[{'func': 'mean', 'name': variable}], 
+        calc_grouping=['day','year'] ) 
+
+      logger.debug('seasoncyc_base calculated : %s' % seasoncyc_base)  
+      # cdo.ydaymean(input=archive, output='seasoncyc_base.nc' )
       seasoncyc_sim = 'seasoncyc_sim.nc'
       copy(seasoncyc_base, seasoncyc_sim)
-    if method == 'sim':
-      seasoncyc_sim  = cdo.ydaymean(input=simulation, output='seasoncyc_sim.nc' )
+    elif method == 'sim':
+      seasoncyc_sim  = call(resource=archive, 
+        variable=variable, 
+        prefix='seasoncyc_sim', 
+        calc=[{'func': 'mean', 'name': variable}], 
+        calc_grouping=['day','year'] )
+      #cdo.ydaymean(input=simulation, output='seasoncyc_sim.nc' )
       seasoncyc_base = 'seasoncyc_base.nc'
       copy(seasoncyc_sim, seasoncyc_base)
-    if method == 'own':
-      seasoncyc_base = cdo.ydaymean(input=archive, output='seasoncyc_base.nc' )
-      seasoncyc_sim  = cdo.ydaymean(input=simulation, output='seasoncyc_sim.nc' )
+    elif method == 'own':
+      seasoncyc_base = call(resource=archive, 
+        variable=variable, 
+        prefix='seasoncyc_base', 
+        calc=[{'func': 'mean', 'name': variable}], 
+        calc_grouping=['day','year'] )
+      #= cdo.ydaymean(input=archive, output='seasoncyc_base.nc' )
+      seasoncyc_sim  = call(resource=archive, 
+        variable=variable, 
+        prefix='seasoncyc_sim', 
+        calc=[{'func': 'mean', 'name': variable}], 
+        calc_grouping=['day','year'] )
+      #seasoncyc_sim  = cdo.ydaymean(input=simulation, output='seasoncyc_sim.nc' )
+    else:
+      raise Exception('normalisation method not found')
 
   except Exception as e: 
     msg = 'seacyc function failed : %s ' % e 
