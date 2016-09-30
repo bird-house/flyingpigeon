@@ -336,7 +336,7 @@ class AnalogsProcess(WPSProcess):
         logger.info('normalization function with method: %s ' % normalize)
         seasoncyc_base, seasoncyc_sim = analogs.seacyc(archive, simulation, method=normalize)
       else:
-        pass
+        seasoncyc_base =  seasoncyc_sim = None
     except Exception as e:
       msg = 'failed to generate normalization files %s ' % e
       logger.debug(msg)
@@ -355,7 +355,10 @@ class AnalogsProcess(WPSProcess):
     self.status.set('writing config file', 15)
     start_time = time.time() # measure write config ...
     try:  
-      config_file = analogs.get_configfile(files=files, 
+      config_file = analogs.get_configfile(
+        files=files,
+        seasoncyc_base = seasoncyc_base,  
+        seasoncyc_sim=seasoncyc_sim,
         timewin=timewin, 
         varname=var, 
         seacyc=seacyc, 

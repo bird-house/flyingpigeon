@@ -23,7 +23,7 @@ dependencies:
 - sphinx
 - sphinx_rtd_theme
 # ipython
-- ipython=4.2.0
+- ipython#=4.2.0
 # wps
 - nginx=1.10.1
 - supervisor=3.1.3

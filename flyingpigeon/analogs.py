@@ -3,7 +3,9 @@ logger = logging.getLogger(__name__)
 from tempfile import mkstemp
 
 
-def get_configfile(files, 
+def get_configfile(files,
+                   seasoncyc_base=None,
+                   seasoncyc_sim=None,
                    timewin=1, 
                    varname='slp',
                    seacyc=False,
@@ -63,6 +65,8 @@ def get_configfile(files,
   config.write(' my_files%archivefile = "{file}" \n'.format(file=files[0]) ) 
   config.write(' my_files%simulationfile = "{file}" \n'.format(file=files[1]) )
   config.write(' my_files%outputfile = "{file}" \n'.format(file=files[2]) )
+  config.write('  my_files%seacycfilebase = "{file}" \n'.format(file=seasoncyc_base))
+  config.write(' my_files%seacycfilesim = "{file}" \n'.format(file=seasoncyc_sim))
   config.write('/ \n')
   config.write('&PARAM \n')
   config.write(' my_params%timewin = {timewin} \n'.format(timewin=timewin))
@@ -130,44 +134,44 @@ def seacyc(archive, simulation, method='base'):
     from shutil import copy
     from flyingpigeon.ocgis_module import call
     from flyingpigeon.utils import get_variable
-    #from cdo import Cdo 
-    #cdo = Cdo()
+    from cdo import Cdo 
+    cdo = Cdo()
 
     if method == 'base':
-      #seasoncyc_base = cdo.ydaymean(input=archive, output='seasoncyc_base.nc' )
+      seasoncyc_base = cdo.ydaymean(input=archive, output='seasoncyc_base.nc' )
       variable = get_variable(archive)
-      seasoncyc_base = call(resource=archive, 
-        variable=variable, 
-        prefix='seasoncyc_base', 
-        calc=[{'func': 'mean', 'name': variable}], 
-        calc_grouping=['day','month'] ) 
+      ##seasoncyc_base = call(resource=archive, 
+        #variable=variable, 
+        #prefix='seasoncyc_base', 
+        #calc=[{'func': 'mean', 'name': variable}], 
+        #calc_grouping=['day','month'] ) 
 
       logger.debug('seasoncyc_base calculated : %s' % seasoncyc_base)  
-      # cdo.ydaymean(input=archive, output='seasoncyc_base.nc' )
+      cdo.ydaymean(input=archive, output='seasoncyc_base.nc' )
       seasoncyc_sim = 'seasoncyc_sim.nc'
       copy(seasoncyc_base, seasoncyc_sim)
     elif method == 'sim':
-      seasoncyc_sim  = call(resource=archive, 
-        variable=variable, 
-        prefix='seasoncyc_sim', 
-        calc=[{'func': 'mean', 'name': variable}], 
-        calc_grouping=['day','month'] )
-      #cdo.ydaymean(input=simulation, output='seasoncyc_sim.nc' )
+      #seasoncyc_sim  = call(resource=archive, 
+        #variable=variable, 
+        #prefix='seasoncyc_sim', 
+        #calc=[{'func': 'mean', 'name': variable}], 
+        #calc_grouping=['day','month'] )
+      cdo.ydaymean(input=simulation, output='seasoncyc_sim.nc' )
       seasoncyc_base = 'seasoncyc_base.nc'
       copy(seasoncyc_sim, seasoncyc_base)
     elif method == 'own':
-      seasoncyc_base = call(resource=archive, 
-        variable=variable, 
-        prefix='seasoncyc_base', 
-        calc=[{'func': 'mean', 'name': variable}], 
-        calc_grouping=['day','month'] )
-      #= cdo.ydaymean(input=archive, output='seasoncyc_base.nc' )
-      seasoncyc_sim  = call(resource=archive, 
-        variable=variable, 
-        prefix='seasoncyc_sim', 
-        calc=[{'func': 'mean', 'name': variable}], 
-        calc_grouping=['day','month'] )
-      #seasoncyc_sim  = cdo.ydaymean(input=simulation, output='seasoncyc_sim.nc' )
+      #seasoncyc_base = call(resource=archive, 
+        #variable=variable, 
+        #prefix='seasoncyc_base', 
+        #calc=[{'func': 'mean', 'name': variable}], 
+        #calc_grouping=['day','month'] )
+      seasoncyc_base= cdo.ydaymean(input=archive, output='seasoncyc_base.nc' )
+      #seasoncyc_sim  = call(resource=archive, 
+        #variable=variable, 
+        #prefix='seasoncyc_sim', 
+        #calc=[{'func': 'mean', 'name': variable}], 
+        #calc_grouping=['day','month'] )
+      seasoncyc_sim  = cdo.ydaymean(input=simulation, output='seasoncyc_sim.nc' )
     else:
       raise Exception('normalisation method not found')
 
