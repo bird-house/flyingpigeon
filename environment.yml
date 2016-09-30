@@ -1,4 +1,4 @@
-name: castf90 # flyingpigeon
+name: flyingpigeon
 channels:
 - defaults
 - birdhouse
@@ -34,9 +34,9 @@ dependencies:
 # misc
 - pywget
 - pyyaml
-# cdo
-- cdo=1.7.0
-- jpeg=8d
+# cdo #depends with castf90
+#- cdo=1.7.0
+#- jpeg=8d
 # numeric
 - pandas=0.18.1
 - statsmodels=0.6.1
@@ -63,10 +63,14 @@ dependencies:
 - munch=2.0.4
 - rtree=0.8.2
 # analogue
-- castf90=0.1.2
+- castf90=0.1.5
 - netcdf-fortran=4.4.3
 - nco=4.5.5
-
+- pillow=3.2.0=py27_1
+- jpeg=9b=0
+- libtiff=4.0.6=6
+- pillow=3.2.0
+- pyqt=4.11.4
 # r
 - r=3.2.2 
 - rpy2=2.7.0
