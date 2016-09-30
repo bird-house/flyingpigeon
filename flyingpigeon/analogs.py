@@ -57,7 +57,7 @@ def get_configfile(files,
 
   config = open(config_file, "w")
   
-  config.write('!Configuration file for flyingpigeon analogs process\n')
+  config.write('!Configuration file for CASTf90 analogs processes deployed in flyingpigeon\n')
   config.write('!Created : %s \n' % ( date_stamp ))
   config.write('!Version : 0.1.5 \n')
   config.write('&FILES \n')
