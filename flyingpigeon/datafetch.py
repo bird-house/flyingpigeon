@@ -84,16 +84,16 @@ def reanalyses( start=1948, end=None, variable='slp', dataset='NCEP'):
         logger.debug(msg)
         raise Exception(msg)
 
-    logger.info('Obseration data fetched for %s files' % len(obs_data))
+    logger.info('Reanalyses data fetched for %s files' % len(obs_data))
   except Exception as e:
     msg = "get reanalyses module failed to fetch data %s " % e
     logger.debug(msg)
     raise Exception(msg)
 
-  if level == None: 
+  if level == None:
     data = obs_data
   else:
-    print ('get level')
+    logger.info('get level: %s' % level)
     data = get_level(obs_data, level=level)
   return data
 

@@ -98,12 +98,10 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     output = None
   else:
     try:
-      if regrid_destination != None: 
-        rd_regrid = RequestDataset(uri=regrid_destination)
-      else:
-        rd_regrid = None
-
-
+      #if regrid_destination != None: 
+        #rd_regrid = RequestDataset(uri=regrid_destination)
+      #else:
+        #rd_regrid = None
       rd = RequestDataset(resource, variable=variable, level_range=level_range,
         dimension_map=dimension_map, conform_units_to=conform_units_to, 
         time_region=time_region,t_calendar=t_calendar, time_range=time_range)
@@ -111,7 +109,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         output_format_options=output_format_options,
         spatial_wrapping=spatial_wrapping,
         spatial_reorder=spatial_reorder,
-        regrid_destination=rd_regrid,
+        # regrid_destination=rd_regrid,
         # options=options,
         calc=calc,
         calc_grouping=calc_grouping,
@@ -127,36 +125,64 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     except Exception as e: 
       logger.debug('failed to setup OcgOperations')
       raise  
-    # check memory load
-    from numpy import sqrt 
-    from flyingpigeon.utils import FreeMemory
-    from os import stat
+    try:
+      from numpy import sqrt 
+      from flyingpigeon.utils import FreeMemory
+      
+      if memory_limit == None: 
+        f = FreeMemory()
+        mem_kb = f.user_free 
+        mem_mb = mem_kb / 1024.
+        mem_limit = mem_mb / 2. # set limit to half of the free memory
+      else:
+        mem_limit = memory_limit
+
+      if mem_limit >= 1024. * 4: 
+        mem_limit = 1024. * 4
+        # 475.0 MB for openDAP 
+      
+      data_kb = ops.get_base_request_size()['total']
+      data_mb = data_kb / 1024.
+
+      if variable == None: 
+        variable = rd.variable
+        logger.info('%s as variable dedected' % (variable))
+
+      #data_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
+      logger.info('data_mb  = %s ; memory_limit = %s ' % (data_mb , mem_limit ))
+    except Exception as e: 
+      logger.debug('failed to compare dataload with free memory %s ' % e)
+      raise  
+
+
+    ## check memory load
+    #from os import stat
     
-    if memory_limit == None: 
-      f = FreeMemory()
-      mem_kb = f.user_free 
-      mem_mb = mem_kb / 1024.
-      mem_limit = mem_mb / 2. # set limit to half of the free memory
-    else:
-      mem_limit = memory_limit
+      #if memory_limit == None: 
+        #f = FreeMemory()
+        #mem_kb = f.user_free 
+        #mem_mb = mem_kb / 1024.
+        #mem_limit = mem_mb / 2. # set limit to half of the free memory
+      #else:
+        #mem_limit = memory_limit
 
-    if mem_limit >= 1024. * 4: 
-      mem_limit = 1024. * 4
-      # 475.0 MB for openDAP 
-    
-    if type(resource) == list : 
-      data_kb =  stat(resource[0]).st_size * len(resource)
-    else: 
-      data_kb =  stat(resource).st_size
-    # ops.get_base_request_size()['total']
-    data_mb = data_kb / 1024.
+      #if mem_limit >= 1024. * 4: 
+        #mem_limit = 1024. * 4
+        ## 475.0 MB for openDAP 
+      
+      ##if type(resource) == list : 
+        ##data_kb =  stat(resource[0]).st_size * len(resource)
+      ##else: 
+        ##data_kb =  stat(resource).st_size
+      #size = ops.get_base_request_size()['total']
+      #data_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
+      #data_mb = data_kb / 1024.
 
-    if variable == None: 
-      variable = rd.variable
-      logger.info('%s as variable dedected' % (variable))
-
-    #data_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
-    logger.info('data_mb  = %s ; memory_limit = %s ' % (data_mb  , mem_limit ))
+      #if variable == None: 
+        #variable = rd.variable
+        #logger.info('%s as variable dedected' % (variable))
+      
+      #logger.info('data_mb  = %s ; memory_limit = %s ' % (data_mb  , mem_limit ))
     
     if data_mb <= mem_limit :  # input is smaler than the half of free memory size
       try:
@@ -170,13 +196,13 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
       # calcultion of chunk size
       ##########################
 
-      size = ops.get_base_request_size()
-      nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
-      element_in_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
-      element_in_mb = element_in_kb / 1024.
-      tile_dim = sqrt(mem_limit/(element_in_mb*nb_time_coordinates_rd)) # maximum chunk size 
-      
       try:
+        size = ops.get_base_request_size()
+        nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
+        element_in_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
+        element_in_mb = element_in_kb / 1024.
+        tile_dim = sqrt(mem_limit/(element_in_mb*nb_time_coordinates_rd)) # maximum chunk size 
+        
         logger.info('ocgis module call compute with chunks')
         print 'ocgis module call compute with chunks'
         if calc == None:
@@ -186,7 +212,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
                     output_format_options=output_format_options,
                     spatial_wrapping=spatial_wrapping,
                     spatial_reorder=spatial_reorder,
-                    regrid_destination=rd_regrid,
+                    # regrid_destination=rd_regrid,
                     # options=options,
                     calc=calc,
                     calc_grouping=calc_grouping,
@@ -206,22 +232,22 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     ############################################
     # remapping according to regrid informations
     ############################################
-    # if not regrid_destination == None:
-    #   try:
-    #     from tempfile import mkstemp
-    #     from cdo import Cdo
-    #     cdo = Cdo()
+    if not regrid_destination == None:
+      try:
+        from tempfile import mkstemp
+        from cdo import Cdo
+        cdo = Cdo()
 
-    #     output = '%s.nc' % uuid.uuid1()
-    #     remap = 'remap%s' % regrid_options  
-    #     call = [op for op in dir(cdo) if remap in op]
-    #     cmd = "output = cdo.%s('%s',input='%s', output='%s')" % (str(call[0]), regrid_destination, geom_file, output) 
-    #     exec cmd
-    #   except Exception as e: 
-    #     logger.debug('failed to remap')
-    #     raise 
-    # else:
-    output = geom_file
+        output = '%s.nc' % uuid.uuid1()
+        remap = 'remap%s' % regrid_options  
+        call = [op for op in dir(cdo) if remap in op]
+        cmd = "output = cdo.%s('%s',input='%s', output='%s')" % (str(call[0]), regrid_destination, geom_file, output) 
+        exec cmd
+      except Exception as e: 
+        logger.debug('failed to remap')
+        raise 
+    else:
+      output = geom_file
   return output
 
   

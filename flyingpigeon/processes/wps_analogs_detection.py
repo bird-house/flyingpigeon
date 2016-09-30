@@ -306,7 +306,7 @@ class AnalogsProcess(WPSProcess):
     self.status.set('fetching input data', 7)
     try:
       input = reanalyses(start = start.year, end = end.year, variable=var, dataset=dataset)
-
+      logger.info('input files %s' % input)
       nc_subset = call(resource=input, variable=var, geom=bbox, spatial_wrapping='wrap')
     except Exception as e :
       msg = 'failed to fetch or subset input files %s' % e
@@ -342,7 +342,7 @@ class AnalogsProcess(WPSProcess):
       logger.debug(msg)
       raise Exception(msg)
       
-    ip, output = mkstemp(dir='.',suffix='.txt')
+    ip, output_file = mkstemp(dir='.',suffix='.txt')
     
     files=[path.abspath(archive), path.abspath(simulation), output_file]
 
@@ -410,7 +410,6 @@ class AnalogsProcess(WPSProcess):
 
 
     try:
-
       f = analogs.refomat_analogs(output_file)
       logger.info('analogs reformated')
       self.status.set('successfully reformatted analog file', 50)
@@ -425,14 +424,11 @@ class AnalogsProcess(WPSProcess):
       msg = 'failed to reformat analogs file or generate viewer%s ' % e
       logger.debug(msg)
 
-
     self.status.set('preparting output', 99)
-
     self.config.setValue( config_file )
     self.analogs.setValue( output_file )
     self.output_netcdf.setValue( simulation )
     self.output_html.setValue( output_av )
 
     self.status.set('execution ended', 100)
-
     logger.debug("total execution took %s seconds.", time.time() - process_start_time)
