@@ -11,15 +11,15 @@ channels:
 - r
 - bioconda
 dependencies:
-- python=2.7.12=1
+- python=2
 - ipython#=4.2.0
 ###############################
 # c fortran netcdf architecture
 ###############################
-- setuptools=23.0.0=py27_1 # to avoid downgrading during installation
+- setuptools=23.0.0=py27_0 # to avoid downgrading during installation
 - pyopenssl=16.0.0=py27_0
 - cryptography=1.5.2
-- icu=54.1
+- icu=56                   # get downgraded later on ....
 - libiconv=1.14
 - hdf4=4.2.12=0 
 - hdf5=1.8.17=5 
