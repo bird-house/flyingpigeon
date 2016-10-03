@@ -2,9 +2,9 @@ name: flyingpigeon
 channels:
 - defaults
 - birdhouse
+- conda-forge
 # cartopy nco cdo ... etc
 - ioos
-- conda-forge
 # ocgis
 - nesii
 # the r hell ...
@@ -17,6 +17,7 @@ dependencies:
 - cryptography=1.4
 - icu=54.1
 - libiconv=1.14
+- psutil
 # tests
 - pytest
 # docs
