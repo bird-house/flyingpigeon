@@ -20,26 +20,26 @@ def make_dirs(directory):
   """
   if not os.path.exists(directory):
     os.makedirs(directory)
-    
-def check_creationtime(path, url): 
+
+def check_creationtime(path, url):
   """
-  Compares the creation time of an archive file with the file creation time of the local disc space. 
-  
+  Compares the creation time of an archive file with the file creation time of the local disc space.
+
   :param path: Path to the local file
   :param url: URL to the archive file
-  
+
   :returns boolean: True/False (True if archive file is newer)
   """
-  
+
   try:
     import urllib2
     import os, datetime, time
-    
+
     u = urllib2.urlopen(url)
     meta = u.info()
     logger.info("Last Modified: " + str(meta.getheaders("Last-Modified")[0]))
 
-    # CONVERTING HEADER TIME TO UTC TIMESTAMP 
+    # CONVERTING HEADER TIME TO UTC TIMESTAMP
     # ASSUMING 'Sun, 28 Jun 2015 06:30:17 GMT' FORMAT
     meta_modifiedtime = time.mktime(datetime.datetime.strptime( \
                         meta.getheaders("Last-Modified")[0], "%a, %d %b %Y %X GMT").timetuple())
@@ -51,12 +51,12 @@ def check_creationtime(path, url):
     else:
       logger.info("local file is up-to-date. Nothing to fetch.")
       newer = False
-  except Exception as e: 
+  except Exception as e:
     msg = 'failed to download data: %s' % e
     logger.debug(msg)
     raise Exception(msg)
-  
-  return newer  
+
+  return newer
 
 def download(url, cache=False):
     """
@@ -83,7 +83,7 @@ def download(url, cache=False):
           #filename = os.path.basename(filename)
       else:
           filename = wget.download(url, bar=None)
-    except Exception as e: 
+    except Exception as e:
       logger.debug('failed to download data %s' % e)
     return filename
 
@@ -170,7 +170,7 @@ def calc_grouping(grouping):
   translate time grouping abbreviation (e.g 'JJA') into the appropriate ocgis calc_grouping syntax
 
   :param grouping: time group abbreviation allowed values: "yr", "mon", "sem", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON"
-  
+
   :returns list: calc_grouping conformant to ocgis syntax
   """
   calc_grouping = ['year'] # default year
@@ -343,7 +343,7 @@ def get_coordinates(resource):
       lons = ds.variables['lon']
 
   except Exception as e:
-    msg = 'failed to extract coordinates: %s ' % e 
+    msg = 'failed to extract coordinates: %s ' % e
     logger.debug(msg)
     raise Exception(msg)
   return lats, lons
@@ -354,7 +354,7 @@ def get_domain(resource):
   returns the domain of a netCDF file
 
   :param resource: netCDF file (metadata quality checked!)
-  
+
   :return str: domain
   """
   ds = Dataset(resource)
@@ -379,7 +379,7 @@ def get_frequency(resource):
   returns the frequency as set in the metadata (see also metadata.get_frequency)
 
   :param resource: NetCDF file
-  
+
   :return str: frequency
   """
   ds = Dataset(resource)
@@ -401,7 +401,7 @@ def get_values(resource, variable=None):
 
   :param resource: list of files
   :param variable: variable to be picked from the files (if not set, variable will be detected)
-  
+
   :returs numpy.array: values
   """
   from numpy import squeeze
@@ -416,18 +416,18 @@ def get_timerange(resource):
   returns from/to timestamp of given netcdf file(s).
 
   :param resource: list of path(s) to netCDF file(s)
-  
+
   :returns netcdf.datetime.datetime: start, end
 
   """
   start = end = None
 
-  if type(resource) != list: 
+  if type(resource) != list:
     resource = [resource]
     print resource
 
   try:
-    if len(resource) > 1: 
+    if len(resource) > 1:
       ds = MFDataset(resource)
       time = ds.variables['time']
     else:
@@ -443,7 +443,7 @@ def get_timerange(resource):
     else:
       s = num2date(time[0])
       e = num2date(time[-1])
-    
+
     ##TODO: include frequency
     start = '%s%s%s'  % (s.year, str(s.month).zfill(2) ,str(s.day).zfill(2))
     end = '%s%s%s'  %   (e.year,  str(e.month).zfill(2) ,str(e.day).zfill(2))
@@ -452,7 +452,7 @@ def get_timerange(resource):
     msg = 'failed to get time range: %s ' % e
     logger.exception(msg)
     raise Exception(msg)
-  
+
   return start, end
 
 # def get_timestamps(resource):
@@ -478,14 +478,14 @@ def get_time(resource, format = None):
     returns all timestamps of given netcdf file as datetime list.
 
     :param resource: NetCDF file(s)
-    :param format: if a format is provided (e.g format='%Y%d%m'), values will be converted to string  
-    :return : list of timesteps 
+    :param format: if a format is provided (e.g format='%Y%d%m'), values will be converted to string
+    :return : list of timesteps
     """
     if type(resource) != list:
         resource = [resource]
 
     try:
-      if len(resource) > 1: 
+      if len(resource) > 1:
         ds = MFDataset(resource)
         time = ds.variables['time']
       else:
@@ -496,7 +496,7 @@ def get_time(resource, format = None):
       logger.exception(msg)
       raise Exception(msg)
 
-    
+
     try:
       if (hasattr(time , 'units') and hasattr(time , 'calendar')) == True:
         timestamps = num2date(time[:], time.units , time.calendar)
@@ -505,13 +505,13 @@ def get_time(resource, format = None):
       else:
         timestamps = num2date(time[:])
       ds.close()
-      try: 
+      try:
         if format != None:
           timestamps = [t.strftime(format = format) for t in timestamps ]
       except:
         msg = 'failed to convert times to string'
         print msg
-        logger.debug(msg)    
+        logger.debug(msg)
     except:
       msg = 'failed to convert time'
       logger.exception(msg)
@@ -530,7 +530,7 @@ def aggregations(resource):
     Time axis is sorted by time.
 
     :param resource: list of netcdf files
-    
+
     :return: dictionary with key=experiment
     """
 
@@ -551,7 +551,7 @@ def aggregations(resource):
         # start timestamp of first file
         start, _ = get_timerange(aggregations[key]['files'][0])
         # end timestamp of last file
-        _, end = get_timestamps(aggregations[key]['files'][-1])
+        _, end = get_timerange(aggregations[key]['files'][-1])
         aggregations[key]['from_timestamp'] = start
         aggregations[key]['to_timestamp'] = end
         aggregations[key]['start_year'] = int(start[0:4])
@@ -564,7 +564,7 @@ def aggregations(resource):
 def rename_variable(resource, oldname=None, newname='newname'):
   """
   Change the variable name of a netCDF variable
-  
+
   :param resource: path to netCDF input file
   :param oldname: variable name to be changed
   :param newname: variable name to be given
@@ -798,12 +798,12 @@ def unrotate_pole(resource, write_to_file=True):
   from iris.analysis import cartography  as ct
   ds = Dataset(resource, mode='a')
 
-  if 'lat' in ds.variables.keys(): 
+  if 'lat' in ds.variables.keys():
     logger.info('coordinates already unrotated')
     lats = ds.variables['lat'][:]
     lons = ds.variables['lon'][:]
 
-  else: 
+  else:
     try:
       if 'rotated_latitude_longitude' in ds.variables:
         rp = ds.variables['rotated_latitude_longitude']
