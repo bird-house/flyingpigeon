@@ -4,7 +4,7 @@ channels:
 - birdhouse
 - conda-forge
 # cartopy nco cdo ... etc
-- ioos
+#- ioos
 # ocgis
 - nesii
 # the r hell ...
