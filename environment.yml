@@ -14,10 +14,11 @@ dependencies:
 - python=2.7.12
 - gcc=4.8.5
 - pyopenssl=0.16.0
-- cryptography=1.4
+- cryptography=1.5.2
 - icu=54.1
 - libiconv=1.14
 - psutil
+- libxslt=1.1.28
 # tests
 - pytest
 # docs
