@@ -9,15 +9,19 @@ def test_caps():
                             '/ows:Identifier')
     sorted_names = sorted(names.split())
     expected_names = [
+        'analogs_compare',
         'analogs_detection',
+        'analogs_model',
         'analogs_viewer',
         'fetch',
         'indices_percentile',
         'indices_simple',
         'plot_timeseries',
+        'robustness',
         'sdm_csv',
         'sdm_gbifsearch',
         'segetalflora',
+        'spatial_analog',
         'subset_continents',
         'subset_countries',
         'subset_points',
@@ -29,4 +33,3 @@ def test_caps():
         ]
 
     assert sorted_names == expected_names
-
