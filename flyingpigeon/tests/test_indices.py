@@ -8,12 +8,15 @@ from netCDF4 import Dataset
 
 from flyingpigeon import indices
 from flyingpigeon.utils import local_path
-  
+
+
 def test_indices():
     assert 'TG' in indices.indices()
 
+
 def test_indices_description():
     assert 'TG: ' in indices.indices_description()
+
 
 #@pytest.mark.skip(reason="no way of currently testing this")
 def test_indice_simple():
@@ -31,7 +34,8 @@ def test_indice_simple():
     # 1 year
     assert len(ds.variables['time']) == 1
 
-#@pytest.mark.skip(reason="no way of currently testing this")
+
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_indice_percentile():
     # TX90p expects tasmax
     resources = [local_path(TESTDATA['cordex_tasmax_2006_nc'])]
@@ -47,9 +51,3 @@ def test_indice_percentile():
     assert 'TX' in ds.variables
     # 1 year
     assert len(ds.variables['time']) == 1
-
-
-
-
-        
-    
