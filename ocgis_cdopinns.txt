@@ -1,0 +1,73 @@
+backports                 1.0                      py27_0  
+cligj                     0.4.0                    py27_0  
+cdo                       1.7.1                         2    conda-forge
+cf_units                  1.1.3                    py27_0    conda-forge
+click                     6.6                      py27_0    conda-forge
+click-plugins             1.0.3                    py27_0    conda-forge
+curl                      7.49.1                        1    conda-forge
+expat                     2.1.0                         2    conda-forge
+fiona                     1.7.0               np111py27_2    conda-forge
+freexl                    1.0.2                         1    conda-forge
+gdal                      2.1.1               np111py27_3    conda-forge
+geos                      3.4.2                         2    conda-forge
+giflib                    5.1.4                         0    conda-forge
+hdf4                      4.2.12                        0    conda-forge
+hdf5                      1.8.17                        6    conda-forge
+icu                       56.1                          4    conda-forge
+jasper                    1.900.1                       3    conda-forge
+jpeg                      9b                            0    conda-forge
+json-c                    0.12                          0    conda-forge
+kealib                    1.4.6                         3    conda-forge
+krb5                      1.14.2                        0    conda-forge
+libdap4                   3.18.0                        2    conda-forge
+libiconv                  1.14                          3    conda-forge
+libnetcdf                 4.4.1                         0    conda-forge
+libpng                    1.6.24                        0    conda-forge
+libpq                     9.5.4                         2    conda-forge
+libspatialite             4.3.0a                        9    conda-forge
+libtiff                   4.0.6                         6    conda-forge
+libuuid                   1.0.3                         1    conda-forge
+libxml2                   2.9.4                         0    conda-forge
+munch                     2.0.4                    py27_0    conda-forge
+ncurses                   5.9                           9    conda-forge
+netcdf-fortran            4.4.4                         1    conda-forge
+netcdf4                   1.2.4               np111py27_2    conda-forge
+openjpeg                  2.1.0                         6    conda-forge
+pip                       8.1.2                    py27_0    conda-forge
+proj.4                    4.9.2                         0    conda-forge
+python                    2.7.12                        1    conda-forge
+readline                  6.2                           0    conda-forge
+shapely                   1.5.17              np111py27_0    conda-forge
+six                       1.10.0                   py27_0    conda-forge
+sqlite                    3.13.0                        1    conda-forge
+tk                        8.5.19                        0    conda-forge
+wheel                     0.29.0                   py27_0    conda-forge
+xerces-c                  3.1.4                         2    conda-forge
+xz                        5.2.2                         0    conda-forge
+zlib                      1.2.8                         3    conda-forge
+decorator                 4.0.10                   py27_0  
+enum34                    1.1.6                    py27_0  
+get_terminal_size         1.0.0                    py27_0  
+ipython                   5.1.0                    py27_0  
+ipython_genutils          0.1.0                    py27_0  
+libgcc                    5.2.0                         0  
+libgfortran               3.0.0                         1  
+mkl                       11.3.3                        0  
+icclim                    4.2.5                    py27_0    nesii/channel/ocgis-next
+libspatialindex           1.8.5                         0    nesii/channel/ocgis-next
+ocgis-next                1.4.0.dev1               py27_3    nesii/channel/ocgis-next
+rtree                     0.8.2                    py27_0    nesii/channel/ocgis-next
+udunits2                  2.2.20                        0    nesii/channel/ocgis-next
+numpy                     1.11.2                   py27_0  
+openssl                   1.0.2j                        0  
+path.py                   8.2.1                    py27_0  
+pathlib2                  2.1.0                    py27_0  
+pexpect                   4.0.1                    py27_0  
+pickleshare               0.7.4                    py27_0  
+prompt_toolkit            1.0.3                    py27_0  
+ptyprocess                0.5.1                    py27_0  
+pygments                  2.1.3                    py27_0  
+setuptools                27.2.0                   py27_0  
+simplegeneric             0.8.1                    py27_1  
+traitlets                 4.3.1                    py27_0  
+wcwidth                   0.1.7                    py27_0 
