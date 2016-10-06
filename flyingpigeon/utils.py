@@ -109,14 +109,19 @@ def archive(resources, format='tar', dir_output='.', mode='w'):
   """
   from tempfile import mkstemp
   from os.path import basename
+  from numpy import squeeze
 
   logger.info('compressing files to archive')
+  try:
+    if isinstance(resources, str):
+      resources = list([resources])
+    resources = squeeze(resources)
+    resources_filter = [x for x in resources.tolist() if x is not None]
+    resources = resources_filter
 
-  if isinstance(resources, str):
-    resources = list([resources])
-
-  resources_filter = [x for x in resources if x is not None]
-  resources = resources_filter
+  except Exception as e:
+    msg = 'failed to prepare file list: %s' % e
+    logger.debug(msg)
 
   if format == 'tar':
     import tarfile
