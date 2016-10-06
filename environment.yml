@@ -59,7 +59,7 @@ dependencies:
 - castf90=0.1.5
 ################
 # r
-- r#=3.2.2 
+- r=3.2.2  # 3.3 conflicts with icu=56 
 - rpy2#=2.7.0
 - r-mclust#=5.1
 - r-ncdf4#=1.13
