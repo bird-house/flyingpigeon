@@ -159,7 +159,7 @@ conda_config: anaconda
 	@"$(ANACONDA_HOME)/bin/conda" config --set use_pip true
 	@"$(ANACONDA_HOME)/bin/conda" config --set channel_priority false
 	@"$(ANACONDA_HOME)/bin/conda" config --set auto_update_conda false
-	@"$(ANACONDA_HOME)/bin/conda" config --add channels defaults
+	@"$(ANACONDA_HOME)/bin/conda" config --add channels conda-forge
 
 .PHONY: conda_env
 conda_env: anaconda conda_config
