@@ -131,13 +131,15 @@ class SingleIndicesProcess(WPSProcess):
             groupings=groupings,
             dir_output=path.curdir,
             ))
+         
+        results_list =  results.tolist()
 
         self.status.set('indices calculated', 90)
-        logger.debug('results type: %s', type(results))
-        logger.debug('indices files: %s ' % results.tolist())
+        logger.debug('results type: %s', type(results_list))
+        logger.debug('indices files: %s ' % results_list )
 
         try:
-            archive_indices = archive(results.tolist())
+            archive_indices = archive(results_list)
             logger.info('archive prepared')
         except Exception as e:
             msg = "archive preparation failed"
@@ -145,8 +147,14 @@ class SingleIndicesProcess(WPSProcess):
             raise Exception(msg)
         try: 
             self.output.setValue(archive_indices)
-            i = next((i for i, x in enumerate(results.tolist()) if x), None)
-            self.output_netcdf.setValue(str(results.tolist()[i]))
+            if type(results_list) == list:
+                i = next((i for i, x in enumerate(results.tolist()) if x), None)
+                self.output_netcdf.setValue(str(results[i]))
+            elif type(results_list) == str:
+                self.output_netcdf.setValue(results_list)
+            else:
+                logger.debug('results_list type: %s  not extractable ' % type(results_list) )
+                self.output_netcdf.setValue(None)
         except Exception as e:
             msg = "extraction of example file failed"
             logger.exception(msg)
