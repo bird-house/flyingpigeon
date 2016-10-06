@@ -1,8 +1,8 @@
-cartopy
-cdo
-pandas
+#cartopy
+#cdo
+#pandas=0.18
 pygbif>=0.1.4
-pyyaml
-scikit-learn
+#pyyaml
+#scikit-learn
 statsmodels
 wget
