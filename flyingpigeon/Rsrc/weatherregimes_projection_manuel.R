@@ -61,6 +61,7 @@ nc = nc_open(infile)
 data=ncvar_get(nc,varname)
 lon=ncvar_get(nc,'lon')
 lat=ncvar_get(nc,'lat')
+
 # time=ncvar_get(nc,'time')
 # print('Time from netCDF R:')
 # print(time)
@@ -155,7 +156,26 @@ pond.slp=1/sqrt(cos(lat*pi/180))
 scale.slp=rep(pond.slp,length(lon))
 dat.scale=scale(dat.m,scale=scale.slp)
 ## Projection of EOFs (1970-2010)
+print ('## Normalization by latitude')
+
+print ('##### EOFs #######')
+print ('##### EOFs #######')
+print ('##### EOFs #######')
+print (as.matrix(EOF.r))
+
+print ('##### dat.scale #######')
+print ('##### dat.scale #######')
+print ('##### dat.scale #######')
+print ('##### dat.scale #######')
+print (dat.scale)
+
+print ('###################')
+print ('###################')
+print ('###################')
+print ('###################')
+
 PC.e = dat.scale %*% as.matrix(EOF.r)
+
 
 # compute distance, correlation and best WR
 rms.reg=c()
