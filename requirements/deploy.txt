@@ -4,5 +4,5 @@
 pygbif>=0.1.4
 #pyyaml
 #scikit-learn
-statsmodels
+#statsmodels
 wget
