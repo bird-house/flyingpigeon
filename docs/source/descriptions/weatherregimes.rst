@@ -94,11 +94,10 @@ This can be read with R syntax. Here is an example to generate an individual plo
             levels=zlev,lty=1, cex.main=0.95)
     library(fields)
     world(xlim=range(lon),ylim=range(lat),interior=FALSE,add=TRUE)
+    add_legend("right", legend=zlev[1:length(zlev)-1],pch=20, col=colplot, horiz=FALSE, bty='n', cex=0.8)
    }#end for i
 
-   add_legend("right", legend=zlev[1:length(zlev)-1],pch=20, 
-             col=colplot,
-             horiz=FALSE, bty='n', cex=0.8)
+
 
    dev.off()
 
