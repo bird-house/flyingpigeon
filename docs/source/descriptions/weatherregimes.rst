@@ -51,15 +51,15 @@ Outputs:
 **PCA data**
 **Frequency**
 
-Postorcessing:
-..............
+Post-processing:
+................
 
-The weather regime process provides a map of the detected pressure patterns according to the centriode. This is a default graphic and might not satisfy the needs of the user. But the process is also providing the intire workspace containing all required values to generate a individual plot according to the need of the user. 
-Download the R-Workspace (output of weather regime process) to your local machine by klicking the download button or run e.g.::
+The weather regime process provides a map of the detected pressure patterns according to the centroid. This is a default graphic and might not satisfy the needs of the user. But the process also provides the entire workspace containing all required values to generate an individual plot according to the needs of the user. 
+Download the R-Workspace (output of the weather regime process) to your local machine by clicking the download button or run e.g.::
 
   wget  http://birdhouse-lsce.extra.cea.fr:8090/wpsoutputs/flyingpigeon/output_classification-e49f2d78-8563-11e6-bf14-fbeae168c26e.Rdat
 
-to fetch the R-workspace to your local machine. This can be read with R syntax. An example to generate an idividual plot can:
+This can be read with R syntax. Here is an example to generate an individual plot:
 
        
 .. code-block:: R
