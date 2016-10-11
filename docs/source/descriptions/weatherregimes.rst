@@ -63,24 +63,25 @@ This can be read with R syntax. Here is an example to generate an individual plo
 
        
 .. code-block:: R
-library(maps)
-load("output_classification-e49f2d78-8563-11e6-bf14-fbeae168c26e.Rdat")
-#save as pdf
-pdf(file="output_graphics.pdf", width=14,height=7)
-#save as eps
-#postscript(file="output_graphics.eps",width=1400,height=700)
-# colorscale 
-bluered=colorRampPalette(c("darkblue","blue","lightblue", "white","white","pink","red","darkred"))
-zcol=c(round(min(dat.class$reg.var/100)),round(max(dat.class$reg.var/100)))
-zlev=seq(zcol[1],zcol[2])
-for(i in 1:nreg){ 
-  champ=dat.class$reg.var[,i]/100
-  par( mar=c(3,3,2,1.5))
-  dum=t(matrix(champ,length(lat),length(lon)))
-  #dum=matrix(champ,length(lon),length(lat)) #if transpose
-  lat.sort=sort(lat,index.return=TRUE)
-  titleplot=paste("WR: ",i,"(",format(dat.class$perc.r[i],digits=3),"%)")
-  filled.contour(lon,sort(lat),dum[,lat.sort$ix],color.palette =bluered,
+
+   library(maps)
+   load("output_classification-e49f2d78-8563-11e6-bf14-fbeae168c26e.Rdat")
+   #save as pdf
+   pdf(file="output_graphics.pdf", width=14,height=7)
+   #save as eps
+   #postscript(file="output_graphics.eps",width=1400,height=700)
+   # colorscale 
+   bluered=colorRampPalette(c("darkblue","blue","lightblue", "white","white","pink","red","darkred"))
+   zcol=c(round(min(dat.class$reg.var/100)),round(max(dat.class$reg.var/100)))
+   zlev=seq(zcol[1],zcol[2])
+   for(i in 1:nreg){ 
+     champ=dat.class$reg.var[,i]/100
+     par( mar=c(3,3,2,1.5))
+     dum=t(matrix(champ,length(lat),length(lon)))
+     #dum=matrix(champ,length(lon),length(lat)) #if transpose
+     lat.sort=sort(lat,index.return=TRUE)
+     titleplot=paste("WR: ",i,"(",format(dat.class$perc.r[i],digits=3),"%)")
+     filled.contour(lon,sort(lat),dum[,lat.sort$ix],color.palette =bluered,
                  asp = 0,nlevels=length(zlev),levels=zlev,
                  plot.title = title(main = titleplot, xlab = "lon", ylab = "lat"),
                  plot.axes={axis(1); axis(2); 
@@ -88,8 +89,8 @@ for(i in 1:nreg){
                    library(fields)
                    world(xlim=range(lon),ylim=range(lat),interior=FALSE,add=TRUE)
                  })
-}# end i
-dev.off() #eps or pdf
+   }# end i
+   dev.off() #eps or pdf
 
 
 Examples: 
