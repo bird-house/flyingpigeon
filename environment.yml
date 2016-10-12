@@ -17,7 +17,7 @@ dependencies:
 - psutil
 - cffi=1.8.3=py27_0
 - setuptools=23
-- icu=56.1=4  #  conda-forge
+- icu=54.1=0  #  conda-forge
 - libxslt#=1.1.28
 ################
 # tests
@@ -60,13 +60,15 @@ dependencies:
 - castf90=0.1.5
 ################
 # r
-- r=3.2.2  # 3.3 conflicts with icu=56 
+- cairo=1.12.18=6 # for X11 independend plot support 
+- r=3.3.1  # 3.3 conflicts with icu=56
+- r-base=3.3.1=1
 - rpy2#=2.7.0
-- r-mclust#=5.1
+# - r-mclust#=5.1 subsuituted by cluster
 - r-ncdf4#=1.13
-- r-fields#=8.4
+#- r-fields#=8.4 conflicts with r3.3.1 needs 3.2
 - r-gridextra#=2.0.0
-- r-cairo#=1.5_9
+#- r-cairo#=1.5_9 build in r-base
 - pip:
   - genshi==0.7
   - pygbif==0.1.4
