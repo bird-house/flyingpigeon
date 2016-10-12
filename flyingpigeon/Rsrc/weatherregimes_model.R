@@ -105,32 +105,53 @@ for(i in 1:nrow(dat.m)){
 ###############
 ##### plot EOFs
 
-library("Cairo")
+library(Cairo)
+library(maps)
 #pdf(file=output_graphics)
-CairoPDF(output_graphics, width = 7, height = 7, pointsize = 12)
+CairoPDF(output_graphics, width = 14, height = 7, pointsize = 12)
 
 # layout(matrix(1:(2*ceiling(nreg/2)),2,ceiling(nreg/2)))
-par(mar=c(4,6,2,2))
+# par(mar=c(4,6,2,2))
 
-for(i in 1:nreg){ 
-   champ=dat.class$reg.var[,i] #/100                        
-    zlev=pretty(champ,20)
-    colplot=rainbow(length(zlev)-1,start=3/6,end=1)
-    par( mar=c(2.5,2,2,1))
-    dum=t(matrix(champ,length(lat),length(lon)))
-    lat.sort=sort(lat,index.return=TRUE)
-    titleplot=paste(model_var," ", seas," ",y1,"-",y2," WR:",i,"(",
-                           format(dat.class$perc.r[i],digits=3),"%)")
-    contour(lon,sort(lat), dum[,lat.sort$ix],
-            xlab="Longitude",ylab="Latitude",main=titleplot,
-            col=colplot,add=FALSE,nlevels=length(zlev),
-            levels=zlev,lty=1, 
-            cex.axis=1.5, cex.main=1.0 )
-    library(maps)
-    map(add=TRUE)
-}
-
-#dev.off()
+bluered=colorRampPalette(c("darkblue","blue","lightblue", "white","white","pink","red","darkred"))
+zcol=c(round(min(dat.class$reg.var)),round(max(dat.class$reg.var)))
+zlev=seq(zcol[1], zcol[2],length=20)
+for(i in 1:nreg){
+  champ=dat.class$reg.var[,i]
+  par( mar=c(3,3,2,1.5))
+  dum=t(matrix(champ,length(lat),length(lon)))
+  #dum=matrix(champ,length(lon),length(lat)) #if transpose
+  lat.sort=sort(lat,index.return=TRUE)
+  titleplot=paste("WR: ",i,"(",format(dat.class$perc.r[i],digits=3),"%)")
+  filled.contour(lon,sort(lat),dum[,lat.sort$ix],color.palette =bluered,
+                 asp = 0,nlevels=length(zlev),levels=zlev,
+                 plot.title = title(main = titleplot, xlab = "lon", ylab = "lat"),
+                 plot.axes={axis(1); axis(2);
+                            contour(lon,sort(lat),dum[,lat.sort$ix],add=T, nlevels=6,lwd=2);
+                            library(fields)
+                            world(xlim=range(lon),ylim=range(lat),interior=FALSE,add=TRUE)
+  })
+}# end i
+dev.off() #eps
+# 
+# for(i in 1:nreg){ 
+#    champ=dat.class$reg.var[,i] #/100                        
+#     zlev=pretty(champ,20)
+#     colplot=rainbow(length(zlev)-1,start=3/6,end=1)
+#     par( mar=c(2.5,2,2,1))
+#     dum=t(matrix(champ,length(lat),length(lon)))
+#     lat.sort=sort(lat,index.return=TRUE)
+#     titleplot=paste(model_var," ", seas," ",y1,"-",y2," WR:",i,"(",
+#                            format(dat.class$perc.r[i],digits=3),"%)")
+#     contour(lon,sort(lat), dum[,lat.sort$ix],
+#             xlab="Longitude",ylab="Latitude",main=titleplot,
+#             col=colplot,add=FALSE,nlevels=length(zlev),
+#             levels=zlev,lty=1, 
+#             cex.axis=1.5, cex.main=1.0 )
+# 
+#     map(add=TRUE)
+# }
+# dev.off()
 
 ## Saving the classification of Weather Regimes that we will use for projections
 save(file=file_classification,dat.class,nreg,dat.climatol,dat.rms,dat.cor,mean.clim.ref,lon,lat,time) #
