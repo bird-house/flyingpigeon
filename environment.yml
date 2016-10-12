@@ -1,6 +1,6 @@
 name: flyingpigeon
 channels:
-# - defaults
+- defaults
 - birdhouse
 - conda-forge
 # ocgis
@@ -54,6 +54,7 @@ dependencies:
 - python-cdo
 - ocgis-next=1.4.0.dev1=py27_3  #  nesii/channel/ocgis-next
 - proj.4=4.9.2
+- jpeg=9b
 ################
 # analogue
 - castf90=0.1.5
