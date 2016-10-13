@@ -55,19 +55,22 @@ class AnalogsviewerProcess(WPSProcess):
         
         #Get the output config file of analogs process using name of analogs file
         #(They share the same name tag)
-        configfile = analogs.replace('analogs-', 'config-')
-        
+        if 'analogs-' in  analogs:
+          configfile = analogs.replace('analogs-', 'config-')
+          logger.info('config filename generated %s' % configfile)
+        else: 
+          configfile = None
+          logger.info('analog file is not conform to detection nameing')
 
         ###########################################
         # reorganize analog txt file for javascript
         # and find associated config file
         ###########################################
-
         from flyingpigeon import config
-        from tempfile import mkstemp
         from flyingpigeon.config import www_url
         from flyingpigeon.analogs import get_configfile, config_edits, refomat_analogs, get_viewer
-     
+        
+        from tempfile import mkstemp
         import numpy as np
         import os
         from os.path import basename

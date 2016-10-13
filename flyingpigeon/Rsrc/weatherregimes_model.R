@@ -105,10 +105,10 @@ for(i in 1:nrow(dat.m)){
 ###############
 ##### plot EOFs
 
-library(Cairo)
+#library(Cairo)
 library(maps)
 #pdf(file=output_graphics)
-CairoPDF(output_graphics, width = 14, height = 7, pointsize = 12)
+pdf(output_graphics, width = 14, height = 7, pointsize = 12)
 
 # layout(matrix(1:(2*ceiling(nreg/2)),2,ceiling(nreg/2)))
 # par(mar=c(4,6,2,2))
