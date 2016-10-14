@@ -49,117 +49,32 @@ class AnalogsviewerProcess(WPSProcess):
         ######################
         # start execution 
         ######################
-
-        #Get the output csv file of analogs process (input by user in text box)
-        analogs = self.getInputValues(identifier='resource')[0]
-        
-        #Get the output config file of analogs process using name of analogs file
-        #(They share the same name tag)
-        if 'analogs-' in  analogs:
-          configfile = analogs.replace('analogs-', 'config-')
-          logger.info('config filename generated %s' % configfile)
-        else: 
-          configfile = None
-          logger.info('analog file is not conform to detection nameing')
+                
+        from flyingpigeon import analogs as anlg
+        from flyingpigeon import config
+        from os.path import basename 
 
         ###########################################
         # reorganize analog txt file for javascript
         # and find associated config file
         ###########################################
-        from flyingpigeon import config
-        from flyingpigeon.config import www_url
-        from flyingpigeon.analogs import get_configfile, config_edits, refomat_analogs, get_viewer
         
-        from tempfile import mkstemp
-        import numpy as np
-        import os
-        from os.path import basename
-        import requests
-        from shutil import copyfile
-
-        #Get config file from either 1) working dir, 2) same local disk as analog file,
-        #or 3) create a dummy config if none exists
-        try:
-            outputUrl_path = config.outputUrl_path()
-            output_path = config.output_path()
-            
-            #Config file with path (server URL address)
-            configfile_with_path = os.path.join(outputUrl_path, configfile)
-            logger.debug('configfile_with_path: %s' % configfile_with_path)
-
-            #Check if config file exists
-            r = requests.get(configfile_with_path)
-            if r.status_code != 404:
-                logger.debug('Config file exists on server URL address.')
-
-            else:
-                logger.debug('Config file does not exist on server address. Check local disk.')
-               
-                #Make config file name and get its path on local disk
-                configfile = 'config_' + analogs
-                logger.debug('local disk configfile: %s' % configfile)
-                
-                p , name = os.path.split(os.path.realpath(analogs))
-                configfile_localAddress = os.path.join(p, configfile)
-                logger.debug('local disk configfile_localAddress: %s' % configfile_localAddress)
-
-                #Check if config file exists
-                if os.path.isfile(configfile_localAddress):
-                    logger.debug('Config file exists on local disk.')
-                    
-                    #Copy config file to output_path (~/birdhouse/var/lib/pywps/outputs/flyingpigeon)                    
-                    configfile_outputlocation = os.path.join(output_path , configfile)
-
-                    copyfile(configfile_localAddress, configfile_outputlocation)
-                    logger.info(' time for coffee ')
-
-                    configfile_outputlocation_edited = config_edits(configfile_outputlocation)
-                    logger.info('outputlocation_edited: %s' % configfile_outputlocation_edited)
-
-                    configfile = os.path.basename(configfile_outputlocation_edited)
-                    logger.info('  configfile %s  ' % configfile)
-
-                else:
-                    logger.debug('There is no config file on local disk. Generating a default one.')
-
-                    #Insert analogs filename into config file.
-                    #The rest of the params are unknown.
-                    configfile_wkdir = get_configfile(
-                        files=['dummyconfig', 'dummyconfig',analogs],
-                        nanalog='DUMMY!!!', 
-                        varname='DUMMY!!!',
-                        seacyc='DUMMY!!!',
-                        cycsmooth='DUMMY!!!',
-                        timewin='DUMMY!!!',
-                        seasonwin='DUMMY!!!',
-                        distfun='DUMMY!!!',
-                        calccor='DUMMY!!!',
-                        outformat='DUMMY!!!',
-                        silent='DUMMY!!!',
-                        period=['dummy','dummy'],
-                        bbox='DUMMY!!!'
-                    )
-
-                    configfile = os.path.basename(configfile_wkdir) #just file name
-                    #Add server path to file name
-                    configfile_inplace = os.path.join(output_path, configfile)
-                    
-                    #Copy out of local working dir to output_path
-                    copyfile(configfile_wkdir, configfile_inplace)
-
-        except Exception as e:
-            msg = 'failed to read number of analogues from config file %s ' % e
-            logger.debug(msg)
 
         #Reformat data file output by the analogs detection process so that it can be
         #read by the analogues viewer template.
         try:
-            f = refomat_analogs(analogs)
+            #Get the output csv file of analogs process (input by user in text box)
+            analogs = self.getInputValues(identifier='resource')[0]
+
+            configfile = anlg.get_viewer_configfile(analogs)
+            f = anlg.refomat_analogs(analogs)
             logger.info('Analog file reformatted')
             self.status.set('Successfully reformatted analog file', 50)
-            output_av = get_viewer(f, configfile)
+            output_av = anlg.get_viewer(f, configfile)
             logger.info('Viewer html page generated')
             self.status.set('Successfully generated analogs viewer html page', 90)
+
+            outputUrl_path = config.outputUrl_path()
 
             output_data = outputUrl_path  + '/' + basename(f)
             logger.info('Data url: %s ' % output_data)
