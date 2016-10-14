@@ -430,6 +430,7 @@ class AnalogsProcess(WPSProcess):
     # generate analog viewer
     ########################
 
+<<<<<<< 1e9e5585a0e8dfa4c5d62af392df1323759c230f
     try:
       f = analogs.refomat_analogs(output_file)
       logger.info('analogs reformated')
@@ -438,11 +439,26 @@ class AnalogsProcess(WPSProcess):
       output_av = analogs.get_viewer(f, config_file)
       logger.info('Viewer generated')
       self.status.set('Successfully generated analogs viewer', 90)
+=======
+
+    try:
+      f = analogs.refomat_analogs(output_file)
+      logger.info('analogs reformated')
+      self.status.set('successfully reformatted analog file', 50)
+      
+      output_av = analogs.get_viewer(f, config_file)
+      logger.info('viewer generated')
+      self.status.set('successfully generated analogs viewer', 90)
+>>>>>>> revert to original wps_analogs_detection
 
       logger.info('output_av: %s ' % output_av)
 
     except Exception as e:
+<<<<<<< 1e9e5585a0e8dfa4c5d62af392df1323759c230f
       msg = 'Failed to reformat analogs file or generate viewer%s ' % e
+=======
+      msg = 'failed to reformat analogs file or generate viewer%s ' % e
+>>>>>>> revert to original wps_analogs_detection
       logger.debug(msg)
 
     self.status.set('preparting output', 99)
