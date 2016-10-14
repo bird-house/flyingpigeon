@@ -176,8 +176,8 @@ class AnalogsProcess(WPSProcess):
 
     self.output_html = self.addComplexOutput(
       identifier="output_html",
-      title="html viewer",
-      abstract="web browser compatible html file",
+      title="Analogues Viewer html page",
+      abstract="Interactive visualization of calculated analogues",
       formats=[{"mimeType":"text/html"}],
       asReference=True,
       )
@@ -320,12 +320,19 @@ class AnalogsProcess(WPSProcess):
     # input data preperation 
     ########################
     self.status.set('Start preparing input data', 12)
-    start_time = time.time()  # mesure data preperation ...
+    start_time = time.time()  # measure data preperation ...
     
-    try: 
-      archive = call(resource=nc_subset, time_range=[refSt , refEn]) 
-      simulation = call(resource=nc_subset, time_range=[dateSt , dateEn])
+    try:
+      #Construct descriptive filenames for the three files listed in config file
+      refDatesString = dt.strftime(refSt,'%Y-%m-%d') + "_" + dt.strftime(refEn,'%Y-%m-%d')
+      simDatesString = dt.strftime(dateSt,'%Y-%m-%d') + "_" + dt.strftime(dateEn,'%Y-%m-%d')
+      archiveNameString = "base_" + var +"_" + refDatesString + '_%.1f_%.1f_%.1f_%.1f' % (bbox[0], bbox[2], bbox[1], bbox[3])
+      simNameString = "sim_" + var +"_" + simDatesString + '_%.1f_%.1f_%.1f_%.1f' % (bbox[0], bbox[2], bbox[1], bbox[3])
+
+      archive = call(resource=nc_subset, time_range=[refSt , refEn], prefix=archiveNameString) 
+      simulation = call(resource=nc_subset, time_range=[dateSt , dateEn], prefix=simNameString)
       logger.info('archive and simulation files generated: %s, %s' % (archive, simulation))
+
     except Exception as e:
       msg = 'failed to prepare archive and simulation files %s ' % e
       logger.debug(msg)
@@ -344,12 +351,27 @@ class AnalogsProcess(WPSProcess):
       
     ip, output_file = mkstemp(dir='.',suffix='.txt')
     
+# =======
+#     #Create an empty config with with random name  
+#     ip, output = mkstemp(dir='.', suffix='.txt')
+
+#     #Rename random name of config file to more descriptive string
+#     import os
+#     anlgname = "ana_" + var + "_" + distance + "_sim_" + simDatesString + "_ref_" + refDatesString + '_%.1f_%.1f_%.1f_%.1f_seasonwin%ddays_%danalogs.txt' % (bbox[0], bbox[2], bbox[1], bbox[3], seasonwin, nanalog) #+ seasonwin 
+#     os.rename(output,anlgname)
+
+#     #Put config file in temporary working dir
+#     tmppath = os.path.dirname(output)
+#     output_file = os.path.join(tmppath, anlgname)
+  
+#     #Put all three files with their paths in array
+# >>>>>>> analogs detn gives descriptive names to files in config file
     files=[path.abspath(archive), path.abspath(simulation), output_file]
 
-    logger.debug("data preperation took %s seconds.", time.time() - start_time)
+    logger.debug("Data preperation took %s seconds.", time.time() - start_time)
 
     ############################
-    # generating the config file
+    # generate the config file
     ############################
     
     self.status.set('writing config file', 15)
@@ -408,20 +430,19 @@ class AnalogsProcess(WPSProcess):
     # generate analog viewer
     ########################
 
-
     try:
       f = analogs.refomat_analogs(output_file)
       logger.info('analogs reformated')
-      self.status.set('successfully reformatted analog file', 50)
+      self.status.set('Successfully reformatted analog file', 50)
       
       output_av = analogs.get_viewer(f, config_file)
-      logger.info('viewer generated')
-      self.status.set('successfully generated analogs viewer', 90)
+      logger.info('Viewer generated')
+      self.status.set('Successfully generated analogs viewer', 90)
 
       logger.info('output_av: %s ' % output_av)
 
     except Exception as e:
-      msg = 'failed to reformat analogs file or generate viewer%s ' % e
+      msg = 'Failed to reformat analogs file or generate viewer%s ' % e
       logger.debug(msg)
 
     self.status.set('preparting output', 99)
