@@ -150,12 +150,14 @@ class AnalogsProcess(WPSProcess):
     # define the outputs
     ### ###################
 
-    self.config = self.addComplexOutput(
+    self.config = self.addLiteralOutput(
       identifier="config",
       title="Config File",
       abstract="Config file used for the Fortran process",
-      formats=[{"mimeType":"text/plain"}],
-      asReference=True,
+      default=None,
+      type=type(''),
+      #formats=[{"mimeType":"text/plain"}],
+      #asReference=True,
       )
 
     self.analogs = self.addComplexOutput(
@@ -434,8 +436,12 @@ class AnalogsProcess(WPSProcess):
       f = analogs.refomat_analogs(output_file)
       logger.info('analogs reformated')
       self.status.set('Successfully reformatted analog file', 50)
+
+      # put config file into output folder
+
+      config_output_path, config_output_url = analogs.copy_configfile(config_file)
       
-      output_av = analogs.get_viewer(f, config_file)
+      output_av = analogs.get_viewer(f, path.basename(config_output_path))
       logger.info('Viewer generated')
       self.status.set('Successfully generated analogs viewer', 90)
 
@@ -447,7 +453,7 @@ class AnalogsProcess(WPSProcess):
       logger.debug(msg)
 
     self.status.set('preparting output', 99)
-    self.config.setValue( config_file )
+    self.config.setValue( config_output_url ) #config_file )
     self.analogs.setValue( output_file )
     self.output_netcdf.setValue( simulation )
     self.output_html.setValue( output_av )

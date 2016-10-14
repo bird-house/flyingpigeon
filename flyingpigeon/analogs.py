@@ -361,13 +361,39 @@ def get_viewer_configfile(analogs):
             configfile = path.basename(configfile_wkdir) #just file name
             #Add server path to file name
             configfile_inplace = path.join(output_path, configfile)
-            
             #Copy out of local working dir to output_path
             copyfile(configfile_wkdir, configfile_inplace)
+
   except Exception as e:
       msg = 'failed to read number of analogues from config file %s ' % e
       logger.debug(msg)
   return configfile
+
+def copy_configfile(configfile):
+  """
+  copy configuration file into output folder
+
+  :param configfile: configuration file (path/to/file.txt) in working dir
+
+  :return str,str: output_path, output_url 
+  """
+  from flyingpigeon import config
+
+  from shutil import copyfile
+  from os import path
+
+  outputUrl_path = config.outputUrl_path()
+  output_path = config.output_path()
+
+  # configfile = path.basename(configfile) #just file name
+  #Add server path to file name
+  config_output_path = path.join(output_path, path.basename(configfile))
+  #Copy out of local working dir to output_path
+  copyfile(configfile, config_output_path)
+  config_output_url = path.join(outputUrl_path,configfile) 
+
+  return config_output_path, config_output_url
+
 
 
 def get_viewer(analogs_mod, configfile ):
