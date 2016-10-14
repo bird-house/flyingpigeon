@@ -275,6 +275,126 @@ def refomat_analogs(analogs):
 
   return analogs_mod
 
+def get_viewer_configfile(analogs):
+  """
+  finds or generates configuration file for an analogs file 
+  to be used by the analogs viewer. The configuration file
+  will be copied into the output folder.
+
+  :param analogs: text file containing the analogs values
+  :return str: configuration file path/name.txt
+  """
+  from flyingpigeon import config
+  from flyingpigeon.config import www_url
+
+  import requests
+  from shutil import copyfile
+  from tempfile import mkstemp
+  from os import path
+  from os.path import basename
+
+
+  try: 
+    outputUrl_path = config.outputUrl_path()
+    output_path = config.output_path()
+    
+    #Config file with path (server URL address)
+    configfile = analogs.replace('analogs-', 'config-')
+    logger.info('config filename generated %s' % configfile)
+    
+    configfile_with_path = path.join(outputUrl_path, configfile)
+    logger.debug('configfile_with_path: %s' % configfile_with_path)
+
+    #Check if config file exists
+    r = requests.get(configfile_with_path)
+    if r.status_code != 404:
+        logger.debug('Config file exists on server URL address.')
+
+    else:
+        logger.debug('Config file does not exist on server address. Check local disk.')
+       
+        #Make config file name and get its path on local disk
+        configfile = 'config_' + analogs
+        logger.debug('local disk configfile: %s' % configfile)
+        
+        p , name = path.split(path.realpath(analogs))
+        configfile_localAddress = path.join(p, configfile)
+        logger.debug('local disk configfile_localAddress: %s' % configfile_localAddress)
+
+        #Check if config file exists
+        if path.isfile(configfile_localAddress):
+            logger.debug('Config file exists on local disk.')
+            
+            #Copy config file to output_path (~/birdhouse/var/lib/pywps/outputs/flyingpigeon)                    
+            configfile_outputlocation = path.join(output_path , configfile)
+
+            copyfile(configfile_localAddress, configfile_outputlocation)
+            logger.info(' time for coffee ')
+
+            configfile_outputlocation_edited = config_edits(configfile_outputlocation)
+            logger.info('outputlocation_edited: %s' % configfile_outputlocation_edited)
+
+            configfile = path.basename(configfile_outputlocation_edited)
+            logger.info('  configfile %s  ' % configfile)
+
+        else:
+            logger.debug('There is no config file on local disk. Generating a default one.')
+
+            #Insert analogs filename into config file.
+            #The rest of the params are unknown.
+            configfile_wkdir = get_configfile(
+                files=['dummyconfig', 'dummyconfig',analogs],
+                nanalog='DUMMY!!!', 
+                varname='DUMMY!!!',
+                seacyc='DUMMY!!!',
+                cycsmooth='DUMMY!!!',
+                timewin='DUMMY!!!',
+                seasonwin='DUMMY!!!',
+                distfun='DUMMY!!!',
+                calccor='DUMMY!!!',
+                outformat='DUMMY!!!',
+                silent='DUMMY!!!',
+                period=['dummy','dummy'],
+                bbox='DUMMY!!!'
+            )
+
+            configfile = path.basename(configfile_wkdir) #just file name
+            #Add server path to file name
+            configfile_inplace = path.join(output_path, configfile)
+            #Copy out of local working dir to output_path
+            copyfile(configfile_wkdir, configfile_inplace)
+
+  except Exception as e:
+      msg = 'failed to read number of analogues from config file %s ' % e
+      logger.debug(msg)
+  return configfile
+
+def copy_configfile(configfile):
+  """
+  copy configuration file into output folder
+
+  :param configfile: configuration file (path/to/file.txt) in working dir
+
+  :return str,str: output_path, output_url 
+  """
+  from flyingpigeon import config
+
+  from shutil import copyfile
+  from os import path
+
+  outputUrl_path = config.outputUrl_path()
+  output_path = config.output_path()
+
+  # configfile = path.basename(configfile) #just file name
+  #Add server path to file name
+  config_output_path = path.join(output_path, path.basename(configfile))
+  #Copy out of local working dir to output_path
+  copyfile(configfile, config_output_path)
+  config_output_url = path.join(outputUrl_path,configfile) 
+
+  return config_output_path, config_output_url
+
+
 
 def get_viewer(analogs_mod, configfile ):
   """

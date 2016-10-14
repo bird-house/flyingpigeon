@@ -75,7 +75,7 @@
       //read config file produced by analogues detection process
       d3.text("analogues_config_placeholder.txt", function(text) {
         text_array = d3.csv.parseRows(text);
-
+      
         //Find element containing param string
         for (idx = 0; idx < text_array.length; idx++) {
           t = text_array[idx].toString();
