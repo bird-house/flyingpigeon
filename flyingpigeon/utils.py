@@ -265,50 +265,50 @@ def drs_filename(resource, skip_timestamp=False, skip_format=False ,
 
     filename = resource
     try:
-        if ds.project_id == 'CORDEX' or ds.project_id == 'EOBS' :
-            filename = cordex_pattern.format(
-                variable = variable,
-                domain = ds.CORDEX_domain,
-                driving_model = ds.driving_model_id,
-                experiment = ds.experiment_id,
-                ensemble = ds.driving_model_ensemble_member,
-                model = ds.model_id,
-                version = ds.rcm_version_id,
-                frequency = ds.frequency)
-        elif ds.project_id == 'CMIP5':
-            # TODO: attributes missing in netcdf file for name generation?
-            filename = cmip5_pattern.format(
-                variable = variable,
-                model = ds.model_id,
-                experiment = ds.experiment,
-                ensemble = ds.parent_experiment_rip
-                )
-        else:
-            raise Exception('unknown project %s' % ds.project_id)
-        ds.close()
+      if ds.project_id == 'CORDEX' or ds.project_id == 'EOBS' :
+        filename = cordex_pattern.format(
+            variable = variable,
+            domain = ds.CORDEX_domain,
+            driving_model = ds.driving_model_id,
+            experiment = ds.experiment_id,
+            ensemble = ds.driving_model_ensemble_member,
+            model = ds.model_id,
+            version = ds.rcm_version_id,
+            frequency = ds.frequency)
+      elif ds.project_id == 'CMIP5':
+        # TODO: attributes missing in netcdf file for name generation?
+        filename = cmip5_pattern.format(
+            variable = variable,
+            model = ds.model_id,
+            experiment = ds.experiment,
+            ensemble = ds.parent_experiment_rip
+            )
+      else:
+        raise Exception('unknown project %s' % ds.project_id)
+      ds.close()
 
-        # add from/to timestamp if not skipped
-        if skip_timestamp == False:
-            logger.debug("add timestamp")
-            from_timestamp, to_timestamp = get_timerange(resource)
-            logger.debug("from_timestamp %s", from_timestamp)
-            filename = "%s_%s-%s" % (filename, int(from_timestamp), int(to_timestamp))
+      # add from/to timestamp if not skipped
+      if skip_timestamp == False:
+          logger.debug("add timestamp")
+          from_timestamp, to_timestamp = get_timerange(resource)
+          logger.debug("from_timestamp %s", from_timestamp)
+          filename = "%s_%s-%s" % (filename, int(from_timestamp), int(to_timestamp))
 
-        # add format extension
-        if skip_format == False:
-            filename = filename + '.nc'
+      # add format extension
+      if skip_format == False:
+          filename = filename + '.nc'
 
-        pf = path.dirname(resource)
-        # add file path
-        if add_file_path == True:
-          filename = path.join( pf , filename )
+      pf = path.dirname(resource)
+      # add file path
+      if add_file_path == True:
+        filename = path.join( pf , filename )
 
-        # rename the file
-        if rename_file==True:
-          if path.exists(path.join(resource)):
-            rename(resource, path.join(pf, filename ))
+      # rename the file
+      if rename_file==True:
+        if path.exists(path.join(resource)):
+          rename(resource, path.join(pf, filename ))
     except:
-        logger.exception('Could not generate DRS filename for %s', resource)
+      logger.exception('Could not generate DRS filename for %s', resource)
 
     return filename
 
