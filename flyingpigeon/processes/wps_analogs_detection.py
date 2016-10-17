@@ -433,7 +433,7 @@ class AnalogsProcess(WPSProcess):
     ########################
 
     try:
-      f = analogs.refomat_analogs(output_file)
+      f = analogs.reformat_analogs(output_file)
       logger.info('analogs reformated')
       self.status.set('Successfully reformatted analog file', 50)
 

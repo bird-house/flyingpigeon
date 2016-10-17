@@ -211,7 +211,7 @@ def config_edits(configfile):
   return configfile
 
 
-def refomat_analogs(analogs):
+def reformat_analogs(analogs):
   """
   Reformats analogs results file for analogues viewer code.
 
@@ -400,7 +400,7 @@ def get_viewer(analogs_mod, configfile ):
   """
   Generate an analogs viewer based on a template.
 
-  :param analogs_mod: modified analogs file (output of refomat_analogs)
+  :param analogs_mod: modified analogs file (output of reformat_analogs)
   :param configfile: configuration file 
 
   return html: analog viewer html page
