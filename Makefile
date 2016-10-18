@@ -1,4 +1,4 @@
-VERSION := 0.3.2
+VERSION := 0.3.3
 RELEASE := master
 
 # Include custom config if it is available
@@ -68,6 +68,7 @@ help:
 	@echo "\nTesting targets:"
 	@echo "  test        to run tests (but skip long running tests)."
 	@echo "  testall     to run all tests (including long running tests)."
+	@echo "  pep8        to run pep8 checks."
 	@echo "\nSupporting targets:"
 	@echo "  envclean    to remove the conda enviroment $(CONDA_ENV)."
 	@echo "  srcclean    to remove all *.pyc files."
@@ -249,6 +250,11 @@ test:
 testall:
 	@echo "Running all tests (including slow and online tests) ..."
 	bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV); bin/py.test -v"
+
+.PHONY: pep8
+pep8:
+		@echo "Running pep8 checks ..."
+		bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV); flake8 $(APP_NAME)"
 
 .PHONY: docs
 docs:
