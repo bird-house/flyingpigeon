@@ -1,5 +1,5 @@
-emu:
-  image: birdhouse/emu
+flyingpigeon:
+  image: birdhouse/flyingpigeon
   ports:
     - "48093:9001"
     - "38093:38093"
