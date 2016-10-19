@@ -1,4 +1,4 @@
-VERSION := 0.3.3
+VERSION := 0.3.4
 RELEASE := master
 
 # Include custom config if it is available
@@ -13,8 +13,7 @@ OS_NAME := $(shell uname -s 2>/dev/null || echo "unknown")
 CPU_ARCH := $(shell uname -m 2>/dev/null || uname -p 2>/dev/null || echo "unknown")
 
 # Python
-SETUPTOOLS_VERSION := 23.0.0
-BUILDOUT_VERSION := 2.5.2
+SETUPTOOLS_VERSION := 27.2.0
 CONDA_VERSION := 4.2.9
 
 # Anaconda
@@ -26,8 +25,8 @@ CONDA_PINNED := $(APP_ROOT)/requirements/conda_pinned
 
 # Configuration used by update-config
 HOSTNAME ?= localhost
+HTTP_PORT ?= 8094
 OUTPUT_PORT ?= 8090
-LOG_LEVEL ?= WARN
 
 # choose anaconda installer depending on your OS
 ANACONDA_URL = http://repo.continuum.io/miniconda
@@ -68,7 +67,6 @@ help:
 	@echo "\nTesting targets:"
 	@echo "  test        to run tests (but skip long running tests)."
 	@echo "  testall     to run all tests (including long running tests)."
-	@echo "  pep8        to run pep8 checks."
 	@echo "\nSupporting targets:"
 	@echo "  envclean    to remove the conda enviroment $(CONDA_ENV)."
 	@echo "  srcclean    to remove all *.pyc files."
@@ -207,8 +205,8 @@ update:
 
 .PHONY: update-config
 update-config:
-	@echo "Update application config with buildout (offline mode) and enviroment variables..."
-	@-bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);bin/buildout buildout:anaconda-home=$(ANACONDA_HOME) settings:hostname=$(HOSTNAME) settings:output-port=$(OUTPUT_PORT) settings:log-level=$(LOG_LEVEL) -o -c custom.cfg"
+	@echo "Update application config with buildout (offline mode) and environment variables..."
+	@-bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);bin/buildout buildout:anaconda-home=$(ANACONDA_HOME) settings:hostname=$(HOSTNAME) settings:output-port=$(OUTPUT_PORT) settings:http-port=$(HTTP_PORT) -o -c custom.cfg"
 
 .PHONY: clean
 clean: srcclean envclean
