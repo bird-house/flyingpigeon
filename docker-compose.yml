@@ -1,12 +1,14 @@
-flyingpigeon:
-  image: birdhouse/flyingpigeon
+emu:
+  image: birdhouse/emu
   ports:
+    - "48093:9001"
     - "38093:38093"
     - "8093:8093"
   environment:
     HOSTNAME: localhost
+    HTTP_PORT: 8093
     OUTPUT_PORT: 38093
   volumes:
-    - data:/data
+    - /tmp/data:/opt/birdhouse/var/lib
+    - /tmp/log:/opt/birdhouse/var/log
   volume_driver: local
- 
