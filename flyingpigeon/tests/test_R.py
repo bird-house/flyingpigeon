@@ -30,6 +30,6 @@ def test_pdf_grDevices():
   remove('Rplot.pdf')  
   png = grDevices.png(filename='Rplot.png', type='cairo')
   grDevices.dev_off()
-  grDevices.postscript(filename='Rplot.eps')
+  grDevices.postscript('Rplot.eps')
   grDevices.dev_off()
   remove('Rplot.eps')
