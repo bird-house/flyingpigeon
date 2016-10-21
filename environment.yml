@@ -17,7 +17,7 @@ dependencies:
 - psutil
 - cffi=1.8.3=py27_0
 - setuptools=23
-- icu=56  #  conda-forge
+- icu#=56  #  conda-forge
 - libxslt#=1.1.28
 ################
 # tests
