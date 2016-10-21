@@ -1,4 +1,4 @@
-VERSION := 0.3.4
+VERSION := 0.3.5
 RELEASE := master
 
 # Include custom config if it is available
@@ -252,7 +252,7 @@ testall:
 .PHONY: pep8
 pep8:
 		@echo "Running pep8 checks ..."
-		bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV); flake8 $(APP_NAME)"
+		bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV); flake8"
 
 .PHONY: docs
 docs:
