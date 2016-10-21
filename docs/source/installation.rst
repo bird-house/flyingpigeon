@@ -25,3 +25,22 @@ Check the log files for errors::
    $ tail -f ~/birdhouse/var/log/supervisor/flyingpigeon.log
 
 For other install options, run ``make help`` and read the documention for the `Makefile <Bootstrap_>`_.
+
+Using docker-compose
+====================
+
+Start flyingpigeon with docker-compose (docker-compose version > 1.7):
+
+.. code-block:: sh
+
+   $ docker-compose up
+
+By default the WPS is available on port 8080: http://localhost:8080/wps?service=WPS&version=1.0.0&request=GetCapabilities.
+
+You can change the ports and hostname with environment variables:
+
+.. code-block:: sh
+
+  $ HOSTNAME=flyingpigeon HTTP_PORT=8093 SUPERVISOR_PORT=48093 docker-compose up
+
+Now the WPS is available on port 8093: http://flyingpigeon:8093/wps?service=WPS&version=1.0.0&request=GetCapabilities.
