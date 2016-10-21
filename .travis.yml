@@ -3,6 +3,7 @@ branches:
   only:
     - master
     - develop
+    - next
     - pingudev
 python:
   - "2.7"
