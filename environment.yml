@@ -16,7 +16,7 @@ dependencies:
 - cryptography=1.5.2=py27_0 #- cryptography=1.5.2
 - psutil
 - cffi=1.8.3=py27_0
-- setuptools=23
+- setuptools=27.2.0
 - icu=56  #  conda-forge
 - libxslt#=1.1.28
 ################
