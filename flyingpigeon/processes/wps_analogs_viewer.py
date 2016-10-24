@@ -71,7 +71,7 @@ class AnalogsviewerProcess(WPSProcess):
             analogs = self.getInputValues(identifier='resource')[0]
 
             configfile = anlg.get_viewer_configfile(analogs)
-            f = anlg.refomat_analogs(analogs)
+            f = anlg.reformat_analogs(analogs)
             logger.info('Analog file reformatted')
             self.status.set('Successfully reformatted analog file', 50)
             output_av = anlg.get_viewer(f, configfile)
