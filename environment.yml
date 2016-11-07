@@ -1,8 +1,8 @@
 name: flyingpigeon
 channels:
+- conda-forge
 - defaults
 - birdhouse
-- conda-forge
 # ocgis
 - nesii
 # the r hell ...
