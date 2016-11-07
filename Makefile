@@ -1,4 +1,4 @@
-VERSION := 0.3.5
+VERSION := 0.3.6
 RELEASE := master
 
 # Include custom config if it is available
@@ -14,7 +14,7 @@ CPU_ARCH := $(shell uname -m 2>/dev/null || uname -p 2>/dev/null || echo "unknow
 
 # Python
 SETUPTOOLS_VERSION := 27.2.0
-CONDA_VERSION := 4.2.9
+CONDA_VERSION := 4.2.12
 
 # Anaconda
 ANACONDA_HOME ?= $(HOME)/anaconda
@@ -29,7 +29,7 @@ HTTP_PORT ?= 8094
 OUTPUT_PORT ?= 8090
 
 # choose anaconda installer depending on your OS
-ANACONDA_URL = http://repo.continuum.io/miniconda
+ANACONDA_URL = https://repo.continuum.io/miniconda
 ifeq "$(OS_NAME)" "Linux"
 FN := Miniconda2-latest-Linux-x86_64.sh
 else ifeq "$(OS_NAME)" "Darwin"
