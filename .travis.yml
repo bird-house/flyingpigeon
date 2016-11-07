@@ -2,7 +2,6 @@ language: python
 branches:
   only:
     - master
-    - develop
     - next
     - pingudev
 python:
