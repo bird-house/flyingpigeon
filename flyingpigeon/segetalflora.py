@@ -149,152 +149,100 @@ def plot_ascii(infile):
     logger.exception('plotting failed for file %s' % basename)
     raise
 
-def get_segetalflora(resource=[], dir_output='.', culture_type='fallow', climate_type=2, region=None, dimension_map=None): 
-  """productive worker for segetalflora jobs
-  :param resources: list of tas netCDF files. (Any time aggregation is possible)
+def get_yrmean(resource=[]): 
+  """
+  calculation of annual mean temperature and clipping Europe 
+  
+  :param resource: list or netCDF tas input files
+  
+  :return list: list of output files 
+  """
+  
+  from flyingpigeon.utils import calc_grouping, sort_by_filename
+  from flyingpigeon.ocgis_module import call
+  from flyingpigeon.subset import clipping
+  ncs = sort_by_filename(resource)
+  nc_tasmean = []
+  
+  try:
+    for key in ncs.keys():
+      try:
+        logger.info('process %s' % (key))
+        calc =  [{'func':'mean','name':'tas'}]
+        calc_group = calc_grouping('yr')
+        prefix = key.replace(key.split('_')[7],'yr')
+        nc_tasmean.append(clipping(resource=ncs[key], 
+                                   variable='tas', 
+                                   calc=calc, calc_grouping= calc_group, 
+                                   prefix=prefix, polygons='Europe')[0])
+        logger.info('clipping and mean tas calculation done for %s' % (key))
+      except Exception as e: 
+        logger.debug('mean tas calculation failed for %s : %s ' % (key,e))
+  except Exception as e:
+    logger.debug('clipping failed for %s: %s' % (key, e))
+  return nc_tasmean
+
+def get_segetalflora(resource=[], culture_type='fallow', climate_type=3): 
+  """
+  calulation of segetalflora species numbers based on yearly mean temperature 
+  
+  :param resource: list of netCDF yearly mean temperature (tas) files. 
   :param culture_type: Type of culture. Possible values are:
                        'fallow', 'intensive', 'extensive' (default:'fallow')
   :param climate_type: Type of climate: number 1 to 7 or 'all' (default: 2)
-  :param region: Region for subset. If 'None' (default), the values will be calculated for Europe
+  
+  :return list: list of result segeltaflora files
   """
-  from flyingpigeon.subset import clipping
-  from flyingpigeon.utils import calc_grouping, sort_by_filename 
-  import os
-  from os import remove
-  from tempfile import mkstemp
-  from ocgis import RequestDataset, OcgOperations
   
-  from cdo import Cdo
-  cdo = Cdo()
-  
-  if not os.path.exists(dir_output):
-    os.makedirs(dir_output)
-  
-  os.chdir(dir_output)
-  #outputs = []
-  
-  if region == None: 
-    region = 'Europe'
+  from flyingpigeon.ocgis_module import call
+  from os import path
     
   if not type(culture_type) == list:
     culture_type = list([culture_type])
   if not type(climate_type) == list:
     climate_type = list([climate_type])
-    
-  ncs = sort_by_filename(resource)
-  print '%s experiments found' % (len(ncs))
-  print 'keys: %s ' % (ncs.keys())
-  
-  # generate outfolder structure: 
-  
-  dir_netCDF = 'netCDF'
-  dir_ascii =  'ascii'
-  dir_netCDF_tas = dir_netCDF+'/tas'
-  dir_ascii_tas = dir_ascii+'/tas'
-  
-  if not os.path.exists(dir_netCDF):
-    os.makedirs(dir_netCDF)
-  if not os.path.exists(dir_ascii):
-    os.makedirs(dir_ascii)  
-  if not os.path.exists(dir_netCDF_tas):
-    os.makedirs(dir_netCDF_tas)
-  if not os.path.exists(dir_ascii_tas):
-    os.makedirs(dir_ascii_tas)
-
-  tas_files = []
-  
-  for key in ncs.keys():
-    try:
-      print 'process %s' % (key)
-      calc =  [{'func':'mean','name':'tas'}]
-      calc_group = calc_grouping('yr')
-      prefix = key.replace(key.split('_')[7],'yr')
-      if not os.path.exists(os.path.join(dir_netCDF_tas,prefix+'.nc')):
-        nc_tas = clipping(resource=ncs[key], variable='tas', calc=calc, dimension_map=dimension_map,  
-          calc_grouping= calc_group, prefix=prefix, polygons='Europe', dir_output=dir_netCDF_tas)[0]
-        print 'clipping done for %s' % (key)
-        if os.path.exists(os.path.join(dir_netCDF_tas,prefix+'.nc')):
-          tas_files.append(prefix)
-        else: 
-          print 'clipping failed for %s: No output file exists' % (key)
-      else :
-        print 'netCDF file already exists %s' % (key)
-        nc_tas = os.path.join(dir_netCDF_tas,prefix+'.nc')
-    except Exception as e:
-      print 'clipping failed for %s: %s' % (key, e)
-    try:
-      asc_tas = os.path.join(dir_ascii_tas,prefix + '.asc')
-      if not os.path.exists(asc_tas):
-        f, tmp = mkstemp(dir=os.curdir, suffix='.asc')
-        tmp = tmp.replace(os.path.abspath(os.curdir),'.')
-
-        #cdo.outputtab('name,date,lon,lat,value', input = nc_tas , output = tmp)
-        cmd = 'cdo outputtab,name,date,lon,lat,value %s > %s' % (nc_tas, tmp)
-        print cmd
-        os.system(cmd)
-        print ('tanslation to ascii done')
-        remove_rows(tmp, asc_tas)
-        remove(tmp)
-        print ('rows with missing values removed')
-      else: 
-        print ('tas ascii already exists')
-      plot_ascii(asc_tas)  
-    except Exception as e: 
-      print 'translation to ascii failed %s: %s' % (key, e)
-      if os.path.exists(tmp):
-        remove(tmp)
-
-  tas_files = [os.path.join(dir_netCDF_tas,nc) for nc in os.listdir(dir_netCDF_tas)]
+   
   outputs = []  
   
-  for name in tas_files:
+  for name in resource:
     for cult in culture_type: 
       for climat in climate_type:
         try:
           calc = get_equation(culture_type=cult, climate_type=climat)
           if type(calc) != None:
-            try:  
               var = 'sf%s%s' %(cult, climat)
-              prefix = os.path.basename(name).replace('tas', var).strip('.nc')
+              prefix = path.basename(name).replace('tas', var).strip('.nc')
               
-              infile = name # os.path.join(dir_netCDF_tas,name+'.nc')
-              dir_sf = os.path.join(dir_netCDF,var)
-              if not os.path.exists(dir_sf):
-                os.makedirs(dir_sf)
-              if os.path.exists(os.path.join(dir_sf, prefix + '.nc')):
-                nc_sf = os.path.join(dir_sf, prefix + '.nc')
-                print 'netCDF file already exists: %s %s ' % (dir_sf, prefix) 
-              else:
-                rd = RequestDataset(name, variable='tas', dimension_map=dimension_map,)
-                op = OcgOperations(dataset=rd, calc=calc, prefix=prefix, output_format='nc', 
-                  dir_output=dir_sf, add_auxiliary_files=False)
-                nc_sf = op.execute()
-                print 'segetalflora done for %s' % (prefix)
-                outputs.append(prefix)
-                
-              dir_ascii_sf = os.path.join(dir_ascii,var)
-              if not os.path.exists(dir_ascii_sf):
-                os.makedirs(dir_ascii_sf)
-              asc_sf = os.path.join(dir_ascii_sf,prefix + '.asc')
-              if not os.path.exists(asc_sf):
-                f, tmp = mkstemp(dir=os.curdir, suffix='.asc')
-                tmp = tmp.replace(os.path.abspath(os.curdir),'.')
-                #cdo.outputtab('name,date,lon,lat,value', input = nc_sf , output = tmp)
-                cmd = 'cdo outputtab,name,date,lon,lat,value %s > %s' % (nc_sf, tmp)
-                os.system(cmd)
-                print ('translation to ascii done')
-                remove_rows(tmp, asc_sf)
-                remove(tmp)
-                print ('rows with missing values removed')
-              else:
-                print 'ascii file already exists'
-              plot_ascii(asc_sf)
-            except Exception as e: 
-              print 'failed for ascii file: %s %s ' % (name, e)
-              if os.path.exists(tmp):
-                remove(tmp)
+              outputs.append(call(resource=name, calc=calc, prefix=prefix))
+                              
+              logger.info('segetalflora done for %s' % (prefix))
           else: 
-            print 'NO EQUATION found for %s %s ' % (cult, climat)
+            logger.debug('NO EQUATION found for %s %s ' % (cult, climat))
         except Exception as e: 
-          print 'Segetal flora failed: %s' % (e)  
+          logger.debug('Segetal flora failed: %s' % (e))  
   return outputs
+
+
+
+                
+              #dir_ascii_sf = os.path.join(dir_ascii,var)
+              #if not os.path.exists(dir_ascii_sf):
+                #os.makedirs(dir_ascii_sf)
+              #asc_sf = os.path.join(dir_ascii_sf,prefix + '.asc')
+              #if not os.path.exists(asc_sf):
+                #f, tmp = mkstemp(dir=os.curdir, suffix='.asc')
+                #tmp = tmp.replace(os.path.abspath(os.curdir),'.')
+                ##cdo.outputtab('name,date,lon,lat,value', input = nc_sf , output = tmp)
+                #cmd = 'cdo outputtab,name,date,lon,lat,value %s > %s' % (nc_sf, tmp)
+                #os.system(cmd)
+                #print ('translation to ascii done')
+                #remove_rows(tmp, asc_sf)
+                #remove(tmp)
+                #print ('rows with missing values removed')
+              #else:
+                #print 'ascii file already exists'
+              #plot_ascii(asc_sf)
+            #except Exception as e: 
+              #print 'failed for ascii file: %s %s ' % (name, e)
+              #if os.path.exists(tmp):
+                #remove(tmp)
