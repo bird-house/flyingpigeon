@@ -8,6 +8,8 @@ Release Notes
 
 |   modularisation of segetalflora process
 |   docker update
+|
+|
 
 * v0.9.0
 
