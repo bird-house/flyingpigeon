@@ -15,20 +15,20 @@ Release Notes
 
 |   Subset points 
 |   Subset European regions
-|   Subset World countries 
-|   Subset Continents
-|   Analouges for Reanlyses datasets
-|   Analouges for Model datasets
-|   Analouges for Comparison Model to Reanalyses datasets
+|   Subset world countries 
+|   Subset continents
+|   Analogues for reanalyses datasets
+|   Analogues for model datasets
+|   Analogues for comparison model to reanalyses datasets
 |   Species Distribution Model based on GBIF CSV file
 |   Species Distribution Model with GBIF search included
-|   Weatherregimes for Reanalyses Datasets
-|   Weatherregimes for Model datasets
-|   Weatherregimes for Model datasets with Centroides trained on Reanalyses data sets
+|   Weather regimes for reanalyses datasets
+|   Weather regimes for model datasets
+|   Weather regimes for model datasets with centroids trained on reanalyses datasets
 |   Segetalflora
-|   Initial spatial analogs process
-|   Climate Indices ( simple )
-|   Climate Indices ( percentile Based )
+|   Initial spatial analogues process
+|   Climate indices (simple)
+|   Climate indices (percentile-based)
 |   Download resources
 |   Initial ensembles robustness
 |   Plots for time series  
