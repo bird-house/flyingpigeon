@@ -24,10 +24,3 @@ Flyingpigeon is a Python package with a collection of algorithms for the climate
    descriptions/index
    tutorials/index
    notebooks
-   releasenotes
-   
-  
-
-
-
-
