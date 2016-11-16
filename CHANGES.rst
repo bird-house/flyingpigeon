@@ -1,5 +1,5 @@
-Changes
-*******
+Releasenotes
+************
 
 0.9.1 (2016-11-16)
 ==================
@@ -8,6 +8,7 @@ Changes
 * docker update
 
 0.9.0 (2016-09-08)
+==================
 
 * Subset points 
 * Subset European regions
