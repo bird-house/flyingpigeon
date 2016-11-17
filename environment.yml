@@ -9,7 +9,7 @@ channels:
 - r
 - bioconda
 dependencies:
-- python=2.7.12=1  #  conda-forge
+- python=2  #  conda-forge
 - ipython=5.1.0 
 - gcc# =4.8.5
 - pyopenssl# =0.16.0
@@ -53,8 +53,9 @@ dependencies:
 ## cdo ocgis 
 - cdo #=1.7.1=2
 - python-cdo
-- ocgis-next=1.4.0.dev1=py27_3  #  nesii/channel/ocgis-next
+- ocgis-next=1.4.0.dev1=py27_4  #  nesii/channel/ocgis-next
 - proj.4=4.9.2
+- geos=3.4.2
 - jpeg=9b
 ################
 # analogue

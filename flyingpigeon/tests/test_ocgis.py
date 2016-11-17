@@ -17,4 +17,7 @@ def test_has_Lambert_Conformal():
         [local_path(TESTDATA['cordex_tasmax_2006_nc']),
         local_path(TESTDATA['cordex_tasmax_2007_nc'])])
     assert False == has_lambert
-  
+
+
+def test_gdal():
+	from flyingpigeon.subset import clipping
