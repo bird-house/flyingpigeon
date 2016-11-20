@@ -131,9 +131,7 @@ def gbif_serach(taxon_name):
     logger.info('read in PA coordinates for %s rows ' % len(ll[:,0])) 
   except Exception as e: 
     logger.exception('failed search GBIF data %s' % (e))
-  return ll             
-
-  
+  return ll
 
 def get_latlon( csv_file ):
   import csv 
