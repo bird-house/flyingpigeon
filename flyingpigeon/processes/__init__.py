@@ -13,6 +13,7 @@ __all__ = [
         "wps_analogs_compare",
         "wps_analogs_viewer",
         "wps_segetalflora",
+        "wps_sdm_getgbif",
         "wps_sdm_gbif",
         "wps_sdm_csv",
         "wps_robustness",
