@@ -8,7 +8,8 @@ _SDMINDICES_ = [
   'FD_ONDJFM','FD_April', 'FD_May', 'FD_June',
   'GD4_yr',
   'ID_yr',
-  'PRCPTOT_yr','PRCPTOT_ONDJFM', 'PRCPTOT_AMJJAS', 'PRCPTOT_JJA', 'PRCPTOT_MAM', 'PRCPTOT_JJA',
+  'PRCPTOT_yr','PRCPTOT_ONDJFM', 'PRCPTOT_AMJJAS', 
+  'PRCPTOT_JJA', 'PRCPTOT_MAM', 'PRCPTOT_JJA',
   'RR1_yr',
   'SU_yr',
   'TG_yr', 'TG_AMJJAS', 'TG_ONDJFM','TG_JJA', 
@@ -23,6 +24,7 @@ def get_csv(zip_file_url):
   z.extractall()  
   csv = z.namelist()[0]
   return csv
+
  
 def gbif_serach(taxon_name):
   """
