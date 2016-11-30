@@ -34,7 +34,7 @@ class GETGBIFProcess(WPSProcess):
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
-            default='fagus sylvatica'
+            default='Fagus sylvatica'
             )
         
         ###########
@@ -48,7 +48,23 @@ class GETGBIFProcess(WPSProcess):
             formats=[{"mimeType":"text/csv"}],
             asReference=True,
             )
+
+        #self.output_csv = self.addComplexOutput(
+            #identifier="output_csv",
+            #title="Tree species table",
+            #abstract="Extracted CSV file containing the tree species table ",
+            #formats=[{"mimeType":"text/csv"}],
+            #asReference=True,
+            #)
         
+        self.output_gbif = self.addComplexOutput(
+            identifier="output_gbif",
+            title="Graphic of GBIF coordinates",
+            abstract="PNG graphic file showing the presence of tree species according to CSV file",
+            formats=[{"mimeType":"image/png"}],
+            asReference=True,
+            )
+
     def execute(self):
       self.status.set('Start process', 0)
       from flyingpigeon import sdm
@@ -85,11 +101,13 @@ class GETGBIFProcess(WPSProcess):
       #     asReference=True,
       #     )
 
+
       # try:
       #   self.status.set('extract csv file with tree observations', 5)
       #   csv_file = sdm.get_csv(taxon_name)
       # except Exception as e: 
       #   logger.exception('failed to extract csv file from url.')
+
       # try:
       #   self.status.set('read in latlon coordinates of tree observations', 10)
       #   latlon = sdm.get_latlon(csv_file)
