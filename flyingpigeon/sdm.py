@@ -87,12 +87,12 @@ def get_csv(zip_file_url):
 #     logger.error('failed search GBIF data %s' % (e))
 #   return latlon
 
-def get_gbif(taxon_name):
+def get_gbif(taxon_name='Fagus sylvatica'):
   """
-  fetching species data from GBIF database
+  fetching species data from GBIF database ( pageing over polygons in Europe )
 
   :param taxon_name: Taxon name of the species to be searched 
-                     default='fagus sylvatica'
+                     default='Fagus sylvatica'
   :returns dic: Dictionay of species occurences                   
   """
 
@@ -102,33 +102,43 @@ def get_gbif(taxon_name):
   
   try:
     nm = species.name_backbone(taxon_name)['usageKey']
+    print 'taxon name set'
     ## a set of WKT polygons
     polys = [
-    #"POLYGON ((-13.9746093699999996 66.1882478999999933, -6.4746093699999996 66.1882478999999933, -6.4746093699999996 57.4422366399999973, -13.9746093699999996 57.4422366399999973, -13.9746093699999996 66.1882478999999933))",
-    #"POLYGON ((-6.4746093699999996 66.1882478999999933, 8.5253906300000004 66.1882478999999933, 8.5253906300000004 57.4422366399999973, -6.4746093699999996 57.4422366399999973, -6.4746093699999996 66.1882478999999933))",
+    "POLYGON ((-13.9746093699999996 66.1882478999999933, -6.4746093699999996 66.1882478999999933, -6.4746093699999996 57.4422366399999973, -13.9746093699999996 57.4422366399999973, -13.9746093699999996 66.1882478999999933))",
+    "POLYGON ((-6.4746093699999996 66.1882478999999933, 8.5253906300000004 66.1882478999999933, 8.5253906300000004 57.4422366399999973, -6.4746093699999996 57.4422366399999973, -6.4746093699999996 66.1882478999999933))"]
     #"POLYGON ((8.5253906300000004 66.1882478999999933, 23.5253906300000004 66.1882478999999933, 23.5253906300000004 57.4422366399999973, 8.5253906300000004 57.4422366399999973, 8.5253906300000004 66.1882478999999933))",      
     #"POLYGON ((23.5253906300000004 66.1882478999999933, 31.7285156300000004 66.1882478999999933, 31.7285156300000004 57.4422366399999973, 23.5253906300000004 57.4422366399999973, 23.5253906300000004 66.1882478999999933))",   
     #"POLYGON ((-13.9746093699999996 42.4422366399999973, -13.9746093699999996 57.4422366399999973, -6.4746093699999996 57.4422366399999973, -6.4746093699999996 42.4422366399999973, -13.9746093699999996 42.4422366399999973))",
-    "POLYGON ((-6.4746093699999996 42.4422366399999973, -6.4746093699999996 57.4422366399999973, 8.5253906300000004 57.4422366399999973, 8.5253906300000004 42.4422366399999973, -6.4746093699999996 42.4422366399999973))",     
-    "POLYGON ((8.5253906300000004 42.4422366399999973, 8.5253906300000004 57.4422366399999973, 23.5253906300000004 57.4422366399999973, 23.5253906300000004 42.4422366399999973, 8.5253906300000004 42.4422366399999973))",     
+    #"POLYGON ((-6.4746093699999996 42.4422366399999973, -6.4746093699999996 57.4422366399999973, 8.5253906300000004 57.4422366399999973, 8.5253906300000004 42.4422366399999973, -6.4746093699999996 42.4422366399999973))",     
+    #"POLYGON ((8.5253906300000004 42.4422366399999973, 8.5253906300000004 57.4422366399999973, 23.5253906300000004 57.4422366399999973, 23.5253906300000004 42.4422366399999973, 8.5253906300000004 42.4422366399999973))",     
     #"POLYGON ((31.7285156300000004 57.4422366399999973, 31.7285156300000004 42.4422366399999973, 23.5253906300000004 42.4422366399999973, 23.5253906300000004 57.4422366399999973, 31.7285156300000004 57.4422366399999973))",   
     #"POLYGON ((-6.4746093699999996 34.9422366399999973, -13.9746093699999996 34.9422366399999973, -13.9746093699999996 42.4422366399999973, -6.4746093699999996 42.4422366399999973, -6.4746093699999996 34.9422366399999973))", 
     #"POLYGON ((8.5253906300000004 34.9422366399999973, -6.4746093699999996 34.9422366399999973, -6.4746093699999996 42.4422366399999973, 8.5253906300000004 42.4422366399999973, 8.5253906300000004 34.9422366399999973))",      
     #"POLYGON ((23.5253906300000004 34.9422366399999973, 8.5253906300000004 34.9422366399999973, 8.5253906300000004 42.4422366399999973, 23.5253906300000004 42.4422366399999973, 23.5253906300000004 34.9422366399999973))",     
     #"POLYGON ((31.7285156300000004 42.4422366399999973, 31.7285156300000004 34.9422366399999973, 23.5253906300000004 34.9422366399999973, 23.5253906300000004 42.4422366399999973, 31.7285156300000004 42.4422366399999973))"
-    ]
-    gbifdic = []
-    for i in polys:
-        res = []
-        x = occ.search(taxonKey = nm, geometry = i)
-        res.append(x['results'])
-        while not x['endOfRecords']:
-            x = occ.search(taxonKey = nm, geometry = i, offset = sum([ len(x) for x in res ]))
-            res.append(x['results'])
-        gbifdic.append([w for z in res for w in z])
-        logger.info('polyon fetched')
+    #]
 
-#    allres = [w for z in results for w in z]
+    gbifdic = []
+
+    for i in polys:
+      print('processing polyon')
+      res = []
+      x = occ.search(taxonKey = nm, geometry = i)
+      res.append(x['results'])
+      while not x['endOfRecords']:
+          x = occ.search(taxonKey = nm, geometry = i, offset = sum([ len(x) for x in res ]))
+          res.append(x['results'])
+      gbifdic.append([w for z in res for w in z])
+      print('polyon fetched')
+      logger.info('polyon fetched')
+    
+    allres = [w for z in gbifdic for w in z]
+  except Exception as e: 
+    logger.exception('failed search GBIF data %s' % (e))
+  return allres 
+
+#    
 #    coords = [ { k: v for k, v in w.items() if k.startswith('decimal') } for w in allres ]#
 #
 #    latlon = empty([len(coords),2], dtype=float, order='C')
@@ -137,21 +147,31 @@ def get_gbif(taxon_name):
 #      latlon[i][1] = Longitude  
 #    nz = (latlon == 0).sum(1)
 #    ll = latlon[nz == 0, :]
-#    logger.info('read in PA coordinates for %s rows ' % len(ll[:,0])) 
-  except Exception as e: 
-    logger.exception('failed search GBIF data %s' % (e))
-  return gbifdic
+#    logger.info('read in PA coordinates for %s rows ' % len(ll[:,0]))
+
 
 def gbifdic2csv(gbifdic):
+  """
+  creates a csv file based on gbif a dictionay .
 
+  :param gbifdic: gbif dictionay, returned by get_gbif
+
+  :return csv file: path to csvfile
+  """
+  import csv
+
+  keys = gbifdic[0].keys()
   f = open('gbifcsvfile.csv','wb')
-  w = csv.DictWriter(f,my_dict.keys())
-  w.writerows(my_dict)
+  with f as output_file:
+    try:
+      dict_writer = csv.DictWriter(output_file, keys, extrasaction='ignore')
+      dict_writer.writeheader()
+      dict_writer.writerows(gbifdic)
+    except Exception as e: 
+      logger.debug('failed to write row %s ' % e)  
   f.close()
 
   return f
-
-
 
 def gbif_serach(taxon_name):
   """
