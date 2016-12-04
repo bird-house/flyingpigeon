@@ -37,6 +37,15 @@ class GETGBIFProcess(WPSProcess):
             default='Fagus sylvatica'
             )
         
+        self.BBox = self.addBBoxInput(
+          identifier="BBox",
+          title="Bounding Box",
+          abstract="coordinates to define the region for occurence data fetch",
+          minOccurs=1,
+          maxOccurs=1,
+          crss=['EPSG:4326']
+          )
+
         ###########
         ### OUTPUTS
         ###########
@@ -61,16 +70,21 @@ class GETGBIFProcess(WPSProcess):
       self.status.set('Start process', 0)
       from flyingpigeon import sdm
 
+
+
       try: 
         logger.info('reading the arguments')
         taxon_name = self.getInputValues(identifier='taxon_name')[0]
-        logger.debug("Taxon Name = %s", taxon_name)
+        bbox_obj = self.BBox.getValue()
+        bbox = [bbox_obj.coords[0][0], bbox_obj.coords[0][1],bbox_obj.coords[1][0],bbox_obj.coords[1][1]]
+        logger.info("bbox={0}".format(bbox))
+        logger.info("Taxon Name = %s", taxon_name)
       except Exception as e: 
         logger.error('failed to read in the arguments %s ' % e)
       
       try:
         self.status.set('Fetching GBIF Data', 10)
-        gbifdic = sdm.get_gbif(taxon_name)
+        gbifdic = sdm.get_gbif(taxon_name, bbox=bbox)
       except Exception as e: 
         logger.exception('failed to search gbif %s' % e)
       
