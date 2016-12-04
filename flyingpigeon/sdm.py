@@ -25,67 +25,32 @@ def get_csv(zip_file_url):
   csv = z.namelist()[0]
   return csv
 
- 
-# def gbif_serach(taxon_name):
-#   """
-#   API to GBIF database.
-#   :param taxon_name: Scientific name of tree species (e.g 'Fagus sylvatica')
-#   """
-  
-#   try:
-#     from pygbif import occurrences as occ
-#     from pygbif import species
+def latlon_gbifdic(gbifdic):
+  """
+  extracts the coordinates from the fetched gbif dictionay 
 
+  :param gbifdic: 
 
-#     polys = ["POLYGON ((-13.9746093699999996 66.1882478999999933, -6.4746093699999996 66.1882478999999933, -6.4746093699999996 57.4422366399999973, -13.9746093699999996 57.4422366399999973, -13.9746093699999996 66.1882478999999933))",
-#     "POLYGON ((-6.4746093699999996 66.1882478999999933, 8.5253906300000004 66.1882478999999933, 8.5253906300000004 57.4422366399999973, -6.4746093699999996 57.4422366399999973, -6.4746093699999996 66.1882478999999933))",
-#     "POLYGON ((8.5253906300000004 66.1882478999999933, 23.5253906300000004 66.1882478999999933, 23.5253906300000004 57.4422366399999973, 8.5253906300000004 57.4422366399999973, 8.5253906300000004 66.1882478999999933))",      
-#     "POLYGON ((23.5253906300000004 66.1882478999999933, 31.7285156300000004 66.1882478999999933, 31.7285156300000004 57.4422366399999973, 23.5253906300000004 57.4422366399999973, 23.5253906300000004 66.1882478999999933))",   
-#     "POLYGON ((-13.9746093699999996 42.4422366399999973, -13.9746093699999996 57.4422366399999973, -6.4746093699999996 57.4422366399999973, -6.4746093699999996 42.4422366399999973, -13.9746093699999996 42.4422366399999973))",
-#     "POLYGON ((-6.4746093699999996 42.4422366399999973, -6.4746093699999996 57.4422366399999973, 8.5253906300000004 57.4422366399999973, 8.5253906300000004 42.4422366399999973, -6.4746093699999996 42.4422366399999973))",     
-#     "POLYGON ((8.5253906300000004 42.4422366399999973, 8.5253906300000004 57.4422366399999973, 23.5253906300000004 57.4422366399999973, 23.5253906300000004 42.4422366399999973, 8.5253906300000004 42.4422366399999973))",     
-#     "POLYGON ((31.7285156300000004 57.4422366399999973, 31.7285156300000004 42.4422366399999973, 23.5253906300000004 42.4422366399999973, 23.5253906300000004 57.4422366399999973, 31.7285156300000004 57.4422366399999973))",   
-#     "POLYGON ((-6.4746093699999996 34.9422366399999973, -13.9746093699999996 34.9422366399999973, -13.9746093699999996 42.4422366399999973, -6.4746093699999996 42.4422366399999973, -6.4746093699999996 34.9422366399999973))", 
-#     "POLYGON ((8.5253906300000004 34.9422366399999973, -6.4746093699999996 34.9422366399999973, -6.4746093699999996 42.4422366399999973, 8.5253906300000004 42.4422366399999973, 8.5253906300000004 34.9422366399999973))",      
-#     "POLYGON ((23.5253906300000004 34.9422366399999973, 8.5253906300000004 34.9422366399999973, 8.5253906300000004 42.4422366399999973, 23.5253906300000004 42.4422366399999973, 23.5253906300000004 34.9422366399999973))",     
-#     "POLYGON ((31.7285156300000004 42.4422366399999973, 31.7285156300000004 34.9422366399999973, 23.5253906300000004 34.9422366399999973, 23.5253906300000004 42.4422366399999973, 31.7285156300000004 42.4422366399999973))"]
+  :return numpy.ndarray: [[lats],[lons]]
+  """
 
+  from numpy import empty
 
-#     nm = species.name_backbone(taxon_name)['usageKey']
-#     logger.info('Taxon Key found: %s' % nm)
-#   except Exception as e:
-#     logger.error('Taxon Key defining failed %s' % (e))
-  
-#   try:
-#     results = []
-#     for i, p  in enumerate(polys):
-#       res = []
-#       x = occ.search(taxonKey = nm, geometry = p)
-#       res.append(x['results'])
-#       while not x['endOfRecords']:
-#           x = occ.search(taxonKey = nm, geometry = p, offset = sum([ len(x) for x in res ]))
-#           res.append(x['results'])
-#       results.append([w for z in res for w in z])
-#       logger.info ('Polygon %s/%s done' % (i+1, len(polys)))
-#     logger.info('***** GBIF data fetching done! ***** ')    
-#   except Exception as e:
-#     logger.error('Coordinate fetching failed: %s' % (e))
-   
-#   try:
-#     allres = [w for z in results for w in z]
-#     coords = [ { k: v for k, v in w.items() if k.startswith('decimal') } for w in allres ]
+  try:
+    
+    coords = [ { k: v for k, v in w.items() if k.startswith('decimal') } for w in gbifdic ]
 
-#     from numpy import empty
-#     latlon = empty([len(coords),2], dtype=float, order='C')
+    
+    latlon = empty([len(coords),2], dtype=float, order='C')
 
-#     for i, coord in enumerate(coords):   
-#       latlon[i][0] = coord['decimalLatitude']  
-#       latlon[i][1] = coord['decimalLongitude']
+    for i, coord in enumerate(coords):   
+      latlon[i][0] = coord['decimalLatitude']  
+      latlon[i][1] = coord['decimalLongitude']
      
-#     logger.info('read in PA coordinates for %s rows ' % len(ll[:,0])) 
-#   except Exception as e:
-#     logger.error('failed search GBIF data %s' % (e))
-#   return latlon
+    logger.info('read in PA coordinates for %s rows ' % len(ll[:,0])) 
+  except Exception as e:
+    logger.error('failed search GBIF data %s' % (e))
+  return latlon
 
 def get_gbif(taxon_name='Fagus sylvatica'):
   """
@@ -93,7 +58,8 @@ def get_gbif(taxon_name='Fagus sylvatica'):
 
   :param taxon_name: Taxon name of the species to be searched 
                      default='Fagus sylvatica'
-  :returns dic: Dictionay of species occurences                   
+  :returns dic: Dictionay of species occurences
+                 
   """
 
   from numpy import nan, empty
