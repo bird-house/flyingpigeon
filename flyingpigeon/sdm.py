@@ -133,10 +133,10 @@ def get_gbif(taxon_name='Fagus sylvatica'):
       print('polyon fetched')
       logger.info('polyon fetched')
     
-    allres = [w for z in gbifdic for w in z]
+    results = [w for z in gbifdic for w in z]
   except Exception as e: 
     logger.exception('failed search GBIF data %s' % (e))
-  return allres 
+  return results 
 
 #    
 #    coords = [ { k: v for k, v in w.items() if k.startswith('decimal') } for w in allres ]#
@@ -158,20 +158,14 @@ def gbifdic2csv(gbifdic):
 
   :return csv file: path to csvfile
   """
-  import csv
+  from pandas import DataFrame
+  from tempfile import mkstemp
 
-  keys = gbifdic[0].keys()
-  f = open('gbifcsvfile.csv','wb')
-  with f as output_file:
-    try:
-      dict_writer = csv.DictWriter(output_file, keys, extrasaction='ignore')
-      dict_writer.writeheader()
-      dict_writer.writerows(gbifdic)
-    except Exception as e: 
-      logger.debug('failed to write row %s ' % e)  
-  f.close()
+  ip, gbif_csv =  mkstemp(dir='.',suffix='.csv')
 
-  return f
+  DataFrame.from_records(gbifdic).to_csv(gbif_csv, mode='a', sep=',', encoding='utf-8')
+
+  return gbif_csv 
 
 def gbif_serach(taxon_name):
   """
