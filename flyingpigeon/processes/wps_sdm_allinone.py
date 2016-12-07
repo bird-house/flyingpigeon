@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 from flyingpigeon.sdm import _SDMINDICES_
 
-class SDMallProcess(WPSProcess):
+class SDMallinoneProcess(WPSProcess):
     
     def __init__(self):
         WPSProcess.__init__(
