@@ -87,7 +87,7 @@ class GBIFfetchProcess(WPSProcess):
         logger.exception('failed to search gbif %s' % e)
       
       try:
-        self.status.set('write csv file', 12)
+        self.status.set('write csv file', 70)
         gbifcsv = sdm.gbifdic2csv(gbifdic)
       except Exception as e: 
         logger.exception('failed to write csv file %s' % e)
@@ -95,7 +95,6 @@ class GBIFfetchProcess(WPSProcess):
       try:
         self.status.set('plot map', 80)
         from flyingpigeon.visualisation import map_gbifoccurrences
-        
         latlon = sdm.latlon_gbifdic(gbifdic)
         occurence_map = map_gbifoccurrences(latlon)
       except Exception as e: 

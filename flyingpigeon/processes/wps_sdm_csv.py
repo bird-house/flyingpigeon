@@ -10,12 +10,11 @@ logger = logging.getLogger(__name__)
 from flyingpigeon.sdm import _SDMINDICES_
 
 class sdmcsvProcess(WPSProcess):
-    
     def __init__(self):
         WPSProcess.__init__(
             self,
             identifier = "sdm_csv",
-            title = "SDM -- based on csv occurence table and tas/pr model data",
+            title = "SDM -- CSV table",
             version = "0.9",
             metadata=[
                 {"title":"LWF", "href": "http://www.lwf.bayern.de/"},
@@ -23,7 +22,7 @@ class sdmcsvProcess(WPSProcess):
 	              {"title":"Journal of Climatology", "href":"http://www.hindawi.com/journals/jcli/2013/787250/"},
 	              {"title":"Tutorial", "href":"http://flyingpigeon.readthedocs.io/en/latest/tutorials/sdm.html"},
                 ],
-            abstract="Species distribution model for tree species based on GBIF presence/absence data and climate indices",
+            abstract="Species distribution model for tree species based on GBIF presence/absence data and climate model data. Indices will be calculated while processing",
             statusSupported=True,
             storeSupported=True
             )

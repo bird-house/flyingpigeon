@@ -423,7 +423,7 @@ def map_gbifoccurrences(latlon):
   from cartopy.util import add_cyclic_point
   import cartopy.crs as ccrs
   
-  tree_presents = 'tree_presents.png'
+  ip, tree_presents = mkstemp(dir='.',suffix='.png')
   fig = plt.figure(figsize=(20,10), facecolor='w', edgecolor='k')
   ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
   ax.coastlines()
@@ -443,7 +443,7 @@ def map_PAmask(PAmask):
   :return png: path to png graphic
   """
   try:
-    png_PA_mask = 'PA_mask.png'
+    ip, png_PA_mask = mkstemp(dir='.',suffix='.png')
     fig = plt.figure(figsize=(20,10), dpi=300, facecolor='w', edgecolor='k')
     cs = plt.contourf(PAmask)
     fig.savefig(png_PA_mask)
