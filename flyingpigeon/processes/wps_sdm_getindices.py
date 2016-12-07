@@ -19,8 +19,8 @@ class SDMgetindicesProcess(WPSProcess):
             version = "0.9",
             metadata=[
                 {"title":"LWF", "href": "http://www.lwf.bayern.de/"},
-                {"title":"Documentation", "href":"http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#species-distribution-model"},
-	              {"title":"Journal of Climatology", "href":"http://www.hindawi.com/journals/jcli/2013/787250/"},
+                {"title":"Doc", "href":"http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#species-distribution-model"},
+	              {"title":"Paper", "href":"http://www.hindawi.com/journals/jcli/2013/787250/"},
 	              {"title":"Tutorial", "href":"http://flyingpigeon.readthedocs.io/en/latest/tutorials/sdm.html"},
                 ],
             abstract="Indices preparation for SDM process",
