@@ -2,8 +2,6 @@
 Processes for Species distribution 
 Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 """
-#import tarfile
-#import os
 
 from pywps.Process import WPSProcess
 import logging
@@ -17,12 +15,12 @@ class sdmcsvProcess(WPSProcess):
         WPSProcess.__init__(
             self,
             identifier = "sdm_csv",
-            title = "SDM -- csv table",
+            title = "SDM -- based on csv occurence table and tas/pr model data",
             version = "0.9",
             metadata=[
-                {"title":"Bayerische Landesanstalt fuer Wald und Forstwirtschaft", "href": "http://www.lwf.bayern.de/"},
+                {"title":"LWF", "href": "http://www.lwf.bayern.de/"},
                 {"title":"Documentation", "href":"http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#species-distribution-model"},
-	              {"title":"Paper in Journal of Climatology", "href":"http://www.hindawi.com/journals/jcli/2013/787250/"},
+	              {"title":"Journal of Climatology", "href":"http://www.hindawi.com/journals/jcli/2013/787250/"},
 	              {"title":"Tutorial", "href":"http://flyingpigeon.readthedocs.io/en/latest/tutorials/sdm.html"},
                 ],
             abstract="Species distribution model for tree species based on GBIF presence/absence data and climate indices",
@@ -42,16 +40,14 @@ class sdmcsvProcess(WPSProcess):
             formats=[{"mimeType":"application/x-netcdf"}],
             )
 
-        self.gbif = self.addLiteralInput(
+        self.gbif = self.addComplexInput(
             identifier="gbif",
-            title="GBIF zip file",
-            abstract="GBIF zip url containing CSV files with tree locations (e.g.: http://api.gbif.org/v1/occurrence/download/request/0013848-160118175350007.zip)",
-            type=type(''),
+            title="GBIF csv file",
+            abstract="GBIF table (csv) with tree occurence (output of 'GBIF data fetch' process )",
             minOccurs=1,
             maxOccurs=1,
-            default=' http://api.gbif.org/v1/occurrence/download/request/0013848-160118175350007.zip'
             #maxmegabites=50,
-            #formats=[{"mimeType":"application/zip"}],
+            formats=[{"mimeType":"text/csv"}],
             )
         
         self.input_indices = self.addLiteralInput(
@@ -86,7 +82,6 @@ class sdmcsvProcess(WPSProcess):
             maxOccurs=1,
             allowedValues=['zip','tar']
             )
-
         
         ###########
         ### OUTPUTS
@@ -159,73 +154,47 @@ class sdmcsvProcess(WPSProcess):
       try: 
         logger.info('reading the arguments')
         resources = self.getInputValues(identifier='resources')
-        gbif = self.getInputValues(identifier='gbif')
+        csv_file = self.getInputValues(identifier='gbif')[0]
         #period = self.period.getValue()
         period = self.getInputValues(identifier='period')
         period = period[0]
         #indices = self.input_indices.getValue()
         indices = self.getInputValues(identifier='input_indices')
-        logger.debug("indices = %s", indices)
-        
+        logger.debug("indices = %s", indices)  
         archive_format = self.archive_format.getValue()
       except Exception as e: 
         logger.error('failed to read in the arguments %s ' % e)
       logger.info('indices %s ' % indices)
-      try:
-        self.status.set('extract csv file with tree observations', 5)
-        csv_file = sdm.get_csv(gbif[0])
-      except Exception as e: 
-        logger.exception('failed to extract csv file from url.')
 
       try:
         self.status.set('read in latlon coordinates of tree observations', 10)
-        latlon = sdm.get_latlon(csv_file)
+        latlon = sdm.latlon_gbifcsv(csv_file)
       except Exception as e: 
         logger.exception('failed to extract the latlon points')
 
-      tree_presents = 'tree_presents.png'
       try:
-        self.status.set('plotting Tree presents based on coordinates', 15)
-        import matplotlib.pyplot as plt
-        from cartopy import config
-        from cartopy.util import add_cyclic_point
-        import cartopy.crs as ccrs
-      
-        fig = plt.figure(figsize=(20,10), dpi=600, facecolor='w', edgecolor='k')
-        ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
-        ax.coastlines()
-        ax.set_global()
-        cs = plt.scatter(latlon[:,1], latlon[:,0], transform=ccrs.PlateCarree())
-        fig.savefig(tree_presents)
-        plt.close()
-      except Exception as e:
-        msg = 'plotting points failed'   
-        logger.exception(msg)
-        with open(tree_presents, 'w') as fp:
-            # TODO: needs to be a png file
-            fp.write(msg)
-      
+        self.status.set('plot map', 80)
+        from flyingpigeon.visualisation import map_gbifoccurrences
+        
+        # latlon = sdm.latlon_gbifdic(gbifdic)
+        occurence_map = map_gbifoccurrences(latlon)
+      except Exception as e: 
+        logger.exception('failed to plot occurence map %s' % e)
+
       try:
         self.status.set('generating the PA mask', 20)
-        PAmask = sdm.get_PAmask(coordinates=latlon)
+        PAmask = sdm.get_PAmask(coordinates=latlon, domain='EUR-11')
         logger.info('PA mask sucessfully generated')
       except Exception as e: 
-        logger.exception('failed to generate the PA mask')
-        
-      png_PA_mask = 'PA_mask.png'
-      try: 
+        logger.exception('failed to generate the PA mask: %s' % e)
+
+      try:
         self.status.set('Ploting PA mask', 25)
-        fig = plt.figure(figsize=(20,10), dpi=300, facecolor='w', edgecolor='k')
-        cs = plt.contourf(PAmask)
-        fig.savefig(png_PA_mask)
-        plt.close()
-      except Exception as e:
-        msg = 'failed to plot the PA mask'
-        logger.exception(msg)
-        with open(png_PA_mask, 'w') as fp:
-            # TODO: needs to be a png file
-            fp.write(msg)
-      
+        from flyingpigeon.visualisation import map_PAmask
+        PAmask_png = map_PAmask(PAmask)
+      except Exception as e: 
+        logger.exception('failed to plot the PA mask: %s' % e )
+
       #################################
       ### calculate the climate indices
       #################################
@@ -259,20 +228,6 @@ class sdmcsvProcess(WPSProcess):
         logger.exception(msg)
         raise Exception(msg)
 
-      # try:
-      #   # open tar files
-      #   tar_reference = tarfile.open('reference.tar', "w")
-      #   tar_indices = tarfile.open('indices.tar', "w")
-
-      #   tar_info = tarfile.open('info.tar', "w")
-      #   tar_prediction = tarfile.open('prediction.tar', "w")
-        
-      #   logger.info('tar files prepared')
-      # except:
-      #   msg = 'tar file preparation failed'
-      #   logger.exception(msg)
-      #   raise Exception(msg)
-
 
       ncs_references = []
       species_files = []
@@ -304,6 +259,24 @@ class sdmcsvProcess(WPSProcess):
           msg = 'failed to calculate reference indices.'
           logger.exception(msg)
           raise Exception(msg)
+
+        archive_references = None
+        try:
+          archive_references = archive(ncs_references , format=archive_format)
+          logger.info('indices 2D added to archive')
+        except:
+          msg = 'failed adding 2D indices to archive'  
+          logger.exception(msg)
+          raise Exception(msg)  
+
+        archive_predicion = None
+        try:
+          archive_predicion = archive(species_files , format=archive_format)
+          logger.info('species_files added to archive')
+        except:
+          msg = 'failed adding species_files indices to archive'  
+          logger.exception(msg)
+          raise Exception(msg) 
 
         try:
           gam_model, predict_gam, gam_info = sdm.get_gam(ncs_references,PAmask)
@@ -349,45 +322,43 @@ class sdmcsvProcess(WPSProcess):
       except:
         msg = 'failed to concat images'  
         logger.exception(msg)
-        raise Exception(msg)  
-
-      archive_references = None
-      try:
-        archive_references = archive(ncs_references , format=archive_format)
-        logger.info('indices 2D added to archive')
-      except:
-        msg = 'failed adding 2D indices to archive'  
-        logger.exception(msg)
-        raise Exception(msg)  
-
-      archive_predicion = None
-      try:
-        archive_predicion = archive(species_files , format=archive_format)
-        logger.info('species_files added to archive')
-      except:
-        msg = 'failed adding species_files indices to archive'  
-        logger.exception(msg)
-        raise Exception(msg)  
-
-      # try:
-      #   #tar_indices.close()
-      #   #tar_reference.close()
-
-      #   tar_prediction.close()
-      #   #tar_info.close()
-        
-      #   logger.info('tar files closed')
-      # except:
-      #   logger.exception('tar file closing failed')
-      #   raise Exception
-        
+        raise Exception(msg) 
+              
       self.output_csv.setValue( csv_file )
-      self.output_gbif.setValue( tree_presents )
-      self.output_PA.setValue( png_PA_mask )
+      self.output_gbif.setValue( occurence_map )
+      self.output_PA.setValue( PAmask_png )
       self.output_indices.setValue( archive_indices )
-      self.output_reference.setValue (archive_references)
-      self.output_prediction.setValue (archive_predicion)
-      self.output_info.setValue(statistics_infos)
+      self.output_reference.setValue (archive_references )
+      self.output_prediction.setValue (archive_predicion )
+      self.output_info.setValue( statistics_infos )
 
       self.status.set('done', 100)
       
+      
+
+      # # try:
+      # #   # open tar files
+      # #   tar_reference = tarfile.open('reference.tar', "w")
+      # #   tar_indices = tarfile.open('indices.tar', "w")
+
+      # #   tar_info = tarfile.open('info.tar', "w")
+      # #   tar_prediction = tarfile.open('prediction.tar', "w")
+        
+      # #   logger.info('tar files prepared')
+      # # except:
+      # #   msg = 'tar file preparation failed'
+      # #   logger.exception(msg)
+      # #   raise Exception(msg)
+
+
+      # # try:
+      # #   #tar_indices.close()
+      # #   #tar_reference.close()
+
+      # #   tar_prediction.close()
+      # #   #tar_info.close()
+        
+      # #   logger.info('tar files closed')
+      # # except:
+      # #   logger.exception('tar file closing failed')
+      # #   raise Exception

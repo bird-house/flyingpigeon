@@ -195,18 +195,6 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
   :returns str: path/to/file.png
   """
 
-  #try:
-    ##import matplotlib.pyplot as plt
-    ##plt.switch_backend('agg')  # dont use x-server
-    ##from cartopy import config
-    ##from cartopy.util import add_cyclic_point
-    ##import cartopy.crs as ccrs
-    #logger.info('libraries loaded')
-  #except Exception as e:
-    #msg = 'failed to load libraries'  
-    #logger.exception(msg)
-    #raise Exception(msg)
-
   try: 
    # get the path of the file. It can be found in the repo data directory.
    
@@ -279,23 +267,6 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
     raise Exception(msg)
 
   return graphic
-
-#def plot_tSNE(data, title='custer', sub_title='method: principal components'):
-  #"""
-  #plot the output of weather classifiaction as a cluster
-  #:param param: values for x y coordinate
-  #:param title: string for title
-  #"""
-  #fig = plt.figure(figsize=(10, 10))
-  #plt.scatter(data[:, 0], data[:, 1], marker=".")
-  #plt.title(title)
-  #plt.annotate(sub_title, (0,0), (0, -30), xycoords='axes fraction', textcoords='offset points', va='top')
-  
-  #ip, image = mkstemp(dir='.',suffix='.png')
-  #plt.savefig(image)
-  #plt.close()
-  
-  #return image 
 
 def plot_kMEAN(kmeans, pca, title='kmean', sub_title='file='):
   from itertools import cycle  
@@ -393,8 +364,10 @@ def plot_pressuremap(data, lats=None, lons=None,
 def concat_images(images, orientation='v'): 
   """ 
   concatenation of images.
+
   :param images: list of images
   :param orientation: vertical ('v' default) or horizontal ('h') concatenation
+  
   :return string: path to image  
   """
   from PIL import Image
@@ -437,6 +410,13 @@ def concat_images(images, orientation='v'):
 
 
 def map_gbifoccurrences(latlon):
+  """
+  creates a plot of coordinate points for tree occourences fetch in GBIF data base
+
+  :param latlon: list of latitude longitude coordinates 
+
+  :return png: world map with occurences
+  """
   
   import matplotlib.pyplot as plt
   from cartopy import config
@@ -453,3 +433,43 @@ def map_gbifoccurrences(latlon):
   plt.close()
  
   return tree_presents
+
+def map_PAmask(PAmask):
+  """
+  plots the presents absence mask used in Species distribution Model processes
+
+  :param PAmask: output of sdm.get_PAmask
+
+  :return png: path to png graphic
+  """
+  try:
+    png_PA_mask = 'PA_mask.png'
+    fig = plt.figure(figsize=(20,10), dpi=300, facecolor='w', edgecolor='k')
+    cs = plt.contourf(PAmask)
+    fig.savefig(png_PA_mask)
+    plt.close()
+  except Exception as e:
+    msg = 'failed to plot the PA mask'
+    logger.exception(msg)
+    with open(png_PA_mask, 'w') as fp:
+        # TODO: needs to be a png file
+        fp.write(msg)
+  return png_PA_mask
+
+
+#def plot_tSNE(data, title='custer', sub_title='method: principal components'):
+  #"""
+  #plot the output of weather classifiaction as a cluster
+  #:param param: values for x y coordinate
+  #:param title: string for title
+  #"""
+  #fig = plt.figure(figsize=(10, 10))
+  #plt.scatter(data[:, 0], data[:, 1], marker=".")
+  #plt.title(title)
+  #plt.annotate(sub_title, (0,0), (0, -30), xycoords='axes fraction', textcoords='offset points', va='top')
+  
+  #ip, image = mkstemp(dir='.',suffix='.png')
+  #plt.savefig(image)
+  #plt.close()
+  
+  #return image 
