@@ -1,7 +1,6 @@
 import logging
 logger = logging.getLogger(__name__)
 
-
 _SDMINDICES_ = [
   'CDD_AMJJAS',
   'CFD_ONDJFM',
@@ -29,7 +28,7 @@ def latlon_gbifdic(gbifdic):
   """
   extracts the coordinates from the fetched gbif dictionay 
 
-  :param gbifdic: 
+  :param gbifdic: pygbif dictionary (output from get_gbif data fetch function) 
 
   :return numpy.ndarray: [[lats],[lons]]
   """
@@ -50,7 +49,11 @@ def latlon_gbifdic(gbifdic):
 
 def latlon_gbifcsv( csvfile ):
   """
-  obsolete use latlon_gbifcsv
+  extracts the coordinates from a given csv table containing GBIF data
+
+  :param csvfile: path to csv file 
+
+  :return list: [[lats],[lons]] 
   """
 
   import csv 
@@ -168,59 +171,6 @@ def gbifdic2csv(gbifdic):
 
   return gbif_csv 
 
-# def gbif_serach(taxon_name):
-#   """
-#   obsolete use get_gbif
-#   """
-#   from numpy import nan, empty
-#   from pygbif import occurrences as occ
-#   from pygbif import species
-  
-#   try:
-#     nm = species.name_backbone(taxon_name)['usageKey']
-
-#     ## a set of WKT polygons
-#     polys = [
-#     #"POLYGON ((-13.9746093699999996 66.1882478999999933, -6.4746093699999996 66.1882478999999933, -6.4746093699999996 57.4422366399999973, -13.9746093699999996 57.4422366399999973, -13.9746093699999996 66.1882478999999933))",
-#     #"POLYGON ((-6.4746093699999996 66.1882478999999933, 8.5253906300000004 66.1882478999999933, 8.5253906300000004 57.4422366399999973, -6.4746093699999996 57.4422366399999973, -6.4746093699999996 66.1882478999999933))",
-#     #"POLYGON ((8.5253906300000004 66.1882478999999933, 23.5253906300000004 66.1882478999999933, 23.5253906300000004 57.4422366399999973, 8.5253906300000004 57.4422366399999973, 8.5253906300000004 66.1882478999999933))",      
-#     #"POLYGON ((23.5253906300000004 66.1882478999999933, 31.7285156300000004 66.1882478999999933, 31.7285156300000004 57.4422366399999973, 23.5253906300000004 57.4422366399999973, 23.5253906300000004 66.1882478999999933))",   
-#     #"POLYGON ((-13.9746093699999996 42.4422366399999973, -13.9746093699999996 57.4422366399999973, -6.4746093699999996 57.4422366399999973, -6.4746093699999996 42.4422366399999973, -13.9746093699999996 42.4422366399999973))",
-#     "POLYGON ((-6.4746093699999996 42.4422366399999973, -6.4746093699999996 57.4422366399999973, 8.5253906300000004 57.4422366399999973, 8.5253906300000004 42.4422366399999973, -6.4746093699999996 42.4422366399999973))",     
-#     "POLYGON ((8.5253906300000004 42.4422366399999973, 8.5253906300000004 57.4422366399999973, 23.5253906300000004 57.4422366399999973, 23.5253906300000004 42.4422366399999973, 8.5253906300000004 42.4422366399999973))",     
-#     #"POLYGON ((31.7285156300000004 57.4422366399999973, 31.7285156300000004 42.4422366399999973, 23.5253906300000004 42.4422366399999973, 23.5253906300000004 57.4422366399999973, 31.7285156300000004 57.4422366399999973))",   
-#     #"POLYGON ((-6.4746093699999996 34.9422366399999973, -13.9746093699999996 34.9422366399999973, -13.9746093699999996 42.4422366399999973, -6.4746093699999996 42.4422366399999973, -6.4746093699999996 34.9422366399999973))", 
-#     #"POLYGON ((8.5253906300000004 34.9422366399999973, -6.4746093699999996 34.9422366399999973, -6.4746093699999996 42.4422366399999973, 8.5253906300000004 42.4422366399999973, 8.5253906300000004 34.9422366399999973))",      
-#     #"POLYGON ((23.5253906300000004 34.9422366399999973, 8.5253906300000004 34.9422366399999973, 8.5253906300000004 42.4422366399999973, 23.5253906300000004 42.4422366399999973, 23.5253906300000004 34.9422366399999973))",     
-#     #"POLYGON ((31.7285156300000004 42.4422366399999973, 31.7285156300000004 34.9422366399999973, 23.5253906300000004 34.9422366399999973, 23.5253906300000004 42.4422366399999973, 31.7285156300000004 42.4422366399999973))"
-#     ]
-
-#     results = []
-#     for i in polys:
-#         res = []
-#         x = occ.search(taxonKey = nm, geometry = i)
-#         res.append(x['results'])
-#         while not x['endOfRecords']:
-#             x = occ.search(taxonKey = nm, geometry = i, offset = sum([ len(x) for x in res ]))
-#             res.append(x['results'])
-
-#         results.append([w for z in res for w in z])
-#         logger.info('polyon fetched')
-
-#     allres = [w for z in results for w in z]
-#     coords = [ { k: v for k, v in w.items() if k.startswith('decimal') } for w in allres ]
-
-#     latlon = empty([len(coords),2], dtype=float, order='C')
-#     for i , coord in enumerate(coords): 
-#       latlon[i][0] = Latitude  
-#       latlon[i][1] = Longitude  
-#     nz = (latlon == 0).sum(1)
-#     ll = latlon[nz == 0, :]
-#     logger.info('read in PA coordinates for %s rows ' % len(ll[:,0])) 
-#   except Exception as e: 
-#     logger.exception('failed search GBIF data %s' % (e))
-#   return ll
-
 def get_latlon( csv_file ):
   """
   obsolete use latlon_gbifcsv
@@ -295,6 +245,15 @@ def get_PAmask(coordinates=[], domain='EUR-11'):
   return PAmask
 
 def get_indices(resources, indices):
+  """
+  calculating indices (netCDF files) defined in _SDMINDICES_
+
+  :param resources:
+  :param indices: indices defined in _SDMINDICES_
+
+  :return list: list of filepathes to netCDF files 
+  """
+  
   from flyingpigeon.utils import sort_by_filename, calc_grouping, drs_filename
   from flyingpigeon.ocgis_module import call
   from flyingpigeon.indices import indice_variable, calc_indice_simple
@@ -314,12 +273,7 @@ def get_indices(resources, indices):
         if variable == indice_variable(name):
           logger.info('calculating indice %s ' % indice)
           prefix=key.replace(variable, name).replace('_day_','_%s_' % month)
-          nc = calc_indice_simple(resource=ncs[key], variable=variable, prefix=prefix, indices=name,  groupings=month, memory_limit=500)
-          
-          #grouping = calc_grouping(month)
-          #calc = [{'func' : 'icclim_' + name, 'name' : name}] 
-          #nc = call(resource=ncs[key], variable=variable, calc=calc, calc_grouping=grouping, prefix=prefix , memory_limit=500) #memory_limit=500
-          
+          nc = calc_indice_simple(resource=ncs[key], variable=variable, prefix=prefix, indices=name, groupings=month)          
           ncs_indices.append(nc[0])
           logger.info('Successful calculated indice %s %s' % (key, indice))
       except Exception as e: 
@@ -538,3 +492,57 @@ def write_to_file(nc_indice, data):
   vals.units = '0-1'
   ds.close()                  
   return nc                
+
+
+# def gbif_serach(taxon_name):
+#   """
+#   obsolete use get_gbif
+#   """
+#   from numpy import nan, empty
+#   from pygbif import occurrences as occ
+#   from pygbif import species
+  
+#   try:
+#     nm = species.name_backbone(taxon_name)['usageKey']
+
+#     ## a set of WKT polygons
+#     polys = [
+#     #"POLYGON ((-13.9746093699999996 66.1882478999999933, -6.4746093699999996 66.1882478999999933, -6.4746093699999996 57.4422366399999973, -13.9746093699999996 57.4422366399999973, -13.9746093699999996 66.1882478999999933))",
+#     #"POLYGON ((-6.4746093699999996 66.1882478999999933, 8.5253906300000004 66.1882478999999933, 8.5253906300000004 57.4422366399999973, -6.4746093699999996 57.4422366399999973, -6.4746093699999996 66.1882478999999933))",
+#     #"POLYGON ((8.5253906300000004 66.1882478999999933, 23.5253906300000004 66.1882478999999933, 23.5253906300000004 57.4422366399999973, 8.5253906300000004 57.4422366399999973, 8.5253906300000004 66.1882478999999933))",      
+#     #"POLYGON ((23.5253906300000004 66.1882478999999933, 31.7285156300000004 66.1882478999999933, 31.7285156300000004 57.4422366399999973, 23.5253906300000004 57.4422366399999973, 23.5253906300000004 66.1882478999999933))",   
+#     #"POLYGON ((-13.9746093699999996 42.4422366399999973, -13.9746093699999996 57.4422366399999973, -6.4746093699999996 57.4422366399999973, -6.4746093699999996 42.4422366399999973, -13.9746093699999996 42.4422366399999973))",
+#     "POLYGON ((-6.4746093699999996 42.4422366399999973, -6.4746093699999996 57.4422366399999973, 8.5253906300000004 57.4422366399999973, 8.5253906300000004 42.4422366399999973, -6.4746093699999996 42.4422366399999973))",     
+#     "POLYGON ((8.5253906300000004 42.4422366399999973, 8.5253906300000004 57.4422366399999973, 23.5253906300000004 57.4422366399999973, 23.5253906300000004 42.4422366399999973, 8.5253906300000004 42.4422366399999973))",     
+#     #"POLYGON ((31.7285156300000004 57.4422366399999973, 31.7285156300000004 42.4422366399999973, 23.5253906300000004 42.4422366399999973, 23.5253906300000004 57.4422366399999973, 31.7285156300000004 57.4422366399999973))",   
+#     #"POLYGON ((-6.4746093699999996 34.9422366399999973, -13.9746093699999996 34.9422366399999973, -13.9746093699999996 42.4422366399999973, -6.4746093699999996 42.4422366399999973, -6.4746093699999996 34.9422366399999973))", 
+#     #"POLYGON ((8.5253906300000004 34.9422366399999973, -6.4746093699999996 34.9422366399999973, -6.4746093699999996 42.4422366399999973, 8.5253906300000004 42.4422366399999973, 8.5253906300000004 34.9422366399999973))",      
+#     #"POLYGON ((23.5253906300000004 34.9422366399999973, 8.5253906300000004 34.9422366399999973, 8.5253906300000004 42.4422366399999973, 23.5253906300000004 42.4422366399999973, 23.5253906300000004 34.9422366399999973))",     
+#     #"POLYGON ((31.7285156300000004 42.4422366399999973, 31.7285156300000004 34.9422366399999973, 23.5253906300000004 34.9422366399999973, 23.5253906300000004 42.4422366399999973, 31.7285156300000004 42.4422366399999973))"
+#     ]
+
+#     results = []
+#     for i in polys:
+#         res = []
+#         x = occ.search(taxonKey = nm, geometry = i)
+#         res.append(x['results'])
+#         while not x['endOfRecords']:
+#             x = occ.search(taxonKey = nm, geometry = i, offset = sum([ len(x) for x in res ]))
+#             res.append(x['results'])
+
+#         results.append([w for z in res for w in z])
+#         logger.info('polyon fetched')
+
+#     allres = [w for z in results for w in z]
+#     coords = [ { k: v for k, v in w.items() if k.startswith('decimal') } for w in allres ]
+
+#     latlon = empty([len(coords),2], dtype=float, order='C')
+#     for i , coord in enumerate(coords): 
+#       latlon[i][0] = Latitude  
+#       latlon[i][1] = Longitude  
+#     nz = (latlon == 0).sum(1)
+#     ll = latlon[nz == 0, :]
+#     logger.info('read in PA coordinates for %s rows ' % len(ll[:,0])) 
+#   except Exception as e: 
+#     logger.exception('failed search GBIF data %s' % (e))
+#   return ll

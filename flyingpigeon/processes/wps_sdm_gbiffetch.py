@@ -7,7 +7,7 @@ from pywps.Process import WPSProcess
 import logging
 logger = logging.getLogger(__name__)
 
-class GETGBIFProcess(WPSProcess):
+class gbiffetchProcess(WPSProcess):
     
     def __init__(self):
         WPSProcess.__init__(
