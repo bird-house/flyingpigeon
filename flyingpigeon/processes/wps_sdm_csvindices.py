@@ -32,14 +32,14 @@ class SDMcsvindicesProcess(WPSProcess):
         # Literal Input Data
         # ------------------
 
-        self.resources = self.addComplexInput(
-            identifier="resources",
-            title="NetCDF File",
-            abstract="NetCDF File",
+        self.input_indices = self.addComplexInput(
+            identifier="input_indices",
+            title="Precalculated Indices",
+            abstract="Precalculated Indices as basis for the SDM calculation (list of netCDF files or tar/zip archive )",
             minOccurs=1,
             maxOccurs=500,
-            maxmegabites=50000,
-            formats=[{"mimeType":"application/x-netcdf"}],
+            #maxmegabites=50,
+            formats=[{"mimeType":"application/x-netcdf"}, {"mimeType":"application/x-tar"}, {"mimeType":"application/zip"}],
             )
 
         self.gbif = self.addComplexInput(
@@ -50,17 +50,6 @@ class SDMcsvindicesProcess(WPSProcess):
             maxOccurs=1,
             #maxmegabites=50,
             formats=[{"mimeType":"text/csv"}],
-            )
-        
-        self.input_indices = self.addLiteralInput(
-            identifier="input_indices",
-            title="Indices",
-            abstract="Climate indices related to growth conditions of tree species",
-            default=['TG_JJA', 'TNn_Jan'],
-            type=type(''),
-            minOccurs=1,
-            maxOccurs=10,
-            allowedValues=_SDMINDICES_ 
             )
 
         self.period = self.addLiteralInput(
@@ -89,14 +78,6 @@ class SDMcsvindicesProcess(WPSProcess):
         ### OUTPUTS
         ###########
         
-        self.output_csv = self.addComplexOutput(
-            identifier="output_csv",
-            title="Tree species table",
-            abstract="Extracted CSV file containing the tree species table",
-            formats=[{"mimeType":"text/csv"}],
-            asReference=True,
-            )
-        
         self.output_gbif = self.addComplexOutput(
             identifier="output_gbif",
             title="Graphic of GBIF coordinates",
@@ -112,15 +93,7 @@ class SDMcsvindicesProcess(WPSProcess):
             formats=[{"mimeType":"image/png"}],
             asReference=True,
             )
-             
-        self.output_indices = self.addComplexOutput(
-            identifier="output_indices",
-            title="Climate indices for growth conditions over all timesteps (3D)",
-            abstract="Archive (tar/zip) containing calculated climate indices as netCDF files",
-            formats=[{"mimeType":"application/x-tar"}, {"mimeType":"application/zip"}],
-            asReference=True,
-            )         
-         
+                      
         self.output_reference = self.addComplexOutput(
             identifier="output_reference",
             title="Climate indices for growth conditions of reference period (2D)",
@@ -147,7 +120,6 @@ class SDMcsvindicesProcess(WPSProcess):
 
     def execute(self):
       from os.path import basename
-
       from flyingpigeon import sdm
       from flyingpigeon.utils import archive
 
@@ -155,14 +127,10 @@ class SDMcsvindicesProcess(WPSProcess):
       
       try: 
         logger.info('reading the arguments')
-        resources = self.getInputValues(identifier='resources')
+        resources = self.getInputValues(identifier='input_indices')
         csv_file = self.getInputValues(identifier='gbif')[0]
-        #period = self.period.getValue()
         period = self.getInputValues(identifier='period')
         period = period[0]
-        #indices = self.input_indices.getValue()
-        indices = self.getInputValues(identifier='input_indices')
-        logger.debug("indices = %s", indices)  
         archive_format = self.archive_format.getValue()
       except Exception as e: 
         logger.error('failed to read in the arguments %s ' % e)
@@ -177,7 +145,6 @@ class SDMcsvindicesProcess(WPSProcess):
       try:
         self.status.set('plot map', 80)
         from flyingpigeon.visualisation import map_gbifoccurrences
-        
         # latlon = sdm.latlon_gbifdic(gbifdic)
         occurence_map = map_gbifoccurrences(latlon)
       except Exception as e: 
@@ -202,25 +169,30 @@ class SDMcsvindicesProcess(WPSProcess):
       #################################
       
       # get the indices
-      ncs_indices = None
+
+      ncs_indices = []
+
       try:
-        self.status.set('start calculation of climate indices for %s' % indices, 30 )
-        ncs_indices = sdm.get_indices(resources=resources, indices=indices)
-        logger.info('indice calculation done')
+        self.status.set('extract climate indices for ' , 30 )
+        for nc in ncs_indices:
+          if '.nc' in nc:  
+        		ncs_indices.extend(nc)
+          #TODO add extraction
+        logger.info('indice extraction done: %s ' % ncs_indices)
       except:
-        msg = 'failed to calculate indices'
+        msg = 'failed to extract indices'
         logger.exception(msg)
         raise Exception(msg)
+      
+      # try:
+      #   self.status.set('start calculation of climate indices for %s' % indices, 30 )
+      #   ncs_indices = sdm.get_indices(resources=resources, indices=indices)
+      #   logger.info('indice calculation done')
+      # except:
+      #   msg = 'failed to calculate indices'
+      #   logger.exception(msg)
+      #   raise Exception(msg)
 
-      try:
-        archive_indices = archive(ncs_indices , format=archive_format)
-        logger.info('indices 3D added to tarfile')
-      except:
-        msg = 'failed adding indices to tar'  
-        logger.exception(msg)
-        raise Exception(msg)  
-
-      indices_dic = None
       try: 
         # sort indices
         indices_dic = sdm.sort_indices(ncs_indices)
@@ -230,17 +202,15 @@ class SDMcsvindicesProcess(WPSProcess):
         logger.exception(msg)
         raise Exception(msg)
 
-
       ncs_references = []
       species_files = []
       statistics_info = []
 
       for count,key in enumerate(indices_dic.keys()):
         try:
-          self.status.set('Start processing of %s ' % key, 40 + count * 10)
-          
+          self.status.set('Start processing of %s ' % key, 40 + count * 10)          
           ncs = indices_dic[key]
-          
+       
           logger.info('with %s files' % len(ncs))
             
           try: 
