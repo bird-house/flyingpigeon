@@ -1,5 +1,5 @@
 """
-Processes for Species distribution 
+Processes to fetch data from GBIF data base
 Author: Nils Hempelmann (info@nilshempelmann.de)
 """
 
@@ -12,8 +12,8 @@ class GETGBIFProcess(WPSProcess):
     def __init__(self):
         WPSProcess.__init__(
             self,
-            identifier = "sdm_getgbif",
-            title = "SDM -- GBIF search",
+            identifier = "sdm_gbiffetch",
+            title = "GBIF data fetch",
             version = "0.1",
             metadata= [
                 {"title": "Documentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
@@ -69,8 +69,6 @@ class GETGBIFProcess(WPSProcess):
     def execute(self):
       self.status.set('Start process', 0)
       from flyingpigeon import sdm
-
-
 
       try: 
         logger.info('reading the arguments')

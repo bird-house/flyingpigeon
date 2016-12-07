@@ -33,14 +33,10 @@ def latlon_gbifdic(gbifdic):
 
   :return numpy.ndarray: [[lats],[lons]]
   """
-
   from numpy import empty
-
   try:
     
     coords = [ { k: v for k, v in w.items() if k.startswith('decimal') } for w in gbifdic ]
-
-    
     latlon = empty([len(coords),2], dtype=float, order='C')
 
     for i, coord in enumerate(coords):   
@@ -50,6 +46,41 @@ def latlon_gbifdic(gbifdic):
     logger.info('read in PA coordinates for %s rows ' % len(ll[:,0])) 
   except Exception as e:
     logger.error('failed search GBIF data %s' % (e))
+  return latlon
+
+def latlon_gbifcsv( csvfile ):
+  """
+  obsolete use latlon_gbifcsv
+  """
+
+  import csv 
+  from collections import defaultdict
+  from numpy import empty
+
+  columns = defaultdict(list)
+  
+  with open(csvfile, 'rb') as f:
+    reader = csv.DictReader(f, delimiter=',')
+    for row in reader:
+        for (k,v) in row.items():
+            columns[k].append(v)
+  
+  l = len(columns['decimalLongitude'])  
+  print 'length of decimalLongitude: %s' % l 
+
+  ll = empty([l,2], dtype=float, order='C')
+  c = 0
+  for i in range(0,l):
+    try:
+      ll[i][0] = float(columns['decimalLatitude'][i])
+      ll[i][1] = float(columns['decimalLongitude'][i])
+    except: 
+      c = c +1
+
+  logger.debug('failed to read in PA coordinates for %s rows ' % c)
+  nz = (ll == 0).sum(1)
+  latlon = ll[nz == 0, :]
+  logger.info('read in PA coordinates for %s rows ' % len(latlon[:,0]))
   return latlon
 
 def get_gbif(taxon_name='Fagus sylvatica', bbox=[-10,-10,10,10]):
@@ -66,7 +97,7 @@ def get_gbif(taxon_name='Fagus sylvatica', bbox=[-10,-10,10,10]):
   from pygbif import occurrences as occ
   from pygbif import species
 
-  print 'libs loaded '
+  logger.info('libs loaded in get_gbif function')
   
   try:
     nm = species.name_backbone(taxon_name)['usageKey']
@@ -137,60 +168,64 @@ def gbifdic2csv(gbifdic):
 
   return gbif_csv 
 
-def gbif_serach(taxon_name):
-  """
-  obsolete use get_gbif
-  """
-  from numpy import nan, empty
-  from pygbif import occurrences as occ
-  from pygbif import species
+# def gbif_serach(taxon_name):
+#   """
+#   obsolete use get_gbif
+#   """
+#   from numpy import nan, empty
+#   from pygbif import occurrences as occ
+#   from pygbif import species
   
-  try:
-    nm = species.name_backbone(taxon_name)['usageKey']
+#   try:
+#     nm = species.name_backbone(taxon_name)['usageKey']
 
-    ## a set of WKT polygons
-    polys = [
-    #"POLYGON ((-13.9746093699999996 66.1882478999999933, -6.4746093699999996 66.1882478999999933, -6.4746093699999996 57.4422366399999973, -13.9746093699999996 57.4422366399999973, -13.9746093699999996 66.1882478999999933))",
-    #"POLYGON ((-6.4746093699999996 66.1882478999999933, 8.5253906300000004 66.1882478999999933, 8.5253906300000004 57.4422366399999973, -6.4746093699999996 57.4422366399999973, -6.4746093699999996 66.1882478999999933))",
-    #"POLYGON ((8.5253906300000004 66.1882478999999933, 23.5253906300000004 66.1882478999999933, 23.5253906300000004 57.4422366399999973, 8.5253906300000004 57.4422366399999973, 8.5253906300000004 66.1882478999999933))",      
-    #"POLYGON ((23.5253906300000004 66.1882478999999933, 31.7285156300000004 66.1882478999999933, 31.7285156300000004 57.4422366399999973, 23.5253906300000004 57.4422366399999973, 23.5253906300000004 66.1882478999999933))",   
-    #"POLYGON ((-13.9746093699999996 42.4422366399999973, -13.9746093699999996 57.4422366399999973, -6.4746093699999996 57.4422366399999973, -6.4746093699999996 42.4422366399999973, -13.9746093699999996 42.4422366399999973))",
-    "POLYGON ((-6.4746093699999996 42.4422366399999973, -6.4746093699999996 57.4422366399999973, 8.5253906300000004 57.4422366399999973, 8.5253906300000004 42.4422366399999973, -6.4746093699999996 42.4422366399999973))",     
-    "POLYGON ((8.5253906300000004 42.4422366399999973, 8.5253906300000004 57.4422366399999973, 23.5253906300000004 57.4422366399999973, 23.5253906300000004 42.4422366399999973, 8.5253906300000004 42.4422366399999973))",     
-    #"POLYGON ((31.7285156300000004 57.4422366399999973, 31.7285156300000004 42.4422366399999973, 23.5253906300000004 42.4422366399999973, 23.5253906300000004 57.4422366399999973, 31.7285156300000004 57.4422366399999973))",   
-    #"POLYGON ((-6.4746093699999996 34.9422366399999973, -13.9746093699999996 34.9422366399999973, -13.9746093699999996 42.4422366399999973, -6.4746093699999996 42.4422366399999973, -6.4746093699999996 34.9422366399999973))", 
-    #"POLYGON ((8.5253906300000004 34.9422366399999973, -6.4746093699999996 34.9422366399999973, -6.4746093699999996 42.4422366399999973, 8.5253906300000004 42.4422366399999973, 8.5253906300000004 34.9422366399999973))",      
-    #"POLYGON ((23.5253906300000004 34.9422366399999973, 8.5253906300000004 34.9422366399999973, 8.5253906300000004 42.4422366399999973, 23.5253906300000004 42.4422366399999973, 23.5253906300000004 34.9422366399999973))",     
-    #"POLYGON ((31.7285156300000004 42.4422366399999973, 31.7285156300000004 34.9422366399999973, 23.5253906300000004 34.9422366399999973, 23.5253906300000004 42.4422366399999973, 31.7285156300000004 42.4422366399999973))"
-    ]
+#     ## a set of WKT polygons
+#     polys = [
+#     #"POLYGON ((-13.9746093699999996 66.1882478999999933, -6.4746093699999996 66.1882478999999933, -6.4746093699999996 57.4422366399999973, -13.9746093699999996 57.4422366399999973, -13.9746093699999996 66.1882478999999933))",
+#     #"POLYGON ((-6.4746093699999996 66.1882478999999933, 8.5253906300000004 66.1882478999999933, 8.5253906300000004 57.4422366399999973, -6.4746093699999996 57.4422366399999973, -6.4746093699999996 66.1882478999999933))",
+#     #"POLYGON ((8.5253906300000004 66.1882478999999933, 23.5253906300000004 66.1882478999999933, 23.5253906300000004 57.4422366399999973, 8.5253906300000004 57.4422366399999973, 8.5253906300000004 66.1882478999999933))",      
+#     #"POLYGON ((23.5253906300000004 66.1882478999999933, 31.7285156300000004 66.1882478999999933, 31.7285156300000004 57.4422366399999973, 23.5253906300000004 57.4422366399999973, 23.5253906300000004 66.1882478999999933))",   
+#     #"POLYGON ((-13.9746093699999996 42.4422366399999973, -13.9746093699999996 57.4422366399999973, -6.4746093699999996 57.4422366399999973, -6.4746093699999996 42.4422366399999973, -13.9746093699999996 42.4422366399999973))",
+#     "POLYGON ((-6.4746093699999996 42.4422366399999973, -6.4746093699999996 57.4422366399999973, 8.5253906300000004 57.4422366399999973, 8.5253906300000004 42.4422366399999973, -6.4746093699999996 42.4422366399999973))",     
+#     "POLYGON ((8.5253906300000004 42.4422366399999973, 8.5253906300000004 57.4422366399999973, 23.5253906300000004 57.4422366399999973, 23.5253906300000004 42.4422366399999973, 8.5253906300000004 42.4422366399999973))",     
+#     #"POLYGON ((31.7285156300000004 57.4422366399999973, 31.7285156300000004 42.4422366399999973, 23.5253906300000004 42.4422366399999973, 23.5253906300000004 57.4422366399999973, 31.7285156300000004 57.4422366399999973))",   
+#     #"POLYGON ((-6.4746093699999996 34.9422366399999973, -13.9746093699999996 34.9422366399999973, -13.9746093699999996 42.4422366399999973, -6.4746093699999996 42.4422366399999973, -6.4746093699999996 34.9422366399999973))", 
+#     #"POLYGON ((8.5253906300000004 34.9422366399999973, -6.4746093699999996 34.9422366399999973, -6.4746093699999996 42.4422366399999973, 8.5253906300000004 42.4422366399999973, 8.5253906300000004 34.9422366399999973))",      
+#     #"POLYGON ((23.5253906300000004 34.9422366399999973, 8.5253906300000004 34.9422366399999973, 8.5253906300000004 42.4422366399999973, 23.5253906300000004 42.4422366399999973, 23.5253906300000004 34.9422366399999973))",     
+#     #"POLYGON ((31.7285156300000004 42.4422366399999973, 31.7285156300000004 34.9422366399999973, 23.5253906300000004 34.9422366399999973, 23.5253906300000004 42.4422366399999973, 31.7285156300000004 42.4422366399999973))"
+#     ]
 
-    results = []
-    for i in polys:
-        res = []
-        x = occ.search(taxonKey = nm, geometry = i)
-        res.append(x['results'])
-        while not x['endOfRecords']:
-            x = occ.search(taxonKey = nm, geometry = i, offset = sum([ len(x) for x in res ]))
-            res.append(x['results'])
+#     results = []
+#     for i in polys:
+#         res = []
+#         x = occ.search(taxonKey = nm, geometry = i)
+#         res.append(x['results'])
+#         while not x['endOfRecords']:
+#             x = occ.search(taxonKey = nm, geometry = i, offset = sum([ len(x) for x in res ]))
+#             res.append(x['results'])
 
-        results.append([w for z in res for w in z])
-        logger.info('polyon fetched')
+#         results.append([w for z in res for w in z])
+#         logger.info('polyon fetched')
 
-    allres = [w for z in results for w in z]
-    coords = [ { k: v for k, v in w.items() if k.startswith('decimal') } for w in allres ]
+#     allres = [w for z in results for w in z]
+#     coords = [ { k: v for k, v in w.items() if k.startswith('decimal') } for w in allres ]
 
-    latlon = empty([len(coords),2], dtype=float, order='C')
-    for i , coord in enumerate(coords): 
-      latlon[i][0] = Latitude  
-      latlon[i][1] = Longitude  
-    nz = (latlon == 0).sum(1)
-    ll = latlon[nz == 0, :]
-    logger.info('read in PA coordinates for %s rows ' % len(ll[:,0])) 
-  except Exception as e: 
-    logger.exception('failed search GBIF data %s' % (e))
-  return ll
+#     latlon = empty([len(coords),2], dtype=float, order='C')
+#     for i , coord in enumerate(coords): 
+#       latlon[i][0] = Latitude  
+#       latlon[i][1] = Longitude  
+#     nz = (latlon == 0).sum(1)
+#     ll = latlon[nz == 0, :]
+#     logger.info('read in PA coordinates for %s rows ' % len(ll[:,0])) 
+#   except Exception as e: 
+#     logger.exception('failed search GBIF data %s' % (e))
+#   return ll
 
 def get_latlon( csv_file ):
+  """
+  obsolete use latlon_gbifcsv
+  """
+
   import csv 
   from collections import defaultdict
   from numpy import empty
@@ -214,7 +249,7 @@ def get_latlon( csv_file ):
     except: 
       c = c +1 
   
-  logger.info('failed to read in PA coordinates for %s rows ' % c)
+  logger.debug('failed to read in PA coordinates for %s rows ' % c)
   
   nz = (latlon == 0).sum(1)
   ll = latlon[nz == 0, :]    
