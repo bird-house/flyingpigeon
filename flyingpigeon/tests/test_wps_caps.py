@@ -1,5 +1,6 @@
 from .common import WpsTestClient
 
+
 def test_caps():
     wps = WpsTestClient()
     resp = wps.get(service='wps', request='getcapabilities')
@@ -20,6 +21,7 @@ def test_caps():
         'robustness',
         'sdm_csv',
         'sdm_gbifsearch',
+        'sdm_getgbif',
         'segetalflora',
         'spatial_analog',
         'subset_continents',
@@ -30,6 +32,6 @@ def test_caps():
         'weatherregimes_projection',
         'weatherregimes_reanalyse',
         'wps_c4i_simple_indice',
-        ]
+    ]
 
     assert sorted_names == expected_names
