@@ -169,7 +169,6 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
                      prefix=str(uuid.uuid4()),
                      dir_output=dir_output,
                      output_format='nc')
-
         else:
           ncs = experiments[key]
         for indice in indices:
