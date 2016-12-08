@@ -21,14 +21,14 @@ __all__ = [
         "wps_robustness",
         "wps_plot_timeseries",
         "wps_fetch",
-# climate for impact processes
+        # climate for impact processes
         "wps_c4i_simple_indice",
-# processes under development     
-       "wps_spatial_analog",
-#        "wps_eobs2cordex",
+        # processes under development
+        "wps_spatial_analog",
+        # "wps_eobs2cordex",
 
-# TODO: c4i processes with multiple input sources
-        #"wps_c4i_multivar_indice",
-        #"wps_c4i_percentile_indice",
-        #"wps_c4i_compound_indice",
+        # TODO: c4i processes with multiple input sources
+        # "wps_c4i_multivar_indice",
+        # "wps_c4i_percentile_indice",
+        # "wps_c4i_compound_indice",
         ]
