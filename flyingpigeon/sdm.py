@@ -44,9 +44,11 @@ def latlon_gbifdic(gbifdic):
             latlon[i][0] = coord['decimalLatitude']
             latlon[i][1] = coord['decimalLongitude']
 
-        logger.info('read in PA coordinates for %s rows ' % len(ll[:, 0]))
+        logger.info('read in PA coordinates for %s rows ', len(coords))
     except Exception as e:
-        logger.exception('failed search GBIF data.')
+        msg = 'failed search GBIF data.'
+        logger.exception(msg)
+        raise Exception(msg)
     return latlon
 
 
