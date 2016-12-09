@@ -151,33 +151,6 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         except Exception as e:
             logger.debug('failed to compare dataload with free memory %s ' % e)
             raise
-    # # check memory load
-    # from os import stat
-    #   if memory_limit == None:
-    #     f = FreeMemory()
-    #     mem_kb = f.user_free
-    #     mem_mb = mem_kb / 1024.
-    #     mem_limit = mem_mb / 2. # set limit to half of the free memory
-    #   else:
-    #     mem_limit = memory_limit
-    #
-    #   if mem_limit >= 1024. * 4:
-    #     mem_limit = 1024. * 4
-    #     # 475.0 MB for openDAP
-    #
-    #   #if type(resource) == list :
-    #     #data_kb =  stat(resource[0]).st_size * len(resource)
-    #   #else:
-    #     #data_kb =  stat(resource).st_size
-    #   size = ops.get_base_request_size()['total']
-    #   data_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
-    #   data_mb = data_kb / 1024.
-    #
-    #   if variable == None:
-    #     variable = rd.variable
-    #     logger.info('%s as variable dedected' % (variable))
-    #
-    #   logger.info('data_mb  = %s ; memory_limit = %s ' % (data_mb  , mem_limit ))
 
         if data_mb <= mem_limit:  # input is smaler than the half of free memory size
             try:
@@ -198,26 +171,26 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
                 tile_dim = sqrt(mem_limit/(element_in_mb*nb_time_coordinates_rd))  # maximum chunk size
 
                 logger.info('ocgis module call compute with chunks')
-                print 'ocgis module call compute with chunks'
                 if calc is None:
                     calc = '%s=%s*1' % (variable, variable)
                     logger.info('calc set to = %s ' % calc)
-                    ops = OcgOperations(dataset=rd,
-                                        output_format_options=output_format_options,
-                                        spatial_wrapping=spatial_wrapping,
-                                        spatial_reorder=spatial_reorder,
-                                        # regrid_destination=rd_regrid,
-                                        # options=options,
-                                        calc=calc,
-                                        calc_grouping=calc_grouping,
-                                        geom=geom,
-                                        output_format=output_format,
-                                        prefix=prefix,
-                                        search_radius_mult=search_radius_mult,
-                                        select_nearest=select_nearest,
-                                        select_ugid=select_ugid,
-                                        add_auxiliary_files=False)
-                    geom_file = compute(ops, tile_dimension=int(tile_dim), verbose=True)
+                ops = OcgOperations(dataset=rd,
+                                    output_format_options=output_format_options,
+                                    spatial_wrapping=spatial_wrapping,
+                                    spatial_reorder=spatial_reorder,
+                                    # regrid_destination=rd_regrid,
+                                    # options=options,
+                                    calc=calc,
+                                    calc_grouping=calc_grouping,
+                                    geom=geom,
+                                    output_format=output_format,
+                                    prefix=prefix,
+                                    search_radius_mult=search_radius_mult,
+                                    select_nearest=select_nearest,
+                                    select_ugid=select_ugid,
+                                    add_auxiliary_files=False)
+                geom_file = compute(ops, tile_dimension=int(tile_dim), verbose=True)
+                print 'ocgis calculated'
             except Exception as e:
                 logger.debug('failed to compute ocgis with chunks')
                 raise
@@ -277,3 +250,29 @@ def eval_timerange(resource, time_range):
         logger.debug('time range reversed! start was later than end ')
     logger.info('time range start and end set')
     return time_range
+
+# # check memory load
+# from os import stat
+#   if memory_limit == None:
+#     f = FreeMemory()
+#     mem_kb = f.user_free
+#     mem_mb = mem_kb / 1024.
+#     mem_limit = mem_mb / 2. # set limit to half of the free memory
+#   else:
+#     mem_limit = memory_limit
+#
+#   if mem_limit >= 1024. * 4:
+#     mem_limit = 1024. * 4
+#     # 475.0 MB for openDAP
+#
+#   #if type(resource) == list :
+#     #data_kb =  stat(resource[0]).st_size * len(resource)
+#   #else:
+#     #data_kb =  stat(resource).st_size
+#   size = ops.get_base_request_size()['total']
+#   data_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
+#   data_mb = data_kb / 1024.
+#
+#   if variable == None:
+#     variable = rd.variable
+#     logger.info('%s as variable dedected' % (variable))

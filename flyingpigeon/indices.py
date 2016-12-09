@@ -196,6 +196,7 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
             #              output_format='nc')
             # else:
             ncs = experiments[key]
+            print ncs
             for indice in indices:
                 logger.info('indice: %s' % indice)
                 try:
@@ -245,10 +246,10 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
                             msg = 'could not calc indice %s for key %s and grouping %s' % (indice, key, grouping)
                             logger.debug(msg)
                             # raise Exception(msg)
-                    except Exception as e:
-                        msg = 'could not calc indice %s for key %s' % (indice, key)
-                        logger.debug(msg)
-                        # raise Exception(msg)
+                except Exception as e:
+                    msg = 'could not calc indice %s for key %s' % (indice, key)
+                    logger.debug(msg)
+                    # raise Exception(msg)
         except Exception as e:
             msg = 'could not calc key %s' % key
             logger.debug(msg)
