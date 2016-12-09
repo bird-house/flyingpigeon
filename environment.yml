@@ -11,7 +11,8 @@ channels:
 dependencies:
 - python=2  #  conda-forge
 - ipython=5.1.0 
-- gcc# =4.8.5
+- gcc=4.8.5
+- glib=2.48.0
 - pyopenssl# =0.16.0
 - cryptography=1.5.2=py27_0 #- cryptography=1.5.2
 - psutil
