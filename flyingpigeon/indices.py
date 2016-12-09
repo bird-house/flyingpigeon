@@ -174,14 +174,12 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
     # from flyingpigeon.subset import select_ugid
     #    tile_dim = 25
     output = None
-
     experiments = sort_by_filename(resource)
     outputs = []
 
     for key in experiments:
         if variable is None:
             variable = get_variable(experiments[key][0])
-        # variable = key.split('_')[0]
         try:
             # if variable == 'pr':
             #     calc = 'pr=pr*86400'
@@ -190,69 +188,59 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
             #                             dimension_map=dimension_map,
             #                             calc=calc,
             #                             memory_limit=memory_limit,
-            #                             # calc_grouping= calc_group,
+            #                             # alc_grouping= calc_group,
             #                             prefix=str(uuid.uuid4()),
             #                             dir_output=dir_output,
             #                             output_format='nc')
             # else:
-            #     ncs = experiments[key]
+            ncs = experiments[key]
             for indice in indices:
-                logger.info('indice: %s' % indice)
                 try:
+                    logger.info('indice: %s' % indice)
                     calc = [{'func': 'icclim_' + indice, 'name': indice}]
                     logger.info('calc: %s' % calc)
                     for grouping in groupings:
                         logger.info('grouping: %s' % grouping)
-                        try:
-                            calc_group = calc_grouping(grouping)
-                            logger.info('calc_group: %s' % calc_group)
-                            if polygons is None:
-                                try:
-                                    prefix = key.replace(variable, indice).replace('_day_', '_%s_' % grouping)
-                                    tmp = ocgis_module.call(resource=ncs,
-                                                            variable=variable,
-                                                            dimension_map=dimension_map,
-                                                            calc=calc,
-                                                            calc_grouping=calc_group,
-                                                            prefix=prefix,
-                                                            dir_output=dir_output,
-                                                            output_format='nc')
-                                    outputs.append(tmp)
-                                except Exception as e:
-                                    msg = 'could not calc indice %s for domain in %s' % (indice, key)
-                                    logger.debug(msg)
-                                    # raise Exception(msg)
-                            else:
-                                try:
-                                    prefix = key.replace(variable, indice).replace('_day_', '_%s_' % grouping)
-                                    tmp = clipping(resource=ncs,
-                                                   variable=variable,
-                                                   dimension_map=dimension_map,
-                                                   calc=calc,
-                                                   calc_grouping=calc_group,
-                                                   prefix=prefix,
-                                                   polygons=polygons,
-                                                   mosaic=mosaic,
-                                                   dir_output=dir_output,
-                                                   output_format='nc')
-                                    outputs.append(tmp)
-                                except Exception as e:
-                                    msg = 'could not calc indice %s for domain in %s' % (indice, key)
-                                    logger.debug(msg)
-                                    # raise Exception(msg)
-                            logger.info('indice file calculated: %s' % tmp)
-                        except Exception as e:
-                            msg = 'could not calc indice %s for key %s and grouping %s' % (indice, key, grouping)
-                            logger.debug(msg)
-                            # raise Exception(msg)
+                        calc_group = calc_grouping(grouping)
+                        logger.info('calc_group: %s' % calc_group)
+                        if polygons is None:
+                            try:
+                                prefix = key.replace(variable, indice).replace('_day_', '_%s_' % grouping)
+                                tmp = ocgis_module.call(resource=ncs,
+                                                        variable=variable,
+                                                        dimension_map=dimension_map,
+                                                        calc=calc,
+                                                        calc_grouping=calc_group,
+                                                        prefix=prefix,
+                                                        dir_output=dir_output,
+                                                        output_format='nc')
+                                outputs.append(tmp)
+                            except Exception as e:
+                                msg = 'could not calc indice %s for domain in %s' % (indice, key)
+                                logger.debug(msg)
+                                # raise Exception(msg)
+                        else:
+                            try:
+                                prefix = key.replace(variable, indice).replace('_day_', '_%s_' % grouping)
+                                tmp = clipping(resource=ncs,
+                                               variable=variable,
+                                               dimension_map=dimension_map,
+                                               calc=calc,
+                                               calc_grouping=calc_group,
+                                               prefix=prefix,
+                                               polygons=polygons,
+                                               mosaic=mosaic,
+                                               dir_output=dir_output,
+                                               output_format='nc')
+                                outputs.append(tmp)
+                            except Exception as e:
+                                msg = 'could not calc indice %s for domain in %s' % (indice, key)
+                                logger.debug(msg)
+                                # raise Exception(msg)
                 except Exception as e:
-                    msg = 'could not calc indice %s for key %s' % (indice, key)
+                    msg = 'could not calc key %s' % key
                     logger.debug(msg)
                     # raise Exception(msg)
-        except Exception as e:
-            msg = 'could not calc key %s' % key
-            logger.debug(msg)
-            # raise Exception(msg)
     logger.info('indice outputs %s ' % outputs)
     return outputs
 

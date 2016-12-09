@@ -27,7 +27,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     '''
     ocgis operation call
 
-    :param resource:
+    :param resource: input netCDF files
     :param variable: variable in the input file to be picked
     :param dimension_map: dimension map in case of unconventional data order
     :param calc: ocgis calc syntax for calculation partion
@@ -150,7 +150,6 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
                 # 475.0 MB for openDAP
             data_kb = ops.get_base_request_size()['total']
             data_mb = data_kb / 1024.
-
             if variable is None:
                 variable = rd.variable
                 logger.info('%s as variable dedected' % (variable))
@@ -265,31 +264,3 @@ def eval_timerange(resource, time_range):
         logger.debug('time range reversed! start was later than end ')
     logger.info('time range start and end set')
     return time_range
-
-# # check memory load
-# from os import stat
-# if memory_limit == None:
-# f = FreeMemory()
-# mem_kb = f.user_free
-# mem_mb = mem_kb / 1024.
-# mem_limit = mem_mb / 2. # set limit to half of the free memory
-# else:
-# mem_limit = memory_limit
-
-# if mem_limit >= 1024. * 4:
-# mem_limit = 1024. * 4
-# # 475.0 MB for openDAP
-
-# #if type(resource) == list :
-# #data_kb =  stat(resource[0]).st_size * len(resource)
-# #else:
-# #data_kb =  stat(resource).st_size
-# size = ops.get_base_request_size()['total']
-# data_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
-# data_mb = data_kb / 1024.
-
-# if variable == None:
-# variable = rd.variable
-# logger.info('%s as variable dedected' % (variable))
-
-# logger.info('data_mb  = %s ; memory_limit = %s ' % (data_mb  , mem_limit ))
