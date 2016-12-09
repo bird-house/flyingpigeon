@@ -1,4 +1,5 @@
 import pytest
 
-def test_pygbif(): 
-  import pygbif
+
+def test_pygbif():
+    import pygbif
