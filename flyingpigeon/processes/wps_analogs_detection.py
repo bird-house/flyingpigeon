@@ -21,8 +21,7 @@ class AnalogsProcess(WPSProcess):
                    "href": "http://flyingpigeon.readthedocs.io/en/latest/\
                     descriptions/analogues.html#analogues-of-circulation"}
                   ],
-            abstract="Search for days with analogue pressure pattern for\
-            reanalyses data sets",
+            abstract="Search for days with analogue pressure pattern for reanalyses data sets",
             statusSupported=True,
             storeSupported=True
             )
@@ -143,8 +142,7 @@ class AnalogsProcess(WPSProcess):
         self.timewin = self.addLiteralInput(
           identifier="timewin",
           title="Time window",
-          abstract="Number of days following the analogue day the distance\
-           will be averaged",
+          abstract="Number of days following the analogue day the distance will be averaged",
           default=1,
           type=type(1),
           minOccurs=0,
@@ -332,14 +330,12 @@ class AnalogsProcess(WPSProcess):
         try:
             # Construct descriptive filenames for the three files
             # listed in config file
-            refDatesString = dt.strftime(refSt, '%Y-%m-%d') +\
-                "_" + dt.strftime(refEn, '%Y-%m-%d')
-            simDatesString = dt.strftime(dateSt, '%Y-%m-%d') +\
-                "_" + dt.strftime(dateEn, '%Y-%m-%d')
-            archiveNameString = "base_" + var + "_" + refDatesString +\
-                '_%.1f_%.1f_%.1f_%.1f' % (bbox[0], bbox[2], bbox[1], bbox[3])
-            simNameString = "sim_" + var + "_" + simDatesString +\
-                '_%.1f_%.1f_%.1f_%.1f' % (bbox[0], bbox[2], bbox[1], bbox[3])
+            refDatesString = dt.strftime(refSt, '%Y-%m-%d') + "_" + dt.strftime(refEn, '%Y-%m-%d')
+            simDatesString = dt.strftime(dateSt, '%Y-%m-%d') + "_" + dt.strftime(dateEn, '%Y-%m-%d')
+            archiveNameString = "base_" + var + "_" + refDatesString + '_%.1f_%.1f_%.1f_%.1f' \
+                                % (bbox[0], bbox[2], bbox[1], bbox[3])
+            simNameString = "sim_" + var + "_" + simDatesString + '_%.1f_%.1f_%.1f_%.1f' \
+                            % (bbox[0], bbox[2], bbox[1], bbox[3])
             archive = call(resource=nc_subset,
                            time_range=[refSt, refEn],
                            prefix=archiveNameString)
