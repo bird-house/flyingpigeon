@@ -18,11 +18,11 @@ class AnalogsProcess(WPSProcess):
                   {"title": "LSCE",
                    "href": "http://www.lsce.ipsl.fr/en/index.php"},
                   {"title": "Doc",
-                   "href": "http://flyingpigeon.readthedocs.io/en/latest/\
-                   descriptions/analogues.html#analogues-of-circulation"}
+                   "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/\
+                   analogues.html#analogues-of-circulation"}
                   ],
-            abstract="Search in a dataset for days with analogue pressure\
-             pattern for a given period in a reanalyses dataset",
+            abstract="Search in a dataset for days with analogue pressure pattern for a given period in\
+             a reanalyses dataset",
             statusSupported=True,
             storeSupported=True
             )
@@ -153,8 +153,7 @@ class AnalogsProcess(WPSProcess):
         self.timewin = self.addLiteralInput(
           identifier="timewin",
           title="Time window",
-          abstract="Number of days following the analogue day the distance\
-           will be averaged",
+          abstract="Number of days following the analogue day the distance will be averaged",
           default=1,
           type=type(1),
           minOccurs=0,
@@ -203,8 +202,7 @@ class AnalogsProcess(WPSProcess):
 
         self.simulation_netcdf = self.addComplexOutput(
           title="prepared netCDF",
-          abstract="NetCDF file with subset and normaized values\
-           of simulation dataset",
+          abstract="NetCDF file with subset and normaized values of simulation dataset",
           formats=[{"mimeType": "application/x-netcdf"}],
           asReference=True,
           identifier="simulation_netcdf",
@@ -313,7 +311,7 @@ class AnalogsProcess(WPSProcess):
                                variable=var, dataset=dataset)
             nc_subset = call(resource=input, variable=var, geom=bbox)
             logger.debug("get_input_subset_dataset took %s seconds.",
-                         % time.time() - start_time)
+                         time.time() - start_time)
             self.status.set('**** Input data fetched', 10)
         except Exception as e:
             msg = 'failed to fetch or subset input files %s' % e
@@ -376,7 +374,7 @@ class AnalogsProcess(WPSProcess):
         files = [path.abspath(archive), path.abspath(simulation), output_file]
 
         logger.debug("data preperation took %s seconds.",
-                     % time.time() - start_time)
+                     time.time() - start_time)
 
         ############################
         # generating the config file
