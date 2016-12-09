@@ -188,7 +188,7 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
             #                             dimension_map=dimension_map,
             #                             calc=calc,
             #                             memory_limit=memory_limit,
-            #                             # alc_grouping= calc_group,
+            #                             # calc_grouping= calc_group,
             #                             prefix=str(uuid.uuid4()),
             #                             dir_output=dir_output,
             #                             output_format='nc')
