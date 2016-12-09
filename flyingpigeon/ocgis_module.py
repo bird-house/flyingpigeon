@@ -28,6 +28,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     ocgis operation call
 
     :param resource: input netCDF files
+    :param resource:
     :param variable: variable in the input file to be picked
     :param dimension_map: dimension map in case of unconventional data order
     :param calc: ocgis calc syntax for calculation partion
@@ -150,6 +151,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
                 # 475.0 MB for openDAP
             data_kb = ops.get_base_request_size()['total']
             data_mb = data_kb / 1024.
+
             if variable is None:
                 variable = rd.variable
                 logger.info('%s as variable dedected' % (variable))
