@@ -409,7 +409,7 @@ def concat_images(images, orientation='v'):
   return image
 
 
-def map_gbifoccurrences(latlon):
+def map_gbifoccurrences(latlon, dir='.'):
     """
     creates a plot of coordinate points for tree occourences fetch in GBIF data base
 
@@ -423,7 +423,7 @@ def map_gbifoccurrences(latlon):
     from cartopy.util import add_cyclic_point
     import cartopy.crs as ccrs
 
-    ip, tree_presents = mkstemp(dir='.', suffix='.png')
+    ip, tree_presents = mkstemp(dir=dir, suffix='.png')
     fig = plt.figure(figsize=(20, 10), facecolor='w', edgecolor='k')
     ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
     ax.coastlines()

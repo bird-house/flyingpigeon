@@ -1,3 +1,5 @@
+import tempfile
+
 from flyingpigeon import visualisation
 
 
@@ -7,4 +9,4 @@ def test_map_gbifoccurrences():
     latlon[0] = [10, 20]
     latlon[1] = [11, 21]
     latlon[2] = [12, 22]
-    visualisation.map_gbifoccurrences(latlon=latlon)
+    visualisation.map_gbifoccurrences(latlon=latlon, dir=tempfile.gettempdir())
