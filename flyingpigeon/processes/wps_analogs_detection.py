@@ -320,7 +320,7 @@ class AnalogsProcess(WPSProcess):
             raise Exception(msg)
 
         logger.debug("get_input_subset_dataset took %s seconds.",
-                     % time.time() - start_time)
+                     time.time() - start_time)
         self.status.set('**** Input data fetched', 10)
 
         ########################

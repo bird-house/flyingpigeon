@@ -313,7 +313,7 @@ class AnalogsProcess(WPSProcess):
                                variable=var, dataset=dataset)
             nc_subset = call(resource=input, variable=var, geom=bbox)
             logger.debug("get_input_subset_dataset took %s seconds.",
-                         % time.time() - start_time)
+                         time.time() - start_time)
             self.status.set('**** Input data fetched', 10)
         except Exception as e:
             msg = 'failed to fetch or subset input files %s' % e
@@ -376,7 +376,7 @@ class AnalogsProcess(WPSProcess):
         files = [path.abspath(archive), path.abspath(simulation), output_file]
 
         logger.debug("data preperation took %s seconds.",
-                     % time.time() - start_time)
+                     time.time() - start_time)
 
         ############################
         # generating the config file
@@ -447,4 +447,4 @@ class AnalogsProcess(WPSProcess):
 
         self.status.set('execution ended', 100)
         logger.debug("total execution took %s seconds.",
-                     % time.time() - process_start_time)
+                     time.time() - process_start_time)
