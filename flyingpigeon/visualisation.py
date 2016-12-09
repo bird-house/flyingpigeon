@@ -9,7 +9,7 @@ matplotlib.use('Agg')   # use this if no xserver is available
 from matplotlib import pyplot as plt
 from matplotlib.colors import Normalize
 
-from cartopy import config
+from cartopy import config as cartopy_config
 from cartopy.util import add_cyclic_point
 import cartopy.crs as ccrs
 
@@ -417,12 +417,9 @@ def map_gbifoccurrences(latlon, dir='.'):
 
     :return png: world map with occurences
     """
-
-    import matplotlib.pyplot as plt
-    from cartopy import config
-    from cartopy.util import add_cyclic_point
-    import cartopy.crs as ccrs
-
+    # configure cartopy cache dir
+    cartopy_config['data_dir'] = os.path.join(dir, 'cartopy')
+    # plotting ...
     ip, tree_presents = mkstemp(dir=dir, suffix='.png')
     fig = plt.figure(figsize=(20, 10), facecolor='w', edgecolor='k')
     ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
