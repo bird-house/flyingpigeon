@@ -445,4 +445,4 @@ class AnalogsProcess(WPSProcess):
 
         self.status.set('execution ended', 100)
         logger.debug("total execution took %s seconds.",
-                     % time.time() - process_start_time)
+                     time.time() - process_start_time)

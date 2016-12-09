@@ -20,12 +20,12 @@ class GBIFfetchProcess(WPSProcess):
                 {"title": "Documentation",
                  "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
                 {"title": "GBIF", "href": "http://gbif.org/"}
-                ],
+            ],
             abstract="Species occurence search in Global Biodiversity \
              Infrastructure Facillity (GBIF)",
             statusSupported=True,
             storeSupported=True
-            )
+        )
 
         # Literal Input Data
         # ------------------
@@ -38,16 +38,16 @@ class GBIFfetchProcess(WPSProcess):
             minOccurs=1,
             maxOccurs=1,
             default='Fagus sylvatica'
-            )
+        )
 
         self.BBox = self.addBBoxInput(
-          identifier="BBox",
-          title="Bounding Box",
-          abstract="coordinates to define the region for occurence data fetch",
-          minOccurs=1,
-          maxOccurs=1,
-          crss=['EPSG:4326']
-          )
+            identifier="BBox",
+            title="Bounding Box",
+            abstract="coordinates to define the region for occurence data fetch",
+            minOccurs=1,
+            maxOccurs=1,
+            crss=['EPSG:4326']
+        )
 
         ###########
         # OUTPUTS
@@ -59,7 +59,7 @@ class GBIFfetchProcess(WPSProcess):
             abstract="Extracted CSV file containing the tree species table ",
             formats=[{"mimeType": "text/csv"}],
             asReference=True,
-            )
+        )
 
         self.output_map = self.addComplexOutput(
             identifier="output_map",
@@ -68,7 +68,7 @@ class GBIFfetchProcess(WPSProcess):
             according to GBIF data fetch",
             formats=[{"mimeType": "image/png"}],
             asReference=True,
-            )
+        )
 
     def execute(self):
         self.status.set('Start process', 0)
@@ -85,19 +85,25 @@ class GBIFfetchProcess(WPSProcess):
             logger.info("bbox={0}".format(bbox))
             logger.info("Taxon Name = %s", taxon_name)
         except Exception as e:
-            logger.error('failed to read in the arguments %s ' % e)
+            msg = 'failed to read in the arguments.'
+            logger.exception(msg)
+            raise Exception(msg)
 
         try:
             self.status.set('Fetching GBIF Data', 10)
             gbifdic = sdm.get_gbif(taxon_name, bbox=bbox)
         except Exception as e:
-            logger.exception('failed to search gbif %s' % e)
+            msg = 'failed to search gbif.'
+            logger.exception(msg)
+            raise Exception(msg)
 
         try:
             self.status.set('write csv file', 70)
             gbifcsv = sdm.gbifdic2csv(gbifdic)
         except Exception as e:
-            logger.exception('failed to write csv file %s' % e)
+            msg = 'failed to write csv file.'
+            logger.exception(msg)
+            raise Exception(msg)
 
         try:
             self.status.set('plot map', 80)
@@ -105,7 +111,9 @@ class GBIFfetchProcess(WPSProcess):
             latlon = sdm.latlon_gbifdic(gbifdic)
             occurence_map = map_gbifoccurrences(latlon)
         except Exception as e:
-            logger.exception('failed to plot occurence map %s' % e)
+            msg = 'failed to plot occurence map.'
+            logger.exception(msg)
+            raise Exception(msg)
 
         self.output_map.setValue(occurence_map)
         self.output_csv.setValue(gbifcsv)

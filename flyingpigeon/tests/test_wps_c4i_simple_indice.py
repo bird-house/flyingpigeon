@@ -2,6 +2,7 @@ import pytest
 
 from .common import WpsTestClient, TESTDATA, assert_response_success
 
+
 @pytest.mark.skip(reason="no way of currently testing this")
 def test_wps_c4i_simple_indice():
     wps = WpsTestClient()
@@ -10,4 +11,3 @@ def test_wps_c4i_simple_indice():
     resp = wps.get(service='wps', request='execute', version='1.0.0', identifier='wps_c4i_simple_indice',
                    datainputs=datainputs)
     assert_response_success(resp)
-
