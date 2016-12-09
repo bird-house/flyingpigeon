@@ -142,8 +142,10 @@ def get_gbif(taxon_name='Fagus sylvatica', bbox=[-10, -10, 10, 10]):
             logger.info('polyon fetched')
 
         results = [w for z in gbifdic for w in z]
-    except Exception as e:
-        logger.exception('failed search GBIF data %s' % (e))
+    except Exception:
+        msg = 'failed search GBIF data.'
+        logger.exception(msg)
+        raise Exception(msg)
     return results
 
 #
@@ -283,9 +285,11 @@ def get_indices(resources, indices):
                     nc = calc_indice_simple(resource=ncs[key], variable=variable,
                                             prefix=prefix, indices=name, groupings=month)
                     ncs_indices.append(nc[0])
-                    logger.info('Successful calculated indice %s %s' % (key, indice))
-            except Exception as e:
-                logger.exception('failed to calculate indice %s %s' % (key, indice))
+                    logger.info('Successful calculated indice %s %s', key, indice)
+            except Exception:
+                msg = 'failed to calculate indice %s %s', key, indice
+                logger.exception(msg)
+                raise Exception(msg)
     return ncs_indices
 
 
@@ -371,8 +375,10 @@ def get_gam(ncs_reference, PAmask):
         data = {'PA': ro.FloatVector(ravel(PAmask))}
         domain = PAmask.shape
         logger.info('mask data converted to R float vector')
-    except Exception as e:
+    except Exception:
         msg = 'failed to convert mask to R vector'
+        logger.exception(msg)
+        raise Exception(msg)
 
     form = 'PA ~ '
     ncs_reference.sort()
@@ -391,8 +397,10 @@ def get_gam(ncs_reference, PAmask):
                 form = form + 's(%s, k=3)' % indice
             else:
                 form = form + ' + s(%s, k=3)' % indice
-    except Exception as e:
-        logger.exception('form string generation for gam failed')
+    except Exception:
+        msg = 'form string generation for gam failed'
+        logger.exception(msg)
+        raise Exception(msg)
 
     dataf = ro.DataFrame(data)
     eq = ro.Formula(str(form))
