@@ -85,19 +85,25 @@ class GBIFfetchProcess(WPSProcess):
             logger.info("bbox={0}".format(bbox))
             logger.info("Taxon Name = %s", taxon_name)
         except Exception as e:
-            logger.error('failed to read in the arguments %s ' % e)
+            msg = 'failed to read in the arguments.'
+            logger.exception(msg)
+            raise Exception(msg)
 
         try:
             self.status.set('Fetching GBIF Data', 10)
             gbifdic = sdm.get_gbif(taxon_name, bbox=bbox)
         except Exception as e:
-            logger.exception('failed to search gbif %s' % e)
+            msg = 'failed to search gbif.'
+            logger.exception(msg)
+            raise Exception(msg)
 
         try:
             self.status.set('write csv file', 70)
             gbifcsv = sdm.gbifdic2csv(gbifdic)
         except Exception as e:
-            logger.exception('failed to write csv file %s' % e)
+            msg = 'failed to write csv file.'
+            logger.exception(msg)
+            raise Exception(msg)
 
         try:
             self.status.set('plot map', 80)
@@ -105,7 +111,9 @@ class GBIFfetchProcess(WPSProcess):
             latlon = sdm.latlon_gbifdic(gbifdic)
             occurence_map = map_gbifoccurrences(latlon)
         except Exception as e:
-            logger.exception('failed to plot occurence map.')
+            msg = 'failed to plot occurence map.'
+            logger.exception(msg)
+            raise Exception(msg)
 
         self.output_map.setValue(occurence_map)
         self.output_csv.setValue(gbifcsv)
