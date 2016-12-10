@@ -96,9 +96,10 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     # execute ocgis
     logger.info('Execute ocgis module call function')
 
-    if has_Lambert_Conformal(resource) is True and geom is not None:
-        logger.debug('input has Lambert_Conformal projection and can not subsetted with geom')
-        output = None
+    if has_Lambert_Conformal(resource) is True:
+        logger.debug('input has Lambert_Conformal projection and can not prcessed with ocgis:\
+         https://github.com/NCPP/ocgis/issues/424')
+        return None
     else:
         try:
             rd = RequestDataset(resource, variable=variable, level_range=level_range,
@@ -121,7 +122,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
                                 add_auxiliary_files=False)
             logger.info('OcgOperations set')
         except Exception as e:
-            logger.debug('failed to setup OcgOperations')
+            logger.debug('failed to setup OcgOperations: %s' % e)
             raise
         try:
             from numpy import sqrt
