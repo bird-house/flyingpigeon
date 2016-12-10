@@ -171,6 +171,7 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
         if not exists(dir_output):
             makedirs(dir_output)
 
+    logger.debug(' **** dir_output = %s ' % dir_output)
     # from flyingpigeon.subset import select_ugid
     #    tile_dim = 25
     output = None
@@ -211,6 +212,7 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
                             if polygons is None:
                                 try:
                                     prefix = key.replace(variable, indice).replace('_day_', '_%s_' % grouping)
+                                    logger.debug(' **** dir_output = %s ' % dir_output)
                                     tmp = ocgis_module.call(resource=ncs,
                                                             variable=variable,
                                                             dimension_map=dimension_map,
@@ -219,11 +221,16 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
                                                             prefix=prefix,
                                                             dir_output=dir_output,
                                                             output_format='nc')
-                                    outputs.append(tmp)
+                                    if len(tmp) is not 0:
+                                        outputs.extend(tmp)
+                                    else:
+                                        msg = 'could not calc indice %s for domain in %s' % (indice, key)
+                                        logger.debug(msg)
+                                        raise Exception(msg)
                                 except Exception as e:
                                     msg = 'could not calc indice %s for domain in %s' % (indice, key)
                                     logger.debug(msg)
-                                    # raise Exception(msg)
+                                    raise Exception(msg)
                             else:
                                 try:
                                     prefix = key.replace(variable, indice).replace('_day_', '_%s_' % grouping)
@@ -237,7 +244,12 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
                                                    mosaic=mosaic,
                                                    dir_output=dir_output,
                                                    output_format='nc')
-                                    outputs.append(tmp)
+                                    if len(tmp) is not 0:
+                                        outputs.extend(tmp)
+                                    else:
+                                        msg = 'could not calc clipped indice %s for domain in %s' % (indice, key)
+                                        logger.debug(msg)
+                                        raise Exception(msg)
                                 except Exception as e:
                                     msg = 'could not calc indice %s for domain in %s' % (indice, key)
                                     logger.debug(msg)
@@ -256,6 +268,9 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
             logger.debug(msg)
             # raise Exception(msg)
     logger.info('indice outputs %s ' % outputs)
+    if len(outputs) is 0:
+        logger.debug('No indices are calculated')
+        return None
     return outputs
 
 
@@ -369,7 +384,7 @@ def calc_indice_percentile(resources=[], variable=None,
                 calc = [{'func': func, 'name': name, 'kwds': {'percentile_dict': percentile_dict}}]
 
                 if polygons is None:
-                    nc_indices.append(call(resource=resource,
+                    nc_indices.extend(call(resource=resource,
                                            prefix=key.replace(variable, name).replace('_day_', '_%s_' % grouping),
                                            calc=calc,
                                            calc_grouping=calc_group,
@@ -385,4 +400,7 @@ def calc_indice_percentile(resources=[], variable=None,
                                                polygons=polygons,
                                                mosaic=mosaic,
                                                ))
+    if len(nc_indices) is 0:
+        logger.debug('No indices are calculated')
+        return None
     return nc_indices

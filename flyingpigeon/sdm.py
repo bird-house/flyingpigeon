@@ -267,7 +267,7 @@ def get_indices(resources, indices):
     from flyingpigeon.ocgis_module import call
     from flyingpigeon.indices import indice_variable, calc_indice_simple
 
-    #names = [drs_filename(nc, skip_timestamp=False, skip_format=False,
+    # names = [drs_filename(nc, skip_timestamp=False, skip_format=False,
     #               variable=None, rename_file=True, add_file_path=True) for nc in resources]
 
     ncs = sort_by_filename(resources, historical_concatination=True)
@@ -284,10 +284,14 @@ def get_indices(resources, indices):
                     prefix = key.replace(variable, name).replace('_day_', '_%s_' % month)
                     nc = calc_indice_simple(resource=ncs[key], variable=variable,
                                             prefix=prefix, indices=name, groupings=month)
-                    ncs_indices.append(nc[0])
-                    logger.info('Successful calculated indice %s %s', key, indice)
+                    if nc is not None:
+                        ncs_indices.append(nc[0])
+                        logger.info('Successful calculated indice %s %s' % (key, indice))
+                    else:
+                        msg = 'failed to calculate indice %s %s' % (key, indice)
+                        logger.debug(msg)
             except Exception:
-                msg = 'failed to calculate indice %s %s', key, indice
+                msg = 'failed to calculate indice %s %s' % (key, indice)
                 logger.exception(msg)
                 raise Exception(msg)
     return ncs_indices

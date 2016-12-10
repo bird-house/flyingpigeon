@@ -9,54 +9,59 @@ from flyingpigeon import config
 import logging
 logger = logging.getLogger(__name__)
 
-GROUPING = [ "day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON" ,
-            "Jan", 'Feb', "Mar", "Apr", "May", "Jun", 'Jul', "Aug", 'Sep', 'Oct', 'Nov', 'Dec' ]
+GROUPING = ["day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON",
+            "Jan", 'Feb', "Mar", "Apr", "May", "Jun", 'Jul', "Aug", 'Sep', 'Oct', 'Nov', 'Dec']
+
 
 def make_dirs(directory):
-  """
-  creates a dictionary if not already existing
+    """
+    creates a dictionary if not already existing
 
-  :param direcory: directory path
-  """
-  if not os.path.exists(directory):
-    os.makedirs(directory)
+    :param direcory: directory path
+    """
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
 
 def check_creationtime(path, url):
-  """
-  Compares the creation time of an archive file with the file creation time of the local disc space.
+    """
+    Compares the creation time of an archive file with the file creation time of the local disc space.
 
-  :param path: Path to the local file
-  :param url: URL to the archive file
+    :param path: Path to the local file
+    :param url: URL to the archive file
 
-  :returns boolean: True/False (True if archive file is newer)
-  """
+    :returns boolean: True/False (True if archive file is newer)
+    """
 
-  try:
-    import urllib2
-    import os, datetime, time
+    try:
+        import urllib2
+        import os
+        import datetime
+        import time
 
-    u = urllib2.urlopen(url)
-    meta = u.info()
-    logger.info("Last Modified: " + str(meta.getheaders("Last-Modified")[0]))
+        u = urllib2.urlopen(url)
+        meta = u.info()
+        logger.info("Last Modified: " + str(meta.getheaders("Last-Modified")[0]))
 
-    # CONVERTING HEADER TIME TO UTC TIMESTAMP
-    # ASSUMING 'Sun, 28 Jun 2015 06:30:17 GMT' FORMAT
-    meta_modifiedtime = time.mktime(datetime.datetime.strptime( \
-                        meta.getheaders("Last-Modified")[0], "%a, %d %b %Y %X GMT").timetuple())
+        # CONVERTING HEADER TIME TO UTC TIMESTAMP
+        # ASSUMING 'Sun, 28 Jun 2015 06:30:17 GMT' FORMAT
+        meta_modifiedtime = time.mktime(datetime.datetime.strptime(
+                            meta.getheaders("Last-Modified")[0], "%a, %d %b %Y %X GMT").timetuple())
 
-    #file = 'C:\Path\ToFile\somefile.xml'
-    if os.path.getmtime(path) < meta_modifiedtime:
-      logger.info("local file is older than archive file.")
-      newer = True
-    else:
-      logger.info("local file is up-to-date. Nothing to fetch.")
-      newer = False
-  except Exception as e:
-    msg = 'failed to download data: %s' % e
-    logger.debug(msg)
-    raise Exception(msg)
+        # file = 'C:\Path\ToFile\somefile.xml'
+        if os.path.getmtime(path) < meta_modifiedtime:
+            logger.info("local file is older than archive file.")
+            newer = True
+        else:
+            logger.info("local file is up-to-date. Nothing to fetch.")
+            newer = False
+    except Exception as e:
+        msg = 'failed to download data: %s' % e
+        logger.debug(msg)
+        raise Exception(msg)
 
-  return newer
+    return newer
+
 
 def download(url, cache=False):
     """
@@ -64,37 +69,38 @@ def download(url, cache=False):
     :param cache: if True then files will be downloaded to a cache directory.
     """
     try:
-      if cache:
-          parsed_url = urlparse.urlparse(url)
-          filename = os.path.join(config.cache_path(), parsed_url.netloc, parsed_url.path.strip('/'))
-          if os.path.exists(filename):
-              logger.info('file already in cache: %s', os.path.basename(filename))
-              if check_creationtime(filename, url):
-                logger.info('file in cache older than archive file, downloading: %s ', os.path.basename(filename))
-                os.remove(filename)
+        if cache:
+            parsed_url = urlparse.urlparse(url)
+            filename = os.path.join(config.cache_path(), parsed_url.netloc, parsed_url.path.strip('/'))
+            if os.path.exists(filename):
+                logger.info('file already in cache: %s', os.path.basename(filename))
+                if check_creationtime(filename, url):
+                    logger.info('file in cache older than archive file, downloading: %s ', os.path.basename(filename))
+                    os.remove(filename)
+                    filename = wget.download(url, out=filename, bar=None)
+            else:
+                if not os.path.exists(os.path.dirname(filename)):
+                    os.makedirs(os.path.dirname(filename))
+                logger.info('downloading: %s', url)
                 filename = wget.download(url, out=filename, bar=None)
-          else:
-              if not os.path.exists(os.path.dirname(filename)):
-                  os.makedirs(os.path.dirname(filename))
-              logger.info('downloading: %s', url)
-              filename = wget.download(url, out=filename, bar=None)
-          # make softlink to current dir
-          #os.symlink(filename, os.path.basename(filename))
-          #filename = os.path.basename(filename)
-      else:
-          filename = wget.download(url, bar=None)
+                # make softlink to current dir
+                # os.symlink(filename, os.path.basename(filename))
+# filename = os.path.basename(filename)
+        else:
+            filename = wget.download(url, bar=None)
     except Exception as e:
-      logger.debug('failed to download data %s' % e)
+        logger.debug('failed to download data %s' % e)
     return filename
 
-def archive(resources, format='tar', dir_output='.', mode='w'):
-  """
-  compresses a list of files into an archive
 
-  :param resources: list of files to be stored in archive
-  :param format: archive format. Options: tar (default), zip
-  :param dir_output: path to output folder (default current directory)
-  :param mode:    for format='tar':
+def archive(resources, format='tar', dir_output='.', mode='w'):
+    """
+    compresses a list of files into an archive
+
+    :param resources: list of files to be stored in archive
+    :param format: archive format. Options: tar (default), zip
+    :param dir_output: path to output folder (default current directory)
+    :param mode:    for format='tar':
                   'w' or 'w:'  open for writing without compression
                   'w:gz'       open for writing with gzip compression
                   'w:bz2'      open for writing with bzip2 compression
@@ -105,64 +111,59 @@ def archive(resources, format='tar', dir_output='.', mode='w'):
                   for foramt='zip':
                   read "r", write "w" or append "a"
 
-  :return str: archive path/filname.ext
-  """
-  from tempfile import mkstemp
-  from os.path import basename
+    :return str: archive path/filname.ext
+    """
+    from tempfile import mkstemp
+    from os.path import basename
 
-  logger.info('compressing files to archive')
-  try:
-    if isinstance(resources, str):
-      resources = list([resources])
-
-    resources_filter = [x for x in resources if x is not None]
-    resources = resources_filter
-  except Exception as e:
-    msg = 'failed to prepare file list: %s' % e
-    logger.debug(msg)
-
-
-  if format == 'tar':
-    import tarfile
+    logger.info('compressing files to archive')
     try:
-      o1 , archive = mkstemp(dir=dir_output, suffix='.tar')
-      tar = tarfile.open(archive, mode)
+        if isinstance(resources, str):
+            resources = list([resources])
 
-      for f in resources:
-        try:
-          tar.add(f, arcname = basename(f))
-        except:
-          msg = 'archiving failed for %s' % f
-          logger.debug( msg )
-          raise Exception
-      tar.close()
-    except:
-      msg = 'failed to compress into archive'
-      logger.exception(msg)
-      raise Exception(msg)
-  elif format == 'zip':
-    import zipfile
-
-    logger.info('creating zip archive')
-    try :
-      o1 , archive = mkstemp(dir=dir_output, suffix='.zip')
-      zf = zipfile.ZipFile(archive, mode=mode)
-      try:
-          for f in resources:
-            zf.write(f, basename(f))
-          zf.close()
-      except Exception as e:
-        msg = 'failed to create zip archive: %s' % msg
-        logger.debug(msg)
-        raise
-      #logger.info(print_info('zipfile_write.zip'))
+        resources_filter = [x for x in resources if x is not None]
+        resources = resources_filter
     except Exception as e:
-      msg = 'failed to create zip archive'
-      logger.debug(msg)
-      raise
-  else:
-    logger.error('no common archive format like: zip / tar')
-  return archive
+        msg = 'failed to prepare file list: %s' % e
+        logger.debug(msg)
+
+    if format == 'tar':
+        import tarfile
+        try:
+            o1, archive = mkstemp(dir=dir_output, suffix='.tar')
+            tar = tarfile.open(archive, mode)
+
+            for f in resources:
+                try:
+                    tar.add(f, arcname=basename(f))
+                except Exception as e:
+                    msg = 'archiving failed for %s: %s' % (f, e)
+                    logger.debug(msg)
+                    raise(msg)
+            tar.close()
+        except Exception as e:
+            msg = 'failed to compress into archive %s', e
+            logger.exception(msg)
+            raise(msg)
+    elif format == 'zip':
+        import zipfile
+
+        logger.info('creating zip archive')
+        try:
+            o1, archive = mkstemp(dir=dir_output, suffix='.zip')
+            zf = zipfile.ZipFile(archive, mode=mode)
+            for f in resources:
+                zf.write(f, basename(f))
+            zf.close()
+        except Exception as e:
+            msg = 'failed to create zip archive: %s' % msg
+            logger.debug(msg)
+            raise
+            # logger.info(print_info('zipfile_write.zip'))
+    else:
+        logger.error('no common archive format like: zip / tar')
+    return archive
+
 
 def local_path(url):
   from urllib2 import urlparse

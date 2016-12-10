@@ -28,7 +28,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
          regrid_destination=None, regrid_options='bil', level_range=None,
          geom=None, output_format_options=False, search_radius_mult=2.,
          select_nearest=False, select_ugid=None, spatial_wrapping=None, t_calendar=None, time_region=None,
-         time_range=None, dir_output=curdir, output_format='nc'):
+         time_range=None, dir_output=None, output_format='nc'):
     '''
     ocgis operation call
 
@@ -71,7 +71,11 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     # prepare the environment
     env.DIR_SHPCABINET = DIR_SHP
     env.OVERWRITE = True
-    env.DIR_OUTPUT = dir_output
+    # env.DIR_OUTPUT = dir_output
+    # logger.debug(' **** env.DIR_OUTPUT  = %s ' % env.DIR_OUTPUT)
+
+    if dir_output is None:
+        dir_output = abspath(curdir)
 
     if geom is None:
         spatial_reorder = True
@@ -79,7 +83,6 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     else:
         spatial_reorder = False
         spatial_wrapping = None
-
     if prefix is None:
         prefix = str(uuid.uuid1())
         env.PREFIX = prefix
@@ -96,17 +99,92 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     # execute ocgis
     logger.info('Execute ocgis module call function')
 
-    if has_Lambert_Conformal(resource) is True:
-        logger.debug('input has Lambert_Conformal projection and can not prcessed with ocgis:\
-         https://github.com/NCPP/ocgis/issues/424')
+    # if has_Lambert_Conformal(resource) is True and geom is not None:
+    #     logger.debug('input has Lambert_Conformal projection and can not prcessed with ocgis:\
+    #      https://github.com/NCPP/ocgis/issues/424')
+    #     return None
+    # else:
+    try:
+        logger.debug('call module curdir = %s ' % abspath(curdir))
+        rd = RequestDataset(resource, variable=variable, level_range=level_range,
+                            dimension_map=dimension_map, conform_units_to=conform_units_to,
+                            time_region=time_region, t_calendar=t_calendar, time_range=time_range)
+        ops = OcgOperations(dataset=rd,
+                            output_format_options=output_format_options,
+                            dir_output=dir_output,
+                            spatial_wrapping=spatial_wrapping,
+                            spatial_reorder=spatial_reorder,
+                            # regrid_destination=rd_regrid,
+                            # options=options,
+                            calc=calc,
+                            calc_grouping=calc_grouping,
+                            geom=geom,
+                            output_format=output_format,
+                            prefix=prefix,
+                            search_radius_mult=search_radius_mult,
+                            select_nearest=select_nearest,
+                            select_ugid=select_ugid,
+                            add_auxiliary_files=False)
+        logger.info('OcgOperations set')
+    except Exception as e:
+        logger.debug('failed to setup OcgOperations: %s' % e)
+        raise
         return None
-    else:
+    try:
+        from numpy import sqrt
+        from flyingpigeon.utils import FreeMemory
+
+        if memory_limit is None:
+            f = FreeMemory()
+            mem_kb = f.user_free
+            mem_mb = mem_kb / 1024.
+            mem_limit = mem_mb / 2.  # set limit to half of the free memory
+        else:
+            mem_limit = memory_limit
+
+        if mem_limit >= 1024. * 4:
+            mem_limit = 1024. * 4
+            # 475.0 MB for openDAP
+
+        data_kb = ops.get_base_request_size()['total']
+        data_mb = data_kb / 1024.
+
+        if variable is None:
+            variable = rd.variable
+            logger.info('%s as variable dedected' % (variable))
+
+        # data_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
+        logger.info('data_mb  = %s ; memory_limit = %s ' % (data_mb, mem_limit))
+    except Exception as e:
+        logger.debug('failed to compare dataload with free memory %s ' % e)
+        raise
+
+    if data_mb <= mem_limit:  # input is smaler than the half of free memory size
         try:
-            rd = RequestDataset(resource, variable=variable, level_range=level_range,
-                                dimension_map=dimension_map, conform_units_to=conform_units_to,
-                                time_region=time_region, t_calendar=t_calendar, time_range=time_range)
+            logger.info('ocgis module call as ops.execute()')
+            geom_file = ops.execute()
+        except Exception as e:
+            logger.debug('failed to execute ocgis operation')
+            raise
+            return None
+    else:
+        ##########################
+        # calcultion of chunk size
+        ##########################
+        try:
+            size = ops.get_base_request_size()
+            nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
+            element_in_kb = size['total']/reduce(lambda x, y: x*y, size['variables'][variable]['value']['shape'])
+            element_in_mb = element_in_kb / 1024.
+            tile_dim = sqrt(mem_limit/(element_in_mb*nb_time_coordinates_rd))  # maximum chunk size
+
+            logger.info('ocgis module call compute with chunks')
+            if calc is None:
+                calc = '%s=%s*1' % (variable, variable)
+                logger.info('calc set to = %s ' % calc)
             ops = OcgOperations(dataset=rd,
                                 output_format_options=output_format_options,
+                                dir_output=dir_output,
                                 spatial_wrapping=spatial_wrapping,
                                 spatial_reorder=spatial_reorder,
                                 # regrid_destination=rd_regrid,
@@ -120,102 +198,34 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
                                 select_nearest=select_nearest,
                                 select_ugid=select_ugid,
                                 add_auxiliary_files=False)
-            logger.info('OcgOperations set')
+            geom_file = compute(ops, tile_dimension=int(tile_dim), verbose=True)
+            print 'ocgis calculated'
         except Exception as e:
-            logger.debug('failed to setup OcgOperations: %s' % e)
+            logger.debug('failed to compute ocgis with chunks')
             raise
+            return None
+    logger.info('Succeeded with ocgis module call function')
+    ############################################
+    # remapping according to regrid informations
+    ############################################
+    if regrid_destination is not None:
         try:
-            from numpy import sqrt
-            from flyingpigeon.utils import FreeMemory
+            from tempfile import mkstemp
+            from cdo import Cdo
+            cdo = Cdo()
 
-            if memory_limit is None:
-                f = FreeMemory()
-                mem_kb = f.user_free
-                mem_mb = mem_kb / 1024.
-                mem_limit = mem_mb / 2.  # set limit to half of the free memory
-            else:
-                mem_limit = memory_limit
-
-            if mem_limit >= 1024. * 4:
-                mem_limit = 1024. * 4
-                # 475.0 MB for openDAP
-
-            data_kb = ops.get_base_request_size()['total']
-            data_mb = data_kb / 1024.
-
-            if variable is None:
-                variable = rd.variable
-                logger.info('%s as variable dedected' % (variable))
-
-            # data_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
-            logger.info('data_mb  = %s ; memory_limit = %s ' % (data_mb, mem_limit))
+            output = '%s.nc' % uuid.uuid1()
+            remap = 'remap%s' % regrid_options
+            call = [op for op in dir(cdo) if remap in op]
+            cmd = "output = cdo.%s('%s',input='%s', output='%s')" \
+                  % (str(call[0]), regrid_destination, geom_file, output)
+            exec cmd
         except Exception as e:
-            logger.debug('failed to compare dataload with free memory %s ' % e)
+            logger.debug('failed to remap')
             raise
-
-        if data_mb <= mem_limit:  # input is smaler than the half of free memory size
-            try:
-                logger.info('ocgis module call as ops.execute()')
-                geom_file = ops.execute()
-            except Exception as e:
-                logger.debug('failed to execute ocgis operation')
-                raise
-        else:
-            ##########################
-            # calcultion of chunk size
-            ##########################
-            try:
-                size = ops.get_base_request_size()
-                nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
-                element_in_kb = size['total']/reduce(lambda x, y: x*y, size['variables'][variable]['value']['shape'])
-                element_in_mb = element_in_kb / 1024.
-                tile_dim = sqrt(mem_limit/(element_in_mb*nb_time_coordinates_rd))  # maximum chunk size
-
-                logger.info('ocgis module call compute with chunks')
-                if calc is None:
-                    calc = '%s=%s*1' % (variable, variable)
-                    logger.info('calc set to = %s ' % calc)
-                ops = OcgOperations(dataset=rd,
-                                    output_format_options=output_format_options,
-                                    spatial_wrapping=spatial_wrapping,
-                                    spatial_reorder=spatial_reorder,
-                                    # regrid_destination=rd_regrid,
-                                    # options=options,
-                                    calc=calc,
-                                    calc_grouping=calc_grouping,
-                                    geom=geom,
-                                    output_format=output_format,
-                                    prefix=prefix,
-                                    search_radius_mult=search_radius_mult,
-                                    select_nearest=select_nearest,
-                                    select_ugid=select_ugid,
-                                    add_auxiliary_files=False)
-                geom_file = compute(ops, tile_dimension=int(tile_dim), verbose=True)
-                print 'ocgis calculated'
-            except Exception as e:
-                logger.debug('failed to compute ocgis with chunks')
-                raise
-        logger.info('Succeeded with ocgis module call function')
-        ############################################
-        # remapping according to regrid informations
-        ############################################
-        if regrid_destination is not None:
-            try:
-                from tempfile import mkstemp
-                from cdo import Cdo
-                cdo = Cdo()
-
-                output = '%s.nc' % uuid.uuid1()
-                remap = 'remap%s' % regrid_options
-                call = [op for op in dir(cdo) if remap in op]
-                cmd = "output = cdo.%s('%s',input='%s', output='%s')" \
-                      % (str(call[0]), regrid_destination, geom_file, output)
-                exec cmd
-            except Exception as e:
-                logger.debug('failed to remap')
-                raise
-        else:
-            output = geom_file
+            return None
+    else:
+        output = geom_file
     return output
 
 
