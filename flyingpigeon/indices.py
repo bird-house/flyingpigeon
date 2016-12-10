@@ -183,19 +183,20 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
             variable = get_variable(experiments[key][0])
         # variable = key.split('_')[0]
         try:
-            if variable == 'pr':
-                calc = 'pr=pr*86400'
-                ncs = ocgis_module.call(resource=experiments[key],
-                                        variable=variable,
-                                        dimension_map=dimension_map,
-                                        calc=calc,
-                                        memory_limit=memory_limit,
-                                        # calc_grouping= calc_group,
-                                        prefix=str(uuid.uuid4()),
-                                        dir_output=dir_output,
-                                        output_format='nc')
-            else:
-                ncs = experiments[key]
+            # # icclim can't handling 'kg m2 sec' needs to be 'mm/day'
+            # if variable == 'pr':
+            #     calc = 'pr=pr*86400'
+            #     ncs = ocgis_module.call(resource=experiments[key],
+            #                             variable=variable,
+            #                             dimension_map=dimension_map,
+            #                             calc=calc,
+            #                             memory_limit=memory_limit,
+            #                             # calc_grouping= calc_group,
+            #                             prefix=str(uuid.uuid4()),
+            #                             dir_output=dir_output,
+            #                             output_format='nc')
+            # else:
+            ncs = experiments[key]
             print ncs
             for indice in indices:
                 logger.info('indice: %s' % indice)
