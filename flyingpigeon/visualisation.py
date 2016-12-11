@@ -3,18 +3,20 @@ from tempfile import mkstemp
 from netCDF4 import Dataset
 from datetime import datetime, date
 import numpy as np
-import logging
 
 from flyingpigeon import utils
 
-from cartopy import config as cartopy_config
-from cartopy.util import add_cyclic_point
-import cartopy.crs as ccrs
+import logging
+
+import matplotlib
+matplotlib.use('Agg')   # use this if no xserver is available
 from matplotlib import pyplot as plt
 from matplotlib.colors import Normalize
-import matplotlib
 
-matplotlib.use('Agg')   # use this if no xserver is available
+from cartopy import config
+from cartopy.util import add_cyclic_point
+import cartopy.crs as ccrs
+
 logger = logging.getLogger(__name__)
 
 
