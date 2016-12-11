@@ -3,21 +3,40 @@ from tempfile import mkstemp
 from netCDF4 import Dataset
 from datetime import datetime, date
 import numpy as np
-
-from flyingpigeon import utils
-
 import logging
-
 import matplotlib
 matplotlib.use('Agg')   # use this if no xserver is available
+
 from matplotlib import pyplot as plt
 from matplotlib.colors import Normalize
-
-from cartopy import config
+from cartopy import config as cartopy_config
 from cartopy.util import add_cyclic_point
 import cartopy.crs as ccrs
 
+from flyingpigeon import utils
+
 logger = logging.getLogger(__name__)
+
+# import os
+# from tempfile import mkstemp
+# from netCDF4 import Dataset
+# from datetime import datetime, date
+# import numpy as np
+#
+# from flyingpigeon import utils
+#
+# import logging
+#
+# import matplotlib
+# matplotlib.use('Agg')   # use this if no xserver is available
+# from matplotlib import pyplot as plt
+# from matplotlib.colors import Normalize
+#
+# from cartopy import config
+# from cartopy.util import add_cyclic_point
+# import cartopy.crs as ccrs
+#
+# logger = logging.getLogger(__name__)
 
 
 class MidpointNormalize(Normalize):
