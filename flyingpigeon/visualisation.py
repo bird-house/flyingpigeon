@@ -330,12 +330,20 @@ def map_gbifoccurrences(latlon, dir='.'):
         ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
         ax.coastlines()
         ax.set_global()
-        cs = plt.scatter(latlon[:, 1], latlon[:, 0], transform=ccrs.PlateCarree())
+        ax = plt.gca()
+        # DEBUG: failed to plot occurency plot: Cannot label gridlines on a Robinson plot.
+        #        Only PlateCarree and Mercator plots are currently supported.
+        # ax.gridlines(draw_labels=True)
+        # or..
+        # ax.set_yticks([-60, -30, 0, 30, 60], crs=ccrs.PlateCarree())
+        # ax.set_xticks(np.arange(-180, 240, 60), crs=ccrs.PlateCarree())
+        # ax.gridlines()  # plt.gca()
+        cs = plt.scatter(latlon[:, 1], latlon[:, 0], transform=ccrs.Geodetic())  # ccrs.PlateCarree()
         fig.savefig(tree_presents)
         plt.close()
     except Exception as e:
         msg = 'failed to plot occurency plot: %s' % e
-        logger.debug('msg')
+        logger.debug(msg)
     return tree_presents
 
 
