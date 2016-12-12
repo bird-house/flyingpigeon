@@ -117,4 +117,17 @@ class GBIFfetchProcess(WPSProcess):
 
         self.output_map.setValue(occurence_map)
         self.output_csv.setValue(gbifcsv)
+
+        ## write folder statistics:
+        import shlex
+        import subprocess
+        import os
+        cmd = 'stat %s/' % os.path.abspath(os.curdir)
+        args = shlex.split(cmd)
+        output, error = subprocess.Popen(
+                        args, stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE
+                        ).communicate()
+
+        logger.debug('temp folder statistics: %s  ERRORS: %s' % (output, error))
         self.status.set('done', 100)
