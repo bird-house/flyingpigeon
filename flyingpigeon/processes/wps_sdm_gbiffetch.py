@@ -118,10 +118,13 @@ class GBIFfetchProcess(WPSProcess):
         self.output_map.setValue(occurence_map)
         self.output_csv.setValue(gbifcsv)
 
-        ## write folder statistics:
+        # write folder statistics:
         import shlex
         import subprocess
         import os
+        import socket
+        logger.debug('HOSTNAME: %s ' % socket.gethostname())
+
         cmd = 'stat %s/' % os.path.abspath(os.curdir)
         args = shlex.split(cmd)
         output, error = subprocess.Popen(
