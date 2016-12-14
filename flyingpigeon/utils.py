@@ -192,10 +192,12 @@ def archiveextract(resource, path='.'):
                     tar = open(archive, mode='r')
                     tar.extractall()
                     files.extend([join(path, nc) for nc in tar.getnames()])
+                    tar.close()
                 elif basename(archive).split('.')[1] == 'zip':
                     zf = zipfile.open(archive, mode='r')
                     zf.extractall()
                     files.extend([join(path, nc) for nc in zf.filelist])
+                    zf.close()
                 else:
                     logger.debug('file extention unknown')
             except Exception as e:
