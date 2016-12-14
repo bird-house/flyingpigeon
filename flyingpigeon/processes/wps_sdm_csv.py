@@ -307,7 +307,7 @@ class sdmcsvProcess(WPSProcess):
              zeros, linspace, meshgrid
             mask = invert(isnan(PAmask))
             mask = broadcast_arrays(prediction, mask)[1]
-            prediction[mask==False] = nan
+            prediction[mask is False] = nan
             self.status.set('land sea mask for predicted data', 90)
         except:
             logger.exception('failed to mask predicted data')
