@@ -100,7 +100,7 @@ def archive(resources, format='tar', dir_output='.', mode='w'):
     :param resources: list of files to be stored in archive
     :param format: archive format. Options: tar (default), zip
     :param dir_output: path to output folder (default current directory)
-    :param mode:    for format='tar':
+    :param mode: for format='tar':
                   'w' or 'w:'  open for writing without compression
                   'w:gz'       open for writing with gzip compression
                   'w:bz2'      open for writing with bzip2 compression
@@ -163,6 +163,46 @@ def archive(resources, format='tar', dir_output='.', mode='w'):
     else:
         logger.error('no common archive format like: zip / tar')
     return archive
+
+
+def archiveextract(resource, path='.'):
+    """
+    extracts archives (tar/zip)
+
+    :param resource: list/str of archive files (if netCDF files are in list,
+                     they are passed and returnd as well in the return)
+    :param path: define a directory to store the results (default='.')
+
+    :return list: [list of extracted files]
+    """
+    from tarfile import open
+    import zipfile
+    from os.path import basename, join
+
+    try:
+        if type(resource) is str:
+            resource = [resource]
+        files = []
+
+        for archive in resource:
+            try:
+                if basename(archive).split('.')[1] == 'nc':
+                    files.appen(join(path, archive))
+                elif basename(archive).split('.')[1] == 'tar':
+                    tar = open(archive, mode='r')
+                    tar.extractall()
+                    files.extend([join(path, nc) for nc in tar.getnames()])
+                elif basename(archive).split('.')[1] == 'zip':
+                    zf = zipfile.open(archive, mode='r')
+                    zf.extractall()
+                    files.extend([join(path, nc) for nc in zf.filelist])
+                else:
+                    logger.debug('file extention unknown')
+            except Exception as e:
+                logger.debug('failed to extract sub archive: %s' % e)
+    except Excepion as e:
+        logger.debug('failed to extract archive resource: %s' % e)
+    return files
 
 
 def local_path(url):
@@ -245,7 +285,7 @@ def drs_filename(resource, skip_timestamp=False, skip_format=False,
 
     :param add_file_path: if add_file_path=True, path to file will be added (default=False)
     :param resource: netcdf file
-    :param skip_timestamp: if True then from/to timestamp is not added to the filename
+    :param skip_timestamp: if True then from/to timestamp != added to the filename
                            (default: False)
     :param variable: appropriate variable for filename, if not set (default), variable will
                       be determined. For files with more than one data variable,
@@ -257,17 +297,15 @@ def drs_filename(resource, skip_timestamp=False, skip_format=False,
     """
     from os import path, rename
 
-    ds = Dataset(resource)
-    if variable is None:
-        variable = get_variable(resource)
-
-    # CORDEX example: EUR-11_ICHEC-EC-EARTH_historical_r3i1p1_DMI-HIRHAM5_v1_day
-    cordex_pattern = "{variable}_{domain}_{driving_model}_{experiment}_{ensemble}_{model}_{version}_{frequency}"
-    # CMIP5 example: tas_MPI-ESM-LR_historical_r1i1p1
-    cmip5_pattern = "{variable}_{model}_{experiment}_{ensemble}"
-
-    filename = resource
     try:
+        ds = Dataset(resource)
+        if variable is None:
+            variable = get_variable(resource)
+        # CORDEX example: EUR-11_ICHEC-EC-EARTH_historical_r3i1p1_DMI-HIRHAM5_v1_day
+        cordex_pattern = "{variable}_{domain}_{driving_model}_{experiment}_{ensemble}_{model}_{version}_{frequency}"
+        # CMIP5 example: tas_MPI-ESM-LR_historical_r1i1p1
+        cmip5_pattern = "{variable}_{model}_{experiment}_{ensemble}"
+        filename = resource
         if ds.project_id == 'CORDEX' or ds.project_id == 'EOBS':
             filename = cordex_pattern.format(
                 variable=variable,
@@ -288,7 +326,7 @@ def drs_filename(resource, skip_timestamp=False, skip_format=False,
                 )
         else:
             raise Exception('unknown project %s' % ds.project_id)
-    ds.close()
+        ds.close()
     except:
         logger.exception('Could not read metadata %s', resource)
     try:
@@ -352,7 +390,7 @@ def get_coordinates(resource):
             lats = ds.variables['lat']
             lons = ds.variables['lon']
         else:
-            msg = 'could not find coordinates: %s ' resource
+            msg = 'could not find coordinates: %s ' % resource
             logger.debug(msg)
             raise Exception(msg)
         ds.close()
@@ -506,7 +544,7 @@ def get_time(resource, format=None):
             time = ds.variables['time']
         else:
             ds = Dataset(resource[0])
-    time = ds.variables['time']
+        time = ds.variables['time']
     except:
         msg = 'failed to get time'
         logger.exception(msg)
@@ -605,9 +643,9 @@ def rename_variable(resource, oldname=None, newname='newname'):
 def sort_by_time(resource):
     from ocgis.util.helpers import get_sorted_uris_by_time_dimension
 
-    if type(resource) is list and len(resource) > 1:
+    if type(resource) == list and len(resource) > 1:
         sorted_list = get_sorted_uris_by_time_dimension(resource)
-    elif type(resource) is str:
+    elif type(resource) == str:
         sorted_list = [resource]
     else:
         sorted_list = resource
@@ -692,7 +730,7 @@ def sort_by_filename(resource, historical_concatination=False):
             p, f = path.split(path.abspath(resource))
             tmp_dic[f.replace('.nc', '')] = resource
         else:
-            logger.debug('sort_by_filename module failed: resource is not str or list')
+            logger.debug('sort_by_filename module failed: resource != str or list')
         logger.info('sort_by_filename module done: %s datasets found' % len(ndic))
     except Exception as e:
         msg = 'failed to sort files by filename %s' % e
@@ -930,7 +968,7 @@ class FreeMemory(object):
 
     @property
     def used_real(self):
-        """memory used which is not cache or buffers"""
+        """memory used which != cache or buffers"""
         return self._convert * (self._tot - self._free - self._buff - self._cached)
 
     @property
