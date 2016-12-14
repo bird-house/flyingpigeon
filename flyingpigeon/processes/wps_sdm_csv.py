@@ -39,12 +39,14 @@ class sdmcsvProcess(WPSProcess):
         # ------------------
         self.resources = self.addComplexInput(
             identifier="resources",
-            title="NetCDF File",
-            abstract="NetCDF File",
+            title="tas/pr files",
+            abstract="Raw climate model outputs as stored in netCDF files. archives (tar/zip) can also be provided",
             minOccurs=1,
             maxOccurs=500,
             maxmegabites=50000,
-            formats=[{"mimeType": "application/x-netcdf"}],
+            formats=[{"mimeType": "application/x-netcdf"},
+                     {"mimeType": "application/x-tar"},
+                     {"mimeType": "application/zip"}],
             )
 
         self.gbif = self.addComplexInput(
@@ -163,12 +165,12 @@ class sdmcsvProcess(WPSProcess):
     def execute(self):
         from os.path import basename
         from flyingpigeon import sdm
-        from flyingpigeon.utils import archive
+        from flyingpigeon.utils import archive, archiveextract
         self.status.set('Start process', 0)
 
         try:
             logger.info('reading the arguments')
-            resources = self.getInputValues(identifier='resources')
+            resources = archiveextract(self.getInputValues(identifier='resources'))
             csv_file = self.getInputValues(identifier='gbif')[0]
             period = self.getInputValues(identifier='period')
             period = period[0]

@@ -138,13 +138,13 @@ class SDMcsvindicesProcess(WPSProcess):
     def execute(self):
         from os.path import basename
         from flyingpigeon import sdm
-        from flyingpigeon.utils import archive
+        from flyingpigeon.utils import archive, archiveextract
 
         self.status.set('Start process', 0)
 
         try:
             logger.info('reading the arguments')
-            resources = self.getInputValues(identifier='input_indices')
+            resources = archiveextract(self.getInputValues(identifier='input_indices'))
             csv_file = self.getInputValues(identifier='gbif')[0]
             period = self.getInputValues(identifier='period')
             period = period[0]
