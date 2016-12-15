@@ -116,24 +116,24 @@ class SDMcsvindicesProcess(WPSProcess):
                      {"mimeType": "application/zip"}],
             asReference=True,
             )
-
-        self.output_prediction = self.addComplexOutput(
-            identifier="output_prediction",
-            title="predicted growth conditions",
-            abstract="Archive (tar/zip) containing the netCDF files of the\
-             predicted growth conditions",
-            formats=[{"mimeType": "application/x-tar"},
-                     {"mimeType": "application/zip"}],
-            asReference=True,
-            )
-
-        self.output_info = self.addComplexOutput(
-            identifier="output_info",
-            title="GAM statistics information",
-            abstract="Graphics and information of the learning statistics",
-            formats=[{"mimeType": "image/png"}],
-            asReference=True,
-            )
+        #
+        # self.output_prediction = self.addComplexOutput(
+        #     identifier="output_prediction",
+        #     title="predicted growth conditions",
+        #     abstract="Archive (tar/zip) containing the netCDF files of the\
+        #      predicted growth conditions",
+        #     formats=[{"mimeType": "application/x-tar"},
+        #              {"mimeType": "application/zip"}],
+        #     asReference=True,
+        #     )
+        #
+        # self.output_info = self.addComplexOutput(
+        #     identifier="output_info",
+        #     title="GAM statistics information",
+        #     abstract="Graphics and information of the learning statistics",
+        #     formats=[{"mimeType": "image/png"}],
+        #     asReference=True,
+        #     )
 
     def execute(self):
         from os.path import basename
@@ -143,7 +143,7 @@ class SDMcsvindicesProcess(WPSProcess):
         self.status.set('Start process', 0)
 
         try:
-            logger.info('reading the arguments')
+            self.status.set('reading the arguments', 5)
             resources = archiveextract(self.getInputValues(identifier='input_indices'))
             csv_file = self.getInputValues(identifier='gbif')[0]
             period = self.getInputValues(identifier='period')
@@ -151,7 +151,6 @@ class SDMcsvindicesProcess(WPSProcess):
             archive_format = self.archive_format.getValue()
         except Exception as e:
             logger.error('failed to read in the arguments %s ' % e)
-        logger.info('indices %s ' % indices)
 
         try:
             self.status.set('read in latlon coordinates', 10)
@@ -186,24 +185,24 @@ class SDMcsvindicesProcess(WPSProcess):
         #################################
 
         # get the indices
-
-        ncs_indices = []
-
-        try:
-            self.status.set('extract climate indices for ', 30)
-            for nc in ncs_indices:
-                if '.nc' in nc:
-                    ncs_indices.extend(nc)
-            # TODO add extraction
-            logger.info('indice extraction done: %s ' % ncs_indices)
-        except:
-            msg = 'failed to extract indices'
-            logger.exception(msg)
-            raise Exception(msg)
+        #
+        # ncs_indices = []
+        #
+        # try:
+        #     self.status.set('extract climate indices for ', 30)
+        #     for nc in ncs_indices:
+        #         if '.nc' in nc:
+        #             ncs_indices.extend(nc)
+        #     # TODO add extraction
+        #     logger.info('indice extraction done: %s ' % ncs_indices)
+        # except:
+        #     msg = 'failed to extract indices'
+        #     logger.exception(msg)
+        #     raise Exception(msg)
 
         try:
             # sort indices
-            indices_dic = sdm.sort_indices(ncs_indices)
+            indices_dic = sdm.sort_indices(resources)
             logger.info('indice files sorted for %s Datasets' %
                         len(indices_dic.keys()))
         except:
@@ -252,58 +251,55 @@ class SDMcsvindicesProcess(WPSProcess):
             msg = 'failed adding species_files indices to archive'
             logger.exception(msg)
             raise Exception(msg)
+        #
+        # try:
+        #     gam_model, predict_gam, gam_info = sdm.get_gam(ncs_references, PAmask)
+        #     statistics_info.append(gam_info)
+        #     self.status.set('GAM sucessfully trained', 70)
+        # except:
+        #     msg = 'failed to train GAM'
+        #     logger.exception(msg)
+        #     raise Exception(msg)
+        #
+        # try:
+        #     prediction = sdm.get_prediction(gam_model, ncs_indices)
+        #     self.status.set('prediction done', 80)
+        # except:
+        #     msg = 'failed to predict'
+        #     logger.exception(msg)
+        #     raise Exception(msg)
+        #
+        # try:
+        #     from numpy import invert, isnan, nan, \
+        #         broadcast_arrays, array, zeros, linspace, meshgrid
+        #     mask = invert(isnan(PAmask))
+        #     mask = broadcast_arrays(prediction, mask)[1]
+        #     prediction[mask is False] = nan
+        #     self.status.set('land sea mask for predicted data', 90)
+        # except:
+        #     logger.exception('failed to mask predicted data')
+        #
+        # try:
+        #     species_files.append(sdm.write_to_file(ncs_indices[0], prediction))
+        #     logger.info('Favourabillity written to file')
+        # except:
+        #     msg = 'failed to write species file'
+        #     logger.exception(msg)
+        #     raise Exception(msg)
+        #
+        # from flyingpigeon.visualisation import concat_images
+        # statistics_infos = None
+        # try:
+        #     statistics_infos = concat_images(statistics_info, orientation='v')
+        # except:
+        #     msg = 'failed to concat images'
+        #     logger.exception(msg)
+        #     raise Exception(msg)
 
-        try:
-            gam_model, predict_gam, gam_info = sdm.get_gam(ncs_references,
-                                                           PAmask)
-            statistics_info.append(gam_info)
-            self.status.set('GAM sucessfully trained', 70)
-        except:
-            msg = 'failed to train GAM'
-            logger.exception(msg)
-            raise Exception(msg)
-
-        try:
-            prediction = sdm.get_prediction(gam_model, ncs_indices)
-            self.status.set('prediction done', 80)
-        except:
-            msg = 'failed to predict'
-            logger.exception(msg)
-            raise Exception(msg)
-
-        try:
-            from numpy import invert, isnan, nan, \
-                broadcast_arrays, array, zeros, linspace, meshgrid
-            mask = invert(isnan(PAmask))
-            mask = broadcast_arrays(prediction, mask)[1]
-            prediction[mask == False] = nan
-            self.status.set('land sea mask for predicted data', 90)
-        except:
-            logger.exception('failed to mask predicted data')
-
-        try:
-            species_files.append(sdm.write_to_file(ncs_indices[0], prediction))
-            logger.info('Favourabillity written to file')
-        except:
-            msg = 'failed to write species file'
-            logger.exception(msg)
-            raise Exception(msg)
-
-        from flyingpigeon.visualisation import concat_images
-        statistics_infos = None
-        try:
-            statistics_infos = concat_images(statistics_info, orientation='v')
-        except:
-            msg = 'failed to concat images'
-            logger.exception(msg)
-            raise Exception(msg)
-
-        self.output_csv.setValue(csv_file)
         self.output_gbif.setValue(occurence_map)
         self.output_PA.setValue(PAmask_png)
-        self.output_indices.setValue(archive_indices)
         self.output_reference.setValue(archive_references)
-        self.output_prediction.setValue(archive_predicion)
-        self.output_info.setValue(statistics_infos)
+#        self.output_prediction.setValue(archive_predicion)
+#        self.output_info.setValue(statistics_infos)
 
         self.status.set('done', 100)
