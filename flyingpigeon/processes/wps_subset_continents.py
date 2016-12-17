@@ -2,7 +2,7 @@ import os
 import tarfile
 
 from flyingpigeon.subset import clipping
-from flyingpigeon.subset import _CONTINENTS_       
+from flyingpigeon.subset import _CONTINENTS_
 from pywps.Process import WPSProcess
 
 import logging
@@ -12,12 +12,12 @@ logger = logging.getLogger(__name__)
 class subset_continentsProcess(WPSProcess):
     def __init__(self):
         WPSProcess.__init__(
-            self, 
-            identifier = "subset_continents",
+            self,
+            identifier="subset_continents",
             title="Subset continents",
-            version = "0.9",
+            version="0.9",
             abstract="Returns only the selected polygon for each input dataset",
-            metadata= [
+            metadata=[
                 {"title": "LSCE", "href": "http://www.lsce.ipsl.fr/en/index.php"},
                 {"title": "Documentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
                 ],
@@ -28,22 +28,23 @@ class subset_continentsProcess(WPSProcess):
         self.resource = self.addComplexInput(
             identifier="resource",
             title="Resource",
-            abstract="NetCDF File",
+            abstract="NetCDF Files or archive (tar/zip) containing netCDF files",
             minOccurs=1,
             maxOccurs=1000,
             maxmegabites=5000,
-            formats=[{"mimeType":"application/x-netcdf"}],
+            formats=[{"mimeType": "application/x-netcdf"},
+                     {"mimeType": "application/x-tar"},
+                     {"mimeType": "application/zip"}],
             )
-       
+
         self.region = self.addLiteralInput(
             identifier="region",
             title="Region",
-            #abstract= countries_longname(), # need to handle special non-ascii char in countries.
             default='Africa',
             type=type(''),
             minOccurs=1,
             maxOccurs=len(_CONTINENTS_),
-            allowedValues=_CONTINENTS_ #REGION_EUROPE #COUNTRIES # 
+            allowedValues=_CONTINENTS_  # REGION_EUROPE #COUNTRIES #
             )
 
         # self.dimension_map = self.addLiteralInput(
@@ -78,7 +79,7 @@ class subset_continentsProcess(WPSProcess):
         self.output = self.addComplexOutput(
             title="Subsets",
             abstract="Tar archive containing the netCDF files",
-            formats=[{"mimeType":"application/x-tar"}],
+            formats=[{"mimeType": "application/x-tar"}],
             asReference=True,
             identifier="output",
             )
@@ -86,42 +87,40 @@ class subset_continentsProcess(WPSProcess):
         self.output_netcdf = self.addComplexOutput(
             title="Subsets for one dataset",
             abstract="NetCDF file with subsets of one dataset.",
-            formats=[{"mimeType":"application/x-netcdf"}],
+            formats=[{"mimeType": "application/x-netcdf"}],
             asReference=True,
             identifier="ncout",
             )
 
     def execute(self):
         from ast import literal_eval
+        from flyingpigeon.utils import archive, archiveextract
 
-        urls = self.getInputValues(identifier='resource')
+        ncs = archiveextract(self.getInputValues(identifier='resource'))
         mosaic = self.mosaic.getValue()
         regions = self.region.getValue()
         variable = self.variable.getValue()
-        
-        #logger.info('regions: %s' % regions)
 
+        # logger.info('regions: %s' % regions)
         # dimension_map = self.dimension_map.getValue()
-        # if dimension_map != None: 
+        # if dimension_map != None:
         #     dimension_map = literal_eval(dimension_map)
 
-        logger.info('urls = %s', urls)
+        logger.info('ncs = %s', ncs)
         logger.info('regions = %s', regions)
         logger.info('mosaic = %s', mosaic)
         # logger.info('dimension_map = %s', dimension_map)
-    
-        self.status.set('Arguments set for subset process', 0)
-
-        logger.debug('starting: regions=%s, num_files=%s' % (len(regions), len(urls)))
+        self.status.set('Arguments set for subset process', 10)
+        logger.debug('starting: regions=%s, num_files=%s' % (len(regions), len(ncs)))
 
         try:
             results = clipping(
-                resource = urls,
-                polygons = regions, # self.region.getValue(),
-                mosaic = mosaic,
+                resource=ncs,
+                polygons=regions,  # self.region.getValue(),
+                mosaic=mosaic,
                 spatial_wrapping='wrap',
-                variable = variable, 
-                dir_output = os.path.abspath(os.curdir),
+                variable=variable,
+                dir_output=os.path.abspath(os.curdir),
                 # dimension_map=dimension_map,
                 )
         except Exception as e:
@@ -131,9 +130,8 @@ class subset_continentsProcess(WPSProcess):
 
         if not results:
             raise Exception('no results produced.')
-
-        # prepare tar file 
-        try: 
+        # prepare tar file
+        try:
             from flyingpigeon.utils import archive
             tarf = archive(results)
             logger.info('Tar file prepared')
@@ -142,7 +140,7 @@ class subset_continentsProcess(WPSProcess):
             logger.exception(msg)
             raise Exception(msg)
 
-        self.output.setValue( tarf )
+        self.output.setValue(tarf)
         i = next((i for i, x in enumerate(results) if x), None)
         self.output_netcdf.setValue(results[i])
         self.status.set('done', 100)
