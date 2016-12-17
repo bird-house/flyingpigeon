@@ -234,7 +234,6 @@ class SDMcsvindicesProcess(WPSProcess):
 
                 try:
                     prediction = sdm.get_prediction(gam_model, ncs)
-#                    species_files.extend([write_to_file(ncs[0], prediction)])
                     self.status.set('prediction done', staus_nr + 7)
                 except Exception as e:
                     msg = 'failed to predict tree occurence %s' % e
@@ -242,11 +241,11 @@ class SDMcsvindicesProcess(WPSProcess):
                     # raise Exception(msg)
 
                 try:
+                    self.status.set('land sea mask for predicted data',  staus_nr + 8)
                     from numpy import invert, isnan, nan, broadcast_arrays  # , array, zeros, linspace, meshgrid
                     mask = invert(isnan(PAmask))
                     mask = broadcast_arrays(prediction, mask)[1]
-                    prediction[mask == False] = nan
-                    self.status.set('land sea mask for predicted data', 90)
+                    prediction[mask is False] = nan
                 except Exception as e:
                     logger.debug('failed to mask predicted data: %s' % e)
 
