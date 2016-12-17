@@ -116,29 +116,29 @@ class SDMcsvindicesProcess(WPSProcess):
                      {"mimeType": "application/zip"}],
             asReference=True,
             )
-        #
-        # self.output_prediction = self.addComplexOutput(
-        #     identifier="output_prediction",
-        #     title="predicted growth conditions",
-        #     abstract="Archive (tar/zip) containing the netCDF files of the\
-        #      predicted growth conditions",
-        #     formats=[{"mimeType": "application/x-tar"},
-        #              {"mimeType": "application/zip"}],
-        #     asReference=True,
-        #     )
-        #
-        # self.output_info = self.addComplexOutput(
-        #     identifier="output_info",
-        #     title="GAM statistics information",
-        #     abstract="Graphics and information of the learning statistics",
-        #     formats=[{"mimeType": "image/png"}],
-        #     asReference=True,
-        #     )
+
+        self.output_prediction = self.addComplexOutput(
+            identifier="output_prediction",
+            title="predicted growth conditions",
+            abstract="Archive (tar/zip) containing the netCDF files of the\
+             predicted growth conditions",
+            formats=[{"mimeType": "application/x-tar"},
+                     {"mimeType": "application/zip"}],
+            asReference=True,
+            )
+
+        self.output_info = self.addComplexOutput(
+            identifier="output_info",
+            title="GAM statistics information",
+            abstract="Graphics and information of the learning statistics",
+            formats=[{"mimeType": "image/png"}],
+            asReference=True,
+            )
 
     def execute(self):
         from os.path import basename
         from flyingpigeon import sdm
-        from flyingpigeon.utils import archive, archiveextract, get_domain
+        from flyingpigeon.utils import archive, archiveextract  # , get_domain
 
         self.status.set('Start process', 0)
 
@@ -170,11 +170,13 @@ class SDMcsvindicesProcess(WPSProcess):
             self.status.set('get domain', 30)
             domains = set()
             for indice in resources:
-                domains = domains.union(get_domain(indice))
+                # get_domain works only if metadata are set in a correct way
+                domains = domains.union([basename(indice).split('_')[1]])
             if len(domains) == 1:
                 domain = list(domains)[0]
+                logger.debug('Domain %s found in indices files' % domain)
             else:
-                logger.error('No single Domain in indices files %s' % domains)
+                logger.error('Not a single domain in indices files %s' % domains)
         except Exception as e:
             logger.exception('failed to get domains %s' % e)
 
@@ -204,25 +206,60 @@ class SDMcsvindicesProcess(WPSProcess):
 
         ncs_references = []
         species_files = []
-        statistics_info = []
+        stat_infos = []
 
         for count, key in enumerate(indices_dic.keys()):
             try:
-                self.status.set('Start processing of %s' % key, 40 + count*10)
+                staus_nr = 40 + count*10
+                self.status.set('Start processing of %s' % key, staus_nr)
                 ncs = indices_dic[key]
                 logger.info('with %s files' % len(ncs))
                 try:
-                    ncs_references.extend(sdm.get_reference(ncs_indices=ncs,
-                                                            period=period))
+                    ncs_reference = sdm.get_reference(ncs_indices=ncs, period=period)
+                    ncs_references.extend(ncs_reference)
                     logger.info('reference indice calculated %s '
                                 % ncs_references)
                 except:
-                    msg = 'failed adding ref indices to tar'
+                    msg = 'failed to calculate the reference'
                     logger.exception(msg)
                     raise Exception(msg)
 
-            except:
-                msg = 'failed to calculate reference indices.'
+                try:
+                    gam_model, predict_gam, gam_info = sdm.get_gam(ncs_reference, PAmask)
+                    stat_infos.append(gam_info)
+                    self.status.set('GAM sucessfully trained', staus_nr + 5)
+                except Exception as e:
+                    msg = 'failed to train GAM for %s : %s' % (key, e)
+                    logger.debug(msg)
+
+                try:
+                    prediction = sdm.get_prediction(gam_model, ncs)
+#                    species_files.extend([write_to_file(ncs[0], prediction)])
+                    self.status.set('prediction done', staus_nr + 7)
+                except Exception as e:
+                    msg = 'failed to predict tree occurence %s' % e
+                    logger.exception(msg)
+                    # raise Exception(msg)
+
+                try:
+                    from numpy import invert, isnan, nan, broadcast_arrays  # , array, zeros, linspace, meshgrid
+                    mask = invert(isnan(PAmask))
+                    mask = broadcast_arrays(prediction, mask)[1]
+                    prediction[mask == False] = nan
+                    self.status.set('land sea mask for predicted data', 90)
+                except Exception as e:
+                    logger.debug('failed to mask predicted data: %s' % e)
+
+                try:
+                    species_files.append(sdm.write_to_file(ncs[0], prediction))
+                    logger.info('Favourabillity written to file')
+                except Exception as e:
+                    msg = 'failed to write species file %s' % e
+                    logger.debug(msg)
+                    # raise Exception(msg)
+
+            except Exception as e:
+                msg = 'failed to calculate reference indices. %s ' % e
                 logger.exception(msg)
                 raise Exception(msg)
 
@@ -243,55 +280,18 @@ class SDMcsvindicesProcess(WPSProcess):
             msg = 'failed adding species_files indices to archive'
             logger.exception(msg)
             raise Exception(msg)
-        #
-        # try:
-        #     gam_model, predict_gam, gam_info = sdm.get_gam(ncs_references, PAmask)
-        #     statistics_info.append(gam_info)
-        #     self.status.set('GAM sucessfully trained', 70)
-        # except:
-        #     msg = 'failed to train GAM'
-        #     logger.exception(msg)
-        #     raise Exception(msg)
-        #
-        # try:
-        #     prediction = sdm.get_prediction(gam_model, ncs_indices)
-        #     self.status.set('prediction done', 80)
-        # except:
-        #     msg = 'failed to predict'
-        #     logger.exception(msg)
-        #     raise Exception(msg)
-        #
-        # try:
-        #     from numpy import invert, isnan, nan, \
-        #         broadcast_arrays, array, zeros, linspace, meshgrid
-        #     mask = invert(isnan(PAmask))
-        #     mask = broadcast_arrays(prediction, mask)[1]
-        #     prediction[mask is False] = nan
-        #     self.status.set('land sea mask for predicted data', 90)
-        # except:
-        #     logger.exception('failed to mask predicted data')
-        #
-        # try:
-        #     species_files.append(sdm.write_to_file(ncs_indices[0], prediction))
-        #     logger.info('Favourabillity written to file')
-        # except:
-        #     msg = 'failed to write species file'
-        #     logger.exception(msg)
-        #     raise Exception(msg)
-        #
-        # from flyingpigeon.visualisation import concat_images
-        # statistics_infos = None
-        # try:
-        #     statistics_infos = concat_images(statistics_info, orientation='v')
-        # except:
-        #     msg = 'failed to concat images'
-        #     logger.exception(msg)
-        #     raise Exception(msg)
+
+        try:
+            from flyingpigeon.visualisation import concat_images
+            stat_infos = concat_images(stat_infos, orientation='v')
+        except:
+            msg = 'failed to concat images'
+            logger.exception(msg)
+            raise Exception(msg)
 
         self.output_gbif.setValue(occurence_map)
         self.output_PA.setValue(PAmask_png)
         self.output_reference.setValue(archive_references)
-#        self.output_prediction.setValue(archive_predicion)
-#        self.output_info.setValue(statistics_infos)
-
+        self.output_prediction.setValue(archive_predicion)
+        self.output_info.setValue(stat_infos)
         self.status.set('done', 100)

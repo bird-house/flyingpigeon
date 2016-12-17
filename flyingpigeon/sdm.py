@@ -357,6 +357,16 @@ def get_reference(ncs_indices, period='all'):
 
 
 def get_gam(ncs_reference, PAmask):
+    """
+    GAM statistical training based on presence/absence mask and indices
+
+    :param ncs_reference: list of netCDF files containing the indices
+    :param PAmask: presence/absence mask as output from get_PAmask
+
+    :return gam_model, prediction, infos_concat: Rstatisics,
+                                                 occurence predicion based on ncs_reference files,
+                                                 graphical visualisation of regression curves
+    """
     from netCDF4 import Dataset
     from os.path import basename
     from numpy import squeeze, ravel, isnan, nan, array, reshape
@@ -388,10 +398,9 @@ def get_gam(ncs_reference, PAmask):
         logger.exception(msg)
         raise Exception(msg)
 
-    form = 'PA ~ '
-    ncs_reference.sort()
-
     try:
+        form = 'PA ~ '
+        ncs_reference.sort()
         for i, nc in enumerate(ncs_reference):
             var = get_variable(nc)
             agg = basename(nc).split('_')[-2]
@@ -430,12 +439,11 @@ def get_gam(ncs_reference, PAmask):
         ip, info = mkstemp(dir='.', suffix='.png')
         infos.append(info)
         grdevices.png(filename=info)
-        #grdevices.pdf(filename=info)
-        #ylim = ro.IntVector([-6,6])
+        # grdevices.pdf(filename=info)
+        # ylim = ro.IntVector([-6,6])
         trans = ro.r('function(x){exp(x)/(1+exp(x))}')
         mgcv.plot_gam(gam_model, trans=trans, shade='T', col='black', select=i, ylab='Predicted Probability',
-                      rug=False, cex_lab=1.4, cex_axis=1.4, )
-        #ylim=ylim,  ,
+                      rug=False, cex_lab=1.4, cex_axis=1.4)
         grdevices.dev_off()
 
     infos_concat = concat_images(infos, orientation='h')
@@ -452,6 +460,8 @@ def get_prediction(gam_model, ncs_indices):  # mask=None
     :param gam_model: fitted gam (output from sdm.get_gam)
     :pram nsc_indices: list of netCDF files containing climate indices of one dataset
     :param mask: 2D array of True/False to exclude areas (e.g ocean) for prediction
+
+    :return array: 3D array with prediction values
     """
     from netCDF4 import Dataset
     from os.path import basename
@@ -478,9 +488,9 @@ def get_prediction(gam_model, ncs_indices):  # mask=None
         vals = squeeze(ds.variables[var])
         if i == 0:
             dims = vals.shape
-        #if mask != None:
-            #mask = broadcast_arrays(vals, mask)[1]
-            #vals[mask==False] = nan
+        # if mask != None:
+            # mask = broadcast_arrays(vals, mask)[1]
+            # vals[mask==False] = nan
         indice = '%s_%s' % (var, agg)
         data[str(indice)] = ro.FloatVector(ravel(vals))
 
@@ -488,90 +498,46 @@ def get_prediction(gam_model, ncs_indices):  # mask=None
     predict_gam = mgcv.predict_gam(gam_model, newdata=dataf,
                                    type="response", progress="text",
                                    newdata_guaranteed=True)  # , na_action=`na.pass`
-
     prediction = array(predict_gam).reshape(dims)
-
     return prediction
 
 
 def write_to_file(nc_indice, data):
-    from netCDF4 import Dataset
-    from shutil import copy
-    from os.path import split, join
-    from flyingpigeon.utils import get_variable
-    from flyingpigeon.metadata import get_frequency
+    """
+    repaces the values in an indice file with given data
 
-    #path, nc_indice = split(indice_file)
+    :param nc_indice: base netCDF file (indice file)
+    :param data: data to be filled into the netCDF file
 
-    var = get_variable(nc_indice)
-    fq = get_frequency(nc_indice)
-    agg = nc_indice.split('_')[-2]
+    :returns str: path to netCDF file
+    """
+    try:
+        from netCDF4 import Dataset
+        from shutil import copy
+        from os.path import split, join
+        from flyingpigeon.utils import get_variable
+        from flyingpigeon.metadata import get_frequency
 
-    nc = nc_indice.replace(var, 'tree').replace(agg, fq)
-    copy(nc_indice, nc)
+        # path, nc_indice = split(indice_file)
 
-    ds = Dataset(nc, mode='a')
-    vals = ds.variables[var]
+        var = get_variable(nc_indice)
+        fq = get_frequency(nc_indice)
+        agg = nc_indice.split('_')[-2]
 
-    ds.renameVariable(var, 'tree')
+        nc = nc_indice.replace(var, 'tree').replace(agg, fq)
+        copy(nc_indice, nc)
 
-    vals[:, :, :] = data[:, :, :]
-    vals.long_name = 'Favourabilliy for tree species'
-    vals.standard_name = 'tree'
-    vals.units = '0-1'
-    ds.close()
+        ds = Dataset(nc, mode='a')
+        vals = ds.variables[var]
+
+        ds.renameVariable(var, 'tree')
+
+        vals[:, :, :] = data[:, :, :]
+        vals.long_name = 'Favourabilliy for tree species'
+        vals.standard_name = 'tree'
+        vals.units = '0-1'
+        ds.close()
+    except Exception as e:
+        msg = 'failed to fill data to netCDF file %s ' % e
+        logger.debug(msg)
     return nc
-
-
-# def gbif_serach(taxon_name):
-#   """
-#   obsolete use get_gbif
-#   """
-#   from numpy import nan, empty
-#   from pygbif import occurrences as occ
-#   from pygbif import species
-
-#   try:
-#     nm = species.name_backbone(taxon_name)['usageKey']
-
-#     ## a set of WKT polygons
-#     polys = [
-#     #"POLYGON ((-13.9746093699999996 66.1882478999999933, -6.4746093699999996 66.1882478999999933, -6.4746093699999996 57.4422366399999973, -13.9746093699999996 57.4422366399999973, -13.9746093699999996 66.1882478999999933))",
-#     #"POLYGON ((-6.4746093699999996 66.1882478999999933, 8.5253906300000004 66.1882478999999933, 8.5253906300000004 57.4422366399999973, -6.4746093699999996 57.4422366399999973, -6.4746093699999996 66.1882478999999933))",
-#     #"POLYGON ((8.5253906300000004 66.1882478999999933, 23.5253906300000004 66.1882478999999933, 23.5253906300000004 57.4422366399999973, 8.5253906300000004 57.4422366399999973, 8.5253906300000004 66.1882478999999933))",
-#     #"POLYGON ((23.5253906300000004 66.1882478999999933, 31.7285156300000004 66.1882478999999933, 31.7285156300000004 57.4422366399999973, 23.5253906300000004 57.4422366399999973, 23.5253906300000004 66.1882478999999933))",
-#     #"POLYGON ((-13.9746093699999996 42.4422366399999973, -13.9746093699999996 57.4422366399999973, -6.4746093699999996 57.4422366399999973, -6.4746093699999996 42.4422366399999973, -13.9746093699999996 42.4422366399999973))",
-#     "POLYGON ((-6.4746093699999996 42.4422366399999973, -6.4746093699999996 57.4422366399999973, 8.5253906300000004 57.4422366399999973, 8.5253906300000004 42.4422366399999973, -6.4746093699999996 42.4422366399999973))",
-#     "POLYGON ((8.5253906300000004 42.4422366399999973, 8.5253906300000004 57.4422366399999973, 23.5253906300000004 57.4422366399999973, 23.5253906300000004 42.4422366399999973, 8.5253906300000004 42.4422366399999973))",
-#     #"POLYGON ((31.7285156300000004 57.4422366399999973, 31.7285156300000004 42.4422366399999973, 23.5253906300000004 42.4422366399999973, 23.5253906300000004 57.4422366399999973, 31.7285156300000004 57.4422366399999973))",
-#     #"POLYGON ((-6.4746093699999996 34.9422366399999973, -13.9746093699999996 34.9422366399999973, -13.9746093699999996 42.4422366399999973, -6.4746093699999996 42.4422366399999973, -6.4746093699999996 34.9422366399999973))",
-#     #"POLYGON ((8.5253906300000004 34.9422366399999973, -6.4746093699999996 34.9422366399999973, -6.4746093699999996 42.4422366399999973, 8.5253906300000004 42.4422366399999973, 8.5253906300000004 34.9422366399999973))",
-#     #"POLYGON ((23.5253906300000004 34.9422366399999973, 8.5253906300000004 34.9422366399999973, 8.5253906300000004 42.4422366399999973, 23.5253906300000004 42.4422366399999973, 23.5253906300000004 34.9422366399999973))",
-#     #"POLYGON ((31.7285156300000004 42.4422366399999973, 31.7285156300000004 34.9422366399999973, 23.5253906300000004 34.9422366399999973, 23.5253906300000004 42.4422366399999973, 31.7285156300000004 42.4422366399999973))"
-#     ]
-
-#     results = []
-#     for i in polys:
-#         res = []
-#         x = occ.search(taxonKey = nm, geometry = i)
-#         res.append(x['results'])
-#         while not x['endOfRecords']:
-#             x = occ.search(taxonKey = nm, geometry = i, offset = sum([ len(x) for x in res ]))
-#             res.append(x['results'])
-
-#         results.append([w for z in res for w in z])
-#         logger.info('polyon fetched')
-
-#     allres = [w for z in results for w in z]
-#     coords = [ { k: v for k, v in w.items() if k.startswith('decimal') } for w in allres ]
-
-#     latlon = empty([len(coords),2], dtype=float, order='C')
-#     for i , coord in enumerate(coords):
-#       latlon[i][0] = Latitude
-#       latlon[i][1] = Longitude
-#     nz = (latlon == 0).sum(1)
-#     ll = latlon[nz == 0, :]
-#     logger.info('read in PA coordinates for %s rows ' % len(ll[:,0]))
-#   except Exception as e:
-#     logger.exception('failed search GBIF data %s' % (e))
-#   return ll
