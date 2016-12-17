@@ -138,7 +138,7 @@ class SDMcsvindicesProcess(WPSProcess):
     def execute(self):
         from os.path import basename
         from flyingpigeon import sdm
-        from flyingpigeon.utils import archive, archiveextract
+        from flyingpigeon.utils import archive, archiveextract, get_domain
 
         self.status.set('Start process', 0)
 
@@ -159,7 +159,7 @@ class SDMcsvindicesProcess(WPSProcess):
             logger.exception('failed to extract the latlon points')
 
         try:
-            self.status.set('plot map', 80)
+            self.status.set('plot map', 20)
             from flyingpigeon.visualisation import map_gbifoccurrences
             # latlon = sdm.latlon_gbifdic(gbifdic)
             occurence_map = map_gbifoccurrences(latlon)
@@ -167,8 +167,20 @@ class SDMcsvindicesProcess(WPSProcess):
             logger.exception('failed to plot occurence map %s' % e)
 
         try:
+            self.status.set('get domain', 30)
+            domains = set()
+            for indice in resources:
+                domains = domains.union(get_domain(indice))
+            if len(domains) == 1:
+                domain = list(domains)[0]
+            else:
+                logger.error('No single Domain in indices files %s' % domains)
+        except Exception as e:
+            logger.exception('failed to get domains %s' % e)
+
+        try:
             self.status.set('generating the PA mask', 20)
-            PAmask = sdm.get_PAmask(coordinates=latlon, domain='EUR-11')
+            PAmask = sdm.get_PAmask(coordinates=latlon, domain=domain)
             logger.info('PA mask sucessfully generated')
         except Exception as e:
             logger.exception('failed to generate the PA mask: %s' % e)
@@ -179,26 +191,6 @@ class SDMcsvindicesProcess(WPSProcess):
             PAmask_png = map_PAmask(PAmask)
         except Exception as e:
             logger.exception('failed to plot the PA mask: %s' % e)
-
-        #################################
-        # calculate the climate indices
-        #################################
-
-        # get the indices
-        #
-        # ncs_indices = []
-        #
-        # try:
-        #     self.status.set('extract climate indices for ', 30)
-        #     for nc in ncs_indices:
-        #         if '.nc' in nc:
-        #             ncs_indices.extend(nc)
-        #     # TODO add extraction
-        #     logger.info('indice extraction done: %s ' % ncs_indices)
-        # except:
-        #     msg = 'failed to extract indices'
-        #     logger.exception(msg)
-        #     raise Exception(msg)
 
         try:
             # sort indices

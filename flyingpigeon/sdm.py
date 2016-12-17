@@ -221,6 +221,8 @@ def get_PAmask(coordinates=[], domain='EUR-11'):
 
     :param coordinates: 2D array with lat lon coordinates representing tree observation
     :param domain: region (default='EUR-11')
+
+    :return : PAmask
     """
     from scipy import spatial
     import numpy as np
@@ -229,7 +231,9 @@ def get_PAmask(coordinates=[], domain='EUR-11'):
     DIR_MASKS = config.masks_dir()
 
     if domain == 'EUR-11':
-        nc = DIR_MASKS + '/sftlf_EUR-11_ECMWF-ERAINT_evaluation_r1i1p1_KNMI-RACMO22E_v1_fx.nc'
+        nc = DIR_MASKS + '/EUR-11.nc'  # sftlf_EUR-11_ECMWF-ERAINT_evaluation_r1i1p1_KNMI-RACMO22E_v1_fx
+    elif domain == 'EUR-44':
+        nc = DIR_MASKS + '/EUR-44.nc'
     else:
         logger.debug('domain not found')
 
@@ -413,16 +417,16 @@ def get_gam(ncs_reference, PAmask):
 
     grdevices = importr('grDevices')
 
-    ### ###########################
+    # ####################
     # plot response curves
-    ### ###########################
+    # ####################
 
     from flyingpigeon.visualisation import concat_images
     from tempfile import mkstemp
     infos = []
 
     for i in range(1, len(ncs_reference) + 1):
-        #ip, info =  mkstemp(dir='.',suffix='.pdf')
+        # ip, info =  mkstemp(dir='.',suffix='.pdf')
         ip, info = mkstemp(dir='.', suffix='.png')
         infos.append(info)
         grdevices.png(filename=info)

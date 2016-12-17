@@ -411,9 +411,8 @@ def get_domain(resource):
 
     :return str: domain
     """
-    ds = Dataset(resource)
-
     try:
+        ds = Dataset(resource)
         if 'CMIP' in ds.project_id or 'EUCLEIA' in ds.project_id:
             domain = None
             logger.debug('resource belongs to a global experiment project')
@@ -422,10 +421,9 @@ def get_domain(resource):
             logger.info('resource belongs to CORDEX')
         else:
             logger.debug('No known project_id found in meta data')
-
+        ds.close()
     except Exception as e:
         logger.debug('Could not specify domain for %s: %s' % (resource, e))
-
     return domain
 
 
