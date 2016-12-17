@@ -132,7 +132,6 @@ class subset_continentsProcess(WPSProcess):
             raise Exception('no results produced.')
         # prepare tar file
         try:
-            from flyingpigeon.utils import archive
             tarf = archive(results)
             logger.info('Tar file prepared')
         except Exception as e:
