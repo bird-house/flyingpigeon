@@ -187,7 +187,7 @@ def archiveextract(resource, path='.'):
         for archive in resource:
             try:
                 if basename(archive).split('.')[1] == 'nc':
-                    files.appen(join(path, archive))
+                    files.append(join(path, archive))
                 elif basename(archive).split('.')[1] == 'tar':
                     tar = open(archive, mode='r')
                     tar.extractall()

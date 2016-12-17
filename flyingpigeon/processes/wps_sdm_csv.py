@@ -49,15 +49,17 @@ class sdmcsvProcess(WPSProcess):
                      {"mimeType": "application/zip"}],
             )
 
-        self.gbif = self.addComplexInput(
+        self.gbif = self.addLiteralInput(
             identifier="gbif",
             title="GBIF csv file",
             abstract="GBIF table (csv) with tree occurence \
             (output of 'GBIF data fetch' process )",
+            type=type(''),
             minOccurs=1,
             maxOccurs=1,
+            default='http://localhost:8090/wpsoutputs/flyingpigeon/output_csv-abe15f64-c30d-11e6-bf63-142d277ef1f3.csv'
             # maxmegabites=50,
-            formats=[{"mimeType": "text/csv"}],
+            # formats=[{"mimeType": "text/csv"}],
             )
 
         self.input_indices = self.addLiteralInput(
@@ -99,14 +101,14 @@ class sdmcsvProcess(WPSProcess):
         ###########
         # OUTPUTS
         ###########
-
-        self.output_csv = self.addComplexOutput(
-            identifier="output_csv",
-            title="Tree species table",
-            abstract="Extracted CSV file containing the tree species table",
-            formats=[{"mimeType": "text/csv"}],
-            asReference=True,
-            )
+        #
+        # self.output_csv = self.addComplexOutput(
+        #     identifier="output_csv",
+        #     title="Tree species table",
+        #     abstract="Extracted CSV file containing the tree species table",
+        #     formats=[{"mimeType": "text/csv"}],
+        #     asReference=True,
+        #     )
 
         self.output_gbif = self.addComplexOutput(
             identifier="output_gbif",
@@ -165,49 +167,46 @@ class sdmcsvProcess(WPSProcess):
     def execute(self):
         from os.path import basename
         from flyingpigeon import sdm
-        from flyingpigeon.utils import archive, archiveextract
+        from flyingpigeon.utils import archive, archiveextract, download
         self.status.set('Start process', 0)
 
         try:
             logger.info('reading the arguments')
-            resources = archiveextract(self.getInputValues(identifier='resources'))
-            csv_file = self.getInputValues(identifier='gbif')[0]
+            resources_raw = self.getInputValues(identifier='resources')
+            csv_url = self.getInputValues(identifier='gbif')[0]
             period = self.getInputValues(identifier='period')
             period = period[0]
             indices = self.getInputValues(identifier='input_indices')
             archive_format = self.archive_format.getValue()
             logger.info('indices %s ' % indices)
+            logger.debug('csv_url %s' % csv_url)
         except Exception as e:
             logger.error('failed to read in the arguments %s ' % e)
+            raise
+
+        try:
+            logger.info('set up the environment')
+            csv_file = download(csv_url)
+            resources = archiveextract(resources_raw)
+        except Exception as e:
+            logger.error('failed to set up the environment %s ' % e)
+            raise
 
         try:
             self.status.set('read in latlon coordinates', 10)
             latlon = sdm.latlon_gbifcsv(csv_file)
+            logger.info('got occurence coordinates %s ' % csv_file)
         except Exception as e:
-            logger.exception('failed to extract the latlon points')
+            logger.exception('failed to extract the latlon points from file: %s: %s' % (csv_file, e))
 
         try:
-            self.status.set('plot map', 80)
+            self.status.set('plot map', 20)
             from flyingpigeon.visualisation import map_gbifoccurrences
 
             # latlon = sdm.latlon_gbifdic(gbifdic)
             occurence_map = map_gbifoccurrences(latlon)
         except Exception as e:
             logger.exception('failed to plot occurence map %s' % e)
-
-        try:
-            self.status.set('generating the PA mask', 20)
-            PAmask = sdm.get_PAmask(coordinates=latlon, domain='EUR-11')
-            logger.info('PA mask sucessfully generated')
-        except Exception as e:
-            logger.exception('failed to generate the PA mask: %s' % e)
-
-        try:
-            self.status.set('Ploting PA mask', 25)
-            from flyingpigeon.visualisation import map_PAmask
-            PAmask_png = map_PAmask(PAmask)
-        except Exception as e:
-            logger.exception('failed to plot the PA mask: %s' % e)
 
         #################################
         # calculate the climate indices
@@ -226,16 +225,36 @@ class sdmcsvProcess(WPSProcess):
             raise Exception(msg)
 
         try:
-            archive_indices = archive(ncs_indices, format=archive_format)
-            logger.info('indices 3D added to tarfile')
-        except:
-            msg = 'failed adding indices to tar'
-            logger.exception(msg)
-            raise Exception(msg)
+            self.status.set('get domain', 30)
+            domains = set()
+            for resource in ncs_indices:
+                # get_domain works only if metadata are set in a correct way
+                domains = domains.union([basename(resource).split('_')[1]])
+            if len(domains) == 1:
+                domain = list(domains)[0]
+                logger.debug('Domain %s found in indices files' % domain)
+            else:
+                logger.error('Not a single domain in indices files %s' % domains)
+        except Exception as e:
+            logger.exception('failed to get domains %s' % e)
 
-        indices_dic = None
+        try:
+            self.status.set('generating the PA mask', 20)
+            PAmask = sdm.get_PAmask(coordinates=latlon, domain=domain)
+            logger.info('PA mask sucessfully generated')
+        except Exception as e:
+            logger.exception('failed to generate the PA mask: %s' % e)
+
+        try:
+            self.status.set('Ploting PA mask', 25)
+            from flyingpigeon.visualisation import map_PAmask
+            PAmask_png = map_PAmask(PAmask)
+        except Exception as e:
+            logger.exception('failed to plot the PA mask: %s' % e)
+
         try:
             # sort indices
+            indices_dic = None
             indices_dic = sdm.sort_indices(ncs_indices)
             logger.info('indice files sorted for %s Datasets' %
                         len(indices_dic.keys()))
@@ -244,34 +263,87 @@ class sdmcsvProcess(WPSProcess):
             logger.exception(msg)
             raise Exception(msg)
 
+        # try:
+        #     archive_indices = archive(ncs_indices, format=archive_format)
+        #     logger.info('indices 3D added to tarfile')
+        # except:
+        #     msg = 'failed adding indices to tar'
+        #     logger.exception(msg)
+        #     raise Exception(msg)
+
         ncs_references = []
         species_files = []
-        statistics_info = []
+        stat_infos = []
+
         for count, key in enumerate(indices_dic.keys()):
             try:
-                self.status.set('Start processing of %s ' % key, 40 + count*10)
+                staus_nr = 40 + count*10
+                self.status.set('Start processing of %s' % key, staus_nr)
                 ncs = indices_dic[key]
                 logger.info('with %s files' % len(ncs))
                 try:
-                    ncs_references.extend(sdm.get_reference(ncs_indices=ncs,
-                                                            period=period))
+                    ncs_reference = sdm.get_reference(ncs_indices=ncs, period=period)
+                    ncs_references.extend(ncs_reference)
                     logger.info('reference indice calculated %s '
                                 % ncs_references)
                 except:
-                    msg = 'failed adding ref indices to tar'
+                    msg = 'failed to calculate the reference'
                     logger.exception(msg)
-                raise Exception(msg)
-            except:
-                msg = 'failed to calculate reference indices.'
+                    raise Exception(msg)
+
+                try:
+                    gam_model, predict_gam, gam_info = sdm.get_gam(ncs_reference, PAmask)
+                    stat_infos.append(gam_info)
+                    self.status.set('GAM sucessfully trained', staus_nr + 5)
+                except Exception as e:
+                    msg = 'failed to train GAM for %s : %s' % (key, e)
+                    logger.debug(msg)
+
+                try:
+                    prediction = sdm.get_prediction(gam_model, ncs)
+                    self.status.set('prediction done', staus_nr + 7)
+                except Exception as e:
+                    msg = 'failed to predict tree occurence %s' % e
+                    logger.exception(msg)
+                    # raise Exception(msg)
+
+                try:
+                    self.status.set('land sea mask for predicted data',  staus_nr + 8)
+                    from numpy import invert, isnan, nan, broadcast_arrays  # , array, zeros, linspace, meshgrid
+                    mask = invert(isnan(PAmask))
+                    mask = broadcast_arrays(prediction, mask)[1]
+                    prediction[mask is False] = nan
+                except Exception as e:
+                    logger.debug('failed to mask predicted data: %s' % e)
+
+                try:
+                    species_files.append(sdm.write_to_file(ncs[0], prediction))
+                    logger.info('Favourabillity written to file')
+                except Exception as e:
+                    msg = 'failed to write species file %s' % e
+                    logger.debug(msg)
+                    # raise Exception(msg)
+
+            except Exception as e:
+                msg = 'failed to calculate reference indices. %s ' % e
                 logger.exception(msg)
                 raise Exception(msg)
+
+        try:
+            archive_indices = None
+            archive_indices = archive(ncs_indices, format=archive_format)
+            logger.info('indices added to archive')
+        except:
+            msg = 'failed adding indices to archive'
+            logger.exception(msg)
+            raise Exception(msg)
 
         archive_references = None
         try:
             archive_references = archive(ncs_references, format=archive_format)
-            logger.info('indices 2D added to archive')
+            logger.info('indices reference added to archive')
         except:
-            msg = 'failed adding 2D indices to archive'
+            msg = 'failed adding reference indices to archive'
             logger.exception(msg)
             raise Exception(msg)
 
@@ -284,57 +356,20 @@ class sdmcsvProcess(WPSProcess):
             logger.exception(msg)
             raise Exception(msg)
 
-        try:
-            gam_model, predict_gam, gam_info = sdm.get_gam(ncs_references,
-                                                           PAmask)
-            statistics_info.append(gam_info)
-            self.status.set('GAM sucessfully trained', 70)
-        except:
-            msg = 'failed to train GAM'
-            logger.exception(msg)
-            raise Exception(msg)
-
-        try:
-            prediction = sdm.get_prediction(gam_model, ncs_indices)
-            self.status.set('prediction done', 80)
-        except:
-            msg = 'failed to predict'
-            logger.exception(msg)
-            raise Exception(msg)
-
-        try:
-            from numpy import invert, isnan, nan, broadcast_arrays, array,\
-             zeros, linspace, meshgrid
-            mask = invert(isnan(PAmask))
-            mask = broadcast_arrays(prediction, mask)[1]
-            prediction[mask is False] = nan
-            self.status.set('land sea mask for predicted data', 90)
-        except:
-            logger.exception('failed to mask predicted data')
-
-        try:
-            species_files.append(sdm.write_to_file(ncs_indices[0], prediction))
-            logger.info('Favourabillity written to file')
-        except:
-            msg = 'failed to write species file'
-            logger.exception(msg)
-            raise Exception(msg)
-
         from flyingpigeon.visualisation import concat_images
-        statistics_infos = None
         try:
-            statistics_infos = concat_images(statistics_info, orientation='v')
+            stat_infosconcat = concat_images(stat_infos, orientation='v')
         except:
             msg = 'failed to concat images'
             logger.exception(msg)
             raise Exception(msg)
 
-        self.output_csv.setValue(csv_file)
+        # self.output_csv.setValue(csv_file)
         self.output_gbif.setValue(occurence_map)
         self.output_PA.setValue(PAmask_png)
         self.output_indices.setValue(archive_indices)
         self.output_reference.setValue(archive_references)
         self.output_prediction.setValue(archive_predicion)
-        self.output_info.setValue(statistics_infos)
+        self.output_info.setValue(stat_infosconcat)
 
         self.status.set('done', 100)

@@ -282,7 +282,7 @@ class SDMcsvindicesProcess(WPSProcess):
 
         try:
             from flyingpigeon.visualisation import concat_images
-            stat_infos = concat_images(stat_infos, orientation='v')
+            stat_infosconcat = concat_images(stat_infos, orientation='v')
         except:
             msg = 'failed to concat images'
             logger.exception(msg)
@@ -292,5 +292,5 @@ class SDMcsvindicesProcess(WPSProcess):
         self.output_PA.setValue(PAmask_png)
         self.output_reference.setValue(archive_references)
         self.output_prediction.setValue(archive_predicion)
-        self.output_info.setValue(stat_infos)
+        self.output_info.setValue(stat_infosconcat)
         self.status.set('done', 100)
