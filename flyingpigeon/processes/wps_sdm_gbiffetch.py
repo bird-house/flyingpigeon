@@ -14,7 +14,7 @@ class GBIFfetchProcess(WPSProcess):
         WPSProcess.__init__(
             self,
             identifier="sdm_gbiffetch",
-            title="GBIF data fetch",
+            title="SDM -- GBIF data fetch",
             version="0.1",
             metadata=[
                 {"title": "Documentation",
