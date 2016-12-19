@@ -263,14 +263,6 @@ class sdmcsvProcess(WPSProcess):
             logger.exception(msg)
             raise Exception(msg)
 
-        # try:
-        #     archive_indices = archive(ncs_indices, format=archive_format)
-        #     logger.info('indices 3D added to tarfile')
-        # except:
-        #     msg = 'failed adding indices to tar'
-        #     logger.exception(msg)
-        #     raise Exception(msg)
-
         ncs_references = []
         species_files = []
         stat_infos = []
