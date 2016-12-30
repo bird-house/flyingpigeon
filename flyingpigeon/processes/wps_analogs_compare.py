@@ -97,6 +97,18 @@ class AnalogsProcess(WPSProcess):
           maxOccurs=1,
           )
 
+        self.direction = self.addLiteralInput(
+          identifier="direction",
+          title="Direction",
+          abstract="Compare direction. Pick analog days in Modeldata for a simulation period in Reanalyses data \
+                    (re2mo) or vice versa",
+          default='re2mo',
+          type=type(''),
+          minOccurs=1,
+          maxOccurs=1,
+          allowedValues=['mo2re', 're2mo']
+            )
+
         self.seasonwin = self.addLiteralInput(
           identifier="seasonwin",
           title="Seasonal window",
@@ -227,7 +239,6 @@ class AnalogsProcess(WPSProcess):
         from flyingpigeon.ocgis_module import call
         from flyingpigeon.datafetch import reanalyses
         from flyingpigeon.utils import get_variable, rename_variable
-
         self.status.set('execution started at : %s ' % dt.now(), 5)
 
         start_time = time.time()  # measure init ...
@@ -238,6 +249,7 @@ class AnalogsProcess(WPSProcess):
         refEn = self.getInputValues(identifier='refEn')
         dateSt = self.getInputValues(identifier='dateSt')
         dateEn = self.getInputValues(identifier='dateEn')
+        direction = self.getInputValues(identifier='direction')[0]
         normalize = self.getInputValues(identifier='normalize')[0]
         distance = self.getInputValues(identifier='dist')[0]
         outformat = self.getInputValues(identifier='outformat')[0]
@@ -245,10 +257,23 @@ class AnalogsProcess(WPSProcess):
         experiment = self.getInputValues(identifier='experiment')[0]
         dataset, var = experiment.split('_')
 
-        refSt = dt.strptime(refSt[0], '%Y-%m-%d')
-        refEn = dt.strptime(refEn[0], '%Y-%m-%d')
-        dateSt = dt.strptime(dateSt[0], '%Y-%m-%d')
-        dateEn = dt.strptime(dateEn[0], '%Y-%m-%d')
+        try:
+            if direction == 're2mo':
+                refSt = dt.strptime(refSt[0], '%Y-%m-%d')
+                refEn = dt.strptime(refEn[0], '%Y-%m-%d')
+                dateSt = dt.strptime(dateSt[0], '%Y-%m-%d')
+                dateEn = dt.strptime(dateEn[0], '%Y-%m-%d')
+            elif:
+                dateSt = dt.strptime(refSt[0], '%Y-%m-%d')
+                dateEn = dt.strptime(refEn[0], '%Y-%m-%d')
+                refSt = dt.strptime(dateSt[0], '%Y-%m-%d')
+                refEn = dt.strptime(dateEn[0], '%Y-%m-%d')
+            else:
+                logger.error('failed to find time periods for comparison direction')
+        except Exception as e:
+            msg = 'failed to put simulation and reference time in order %s ' % e
+            logger.debug(msg)
+            raise Exception(msg)
 
         if normalize == 'None':
             seacyc = False
@@ -307,9 +332,9 @@ class AnalogsProcess(WPSProcess):
         start_time = time.time()  # measure get_input_data ...
         self.status.set('fetching input data', 7)
         try:
-            input = reanalyses(start=dateSt.year, end=dateEn.year,
-                               variable=var, dataset=dataset)
-            nc_subset = call(resource=input, variable=var, geom=bbox)
+            nc_reanalyses = reanalyses(start=dateSt.year, end=dateEn.year,
+                                       variable=var, dataset=dataset)
+            nc_subset = call(resource=nc_reanalyses, variable=var, geom=bbox)
             logger.debug("get_input_subset_dataset took %s seconds.",
                          time.time() - start_time)
             self.status.set('**** Input data fetched', 10)
@@ -323,27 +348,72 @@ class AnalogsProcess(WPSProcess):
         ########################
         self.status.set('Start preparing input data', 12)
         start_time = time.time()  # mesure data preperation ...
-        try:
-            self.status.set('Preparing simulation data', 15)
-            simulation = call(resource=nc_subset, time_range=[dateSt, dateEn])
-        except:
-            msg = 'failed to prepare simulation period'
-            logger.debug(msg)
 
         try:
-            self.status.set('Preparing target data', 17)
-            var_target = get_variable(resource)
-            # var_simulation = get_variable(simulation)
-            archive = call(resource=resource, variable=var_target,
-                           time_range=[refSt, refEn],
-                           geom=bbox,
-                           t_calendar='standard',
-                           # conform_units_to=conform_units_to,
-                           # spatial_wrapping='wrap',
-                           regrid_destination=simulation,
-                           regrid_options='bil')
+            if direction = 're2mo':
+                try:
+                    self.status.set('Preparing simulation data', 15)
+                    reanalyses_subset = call(resource=nc_subset, time_range=[dateSt, dateEn])
+                except:
+                    msg = 'failed to prepare simulation period'
+                    logger.debug(msg)
+                try:
+                    self.status.set('Preparing target data', 17)
+                    var_target = get_variable(resource)
+                    # var_simulation = get_variable(simulation)
+                    model_subset = call(resource=resource, variable=var_target,
+                                        time_range=[refSt, refEn],
+                                        geom=bbox,
+                                        t_calendar='standard',
+                                        # conform_units_to=conform_units_to,
+                                        # spatial_wrapping='wrap',
+                                        regrid_destination=reanalyses_subset,
+                                        regrid_options='bil')
+                except Exception as e:
+                    msg = 'failed subset archive dataset %s ' % e
+                    logger.debug(msg)
+                    raise Exception(msg)
+            else:
+                try:
+                    self.status.set('Preparing target data', 17)
+                    var_target = get_variable(resource)
+                    # var_simulation = get_variable(simulation)
+                    model_subset = call(resource=resource, variable=var_target,
+                                        time_range=[refSt, refEn],
+                                        geom=bbox,
+                                        t_calendar='standard',
+                                        # conform_units_to=conform_units_to,
+                                        # spatial_wrapping='wrap',
+                                        )
+                except Exception as e:
+                    msg = 'failed subset archive dataset %s ' % e
+                    logger.debug(msg)
+                    raise Exception(msg)
+                try:
+                    self.status.set('Preparing simulation data', 15)
+                    reanalyses_subset = call(resource=nc_subset,
+                                             time_range=[dateSt, dateEn],
+                                             regrid_destination=model_subset,
+                                             regrid_options='bil')
+                except:
+                    msg = 'failed to prepare simulation period'
+                    logger.debug(msg)
+        except Exeption as e:
+            msg = 'failed to subset simulation or reference data %s ' % e
+            logger.debug(msg)
+            raise Exception(msg)
+
+        try:
+            if direction == 'mo2re':
+                simulation = model_subset
+                archive = reanalyses_subset
+            elif direction == 're2mo':
+                simulation = reanalyses_subset
+                archive = model_subset
+            else:
+                logger.error('direction not valid: %s ' % direction)
         except Exception as e:
-            msg = 'failed subset archive dataset %s ' % e
+            msg = 'failed to find comparison direction %s' % e
             logger.debug(msg)
             raise Exception(msg)
 
