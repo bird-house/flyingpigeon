@@ -6,6 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 class SubsetPointsProcess(WPSProcess):
+
     def __init__(self):
         WPSProcess.__init__(
             self,
@@ -21,39 +22,39 @@ class SubsetPointsProcess(WPSProcess):
             storeSupported=True
             )
 
-    self.netcdf_file = self.addComplexInput(
-      identifier="netcdf_file",
-      title="NetCDF File",
-      abstract="NetCDF File",
-      minOccurs=1,
-      maxOccurs=1000,
-      maxmegabites=5000,
-      formats=[{"mimeType": "application/x-netcdf"}],
-      )
+        self.resource = self.addComplexInput(
+          identifier="resource",
+          title="NetCDF File",
+          abstract="NetCDF File",
+          minOccurs=1,
+          maxOccurs=1000,
+          maxmegabites=5000,
+          formats=[{"mimeType": "application/x-netcdf"}],
+          )
 
-    self.coords = self.addLiteralInput(
-      identifier="coords",
-      title="Coordinates",
-      abstract="a comma-seperated tuple of WGS85 lon,lat decimal coordinates",
-      default="2.356138, 48.846450",
-      type=type(''),
-      minOccurs=1,
-      maxOccurs=100,
-      )
+        self.coords = self.addLiteralInput(
+          identifier="coords",
+          title="Coordinates",
+          abstract="a comma-seperated tuple of WGS85 lon,lat decimal coordinates",
+          default="2.356138, 48.846450",
+          type=type(''),
+          minOccurs=1,
+          maxOccurs=100,
+          )
 
-    self.tarout = self.addComplexOutput(
-      identifier="tarout",
-      title="Tarfile",
-      abstract="tar archive containing the value tables",
-      formats=[{"mimeType": "application/x-tar"}],
-      asReference=True,
-      )
+        self.tarout = self.addComplexOutput(
+          identifier="tarout",
+          title="Tarfile",
+          abstract="tar archive containing the value tables",
+          formats=[{"mimeType": "application/x-tar"}],
+          asReference=True,
+          )
 
     def execute(self):
         from flyingpigeon.ocgis_module import call
         from flyingpigeon.utils import sort_by_filename, archive, get_values, get_time
 
-        ncs = self.getInputValues(identifier='netcdf_file')
+        ncs = self.getInputValues(identifier='resource')
         logger.info("ncs: %s " % ncs)
         coords = self.getInputValues(identifier='coords')
         logger.info("coords %s", coords)
@@ -96,6 +97,6 @@ class SubsetPointsProcess(WPSProcess):
                 logger.debug('failed for %s %s' % (key, e))
 
     # set the outputs
-    self.status.set('*** creating output tar archive ****', 90)
-    tarout_file = archive(filenames)
-    self.tarout.setValue(tarout_file)
+        self.status.set('*** creating output tar archive ****', 90)
+        tarout_file = archive(filenames)
+        self.tarout.setValue(tarout_file)

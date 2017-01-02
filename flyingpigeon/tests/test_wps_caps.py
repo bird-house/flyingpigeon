@@ -29,7 +29,7 @@ def test_caps():
         'spatial_analog',
         'subset_continents',
         'subset_countries',
-        # 'subset_points',
+        'subset_points',
         'subset_regionseurope',
         'weatherregimes_model',
         'weatherregimes_projection',
