@@ -16,11 +16,14 @@ def test_R_fields():
 def test_R_stats():
     stats = importr("stats")
 
+
 def test_R_ncdf4():
     ncdf4 = importr("ncdf4")
 
+
 def test_R_mclust():
     mclust = importr("mclust")
+
 
 def test_R_maps():
     maps = importr("maps")
