@@ -9,7 +9,7 @@ def test_caps():
                             '/wps:Process'
                             '/ows:Identifier')
     sorted_names = sorted(names.split())
-    print sorted
+
     expected_names = [
         # 'analogs_compare',
         'analogs_detection',
