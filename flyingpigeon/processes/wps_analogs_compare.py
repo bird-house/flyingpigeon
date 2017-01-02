@@ -263,7 +263,7 @@ class AnalogsProcess(WPSProcess):
                 refEn = dt.strptime(refEn[0], '%Y-%m-%d')
                 dateSt = dt.strptime(dateSt[0], '%Y-%m-%d')
                 dateEn = dt.strptime(dateEn[0], '%Y-%m-%d')
-            elif:
+            elif direction == 'mo2re':
                 dateSt = dt.strptime(refSt[0], '%Y-%m-%d')
                 dateEn = dt.strptime(refEn[0], '%Y-%m-%d')
                 refSt = dt.strptime(dateSt[0], '%Y-%m-%d')
@@ -350,7 +350,7 @@ class AnalogsProcess(WPSProcess):
         start_time = time.time()  # mesure data preperation ...
 
         try:
-            if direction = 're2mo':
+            if direction == 're2mo':
                 try:
                     self.status.set('Preparing simulation data', 15)
                     reanalyses_subset = call(resource=nc_subset, time_range=[dateSt, dateEn])
