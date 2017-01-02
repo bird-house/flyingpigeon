@@ -4,7 +4,7 @@ from .common import WpsTestClient, TESTDATA, assert_response_success
 
 
 @pytest.mark.online
-#@pytest.mark.skip(reason="no way of currently testing this")
+# @pytest.mark.skip(reason="no way of currently testing this")
 def test_wps_sdm_gbiffetch():
     wps = WpsTestClient()
     datainputs = "[taxon_name=Fagus sylvatica;BBox=-10,20,10,40;]"

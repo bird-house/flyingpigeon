@@ -9,8 +9,9 @@ def test_caps():
                             '/wps:Process'
                             '/ows:Identifier')
     sorted_names = sorted(names.split())
+    print sorted
     expected_names = [
-        'analogs_compare',
+        # 'analogs_compare',
         'analogs_detection',
         'analogs_model',
         'analogs_viewer',
@@ -28,12 +29,38 @@ def test_caps():
         'spatial_analog',
         'subset_continents',
         'subset_countries',
-        'subset_points',
+        # 'subset_points',
         'subset_regionseurope',
         'weatherregimes_model',
         'weatherregimes_projection',
         'weatherregimes_reanalyse',
-        'wps_c4i_simple_indice',
-    ]
-
+        'wps_c4i_simple_indice'
+        ]
     assert sorted_names == expected_names
+
+    #
+    #     'analogs_compare',
+    #     'analogs_detection',
+    #     'analogs_model',
+    #     'analogs_viewer',
+    #     'fetch',
+    #     'indices_percentile',
+    #     'indices_simple',
+    #     'plot_timeseries',
+    #     'robustness',
+    #     'sdm_allinone',
+    #     'sdm_csv',
+    #     'sdm_csvindices',
+    #     'sdm_gbiffetch',
+    #     'sdm_getindices',
+    #     'segetalflora',
+    #     'spatial_analog',
+    #     'subset_continents',
+    #     'subset_countries',
+    #     'subset_points',
+    #     'subset_regionseurope',
+    #     'weatherregimes_model',
+    #     'weatherregimes_projection',
+    #     'weatherregimes_reanalyse',
+    #     'wps_c4i_simple_indice',
+    # ]
