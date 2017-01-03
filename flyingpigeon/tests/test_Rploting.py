@@ -33,12 +33,9 @@ def test_png_sink():
     base.sink(logfile)
     png = grDevices.png(filename='Rplot.png', type='cairo')
     grDevices.dev_off()
-    unlink(logfile)
+    base.unlink(logfile)
 
 
 def test_png_invisible():
-    logfile = "test_logfile.txt"
-    base.sink(logfile)
     png = grDevices.png(filename='Rplot.png', type='cairo')
-    grDevices.dev_off()
-    unlink(logfile)
+    base.invisible(grDevices.dev_off())

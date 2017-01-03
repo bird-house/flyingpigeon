@@ -29,14 +29,14 @@ def test_R_maps():
     maps = importr("maps")
 
 
-def test_pdf_grDevices():
-    from os import remove
-    grDevices = importr("grDevices")
-    grDevices.pdf(file='Rplot.pdf')
-    grDevices.dev_off()
-    remove('Rplot.pdf')
-    png = grDevices.png(filename='Rplot.png', type='cairo')
-    grDevices.dev_off()
-    grDevices.postscript('Rplot.eps')
-    grDevices.dev_off()
-    remove('Rplot.eps')
+# def test_pdf_grDevices():
+#     from os import remove
+#     grDevices = importr("grDevices")
+#     grDevices.pdf(file='Rplot.pdf')
+#     grDevices.dev_off()
+#     remove('Rplot.pdf')
+#     png = grDevices.png(filename='Rplot.png', type='cairo')
+#     grDevices.dev_off()
+#     grDevices.postscript('Rplot.eps')
+#     grDevices.dev_off()
+#     remove('Rplot.eps')
