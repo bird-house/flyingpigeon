@@ -5,7 +5,7 @@ __all__ = [
         "wps_subset_points",
         "wps_indices_simple",
         "wps_indices_percentile",
-        "wps_weatherregimes_ra",
+        "wps_weatherregimes_reanalyse",
         "wps_weatherregimes_model",
         "wps_weatherregimes_projection",
         "wps_analogs_detection",

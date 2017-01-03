@@ -178,41 +178,41 @@ def gbifdic2csv(gbifdic):
     return gbif_csv
 
 
-def get_latlon(csv_file):
-    """
-    obsolete use latlon_gbifcsv
-    """
-
-    import csv
-    from collections import defaultdict
-    from numpy import empty
-    columns = defaultdict(list)
-
-    with open(csv_file, 'rb') as f:
-        reader = csv.DictReader(f, delimiter='\t')
-        for row in reader:
-            for (k, v) in row.items():
-                columns[k].append(v)
-
-    l = len(columns['decimallongitude'])
-
-    latlon = empty([l, 2], dtype=float, order='C')
-
-    c = 0
-    for i in range(0, l):
-        try:
-            latlon[i][0] = float(columns['decimallatitude'][i])
-            latlon[i][1] = float(columns['decimallongitude'][i])
-        except:
-            c = c + 1
-
-    logger.debug('failed to read in PA coordinates for %s rows ' % c)
-
-    nz = (latlon == 0).sum(1)
-    ll = latlon[nz == 0, :]
-
-    logger.info('read in PA coordinates for %s rows ' % len(ll[:, 0]))
-    return ll
+# def get_latlon(csv_file):
+#     """
+#     obsolete use latlon_gbifcsv
+#     """
+#
+#     import csv
+#     from collections import defaultdict
+#     from numpy import empty
+#     columns = defaultdict(list)
+#
+#     with open(csv_file, 'rb') as f:
+#         reader = csv.DictReader(f, delimiter='\t')
+#         for row in reader:
+#             for (k, v) in row.items():
+#                 columns[k].append(v)
+#
+#     l = len(columns['decimallongitude'])
+#
+#     latlon = empty([l, 2], dtype=float, order='C')
+#
+#     c = 0
+#     for i in range(0, l):
+#         try:
+#             latlon[i][0] = float(columns['decimallatitude'][i])
+#             latlon[i][1] = float(columns['decimallongitude'][i])
+#         except:
+#             c = c + 1
+#
+#     logger.debug('failed to read in PA coordinates for %s rows ' % c)
+#
+#     nz = (latlon == 0).sum(1)
+#     ll = latlon[nz == 0, :]
+#
+#     logger.info('read in PA coordinates for %s rows ' % len(ll[:, 0]))
+#     return ll
 
 
 def get_PAmask(coordinates=[], domain='EUR-11'):
@@ -319,7 +319,6 @@ def sort_indices(ncs_indices):
         for path in ncs_indices:
             if key in path:
                 indices_dic[key].append(path)
-
     return indices_dic
 
 
@@ -367,13 +366,14 @@ def get_gam(ncs_reference, PAmask):
                                                  occurence predicion based on ncs_reference files,
                                                  graphical visualisation of regression curves
     """
-    from netCDF4 import Dataset
-    from os.path import basename
-    from numpy import squeeze, ravel, isnan, nan, array, reshape
-
-    from flyingpigeon.utils import get_variable
 
     try:
+        from netCDF4 import Dataset
+        from os.path import basename
+        from numpy import squeeze, ravel, isnan, nan, array, reshape
+
+        from flyingpigeon.utils import get_variable
+
         from rpy2.robjects.packages import importr
         import rpy2.robjects as ro
         import rpy2.robjects.numpy2ri
@@ -423,7 +423,6 @@ def get_gam(ncs_reference, PAmask):
     eq = ro.Formula(str(form))
 
     gam_model = mgcv.gam(base.eval(eq), data=dataf, family=stats.binomial(), scale=-1, na_action=stats.na_exclude)
-
     grdevices = importr('grDevices')
 
     # ####################
@@ -438,7 +437,7 @@ def get_gam(ncs_reference, PAmask):
         # ip, info =  mkstemp(dir='.',suffix='.pdf')
         ip, info = mkstemp(dir='.', suffix='.png')
         infos.append(info)
-        grdevices.png(filename=info)
+        grdevices.png(filename=info, type='cairo')
         # grdevices.pdf(filename=info)
         # ylim = ro.IntVector([-6,6])
         trans = ro.r('function(x){exp(x)/(1+exp(x))}')

@@ -9,6 +9,7 @@ def test_caps():
                             '/wps:Process'
                             '/ows:Identifier')
     sorted_names = sorted(names.split())
+
     expected_names = [
         'analogs_compare',
         'analogs_detection',
@@ -33,7 +34,6 @@ def test_caps():
         'weatherregimes_model',
         'weatherregimes_projection',
         'weatherregimes_reanalyse',
-        'wps_c4i_simple_indice',
-    ]
-
+        'wps_c4i_simple_indice'
+        ]
     assert sorted_names == expected_names
