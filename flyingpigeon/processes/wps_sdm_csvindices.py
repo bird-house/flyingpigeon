@@ -3,8 +3,12 @@ Processes for Species distribution
 Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 """
 
+import tempfile
+
 from pywps.Process import WPSProcess
+
 from flyingpigeon.sdm import _SDMINDICES_
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -20,19 +24,17 @@ class SDMcsvindicesProcess(WPSProcess):
             metadata=[
                 {"title": "LWF", "href": "http://www.lwf.bayern.de/"},
                 {"title": "Doc",
-                 "href": "http://flyingpigeon.readthedocs.io/\
-                en/latest/descriptions/index.html#species-distribution-model"},
+                 "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#species-distribution-model"},  # NOQA
                 {"title": "Paper",
                  "href": "http://www.hindawi.com/journals/jcli/2013/787250/"},
                 {"title": "Tutorial",
-                 "href": "http://flyingpigeon.readthedocs.io/en/latest/\
-                 tutorials/sdm.html"},
-                ],
+                 "href": "http://flyingpigeon.readthedocs.io/en/latest/tutorials/sdm.html"},
+            ],
             abstract="Species distribution model for tree species based on GBIF"
-                " presence/absence data and precalculated Indices",
+                     " presence/absence data and precalculated Indices",
             statusSupported=True,
             storeSupported=True
-            )
+        )
 
         # Literal Input Data
         # ------------------
@@ -41,50 +43,50 @@ class SDMcsvindicesProcess(WPSProcess):
             identifier="input_indices",
             title="Precalculated Indices",
             abstract="Precalculated Indices as basis for the SDM calculation"
-                " (list of netCDF files or tar/zip archive)",
+                     " (list of netCDF files or tar/zip archive)",
             minOccurs=1,
             maxOccurs=500,
             # maxmegabites=50,
             formats=[{"mimeType": "application/x-netcdf"},
                      {"mimeType": "application/x-tar"},
                      {"mimeType": "application/zip"}],
-            )
+        )
 
         self.gbif = self.addComplexInput(
             identifier="gbif",
             title="GBIF csv file",
             abstract="GBIF table (csv) with tree occurence"
-                " (output of 'GBIF data fetch' process)",
+                     " (output of 'GBIF data fetch' process)",
             minOccurs=1,
             maxOccurs=1,
             # maxmegabites=50,
             formats=[{"mimeType": "text/csv"}],
-            )
+        )
 
         self.period = self.addLiteralInput(
             identifier="period",
             title="Reference period",
             abstract="Reference period for climate conditions"
-                " (all = entire timeseries)",
+                     " (all = entire timeseries)",
             default="all",
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
             allowedValues=['all', '1951-1980', '1961-1990',
                            '1971-2000', '1981-2010']
-            )
+        )
 
         self.archive_format = self.addLiteralInput(
             identifier="archive_format",
             title="Archive format",
             abstract="Result files will be compressed into archives."
-                " Choose an appropriate format.",
+                     " Choose an appropriate format.",
             default="tar",
             type=type(''),
             minOccurs=1,
             maxOccurs=1,
             allowedValues=['zip', 'tar']
-            )
+        )
 
         ###########
         # OUTPUTS
@@ -94,19 +96,19 @@ class SDMcsvindicesProcess(WPSProcess):
             identifier="output_gbif",
             title="Graphic of GBIF coordinates",
             abstract="PNG graphic file showing the presence of tree species"
-                " according to the CSV file",
+                     " according to the CSV file",
             formats=[{"mimeType": "image/png"}],
             asReference=True,
-            )
+        )
 
         self.output_PA = self.addComplexOutput(
             identifier="output_PA",
             title="Graphic of PA mask",
             abstract="PNG graphic file showing PA mask generated based"
-                " on netCDF spatial increment.",
+                     " on netCDF spatial increment.",
             formats=[{"mimeType": "image/png"}],
             asReference=True,
-            )
+        )
 
         self.output_reference = self.addComplexOutput(
             identifier="output_reference",
@@ -115,17 +117,17 @@ class SDMcsvindicesProcess(WPSProcess):
             formats=[{"mimeType": "application/x-tar"},
                      {"mimeType": "application/zip"}],
             asReference=True,
-            )
+        )
 
         self.output_prediction = self.addComplexOutput(
             identifier="output_prediction",
             title="predicted growth conditions",
             abstract="Archive (tar/zip) containing the netCDF files of the"
-                " predicted growth conditions.",
+                     " predicted growth conditions.",
             formats=[{"mimeType": "application/x-tar"},
                      {"mimeType": "application/zip"}],
             asReference=True,
-            )
+        )
 
         self.output_info = self.addComplexOutput(
             identifier="output_info",
@@ -133,7 +135,7 @@ class SDMcsvindicesProcess(WPSProcess):
             abstract="Graphics and information of the learning statistics",
             formats=[{"mimeType": "image/png"}],
             asReference=True,
-            )
+        )
 
     def execute(self):
         from os.path import basename
@@ -210,7 +212,7 @@ class SDMcsvindicesProcess(WPSProcess):
 
         for count, key in enumerate(indices_dic.keys()):
             try:
-                staus_nr = 40 + count*10
+                staus_nr = 40 + count * 10
                 self.status.set('Start processing of %s' % key, staus_nr)
                 ncs = indices_dic[key]
                 logger.info('with %s files' % len(ncs))
@@ -241,7 +243,7 @@ class SDMcsvindicesProcess(WPSProcess):
                     # raise Exception(msg)
 
                 try:
-                    self.status.set('land sea mask for predicted data',  staus_nr + 8)
+                    self.status.set('land sea mask for predicted data', staus_nr + 8)
                     from numpy import invert, isnan, nan, broadcast_arrays  # , array, zeros, linspace, meshgrid
                     mask = invert(isnan(PAmask))
                     mask = broadcast_arrays(prediction, mask)[1]
@@ -284,9 +286,8 @@ class SDMcsvindicesProcess(WPSProcess):
             from flyingpigeon.visualisation import concat_images
             stat_infosconcat = concat_images(stat_infos, orientation='v')
         except:
-            msg = 'failed to concat images'
-            logger.exception(msg)
-            raise Exception(msg)
+            logger.warn('failed to concat images')
+            _, stat_infosconcat = tempfile.mkstemp(suffix='.png', prefix='foobar-', dir='.')
 
         self.output_gbif.setValue(occurence_map)
         self.output_PA.setValue(PAmask_png)
