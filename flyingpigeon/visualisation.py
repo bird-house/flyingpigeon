@@ -301,36 +301,42 @@ def concat_images(images, orientation='v'):
     from PIL import Image
     import sys
 
-    open_images = map(Image.open, images)
-    w = max(i.size[0] for i in open_images)
-    h = max(i.size[1] for i in open_images)
-    nr = len(open_images)
+    try:
+        images_existing = [img for img in images if os.path.exists(img)]
+        open_images = map(Image.open, images_existing)
+        w = max(i.size[0] for i in open_images)
+        h = max(i.size[1] for i in open_images)
+        nr = len(open_images)
+    except Exception as e:
+        logger.debug('failed to prepare image concatenation')
+    try:
+        if orientation == 'v':
+            result = Image.new("RGB", (w, h * nr))
+            # p = nr # h / len(images)
+            for i in range(len(open_images)):
+                oi = open_images[i]
+                cw = oi.size[0]
+                ch = oi.size[1]
+                cp = h * i
+                box = [0, cp, cw, ch+cp]
+                result.paste(oi, box=box)
 
-    if orientation == 'v':
-        result = Image.new("RGB", (w, h * nr))
-        # p = nr # h / len(images)
-        for i in range(len(open_images)):
-            oi = open_images[i]
-            cw = oi.size[0]
-            ch = oi.size[1]
-            cp = h * i
-            box = [0, cp, cw, ch+cp]
-            result.paste(oi, box=box)
+        if orientation == 'h':
+            result = Image.new("RGB", (w * nr, h))
+            # p = nr # h / len(images)
+            for i in range(len(open_images)):
+                oi = open_images[i]
 
-    if orientation == 'h':
-        result = Image.new("RGB", (w * nr, h))
-        # p = nr # h / len(images)
-        for i in range(len(open_images)):
-            oi = open_images[i]
+                cw = oi.size[0]
+                ch = oi.size[1]
+                cp = w * i
+                box = [cp, 0, cw+cp, ch]
+                result.paste(oi, box=box)
 
-            cw = oi.size[0]
-            ch = oi.size[1]
-            cp = w * i
-            box = [cp, 0, cw+cp, ch]
-            result.paste(oi, box=box)
-
-    ip, image = mkstemp(dir='.', suffix='.png')
-    result.save(image)
+        ip, image = mkstemp(dir='.', suffix='.png')
+        result.save(image)
+    except Exception as e:
+        logger.exception('failed to concat images')
     return image
 
 
