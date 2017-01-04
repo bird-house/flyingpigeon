@@ -28,8 +28,8 @@ class SDMcsvindicesProcess(WPSProcess):
                  "href": "http://flyingpigeon.readthedocs.io/en/latest/\
                  tutorials/sdm.html"},
                 ],
-            abstract="Species distribution model for tree species based on GBIF\
-             presence/absence data and precalculated Indices",
+            abstract="Species distribution model for tree species based on GBIF"
+                " presence/absence data and precalculated Indices",
             statusSupported=True,
             storeSupported=True
             )
@@ -40,8 +40,8 @@ class SDMcsvindicesProcess(WPSProcess):
         self.input_indices = self.addComplexInput(
             identifier="input_indices",
             title="Precalculated Indices",
-            abstract="Precalculated Indices as basis for the SDM calculation \
-            (list of netCDF files or tar/zip archive )",
+            abstract="Precalculated Indices as basis for the SDM calculation"
+                " (list of netCDF files or tar/zip archive)",
             minOccurs=1,
             maxOccurs=500,
             # maxmegabites=50,
@@ -53,8 +53,8 @@ class SDMcsvindicesProcess(WPSProcess):
         self.gbif = self.addComplexInput(
             identifier="gbif",
             title="GBIF csv file",
-            abstract="GBIF table (csv) with tree occurence\
-             (output of 'GBIF data fetch' process )",
+            abstract="GBIF table (csv) with tree occurence"
+                " (output of 'GBIF data fetch' process)",
             minOccurs=1,
             maxOccurs=1,
             # maxmegabites=50,
@@ -64,8 +64,8 @@ class SDMcsvindicesProcess(WPSProcess):
         self.period = self.addLiteralInput(
             identifier="period",
             title="Reference period",
-            abstract="Reference period for climate conditions\
-            (all = entire timeseries)",
+            abstract="Reference period for climate conditions"
+                " (all = entire timeseries)",
             default="all",
             type=type(''),
             minOccurs=1,
@@ -77,8 +77,8 @@ class SDMcsvindicesProcess(WPSProcess):
         self.archive_format = self.addLiteralInput(
             identifier="archive_format",
             title="Archive format",
-            abstract="Result files will be compressed into archives.\
-                      Choose an appropriate format",
+            abstract="Result files will be compressed into archives."
+                " Choose an appropriate format.",
             default="tar",
             type=type(''),
             minOccurs=1,
@@ -93,8 +93,8 @@ class SDMcsvindicesProcess(WPSProcess):
         self.output_gbif = self.addComplexOutput(
             identifier="output_gbif",
             title="Graphic of GBIF coordinates",
-            abstract="PNG graphic file showing the presence of tree species\
-             according to the CSV file",
+            abstract="PNG graphic file showing the presence of tree species"
+                " according to the CSV file",
             formats=[{"mimeType": "image/png"}],
             asReference=True,
             )
@@ -102,8 +102,8 @@ class SDMcsvindicesProcess(WPSProcess):
         self.output_PA = self.addComplexOutput(
             identifier="output_PA",
             title="Graphic of PA mask",
-            abstract="PNG graphic file showing PA mask generated based \
-            on netCDF spatial increment",
+            abstract="PNG graphic file showing PA mask generated based"
+                " on netCDF spatial increment.",
             formats=[{"mimeType": "image/png"}],
             asReference=True,
             )
@@ -120,8 +120,8 @@ class SDMcsvindicesProcess(WPSProcess):
         self.output_prediction = self.addComplexOutput(
             identifier="output_prediction",
             title="predicted growth conditions",
-            abstract="Archive (tar/zip) containing the netCDF files of the\
-             predicted growth conditions",
+            abstract="Archive (tar/zip) containing the netCDF files of the"
+                " predicted growth conditions.",
             formats=[{"mimeType": "application/x-tar"},
                      {"mimeType": "application/zip"}],
             asReference=True,
