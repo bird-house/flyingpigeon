@@ -419,21 +419,23 @@ def get_gam(ncs_reference, PAmask):
         logger.exception(msg)
         raise Exception(msg)
 
-    dataf = ro.DataFrame(data)
-    eq = ro.Formula(str(form))
-
-    gam_model = mgcv.gam(base.eval(eq), data=dataf, family=stats.binomial(), scale=-1, na_action=stats.na_exclude)
-    grdevices = importr('grDevices')
+    try:
+        dataf = ro.DataFrame(data)
+        eq = ro.Formula(str(form))
+        gam_model = mgcv.gam(base.eval(eq), data=dataf, family=stats.binomial(), scale=-1, na_action=stats.na_exclude)
+    except Exception as e:
+        msg = 'failed to train the GAM model %s ' % e
+        logger.debug(msg)
 
     # ####################
     # plot response curves
     # ####################
-
-    from flyingpigeon.visualisation import concat_images
-    from tempfile import mkstemp
-    infos = []
-
     try:
+        from flyingpigeon.visualisation import concat_images
+        from tempfile import mkstemp
+        grdevices = importr('grDevices')
+
+        infos = []
         for i in range(1, len(ncs_reference) + 1):
             try:
                 # ip, info =  mkstemp(dir='.',suffix='.pdf')
@@ -447,7 +449,7 @@ def get_gam(ncs_reference, PAmask):
                               rug=False, cex_lab=1.4, cex_axis=1.4)
                 grdevices.dev_off()
             except Exception as e:
-                logger.exception('failed to plot GAM curves for %s.', i)
+                logger.debug('failed to plot GAM curves for %s.', i)
         infos_concat = concat_images(infos, orientation='h')
         predict_gam = mgcv.predict_gam(gam_model, type="response", progress="text", na_action=stats.na_exclude)
         prediction = array(predict_gam).reshape(domain)
