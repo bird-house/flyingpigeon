@@ -35,5 +35,5 @@ def test_caps():
         'weatherregimes_projection',
         'weatherregimes_reanalyse',
         'wps_c4i_simple_indice'
-        ]
+    ]
     assert sorted_names == expected_names
