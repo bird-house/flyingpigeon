@@ -6,6 +6,13 @@ grDevices = importr("grDevices")
 base = importr("base")
 
 
+def test_plot():
+    # ds = importr("datasets")
+    gr = importr("graphics")
+    gr.plot(500,400)
+    grDevices.dev_off()
+
+
 def test_plain():
     grDevices.pdf(file='Rplot.pdf')
     grDevices.dev_off()
