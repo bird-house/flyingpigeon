@@ -447,14 +447,12 @@ def get_gam(ncs_reference, PAmask):
                               rug=False, cex_lab=1.4, cex_axis=1.4)
                 grdevices.dev_off()
             except Exception as e:
-                msg 'failed to plot GAM curves for %s : %s ' % (i, e)
-                logger.debug(msg)
+                logger.exception('failed to plot GAM curves for %s.', i)
         infos_concat = concat_images(infos, orientation='h')
         predict_gam = mgcv.predict_gam(gam_model, type="response", progress="text", na_action=stats.na_exclude)
         prediction = array(predict_gam).reshape(domain)
     except Exception as e:
-        msg = 'failed to plot GAM curves %s' %  # coding=utf-8
-        logger.debug(msg)
+        logger.exception('failed to plot GAM curves.')
 
     return gam_model, prediction, infos_concat
 
