@@ -6,11 +6,11 @@ grDevices = importr("grDevices")
 base = importr("base")
 
 
-def test_plot():
+def test_graphics():
     # ds = importr("datasets")
     gr = importr("graphics")
     gr.plot(500,400)
-    grDevices.dev_off()
+    grDevices.graphics_off()
 
 
 def test_plain():
@@ -41,6 +41,11 @@ def test_png_sink():
     png = grDevices.png(filename='Rplot.png', type='cairo')
     grDevices.dev_off()
     base.unlink(logfile)
+
+
+def test_png_devcur():
+    png = grDevices.png(filename='Rplot.png', type='cairo')
+    base.invisible(grDevices.dev_off(base.as_integer(grDevices.dev_cur())))
 
 
 def test_png_invisible():
