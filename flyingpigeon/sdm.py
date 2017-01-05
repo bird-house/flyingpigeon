@@ -45,10 +45,10 @@ def latlon_gbifdic(gbifdic):
             latlon[i][1] = coord['decimalLongitude']
 
         logger.info('read in PA coordinates for %s rows ', len(coords))
-    except Exception as e:
+    except:
         msg = 'failed search GBIF data.'
         logger.exception(msg)
-        raise Exception(msg)
+        raise
     return latlon
 
 
@@ -84,7 +84,7 @@ def latlon_gbifcsv(csvfile):
         except:
             c = c + 1
 
-    logger.debug('failed to read in PA coordinates for %s rows ' % c)
+    logger.exception('failed to read in PA coordinates for %s rows ' % c)
     nz = (ll == 0).sum(1)
     latlon = ll[nz == 0, :]
     logger.info('read in PA coordinates for %s rows ' % len(latlon[:, 0]))
@@ -142,10 +142,10 @@ def get_gbif(taxon_name='Fagus sylvatica', bbox=[-10, -10, 10, 10]):
             logger.info('polyon fetched')
 
         results = [w for z in gbifdic for w in z]
-    except Exception:
+    except:
         msg = 'failed search GBIF data.'
         logger.exception(msg)
-        raise Exception(msg)
+        raise
     return results
 
 #
@@ -178,43 +178,6 @@ def gbifdic2csv(gbifdic):
     return gbif_csv
 
 
-# def get_latlon(csv_file):
-#     """
-#     obsolete use latlon_gbifcsv
-#     """
-#
-#     import csv
-#     from collections import defaultdict
-#     from numpy import empty
-#     columns = defaultdict(list)
-#
-#     with open(csv_file, 'rb') as f:
-#         reader = csv.DictReader(f, delimiter='\t')
-#         for row in reader:
-#             for (k, v) in row.items():
-#                 columns[k].append(v)
-#
-#     l = len(columns['decimallongitude'])
-#
-#     latlon = empty([l, 2], dtype=float, order='C')
-#
-#     c = 0
-#     for i in range(0, l):
-#         try:
-#             latlon[i][0] = float(columns['decimallatitude'][i])
-#             latlon[i][1] = float(columns['decimallongitude'][i])
-#         except:
-#             c = c + 1
-#
-#     logger.debug('failed to read in PA coordinates for %s rows ' % c)
-#
-#     nz = (latlon == 0).sum(1)
-#     ll = latlon[nz == 0, :]
-#
-#     logger.info('read in PA coordinates for %s rows ' % len(ll[:, 0]))
-#     return ll
-
-
 def get_PAmask(coordinates=[], domain='EUR-11'):
     """
     generates a matrix with 1/0 values over land areas. (NaN for water regions)
@@ -235,7 +198,7 @@ def get_PAmask(coordinates=[], domain='EUR-11'):
     elif domain == 'EUR-44':
         nc = DIR_MASKS + '/EUR-44.nc'
     else:
-        logger.debug('domain not found')
+        logger.warn('domain not found')
 
     ds = Dataset(nc, mode='r')
     lats = ds.variables['lat']
@@ -293,11 +256,11 @@ def get_indices(resources, indices):
                         logger.info('Successful calculated indice %s %s' % (key, indice))
                     else:
                         msg = 'failed to calculate indice %s %s' % (key, indice)
-                        logger.debug(msg)
-            except Exception:
+                        logger.exception(msg)
+            except:
                 msg = 'failed to calculate indice %s %s' % (key, indice)
                 logger.exception(msg)
-                raise Exception(msg)
+                raise
     return ncs_indices
 
 
@@ -325,8 +288,10 @@ def sort_indices(ncs_indices):
 def get_reference(ncs_indices, period='all'):
     """
     calculates the netCDF files containing the mean climatology for statistical GAM training
+
     :param ncs_indices: list of climate indices defining the growing conditions of tree species
     :param refperiod: time period for statistic training
+
     :return present: present conditions
     """
     from datetime import datetime as dt
@@ -384,19 +349,19 @@ def get_gam(ncs_reference, PAmask):
         stats = importr("stats")
         mgcv = importr("mgcv")
         logger.info('rpy2 modules imported')
-    except Exception as e:
-        msg = 'failed to import rpy2 modules %s' % e
+    except:
+        msg = 'failed to import rpy2 modules'
         logger.exception(msg)
-        raise Exception(msg)
+        raise
 
     try:
         data = {'PA': ro.FloatVector(ravel(PAmask))}
         domain = PAmask.shape
         logger.info('mask data converted to R float vector')
-    except Exception:
+    except:
         msg = 'failed to convert mask to R vector'
         logger.exception(msg)
-        raise Exception(msg)
+        raise Exception
 
     try:
         form = 'PA ~ '
@@ -414,18 +379,18 @@ def get_gam(ncs_reference, PAmask):
                 form = form + 's(%s, k=3)' % indice
             else:
                 form = form + ' + s(%s, k=3)' % indice
-    except Exception:
+    except:
         msg = 'form string generation for gam failed'
         logger.exception(msg)
-        raise Exception(msg)
+        raise Exception
 
     try:
         dataf = ro.DataFrame(data)
         eq = ro.Formula(str(form))
         gam_model = mgcv.gam(base.eval(eq), data=dataf, family=stats.binomial(), scale=-1, na_action=stats.na_exclude)
-    except Exception as e:
-        msg = 'failed to train the GAM model %s ' % e
-        logger.debug(msg)
+    except:
+        msg = 'failed to train the GAM model'
+        logger.exception(msg)
 
     # ####################
     # plot response curves
@@ -448,14 +413,13 @@ def get_gam(ncs_reference, PAmask):
                 mgcv.plot_gam(gam_model, trans=trans, shade='T', col='black', select=i, ylab='Predicted Probability',
                               rug=False, cex_lab=1.4, cex_axis=1.4)
                 grdevices.dev_off()
-            except Exception as e:
-                logger.debug('failed to plot GAM curves for %s.', i)
+            except:
+                logger.exception('failed to plot GAM curves for %s.', i)
         infos_concat = concat_images(infos, orientation='h')
         predict_gam = mgcv.predict_gam(gam_model, type="response", progress="text", na_action=stats.na_exclude)
         prediction = array(predict_gam).reshape(domain)
-    except Exception as e:
+    except:
         logger.exception('failed to plot GAM curves.')
-
     return gam_model, prediction, infos_concat
 
 
@@ -543,7 +507,7 @@ def write_to_file(nc_indice, data):
         vals.standard_name = 'tree'
         vals.units = '0-1'
         ds.close()
-    except Exception as e:
-        msg = 'failed to fill data to netCDF file %s ' % e
-        logger.debug(msg)
+    except:
+        msg = 'failed to fill data to netCDF file'
+        logger.exception(msg)
     return nc

@@ -151,13 +151,13 @@ class SDMcsvindicesProcess(WPSProcess):
             period = self.getInputValues(identifier='period')
             period = period[0]
             archive_format = self.archive_format.getValue()
-        except Exception as e:
-            logger.error('failed to read in the arguments %s ' % e)
+        except:
+            logger.error('failed to read in the arguments')
 
         try:
             self.status.set('read in latlon coordinates', 10)
             latlon = sdm.latlon_gbifcsv(csv_file)
-        except Exception as e:
+        except:
             logger.exception('failed to extract the latlon points')
 
         try:
@@ -165,8 +165,8 @@ class SDMcsvindicesProcess(WPSProcess):
             from flyingpigeon.visualisation import map_gbifoccurrences
             # latlon = sdm.latlon_gbifdic(gbifdic)
             occurence_map = map_gbifoccurrences(latlon)
-        except Exception as e:
-            logger.exception('failed to plot occurence map %s' % e)
+        except:
+            logger.exception('failed to plot occurence map')
 
         try:
             self.status.set('get domain', 30)
@@ -176,25 +176,25 @@ class SDMcsvindicesProcess(WPSProcess):
                 domains = domains.union([basename(indice).split('_')[1]])
             if len(domains) == 1:
                 domain = list(domains)[0]
-                logger.debug('Domain %s found in indices files' % domain)
+                logger.exception('Domain %s found in indices files' % domain)
             else:
                 logger.error('Not a single domain in indices files %s' % domains)
-        except Exception as e:
-            logger.exception('failed to get domains %s' % e)
+        except:
+            logger.exception('failed to get domains')
 
         try:
             self.status.set('generating the PA mask', 20)
             PAmask = sdm.get_PAmask(coordinates=latlon, domain=domain)
             logger.info('PA mask sucessfully generated')
-        except Exception as e:
-            logger.exception('failed to generate the PA mask: %s' % e)
+        except:
+            logger.exception('failed to generate the PA mask')
 
         try:
             self.status.set('Ploting PA mask', 25)
             from flyingpigeon.visualisation import map_PAmask
             PAmask_png = map_PAmask(PAmask)
-        except Exception as e:
-            logger.exception('failed to plot the PA mask: %s' % e)
+        except:
+            logger.exception('failed to plot the PA mask')
 
         try:
             # sort indices
@@ -210,6 +210,7 @@ class SDMcsvindicesProcess(WPSProcess):
         species_files = []
         stat_infos = []
 
+        self.status.set('Start processing for %s satasets' % len(indices_dic.keys()))
         for count, key in enumerate(indices_dic.keys()):
             try:
                 staus_nr = 40 + count * 10
@@ -224,21 +225,21 @@ class SDMcsvindicesProcess(WPSProcess):
                 except:
                     msg = 'failed to calculate the reference'
                     logger.exception(msg)
-                    raise Exception(msg)
+                    # raise Exception(msg)
 
                 try:
                     gam_model, predict_gam, gam_info = sdm.get_gam(ncs_reference, PAmask)
                     stat_infos.append(gam_info)
                     self.status.set('GAM sucessfully trained', staus_nr + 5)
-                except Exception as e:
-                    msg = 'failed to train GAM for %s : %s' % (key, e)
-                    logger.debug(msg)
+                except:
+                    msg = 'failed to train GAM for %s' % (key)
+                    logger.exception(msg)
 
                 try:
                     prediction = sdm.get_prediction(gam_model, ncs)
                     self.status.set('prediction done', staus_nr + 7)
-                except Exception as e:
-                    msg = 'failed to predict tree occurence %s' % e
+                except:
+                    msg = 'failed to predict tree occurence'
                     logger.exception(msg)
                     # raise Exception(msg)
 
@@ -248,24 +249,23 @@ class SDMcsvindicesProcess(WPSProcess):
                     mask = invert(isnan(PAmask))
                     mask = broadcast_arrays(prediction, mask)[1]
                     prediction[mask is False] = nan
-                except Exception as e:
-                    logger.debug('failed to mask predicted data: %s' % e)
+                except:
+                    logger.exception('failed to mask predicted data')
 
                 try:
                     species_files.append(sdm.write_to_file(ncs[0], prediction))
                     logger.info('Favourabillity written to file')
-                except Exception as e:
-                    msg = 'failed to write species file %s' % e
-                    logger.debug(msg)
+                except:
+                    msg = 'failed to write species file'
+                    logger.exception(msg)
                     # raise Exception(msg)
-
-            except Exception as e:
-                msg = 'failed to calculate reference indices. %s ' % e
+            except:
+                msg = 'failed to process SDM chain for %s ' % key
                 logger.exception(msg)
-                raise Exception(msg)
+                # raise Exception(msg)
 
-        archive_references = None
         try:
+            archive_references = None
             archive_references = archive(ncs_references, format=archive_format)
             logger.info('indices 2D added to archive')
         except:

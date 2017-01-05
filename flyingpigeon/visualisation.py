@@ -307,8 +307,8 @@ def concat_images(images, orientation='v'):
         w = max(i.size[0] for i in open_images)
         h = max(i.size[1] for i in open_images)
         nr = len(open_images)
-    except Exception as e:
-        logger.debug('failed to prepare image concatenation')
+    except:
+        logger.exception('failed to prepare image concatenation')
     try:
         if orientation == 'v':
             result = Image.new("RGB", (w, h * nr))
@@ -335,7 +335,7 @@ def concat_images(images, orientation='v'):
 
         ip, image = mkstemp(dir='.', suffix='.png')
         result.save(image)
-    except Exception as e:
+    except:
         logger.exception('failed to concat images')
     return image
 
@@ -398,12 +398,12 @@ def map_PAmask(PAmask):
 
 
 # def plot_tSNE(data, title='custer', sub_title='method: principal components'):
-    """
-    !!!Obsolete!!!
-    plot the output of weather classifiaction as a cluster
-    :param param: values for x y coordinate
-    :param title: string for title
-    """
+#     """
+#     !!!Obsolete!!!
+#     plot the output of weather classifiaction as a cluster
+#     :param param: values for x y coordinate
+#     :param title: string for title
+#     """
     # fig = plt.figure(figsize=(10, 10))
     # plt.scatter(data[:, 0], data[:, 1], marker=".")
     # plt.title(title)
