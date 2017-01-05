@@ -222,6 +222,7 @@ class SDMcsvindicesProcess(WPSProcess):
                     ncs_references.extend(ncs_reference)
                     logger.info('reference indice calculated %s '
                                 % ncs_references)
+                    self.status.set('reference indice calculated', staus_nr + 2)
                 except:
                     msg = 'failed to calculate the reference'
                     logger.exception(msg)
