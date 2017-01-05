@@ -379,15 +379,17 @@ def get_gam(ncs_reference, PAmask):
                 form = form + 's(%s, k=3)' % indice
             else:
                 form = form + ' + s(%s, k=3)' % indice
+        logger.info('form string generated for gam model')
     except:
         msg = 'form string generation for gam failed'
         logger.exception(msg)
-        raise Exception
+        # raise Exception
 
     try:
         dataf = ro.DataFrame(data)
         eq = ro.Formula(str(form))
         gam_model = mgcv.gam(base.eval(eq), data=dataf, family=stats.binomial(), scale=-1, na_action=stats.na_exclude)
+        logger.info('GAM model trained')
     except:
         msg = 'failed to train the GAM model'
         logger.exception(msg)
@@ -413,13 +415,22 @@ def get_gam(ncs_reference, PAmask):
                 mgcv.plot_gam(gam_model, trans=trans, shade='T', col='black', select=i, ylab='Predicted Probability',
                               rug=False, cex_lab=1.4, cex_axis=1.4)
                 grdevices.dev_off()
+                logger.info('plot GAM curves for %s.', i)
             except:
                 logger.exception('failed to plot GAM curves for %s.', i)
-        infos_concat = concat_images(infos, orientation='h')
-        predict_gam = mgcv.predict_gam(gam_model, type="response", progress="text", na_action=stats.na_exclude)
-        prediction = array(predict_gam).reshape(domain)
+        # concatinate GAM curves
+        try:
+            infos_concat = concat_images(infos, orientation='h')
+            loger.warn('image concatination done in SDM process, but can be a dummy picture')
+        except:
+            logger.exception('image concatination failed in SDM process')
+        try:
+            predict_gam = mgcv.predict_gam(gam_model, type="response", progress="text", na_action=stats.na_exclude)
+            prediction = array(predict_gam).reshape(domain)
+        except:
+            logger.exception('failed to process SDM prediction')
     except:
-        logger.exception('failed to plot GAM curves.')
+        logger.exception('failed to plot GAM curves')
     return gam_model, prediction, infos_concat
 
 

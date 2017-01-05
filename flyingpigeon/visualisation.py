@@ -17,28 +17,6 @@ from flyingpigeon import utils
 
 logger = logging.getLogger(__name__)
 
-# import os
-# from tempfile import mkstemp
-# from netCDF4 import Dataset
-# from datetime import datetime, date
-# import numpy as np
-#
-# from flyingpigeon import utils
-#
-# import logging
-#
-# import matplotlib
-# matplotlib.use('Agg')   # use this if no xserver is available
-# from matplotlib import pyplot as plt
-# from matplotlib.colors import Normalize
-#
-# from cartopy import config
-# from cartopy.util import add_cyclic_point
-# import cartopy.crs as ccrs
-#
-# logger = logging.getLogger(__name__)
-
-
 class MidpointNormalize(Normalize):
     def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
         self.midpoint = midpoint
@@ -301,42 +279,52 @@ def concat_images(images, orientation='v'):
     from PIL import Image
     import sys
 
-    try:
-        images_existing = [img for img in images if os.path.exists(img)]
-        open_images = map(Image.open, images_existing)
-        w = max(i.size[0] for i in open_images)
-        h = max(i.size[1] for i in open_images)
-        nr = len(open_images)
-    except:
-        logger.exception('failed to prepare image concatenation')
-    try:
-        if orientation == 'v':
-            result = Image.new("RGB", (w, h * nr))
-            # p = nr # h / len(images)
-            for i in range(len(open_images)):
-                oi = open_images[i]
-                cw = oi.size[0]
-                ch = oi.size[1]
-                cp = h * i
-                box = [0, cp, cw, ch+cp]
-                result.paste(oi, box=box)
+    logger.debug('Images to be concatinated: %s' % images)
 
-        if orientation == 'h':
-            result = Image.new("RGB", (w * nr, h))
-            # p = nr # h / len(images)
-            for i in range(len(open_images)):
-                oi = open_images[i]
+    if len(images > 1):
+        try:
+            images_existing = [img for img in images if os.path.exists(img)]
+            open_images = map(Image.open, images_existing)
+            w = max(i.size[0] for i in open_images)
+            h = max(i.size[1] for i in open_images)
+            nr = len(open_images)
+        except:
+            logger.exception('failed to prepare image concatenation')
+        try:
+            if orientation == 'v':
+                result = Image.new("RGB", (w, h * nr))
+                # p = nr # h / len(images)
+                for i in range(len(open_images)):
+                    oi = open_images[i]
+                    cw = oi.size[0]
+                    ch = oi.size[1]
+                    cp = h * i
+                    box = [0, cp, cw, ch+cp]
+                    result.paste(oi, box=box)
 
-                cw = oi.size[0]
-                ch = oi.size[1]
-                cp = w * i
-                box = [cp, 0, cw+cp, ch]
-                result.paste(oi, box=box)
+            if orientation == 'h':
+                result = Image.new("RGB", (w * nr, h))
+                # p = nr # h / len(images)
+                for i in range(len(open_images)):
+                    oi = open_images[i]
 
-        ip, image = mkstemp(dir='.', suffix='.png')
+                    cw = oi.size[0]
+                    ch = oi.size[1]
+                    cp = w * i
+                    box = [cp, 0, cw+cp, ch]
+                    result.paste(oi, box=box)
+
+            ip, image = mkstemp(dir='.', suffix='.png')
+            result.save(image)
+        except:
+            logger.exception('failed to concat images')
+    elif len(images) == 1:
+        image = images
+    else:
+        logger.error('No concatable number of images: %s, Dummy will be produced' % len(image))
+        _, image = mkstemp(dir='.', suffix='.png')
+        result = Image.new("RGB", (50, 50))
         result.save(image)
-    except:
-        logger.exception('failed to concat images')
     return image
 
 

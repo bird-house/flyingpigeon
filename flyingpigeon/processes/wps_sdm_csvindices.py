@@ -176,9 +176,9 @@ class SDMcsvindicesProcess(WPSProcess):
                 domains = domains.union([basename(indice).split('_')[1]])
             if len(domains) == 1:
                 domain = list(domains)[0]
-                logger.exception('Domain %s found in indices files' % domain)
+                logger.info('Domain %s found in indices files' % domain)
             else:
-                logger.error('Not a single domain in indices files %s' % domains)
+                logger.warn('NOT a single domain in indices files %s' % domains)
         except:
             logger.exception('failed to get domains')
 
@@ -210,7 +210,7 @@ class SDMcsvindicesProcess(WPSProcess):
         species_files = []
         stat_infos = []
 
-        self.status.set('Start processing for %s satasets' % len(indices_dic.keys()))
+        self.status.set('Start processing for %s Datasets' % len(indices_dic.keys()))
         for count, key in enumerate(indices_dic.keys()):
             try:
                 staus_nr = 40 + count * 10
