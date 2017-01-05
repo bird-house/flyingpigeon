@@ -288,9 +288,6 @@ def concat_images(images, orientation='v'):
             w = max(i.size[0] for i in open_images)
             h = max(i.size[1] for i in open_images)
             nr = len(open_images)
-        except:
-            logger.exception('failed to prepare image concatenation')
-        try:
             if orientation == 'v':
                 result = Image.new("RGB", (w, h * nr))
                 # p = nr # h / len(images)
@@ -318,6 +315,9 @@ def concat_images(images, orientation='v'):
             result.save(image)
         except:
             logger.exception('failed to concat images')
+            _, image = mkstemp(dir='.', suffix='.png')
+            result = Image.new("RGB", (50, 50))
+            result.save(image)
     elif len(images) == 1:
         image = images
     else:
