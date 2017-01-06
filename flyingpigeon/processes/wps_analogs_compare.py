@@ -249,6 +249,7 @@ class AnalogsProcess(WPSProcess):
         refEn = self.getInputValues(identifier='refEn')
         dateSt = self.getInputValues(identifier='dateSt')
         dateEn = self.getInputValues(identifier='dateEn')
+        nanalog = int(self.getInputValues(identifier='nanalog')[0])
         direction = self.getInputValues(identifier='direction')[0]
         normalize = self.getInputValues(identifier='normalize')[0]
         distance = self.getInputValues(identifier='dist')[0]
