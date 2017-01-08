@@ -249,6 +249,7 @@ class AnalogsProcess(WPSProcess):
         refEn = self.getInputValues(identifier='refEn')
         dateSt = self.getInputValues(identifier='dateSt')
         dateEn = self.getInputValues(identifier='dateEn')
+        seasonwin = int(self.getInputValues(identifier='seasonwin')[0])
         nanalog = int(self.getInputValues(identifier='nanalog')[0])
         direction = self.getInputValues(identifier='direction')[0]
         normalize = self.getInputValues(identifier='normalize')[0]
@@ -260,20 +261,20 @@ class AnalogsProcess(WPSProcess):
 
         try:
             if direction == 're2mo':
+                anaSt = dt.strptime(dateSt[0], '%Y-%m-%d')
+                anaEn = dt.strptime(dateEn[0], '%Y-%m-%d')
                 refSt = dt.strptime(refSt[0], '%Y-%m-%d')
                 refEn = dt.strptime(refEn[0], '%Y-%m-%d')
-                dateSt = dt.strptime(dateSt[0], '%Y-%m-%d')
-                dateEn = dt.strptime(dateEn[0], '%Y-%m-%d')
             elif direction == 'mo2re':
-                dateSt = dt.strptime(refSt[0], '%Y-%m-%d')
-                dateEn = dt.strptime(refEn[0], '%Y-%m-%d')
+                anaSt = dt.strptime(refSt[0], '%Y-%m-%d')
+                anaEn = dt.strptime(refEn[0], '%Y-%m-%d')
                 refSt = dt.strptime(dateSt[0], '%Y-%m-%d')
                 refEn = dt.strptime(dateEn[0], '%Y-%m-%d')
             else:
-                logger.error('failed to find time periods for comparison direction')
-        except Exception as e:
-            msg = 'failed to put simulation and reference time in order %s ' % e
-            logger.debug(msg)
+                logger.exception('failed to find time periods for comparison direction')
+        except:
+            msg = 'failed to put simulation and reference time in order'
+            logger.exception(msg)
             raise Exception(msg)
 
         if normalize == 'None':
@@ -286,7 +287,7 @@ class AnalogsProcess(WPSProcess):
         elif outformat == 'netCDF':
             outformat = '.nc'
         else:
-            logger.error('output format not valid')
+            logger.exception('output format not valid')
         if bbox_obj is not None:
             logger.info("bbox_obj={0}".format(bbox_obj.coords))
             bbox = [bbox_obj.coords[0][0],
@@ -317,14 +318,14 @@ class AnalogsProcess(WPSProcess):
                     level = None
                     # conform_units_to='hPa'
             else:
-                logger.error('Reanalyses dataset not known')
+                logger.exception('Reanalyses dataset not known')
             logger.info('environment set')
-        except Exception as e:
-            msg = 'failed to set environment %s ' % e
-            logger.error(msg)
+        except:
+            msg = 'failed to set environment'
+            logger.exception(msg)
             raise Exception(msg)
 
-        logger.debug("init took %s seconds.", time.time() - start_time)
+        logger.exception("init took %s seconds.", time.time() - start_time)
         self.status.set('Read in the arguments', 5)
 
         #################
@@ -333,15 +334,14 @@ class AnalogsProcess(WPSProcess):
         start_time = time.time()  # measure get_input_data ...
         self.status.set('fetching input data', 7)
         try:
-            nc_reanalyses = reanalyses(start=dateSt.year, end=dateEn.year,
+            nc_reanalyses = reanalyses(start=anaSt.year, end=anaEn.year,
                                        variable=var, dataset=dataset)
             nc_subset = call(resource=nc_reanalyses, variable=var, geom=bbox)
-            logger.debug("get_input_subset_dataset took %s seconds.",
-                         time.time() - start_time)
+            logger.exception("get_input_subset_dataset took %s seconds.", time.time() - start_time)
             self.status.set('**** Input data fetched', 10)
-        except Exception as e:
-            msg = 'failed to fetch or subset input files %s' % e
-            logger.error(msg)
+        except:
+            msg = 'failed to fetch or subset input files'
+            logger.exception(msg)
             raise Exception(msg)
 
         ########################
@@ -354,10 +354,10 @@ class AnalogsProcess(WPSProcess):
             if direction == 're2mo':
                 try:
                     self.status.set('Preparing simulation data', 15)
-                    reanalyses_subset = call(resource=nc_subset, time_range=[dateSt, dateEn])
+                    reanalyses_subset = call(resource=nc_subset, time_range=[anaSt, anaEn])
                 except:
                     msg = 'failed to prepare simulation period'
-                    logger.debug(msg)
+                    logger.exception(msg)
                 try:
                     self.status.set('Preparing target data', 17)
                     var_target = get_variable(resource)
@@ -370,9 +370,9 @@ class AnalogsProcess(WPSProcess):
                                         # spatial_wrapping='wrap',
                                         regrid_destination=reanalyses_subset,
                                         regrid_options='bil')
-                except Exception as e:
-                    msg = 'failed subset archive dataset %s ' % e
-                    logger.debug(msg)
+                except:
+                    msg = 'failed subset archive dataset'
+                    logger.exception(msg)
                     raise Exception(msg)
             else:
                 try:
@@ -386,22 +386,22 @@ class AnalogsProcess(WPSProcess):
                                         # conform_units_to=conform_units_to,
                                         # spatial_wrapping='wrap',
                                         )
-                except Exception as e:
-                    msg = 'failed subset archive dataset %s ' % e
-                    logger.debug(msg)
+                except:
+                    msg = 'failed subset archive dataset'
+                    logger.exception(msg)
                     raise Exception(msg)
                 try:
                     self.status.set('Preparing simulation data', 15)
                     reanalyses_subset = call(resource=nc_subset,
-                                             time_range=[dateSt, dateEn],
+                                             time_range=[anaSt, anaEn],
                                              regrid_destination=model_subset,
                                              regrid_options='bil')
                 except:
                     msg = 'failed to prepare simulation period'
-                    logger.debug(msg)
-        except Exeption as e:
-            msg = 'failed to subset simulation or reference data %s ' % e
-            logger.debug(msg)
+                    logger.exception(msg)
+        except:
+            msg = 'failed to subset simulation or reference data'
+            logger.exception(msg)
             raise Exception(msg)
 
         try:
@@ -412,20 +412,21 @@ class AnalogsProcess(WPSProcess):
                 simulation = reanalyses_subset
                 archive = model_subset
             else:
-                logger.error('direction not valid: %s ' % direction)
-        except Exception as e:
-            msg = 'failed to find comparison direction %s' % e
-            logger.debug(msg)
+                logger.exception('direction not valid: %s ' % direction)
+        except:
+            msg = 'failed to find comparison direction'
+            logger.exception(msg)
             raise Exception(msg)
 
         try:
-            if var != var_target:
-                rename_variable(archive, oldname=var_target, newname=var)
-                logger.info('varname %s in netCDF renamed to %s'
-                            % (var_target, var))
-        except Exception as e:
-            msg = 'failed to rename variable in target files %s ' % e
-            logger.debug(msg)
+            var_archive = get_variable(archive)
+            var_simulation = get_variable(simulation)
+            if var_archive != var_simulation:
+                rename_variable(archive, oldname=var_archive, newname=var_simulation)
+                logger.info('varname %s in netCDF renamed to %s' % (var_archive, var_simulation))
+        except:
+            msg = 'failed to rename variable in target files'
+            logger.exception(msg)
             raise Exception(msg)
 
         try:
@@ -435,17 +436,16 @@ class AnalogsProcess(WPSProcess):
                                         method=normalize)
             else:
                 seasoncyc_base, seasoncyc_sim = None
-        except Exception as e:
-            msg = 'failed to prepare seasonal cycle reference files %s ' % e
-            logger.debug(msg)
+        except:
+            msg = 'failed to prepare seasonal cycle reference files'
+            logger.exception(msg)
             raise Exception(msg)
 
         ip, output = mkstemp(dir='.', suffix='.txt')
         output_file = path.abspath(output)
         files = [path.abspath(archive), path.abspath(simulation), output_file]
 
-        logger.debug("data preperation took %s seconds.",
-                     time.time() - start_time)
+        logger.exception("data preperation took %s seconds.", time.time() - start_time)
 
         ############################
         # generating the config file
@@ -472,12 +472,12 @@ class AnalogsProcess(WPSProcess):
                 period=[dt.strftime(refSt, '%Y-%m-%d'),
                         dt.strftime(refEn, '%Y-%m-%d')],
                 bbox="%s,%s,%s,%s" % (bbox[0], bbox[2], bbox[1], bbox[3]))
-        except Exception as e:
-            msg = 'failed to generate config file %s ' % e
-            logger.debug(msg)
+        except:
+            msg = 'failed to generate config file'
+            logger.exception(msg)
             raise Exception(msg)
 
-        logger.debug("write_config took %s seconds.", time.time() - start_time)
+        logger.exception("write_config took %s seconds.", time.time() - start_time)
 
         #######################
         # CASTf90 call
@@ -499,14 +499,14 @@ class AnalogsProcess(WPSProcess):
                 stderr=subprocess.PIPE
                 ).communicate()
             logger.info('analogue.out info:\n %s ' % output)
-            logger.debug('analogue.out errors:\n %s ' % error)
+            logger.exception('analogue.out errors:\n %s ' % error)
             self.status.set('**** CASTf90 suceeded', 90)
-        except Exception as e:
-            msg = 'CASTf90 failed %s ' % e
-            logger.error(msg)
+        except:
+            msg = 'CASTf90 failed'
+            logger.exception(msg)
             raise Exception(msg)
 
-        logger.debug("castf90 took %s seconds.", time.time() - start_time)
+        logger.exception("castf90 took %s seconds.", time.time() - start_time)
 
         self.status.set('preparting output', 99)
         self.config.setValue(config_file)
@@ -515,5 +515,4 @@ class AnalogsProcess(WPSProcess):
         self.target_netcdf.setValue(archive)
 
         self.status.set('execution ended', 100)
-        logger.debug("total execution took %s seconds.",
-                     time.time() - process_start_time)
+        logger.exception("total execution took %s seconds.", time.time() - process_start_time)
