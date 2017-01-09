@@ -1,10 +1,11 @@
+import os
 import logging
 
 
 def init_process_logger(filename=None):
     filename = filename or 'log.txt'
     # create console handler and set level to debug
-    ch = logging.FileHandler(filename=filename, mode="w", delay=False)
+    ch = logging.FileHandler(filename=filename, mode="a", delay=False)
     ch.setLevel(logging.DEBUG)
 
     # create formatter
