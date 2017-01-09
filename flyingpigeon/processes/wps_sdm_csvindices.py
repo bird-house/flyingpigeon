@@ -8,6 +8,7 @@ import tempfile
 from pywps.Process import WPSProcess
 
 from flyingpigeon.sdm import _SDMINDICES_
+from flyingpigeon.log import init_process_logger
 
 import logging
 logger = logging.getLogger(__name__)
@@ -137,10 +138,21 @@ class SDMcsvindicesProcess(WPSProcess):
             asReference=True,
         )
 
+        self.output_log = self.addComplexOutput(
+            identifier="output_log",
+            title="Logging information",
+            abstract="Collected logs during process run.",
+            formats=[{"mimeType": "text/plain"}],
+            asReference=True,
+        )
+
     def execute(self):
         from os.path import basename
         from flyingpigeon import sdm
         from flyingpigeon.utils import archive, archiveextract  # , get_domain
+
+        init_process_logger('log.txt')
+        self.output_log.setValue('log.txt')
 
         self.status.set('Start process', 0)
 
