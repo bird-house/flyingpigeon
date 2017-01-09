@@ -434,8 +434,10 @@ def get_gam(ncs_reference, PAmask):
     # except:
     #     logger.exception('failed to plot GAM curves')
 
-    _,  infos_concat = mkstemp(dir='.', suffix='.png')
+    _, infos_concat = mkstemp(dir='.', suffix='.png')
 
+    # TODO: handle prediction
+    prediction = None
     return gam_model, prediction, infos_concat
 
 
