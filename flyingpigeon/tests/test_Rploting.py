@@ -22,8 +22,8 @@ def test_pdf_garbage():
 def test_png_garbage():
     png = grDevices.png(filename='Rplot.png')
     garbage = grDevices.dev_off()
-#
-#
+
+
 # def test_plain():
 #     grDevices.pdf(file='Rplot.pdf')
 #     grDevices.dev_off()
@@ -33,6 +33,7 @@ def test_png_garbage():
 #     grDevices.postscript('Rplot.eps')
 #     grDevices.dev_off()
 #     remove('Rplot.eps')
+#
 #
 #
 # def test_png_sink():
