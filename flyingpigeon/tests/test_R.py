@@ -29,9 +29,10 @@ def test_R_maps():
     maps = importr("maps")
 
 
-# def test_pdf_grDevices():
-#     from os import remove
-#     grDevices = importr("grDevices")
+def test_grDevices():
+    from os import remove
+    grDevices = importr("grDevices")
+
 #     grDevices.pdf(file='Rplot.pdf')
 #     grDevices.dev_off()
 #     remove('Rplot.pdf')
