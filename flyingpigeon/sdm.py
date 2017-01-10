@@ -1,3 +1,5 @@
+from tempfile import mkstemp
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -397,43 +399,45 @@ def get_gam(ncs_reference, PAmask):
     # ####################
     # plot response curves
     # ####################
+    # try:
+    #     from flyingpigeon.visualisation import concat_images
+    #     from tempfile import mkstemp
+    #     grdevices = importr('grDevices')
+    #
+    #     infos = []
+    #     for i in range(1, len(ncs_reference) + 1):
+    #         try:
+    #             # ip, info =  mkstemp(dir='.',suffix='.pdf')
+    #             ip, info = mkstemp(dir='.', suffix='.png')
+    #             infos.append(info)
+    #             grdevices.png(filename=info, type='cairo')
+    #             # grdevices.pdf(filename=info)
+    #             # ylim = ro.IntVector([-6,6])
+    #             trans = ro.r('function(x){exp(x)/(1+exp(x))}')
+    #             mgcv.plot_gam(gam_model, trans=trans, shade='T', col='black', select=i, ylab='Predicted Probability',
+    #                           rug=False, cex_lab=1.4, cex_axis=1.4)
+    #             grdevices.dev_off()
+    #             logger.info('plot GAM curves for %s.', i)
+    #         except:
+    #             logger.exception('failed to plot GAM curves for %s.', i)
+    #     # concatinate GAM curves
+    #     try:
+    #         infos_concat = concat_images(infos, orientation='h')
+    #         loger.warn('image concatination done in SDM process, but can be a dummy picture')
+    #     except:
+    #         logger.exception('image concatination failed in SDM process')
+    #     try:
+    #         predict_gam = mgcv.predict_gam(gam_model, type="response", progress="text", na_action=stats.na_exclude)
+    #         prediction = array(predict_gam).reshape(domain)
+    #     except:
+    #         logger.exception('failed to process SDM prediction')
+    # except:
+    #     logger.exception('failed to plot GAM curves')
 
-    try:
-        from flyingpigeon.visualisation import concat_images
-        from tempfile import mkstemp
-        grdevices = importr('grDevices')
+    _, infos_concat = mkstemp(dir='.', suffix='.png')
 
-        infos = []
-        for i in range(1, len(ncs_reference) + 1):
-            try:
-                ip, info = mkstemp(dir='.', suffix='.pdf')
-                # ip, info = mkstemp(dir='.', suffix='.png')
-                infos.append(info)
-                # grdevices.png(filename=info, type='cairo')
-                grdevices.pdf(filename=info)
-                # ylim = ro.IntVector([-6,6])
-                trans = ro.r('function(x){exp(x)/(1+exp(x))}')
-                mgcv.plot_gam(gam_model, trans=trans, shade='T', col='black', select=i, ylab='Predicted Probability',
-                              rug=False, cex_lab=1.4, cex_axis=1.4)
-                _ = grdevices.dev_off()
-                logger.info('plot GAM curves for %s.', i)
-            except:
-                logger.exception('failed to plot GAM curves for %s.', i)
-        # concatinate GAM curves
-        # try:
-        #     infos_concat = concat_images(infos, orientation='h')
-        #     loger.warn('image concatination done in SDM process, but can be a dummy picture')
-        # except:
-        #     logger.exception('image concatination failed in SDM process')
-        try:
-            predict_gam = mgcv.predict_gam(gam_model, type="response", progress="text", na_action=stats.na_exclude)
-            prediction = array(predict_gam).reshape(domain)
-        except:
-            logger.exception('failed to process SDM prediction')
-    except:
-        logger.exception('failed to plot GAM curves')
-        _,  infos_concat = mkstemp(dir='.', suffix='.pdf')
-    infos_concat = infos[0]
+    # TODO: handle prediction
+    prediction = None
     return gam_model, prediction, infos_concat
 
 
