@@ -1,4 +1,4 @@
-VERSION := 0.3.6
+VERSION := 0.3.7
 RELEASE := master
 
 # Include custom config if it is available
@@ -223,7 +223,7 @@ envclean: stop
 .PHONY: srcclean
 srcclean:
 	@echo "Removing *.pyc files ..."
-	@-find $(APP_ROOT) -type f -name "*.pyc" -print0 | xargs -0r rm
+	@-find $(APP_ROOT) -type f -name "*.pyc" -print | xargs rm
 
 .PHONY: distclean
 distclean: backup clean
