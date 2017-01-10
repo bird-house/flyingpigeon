@@ -134,7 +134,7 @@ class SDMcsvindicesProcess(WPSProcess):
             identifier="output_info",
             title="GAM statistics information",
             abstract="Graphics and information of the learning statistics",
-            formats=[{"mimeType": "image/png"}],
+            formats=[{"mimeType": "application/pdf"}],
             asReference=True,
         )
 
@@ -296,11 +296,13 @@ class SDMcsvindicesProcess(WPSProcess):
             raise Exception(msg)
 
         try:
-            from flyingpigeon.visualisation import concat_images
-            stat_infosconcat = concat_images(stat_infos, orientation='v')
+            # from flyingpigeon.visualisation import concat_images
+            # stat_infosconcat = concat_images(stat_infos, orientation='v')
+            # TODO concat pdfs
+            stat_infosconcat = stat_infos[0]
         except:
             logger.warn('failed to concat images')
-            _, stat_infosconcat = tempfile.mkstemp(suffix='.png', prefix='foobar-', dir='.')
+            _, stat_infosconcat = tempfile.mkstemp(suffix='.pdf', prefix='foobar-', dir='.')
 
         self.output_gbif.setValue(occurence_map)
         self.output_PA.setValue(PAmask_png)

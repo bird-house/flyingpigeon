@@ -411,7 +411,7 @@ def get_gam(ncs_reference, PAmask):
                 # ip, info = mkstemp(dir='.', suffix='.png')
                 infos.append(info)
                 # grdevices.png(filename=info, type='cairo')
-                grdevices.pdf(filename=info)
+                grdevices.pdf(file=info)
                 # ylim = ro.IntVector([-6,6])
                 trans = ro.r('function(x){exp(x)/(1+exp(x))}')
                 _ = mgcv.plot_gam(gam_model, trans=trans, shade='T',
