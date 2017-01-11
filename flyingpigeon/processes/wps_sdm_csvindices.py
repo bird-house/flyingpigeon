@@ -241,7 +241,7 @@ class SDMcsvindicesProcess(WPSProcess):
                     # raise Exception(msg)
 
                 try:
-                    gam_model, predict_gam, gam_info = sdm.get_gam(ncs_reference, PAmask)
+                    gam_model, predict_gam, gam_info = sdm.get_gam(ncs_reference, PAmask, modelname=key)
                     stat_infos.append(gam_info)
                     self.status.set('GAM sucessfully trained', staus_nr + 5)
                 except:

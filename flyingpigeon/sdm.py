@@ -322,12 +322,13 @@ def get_reference(ncs_indices, period='all'):
     return ref_indices
 
 
-def get_gam(ncs_reference, PAmask):
+def get_gam(ncs_reference, PAmask, modelname=None):
     """
     GAM statistical training based on presence/absence mask and indices
 
     :param ncs_reference: list of netCDF files containing the indices
     :param PAmask: presence/absence mask as output from get_PAmask
+    :param modelname: Model name to be used for title in gam plot
 
     :return gam_model, prediction, infos_concat: Rstatisics,
                                                  occurence predicion based on ncs_reference files,
@@ -399,46 +400,39 @@ def get_gam(ncs_reference, PAmask):
     # ####################
     # plot response curves
     # ####################
-    # try:
-    #     from flyingpigeon.visualisation import concat_images
-    #     from tempfile import mkstemp
-    #     grdevices = importr('grDevices')
-    #
-    #     infos = []
-    #     for i in range(1, len(ncs_reference) + 1):
-    #         try:
-    #             # ip, info =  mkstemp(dir='.',suffix='.pdf')
-    #             ip, info = mkstemp(dir='.', suffix='.png')
-    #             infos.append(info)
-    #             grdevices.png(filename=info, type='cairo')
-    #             # grdevices.pdf(filename=info)
-    #             # ylim = ro.IntVector([-6,6])
-    #             trans = ro.r('function(x){exp(x)/(1+exp(x))}')
-    #             mgcv.plot_gam(gam_model, trans=trans, shade='T', col='black', select=i, ylab='Predicted Probability',
-    #                           rug=False, cex_lab=1.4, cex_axis=1.4)
-    #             grdevices.dev_off()
-    #             logger.info('plot GAM curves for %s.', i)
-    #         except:
-    #             logger.exception('failed to plot GAM curves for %s.', i)
-    #     # concatinate GAM curves
-    #     try:
-    #         infos_concat = concat_images(infos, orientation='h')
-    #         loger.warn('image concatination done in SDM process, but can be a dummy picture')
-    #     except:
-    #         logger.exception('image concatination failed in SDM process')
-    #     try:
-    #         predict_gam = mgcv.predict_gam(gam_model, type="response", progress="text", na_action=stats.na_exclude)
-    #         prediction = array(predict_gam).reshape(domain)
-    #     except:
-    #         logger.exception('failed to process SDM prediction')
-    # except:
-    #     logger.exception('failed to plot GAM curves')
+    try:
+        try:
+            from tempfile import mkstemp
+            grdevices = importr('grDevices')
+            ip, statinfos = mkstemp(dir='.', suffix='.pdf')
+            grdevices.pdf(file=statinfos)
+            for i in range(1, len(ncs_reference) + 1):
+                try:
+                    trans = ro.r('function(x){exp(x)/(1+exp(x))}')
+                    _ = mgcv.plot_gam(gam_model, trans=trans, shade='T',
+                                      col='black', select=i, ylab='Predicted Probability',
+                                      main=modelname,
+                                      rug=False, cex_lab=1.4, cex_axis=4.2)
+                    logger.info('plot GAM curves for %s.', i)
+                except:
+                    logger.exception('failed to plot GAM curves for %s.', i)
+            _ = grdevices.dev_off()
+        except:
+            logger.exception('GAM plot failedin SDM process')
 
-    _, infos_concat = mkstemp(dir='.', suffix='.png')
+        try:
+            predict_gam = mgcv.predict_gam(gam_model, type="response",
+                                           progress="text", na_action=stats.na_exclude)
+            prediction = array(predict_gam).reshape(domain)
+            logger.info('SDM prediction for reference period processed')
+        except:
+            logger.exception('failed to process SDM prediction')
+            prediction = None
+    except:
+        logger.exception('failed to plot GAM curves')
+        _, infos_concat = mkstemp(dir='.', suffix='.pdf')
 
-    # TODO: handle prediction
-    prediction = None
-    return gam_model, prediction, infos_concat
+    return gam_model, prediction, statinfos
 
 
 def get_prediction(gam_model, ncs_indices):  # mask=None
