@@ -399,6 +399,7 @@ def get_gam(ncs_reference, PAmask):
     # ####################
     # plot response curves
     # ####################
+
     try:
         try:
             from tempfile import mkstemp
