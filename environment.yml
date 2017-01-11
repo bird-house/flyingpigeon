@@ -10,7 +10,7 @@ channels:
 - bioconda
 dependencies:
 - python=2  #  conda-forge
-- ipython=5.1.0 
+- ipython=5.1.0
 - gcc=4.8.5
 #- glib=2.48.0
 - pyopenssl# =0.16.0
@@ -20,6 +20,7 @@ dependencies:
 - setuptools=27.2.0
 - icu=56  #  conda-forge
 - libxslt#=1.1.28
+- pypdf2
 ################
 # tests
 - pytest
@@ -34,7 +35,7 @@ dependencies:
 - supervisor=3.3.1
 - gunicorn # =19.1.0
 - gevent
-- pywps=3.2.6=py27_1 
+- pywps=3.2.6=py27_1
 - mako
 ################
 # misc
@@ -43,15 +44,15 @@ dependencies:
 ################
 # numeric
 - numpy
-- scipy 
+- scipy
 - pandas #=0.18.1
 - statsmodels #=0.6.1
-- scikit-learn #=0.17.1 
+- scikit-learn #=0.17.1
 # cartopy
 - cartopy #=0.14.2 # conflicts with numpy >1.10
 - iris #=1.9.2 # conflicts with numpy >1.10
 ################
-## cdo ocgis 
+## cdo ocgis
 - cdo #=1.7.1=2
 - python-cdo
 - ocgis-next=1.4.0.dev1=py27_6  #  nesii/channel/ocgis-next
@@ -63,7 +64,7 @@ dependencies:
 - castf90=0.1.5
 ################
 # r
-- cairo # for X11 independend plot support 
+- cairo # for X11 independend plot support
 - r=3.2  # 3.3 conflicts with icu=56
 - rpy2 #=2.7.0
 - r-mclust #=5.1 subsuituted by cluster

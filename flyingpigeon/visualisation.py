@@ -328,6 +328,30 @@ def concat_images(images, orientation='v'):
     return image
 
 
+def pdfmerge(pdfs):
+    """
+    merge a list of pdfs
+
+    :param pdfs: list of pdf files
+
+    :retun str: merged pdf
+    """
+    from PyPDF2 import PdfFileMerger
+
+    # pdfs = ['file1.pdf', 'file2.pdf', 'file3.pdf', 'file4.pdf']
+    try:
+        merger = PdfFileMerger()
+        for pdf in pdfs:
+            merger.append(pdf)
+        _, mergedpdf = mkstemp(dir='.', suffix='.pdf')
+        merger.write(mergedpdf)
+    except:
+        logger.excetion('failed to merge pdfs')
+        _, mergedpdf = mkstemp(dir='.', suffix='.pdf')
+
+    return mergedpdf
+
+
 def map_gbifoccurrences(latlon, dir='.'):
     """
     creates a plot of coordinate points for tree occourences fetch in GBIF data base

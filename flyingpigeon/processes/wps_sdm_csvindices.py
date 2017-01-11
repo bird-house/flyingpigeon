@@ -296,12 +296,11 @@ class SDMcsvindicesProcess(WPSProcess):
             raise Exception(msg)
 
         try:
-            # from flyingpigeon.visualisation import concat_images
-            # stat_infosconcat = concat_images(stat_infos, orientation='v')
-            # TODO concat pdfs
-            stat_infosconcat = stat_infos[0]
+            from flyingpigeon.visualisation import pdfmerge
+            stat_infosconcat = pdfmerge(stat_infos)
+            logger.info('stat infos pdfs merged')
         except:
-            logger.warn('failed to concat images')
+            logger.exception('failed to concat images')
             _, stat_infosconcat = tempfile.mkstemp(suffix='.pdf', prefix='foobar-', dir='.')
 
         self.output_gbif.setValue(occurence_map)
