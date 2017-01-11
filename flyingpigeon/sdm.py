@@ -322,13 +322,12 @@ def get_reference(ncs_indices, period='all'):
     return ref_indices
 
 
-def get_gam(ncs_reference, PAmask, modelname=None):
+def get_gam(ncs_reference, PAmask):
     """
     GAM statistical training based on presence/absence mask and indices
 
     :param ncs_reference: list of netCDF files containing the indices
     :param PAmask: presence/absence mask as output from get_PAmask
-    :param modelname: Model name to be used for title in gam plot
 
     :return gam_model, prediction, infos_concat: Rstatisics,
                                                  occurence predicion based on ncs_reference files,
@@ -411,7 +410,6 @@ def get_gam(ncs_reference, PAmask, modelname=None):
                     trans = ro.r('function(x){exp(x)/(1+exp(x))}')
                     _ = mgcv.plot_gam(gam_model, trans=trans, shade='T',
                                       col='black', select=i, ylab='Predicted Probability',
-                                      main=modelname,
                                       rug=False, cex_lab=1.4, cex_axis=4.2)
                     logger.info('plot GAM curves for %s.', i)
                 except:
