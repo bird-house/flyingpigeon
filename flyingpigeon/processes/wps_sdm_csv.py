@@ -160,7 +160,7 @@ class sdmcsvProcess(WPSProcess):
             identifier="output_info",
             title="GAM statistics information",
             abstract="Graphics and information of the learning statistics",
-            formats=[{"mimeType": "image/png"}],
+            formats=[{"mimeType": "application/pdf"}],
             asReference=True,
             )
 
@@ -348,13 +348,13 @@ class sdmcsvProcess(WPSProcess):
             logger.exception(msg)
             raise Exception(msg)
 
-        from flyingpigeon.visualisation import concat_images
         try:
-            stat_infosconcat = concat_images(stat_infos, orientation='v')
+            from flyingpigeon.visualisation import pdfmerge
+            stat_infosconcat = pdfmerge(stat_infos)
+            logger.info('stat infos pdfs merged')
         except:
-            msg = 'failed to concat images'
-            logger.exception(msg)
-            raise Exception(msg)
+            logger.exception('failed to concat images')
+            _, stat_infosconcat = tempfile.mkstemp(suffix='.pdf', prefix='foobar-', dir='.')
 
         # self.output_csv.setValue(csv_file)
         self.output_gbif.setValue(occurence_map)
