@@ -24,7 +24,7 @@ __all__ = [
         # climate for impact processes
         "wps_c4i_simple_indice",
         # processes under development
-        "wps_spatial_analog",
+        # "wps_spatial_analog",
         # "wps_eobs2cordex",
 
         # TODO: c4i processes with multiple input sources
