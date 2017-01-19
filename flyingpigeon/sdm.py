@@ -62,34 +62,37 @@ def latlon_gbifcsv(csvfile):
 
     :return list: [[lats],[lons]]
     """
-    import csv
-    from collections import defaultdict
-    from numpy import empty
+    try:
+        import csv
+        from collections import defaultdict
+        from numpy import empty
 
-    columns = defaultdict(list)
+        columns = defaultdict(list)
 
-    with open(csvfile, 'rb') as f:
-        reader = csv.DictReader(f, delimiter=',')
-        for row in reader:
-            for (k, v) in row.items():
-                columns[k].append(v)
+        with open(csvfile, 'rb') as f:
+            reader = csv.DictReader(f, delimiter=',')
+            for row in reader:
+                for (k, v) in row.items():
+                    columns[k].append(v)
 
-    l = len(columns['decimalLongitude'])
-    print 'length of decimalLongitude: %s' % l
+        l = len(columns['decimalLongitude'])
+        print 'length of decimalLongitude: %s' % l
 
-    ll = empty([l, 2], dtype=float, order='C')
-    c = 0
-    for i in range(0, l):
-        try:
-            ll[i][0] = float(columns['decimalLatitude'][i])
-            ll[i][1] = float(columns['decimalLongitude'][i])
-        except:
-            c = c + 1
+        ll = empty([l, 2], dtype=float, order='C')
+        c = 0
+        for i in range(0, l):
+            try:
+                ll[i][0] = float(columns['decimalLatitude'][i])
+                ll[i][1] = float(columns['decimalLongitude'][i])
+            except:
+                c = c + 1
 
-    logger.exception('failed to read in PA coordinates for %s rows ' % c)
-    nz = (ll == 0).sum(1)
-    latlon = ll[nz == 0, :]
-    logger.info('read in PA coordinates for %s rows ' % len(latlon[:, 0]))
+        nz = (ll == 0).sum(1)
+        latlon = ll[nz == 0, :]
+        logger.info('read in PA coordinates for %s rows ' % len(latlon[:, 0]))
+        logger.warn('failed to read in PA coordinates for %s rows ' % c)
+    except:
+        logger.exception('failed to get lat/lon coordinates from csv table')
     return latlon
 
 

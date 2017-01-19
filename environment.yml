@@ -48,7 +48,8 @@ dependencies:
 - pandas #=0.18.1
 - statsmodels #=0.6.1
 - scikit-learn #=0.17.1
-# cartopy
+# visualisation
+- matplotlib
 - cartopy #=0.14.2 # conflicts with numpy >1.10
 - iris #=1.9.2 # conflicts with numpy >1.10
 ################
