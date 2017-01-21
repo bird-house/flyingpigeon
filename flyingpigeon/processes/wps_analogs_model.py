@@ -2,6 +2,7 @@ from datetime import date
 from pywps.Process import WPSProcess
 
 from flyingpigeon.datafetch import _PRESSUREDATA_
+from flyingpigeon.log import init_process_logger
 
 import logging
 logger = logging.getLogger(__name__)
@@ -173,9 +174,20 @@ class AnalogsProcess(WPSProcess):
             abstract="NetCDF file with subset and normaized values",
             formats=[{"mimeType": "application/x-netcdf"}],
             asReference=True,
-            identifier="ncout",)
+            identifier="ncout")
+
+        self.output_log = self.addComplexOutput(
+            identifier="output_log",
+            title="Logging information",
+            abstract="Collected logs during process run.",
+            formats=[{"mimeType": "text/plain"}],
+            asReference=True,
+        )
 
     def execute(self):
+        init_process_logger('log.txt')
+        self.output_log.setValue('log.txt')
+
         import time  # performance test
         process_start_time = time.time()  # measure process execution time ...
 
