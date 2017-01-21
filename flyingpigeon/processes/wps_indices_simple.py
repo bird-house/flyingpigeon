@@ -5,6 +5,8 @@ from flyingpigeon.indices import calc_indice_simple
 from flyingpigeon.subset import countries, countries_longname
 from flyingpigeon.utils import GROUPING
 
+from flyingpigeon.log import init_process_logger
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -103,6 +105,14 @@ class SingleIndicesProcess(WPSProcess):
             identifier="ncout",
             )
 
+        self.output_log = self.addComplexOutput(
+            identifier="output_log",
+            title="Logging information",
+            abstract="Collected logs during process run.",
+            formats=[{"mimeType": "text/plain"}],
+            asReference=True,
+            )
+
     def execute(self):
         import os
         from flyingpigeon.utils import archive
@@ -110,6 +120,9 @@ class SingleIndicesProcess(WPSProcess):
         from tempfile import mkstemp
         from os import path
         from numpy import squeeze
+
+        init_process_logger('log.txt')
+        self.output_log.setValue('log.txt')
 
         ncs = self.getInputValues(identifier='resource')
         indices = self.indices.getValue()

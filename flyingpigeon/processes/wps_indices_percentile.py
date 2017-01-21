@@ -7,6 +7,8 @@ from flyingpigeon.indices import indices, indices_description
 from flyingpigeon.subset import countries, countries_longname
 from flyingpigeon.utils import GROUPING
 
+from flyingpigeon.log import init_process_logger
+
 from pywps.Process import WPSProcess
 
 import logging
@@ -131,7 +133,19 @@ class IndicesPercentileProcess(WPSProcess):
             asReference=True
             )
 
+        self.output_log = self.addComplexOutput(
+            identifier="output_log",
+            title="Logging information",
+            abstract="Collected logs during process run.",
+            formats=[{"mimeType": "text/plain"}],
+            asReference=True,
+            )
+
     def execute(self):
+
+        init_process_logger('log.txt')
+        self.output_log.setValue('log.txt')
+        
         ncs = self.getInputValues(identifier='resource')
         indices = self.indices.getValue()
         polygons = self.polygons.getValue()
