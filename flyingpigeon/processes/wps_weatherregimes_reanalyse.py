@@ -6,6 +6,9 @@ Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 from flyingpigeon.datafetch import _PRESSUREDATA_
 from flyingpigeon.weatherregimes import _TIMEREGIONS_
 from pywps.Process import WPSProcess
+
+from flyingpigeon.log import init_process_logger
+
 # from datetime import  date
 
 import logging
@@ -139,7 +142,18 @@ class WeatherRegimesRProcess(WPSProcess):
             asReference=True,
             )
 
+        self.output_log = self.addComplexOutput(
+            identifier="output_log",
+            title="Logging information",
+            abstract="Collected logs during process run.",
+            formats=[{"mimeType": "text/plain"}],
+            asReference=True,
+        )
+
     def execute(self):
+
+        init_process_logger('log.txt')
+        self.output_log.setValue('log.txt')
 
         logger.info('Start process')
         from datetime import datetime as dt

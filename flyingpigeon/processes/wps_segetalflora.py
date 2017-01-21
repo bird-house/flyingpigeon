@@ -1,6 +1,7 @@
 from pywps.Process import WPSProcess
 
 from flyingpigeon.subset import countries  # REGION_EUROPE
+from flyingpigeon.log import init_process_logger
 
 import logging
 logger = logging.getLogger(__name__)
@@ -111,10 +112,21 @@ class SegetalfloraProcess(WPSProcess):
     #   identifier="out_plots",
     #   )
 
+        self.output_log = self.addComplexOutput(
+            identifier="output_log",
+            title="Logging information",
+            abstract="Collected logs during process run.",
+            formats=[{"mimeType": "text/plain"}],
+            asReference=True,
+            )
+
 # calculation of number of segetal flora species
     def execute(self):
         from os import mkdir, path, listdir
         from flyingpigeon import segetalflora as sf
+
+        init_process_logger('log.txt')
+        self.output_log.setValue('log.txt')
 
         logging.debug('starting segetalflora process execution')
         self.status.set('starting calcualtion segetalflora', 5)
