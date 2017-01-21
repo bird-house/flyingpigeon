@@ -66,25 +66,25 @@ def get_anomalies(nc_file, frac=0.2, reference=None):
                     # ys = smooth(y, window_size=91, order=2, deriv=0, rate=1)[ts:ts*2]
                     ys = sm.nonparametric.lowess(y, x, frac=frac)[ts:ts*2, 1]
                     vals_sm[:, lat, lon] = ys
-                except Exception as e:
-                    msg = 'failed for lat %s lon %s  %s ' % (lat, lon, e)
-                    logger.debug('failed for lat %s lon %s  %s ' % (lat, lon, e))
+                except:
+                    msg = 'failed for lat %s lon %s' % (lat, lon)
+                    logger.exception(msg)
                     raise Exception(msg)
             print 'done for %s - %s ' % (lat, lon)
         vals[:, :, :] = vals_sm[:, :, :]
         ds.close()
         logger.info('smothing of annual cycle done')
-    except Exception as e:
-        msg = 'failed smothing of annual cycle %s ' % e
-        logger.error(msg)
+    except:
+        msg = 'failed smothing of annual cycle'
+        logger.exception(msg)
         raise Exception(msg)
     try:
         ip, nc_anomal = mkstemp(dir='.', suffix='.nc')
         nc_anomal = cdo.sub(input=[nc_file, nc_anual_cycle], output=nc_anomal)
-        logger.info('anomalisation done: %s ' % nc_anomal)
-    except Exception as e:
-        msg = 'failed substraction of annual cycle %s ' % e
-        logger.error(msg)
+        logger.info('cdo.sub; anomalisation done: %s ' % nc_anomal)
+    except:
+        msg = 'failed substraction of annual cycle'
+        logger.exception(msg)
         raise Exception(msg)
     return nc_anomal
 
@@ -100,10 +100,11 @@ def get_season(nc_file, season='DJF'):
     """
     try:
         time_region = _TIMEREGIONS_[season]
+        logger.info('time_region: %s ' % time_region)
         nc_season = call(nc_file, time_region=time_region)
         logger.info('season selection done %s ' % nc_season)
-    except Exception as e:
-        msg = 'failed to select season %s' % e
-        logger.error(msg)
-        raise Exception(msg)
+    except:
+        msg = 'failed to select season, input file is passed '
+        logger.exception(msg)
+        nc_season = nc_file
     return nc_season

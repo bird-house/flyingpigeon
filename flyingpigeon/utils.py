@@ -55,11 +55,10 @@ def check_creationtime(path, url):
         else:
             logger.info("local file is up-to-date. Nothing to fetch.")
             newer = False
-    except Exception as e:
-        msg = 'failed to download data: %s' % e
-        logger.debug(msg)
-        raise Exception(msg)
-
+    except:
+        msg = 'failed to check arichve and cache creation time assuming newer = False'
+        logger.exception(msg)
+        newer = False
     return newer
 
 
@@ -88,8 +87,8 @@ def download(url, cache=False):
 # filename = os.path.basename(filename)
         else:
             filename = wget.download(url, bar=None)
-    except Exception as e:
-        logger.debug('failed to download data %s' % e)
+    except:
+        logger.exception('failed to download data')
     return filename
 
 

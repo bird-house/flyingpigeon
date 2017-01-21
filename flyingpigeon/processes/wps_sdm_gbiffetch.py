@@ -85,7 +85,7 @@ class GBIFfetchProcess(WPSProcess):
 
         init_process_logger('log.txt')
         self.output_log.setValue('log.txt')
-    
+
         self.status.set('Start process', 0)
         from flyingpigeon import sdm
 

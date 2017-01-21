@@ -245,7 +245,7 @@ class WeatherRegimesRProcess(WPSProcess):
         # get the required bbox and time region from resource data
         ############################################################
 
-        self.status.set('start subsetting', 17)
+        self.status.set('subsetting region of interest', 17)
         # from flyingpigeon.weatherregimes import get_level
         from flyingpigeon.ocgis_module import call
 
@@ -270,9 +270,10 @@ class WeatherRegimesRProcess(WPSProcess):
         #####################
         # extracting season
         #####################
+        self.status.set('normalizing data', 21)
         model_season = wr.get_season(model_anomal, season=season)
 
-        self.status.set('values normalized', 20)
+        self.status.set('anomalies computed and  normalized', 24)
         #######################
         # call the R scripts
         #######################

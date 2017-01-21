@@ -150,9 +150,9 @@ class SDMcsvindicesProcess(WPSProcess):
         from os.path import basename
         from flyingpigeon import sdm
         from flyingpigeon.utils import archive, archiveextract  # , get_domain
-
-        init_process_logger('log.txt')
-        self.output_log.setValue('log.txt')
+        #
+        # init_process_logger('log.txt')
+        # self.output_log.setValue('log.txt')
 
         self.status.set('Start process', 0)
 
