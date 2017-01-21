@@ -1,6 +1,11 @@
 from flyingpigeon import visualisation as vs
 from pywps.Process import WPSProcess
 
+from flyingpigeon.log import init_process_logger
+
+import logging
+logger = logging.getLogger(__name__)
+
 
 class plottimeseriesProcess(WPSProcess):
     def __init__(self):
@@ -54,25 +59,49 @@ class plottimeseriesProcess(WPSProcess):
             asReference=True,
             )
 
+        self.output_log = self.addComplexOutput(
+            identifier="output_log",
+            title="Logging information",
+            abstract="Collected logs during process run.",
+            formats=[{"mimeType": "text/plain"}],
+            asReference=True,
+        )
+
     def execute(self):
+
+        init_process_logger('log.txt')
+        self.output_log.setValue('log.txt')
+
         ncfiles = self.getInputValues(identifier='resource')
         var = self.variableIn.getValue()
 
         self.status.set('plotting variable %s' % var, 10)
 
-        plotout_spagetti_file = vs.spaghetti(ncfiles,
+        try:
+            plotout_spagetti_file = vs.spaghetti(
+                                             ncfiles,
                                              variable=var,
                                              title='Fieldmean of %s ' % (var),
-                                             dir_out=None)
+                                             dir_out=None
+                                             )
+            logger.info("spagetti plot done")
+            self.status.set('Spagetti plot for %s %s files done' % (len(ncfiles), var), 50)
+        except:
+            logger.exception("spagetti plot failed")
 
-        self.status.set('Spagetti plot for %s %s files done' % (len(ncfiles), var), 50)
-
-        plotout_uncertainty_file = vs.uncertainty(ncfiles,
+        try:
+            plotout_uncertainty_file = vs.uncertainty(
+                                                  ncfiles,
                                                   variable=var,
                                                   title='Ensemble uncertainty for %s ' % (var),
-                                                  dir_out=None)
+                                                  dir_out=None
+                                                  )
 
-        self.status.set('Uncertainty plot for %s %s files done' % (len(ncfiles), var), 90)
+            self.status.set('Uncertainty plot for %s %s files done' % (len(ncfiles), var), 90)
+            logger.info("uncertainty plot done")
+        except:
+            logger.exception("uncertainty plot failed")
+
         self.plotout_spagetti.setValue(plotout_spagetti_file)
         self.plotout_uncertainty.setValue(plotout_uncertainty_file)
         self.status.set('visualisation done', 100)
