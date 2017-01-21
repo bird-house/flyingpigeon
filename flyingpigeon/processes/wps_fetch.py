@@ -2,6 +2,7 @@ import os
 
 from pywps.Process import WPSProcess
 import logging
+from flyingpigeon.log import init_process_logger
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +36,19 @@ class FetchProcess(WPSProcess):
             asReference=True,
             )
 
+        self.output_log = self.addComplexOutput(
+            identifier="output_log",
+            title="Logging information",
+            abstract="Collected logs during process run.",
+            formats=[{"mimeType": "text/plain"}],
+            asReference=True,
+        )
+
     def execute(self):
+
+        init_process_logger('log.txt')
+        self.output_log.setValue('log.txt')
+
         resources = self.getInputValues(identifier='resource')
         filename = 'out.txt'
         with open(filename, 'w') as fp:
