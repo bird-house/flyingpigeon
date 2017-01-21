@@ -5,6 +5,7 @@ Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 
 from pywps.Process import WPSProcess
 from flyingpigeon.sdm import _SDMINDICES_
+from flyingpigeon.log import init_process_logger
 import logging
 logger = logging.getLogger(__name__)
 
@@ -161,10 +162,22 @@ class SDMallinoneProcess(WPSProcess):
             asReference=True,
             )
 
+        self.output_log = self.addComplexOutput(
+            identifier="output_log",
+            title="Logging information",
+            abstract="Collected logs during process run.",
+            formats=[{"mimeType": "text/plain"}],
+            asReference=True,
+            )
+
     def execute(self):
+        init_process_logger('log.txt')
+        self.output_log.setValue('log.txt')
+
         from os.path import basename
         from flyingpigeon import sdm
         from flyingpigeon.utils import archive, archiveextract
+
         self.status.set('Start process', 0)
 
         try:
