@@ -1,4 +1,5 @@
-from flyingpigeon import ensembleRobustness as erob
+from flyingpigeon import robustness as erob
+from flyingpigeon.log import init_process_logger
 
 from pywps.Process import WPSProcess
 import logging
@@ -126,15 +127,26 @@ class robustnessProcess(WPSProcess):
             asReference=True,
             )
 
+        self.output_log = self.addComplexOutput(
+            identifier="output_log",
+            title="Logging information",
+            abstract="Collected logs during process run.",
+            formats=[{"mimeType": "text/plain"}],
+            asReference=True,
+            )
+
     def execute(self):
         self.status.set('starting uncertainty process', 0)
+
+        init_process_logger('log.txt')
+        self.output_log.setValue('log.txt')
 
         ncfiles = self.getInputValues(identifier='resource')
         start = self.start.getValue()
         end = self.end.getValue()
         timeslice = self.timeslice.getValue()
         variable = self.variableIn.getValue()
-        method = self.method.getValue()
+        method = self.method.getValue()       
 
         self.status.set('arguments read', 5)
 
