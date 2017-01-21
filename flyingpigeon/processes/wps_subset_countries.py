@@ -3,6 +3,8 @@ import tarfile
 
 from flyingpigeon.subset import clipping
 from flyingpigeon.subset import countries, countries_longname
+from flyingpigeon.log import init_process_logger
+
 from pywps.Process import WPSProcess
 
 import logging
@@ -77,6 +79,10 @@ class ClippingProcess(WPSProcess):
             maxOccurs=1,
             )
 
+        ###########
+        # OUTPUTS
+        ###########
+
         self.output = self.addComplexOutput(
             title="Subsets",
             abstract="Tar archive containing the netCDF files",
@@ -93,9 +99,20 @@ class ClippingProcess(WPSProcess):
             identifier="ncout",
             )
 
+        self.output_log = self.addComplexOutput(
+            identifier="output_log",
+            title="Logging information",
+            abstract="Collected logs during process run.",
+            formats=[{"mimeType": "text/plain"}],
+            asReference=True,
+        )
+
     def execute(self):
         from ast import literal_eval
         from flyingpigeon.utils import archive, archiveextract
+
+        init_process_logger('log.txt')
+        self.output_log.setValue('log.txt')
 
         ncs = archiveextract(self.getInputValues(identifier='resource'))
         mosaic = self.mosaic.getValue()
