@@ -20,19 +20,16 @@ class SDMgetindicesProcess(WPSProcess):
             metadata=[
                 {"title": "LWF", "href": "http://www.lwf.bayern.de/"},
                 {"title": "Doc",
-                    "href": "http://flyingpigeon.readthedocs.io/en/latest/\
-                    descriptions/index.html#species-distribution-model"},
+                    "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#species-distribution-model"},  # noqa
                 {"title": "Paper",
-                    "href": "http://www.hindawi.com/\
-                    journals/jcli/2013/787250/"},
+                    "href": "http://www.hindawi.com/journals/jcli/2013/787250/"},
                 {"title": "Tutorial",
-                    "href": "http://flyingpigeon.readthedocs.io/en/latest/\
-                    tutorials/sdm.html"},
-                ],
+                    "href": "http://flyingpigeon.readthedocs.io/en/latest/tutorials/sdm.html"},
+            ],
             abstract="Indices preparation for SDM process",
             statusSupported=True,
             storeSupported=True
-            )
+        )
 
         # Literal Input Data
         # ------------------
@@ -44,7 +41,7 @@ class SDMgetindicesProcess(WPSProcess):
             maxOccurs=500,
             maxmegabites=50000,
             formats=[{"mimeType": "application/x-netcdf"}],
-            )
+        )
 
         self.input_indices = self.addLiteralInput(
             identifier="input_indices",
@@ -56,7 +53,7 @@ class SDMgetindicesProcess(WPSProcess):
             minOccurs=1,
             maxOccurs=10,
             allowedValues=_SDMINDICES_
-            )
+        )
 
         self.archive_format = self.addLiteralInput(
             identifier="archive_format",
@@ -68,7 +65,7 @@ class SDMgetindicesProcess(WPSProcess):
             minOccurs=1,
             maxOccurs=1,
             allowedValues=['zip', 'tar']
-            )
+        )
 
         ###########
         # OUTPUTS
@@ -81,7 +78,7 @@ class SDMgetindicesProcess(WPSProcess):
             formats=[{"mimeType": "application/x-tar"},
                      {"mimeType": "application/zip"}],
             asReference=True,
-            )
+        )
 
     def execute(self):
         from os.path import basename
