@@ -483,9 +483,11 @@ def get_timerange(resource):
         if len(resource) > 1:
             ds = MFDataset(resource)
             time = ds.variables['time']
+            print('MFDataset loaded for %s of files in resource:' % len(resource))
         else:
             ds = Dataset(resource[0])
             time = ds.variables['time']
+            print('Dataset loaded for %s file in resource:' % len(resource))
 
         if (hasattr(time, 'units') and hasattr(time, 'calendar')) is True:
             s = num2date(time[0], time.units, time.calendar)
@@ -504,6 +506,7 @@ def get_timerange(resource):
     except Exception as e:
         msg = 'failed to get time range: %s ' % e
         logger.exception(msg)
+        ds.close()
         raise Exception(msg)
     return start, end
 
