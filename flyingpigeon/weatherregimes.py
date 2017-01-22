@@ -23,8 +23,7 @@ _TIMEREGIONS_ = {'JJA': {'month': [6, 7, 8]},
 
 def get_anomalies(nc_file, frac=0.2, reference=None):
     """
-    Anomalisation of data subsets for weather classification.
-    Anomalisation is done by subtracting a smoothed annual cycle
+    Anomalisation of data subsets for weather classification by subtracting a smoothed annual cycle
 
     :param nc_file: input netCDF file
     :param frac: Number between 0-1 for strength of smoothing
@@ -38,21 +37,23 @@ def get_anomalies(nc_file, frac=0.2, reference=None):
         variable = utils.get_variable(nc_file)
         calc = [{'func': 'mean', 'name': variable}]
         calc_grouping = calc_grouping = ['day', 'month']
-        nc_anual_cycle = call(nc_file, calc=calc, calc_grouping=calc_grouping, time_range=reference)
+        nc_anual_cycle = call(nc_file,
+                              calc=calc,
+                              calc_grouping=calc_grouping,
+                              time_range=reference)
         logger.info('annual cycle calculated')
     except Exception as e:
         msg = 'failed to calcualte annual cycle %s' % e
         logger.error(msg)
         raise Exception(msg)
 
-    # spline for smoothing
-    import statsmodels.api as sm
-    from numpy import tile, empty, linspace
-    from netCDF4 import Dataset
-    from cdo import Cdo
-    cdo = Cdo()
-
     try:
+        # spline for smoothing
+        import statsmodels.api as sm
+        from numpy import tile, empty, linspace
+        from netCDF4 import Dataset
+        from cdo import Cdo
+        cdo = Cdo()
         # variable = utils.get_variable(nc_file)
         ds = Dataset(nc_anual_cycle, mode='a')
         vals = ds.variables[variable]
@@ -70,7 +71,7 @@ def get_anomalies(nc_file, frac=0.2, reference=None):
                     msg = 'failed for lat %s lon %s' % (lat, lon)
                     logger.exception(msg)
                     raise Exception(msg)
-            print 'done for %s - %s ' % (lat, lon)
+            logger.debug('done for %s - %s ' % (lat, lon))
         vals[:, :, :] = vals_sm[:, :, :]
         ds.close()
         logger.info('smothing of annual cycle done')

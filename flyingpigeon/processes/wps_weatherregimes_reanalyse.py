@@ -265,6 +265,7 @@ class WeatherRegimesRProcess(WPSProcess):
         cycst = anualcycle.split('-')[0]
         cycen = anualcycle.split('-')[0]
         reference = [dt.strptime(cycst, '%Y%m%d'), dt.strptime(cycen, '%Y%m%d')]
+        logger.debug('reference time: %s' % reference)
         model_anomal = wr.get_anomalies(model_subset, reference=reference)
 
         #####################

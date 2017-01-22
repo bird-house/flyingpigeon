@@ -77,12 +77,21 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     if dir_output is None:
         dir_output = abspath(curdir)
 
-    if geom is None:
+    #
+    # if geom is not None:
+    #     spatial_reorder = True
+    #     spatial_wrapping = 'wrap'
+    # else:
+    #     spatial_reorder = False
+    #     spatial_wrapping = None
+    #
+
+    if spatial_wrapping == 'wrap':
         spatial_reorder = True
-        spatial_wrapping = 'wrap'
     else:
         spatial_reorder = False
-        spatial_wrapping = None
+    logger.debug('spatial_reorder: %s and spatial_wrapping: %s ' % (spatial_reorder, spatial_wrapping))
+
     if prefix is None:
         prefix = str(uuid.uuid1())
         env.PREFIX = prefix
