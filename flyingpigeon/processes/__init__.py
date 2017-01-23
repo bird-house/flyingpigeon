@@ -20,7 +20,7 @@ __all__ = [
         "wps_sdm_allinone",
         "wps_robustness",
         "wps_plot_timeseries",
-        "wps_factsheetgenerator",
+        "wps_climatefactsheet",
         "wps_fetch",
         # climate for impact processes
         "wps_c4i_simple_indice",

@@ -10,14 +10,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class factsheetgeneratorProcess(WPSProcess):
+class climatefactsheetProcess(WPSProcess):
     def __init__(self):
         WPSProcess.__init__(
             self,
-            identifier="factsheetgenerator",
-            title="Fact Sheet Generator",
+            identifier="climatefactsheet",
+            title="Climate Fact Sheet Generator",
             version="0.1",
-            abstract="Returns a pdf with a short overview of ",
+            abstract="Returns a pdf with a short overview of the climatological situation for the selected countries",
             metadata=[
                 # {"title": "LSCE", "href": "http://www.lsce.ipsl.fr/en/index.php"},
                 {"title": "Doc", "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
@@ -128,31 +128,60 @@ class factsheetgeneratorProcess(WPSProcess):
         logger.debug('starting: regions=%s, num_files=%s' % (len(regions), len(ncs)))
 
         try:
-            import shapefile as shp
+
+
             import matplotlib.pyplot as plt
-            from os.path import join
-            from tempfile import mkstemp
+            import cartopy.crs as ccrs
+            from cartopy.io.shapereader import Reader
+            from cartopy.feature import ShapelyFeature
 
             from flyingpigeon import config
-            from flyingpigeon.subset import get_ugid
+            from os.path import join
+            from tempfile import mkstemp
             DIR_SHP = config.shapefiles_dir()
 
-            sf = shp.Reader(join(DIR_SHP, "countries.shp"))
-
-            ugid = get_ugid(polygons=regions, geom='countries')
-            logger.debug("selcted ugids: %s " % ugid)
+            fname = join(DIR_SHP, "countries.shp")
+            geos = Reader(fname).geometries()
+            records = Reader(fname).records()
 
             fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
-            o1, factsheet_plot = mkstemp(dir='.', suffix='.pdf')
+            ax = plt.axes(projection=ccrs.Robinson())
+            for r in records:
+                geo = geos.next()
+                if r.attributes['ISO_A3'] in regions:
+                    shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black')
+                    ax.add_feature(shape_feature)
 
-            for c, shape in enumerate(sf.shapeRecords()):
-                if c in ugid:
-                    x = [i[0] for i in shape.shape.points[:]]
-                    y = [i[1] for i in shape.shape.points[:]]
-                    plt.plot(x, y)
+            o1, factsheet_plot = mkstemp(dir='.', suffix='.pdf')
 
             fig.savefig(factsheet_plot)
             plt.close()
+            #
+            # import shapefile as shp
+            # import matplotlib.pyplot as plt
+            # from os.path import join
+            # from tempfile import mkstemp
+            #
+            # from flyingpigeon import config
+            # from flyingpigeon.subset import get_ugid
+            # DIR_SHP = config.shapefiles_dir()
+            #
+            # sf = shp.Reader(join(DIR_SHP, "countries.shp"))
+            #
+            # ugid = get_ugid(polygons=regions, geom='countries')
+            # logger.debug("selcted ugids: %s " % ugid)
+            #
+            # fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
+            # o1, factsheet_plot = mkstemp(dir='.', suffix='.pdf')
+            #
+            # for c, shape in enumerate(sf.shapeRecords()):
+            #     if c in ugid:
+            #         x = [i[0] for i in shape.shape.points[:]]
+            #         y = [i[1] for i in shape.shape.points[:]]
+            #         plt.plot(x, y)
+            #
+            # fig.savefig(factsheet_plot)
+            # plt.close()
 
         except:
             logger.exception('failed to generate the fact sheet')
