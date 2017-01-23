@@ -478,6 +478,7 @@ def get_timerange(resource):
 
     if type(resource) != list:
         resource = [resource]
+    logger.debug('length of recources: %s files' % len(resource))
 
     try:
         if len(resource) > 1:
@@ -664,11 +665,15 @@ def sort_by_filename(resource, historical_concatination=False):
     :return  dictionary: {'drs_filename': [list of netCDF files]}
     """
     from os import path
-    logger.info('sort_by_filename module start sorting %s files' % len(resource))
+    if type(resource) == str:
+        resource = [resource]
+
     ndic = {}
     tmp_dic = {}
+
     try:
-        if type(resource) == list:
+        if len(resource) > 1:
+            logger.debug('sort_by_filename module start sorting %s files' % len(resource))
             # logger.debug('resource is list with %s files' % len(resource))
             try:  # if len(resource) > 1:
                 # collect the different experiment names
@@ -711,34 +716,34 @@ def sort_by_filename(resource, historical_concatination=False):
                                 if '%s_' % key in n or '%s_' % key_hist in n:
                                     ndic[key].append(path.join(p, n))
                         else:
-                            logger.error('append file paths to dictionary for key %s failed', key)
+                            logger.error('append file paths to dictionary for key %s failed' % key)
                         ndic[key].sort()
-                    except Exception as e:
-                        logger.exception('failed for %s : %s', key, e)
-            except Exception as e:
-                logger.exception('failed to populate the dictionary with appropriate files: %s ' % e)
-            try:
-                # add date information to the key:
-                for key in ndic.keys():
+                    except:
+                        logger.exception('failed for %s ' % key)
+            except:
+                logger.exception('failed to populate the dictionary with appropriate files')
+            for key in ndic.keys():
+                try:
                     ndic[key].sort()
                     start, end = get_timerange(ndic[key])
                     newkey = key+'_'+start+'-'+end
                     tmp_dic[newkey] = ndic[key]
-            except Exception as e:
-                msg = 'failed to sort the list of resources and add dates to keyname: %s' % e
-                logger.exception(msg)
-                raise Exception(msg)
-        elif type(resource) == str:
-            p, f = path.split(path.abspath(resource))
-            tmp_dic[f.replace('.nc', '')] = resource
+                except:
+                    msg = 'failed to sort the list of resources and add dates to keyname: %s' % key
+                    logger.exception(msg)
+                    raise Exception(msg)
+        elif len(resource) == 1:
+            p, f = path.split(path.abspath(resource[0]))
+            tmp_dic[f.replace('.nc', '')] = path.abspath(resource[0])
+            logger.debug('only one file! Nothing to sort, resource is passed into dictionary')
         else:
-            logger.debug('sort_by_filename module failed: resource != str or list')
+            logger.debug('sort_by_filename module failed: resource is not 1 or >1')
         logger.info('sort_by_filename module done: %s datasets found' % len(ndic))
-    except Exception as e:
-        msg = 'failed to sort files by filename %s' % e
+    except:
+        msg = 'failed to sort files by filename'
         logger.exception(msg)
         raise Exception(msg)
-    return tmp_dic  # rndic
+    return tmp_dic
 
 
 def has_variable(resource, variable):
