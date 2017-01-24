@@ -128,8 +128,6 @@ class climatefactsheetProcess(WPSProcess):
         logger.debug('starting: regions=%s, num_files=%s' % (len(regions), len(ncs)))
 
         try:
-
-
             import matplotlib.pyplot as plt
             import cartopy.crs as ccrs
             from cartopy.io.shapereader import Reader
@@ -156,68 +154,10 @@ class climatefactsheetProcess(WPSProcess):
 
             fig.savefig(factsheet_plot)
             plt.close()
-            #
-            # import shapefile as shp
-            # import matplotlib.pyplot as plt
-            # from os.path import join
-            # from tempfile import mkstemp
-            #
-            # from flyingpigeon import config
-            # from flyingpigeon.subset import get_ugid
-            # DIR_SHP = config.shapefiles_dir()
-            #
-            # sf = shp.Reader(join(DIR_SHP, "countries.shp"))
-            #
-            # ugid = get_ugid(polygons=regions, geom='countries')
-            # logger.debug("selcted ugids: %s " % ugid)
-            #
-            # fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
-            # o1, factsheet_plot = mkstemp(dir='.', suffix='.pdf')
-            #
-            # for c, shape in enumerate(sf.shapeRecords()):
-            #     if c in ugid:
-            #         x = [i[0] for i in shape.shape.points[:]]
-            #         y = [i[1] for i in shape.shape.points[:]]
-            #         plt.plot(x, y)
-            #
-            # fig.savefig(factsheet_plot)
-            # plt.close()
 
         except:
             logger.exception('failed to generate the fact sheet')
             o1, factsheet_plot = mkstemp(dir='.', suffix='.pdf')
-        # try:
-        #     results = clipping(
-        #         resource=ncs,
-        #         polygons=regions,  # self.region.getValue(),
-        #         mosaic=mosaic,
-        #         spatial_wrapping='wrap',
-        #         variable=variable,
-        #         dir_output=os.path.abspath(os.curdir),
-        #         # dimension_map=dimension_map,
-        #         )
-        #     logger.info('results %s' % results)
-        # except Exception as e:
-        #     msg = 'clipping failed'
-        #     logger.exception(msg)
-        #     raise Exception(msg)
-
-        # if not results:
-        #     raise Exception('no results produced.')
-
-        # prepare tar file
-        # try:
-        #     tarf = archive(results)
-        #     logger.info('Tar file prepared')
-        # except Exception as e:
-        #     msg = 'Tar file preparation failed'
-        #     logger.exception(msg)
-        #     raise Exception(msg)
-        #
-        # self.output.setValue(tarf)
-        #
-        # i = next((i for i, x in enumerate(results) if x), None)
-        # self.output_netcdf.setValue(results[i])
 
         self.output_factsheet.setValue(factsheet_plot)
         self.status.set('done', 100)
