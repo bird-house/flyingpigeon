@@ -111,8 +111,8 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  output_
             logger.debug('geom identification failed %s ' % e)
         for i, key in enumerate(ncs.keys()):
             try:
-                if variable is None:
-                    variable = get_variable(ncs[key])
+                # if variable is None:
+                variable = get_variable(ncs[key])
                 logger.info('variable %s detected in resource' % (variable))
                 if prefix is None:
                     name = key + nameadd
@@ -136,9 +136,9 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  output_
                 ugid = get_ugid(polygons=polygon, geom=geom)
                 for key in ncs.keys():
                     try:
-                        if variable is None:
-                            variable = get_variable(ncs[key])
-                            logger.info('variable %s detected in resource' % (variable))
+                        # if variable is None:
+                        variable = get_variable(ncs[key])
+                        logger.info('variable %s detected in resource' % (variable))
                         if prefix is None:
                             name = key + '_' + polygon
                         else:

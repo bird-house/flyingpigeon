@@ -66,15 +66,15 @@ class subset_regionseuropeProcess(WPSProcess):
         #     maxOccurs=1
         #     )
 
-        self.variable = self.addLiteralInput(
-            identifier="variable",
-            title="Variable",
-            abstract="Variable to be expected in the input files (variable will be detected if not set).",
-            default=None,
-            type=type(''),
-            minOccurs=0,
-            maxOccurs=1,
-            )
+        # self.variable = self.addLiteralInput(
+        #     identifier="variable",
+        #     title="Variable",
+        #     abstract="Variable to be expected in the input files (variable will be detected if not set).",
+        #     default=None,
+        #     type=type(''),
+        #     minOccurs=0,
+        #     maxOccurs=1,
+        #     )
 
         self.output = self.addComplexOutput(
             title="Subsets",
@@ -102,7 +102,7 @@ class subset_regionseuropeProcess(WPSProcess):
         ncs = archiveextract(self.getInputValues(identifier='resource'))
         mosaic = self.mosaic.getValue()
         regions = self.region.getValue()
-        variable = self.variable.getValue()
+        # variable = self.variable.getValue()
 
         # logger.info('regions: %s' % regions)
 
@@ -124,7 +124,7 @@ class subset_regionseuropeProcess(WPSProcess):
                 resource=ncs,
                 polygons=regions,  # self.region.getValue(),
                 mosaic=mosaic,
-                variable=variable,
+                # variable=variable,
                 dir_output=os.path.abspath(os.curdir),
                 #  dimension_map=dimension_map,
                 )
