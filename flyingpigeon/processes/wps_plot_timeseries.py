@@ -75,6 +75,10 @@ class plottimeseriesProcess(WPSProcess):
         ncfiles = self.getInputValues(identifier='resource')
         var = self.variableIn.getValue()
 
+        if var is None:
+            from flyingpigeon.utils import get_variable
+            var = get_variable(ncfiles[0])
+
         self.status.set('plotting variable %s' % var, 10)
 
         try:

@@ -12,10 +12,10 @@ from matplotlib.colors import Normalize
 from cartopy import config as cartopy_config
 from cartopy.util import add_cyclic_point
 import cartopy.crs as ccrs
-
 from flyingpigeon import utils
 
 logger = logging.getLogger(__name__)
+
 
 class MidpointNormalize(Normalize):
     def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
@@ -53,8 +53,8 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
         if dir_out is None:
             dir_out = os.curdir
         logger.info('plot values preparation done')
-    except Exception as e:
-        msg = "plot values preparation failed: %s" % (e)
+    except:
+        msg = "plot values preparation failed"
         logger.exception(msg)
         raise Exception(msg)
     try:
@@ -73,8 +73,8 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
                     ts = data[:]
                 plt.plot(dt, ts)
                 # fig.line( dt,ts )
-            except Exception as e:
-                msg = "lineplot failed for %s" % (nc)
+            except:
+                msg = "spaghetti plot failed for"
                 logger.exception(msg)
                 raise Exception(msg)
 
@@ -83,8 +83,8 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
         fig.savefig(output_png)
         plt.close()
         logger.info('timeseries spaghetti plot done for %s with %s lines.' % (variable, c))
-    except Exception as e:
-        msg = 'matplotlib spaghetti plot failed: %s' % e
+    except:
+        msg = 'matplotlib spaghetti plot failed'
         logger.exception(msg)
         raise Exception(msg)
     return output_png
