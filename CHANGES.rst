@@ -1,6 +1,13 @@
 Releasenotes
 ************
 
+upcoming
+
+* R plot for SDM response cuvres running under CentOS
+* Species distribution model Processes modularized in five processes
+* Direction switch for analogs comparison process
+
+
 0.9.1 (2016-11-16)
 ==================
 
@@ -10,9 +17,9 @@ Releasenotes
 0.9.0 (2016-09-08)
 ==================
 
-* Subset points 
+* Subset points
 * Subset European regions
-* Subset world countries 
+* Subset world countries
 * Subset continents
 * Analogues for reanalyses datasets
 * Analogues for model datasets
@@ -52,5 +59,3 @@ Paris Release
 
 * moved code to github.
 * Initial Release.
-
-
