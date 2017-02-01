@@ -71,8 +71,9 @@ class plottimeseriesProcess(WPSProcess):
 
         init_process_logger('log.txt')
         self.output_log.setValue('log.txt')
+        from flyingpigeon.utils import archiveextract
 
-        ncfiles = self.getInputValues(identifier='resource')
+        ncfiles = archiveextract(self.getInputValues(identifier='resource'))
         var = self.variableIn.getValue()
 
         if var is None:
