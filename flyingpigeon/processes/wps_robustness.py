@@ -140,13 +140,14 @@ class robustnessProcess(WPSProcess):
 
         init_process_logger('log.txt')
         self.output_log.setValue('log.txt')
+        from flyingpigeon.utils import archiveextract
 
-        ncfiles = self.getInputValues(identifier='resource')
+        ncfiles = archiveextract(self.getInputValues(identifier='resource'))
         start = self.start.getValue()
         end = self.end.getValue()
         timeslice = self.timeslice.getValue()
         variable = self.variableIn.getValue()
-        method = self.method.getValue()       
+        method = self.method.getValue()
 
         self.status.set('arguments read', 5)
 
