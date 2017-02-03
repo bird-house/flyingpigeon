@@ -236,7 +236,7 @@ def get_indices(resources, indices):
     """
 
     from flyingpigeon.utils import sort_by_filename, calc_grouping, drs_filename
-    from flyingpigeon.ocgis_module import call
+    # from flyingpigeon.ocgis_module import call
     from flyingpigeon.indices import indice_variable, calc_indice_simple
 
     # names = [drs_filename(nc, skip_timestamp=False, skip_format=False,
@@ -254,7 +254,11 @@ def get_indices(resources, indices):
                 if variable == indice_variable(name):
                     logger.info('calculating indice %s ' % indice)
                     prefix = key.replace(variable, name).replace('_day_', '_%s_' % month)
-                    nc = calc_indice_simple(resource=ncs[key], variable=variable,
+                    nc = calc_indice_simple(resource=ncs[key],
+                                            variable=variable,
+                                            polygons=['Europe', 'Africa', 'Asia', 'North America', 'Oceania',
+                                                      'South America', 'Antarctica'],
+                                            mosaic=True,
                                             prefix=prefix, indices=name, groupings=month)
                     if nc is not None:
                         ncs_indices.append(nc[0])
