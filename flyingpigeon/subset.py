@@ -101,7 +101,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  output_
             nameadd = '_'
             for polygon in polygons:
                 geoms.add(get_geom(polygon))
-                nameadd = nameadd + '-' + polygon
+                nameadd = nameadd + polygon.replace(' ', '')
             if len(geoms) > 1:
                 logger.error('polygons belong to different shapefiles! mosaic option is not possible %s', geoms)
             else:
@@ -140,7 +140,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  output_
                         variable = get_variable(ncs[key])
                         logger.info('variable %s detected in resource' % (variable))
                         if prefix is None:
-                            name = key + '_' + polygon
+                            name = key + '_' + polygon.replace(' ', '')
                         else:
                             name = prefix[i]
                         geom_file = call(resource=ncs[key], variable=variable,  calc=calc, calc_grouping=calc_grouping,
