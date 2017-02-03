@@ -118,7 +118,6 @@ def get_gbif(taxon_name='Fagus sylvatica', bbox=[-10, -10, 10, 10]):
         # generate polygons with gridwidth 10_degree
         # x_len = (bbox[2] - bbox[0] ) / 10
         # y_len = (bbox[3] - bbox[1] ) / 10
-
         # logger.info('length = %s , %s ' % (x_len, y_len))
         polys = []
         gridlen = 10
@@ -223,7 +222,6 @@ def get_PAmask(coordinates=[], domain='EUR-11'):
 
     PAmask[sftlf <= 50] = np.nan
     return PAmask
-
 
 def get_indices(resources, indices):
     """
