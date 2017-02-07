@@ -180,8 +180,14 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
     outputs = []
 
     for key in experiments:
+        print type(experiments[key])
         if variable is None:
-            variable = get_variable(experiments[key][0])
+            if type(experiments[key]) == str:
+                print "variable from str %s" % variable
+                variable = get_variable(experiments[key])
+            else:
+                print "variable from list %s" % variable
+                variable = get_variable(experiments[key][0])
         # variable = key.split('_')[0]
         try:
             # icclim can't handling 'kg m2 sec' needs to be 'mm/day'
