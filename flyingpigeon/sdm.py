@@ -193,6 +193,7 @@ def get_PAmask(coordinates=[], nc=None):
     """
     from scipy import spatial
     import numpy as np
+    import numpy.ma as ma
 #    from netCDF4 import Dataset
 #    from flyingpigeon import config
 #    DIR_MASKS = config.masks_dir()
@@ -200,25 +201,14 @@ def get_PAmask(coordinates=[], nc=None):
     from flyingpigeon.utils import get_variable
     from flyingpigeon.utils import get_coordinates, get_values
 
-    lat, lon = np.array(get_coordinates(nc))
+    lats, lons = np.array(get_coordinates(nc))
 
-    if dim(lats) == 1:
-        sftlf = get_values(nc)[0, :, :]
-
-    # if domain == 'EUR-11':
-    #     nc = DIR_MASKS + '/EUR-11.nc'  # sftlf_EUR-11_ECMWF-ERAINT_evaluation_r1i1p1_KNMI-RACMO22E_v1_fx
-    # elif domain == 'EUR-44':
-    #     nc = DIR_MASKS + '/EUR-44.nc'
-    # else:
-    #     logger.warn('domain not found')
+    sftlf = get_values(nc)[0, :, :]
     #
-    # var = get_variable(nc)
-    # ds = Dataset(nc, mode='r')
-    # lats = ds.variables['lat']
-    # lons = ds.variables['lon']
+    # sftlf[sftlf.mask is True] = 0
+    # sftlf[sftlf.mask is False] = np.nan
 
-    sftlf = np.array(ds.variables[var][0, :, :])  # get first time step
-    domain = lats.shape
+    domain = sftlf.shape
 
     lats1D = np.array(lats).ravel()
     lons1D = np.array(lons).ravel()
@@ -227,11 +217,12 @@ def get_PAmask(coordinates=[], nc=None):
 
     PA = np.zeros(len(lats1D))
     PA[i] = 1
-
+    #
     PAmask = PA.reshape(domain)
-    PAmask[sftlf <= 50] = np.nan
+    PAmask[sftlf.mask] = np.nan
 
     return PAmask
+
 
 def get_indices(resources, indices):
     """

@@ -460,8 +460,14 @@ def get_values(resource, variable=None):
     from numpy import squeeze
     if variable is None:
         variable = get_variable(resource)
-    mds = MFDataset(resource)
-    vals = squeeze(mds.variables[variable][:])
+
+    if type(resource) is str:
+        ds = Dataset(resource)
+    elif len(resource) == 1:
+        ds = Dataset(resource)
+    else:
+        ds = MFDataset(resource)
+    vals = squeeze(ds.variables[variable][:])
     return vals
 
 
