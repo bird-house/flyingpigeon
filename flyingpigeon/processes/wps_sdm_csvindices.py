@@ -150,6 +150,7 @@ class SDMcsvindicesProcess(WPSProcess):
         from os.path import basename
         from flyingpigeon import sdm
         from flyingpigeon.utils import archive, archiveextract  # , get_domain
+        from flyingpigeon.visualisation import map_PAmask
 
         init_process_logger('log.txt')
         self.output_log.setValue('log.txt')
@@ -180,33 +181,19 @@ class SDMcsvindicesProcess(WPSProcess):
         except:
             logger.exception('failed to plot occurence map')
 
-        try:
-            self.status.set('get domain', 30)
-            domains = set()
-            for indice in resources:
-                # get_domain works only if metadata are set in a correct way
-                domains = domains.union([basename(indice).split('_')[1]])
-            if len(domains) == 1:
-                domain = list(domains)[0]
-                logger.info('Domain %s found in indices files' % domain)
-            else:
-                logger.warn('NOT a single domain in indices files %s' % domains)
-        except:
-            logger.exception('failed to get domains')
-
-        try:
-            self.status.set('generating the PA mask', 20)
-            PAmask = sdm.get_PAmask(coordinates=latlon, domain=domain)
-            logger.info('PA mask sucessfully generated')
-        except:
-            logger.exception('failed to generate the PA mask')
-
-        try:
-            self.status.set('Ploting PA mask', 25)
-            from flyingpigeon.visualisation import map_PAmask
-            PAmask_png = map_PAmask(PAmask)
-        except:
-            logger.exception('failed to plot the PA mask')
+        # try:
+        #     self.status.set('get domain', 30)
+        #     domains = set()
+        #     for indice in resources:
+        #         # get_domain works only if metadata are set in a correct way
+        #         domains = domains.union([basename(indice).split('_')[1]])
+        #     if len(domains) == 1:
+        #         domain = list(domains)[0]
+        #         logger.info('Domain %s found in indices files' % domain)
+        #     else:
+        #         logger.warn('NOT a single domain in indices files %s' % domains)
+        # except:
+        #     logger.exception('failed to get domains')
 
         try:
             # sort indices
@@ -221,6 +208,7 @@ class SDMcsvindicesProcess(WPSProcess):
         ncs_references = []
         species_files = []
         stat_infos = []
+        PAmask_pngs = []
 
         self.status.set('Start processing for %s Datasets' % len(indices_dic.keys()))
         for count, key in enumerate(indices_dic.keys()):
@@ -229,6 +217,20 @@ class SDMcsvindicesProcess(WPSProcess):
                 self.status.set('Start processing of %s' % key, staus_nr)
                 ncs = indices_dic[key]
                 logger.info('with %s files' % len(ncs))
+
+                try:
+                    self.status.set('generating the PA mask', 20)
+                    PAmask = sdm.get_PAmask(coordinates=latlon, nc=ncs[0])
+                    logger.info('PA mask sucessfully generated')
+                except:
+                    logger.exception('failed to generate the PA mask')
+
+                try:
+                    self.status.set('Ploting PA mask', 25)
+                    PAmask_pngs.extend(map_PAmask(PAmask))
+                except:
+                    logger.exception('failed to plot the PA mask')
+
                 try:
                     ncs_reference = sdm.get_reference(ncs_indices=ncs, period=period)
                     ncs_references.extend(ncs_reference)
@@ -304,7 +306,7 @@ class SDMcsvindicesProcess(WPSProcess):
             _, stat_infosconcat = tempfile.mkstemp(suffix='.pdf', prefix='foobar-', dir='.')
 
         self.output_gbif.setValue(occurence_map)
-        self.output_PA.setValue(PAmask_png)
+        self.output_PA.setValue(PAmask_pngs[0])
         self.output_reference.setValue(archive_references)
         self.output_prediction.setValue(archive_predicion)
         self.output_info.setValue(stat_infosconcat)
