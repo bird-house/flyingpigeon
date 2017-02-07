@@ -180,13 +180,10 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
     outputs = []
 
     for key in experiments:
-        print type(experiments[key])
         if variable is None:
             if type(experiments[key]) == str:
-                print "variable from str %s" % variable
                 variable = get_variable(experiments[key])
             else:
-                print "variable from list %s" % variable
                 variable = get_variable(experiments[key][0])
         # variable = key.split('_')[0]
         try:
