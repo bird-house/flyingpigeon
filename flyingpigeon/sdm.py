@@ -182,7 +182,7 @@ def gbifdic2csv(gbifdic):
     return gbif_csv
 
 
-def get_PAmask(coordinates=[], domain='EUR-11'):
+def get_PAmask(coordinates=[], nc=None):
     """
     generates a matrix with 1/0 values over land areas. (NaN for water regions)
 
@@ -193,22 +193,32 @@ def get_PAmask(coordinates=[], domain='EUR-11'):
     """
     from scipy import spatial
     import numpy as np
-    from netCDF4 import Dataset
-    from flyingpigeon import config
-    DIR_MASKS = config.masks_dir()
+#    from netCDF4 import Dataset
+#    from flyingpigeon import config
+#    DIR_MASKS = config.masks_dir()
 
-    if domain == 'EUR-11':
-        nc = DIR_MASKS + '/EUR-11.nc'  # sftlf_EUR-11_ECMWF-ERAINT_evaluation_r1i1p1_KNMI-RACMO22E_v1_fx
-    elif domain == 'EUR-44':
-        nc = DIR_MASKS + '/EUR-44.nc'
-    else:
-        logger.warn('domain not found')
+    from flyingpigeon.utils import get_variable
+    from flyingpigeon.utils import get_coordinates , get_values
 
-    ds = Dataset(nc, mode='r')
-    lats = ds.variables['lat']
-    lons = ds.variables['lon']
-    sftlf = np.array(ds.variables['sftlf'])
+    lat , lon  = np.array(get_coordinates(nc))
 
+
+    if dim(lats) == 1
+    sftlf = get_values(nc)[0,:,:]
+
+    # if domain == 'EUR-11':
+    #     nc = DIR_MASKS + '/EUR-11.nc'  # sftlf_EUR-11_ECMWF-ERAINT_evaluation_r1i1p1_KNMI-RACMO22E_v1_fx
+    # elif domain == 'EUR-44':
+    #     nc = DIR_MASKS + '/EUR-44.nc'
+    # else:
+    #     logger.warn('domain not found')
+    #
+    # var = get_variable(nc)
+    # ds = Dataset(nc, mode='r')
+    # lats = ds.variables['lat']
+    # lons = ds.variables['lon']
+
+    sftlf = np.array(ds.variables[var][0,:,:])  # get first time step
     domain = lats.shape
 
     lats1D = np.array(lats).ravel()
@@ -218,9 +228,10 @@ def get_PAmask(coordinates=[], domain='EUR-11'):
 
     PA = np.zeros(len(lats1D))
     PA[i] = 1
-    PAmask = PA.reshape(domain)
 
+    PAmask = PA.reshape(domain)
     PAmask[sftlf <= 50] = np.nan
+
     return PAmask
 
 def get_indices(resources, indices):
