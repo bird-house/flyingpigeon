@@ -75,12 +75,11 @@ def latlon_gbifcsv(csvfile):
                 for (k, v) in row.items():
                     columns[k].append(v)
 
-        l = len(columns['decimalLongitude'])
-        print 'length of decimalLongitude: %s' % l
-
-        ll = empty([l, 2], dtype=float, order='C')
+        dl = len(columns['decimalLongitude'])
+        # print 'length of decimalLongitude: %s' % dl
+        ll = empty([dl, 2], dtype=float, order='C')
         c = 0
-        for i in range(0, l):
+        for i in range(0, dl):
             try:
                 ll[i][0] = float(columns['decimalLatitude'][i])
                 ll[i][1] = float(columns['decimalLongitude'][i])
@@ -131,7 +130,6 @@ def get_gbif(taxon_name='Fagus sylvatica', bbox=[-10, -10, 10, 10]):
         print(polys)
 
         logger.info('%s polygons created' % len(polys))
-
         gbifdic = []
 
         for i in polys:
@@ -176,9 +174,7 @@ def gbifdic2csv(gbifdic):
     from tempfile import mkstemp
 
     ip, gbif_csv = mkstemp(dir='.', suffix='.csv')
-
     DataFrame.from_records(gbifdic).to_csv(gbif_csv, mode='a', sep=',', encoding='utf-8')
-
     return gbif_csv
 
 
@@ -194,15 +190,15 @@ def get_PAmask(coordinates=[], nc=None):
     from scipy import spatial
     import numpy as np
     import numpy.ma as ma
+
 #    from netCDF4 import Dataset
 #    from flyingpigeon import config
 #    DIR_MASKS = config.masks_dir()
 
     from flyingpigeon.utils import get_variable
-    from flyingpigeon.utils import unrotate_pole, get_values
+    from flyingpigeon.utils import get_coordinates, get_values  # unrotate_pole,
 
-    lats, lons = np.array(unrotate_pole(nc, write_to_file=False))  # get_coordinates(nc))
-
+    lats, lons = np.array(get_coordinates(nc))  # unrotate_pole(nc, write_to_file=False))
     sftlf = get_values(nc)[0, :, :]
     #
     # sftlf[sftlf.mask is True] = 0
@@ -234,7 +230,7 @@ def get_indices(resources, indices):
     :return list: list of filepathes to netCDF files
     """
 
-    from flyingpigeon.utils import sort_by_filename, calc_grouping, drs_filename
+    from flyingpigeon.utils import sort_by_filename, calc_grouping, drs_filename, unrotate_pole
     # from flyingpigeon.ocgis_module import call
     from flyingpigeon.indices import indice_variable, calc_indice_simple
 
@@ -260,6 +256,7 @@ def get_indices(resources, indices):
                                             mosaic=True,
                                             prefix=prefix, indices=name, groupings=month)
                     if nc is not None:
+                        coords = unrotate_pole(nc[0], write_to_file=True)
                         ncs_indices.append(nc[0])
                         logger.info('Successful calculated indice %s %s' % (key, indice))
                     else:
@@ -397,7 +394,11 @@ def get_gam(ncs_reference, PAmask, modelname=None):
     try:
         dataf = ro.DataFrame(data)
         eq = ro.Formula(str(form))
-        gam_model = mgcv.gam(base.eval(eq), data=dataf, family=stats.binomial(), scale=-1, na_action=stats.na_exclude)
+        gam_model = mgcv.gam(base.eval(eq),
+                             data=dataf,
+                             family=stats.binomial(),
+                             scale=-1,
+                             na_action=stats.na_exclude)
         logger.info('GAM model trained')
     except:
         msg = 'failed to train the GAM model'
@@ -429,7 +430,7 @@ def get_gam(ncs_reference, PAmask, modelname=None):
 
         try:
             predict_gam = mgcv.predict_gam(gam_model, type="response",
-                                           progress="text", na_action=stats.na_exclude)
+                                           progress="text", na_action=stats.na_pass)
             prediction = array(predict_gam).reshape(domain)
             logger.info('SDM prediction for reference period processed')
         except:
@@ -486,7 +487,7 @@ def get_prediction(gam_model, ncs_indices):  # mask=None
     dataf = ro.DataFrame(data)
     predict_gam = mgcv.predict_gam(gam_model, newdata=dataf,
                                    type="response", progress="text",
-                                   newdata_guaranteed=True, na_action=stats.na_exclude)
+                                   newdata_guaranteed=True, na_action=stats.na_omit)
     prediction = array(predict_gam).reshape(dims)
     return prediction
 
@@ -506,6 +507,7 @@ def write_to_file(nc_indice, data):
         from os.path import split, join
         from flyingpigeon.utils import get_variable
         from flyingpigeon.metadata import get_frequency
+        from numpy import nan
 
         # path, nc_indice = split(indice_file)
 
@@ -525,6 +527,7 @@ def write_to_file(nc_indice, data):
         vals.long_name = 'Favourabilliy for tree species'
         vals.standard_name = 'tree'
         vals.units = '0-1'
+        vals.missing_value = nan
         ds.close()
     except:
         msg = 'failed to fill data to netCDF file'
