@@ -198,13 +198,12 @@ def get_PAmask(coordinates=[], nc=None):
 #    DIR_MASKS = config.masks_dir()
 
     from flyingpigeon.utils import get_variable
-    from flyingpigeon.utils import get_coordinates , get_values
+    from flyingpigeon.utils import get_coordinates, get_values
 
-    lat , lon  = np.array(get_coordinates(nc))
+    lat, lon = np.array(get_coordinates(nc))
 
-
-    if dim(lats) == 1
-    sftlf = get_values(nc)[0,:,:]
+    if dim(lats) == 1:
+        sftlf = get_values(nc)[0, :, :]
 
     # if domain == 'EUR-11':
     #     nc = DIR_MASKS + '/EUR-11.nc'  # sftlf_EUR-11_ECMWF-ERAINT_evaluation_r1i1p1_KNMI-RACMO22E_v1_fx
@@ -218,7 +217,7 @@ def get_PAmask(coordinates=[], nc=None):
     # lats = ds.variables['lat']
     # lons = ds.variables['lon']
 
-    sftlf = np.array(ds.variables[var][0,:,:])  # get first time step
+    sftlf = np.array(ds.variables[var][0, :, :])  # get first time step
     domain = lats.shape
 
     lats1D = np.array(lats).ravel()
