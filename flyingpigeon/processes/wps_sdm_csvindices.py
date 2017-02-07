@@ -227,7 +227,7 @@ class SDMcsvindicesProcess(WPSProcess):
 
                 try:
                     self.status.set('Ploting PA mask', 25)
-                    PAmask_pngs.extend(map_PAmask(PAmask))
+                    PAmask_pngs.extend([map_PAmask(PAmask)])
                 except:
                     logger.exception('failed to plot the PA mask')
 
@@ -258,14 +258,14 @@ class SDMcsvindicesProcess(WPSProcess):
                     logger.exception(msg)
                     # raise Exception(msg)
 
-                try:
-                    self.status.set('land sea mask for predicted data', staus_nr + 8)
-                    from numpy import invert, isnan, nan, broadcast_arrays  # , array, zeros, linspace, meshgrid
-                    mask = invert(isnan(PAmask))
-                    mask = broadcast_arrays(prediction, mask)[1]
-                    prediction[mask is False] = nan
-                except:
-                    logger.exception('failed to mask predicted data')
+                # try:
+                #     self.status.set('land sea mask for predicted data', staus_nr + 8)
+                #     from numpy import invert, isnan, nan, broadcast_arrays  # , array, zeros, linspace, meshgrid
+                #     mask = invert(isnan(PAmask))
+                #     mask = broadcast_arrays(prediction, mask)[1]
+                #     prediction[mask is False] = nan
+                # except:
+                #     logger.exception('failed to mask predicted data')
 
                 try:
                     species_files.append(sdm.write_to_file(ncs[0], prediction))

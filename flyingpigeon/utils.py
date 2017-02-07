@@ -763,59 +763,6 @@ def has_variable(resource, variable):
     return success
 
 
-# def filename_creator(resource, var=None):
-# #    OBSOLETE
-#   """ use drs_filename instead """
-
-#   from os import path , rename
-#   from netCDF4 import Dataset
-#   from datetime import datetime, timedelta
-
-#   if type(resource) != list:
-#     resource = list([resource])
-#   newnames = []
-#   for i, nc in enumerate(resource):
-#     fp ,fn = path.split(nc)
-#     # logger.debug('fn_creator for: %s' % fn)
-
-#     ds = Dataset(nc)
-#     rd = []
-#     rd = RequestDataset(nc)
-#     ts = ds.variables['time']
-#     reftime = reftime = datetime.strptime('1949-12-01', '%Y-%m-%d')
-#     st = datetime.strftime(reftime + timedelta(days=ts[0]), '%Y%m%d')
-#     en = datetime.strftime(reftime + timedelta(days=ts[-1]), '%Y%m%d')
-
-#     if var == None:
-#       var = str(rd.variable)
-#     frq = str(ds.frequency)
-#     exp = str(ds.experiment_id)
-
-#     if (str(ds.project_id) == 'CMIP5'):
-#     #day_MPI-ESM-LR_historical_r1i1p1
-#       gmodel = str(ds.model_id)
-#       ens = str(ds.parent_experiment_rip)
-#       filename = var + '_' + str( gmodel + '_' + exp + '_' + ens + '_' + str(int(st)) + '-' + str(int(en)) + '.nc')
-#     elif (str(ds.project_id) == 'CORDEX'):
-#     #EUR-11_ICHEC-EC-EARTH_historical_r3i1p1_DMI-HIRHAM5_v1_day
-#       dom = str(ds.CORDEX_domain)
-#       gmodel = str(ds.driving_model_id)
-#       ens = str(ds.driving_model_ensemble_member)
-#       rmodel = str(ds.model_id)
-#       ver = str(ds.rcm_version_id)
-#       filename = str(var + '_'+ dom + '_' + gmodel + '_' + exp + '_' + ens + '_' + rmodel + '_' + ver + \
-#         '_' + frq + '_' + str(int(st)) + '-' + str(int(en)) + '.nc' )
-#     else:
-#       filename = fn
-#       logger.debug('WPS name forwarded :%s' % ( filename))
-
-#     rename(path.join(fp ,fn), path.join(fp, filename ))
-#     if path.exists(path.join(fp, filename)):
-#       newnames.append(path.join(fp, filename))
-#     logger.debug('file name generated and renamed :%s' % (len(filename)))
-#   return newnames
-
-
 # def get_dimension_map(resource):
 #   OBSOLETE
 #   """ returns the dimension map for a file, required for ocgis processing.

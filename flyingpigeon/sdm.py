@@ -199,9 +199,9 @@ def get_PAmask(coordinates=[], nc=None):
 #    DIR_MASKS = config.masks_dir()
 
     from flyingpigeon.utils import get_variable
-    from flyingpigeon.utils import get_coordinates, get_values
+    from flyingpigeon.utils import unrotate_pole, get_values
 
-    lats, lons = np.array(get_coordinates(nc))
+    lats, lons = np.array(unrotate_pole(nc, write_to_file=False))  # get_coordinates(nc))
 
     sftlf = get_values(nc)[0, :, :]
     #
@@ -380,7 +380,7 @@ def get_gam(ncs_reference, PAmask, modelname=None):
             agg = basename(nc).split('_')[-2]
             ds = Dataset(nc)
             vals = squeeze(ds.variables[var])
-            vals[vals > 1000] = 0
+            # vals[vals > 1000] = 0
             vals[isnan(PAmask)] = nan
             indice = '%s_%s' % (var, agg)
             data[str(indice)] = ro.FloatVector(ravel(vals))
@@ -486,7 +486,7 @@ def get_prediction(gam_model, ncs_indices):  # mask=None
     dataf = ro.DataFrame(data)
     predict_gam = mgcv.predict_gam(gam_model, newdata=dataf,
                                    type="response", progress="text",
-                                   newdata_guaranteed=True)  # , na_action=`na.pass`
+                                   newdata_guaranteed=True, na_action=stats.na_exclude)
     prediction = array(predict_gam).reshape(dims)
     return prediction
 
