@@ -110,22 +110,33 @@ class LandseamaskProcess(WPSProcess):
         ncs = []
         sftlf = []
         for nc in resources:
-            basename = path.basename(nc)
-            pattern
-            bs = basename.split('_')
-            pattern = 'sftlf_' + '_'.join(bs[1:-2]) + '_fx.nc'
-            pattern = pattern.replace('historical',
-                                      '*').replace('rcp85',
-                                                   '*').replace('rcp65',
-                                                                '*').replace('rcp45',
-                                                                             '*').replace('rcp26', '*')
-            sftlf.append(searchfile(pattern, path.curdir))
-            sftlf.append(searchfile(pattern, base_dir))
-            if len(sftlf) > 1:
-                logger.warn('more than one sftlf file is found fitting to the pattern, first one will be taken')
-            prefix = 'masked%s' % basename.replace('.nc', '')
-            nc_mask = maksing(nc, sftlf[0], land_area=land_area, prefix=prefix)
-            ncs.extend([nc_mask])
+            try:
+                basename = path.basename(nc)
+                bs = basename.split('_')
+                pattern = 'sftlf_' + '_'.join(bs[1:-2]) + '_fx.nc'
+                pattern = pattern.replace('historical',
+                                          '*').replace('rcp85',
+                                                       '*').replace('rcp65',
+                                                                    '*').replace('rcp45',
+                                                                                 '*').replace('rcp26', '*')
+                logger.debug('searching for %s ' % pattern)
+                sftlf.extend(searchfile(pattern, path.curdir))
+                sftlf.extend(searchfile(pattern, base_dir))
+                logger.debug('lenght of sftlf: %s' % len(sftlf))
+                if len(sftlf) >= 1:
+                    if len(sftlf) > 1:
+                        logger.warn(
+                            'more than one sftlf file is found fitting to the pattern, first one will be taken %s'
+                            % sftlf[0])
+                    prefix = 'masked%s' % basename.replace('.nc', '')
+                    nc_mask = masking(nc, sftlf[0], land_area=land_area, prefix=prefix)
+                    ncs.extend([nc_mask])
+                    logger.info('masking processed for %s' % basename)
+                else:
+                    logger.warn('no masked found. Please perform a "Download Resources"\
+                     to make sure the land_area file is in cache')
+            except:
+                logger.exception('failed to mask file: %s' % basename)
         nc_archive = archive(ncs)
 
         self.output_archive.setValue(nc_archive)
