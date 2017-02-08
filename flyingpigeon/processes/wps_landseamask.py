@@ -7,10 +7,10 @@ from flyingpigeon.log import init_process_logger
 logger = logging.getLogger(__name__)
 
 
-class MaskProcess(WPSProcess):
+class LandseamaskProcess(WPSProcess):
     def __init__(self):
         WPSProcess.__init__(self,
-                            identifier="mask",
+                            identifier="landseamask",
                             title="Mask Land/Sea",
                             version="0.1",
                             abstract="Find the appropriate land_area fraction file and perform a CDO division",
@@ -24,7 +24,9 @@ class MaskProcess(WPSProcess):
             minOccurs=1,
             maxOccurs=100,
             maxmegabites=5000,
-            formats=[{"mimeType": "application/x-netcdf"}],
+            formats=[{"mimeType": "application/x-netcdf"},
+                     {"mimeType": "application/x-tar"},
+                     {"mimeType": "application/zip"}],
             )
 
         self.threshold = self.addLiteralInput(
@@ -46,20 +48,30 @@ class MaskProcess(WPSProcess):
             minOccurs=0,
             maxOccurs=100,
             # maxmegabites=50,
-            formats=[{"application/x-netcdf"}],
-        )
+            formats=[{"mimeType": "application/x-netcdf"},
+                     {"mimeType": "application/x-tar"},
+                     {"mimeType": "application/zip"}],
+            )
+
+        self.land_area = self.addLiteralInput(
+            identifier="land_area",
+            title="Land/Sea",
+            abstract="If land_area (default) is checked, sea areas will be set to missing value",
+            default=True,
+            type=type(False),
+            )
 
         ###########
         # output
         ###########
 
-        self.output = self.addComplexOutput(
+        self.output_archive = self.addComplexOutput(
             title="Masked Files Archive",
             abstract="Tar file of the masked netCDF files",
             metadata=[],
             formats=[{"mimeType": "application/x-tar"}],
             asReference=True,
-            identifier="output",
+            identifier="output_archive",
             )
 
         self.output_example = self.addComplexOutput(
@@ -79,7 +91,6 @@ class MaskProcess(WPSProcess):
         )
 
     def execute(self):
-
         init_process_logger('log.txt')
         self.output_log.setValue('log.txt')
 
@@ -91,6 +102,9 @@ class MaskProcess(WPSProcess):
         from os import path
 
         resources = archiveextract(self.getInputValues(identifier='resource'))
+        masks = archiveextract(self.getInputValues(identifier='mask'))
+        land_area = self.land_area.getValue()
+
         base_dir = config.cache_path()
 
         ncs = []
@@ -109,10 +123,11 @@ class MaskProcess(WPSProcess):
             sftlf.append(searchfile(pattern, base_dir))
             if len(sftlf) > 1:
                 logger.warn('more than one sftlf file is found fitting to the pattern, first one will be taken')
-            nc_mask = maksing(nc, sftlf[0])
+            prefix = 'masked%s' % basename.replace('.nc', '')
+            nc_mask = maksing(nc, sftlf[0], land_area=land_area, prefix=prefix)
             ncs.extend([nc_mask])
         nc_archive = archive(ncs)
 
-        self.output.setValue(nc_archive)
+        self.output_archive.setValue(nc_archive)
         i = next((i for i, x in enumerate(ncs) if x), None)
         self.output_example.setValue(ncs[i])
