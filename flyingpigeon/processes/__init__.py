@@ -21,6 +21,7 @@ __all__ = [
         "wps_robustness",
         "wps_plot_timeseries",
         "wps_fetch",
+        "wps_mask",
         # climate for impact processes
         "wps_c4i_simple_indice",
         # processes under development
