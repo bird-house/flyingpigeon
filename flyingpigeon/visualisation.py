@@ -281,7 +281,7 @@ def concat_images(images, orientation='v'):
 
     logger.debug('Images to be concatinated: %s' % images)
 
-    if len(images > 1):
+    if len(images) > 1:
         try:
             images_existing = [img for img in images if os.path.exists(img)]
             open_images = map(Image.open, images_existing)
@@ -319,9 +319,9 @@ def concat_images(images, orientation='v'):
             result = Image.new("RGB", (50, 50))
             result.save(image)
     elif len(images) == 1:
-        image = images
+        image = images[0]
     else:
-        logger.error('No concatable number of images: %s, Dummy will be produced' % len(image))
+        logger.exception('No concatable number of images: %s, Dummy will be produced' % len(image))
         _, image = mkstemp(dir='.', suffix='.png')
         result = Image.new("RGB", (50, 50))
         result.save(image)

@@ -487,7 +487,7 @@ def get_prediction(gam_model, ncs_indices):  # mask=None
     dataf = ro.DataFrame(data)
     predict_gam = mgcv.predict_gam(gam_model, newdata=dataf,
                                    type="response", progress="text",
-                                   newdata_guaranteed=True, na_action=stats.na_omit)
+                                   newdata_guaranteed=True, na_action=stats.na_pass)
     prediction = array(predict_gam).reshape(dims)
     return prediction
 
