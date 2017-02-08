@@ -765,11 +765,11 @@ def has_variable(resource, variable):
 
 def searchfile(pattern, base_dir):
     """
-    searches for files with an given pattern, in the working direcory as well as rescursive
-    in the birdhouse cache (including the cached files of other birds as well)
+    searches recursive for files with an given pattern,
 
     :param pattern: file name pattern including wildcards (e.g. tas_*_day_*.nc)
     :param base_dir: base direcory of the direcory tree
+
     return:  list of fitting files
     """
 

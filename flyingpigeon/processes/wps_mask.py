@@ -87,14 +87,30 @@ class MaskProcess(WPSProcess):
         from flyingpigeon.subset import masking
         from flyingpigeon.utils import archive, archiveextract
 
+        from flyingpigeon import config
+        from os import path
+
         resources = archiveextract(self.getInputValues(identifier='resource'))
+        base_dir = config.cache_path()
 
         ncs = []
+        sftlf = []
         for nc in resources:
-            sftlf = searchfile('pattern')
-            nc_mask = maksing(nc, sftlf)
+            basename = path.basename(nc)
+            pattern
+            bs = basename.split('_')
+            pattern = 'sftlf_' + '_'.join(bs[1:-2]) + '_fx.nc'
+            pattern = pattern.replace('historical',
+                                      '*').replace('rcp85',
+                                                   '*').replace('rcp65',
+                                                                '*').replace('rcp45',
+                                                                             '*').replace('rcp26', '*')
+            sftlf.append(searchfile(pattern, path.curdir))
+            sftlf.append(searchfile(pattern, base_dir))
+            if len(sftlf) > 1:
+                logger.warn('more than one sftlf file is found fitting to the pattern, first one will be taken')
+            nc_mask = maksing(nc, sftlf[0])
             ncs.extend([nc_mask])
-
         nc_archive = archive(ncs)
 
         self.output.setValue(nc_archive)
