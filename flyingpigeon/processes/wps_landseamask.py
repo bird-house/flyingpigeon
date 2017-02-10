@@ -105,7 +105,10 @@ class LandseamaskProcess(WPSProcess):
         masks = archiveextract(self.getInputValues(identifier='mask'))
         land_area = self.land_area.getValue()
 
-        base_dir = config.cache_path()
+        fp_cache = config.cache_path().split('/')
+        base_dir = '/'.join(fp_cache[0:-1])  # base dir for all birds
+
+        logger.debug('base dir of directory tree: %s' % base_dir)
 
         ncs = []
         sftlf = []
