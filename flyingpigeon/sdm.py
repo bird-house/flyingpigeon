@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 _SDMINDICES_ = [
     'CDD_AMJJAS',
     'CFD_ONDJFM',
-    'FD_ONDJFM', 'FD_April', 'FD_May', 'FD_June',
+    'FD_ONDJFM', 'FD_Apr', 'FD_May', 'FD_June',
     'GD4_yr',
     'ID_yr',
     'PRCPTOT_yr', 'PRCPTOT_ONDJFM', 'PRCPTOT_AMJJAS',
