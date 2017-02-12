@@ -20,7 +20,7 @@ plt.figure()
 for i, country in enumerate(countries):
     if country.attributes['ISO_ A3'] in ['DEU']:
         shape = sf.scountry[i]
-        xs = [xor x in sha  pe.shape.points[:]]
+        xs = [x for x in shape.shape.points[:]]
         ys = [y[1] for y in shape.shape.points[:]]
         plt.plot(xs, ys)
 plt.show()
@@ -72,8 +72,8 @@ for r in records:
     geo = geos.next()
     shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black')
     ax.add_feature(shape_feature)
+# plt.save('country_polygon.png')
 plt.show()
-
 
 
 #
