@@ -20,5 +20,5 @@ for page_number in range(page_count):
     input_page.mergePage(watermark.getPage(0))
     output_file.addPage(input_page)
 
-with open('climatefactsheet.pdf', 'wb') as outputStream:
+with open('output.pdf', 'wb') as outputStream:
     output_file.write(outputStream)

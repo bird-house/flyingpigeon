@@ -149,6 +149,8 @@ class climatefactsheetProcess(WPSProcess):
                 if r.attributes['ISO_A3'] in regions:
                     shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black')
                     ax.add_feature(shape_feature)
+                    ax.coastlines()
+                    # ax.set_global()
 
             o1, png_country = mkstemp(dir='.', suffix='.png')
 

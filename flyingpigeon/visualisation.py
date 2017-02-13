@@ -36,7 +36,7 @@ def factsheetbrewer(png_country=None):
     _, climatefactsheet = mkstemp(dir='.', suffix='.pdf')
 
     c = canvas.Canvas(pdf_country)
-    c.drawImage(png_country, 350, 550, width=150, height=150)  # , mask=None, preserveAspectRatio=False)
+    c.drawImage(png_country, 365, 490, width=200, height=150)  # , mask=None, preserveAspectRatio=False)
 
     #  c.drawString(15, 720, "Hello World")
     c.save()
