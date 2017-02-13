@@ -27,6 +27,39 @@ class MidpointNormalize(Normalize):
         return np.ma.masked_array(np.interp(value, x, y))
 
 
+def factsheetbrewer(png_country=None):
+    from PyPDF2 import PdfFileWriter, PdfFileReader
+    from reportlab.pdfgen import canvas
+    from flyingpigeon.config import static_dir
+
+    _, pdf_country = mkstemp(dir='.', suffix='.pdf')
+    _, climatefactsheet = mkstemp(dir='.', suffix='.pdf')
+
+    c = canvas.Canvas(pdf_country)
+    c.drawImage(png_country, 350, 550, width=150, height=150)  # , mask=None, preserveAspectRatio=False)
+
+    #  c.drawString(15, 720, "Hello World")
+    c.save()
+
+    output_file = PdfFileWriter()
+    pfr_country = PdfFileReader(open(pdf_country, 'rb'))
+    pfr_template = PdfFileReader(file(static_dir() + '/pdf/climatefactsheettemplate.pdf', 'rb'))
+    logger.debug('template: %s' % pfr_template)
+
+    page_count = pfr_template.getNumPages()
+
+    for page_number in range(page_count):
+        logger.debug("Plotting png to {} of {}".format(page_number, page_count))
+        input_page = pfr_template.getPage(page_number)
+        input_page.mergePage(pfr_country.getPage(0))
+        output_file.addPage(input_page)
+
+    with open(climatefactsheet, 'wb') as outputStream:
+        output_file.write(outputStream)
+
+    return climatefactsheet
+
+
 def spaghetti(resouces, variable=None, title=None, dir_out=None):
     """
     creates a png file containing the appropriate spaghetti plot as a field mean of the values.

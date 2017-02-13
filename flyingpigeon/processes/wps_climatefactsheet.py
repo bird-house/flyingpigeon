@@ -150,14 +150,18 @@ class climatefactsheetProcess(WPSProcess):
                     shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black')
                     ax.add_feature(shape_feature)
 
-            o1, factsheet_plot = mkstemp(dir='.', suffix='.pdf')
+            o1, png_country = mkstemp(dir='.', suffix='.png')
 
-            fig.savefig(factsheet_plot)
+            fig.savefig(png_country)
             plt.close()
 
         except:
             logger.exception('failed to generate the fact sheet')
-            o1, factsheet_plot = mkstemp(dir='.', suffix='.pdf')
+            o1, factsheet_plot = mkstemp(dir='.', suffix='.png')
 
-        self.output_factsheet.setValue(factsheet_plot)
+        from flyingpigeon.visualisation import factsheetbrewer
+        factsheet = factsheetbrewer(png_country=png_country)
+
+
+        self.output_factsheet.setValue(factsheet)
         self.status.set('done', 100)
