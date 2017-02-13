@@ -2,15 +2,15 @@ from PyPDF2 import PdfFileWriter, PdfFileReader
 from reportlab.pdfgen import canvas
 
 
-c = canvas('watermark.pdf')
-c.drawImage('testplot.png', 15, 720)
+c = canvas.Canvas('watermark.pdf')
+c.drawImage('testplot.png', 350, 550, width=150, height=150)  # , mask=None, preserveAspectRatio=False)
 
-c.drawString(15, 720, "Hello World")
+#  c.drawString(15, 720, "Hello World")
 c.save()
 
 output_file = PdfFileWriter()
-watermark = PdfFileReader(open("watermark.pdf"))
-input_pdf = PdfFileReader(file('../flyingpigeon/static//pdf/climatefactsheettemplate.pdf', 'rb'))
+watermark = PdfFileReader(open("watermark.pdf", 'rb'))
+input_file = PdfFileReader(file('../flyingpigeon/static/pdf/climatefactsheettemplate.pdf', 'rb'))
 
 page_count = input_file.getNumPages()
 
