@@ -144,6 +144,29 @@ pond.slp=1/sqrt(cos(lat*pi/180))
 scale.slp=rep(pond.slp,length(lon))
 dat.scale=scale(dat.m,scale=scale.slp)
 ## Projection of EOFs (1970-2010)
+
+print ('##### EOFs #######')
+print ('##### EOFs #######')
+print ('##### EOFs #######')
+print (as.matrix(EOF.r))
+
+print ('##### dat.scale #######')
+print ('##### dat.scale #######')
+print ('##### dat.scale #######')
+print ('##### dat.scale #######')
+print (dat.scale)
+
+print ('###################')
+print ('###################')
+print ('###################')
+
+print ('#####Class EOF######')
+class(EOF.r)
+
+print ('#####dat.scale######')
+class(dat.scale)
+
+
 PC.e = dat.scale %*% as.matrix(EOF.r)
 
 # compute distance, correlation and best WR

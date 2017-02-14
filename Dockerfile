@@ -2,26 +2,25 @@
 FROM birdhouse/bird-base:latest
 MAINTAINER https://github.com/bird-house
 
-LABEL Description="Flyingpigeon WPS Application" Vendor="Birdhouse" Version="0.2.5"
+LABEL Description="flyingpigeon application" Vendor="Birdhouse" Version="0.2.1"
 
-# Configure hostname and user for services 
-ENV OUTPUT_PORT 38093
+# Configure hostname and ports for services
+ENV HTTP_PORT 8080
+ENV HTTPS_PORT 8443
+ENV OUTPUT_PORT 8000
 ENV HOSTNAME localhost
-ENV USER www-data
-
 
 # Set current home
 ENV HOME /root
 
 # Copy application sources
-COPY . /opt/birdhouse
+COPY . /opt/birdhouse/src/flyingpigeon
 
 # cd into application
-WORKDIR /opt/birdhouse
-
+WORKDIR /opt/birdhouse/src/flyingpigeon
 
 # Provide custom.cfg with settings for docker image
-COPY .docker.cfg custom.cfg
+RUN printf "[buildout]\nextends=profiles/docker.cfg" > custom.cfg
 
 # Install system dependencies
 RUN bash bootstrap.sh -i && bash requirements.sh
@@ -30,21 +29,18 @@ RUN bash bootstrap.sh -i && bash requirements.sh
 ENV ANACONDA_HOME /opt/conda
 ENV CONDA_ENVS_DIR /opt/conda/envs
 
-# Run install
-RUN make clean install 
+# Run install and fix permissions
+RUN make clean install && chmod 755 /opt/birdhouse/etc && chmod 755 /opt/birdhouse/var/run
 
 # Volume for data, cache, logfiles, ...
-RUN chown -R $USER $CONDA_ENVS_DIR/birdhouse
-RUN mkdir -p $CONDA_ENVS_DIR/birdhouse/var/lib && mv $CONDA_ENVS_DIR/birdhouse/var/lib /data && ln -s /data $CONDA_ENVS_DIR/birdhouse/var/lib
-RUN chown -R $USER /data
-VOLUME /data
+VOLUME /opt/birdhouse/var/lib
+VOLUME /opt/birdhouse/var/log
 
 # Ports used in birdhouse
-EXPOSE 9001 8093 28093 $OUTPUT_PORT
+EXPOSE 9001 $HTTP_PORT $HTTPS_PORT $OUTPUT_PORT
 
 # Start supervisor in foreground
-ENV DAEMON_OPTS --nodaemon --user $USER
+ENV DAEMON_OPTS --nodaemon
 
 # Start service ...
-CMD ["make", "update-config", "update-user", "start"]
-
+CMD ["make", "update-config", "start"]

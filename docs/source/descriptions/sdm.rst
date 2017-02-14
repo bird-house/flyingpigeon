@@ -1,38 +1,52 @@
 Species Distribution Model
 --------------------------
 
-Prediction of growth favourability for tree species. 
+The processes related to species distribution models (SDM) are basically producing data showing the growth favourability for single tree species
+related to climte conditions. Generally tree observations (coordinate points of tree occurences) and climate indices, based on temperature at surface and precipitation
+are the input data. With statistical methodes (general additive models GAM) the spatial favourabillity is calculated for each year of the input timeseries.
+The SDM processes are able to handle ensemble Datasets and putting a favourabillity data set out for each ensemble member.
 
 
-Method:
-.......
+Stepps being processed in a SDM experiment
+..........................................
+
+  * fetching tree occurences of a specific tree species from the GBIF database.
+  * calculation of climate indices timeserieses based on climate model raw data
+  * generation of a presence / absence mask based on the GBIF data coordinates and the grid resolution of the climate indices data
+  * calculation of time mean values for the climate indices data for the given reference period
+  * statistical training (GAM) based on presence / absence mask and climate indices of reference period
+  * calculation of favourability as yearly timeseries for each dataset based on the statistically trained GAM
 
 
-  * fetching selected data (GBIF zip file) and climate model data. 
-  * extraction of GBIF Data
-  * based on GBIF data coordinates, a presence/absence mask is generated
-  * calculation of selected climate indices in appropriate time aggregations
-  * calculation of mean values of climate indices for the given reference period
-  * statistical training (GAM) based on presence/absence mask and climate indices of reference period
-  * prediction of favourability based on trained GAM and projected as yearly timeseries for the provided time series
-  * plotting information and storing netCDF files in archive files (tar or zip)
-
-  
-Further reading: `Species Favourability Shift in Europe due to Climate Change: A Case Study for Fagus sylvatica L. and Picea abies (L.) Karst. Based on an Ensemble of Climate Models <http://www.hindawi.com/journals/jcli/2013/787250/>`_.
-
-
-Processes identifiers:
+SDM related processes
 .....................
 
-  * **SDM_csv**
-    species distribution coordinates are provided by a csv table to be uploaded
-  * **SDM_gbif**
-    species distribution coordinates are fetched from GBIF database based on a scientific name 
+Beside a big 'all in one' process, which contains all the analysing stepps from fetching of raw data to the final output the processes can also be run as parts.
+Following processes are available:
 
-Input Paramter: 
-...............
 
-**Indices**
++----------------+------------------------------------------------------------------------------------------------+
+| Indentifier    | Description                                                                                    |
++================+================================================================================================+
+| sdm_getgbif    | Only fetching GBIF tree occurence data                                                         |
++----------------+------------------------------------------------------------------------------------------------+
+| sdm_getindices | Only calculation of climate indices                                                            |
++----------------+----------------+-------------------------------------------------------------------------------+
+| sdm_csvindices | output of sdm_getgbif and sdm_getindices as input to run a SDM experiment                      |
++----------------+----------------+-------------------------------------------------------------------------------+
+| sdm_csv        | output of sdm_getgbif and raw climate model data as input to run a SDM experiment              |
++----------------+------------------------------------------------------------------------------------------------+
+| sdm_allinone   | All requred steps are performed in this process to run a  SDM process (!! time consuming !!)   |
++----------------+------------------------------------------------------------------------------------------------+
+
+Further reading: `Species Favourability Shift in Europe due to Climate Change:
+A Case Study for Fagus sylvatica L. and Picea abies (L.) Karst. Based on an Ensemble of Climate Models
+<http://www.hindawi.com/journals/jcli/2013/787250/>`_.
+
+
+.. _sdmindices:
+Climate Indices for SDM:
+........................
 
 +----------------+----------------+--------------------------------------------------------------------------------+
 | Index          | Input Variable | Definition                                                                     |
@@ -45,6 +59,8 @@ Input Paramter:
 +----------------+----------------+--------------------------------------------------------------------------------+
 | TG_JJA         | tas            | Mean of mean temperature June to August                                        |
 +----------------+----------------+--------------------------------------------------------------------------------+
+| GD4_yr         | tas            | Growing degree days [sum of TG >= 4 degrees] per year                          |
++----------------+----------------+--------------------------------------------------------------------------------+
 | TNn_yr         | tasmin         | Minimum of minimum temperature per year                                        |
 +----------------+----------------+--------------------------------------------------------------------------------+
 | TNn_AMJJAS     | tasmin         | Minimum of minimum temperature April to September                              |
@@ -52,8 +68,6 @@ Input Paramter:
 | TNn_ONDJFM     | tasmin         | Minimum of minimum temperature October to March                                |
 +----------------+----------------+--------------------------------------------------------------------------------+
 | TNn_Jan        | tasmin         | Minimum of minimum temperature in January                                      |
-+----------------+----------------+--------------------------------------------------------------------------------+
-| SU_yr          | tasmax         | Summer days [tasmax > = 25°C] per year                                         |
 +----------------+----------------+--------------------------------------------------------------------------------+
 | FD_ONDJFM      | tasmin         | Nr of frost days  [tasmin < 0°C] in October to March                           |
 +----------------+----------------+--------------------------------------------------------------------------------+
@@ -67,7 +81,7 @@ Input Paramter:
 +----------------+----------------+--------------------------------------------------------------------------------+
 | ID_yr          | tasmax         |  Nr of ice days [tasmax < 0°C] per year                                        |
 +----------------+----------------+--------------------------------------------------------------------------------+
-| GD4_yr         | tas            | Growing degree days [sum of TG >= 4 degrees] per year                          |
+| SU_yr          | tasmax         | Summer days [tasmax > = 25°C] per year                                         |
 +----------------+----------------+--------------------------------------------------------------------------------+
 | PRCPTOT_yr     | pr             | Precipitation total amount [sum] per year                                      |
 +----------------+----------------+--------------------------------------------------------------------------------+
@@ -84,15 +98,11 @@ Input Paramter:
 | CDD_AMJJAS     | pr             | Consecutive dry days precipitation < 1 mm in summer half                       |
 +----------------+----------------+--------------------------------------------------------------------------------+
 
-Outputs: 
 
-to be checked
-
-Examples:
-..........
-
+Examples
+........
 
 .. toctree::
    :maxdepth: 1
-   
+
    /tutorials/sdm

@@ -1,25 +1,43 @@
-Tutorial: Species distribution model
-....................................
+GBIF Data fetch
+...............
 
-Execution with Phoenix (web browser GUI)
+1. Login to a Phoenix GUI (e.g. `Compute provider mouflon at DKRZ <https://mouflon.dkrz.de/>`_)
+2. Menu option: Processes
+3. Choose a Web Processing Service: Flyingpigeon
+4. Choose WPS Process of Flyingpigeon:SDM - Get GBIF only
+5. Set the taxonomic name of the tree species of your choise and optionally reduce the region to fetch data for (recommended! to reduce the process time)
 
-1. Login to a Phoenix GUI (e.g. `Compute provider mouflon at DKRZ <https://mouflon.dkrz.de/>`_) 
+
+
+Calculate climate indices
+.........................
+
+1. Login to a Phoenix GUI (e.g. `Compute provider mouflon at DKRZ <https://mouflon.dkrz.de/>`_)
 2. Menu option: Wizard
-3. Choose a Favorite: No Favorite 
-4. Choose a Web Processing Service: Flyingpigeon 
-5. Choose WPS Process of Flyingpigeon: Species distribution model (SDM) 
-6. Literal inputs of species distribution model :
-
-.. image:: ../pics/sdm_literalinputs.png
-
+3. Choose a Favorite: No Favorite
+4. Choose WPS Process of Flyingpigeon:SDM - Get indices only
+5. Choose the climate indices to be taken as input for SDM experiment (optionally change the archive format)
 7. Choose Input Parameter of species distribution model: netCDF
 8. Choose Data Source : Earth System Grid Federation (ESGF)
-            
-The next window is the data search interface to the data available in the ESGF archive. The input files are used to calculate the climate conditions. Depending on the selection of indices, appropriate variables have to be provided (e.g. an index based on precipitation needs 'pr' as an input variable ). Multiple selection can be done while pressing the Ctrl button. With other search options, the data selection looks like this example: 
+
+The next window is the data search interface to the data available in the ESGF archive. The input files are used to calculate the climate conditions.
+Depending on the selection of indices, appropriate variables have to be provided (e.g. an index based on precipitation needs 'pr' as an input variable ).
+Multiple selection can be done while pressing the Ctrl button. With other search options, the data selection looks like this example:
 
 .. image:: ../pics/sdm_esgfsearch.png
 
-10. You can optionally check or uncheck 'Save as Favorite' with an appropriate name and submit the job.  
-11. Done!!!
+9. follow the 'next' buttons and submit the job with 'Done'.
 
-You can follow the log file in the monitor (click on the job ID e.g. a4aa98de-ffde-11e5-b50a-bb0d01b14483). Manual reload of your browser site is necessary.
+
+running a SDM experiment
+........................
+
+With the outputs of the first two examples ( fetching GBIF data and climate indices calculation ) it is possible to run a SDM experiment.
+
+1. Login to a Phoenix GUI (e.g. `Compute provider mouflon at DKRZ <https://mouflon.dkrz.de/>`_)
+2. Menu option: Processes
+3. Choose a Web Processing Service: Flyingpigeon
+4. Choose WPS Process of Flyingpigeon:SDM - csvindices
+5. resouces is a archive file containing the precalculated climate indices and GBIF data is the csv table outputed by the GBIF data fetch process.
+   You can use the basket butttons to put/take the appropriate urls for the data an easy way.
+6. Execute to submit the job and follow the process in the monitor.

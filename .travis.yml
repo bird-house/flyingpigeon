@@ -2,6 +2,8 @@ language: python
 branches:
   only:
     - master
+    - next
+    - pingudev
 python:
   - "2.7"
 sudo: false

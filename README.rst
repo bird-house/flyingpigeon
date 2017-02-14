@@ -14,6 +14,6 @@ Flying Pigeon (the bike)
 
 Flyingpigeon is a Python package with a collection of algorithms for the climate community available as a Web Processing Service (WPS).
 
-For installation and configuration read the `documentation <http://flyingpigeon.readthedocs.org>`_.
+For installation and configuration read the `documentation <http://flyingpigeon.readthedocs.io>`_.
 
 Flyingpigeon is part of the `Birdhouse <http://bird-house.github.io>`_ project.

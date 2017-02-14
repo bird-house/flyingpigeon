@@ -1,12 +1,16 @@
 flyingpigeon:
   image: birdhouse/flyingpigeon
-  ports:
-    - "38093:38093"
-    - "8093:8093"
   environment:
-    HOSTNAME: localhost
-    OUTPUT_PORT: 38093
-  volumes:
-    - data:/data
-  volume_driver: local
- 
+    HOSTNAME: $HOSTNAME
+    HTTP_PORT: $HTTP_PORT
+    HTTPS_PORT: $HTTPS_PORT
+    OUTPUT_PORT: $OUTPUT_PORT
+  ports:
+    - "$SUPERVISOR_PORT:9001"
+    - "$HTTP_PORT:$HTTP_PORT"
+    - "$HTTPS_PORT:$HTTPS_PORT"
+    - "$OUTPUT_PORT:$OUTPUT_PORT"
+#  volumes:
+#    - /tmp/data:/opt/birdhouse/var/lib
+#    - /tmp/log:/opt/birdhouse/var/log
+#  volume_driver: local

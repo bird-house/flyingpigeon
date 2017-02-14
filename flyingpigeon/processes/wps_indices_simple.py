@@ -5,6 +5,8 @@ from flyingpigeon.indices import calc_indice_simple
 from flyingpigeon.subset import countries, countries_longname
 from flyingpigeon.utils import GROUPING
 
+from flyingpigeon.log import init_process_logger
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -21,9 +23,12 @@ class SingleIndicesProcess(WPSProcess):
             version="0.9",
             abstract="Climate indices based on one single input variable.",
             metadata=[
-                {'title': 'Documentation', 'href': 'http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#climate-indices'},
-                {"title": "ICCLIM" , "href": "http://icclim.readthedocs.io/en/latest/"},
-                {"title": "Simple Indices", "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/indices.html"}
+                {'title': 'Documentation',
+                 'href': 'http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#climate-indices'},
+                {"title": "ICCLIM",
+                 "href": "http://icclim.readthedocs.io/en/latest/"},
+                {"title": "Simple Indices",
+                 "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/indices.html"}
                 ],
             statusSupported=True,
             storeSupported=True
@@ -95,9 +100,17 @@ class SingleIndicesProcess(WPSProcess):
         self.output_netcdf = self.addComplexOutput(
             title="one dataset as example",
             abstract="NetCDF file to be dispayed on WMS",
-            formats=[{"mimeType":"application/x-netcdf"}],
+            formats=[{"mimeType": "application/x-netcdf"}],
             asReference=True,
             identifier="ncout",
+            )
+
+        self.output_log = self.addComplexOutput(
+            identifier="output_log",
+            title="Logging information",
+            abstract="Collected logs during process run.",
+            formats=[{"mimeType": "text/plain"}],
+            asReference=True,
             )
 
     def execute(self):
@@ -108,16 +121,17 @@ class SingleIndicesProcess(WPSProcess):
         from os import path
         from numpy import squeeze
 
+        init_process_logger('log.txt')
+        self.output_log.setValue('log.txt')
+
         ncs = self.getInputValues(identifier='resource')
         indices = self.indices.getValue()
         polygons = self.polygons.getValue()
         mosaic = self.mosaic.getValue()
-        groupings = self.groupings.getValue() 
+        groupings = self.groupings.getValue()
 
-        
-        if polygons==None:
-            self.status.set('No countries selected, entire domain will be calculated' , 10)
-
+        if polygons is None:
+            self.status.set('No countries selected, entire domain will be calculated', 10)
         logger.debug('indices=%s', indices)
         logger.debug('groupings=%s', groupings)
         logger.debug('num files=%s', len(ncs))
@@ -131,12 +145,10 @@ class SingleIndicesProcess(WPSProcess):
             groupings=groupings,
             dir_output=path.curdir,
             ))
-         
-        results_list =  results.tolist()
-
+        results_list = results.tolist()
         self.status.set('indices calculated', 90)
         logger.debug('results type: %s', type(results_list))
-        logger.debug('indices files: %s ' % results_list )
+        logger.debug('indices files: %s ' % results_list)
 
         try:
             archive_indices = archive(results_list)
@@ -145,7 +157,7 @@ class SingleIndicesProcess(WPSProcess):
             msg = "archive preparation failed"
             logger.exception(msg)
             raise Exception(msg)
-        try: 
+        try:
             self.output.setValue(archive_indices)
             if type(results_list) == list:
                 i = next((i for i, x in enumerate(results.tolist()) if x), None)
@@ -153,7 +165,7 @@ class SingleIndicesProcess(WPSProcess):
             elif type(results_list) == str:
                 self.output_netcdf.setValue(results_list)
             else:
-                logger.debug('results_list type: %s  not extractable ' % type(results_list) )
+                logger.debug('results_list type: %s  not extractable ' % type(results_list))
                 self.output_netcdf.setValue(None)
         except Exception as e:
             msg = "extraction of example file failed"
