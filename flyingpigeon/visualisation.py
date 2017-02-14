@@ -51,15 +51,16 @@ def plot_polygons(regions):
     records = Reader(fname).records()
 
     fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
-    ax = plt.axes(projection=ccrs.Robinson())
+    projection = ccrs.Orthographic(central_longitude=0.0, central_latitude=0.0, globe=None)  # Robinson()
+    ax = plt.axes(projection=projection)
 
     for r in records:
         geo = geos.next()
         if r.attributes['ISO_A3'] in regions:
             shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black')
             ax.add_feature(shape_feature)
-            ax.coastlines()
-            # ax.set_global()
+        ax.coastlines()
+        # ax.set_global()
 
     o1, map_graphic = mkstemp(dir='.', suffix='.png')
 
@@ -69,22 +70,41 @@ def plot_polygons(regions):
     return map_graphic
 
 
-def factsheetbrewer(png_country=None):
+def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None):
+    """
+    Put graphics into the climate fact sheet template to generate the final climate fact sheet
+
+    :param png_country: World map graphic with countries polygons.
+    :param png_uncertainty: Graphic showing a timeseries with fieldmean values and corresponding uncertainty
+
+    :return pdf foumular: pdf with fillable text boxes for interpretation text
+    """
     from PyPDF2 import PdfFileWriter, PdfFileReader
     from reportlab.pdfgen import canvas
     from flyingpigeon.config import static_dir
 
     _, pdf_country = mkstemp(dir='.', suffix='.pdf')
+    _, pdf_uncertainty = mkstemp(dir='.', suffix='.pdf')
+    _, pdf_spaghetti = mkstemp(dir='.', suffix='.pdf')
     _, climatefactsheet = mkstemp(dir='.', suffix='.pdf')
 
     c = canvas.Canvas(pdf_country)
-    c.drawImage(png_country, 365, 490, width=200, height=150)  # , mask=None, preserveAspectRatio=False)
+    c.drawImage(png_country, 355, 490, width=270, height=150)  # , mask=None, preserveAspectRatio=False)
+    c.save()
 
-    #  c.drawString(15, 720, "Hello World")
+    c = canvas.Canvas(pdf_uncertainty)
+    c.drawImage(png_uncertainty, 20, 320, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
+    c.save()
+
+    c = canvas.Canvas(pdf_spaghetti)
+    c.drawImage(png_spaghetti, 280, 320, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
     c.save()
 
     output_file = PdfFileWriter()
     pfr_country = PdfFileReader(open(pdf_country, 'rb'))
+    pfr_uncertainty = PdfFileReader(open(pdf_uncertainty, 'rb'))
+    pfr_spagetthi = PdfFileReader(open(pdf_spaghetti, 'rb'))
+
     pfr_template = PdfFileReader(file(static_dir() + '/pdf/climatefactsheettemplate.pdf', 'rb'))
     logger.debug('template: %s' % pfr_template)
 
@@ -94,6 +114,8 @@ def factsheetbrewer(png_country=None):
         logger.debug("Plotting png to {} of {}".format(page_number, page_count))
         input_page = pfr_template.getPage(page_number)
         input_page.mergePage(pfr_country.getPage(0))
+        input_page.mergePage(pfr_uncertainty.getPage(0))
+        input_page.mergePage(pfr_spagetthi.getPage(0))
         output_file.addPage(input_page)
 
     with open(climatefactsheet, 'wb') as outputStream:

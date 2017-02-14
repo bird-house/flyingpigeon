@@ -131,43 +131,43 @@ class climatefactsheetProcess(WPSProcess):
         try:
             from flyingpigeon.visualisation import plot_polygons
             png_country = plot_polygons(regions)
-
-            # import matplotlib.pyplot as plt
-            # import cartopy.crs as ccrs
-            # from cartopy.io.shapereader import Reader
-            # from cartopy.feature import ShapelyFeature
-            #
-            # from flyingpigeon import config
-            # from os.path import join
-            # from tempfile import mkstemp
-            # DIR_SHP = config.shapefiles_dir()
-            #
-            # fname = join(DIR_SHP, "countries.shp")
-            # geos = Reader(fname).geometries()
-            # records = Reader(fname).records()
-            #
-            # fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
-            # ax = plt.axes(projection=ccrs.Robinson())
-            # for r in records:
-            #     geo = geos.next()
-            #     if r.attributes['ISO_A3'] in regions:
-            #         shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black')
-            #         ax.add_feature(shape_feature)
-            #         ax.coastlines()
-            #         # ax.set_global()
-            #
-            # o1, png_country = mkstemp(dir='.', suffix='.png')
-            #
-            # fig.savefig(png_country)
-            # plt.close()
-
         except:
-            logger.exception('failed to generate the fact sheet')
+            logger.exception('failed to plot the polygon to world map')
             o1, factsheet_plot = mkstemp(dir='.', suffix='.png')
 
-        from flyingpigeon.visualisation import factsheetbrewer
-        factsheet = factsheetbrewer(png_country=png_country)
+        # clip the demanded polygons
+        from flyingpigeon.subset import clipping
+        subsets = clipping(resource=ncs, variable=None,
+                           dimension_map=None,
+                           calc=None,
+                           output_format='nc',
+                           calc_grouping=None,
+                           time_range=None,
+                           time_region=None,
+                           historical_concatination=True,
+                           prefix=None,
+                           spatial_wrapping='wrap',
+                           polygons=regions,
+                           mosaic=True
+                           )
+        try:
+            from flyingpigeon.visualisation import uncertainty
+            png_uncertainty = uncertainty(subsets)
+        except:
+            logger.exception('failed to generate the uncertainty plot')
+            _, png_uncertainty = mkstemp(dir='.', suffix='.png')
 
+        try:
+            from flyingpigeon.visualisation import spaghetti
+            png_spaghetti = spaghetti(subsets)
+        except:
+            logger.exception('failed to generate the spaghetti plot')
+            _, png_spaghetti = mkstemp(dir='.', suffix='.png')
+
+        from flyingpigeon.visualisation import factsheetbrewer
+        factsheet = factsheetbrewer(png_country=png_country,
+                                    png_uncertainty=png_uncertainty,
+                                    png_spaghetti=png_spaghetti)
 
         self.output_factsheet.setValue(factsheet)
         self.status.set('done', 100)
