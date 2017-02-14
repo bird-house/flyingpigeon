@@ -116,6 +116,7 @@ class climatefactsheetProcess(WPSProcess):
 
     def execute(self):
         from flyingpigeon.utils import archive, archiveextract
+        from tempfile import mkstemp
 
         init_process_logger('log.txt')
         self.output_log.setValue('log.txt')
@@ -128,34 +129,37 @@ class climatefactsheetProcess(WPSProcess):
         logger.debug('starting: regions=%s, num_files=%s' % (len(regions), len(ncs)))
 
         try:
-            import matplotlib.pyplot as plt
-            import cartopy.crs as ccrs
-            from cartopy.io.shapereader import Reader
-            from cartopy.feature import ShapelyFeature
+            from flyingpigeon.visualisation import plot_polygons
+            png_country = plot_polygons(regions)
 
-            from flyingpigeon import config
-            from os.path import join
-            from tempfile import mkstemp
-            DIR_SHP = config.shapefiles_dir()
-
-            fname = join(DIR_SHP, "countries.shp")
-            geos = Reader(fname).geometries()
-            records = Reader(fname).records()
-
-            fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
-            ax = plt.axes(projection=ccrs.Robinson())
-            for r in records:
-                geo = geos.next()
-                if r.attributes['ISO_A3'] in regions:
-                    shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black')
-                    ax.add_feature(shape_feature)
-                    ax.coastlines()
-                    # ax.set_global()
-
-            o1, png_country = mkstemp(dir='.', suffix='.png')
-
-            fig.savefig(png_country)
-            plt.close()
+            # import matplotlib.pyplot as plt
+            # import cartopy.crs as ccrs
+            # from cartopy.io.shapereader import Reader
+            # from cartopy.feature import ShapelyFeature
+            #
+            # from flyingpigeon import config
+            # from os.path import join
+            # from tempfile import mkstemp
+            # DIR_SHP = config.shapefiles_dir()
+            #
+            # fname = join(DIR_SHP, "countries.shp")
+            # geos = Reader(fname).geometries()
+            # records = Reader(fname).records()
+            #
+            # fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
+            # ax = plt.axes(projection=ccrs.Robinson())
+            # for r in records:
+            #     geo = geos.next()
+            #     if r.attributes['ISO_A3'] in regions:
+            #         shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black')
+            #         ax.add_feature(shape_feature)
+            #         ax.coastlines()
+            #         # ax.set_global()
+            #
+            # o1, png_country = mkstemp(dir='.', suffix='.png')
+            #
+            # fig.savefig(png_country)
+            # plt.close()
 
         except:
             logger.exception('failed to generate the fact sheet')

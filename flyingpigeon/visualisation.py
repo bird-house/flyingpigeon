@@ -1,4 +1,5 @@
 import os
+from os.path import join
 from tempfile import mkstemp
 from netCDF4 import Dataset
 from datetime import datetime, date
@@ -25,6 +26,47 @@ class MidpointNormalize(Normalize):
     def __call__(self, value, clip=None):
         x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
         return np.ma.masked_array(np.interp(value, x, y))
+
+
+def plot_polygons(regions):
+    """
+    extract the polygon coordinate and plot it on a worldmap
+
+    :param regions: list of ISO abreviations for polygons
+
+    :return png: map_graphic.png
+    """
+
+    from cartopy.io.shapereader import Reader
+    from cartopy.feature import ShapelyFeature
+
+    from flyingpigeon import config
+    DIR_SHP = config.shapefiles_dir()
+
+    if type(regions) == str:
+        regions = list([regions])
+
+    fname = join(DIR_SHP, "countries.shp")
+    geos = Reader(fname).geometries()
+    records = Reader(fname).records()
+
+    fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
+    ax = plt.axes(projection=ccrs.Robinson())
+
+    for r in records:
+        geo = geos.next()
+        if r.attributes['ISO_A3'] in regions:
+            shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black')
+            ax.add_feature(shape_feature)
+            ax.coastlines()
+            # ax.set_global()
+
+    o1, map_graphic = mkstemp(dir='.', suffix='.png')
+
+    fig.savefig(map_graphic)
+    plt.close()
+
+    return map_graphic
 
 
 def factsheetbrewer(png_country=None):
