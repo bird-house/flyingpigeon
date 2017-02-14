@@ -52,6 +52,7 @@ dependencies:
 - matplotlib
 - cartopy #=0.14.2 # conflicts with numpy >1.10
 - iris #=1.9.2 # conflicts with numpy >1.10
+- reportlab
 ################
 ## cdo ocgis
 - cdo #=1.7.1=2

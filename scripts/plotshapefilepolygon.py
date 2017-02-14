@@ -20,7 +20,11 @@ plt.figure()
 for i, country in enumerate(countries):
     if country.attributes['ISO_ A3'] in ['DEU']:
         shape = sf.scountry[i]
+<<<<<<< HEAD
         xs = [xor x in sha  pe.shape.points[:]]
+=======
+        xs = [x for x in shape.shape.points[:]]
+>>>>>>> factsheetgenerator
         ys = [y[1] for y in shape.shape.points[:]]
         plt.plot(xs, ys)
 plt.show()
@@ -29,6 +33,7 @@ plt.show()
 ax = plt.axes()
 shape_feature = ShapelyFeature(geoms, ccrs.GOOGLE_MERCATOR)
 ax.add_feature(shape_feature)
+<<<<<<< HEAD
 plt.show()
 
 
@@ -54,6 +59,33 @@ for country in countries:
 plt.show()
 
 
+=======
+plt.show()
+
+
+from flyingpigeon import config
+DIR_SHP = config.shapefiles_dir()
+
+
+import matplotlib.pyplot as plt
+import cartopy.crs as ccrs
+from cartopy.io.shapereader import Reader
+from cartopy.feature import ShapelyFeature
+
+fname = join(DIR_SHP, "countries.shp")  # r'simplified-land-polygons-complete-3857\simplified_land_polygons.shp'
+
+ax = plt.axes(projection=ccrs.Robinson())
+
+countries = reader.records()
+
+for country in countries:
+    if country.attributes['ISO_A3'] in ['DEU']:
+        shape_feature = ShapelyFeature(country.geometries(), ccrs.PlateCarree(), edgecolor='black')
+        ax.add_feature(shape_feature)
+plt.show()
+
+
+>>>>>>> factsheetgenerator
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 from cartopy.io.shapereader import Reader
@@ -65,11 +97,16 @@ DIR_SHP = config.shapefiles_dir()
 
 fname = join(DIR_SHP, "countries.shp")
 geos = Reader(fname).geometries()
+<<<<<<< HEAD
 records = Reader(fname).records()
+=======
+countries = reader.records()
+>>>>>>> factsheetgenerator
 
 ax = plt.axes(projection=ccrs.Robinson())
 for r in records:
     geo = geos.next()
+<<<<<<< HEAD
     if r.attributes['ISO_A3'] in ['DEU']:
         shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black')
         ax.add_feature(shape_feature)
@@ -77,6 +114,14 @@ plt.show()
 
 
 
+=======
+    shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black')
+    ax.add_feature(shape_feature)
+# plt.save('country_polygon.png')
+plt.show()
+
+
+>>>>>>> factsheetgenerator
 #
 #
 # for c, shape in enumerate(sf.shapeRecords()):
