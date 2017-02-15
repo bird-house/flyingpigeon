@@ -1,4 +1,5 @@
 import os
+from os.path import join
 from tempfile import mkstemp
 from netCDF4 import Dataset
 from datetime import datetime, date
@@ -25,6 +26,107 @@ class MidpointNormalize(Normalize):
     def __call__(self, value, clip=None):
         x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
         return np.ma.masked_array(np.interp(value, x, y))
+
+
+def plot_polygons(regions):
+    """
+    extract the polygon coordinate and plot it on a worldmap
+
+    :param regions: list of ISO abreviations for polygons
+
+    :return png: map_graphic.png
+    """
+
+    from cartopy.io.shapereader import Reader
+    from cartopy.feature import ShapelyFeature
+
+    from flyingpigeon import config
+    DIR_SHP = config.shapefiles_dir()
+
+    if type(regions) == str:
+        regions = list([regions])
+
+    fname = join(DIR_SHP, "countries.shp")
+    geos = Reader(fname).geometries()
+    records = Reader(fname).records()
+
+    fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
+    projection = ccrs.Orthographic(central_longitude=0.0, central_latitude=0.0, globe=None)  # Robinson()
+    ax = plt.axes(projection=projection)
+
+    for r in records:
+        geo = geos.next()
+        if r.attributes['ISO_A3'] in regions:
+            shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black')
+            ax.add_feature(shape_feature)
+        ax.coastlines()
+        # ax.set_global()
+
+    o1, map_graphic = mkstemp(dir='.', suffix='.png')
+
+    fig.savefig(map_graphic)
+    plt.close()
+
+    return map_graphic
+
+
+def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None):
+    """
+    Put graphics into the climate fact sheet template to generate the final climate fact sheet
+
+    :param png_country: World map graphic with countries polygons.
+    :param png_uncertainty: Graphic showing a timeseries with fieldmean values and corresponding uncertainty
+
+    :return pdf foumular: pdf with fillable text boxes for interpretation text
+    """
+
+    from PyPDF2 import PdfFileWriter, PdfFileReader
+    from reportlab.pdfgen import canvas
+    from flyingpigeon.config import static_dir
+
+    try:
+        _, pdf_country = mkstemp(dir='.', suffix='.pdf')
+        _, pdf_uncertainty = mkstemp(dir='.', suffix='.pdf')
+        _, pdf_spaghetti = mkstemp(dir='.', suffix='.pdf')
+        _, climatefactsheet = mkstemp(dir='.', suffix='.pdf')
+
+        c = canvas.Canvas(pdf_country)
+        c.drawImage(png_country, 355, 490, width=270, height=150)  # , mask=None, preserveAspectRatio=False)
+        c.save()
+
+        c = canvas.Canvas(pdf_uncertainty)
+        c.drawImage(png_uncertainty, 20, 320, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
+        c.save()
+
+        c = canvas.Canvas(pdf_spaghetti)
+        c.drawImage(png_spaghetti, 280, 320, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
+        c.save()
+
+        output_file = PdfFileWriter()
+        pfr_country = PdfFileReader(open(pdf_country, 'rb'))
+        pfr_uncertainty = PdfFileReader(open(pdf_uncertainty, 'rb'))
+        pfr_spagetthi = PdfFileReader(open(pdf_spaghetti, 'rb'))
+
+        pfr_template = PdfFileReader(file(static_dir() + '/pdf/climatefactsheettemplate.pdf', 'rb'))
+        logger.debug('template: %s' % pfr_template)
+
+        page_count = pfr_template.getNumPages()
+
+        for page_number in range(page_count):
+            logger.debug("Plotting png to {} of {}".format(page_number, page_count))
+            input_page = pfr_template.getPage(page_number)
+            input_page.mergePage(pfr_country.getPage(0))
+            input_page.mergePage(pfr_uncertainty.getPage(0))
+            input_page.mergePage(pfr_spagetthi.getPage(0))
+            output_file.addPage(input_page)
+
+        with open(climatefactsheet, 'wb') as outputStream:
+            output_file.write(outputStream)
+    except:
+        logger.exception("failed to brew the factsheet, empty template is set as output")
+        climatefactsheet = static_dir() + '/pdf/climatefactsheettemplate.pdf'
+
+    return climatefactsheet
 
 
 def spaghetti(resouces, variable=None, title=None, dir_out=None):

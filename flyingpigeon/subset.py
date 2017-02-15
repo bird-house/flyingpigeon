@@ -32,31 +32,43 @@ def countries_longname():
     return longname
 
 
-def masking(resource, mask, prefix=None, dir_output=None):
+def masking(resource, sftlf, threshold=50, land_area=True, prefix=None):
     """
-    Returns a list of masked netCDF file(s) path(s).
+    Set land/sea areas to nan.
 
     :param resource: string path to netCDF resource
-    :param mask: pre-defined mask ('EUR-11', 'EUR-44')
+    :param sftlf: land_area fraction netCDF file
+    :param threshold: Percentage of land area
+    :param land_area: If True (default), sea areas will set to nan
     :param prefix:  prefix for filename. If prefix is not set, a filename will be created
-    :param dir_output: directory for output file. If dir_output is not set, a tempdir will be created
 
     :returns str: path to netCDF file
     """
     cdo = Cdo()
+    #######################
+    # TODO check sftlf unit
+    #######################
+    th = threshold/100
 
-    if dir_output is None:
-        dir_output = os.curdir
-        nc_mask = os.path.join(DIR_MASKS, mask + '.nc')
-
-    if prefix is None:
-        p1, resource_masked = mkstemp(dir=dir_output, suffix='.nc')
+    ###################
+    # generate the mask
+    if land_area is True:
+        mask = cdo.gtc(th, input=sftlf, output='mask.nc')
     else:
-        resource_masked = os.path.join(dir_output, prefix + '.nc')
-        # try:
-        call = "cdo div '%s' '%s' '%s'" % (resource, nc_mask, resource_masked)
-        os.system(call)
-    return resource_masked
+        mask = cdo.stc(th, input=sftlf, output='mask.nc')
+
+    # generate output filename
+    if prefix is not None:
+        nc_masked = prefix + '.nc'
+    else:
+        _, nc_masked = mkstemp(dir='.', suffix='.nc')
+
+    #################
+    # divide by mask
+
+    _ = cdo.div(input=[resource, mask], output=nc_masked)
+
+    return nc_masked
 
 
 def clipping(resource=[], variable=None, dimension_map=None, calc=None,  output_format='nc',

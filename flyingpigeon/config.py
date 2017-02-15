@@ -21,6 +21,10 @@ def masks_dir():
     return os.path.join(os.path.abspath(os.path.dirname(__file__)), 'masks')
 
 
+def static_dir():
+    return os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static')
+
+
 def cache_path():
     cache_path = None
     try:

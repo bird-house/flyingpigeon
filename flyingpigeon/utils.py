@@ -763,6 +763,27 @@ def has_variable(resource, variable):
     return success
 
 
+def searchfile(pattern, base_dir):
+    """
+    searches recursive for files with an given pattern,
+
+    :param pattern: file name pattern including wildcards (e.g. tas_*_day_*.nc)
+    :param base_dir: base direcory of the direcory tree
+
+    return:  list of fitting files
+    """
+
+    from os import path, walk
+    import fnmatch
+
+    nc_list = []
+    for root, dir, files in walk(base_dir):
+        for name in files:
+            if fnmatch.fnmatch(name, pattern):
+                nc_list.extend([path.join(root, name)])
+
+    return nc_list
+
 # def get_dimension_map(resource):
 #   OBSOLETE
 #   """ returns the dimension map for a file, required for ocgis processing.

@@ -222,7 +222,6 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
             from tempfile import mkstemp
             from cdo import Cdo
             cdo = Cdo()
-
             output = '%s.nc' % uuid.uuid1()
             remap = 'remap%s' % regrid_options
             call = [op for op in dir(cdo) if remap in op]
