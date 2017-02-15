@@ -14,20 +14,6 @@ A combination of processes will be called a 'workflow'.
    masks
    weatherregimes
    climatefactsheet
-
-Download Resources
-------------------
-
-Downloads resources (limited to 50GB) to the local file system of the birdhouse computer provider.
-
-
-Segetal flora
---------------
-Species biodiversity of segetal flora. Imput files: variable:tas, domain: EUR-11 or EUR-44.
-
-
-Visualisation
--------------
-
-Time series visualisation of netCDF files.
-Creates a spaghetti plot and an uncertainty plot.
+   fetch
+   segetalflora
+   visualisation
