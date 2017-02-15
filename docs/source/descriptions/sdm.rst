@@ -31,11 +31,11 @@ The following processes are available:
 +----------------+------------------------------------------------------------------------------------------------+
 | sdm_getindices | Only calculation of climate indices                                                            |
 +----------------+----------------+-------------------------------------------------------------------------------+
-| sdm_csvindices | output of sdm_getgbif and sdm_getindices as input to run an SDM experiment                      |
+| sdm_csvindices | output of sdm_getgbif and sdm_getindices as input to run an SDM experiment                     |
 +----------------+----------------+-------------------------------------------------------------------------------+
-| sdm_csv        | output of sdm_getgbif and raw climate model data as input to run an SDM experiment              |
+| sdm_csv        | output of sdm_getgbif and raw climate model data as input to run an SDM experiment             |
 +----------------+------------------------------------------------------------------------------------------------+
-| sdm_allinone   | All required steps are performed in this process to run an SDM process (!! time consuming !!)   |
+| sdm_allinone   | All required steps are performed in this process to run an SDM process (!! time consuming !!)  |
 +----------------+------------------------------------------------------------------------------------------------+
 
 Further reading: `Species Favourability Shift in Europe due to Climate Change:
@@ -44,6 +44,7 @@ A Case Study for Fagus sylvatica L. and Picea abies (L.) Karst. Based on an Ense
 
 
 .. _sdmindices:
+
 Climate Indices for SDM:
 ........................
 
@@ -52,23 +53,23 @@ Climate Indices for SDM:
 +================+================+================================================================================+
 | TG_yr          | tas            | Mean of mean temperature per year                                              |
 +----------------+----------------+--------------------------------------------------------------------------------+
-| TG_AMJJAS      | tas            | Mean of mean temperature from April to September                                    |
+| TG_AMJJAS      | tas            | Mean of mean temperature from April to September                               |
 +----------------+----------------+--------------------------------------------------------------------------------+
-| TG_ONDJFM      | tas            | Mean of mean temperature from October to March                                      |
+| TG_ONDJFM      | tas            | Mean of mean temperature from October to March                                 |
 +----------------+----------------+--------------------------------------------------------------------------------+
-| TG_JJA         | tas            | Mean of mean temperature from June to August                                        |
+| TG_JJA         | tas            | Mean of mean temperature from June to August                                   |
 +----------------+----------------+--------------------------------------------------------------------------------+
 | GD4_yr         | tas            | Growing degree days [sum of TG >= 4 degrees] per year                          |
 +----------------+----------------+--------------------------------------------------------------------------------+
 | TNn_yr         | tasmin         | Minimum of minimum temperature per year                                        |
 +----------------+----------------+--------------------------------------------------------------------------------+
-| TNn_AMJJAS     | tasmin         | Minimum of minimum temperature from April to September                              |
+| TNn_AMJJAS     | tasmin         | Minimum of minimum temperature from April to September                         |
 +----------------+----------------+--------------------------------------------------------------------------------+
-| TNn_ONDJFM     | tasmin         | Minimum of minimum temperature from October to March                                |
+| TNn_ONDJFM     | tasmin         | Minimum of minimum temperature from October to March                           |
 +----------------+----------------+--------------------------------------------------------------------------------+
 | TNn_Jan        | tasmin         | Minimum of minimum temperature in January                                      |
 +----------------+----------------+--------------------------------------------------------------------------------+
-| FD_ONDJFM      | tasmin         | Nr of frost days  [tasmin < 0°C] from October to March                           |
+| FD_ONDJFM      | tasmin         | Nr of frost days  [tasmin < 0°C] from October to March                         |
 +----------------+----------------+--------------------------------------------------------------------------------+
 | FD_April       | tasmin         | Nr of frost days  [tasmin < 0°C] in April                                      |
 +----------------+----------------+--------------------------------------------------------------------------------+
@@ -76,7 +77,7 @@ Climate Indices for SDM:
 +----------------+----------------+--------------------------------------------------------------------------------+
 | FD_June        | tasmin         | Nr of frost days  [tasmin < 0°C] in June                                       |
 +----------------+----------------+--------------------------------------------------------------------------------+
-| CFD_ONDJFM     | tasmin         | Longest period of consecutive frost days from October to March                   |
+| CFD_ONDJFM     | tasmin         | Longest period of consecutive frost days from October to March                 |
 +----------------+----------------+--------------------------------------------------------------------------------+
 | ID_yr          | tasmax         |  Nr of ice days [tasmax < 0°C] per year                                        |
 +----------------+----------------+--------------------------------------------------------------------------------+
