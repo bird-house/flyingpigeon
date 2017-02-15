@@ -202,8 +202,96 @@ def seacyc(archive, simulation, method='base'):
 
 
 def config_edits(configfile):
+<<<<<<< HEAD
+  """
+  Edits the CASTf90 configuration file. Removes filepaths.
+
+  :param configfile: configfile name with its path
+
+  :return str: modified_configfile name
+  """
+  try:
+    
+    # Read in the file
+    filedata = None
+    with open(configfile, 'r') as file :
+      filedata = file.read()
+    
+    # Replace the target string
+    filedata = filedata.replace('/home/scratch01/sradanov/A2C2/NCEP/', '').replace('/home/estimr2/sradanov/Operational/', '')
+
+    # Write the file out again
+    with open(configfile, 'w') as file:
+      file.write(filedata)
+  
+    logger.info('configfile modified')
+  except Exception as e: 
+    logger.debug('Failed to modify configfile: %s ' % e)
+
+  return configfile
+
+
+def reformat_analogs(analogs):
+  """
+  Reformats analogs results file for analogues viewer code.
+
+  :param analogs: output from analog_detection process
+  
+  :return str: reformatted analogs file for analogues viewer
+  """
+
+  from flyingpigeon import config
+  import numpy as np
+  import pandas as pd
+
+  try:
+
+    num_cols = 3 #dateAnlg, Dis, Corr
+
+    #Create dataframe and read in output csv file of analogs process
+    dfS = pd.DataFrame()
+    dfS = pd.read_csv(analogs, delimiter=r"\s+", index_col=0)
+
+    #Find number of analogues
+    num_analogues = (dfS.shape[1])/3
+    logger.debug('num_analogues: %s ' % num_analogues)
+
+    #Define temporary df
+    df_anlg = dfS.iloc[:, 0:num_analogues] #store only anlg dates
+    df_dis = dfS.iloc[:, num_analogues:2*num_analogues] #store only dis
+    df_corr = dfS.iloc[:, 2*num_analogues:3*num_analogues] #store only corr
+
+    #remove index name before stacking
+    df_anlg.index.name = ""
+    df_dis.index.name = ""
+    df_corr.index.name = ""
+
+    dateStack = df_anlg.stack()
+    disStack = df_dis.stack().abs() #raw values < 0 so take abs
+    corrStack = df_corr.stack()
+
+    #Create df of correct dimensions (n x num_cols) using dfS
+    df_all = dfS.iloc[:, 0:num_cols] #NB data are placeholders
+    #Rename cols
+    df_all.columns = ['dateAnlg', 'Dis', 'Corr']
+    #Replicate each row 20 times (for dcjs format)
+    df_all = df_all.loc[np.repeat(df_all.index.values,num_analogues)]
+    #Replace data placeholders with correct values
+    df_all['dateAnlg'] = list(dateStack)
+    df_all['Dis'] = list(disStack)
+    df_all['Corr'] = list(corrStack)
+    #Name index col
+    df_all.index.name = 'dateRef'
+
+    #save to tsv file
+    output_path = config.output_path()
+    ip , analogs_mod = mkstemp(suffix='.tsv', prefix='modified-analogfile', dir=output_path, text=False)
+    df_all.to_csv(analogs_mod, sep='\t')
+    logger.info('successfully reformatted analog file')
+=======
     """
     Edits the CASTf90 configuration file. Removes filepaths.
+>>>>>>> cdb1ffd22e714d4c7d0bbbd6cdf3ff5856b9612d
 
     :param configfile: configfile name with its path
 
@@ -434,9 +522,14 @@ def get_viewer(analogs_mod, configfile):
     return html: analog viewer html page
     """
 
+<<<<<<< HEAD
+  :param analogs_mod: modified analogs file (output of reformat_analogs)
+  :param configfile: configuration file 
+=======
     from os.path import basename
     from flyingpigeon.config import JSsrc_dir
     tmpl = JSsrc_dir() + '/template_analogviewer.html'
+>>>>>>> cdb1ffd22e714d4c7d0bbbd6cdf3ff5856b9612d
 
     ip, output_av = mkstemp(
         suffix='.html', prefix='analogviewer', dir='.', text=False)
