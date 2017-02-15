@@ -1,8 +1,10 @@
 Releasenotes
 ************
 
-upcoming
+next:
+=====
 
+* Climate Fact sheet Generator
 * R plot for SDM response cuvres running under CentOS
 * Species distribution model Processes modularized in five processes
 * Direction switch for analogs comparison process
@@ -37,12 +39,8 @@ upcoming
 * Initial ensembles robustness
 * Plots for time series
 
-
-
 0.2.0 (2016-07-15)
 ==================
-
-available processes:
 
 * analogs detection and viewer.
 * timeseries plot.

@@ -1,17 +1,19 @@
 Processes
 *********
 
-Flyingpigeon provides processes for climate model data analysis, climate impact studies and investigations of extremes. 
+Flyingpigeon provides processes for climate model data analysis, climate impact studies and investigations of extremes.
 A combination of processes will be called a 'workflow'.
 
 .. toctree::
    :maxdepth: 1
-   
-   analogues 
+
+   analogues
    indices
    sdm
    subset
-   weatherregimes   
+   masks
+   weatherregimes
+   climatefactsheet
 
 Download Resources
 ------------------
@@ -27,5 +29,5 @@ Species biodiversity of segetal flora. Imput files: variable:tas, domain: EUR-11
 Visualisation
 -------------
 
-Time series visualisation of netCDF files. 
+Time series visualisation of netCDF files.
 Creates a spaghetti plot and an uncertainty plot.
