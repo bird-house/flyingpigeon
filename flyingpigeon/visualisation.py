@@ -122,6 +122,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None):
 
         with open(climatefactsheet, 'wb') as outputStream:
             output_file.write(outputStream)
+        logger.info('sucessfully brewed the demanded factsheet')   
     except:
         logger.exception("failed to brew the factsheet, empty template is set as output")
         climatefactsheet = static_dir() + '/pdf/climatefactsheettemplate.pdf'
