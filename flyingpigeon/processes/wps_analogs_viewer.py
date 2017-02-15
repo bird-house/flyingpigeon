@@ -92,8 +92,12 @@ class AnalogsviewerProcess(WPSProcess):
                 'Successfully generated analogs viewer html page', 90)
 
             outputUrl_path = config.outputUrl_path()
+<<<<<<< HEAD
+            output_data = outputUrl_path  + '/' + basename(f)
+=======
 
             output_data = outputUrl_path + '/' + basename(f)
+>>>>>>> cdb1ffd22e714d4c7d0bbbd6cdf3ff5856b9612d
             logger.info('Data url: %s ' % output_data)
             logger.info('output_av: %s ' % output_av)
 

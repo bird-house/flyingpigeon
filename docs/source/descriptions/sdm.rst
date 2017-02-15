@@ -1,28 +1,27 @@
 Species Distribution Model
 --------------------------
 
-The processes related to species distribution models (SDM) are basically producing data showing the growth favourability for single tree species
-related to climte conditions. Generally tree observations (coordinate points of tree occurences) and climate indices, based on temperature at surface and precipitation
-are the input data. With statistical methodes (general additive models GAM) the spatial favourabillity is calculated for each year of the input timeseries.
-The SDM processes are able to handle ensemble Datasets and putting a favourabillity data set out for each ensemble member.
+The processes related to species distribution models (SDM) produce data showing the growth favourability for single tree species
+related to climate conditions. Generally, the input data consist of tree observations (coordinate points of tree occurences) and climate indices based on temperature at surface and precipitation. With statistical methods (general additive models [GAM]), the spatial favourability is calculated for each year of the input timeseries.
+The SDM processes are able to handle ensemble datasets and output a favourability dataset for each ensemble member.
 
 
-Stepps being processed in a SDM experiment
-..........................................
+Processing steps in an SDM experiment
+.....................................
 
-  * fetching tree occurences of a specific tree species from the GBIF database.
-  * calculation of climate indices timeserieses based on climate model raw data
-  * generation of a presence / absence mask based on the GBIF data coordinates and the grid resolution of the climate indices data
+  * fetching tree occurences of a specific tree species from the GBIF database
+  * calculation of climate indices timeseries based on climate model raw data
+  * generation of a presence/absence mask based on the GBIF data coordinates and the grid resolution of the climate indices data
   * calculation of time mean values for the climate indices data for the given reference period
-  * statistical training (GAM) based on presence / absence mask and climate indices of reference period
-  * calculation of favourability as yearly timeseries for each dataset based on the statistically trained GAM
+  * statistical training (GAM) based on presence/absence mask and climate indices of a reference period
+  * calculation of favourability as yearly timeseries for each dataset based on the statistically-trained GAM
 
 
-SDM related processes
-.....................
+SDM-related processes
+......................
 
-Beside a big 'all in one' process, which contains all the analysing stepps from fetching of raw data to the final output the processes can also be run as parts.
-Following processes are available:
+Besides a big 'all-in-one' process which contains all the analysis steps from fetching of raw data to the final output, the processes can also be run as parts.
+The following processes are available:
 
 
 +----------------+------------------------------------------------------------------------------------------------+
@@ -32,11 +31,11 @@ Following processes are available:
 +----------------+------------------------------------------------------------------------------------------------+
 | sdm_getindices | Only calculation of climate indices                                                            |
 +----------------+----------------+-------------------------------------------------------------------------------+
-| sdm_csvindices | output of sdm_getgbif and sdm_getindices as input to run a SDM experiment                      |
+| sdm_csvindices | output of sdm_getgbif and sdm_getindices as input to run an SDM experiment                      |
 +----------------+----------------+-------------------------------------------------------------------------------+
-| sdm_csv        | output of sdm_getgbif and raw climate model data as input to run a SDM experiment              |
+| sdm_csv        | output of sdm_getgbif and raw climate model data as input to run an SDM experiment              |
 +----------------+------------------------------------------------------------------------------------------------+
-| sdm_allinone   | All requred steps are performed in this process to run a  SDM process (!! time consuming !!)   |
+| sdm_allinone   | All required steps are performed in this process to run an SDM process (!! time consuming !!)   |
 +----------------+------------------------------------------------------------------------------------------------+
 
 Further reading: `Species Favourability Shift in Europe due to Climate Change:
@@ -53,23 +52,23 @@ Climate Indices for SDM:
 +================+================+================================================================================+
 | TG_yr          | tas            | Mean of mean temperature per year                                              |
 +----------------+----------------+--------------------------------------------------------------------------------+
-| TG_AMJJAS      | tas            | Mean of mean temperature April to September                                    |
+| TG_AMJJAS      | tas            | Mean of mean temperature from April to September                                    |
 +----------------+----------------+--------------------------------------------------------------------------------+
-| TG_ONDJFM      | tas            | Mean of mean temperature October to March                                      |
+| TG_ONDJFM      | tas            | Mean of mean temperature from October to March                                      |
 +----------------+----------------+--------------------------------------------------------------------------------+
-| TG_JJA         | tas            | Mean of mean temperature June to August                                        |
+| TG_JJA         | tas            | Mean of mean temperature from June to August                                        |
 +----------------+----------------+--------------------------------------------------------------------------------+
 | GD4_yr         | tas            | Growing degree days [sum of TG >= 4 degrees] per year                          |
 +----------------+----------------+--------------------------------------------------------------------------------+
 | TNn_yr         | tasmin         | Minimum of minimum temperature per year                                        |
 +----------------+----------------+--------------------------------------------------------------------------------+
-| TNn_AMJJAS     | tasmin         | Minimum of minimum temperature April to September                              |
+| TNn_AMJJAS     | tasmin         | Minimum of minimum temperature from April to September                              |
 +----------------+----------------+--------------------------------------------------------------------------------+
-| TNn_ONDJFM     | tasmin         | Minimum of minimum temperature October to March                                |
+| TNn_ONDJFM     | tasmin         | Minimum of minimum temperature from October to March                                |
 +----------------+----------------+--------------------------------------------------------------------------------+
 | TNn_Jan        | tasmin         | Minimum of minimum temperature in January                                      |
 +----------------+----------------+--------------------------------------------------------------------------------+
-| FD_ONDJFM      | tasmin         | Nr of frost days  [tasmin < 0°C] in October to March                           |
+| FD_ONDJFM      | tasmin         | Nr of frost days  [tasmin < 0°C] from October to March                           |
 +----------------+----------------+--------------------------------------------------------------------------------+
 | FD_April       | tasmin         | Nr of frost days  [tasmin < 0°C] in April                                      |
 +----------------+----------------+--------------------------------------------------------------------------------+
@@ -77,7 +76,7 @@ Climate Indices for SDM:
 +----------------+----------------+--------------------------------------------------------------------------------+
 | FD_June        | tasmin         | Nr of frost days  [tasmin < 0°C] in June                                       |
 +----------------+----------------+--------------------------------------------------------------------------------+
-| CFD_ONDJFM     | tasmin         | Longest period of consecutive frost days in October to March                   |
+| CFD_ONDJFM     | tasmin         | Longest period of consecutive frost days from October to March                   |
 +----------------+----------------+--------------------------------------------------------------------------------+
 | ID_yr          | tasmax         |  Nr of ice days [tasmax < 0°C] per year                                        |
 +----------------+----------------+--------------------------------------------------------------------------------+
