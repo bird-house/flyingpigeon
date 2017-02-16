@@ -79,54 +79,71 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None):
 
     :return pdf foumular: pdf with fillable text boxes for interpretation text
     """
-
     from PyPDF2 import PdfFileWriter, PdfFileReader
     from reportlab.pdfgen import canvas
     from flyingpigeon.config import static_dir
-
     try:
-        _, pdf_country = mkstemp(dir='.', suffix='.pdf')
-        _, pdf_uncertainty = mkstemp(dir='.', suffix='.pdf')
-        _, pdf_spaghetti = mkstemp(dir='.', suffix='.pdf')
-        _, climatefactsheet = mkstemp(dir='.', suffix='.pdf')
+        try:
+            _, pdf_country = mkstemp(dir='.', suffix='.pdf')
+            c = canvas.Canvas(pdf_country)
+            c.drawImage(png_country, 355, 490, width=270, height=150)  # , mask=None, preserveAspectRatio=False)
+            c.save()
+            pfr_country = PdfFileReader(open(pdf_country, 'rb'))
+        except:
+            logger.exception('failed to convert png to pdf')
 
-        c = canvas.Canvas(pdf_country)
-        c.drawImage(png_country, 355, 490, width=270, height=150)  # , mask=None, preserveAspectRatio=False)
-        c.save()
+        try:
+            _, pdf_uncertainty = mkstemp(dir='.', suffix='.pdf')
+            c = canvas.Canvas(pdf_uncertainty)
+            c.drawImage(png_uncertainty, 20, 320, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
+            c.save()
+            pfr_uncertainty = PdfFileReader(open(pdf_uncertainty, 'rb'))
+        except:
+            logger.exception('failed to convert png to pdf')
 
-        c = canvas.Canvas(pdf_uncertainty)
-        c.drawImage(png_uncertainty, 20, 320, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
-        c.save()
-
-        c = canvas.Canvas(pdf_spaghetti)
-        c.drawImage(png_spaghetti, 280, 320, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
-        c.save()
+        try:
+            _, pdf_spaghetti = mkstemp(dir='.', suffix='.pdf')
+            c = canvas.Canvas(pdf_spaghetti)
+            c.drawImage(png_spaghetti, 280, 320, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
+            c.save()
+            pfr_spagetthi = PdfFileReader(open(pdf_spaghetti, 'rb'))
+        except:
+            logger.exception('failed to convert png to pdf')
 
         output_file = PdfFileWriter()
-        pfr_country = PdfFileReader(open(pdf_country, 'rb'))
-        pfr_uncertainty = PdfFileReader(open(pdf_uncertainty, 'rb'))
-        pfr_spagetthi = PdfFileReader(open(pdf_spaghetti, 'rb'))
-
         pfr_template = PdfFileReader(file(static_dir() + '/pdf/climatefactsheettemplate.pdf', 'rb'))
         logger.debug('template: %s' % pfr_template)
 
         page_count = pfr_template.getNumPages()
-
         for page_number in range(page_count):
             logger.debug("Plotting png to {} of {}".format(page_number, page_count))
             input_page = pfr_template.getPage(page_number)
-            input_page.mergePage(pfr_country.getPage(0))
-            input_page.mergePage(pfr_uncertainty.getPage(0))
-            input_page.mergePage(pfr_spagetthi.getPage(0))
-            output_file.addPage(input_page)
-
-        with open(climatefactsheet, 'wb') as outputStream:
-            output_file.write(outputStream)
-        logger.info('sucessfully brewed the demanded factsheet')   
+            try:
+                input_page.mergePage(pfr_country.getPage(0))
+            except:
+                logger.warn('failed to merge courtry map')
+            try:
+                input_page.mergePage(pfr_uncertainty.getPage(0))
+            except:
+                logger.warn('failed to merge uncertainy plot')
+            try:
+                input_page.mergePage(pfr_spagetthi.getPage(0))
+            except:
+                logger.warn('failed to merge spaghetti plot')
+            try:
+                output_file.addPage(input_page)
+            except:
+                logger.warn('failed to add page to output pdf')
+        try:
+            _, climatefactsheet = mkstemp(dir='.', suffix='.pdf')
+            with open(climatefactsheet, 'wb') as outputStream:
+                output_file.write(outputStream)
+            logger.info('sucessfully brewed the demanded factsheet')
+        except:
+            logger.exception('failed write filled template to pdf. empty template will be set as output')
+            climatefactsheet = static_dir() + '/pdf/climatefactsheettemplate.pdf'
     except:
-        logger.exception("failed to brew the factsheet, empty template is set as output")
-        climatefactsheet = static_dir() + '/pdf/climatefactsheettemplate.pdf'
-
+        logger.exception("failed to brew the factsheet, empty template will be set as output")
     return climatefactsheet
 
 
