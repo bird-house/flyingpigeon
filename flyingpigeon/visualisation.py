@@ -62,7 +62,6 @@ def plot_polygons(regions):
         ax.coastlines()
         # ax.set_global()
     o1, map_graphic = mkstemp(dir='.', suffix='.png')
-
     fig.savefig(map_graphic)
     plt.close()
 

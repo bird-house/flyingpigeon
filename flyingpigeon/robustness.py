@@ -41,12 +41,13 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
     try:
         mergefiles = []
         for key in file_dic.keys():
+            if variable is None:
+                variable = get_variable(file_dic[key])
+                logger.info('variable detected %s ' % variable)
             try:
                 if type(file_dic[key]) == list and len(file_dic[key]) > 1:
-                    input = []
-                    for i in file_dic[key]:
-                        input.extend([i.replace(' ', '\\\ ')])
-                        mergefiles.append(cdo.mergetime(input=input, output=key+'_mergetime.nc'))
+                    _, nc_merge = mkstemp(dir='.', suffix='.nc')
+                    mergefiles.append(cdo.mergetime(input=file_dic[key], output=nc_merge))
                 else:
                     mergefiles.extend(file_dic[key])
             except:
@@ -132,7 +133,7 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
         msg = 'ensemble std or failed'
         logger.exception(msg)
 
-#  get the get the signal as difference from the beginning (first years) and end period (last years), :
+    # get the get the signal as difference from the beginning (first years) and end period (last years), :
     try:
         selyearstart = cdo.selyear('%s/%s' % (start1, start2), input=nc_ensmean, output='selyearstart.nc')
         selyearend = cdo.selyear('%s/%s' % (end1, end2), input=nc_ensmean, output='selyearend.nc')
@@ -168,8 +169,6 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
         _, low_agreement_mask = mkstemp(dir='.', suffix='.nc')
 
     try:
-        # if variable is None:
-        #     variable = get_variable(signal)
         logger.info('variable to be plotted: %s' % variable)
 
         if title is None:
