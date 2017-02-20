@@ -8,13 +8,8 @@
 Introduction
 ============
 
-Flying Pigeon (the bird)
-  *The pigeon finds its way home over extremely long distances. [..].* (` Wikipedia <https://en.wikipedia.org/wiki/Pigeon_flying>`_).
+Flyingpigeon is a Web Processing Service with a collection of processes for the climate community as a compartment of the `Birdhouse`_ 
 
-Flying Pigeon (the bike)
-  *Flying Pigeon is a Chinese bicycle company [..]. The Flying Pigeon is the most popular vehicle ever.* ( `Wikipedia <https://en.wikipedia.org/wiki/Flying_Pigeon>`_ )
-
-Flyingpigeon is a Python package with a collection of algorithms for the climate community available as a Web Processing Service (WPS) as a compartment of the `Birdhouse`_ 
 
 .. toctree::
    :maxdepth: 1
@@ -25,3 +20,15 @@ Flyingpigeon is a Python package with a collection of algorithms for the climate
    tutorials/index
    notebooks
    releasenotes
+   
+
+
+Further reading:
+----------------
+
+   
+Flying Pigeon (the bird)
+  *The pigeon finds its way home over extremely long distances. [..].* ( `Wikipedia <https://en.wikipedia.org/wiki/Pigeon_flying>`_ ).
+
+Flying Pigeon (the bike)
+  *Flying Pigeon is a Chinese bicycle company [..]. The Flying Pigeon is the most popular vehicle ever.* ( `Wikipedia <https://en.wikipedia.org/wiki/Flying_Pigeon>`_ )
