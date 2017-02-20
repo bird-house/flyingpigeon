@@ -229,7 +229,7 @@ srcclean:
 distclean: backup clean
 	@echo "Cleaning distribution ..."
 	@git diff --quiet HEAD || echo "There are uncommited changes! Not doing 'git clean' ..."
-	@-git clean -dfx -e *.bak -e custom.cfg
+	@-git clean -dfx -e *.bak -e custom.cfg -e Makefile.config
 
 .PHONY: passwd
 passwd: custom.cfg
