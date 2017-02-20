@@ -24,6 +24,7 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
     :return: signal.nc, low_agreement_mask.nc, high_agreement_mask.nc, graphic.png, text.txt
     """
     from os.path import split
+    from tempfile import mkstemp
     from cdo import Cdo
     cdo = Cdo()
     cdo.forceOutput = True
@@ -35,7 +36,6 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
     except:
         msg = 'failed to sort the input files'
         logger.exception(msg)
-        raise Exception(msg)
 
     # timemerge for seperate datasets
     try:
@@ -55,7 +55,6 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
     except:
         msg = 'seltime and mergetime failed'
         logger.exception(msg)
-        raise
 
     # dataset documentation
     try:
@@ -66,7 +65,7 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
     except:
         msg = 'failed to write source textfile'
         logger.exception(msg)
-        raise Exception(msg)
+        _, text_src = mkstemp(dir='.', suffix='.txt')
 
     # configure reference and compare period
     try:
@@ -87,7 +86,6 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
     except:
         msg = 'failed to detect start and end times of the ensemble'
         logger.exception(msg)
-        raise Exception(msg)
 
     # set the periodes:
     try:
@@ -107,7 +105,6 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
     except:
         msg = 'failed to set the periodes'
         logger.exception(msg)
-        raise Exception(msg)
 
     try:
         files = []
@@ -118,7 +115,6 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
     except:
         msg = 'seltime and mergetime failed'
         logger.exception(msg)
-        raise Exception(msg)
 
     try:
         # ensemble mean
@@ -127,7 +123,6 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
     except:
         msg = 'ensemble mean failed'
         logger.exception(msg)
-        raise Exception(msg)
 
     try:
         # ensemble std
@@ -136,7 +131,6 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
     except:
         msg = 'ensemble std or failed'
         logger.exception(msg)
-        raise Exception(msg)
 
 #  get the get the signal as difference from the beginning (first years) and end period (last years), :
     try:
@@ -149,7 +143,7 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
     except:
         msg = 'calculation of signal failed'
         logger.exception(msg)
-        raise Exception(msg)
+        _, signal = mkstemp(dir='.', suffix='.nc')
 
     # get the intermodel standard deviation (mean over whole period)
     try:
@@ -162,7 +156,6 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
     except:
         msg = 'calculation of internal model std failed'
         logger.exception(msg)
-        raise Exception(msg)
     try:
         absolut = cdo.abs(input=signal, output='absolut_signal.nc')
         high_agreement_mask = cdo.gt(input=[absolut, std2],  output='large_change_with_high_model_agreement.nc')
@@ -171,7 +164,8 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
     except:
         msg = 'calculation of robustness mask failed'
         logger.exception(msg)
-        raise Exception(msg)
+        _, high_agreement_mask = mkstemp(dir='.', suffix='.nc')
+        _, low_agreement_mask = mkstemp(dir='.', suffix='.nc')
 
     try:
         # if variable is None:
@@ -192,8 +186,6 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
     except:
         msg = 'graphic generation failed'
         logger.exception(msg)
-        from tempfile import mkstemp
-        _, graphic = mkstemp(dir='.', suffix='.pdf')
-        raise Exception(msg)
+        _, graphic = mkstemp(dir='.', suffix='.png')
 
     return signal, low_agreement_mask, high_agreement_mask, graphic, text_src  #

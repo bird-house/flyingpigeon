@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 GROUPING = ["day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON",
             "Jan", 'Feb', "Mar", "Apr", "May", "Jun", 'Jul', "Aug", 'Sep', 'Oct', 'Nov', 'Dec']
 
-
 def make_dirs(directory):
     """
     creates a dictionary if not already existing

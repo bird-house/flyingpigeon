@@ -61,7 +61,6 @@ def plot_polygons(regions):
             ax.add_feature(shape_feature)
         ax.coastlines()
         # ax.set_global()
-
     o1, map_graphic = mkstemp(dir='.', suffix='.png')
 
     fig.savefig(map_graphic)
@@ -291,11 +290,10 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
             fig.savefig(output_png)
             plt.close()
             logger.debug('timeseries uncertainty plot done for %s' % variable)
-        except Exception as e:
-            logger.debug('failed to calculate quantiles %s ' % e)
-    except Exception as e:
+        except:
+            logger.exception('failed to calculate quantiles')
+    except:
         logger.exception('uncertainty plot failed for %s' % variable)
-        raise
     return output_png
 
 
@@ -344,10 +342,9 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
         maxval = round(np.nanmax(var_signal)+.5)
 
         logger.info('prepared data for plotting')
-    except Exception as e:
-        msg = 'failed to get data for plotting %s' % e
+    except:
+        msg = 'failed to get data for plotting'
         logger.exception(msg)
-        raise Exception(msg)
 
     try:
         fig = plt.figure(facecolor='w', edgecolor='k')  # figsize=(20,10), dpi=600,
@@ -379,11 +376,9 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
         plt.close()
 
         logger.info('Plot created and figure saved')
-    except Exception as e:
+    except:
         msg = 'failed to plot graphic'
         logger.exception(msg)
-        raise Exception(msg)
-
     return graphic
 
 
@@ -527,25 +522,6 @@ def map_PAmask(PAmask):
             # TODO: needs to be a png file
             fp.write(msg)
     return png_PA_mask
-
-
-# def plot_tSNE(data, title='custer', sub_title='method: principal components'):
-#     """
-#     !!!Obsolete!!!
-#     plot the output of weather classifiaction as a cluster
-#     :param param: values for x y coordinate
-#     :param title: string for title
-#     """
-    # fig = plt.figure(figsize=(10, 10))
-    # plt.scatter(data[:, 0], data[:, 1], marker=".")
-    # plt.title(title)
-    # plt.annotate(sub_title, (0,0), (0, -30), xycoords='axes fraction', textcoords='offset points', va='top')
-    #
-    # ip, image = mkstemp(dir='.',suffix='.png')
-    # plt.savefig(image)
-    # plt.close()
-    #
-    # return image
 
 
 def plot_kMEAN(kmeans, pca, title='kmean', sub_title='file='):
