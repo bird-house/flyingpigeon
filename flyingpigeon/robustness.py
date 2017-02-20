@@ -28,43 +28,47 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
     cdo = Cdo()
     cdo.forceOutput = True
 
+    # preparing the resource
     try:
-        # preparing the resource
         file_dic = sort_by_filename(resource, historical_concatination=True)
         logger.info('file names sorted experimets: %s' % len(file_dic.keys()))
-    except Exception as e:
+    except:
         msg = 'failed to sort the input files'
         logger.exception(msg)
         raise Exception(msg)
 
+    # timemerge for seperate datasets
     try:
         mergefiles = []
         for key in file_dic.keys():
-
-            if type(file_dic[key]) == list and len(file_dic[key]) > 1:
-                input = []
-                for i in file_dic[key]:
-                    input.extend([i.replace(' ', '\\\ ')])
-                    mergefiles.append(cdo.mergetime(input=input, output=key+'_mergetime.nc'))
-            else:
-                mergefiles.extend(file_dic[key])
+            try:
+                if type(file_dic[key]) == list and len(file_dic[key]) > 1:
+                    input = []
+                    for i in file_dic[key]:
+                        input.extend([i.replace(' ', '\\\ ')])
+                        mergefiles.append(cdo.mergetime(input=input, output=key+'_mergetime.nc'))
+                else:
+                    mergefiles.extend(file_dic[key])
+            except:
+                logger.exception('failed to merge files for %s ' % key)
         logger.info('datasets merged %s ' % mergefiles)
-    except Exception as e:
-        msg = 'seltime and mergetime failed %s' % e
+    except:
+        msg = 'seltime and mergetime failed'
         logger.exception(msg)
-        raise Exception(e)
+        raise
 
+    # dataset documentation
     try:
         text_src = open('infiles.txt', 'a')
         for key in file_dic.keys():
             text_src.write(key + '\n')
         text_src.close()
-    except Exception as e:
+    except:
         msg = 'failed to write source textfile'
         logger.exception(msg)
         raise Exception(msg)
 
-# configure reference and compare period
+    # configure reference and compare period
     try:
         if start is None:
             st_set = set()
@@ -80,12 +84,12 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
         logger.info('Start and End: %s - %s ' % (start, end))
         if start >= end:
             logger.error('ensemble is inconsistent!!! start year is later than end year')
-    except Exception as e:
+    except:
         msg = 'failed to detect start and end times of the ensemble'
         logger.exception(msg)
         raise Exception(msg)
 
-# set the periodes:
+    # set the periodes:
     try:
         start = int(start)
         end = int(end)
@@ -100,7 +104,7 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
         end1 = end - timeslice + 1
         end2 = end
         logger.info('timeslice and periodes set')
-    except Exception as e:
+    except:
         msg = 'failed to set the periodes'
         logger.exception(msg)
         raise Exception(msg)
@@ -111,7 +115,7 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
             files.append(cdo.selyear('{0}/{1}'.format(start1, end2), input=[mf.replace(' ', '\ ')],
                          output='file_{0}_.nc'.format(i)))  # python version
         logger.info('timeseries selected from defined start to end year')
-    except Exception as e:
+    except:
         msg = 'seltime and mergetime failed'
         logger.exception(msg)
         raise Exception(msg)
@@ -120,7 +124,7 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
         # ensemble mean
         nc_ensmean = cdo.ensmean(input=files, output='nc_ensmean.nc')
         logger.info('ensemble mean calculation done')
-    except Exception as e:
+    except:
         msg = 'ensemble mean failed'
         logger.exception(msg)
         raise Exception(msg)
@@ -129,7 +133,7 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
         # ensemble std
         nc_ensstd = cdo.ensstd(input=files, output='nc_ensstd.nc')
         logger.info('ensemble std and calculation done')
-    except Exception as e:
+    except:
         msg = 'ensemble std or failed'
         logger.exception(msg)
         raise Exception(msg)
@@ -142,7 +146,7 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
         meanyearend = cdo.timmean(input=selyearend, output='meanyearend.nc')
         signal = cdo.sub(input=[meanyearend, meanyearst], output='signal.nc')
         logger.info('Signal calculation done')
-    except Exception as e:
+    except:
         msg = 'calculation of signal failed'
         logger.exception(msg)
         raise Exception(msg)
@@ -155,7 +159,7 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
         std = cdo.timmean(input=nc_ensstd, output='std.nc')
         std2 = cdo.mulc('2', input=std, output='std2.nc')
         logger.info('calculation of internal model std for time period done')
-    except Exception as e:
+    except:
         msg = 'calculation of internal model std failed'
         logger.exception(msg)
         raise Exception(msg)
@@ -164,14 +168,14 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
         high_agreement_mask = cdo.gt(input=[absolut, std2],  output='large_change_with_high_model_agreement.nc')
         low_agreement_mask = cdo.lt(input=[absolut, std], output='small_signal_or_low_agreement_of_models.nc')
         logger.info('high and low mask done')
-    except Exception as e:
+    except:
         msg = 'calculation of robustness mask failed'
         logger.exception(msg)
         raise Exception(msg)
 
     try:
-        if variable is None:
-            variable = get_variable(signal)
+        # if variable is None:
+        #     variable = get_variable(signal)
         logger.info('variable to be plotted: %s' % variable)
 
         if title is None:
@@ -185,9 +189,11 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
                                          title=title)
 
         logger.info('graphic generated')
-    except Exception as e:
-        msg('graphic generation failed: %s' % e)
-        logger.debug(msg)
+    except:
+        msg = 'graphic generation failed'
+        logger.exception(msg)
+        from tempfile import mkstemp
+        _, graphic = mkstemp(dir='.', suffix='.pdf')
         raise Exception(msg)
 
     return signal, low_agreement_mask, high_agreement_mask, graphic, text_src  #

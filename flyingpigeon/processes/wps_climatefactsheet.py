@@ -133,7 +133,7 @@ class climatefactsheetProcess(WPSProcess):
             png_country = plot_polygons(regions)
         except:
             logger.exception('failed to plot the polygon to world map')
-            o1, factsheet_plot = mkstemp(dir='.', suffix='.png')
+            o1, png_country = mkstemp(dir='.', suffix='.png')
 
         # clip the demanded polygons
         from flyingpigeon.subset import clipping
