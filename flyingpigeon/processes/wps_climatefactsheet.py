@@ -48,55 +48,18 @@ class climatefactsheetProcess(WPSProcess):
             maxOccurs=len(countries()),
             allowedValues=countries()  # REGION_EUROPE #COUNTRIES #
             )
-        #
-        # self.mosaic = self.addLiteralInput(
-        #     identifier="mosaic",
-        #     title="Mosaic",
-        #     abstract="If Mosaic is checked, selected polygons will be merged to one Mosaic for each input file",
-        #     default=False,
-        #     type=type(False),
-        #     minOccurs=0,
-        #     maxOccurs=1,
-        #     )
-
-        # self.dimension_map = self.addLiteralInput(
-        #     identifier="dimension_map",
-        #     title="Dimension Map",
-        #     abstract= 'if not ordered in lon/lat a dimension map has to be provided',
-        #     type=type(''),
-        #     minOccurs=0,
-        #     maxOccurs=1
-        #     )
-        #
-        # self.variable = self.addLiteralInput(
-        #     identifier="variable",
-        #     title="Variable",
-        #     abstract="Variable to be expected in the input files (Variable will be detected if not set)",
-        #     default=None,
-        #     type=type(''),
-        #     minOccurs=0,
-        #     maxOccurs=1,
-        #     )
 
         ###########
         # OUTPUTS
         ###########
 
-        # self.output = self.addComplexOutput(
-        #     title="Subsets",
-        #     abstract="Tar archive containing the netCDF files",
-        #     formats=[{"mimeType": "application/x-tar"}],
-        #     asReference=True,
-        #     identifier="output",
-        #     )
-
-        # self.output_netcdf = self.addComplexOutput(
-        #     title="Subsets for one dataset",
-        #     abstract="NetCDF file with subsets of one dataset.",
-        #     formats=[{"mimeType": "application/x-netcdf"}],
-        #     asReference=True,
-        #     identifier="ncout",
-        #     )
+        self.output_nc = self.addComplexOutput(
+            title="Subsets",
+            abstract="Tar archive containing the netCDF files",
+            formats=[{"mimeType": "application/x-tar"}],
+            asReference=True,
+            identifier="output_nc",
+            )
 
         self.output_factsheet = self.addComplexOutput(
             title="Climate Fact Sheet",
@@ -150,6 +113,13 @@ class climatefactsheetProcess(WPSProcess):
                            polygons=regions,
                            mosaic=True
                            )
+
+        try:
+            tar_subsets = archive(subsets)
+        except:
+            logger.exception('failed to archive subsets')
+            _, tar_subsets = mkstemp(dir='.', suffix='.tar')
+
         try:
             from flyingpigeon.visualisation import uncertainty
             png_uncertainty = uncertainty(subsets)
@@ -167,7 +137,7 @@ class climatefactsheetProcess(WPSProcess):
         try:
             from flyingpigeon import robustness as erob
             signal, low_agreement_mask, high_agreement_mask,  png_robustness, text_src = erob.method_A(
-                # resource=subsets,
+                resource=ncs,  # subsets,
                 # start=None, end=None,
                 # timeslice=None,
                 # variable=None
@@ -182,5 +152,6 @@ class climatefactsheetProcess(WPSProcess):
                                     png_spaghetti=png_spaghetti,
                                     png_robustness=png_robustness)
 
+        self.output_nc.setValue(tar_subsets)
         self.output_factsheet.setValue(factsheet)
         self.status.set('done', 100)

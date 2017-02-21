@@ -90,7 +90,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
         try:
             _, pdf_country = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_country)
-            c.drawImage(png_country, 355, 500, width=100, height=100)  # , mask=None, preserveAspectRatio=False)
+            c.drawImage(png_country, 355, 500, width=120, height=120)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_country = PdfFileReader(open(pdf_country, 'rb'))
         except:
@@ -99,7 +99,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
         try:
             _, pdf_uncertainty = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_uncertainty)
-            c.drawImage(png_uncertainty, 20, 320, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
+            c.drawImage(png_uncertainty, 20, 370, width=300, height=120)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_uncertainty = PdfFileReader(open(pdf_uncertainty, 'rb'))
         except:
@@ -108,7 +108,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
         try:
             _, pdf_spaghetti = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_spaghetti)
-            c.drawImage(png_spaghetti, 280, 320, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
+            c.drawImage(png_spaghetti, 280, 370, width=300, height=120)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_spagetthi = PdfFileReader(open(pdf_spaghetti, 'rb'))
         except:
@@ -117,7 +117,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
         try:
             _, pdf_robustness = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_robustness)
-            c.drawImage(png_robustness, 20, 50, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
+            c.drawImage(png_robustness, 50, 100, width=250, height=200)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_robustness = PdfFileReader(open(pdf_robustness, 'rb'))
         except:
