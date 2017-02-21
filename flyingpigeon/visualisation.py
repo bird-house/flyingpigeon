@@ -90,7 +90,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
         try:
             _, pdf_country = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_country)
-            c.drawImage(png_country, 355, 490, width=270, height=150)  # , mask=None, preserveAspectRatio=False)
+            c.drawImage(png_country, 355, 500, width=100, height=100)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_country = PdfFileReader(open(pdf_country, 'rb'))
         except:
