@@ -68,7 +68,7 @@ def plot_polygons(regions):
     return map_graphic
 
 
-def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None):
+def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, png_robustness=None):
     """
     Put graphics into the climate fact sheet template to generate the final climate fact sheet
 
@@ -108,6 +108,15 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None):
         except:
             logger.exception('failed to convert png to pdf')
 
+        try:
+            _, pdf_robustness = mkstemp(dir='.', suffix='.pdf')
+            c = canvas.Canvas(pdf_robustness)
+            c.drawImage(png_robustness, 20, 50, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
+            c.save()
+            pfr_robustness = PdfFileReader(open(pdf_robustness, 'rb'))
+        except:
+            logger.exception('failed to convert png to pdf')
+
         output_file = PdfFileWriter()
         pfr_template = PdfFileReader(file(static_dir() + '/pdf/climatefactsheettemplate.pdf', 'rb'))
         logger.debug('template: %s' % pfr_template)
@@ -128,6 +137,10 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None):
                 input_page.mergePage(pfr_spagetthi.getPage(0))
             except:
                 logger.warn('failed to merge spaghetti plot')
+            try:
+                input_page.mergePage(pfr_robustness.getPage(0))
+            except:
+                logger.warn('failed to merge robustness plot')
             try:
                 output_file.addPage(input_page)
             except:

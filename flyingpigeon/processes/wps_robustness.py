@@ -1,4 +1,3 @@
-from flyingpigeon import robustness as erob
 from flyingpigeon.log import init_process_logger
 
 from pywps.Process import WPSProcess
@@ -140,7 +139,9 @@ class robustnessProcess(WPSProcess):
 
         init_process_logger('log.txt')
         self.output_log.setValue('log.txt')
+
         from flyingpigeon.utils import archiveextract
+        from flyingpigeon import robustness as erob
 
         ncfiles = archiveextract(self.getInputValues(identifier='resource'))
         start = self.start.getValue()

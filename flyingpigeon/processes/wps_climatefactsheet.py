@@ -164,10 +164,23 @@ class climatefactsheetProcess(WPSProcess):
             logger.exception('failed to generate the spaghetti plot')
             _, png_spaghetti = mkstemp(dir='.', suffix='.png')
 
+        try:
+            from flyingpigeon import robustness as erob
+            signal, low_agreement_mask, high_agreement_mask,  png_robustness, text_src = erob.method_A(
+                # resource=subsets,
+                # start=None, end=None,
+                # timeslice=None,
+                # variable=None
+                )
+        except:
+            logger.exception('failed to generate the robustness plot')
+            _, png_robustness = mkstemp(dir='.', suffix='.png')
+
         from flyingpigeon.visualisation import factsheetbrewer
         factsheet = factsheetbrewer(png_country=png_country,
                                     png_uncertainty=png_uncertainty,
-                                    png_spaghetti=png_spaghetti)
+                                    png_spaghetti=png_spaghetti,
+                                    png_robustness=png_robustness)
 
         self.output_factsheet.setValue(factsheet)
         self.status.set('done', 100)
