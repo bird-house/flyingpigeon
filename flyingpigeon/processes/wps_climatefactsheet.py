@@ -136,12 +136,26 @@ class climatefactsheetProcess(WPSProcess):
 
         try:
             from flyingpigeon import robustness as erob
-            signal, low_agreement_mask, high_agreement_mask,  png_robustness, text_src = erob.method_A(
-                resource=ncs,  # subsets,
-                # start=None, end=None,
-                # timeslice=None,
-                # variable=None
-                )
+            from flyingpigeon.utils import get_variable
+            variable = get_variable(ncs[0])
+
+            signal, low_agreement_mask, high_agreement_mask, text_src = erob.method_A(resource=ncs,  # subsets,
+                                                                                      # start=None, end=None,
+                                                                                      # timeslice=None,
+                                                                                      variable=variable
+                                                                                      )
+            logger.info('variable to be plotted: %s' % variable)
+            from flyingpigeon.visualisation import map_robustness
+            # if title is None:
+            title = 'signal robustness of %s ' % (variable)  # , end1, end2, start1, start2
+            png_robustness = map_robustness(signal,
+                                            high_agreement_mask,
+                                            low_agreement_mask,
+                                            variable=variable,
+                                            # cmap=cmap,
+                                            title=title)
+            logger.info('graphic generated')
+
         except:
             logger.exception('failed to generate the robustness plot')
             _, png_robustness = mkstemp(dir='.', suffix='.png')

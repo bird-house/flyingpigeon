@@ -135,13 +135,17 @@ class robustnessProcess(WPSProcess):
             )
 
     def execute(self):
+        from flyingpigeon.utils import archiveextract
+        from flyingpigeon import robustness as erob
+        from tempfile import mkstemp
+
+        import logging
+        logger = logging.getLogger(__name__)
+
         self.status.set('starting uncertainty process', 0)
 
         init_process_logger('log.txt')
         self.output_log.setValue('log.txt')
-
-        from flyingpigeon.utils import archiveextract
-        from flyingpigeon import robustness as erob
 
         ncfiles = archiveextract(self.getInputValues(identifier='resource'))
         start = self.start.getValue()
@@ -152,12 +156,40 @@ class robustnessProcess(WPSProcess):
 
         self.status.set('arguments read', 5)
 
-        if method == 'Method_A':
-            signal, low_agreement_mask, high_agreement_mask,  graphic, text_src = erob.method_A(
+        if variable is None:
+            from flyingpigeon.utils import get_variable
+            variable = get_variable(ncfiles[0])
+
+        logger.debug('variable set to %s' % variable)
+
+        # if method == 'Method_A':
+        signal, low_agreement_mask, high_agreement_mask, text_src = erob.method_A(
                 resource=ncfiles,
                 start=start, end=end,
                 timeslice=timeslice,
-                variable=variable)  # graphic,
+                variable=variable
+                )  # graphic,
+
+        logger.debug('Robustness calculated')
+
+        try:
+            logger.info('variable to be plotted: %s' % variable)
+            from flyingpigeon.visualisation import map_robustness
+            # if title is None:
+            title = 'signal robustness of %s ' % (variable)  # , end1, end2, start1, start2
+
+            graphic = map_robustness(signal,
+                                     high_agreement_mask,
+                                     low_agreement_mask,
+                                     variable=variable,
+                                     # cmap=cmap,
+                                     title=title)
+
+            logger.info('graphic generated')
+        except:
+            msg = 'graphic generation failed'
+            logger.exception(msg)
+            _, graphic = mkstemp(dir='.', suffix='.png')
 
         self.status.set('process worker done', 95)
 

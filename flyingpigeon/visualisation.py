@@ -117,7 +117,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
         try:
             _, pdf_robustness = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_robustness)
-            c.drawImage(png_robustness, 50, 100, width=250, height=200)  # , mask=None, preserveAspectRatio=False)
+            c.drawImage(png_robustness, 50, 85, width=250, height=180)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_robustness = PdfFileReader(open(pdf_robustness, 'rb'))
         except:
@@ -315,7 +315,7 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
     return output_png
 
 
-def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, variable, cmap='seismic', title=None):
+def map_robustness(signal, high_agreement_mask, low_agreement_mask, variable, cmap='seismic', title=None):
     """
     generates a graphic for the output of the ensembleRobustness process for a lat/long file.
 

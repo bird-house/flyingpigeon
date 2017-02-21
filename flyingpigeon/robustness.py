@@ -1,4 +1,4 @@
-from flyingpigeon.visualisation import map_ensembleRobustness
+# from flyingpigeon.visualisation import map_robustness
 from flyingpigeon.utils import get_variable
 from flyingpigeon.utils import sort_by_filename
 from flyingpigeon.utils import get_time
@@ -21,7 +21,7 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
     :param title: str to be used as title for the signal mal
     :param cmap: define the color scheme for signal map plotting
 
-    :return: signal.nc, low_agreement_mask.nc, high_agreement_mask.nc, graphic.png, text.txt
+    :return: signal.nc, low_agreement_mask.nc, high_agreement_mask.nc, text.txt,  #  graphic.png,
     """
     from os.path import split
     from tempfile import mkstemp
@@ -167,24 +167,24 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
         logger.exception(msg)
         _, high_agreement_mask = mkstemp(dir='.', suffix='.nc')
         _, low_agreement_mask = mkstemp(dir='.', suffix='.nc')
+    #
+    # try:
+    #     logger.info('variable to be plotted: %s' % variable)
+    #
+    #     if title is None:
+    #         title = 'Change of %s (difference of mean %s-%s to %s-%s)' % (variable, end1, end2, start1, start2)
+    #     graphic = None
+    #     graphic = map_robustness(signal,
+    #                              high_agreement_mask,
+    #                              low_agreement_mask,
+    #                              variable=variable,
+    #                              cmap=cmap,
+    #                              title=title)
+    #
+    #     logger.info('graphic generated')
+    # except:
+    #     msg = 'graphic generation failed'
+    #     logger.exception(msg)
+    #     _, graphic = mkstemp(dir='.', suffix='.png')
 
-    try:
-        logger.info('variable to be plotted: %s' % variable)
-
-        if title is None:
-            title = 'Change of %s (difference of mean %s-%s to %s-%s)' % (variable, end1, end2, start1, start2)
-        graphic = None
-        graphic = map_ensembleRobustness(signal,
-                                         high_agreement_mask,
-                                         low_agreement_mask,
-                                         variable=variable,
-                                         cmap=cmap,
-                                         title=title)
-
-        logger.info('graphic generated')
-    except:
-        msg = 'graphic generation failed'
-        logger.exception(msg)
-        _, graphic = mkstemp(dir='.', suffix='.png')
-
-    return signal, low_agreement_mask, high_agreement_mask, graphic, text_src  #
+    return signal, low_agreement_mask, high_agreement_mask, text_src  #graphic,
