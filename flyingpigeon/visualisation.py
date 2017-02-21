@@ -17,6 +17,8 @@ from flyingpigeon import utils
 
 logger = logging.getLogger(__name__)
 
+os.environ['HOME'] = os.curdir
+
 
 class MidpointNormalize(Normalize):
     def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
@@ -39,6 +41,7 @@ def plot_polygons(regions):
 
     from cartopy.io.shapereader import Reader
     from cartopy.feature import ShapelyFeature
+    from os.path import curdir, abspath
 
     from flyingpigeon import config
     DIR_SHP = config.shapefiles_dir()
@@ -50,7 +53,9 @@ def plot_polygons(regions):
     geos = Reader(fname).geometries()
     records = Reader(fname).records()
 
-    fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
+    logger.debug('')
+
+    fig = plt.figure(figsize=(10, 10), facecolor='w', edgecolor='k')  # dpi=600,
     projection = ccrs.Orthographic(central_longitude=0.0, central_latitude=0.0, globe=None)  # Robinson()
     ax = plt.axes(projection=projection)
 
@@ -61,7 +66,8 @@ def plot_polygons(regions):
             ax.add_feature(shape_feature)
         ax.coastlines()
         # ax.set_global()
-    o1, map_graphic = mkstemp(dir='.', suffix='.png')
+
+    o1, map_graphic = mkstemp(dir=abspath(curdir), suffix='.png')
     fig.savefig(map_graphic)
     plt.close()
 
@@ -171,7 +177,7 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
     """
 
     try:
-        fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
+        fig = plt.figure(figsize=(20, 10), facecolor='w', edgecolor='k')  # dpi=600,
         logger.debug('Start visualisation spaghetti plot')
 
         # === prepare invironment
@@ -249,7 +255,7 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
         dir_out = '.'
 
     try:
-        fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
+        fig = plt.figure(figsize=(20, 10), facecolor='w', edgecolor='k')  # dpi=600,
         o1, output_png = mkstemp(dir=dir_out, suffix='.png')
         variable = utils.get_variable(resouces[0])
         df = pd.DataFrame()
@@ -523,7 +529,7 @@ def map_PAmask(PAmask):
     """
     try:
         ip, png_PA_mask = mkstemp(dir='.', suffix='.png')
-        fig = plt.figure(figsize=(20, 10), dpi=300, facecolor='w', edgecolor='k')
+        fig = plt.figure(figsize=(20, 10), facecolor='w', edgecolor='k')  # dpi=300,
         cs = plt.contourf(PAmask)
         fig.savefig(png_PA_mask)
         plt.close()
