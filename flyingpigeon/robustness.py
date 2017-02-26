@@ -167,24 +167,6 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
         logger.exception(msg)
         _, high_agreement_mask = mkstemp(dir='.', suffix='.nc')
         _, low_agreement_mask = mkstemp(dir='.', suffix='.nc')
-    #
-    # try:
-    #     logger.info('variable to be plotted: %s' % variable)
-    #
-    #     if title is None:
-    #         title = 'Change of %s (difference of mean %s-%s to %s-%s)' % (variable, end1, end2, start1, start2)
-    #     graphic = None
-    #     graphic = map_robustness(signal,
-    #                              high_agreement_mask,
-    #                              low_agreement_mask,
-    #                              variable=variable,
-    #                              cmap=cmap,
-    #                              title=title)
-    #
-    #     logger.info('graphic generated')
-    # except:
-    #     msg = 'graphic generation failed'
-    #     logger.exception(msg)
-    #     _, graphic = mkstemp(dir='.', suffix='.png')
 
-    return signal, low_agreement_mask, high_agreement_mask, text_src  #graphic,
+    return nc_ensmean, nc_ensstd, selyearstart, selyearend
+    # signal, low_agreement_mask, high_agreement_mask, text_src  # graphic,

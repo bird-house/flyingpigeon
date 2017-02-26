@@ -1,190 +1,76 @@
-import shapefile as shp
-import matplotlib.pyplot as plt
+import os
 from os.path import join
+from tempfile import mkstemp
+from netCDF4 import Dataset
+from datetime import datetime, date
+import numpy as np
+import logging
+import matplotlib
+matplotlib.use('Agg')   # use this if no xserver is available
 
-from flyingpigeon import config
-from flyingpigeon.subset import get_ugid
-DIR_SHP = config.shapefiles_dir()
-
-sf = shp.Reader(join(DIR_SHP, "countries.shp"))
-
-import cartopy.io.shapereader as shpreader
-
-reader = shpreader.Reader(join(DIR_SHP, "countries.shp"))
-countries = reader.records()
-# ugid = get_ugid(polygons='DEU', geom='countries')
-# print ugid
-
-plt.figure()
-
-for i, country in enumerate(countries):
-    if country.attributes['ISO_ A3'] in ['DEU']:
-        shape = sf.scountry[i]
-<<<<<<< HEAD
-        xs = [xor x in sha  pe.shape.points[:]]
-=======
-        xs = [x for x in shape.shape.points[:]]
->>>>>>> factsheetgenerator
-        ys = [y[1] for y in shape.shape.points[:]]
-        plt.plot(xs, ys)
-plt.show()
-
-
-ax = plt.axes()
-shape_feature = ShapelyFeature(geoms, ccrs.GOOGLE_MERCATOR)
-ax.add_feature(shape_feature)
-<<<<<<< HEAD
-plt.show()
-
-
-from flyingpigeon import config
-DIR_SHP = config.shapefiles_dir()
-
-
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
+from matplotlib.colors import Normalize
+from cartopy import config as cartopy_config
+from cartopy.util import add_cyclic_point
 import cartopy.crs as ccrs
-from cartopy.io.shapereader import Reader
-from cartopy.feature import ShapelyFeature
+from flyingpigeon import utils
 
-fname = join(DIR_SHP, "countries.shp")  # r'simplified-land-polygons-complete-3857\simplified_land_polygons.shp'
+logger = logging.getLogger(__name__)
 
-ax = plt.axes(projection=ccrs.Robinson())
-
-countries = reader.records()
-
-for country in countries:
-    if country.attributes['ISO_A3'] in ['DEU']:
-        shape_feature = ShapelyFeature(country.geometries(), ccrs.PlateCarree(), edgecolor='black')
-        ax.add_feature(shape_feature)
-plt.show()
+os.environ['HOME'] = os.curdir
 
 
-=======
-plt.show()
+class MidpointNormalize(Normalize):
+    def __init__(self, vmin=None, vmax=None, midpoint=None, clip=False):
+        self.midpoint = midpoint
+        Normalize.__init__(self, vmin, vmax, clip)
+
+    def __call__(self, value, clip=None):
+        x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
+        return np.ma.masked_array(np.interp(value, x, y))
 
 
-from flyingpigeon import config
-DIR_SHP = config.shapefiles_dir()
+def plot_polygons()regions):
+    """
+    extract the polygon coordinate and plot it on a worldmap
 
+    :param regions: list of ISO abreviations for polygons
 
-import matplotlib.pyplot as plt
-import cartopy.crs as ccrs
-from cartopy.io.shapereader import Reader
-from cartopy.feature import ShapelyFeature
+    :return png: map_graphic.png
+    """
 
-fname = join(DIR_SHP, "countries.shp")  # r'simplified-land-polygons-complete-3857\simplified_land_polygons.shp'
+    from cartopy.io.shapereader import Reader
+    from cartopy.feature import ShapelyFeature
+    from os.path import curdir, abspath
 
-ax = plt.axes(projection=ccrs.Robinson())
+    from flyingpigeon import config
+    DIR_SHP=config.shapefiles_dir()
 
-countries = reader.records()
+    if type(regions) == str:
+        regions=list([regions])
 
-for country in countries:
-    if country.attributes['ISO_A3'] in ['DEU']:
-        shape_feature = ShapelyFeature(country.geometries(), ccrs.PlateCarree(), edgecolor='black')
-        ax.add_feature(shape_feature)
-plt.show()
+    fname=join(DIR_SHP, "countries.shp")
+    geos=Reader(fname).geometries()
+    records=Reader(fname).records()
 
+    logger.debug('')
 
->>>>>>> factsheetgenerator
-import matplotlib.pyplot as plt
-import cartopy.crs as ccrs
-from cartopy.io.shapereader import Reader
-from cartopy.feature import ShapelyFeature
+    fig = plt.figure(figsize=(10, 10), facecolor='w', edgecolor='k')  # dpi=600,
+    projection = ccrs.Orthographic(central_longitude=0.0, central_latitude=0.0, globe=None)  # Robinson()
+    ax = plt.axes(projection=projection)
 
-from flyingpigeon import config
-from os.path import join
-DIR_SHP = config.shapefiles_dir()
+    for r in records:
+        geo = geos.next()
+        if r.attributes['ISO_A3'] in regions:
+            shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black')
+            ax.add_feature(shape_feature)
+        ax.coastlines()
+        # ax.set_global()
 
-fname = join(DIR_SHP, "countries.shp")
-geos = Reader(fname).geometries()
-<<<<<<< HEAD
-records = Reader(fname).records()
-=======
-countries = reader.records()
->>>>>>> factsheetgenerator
+    o1, map_graphic = mkstemp(dir=abspath(curdir), suffix='.png')
+    fig.savefig(map_graphic)
+    plt.close()
 
-ax = plt.axes(projection=ccrs.Robinson())
-for r in records:
-    geo = geos.next()
-<<<<<<< HEAD
-    if r.attributes['ISO_A3'] in ['DEU']:
-        shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black')
-        ax.add_feature(shape_feature)
-plt.show()
+    return map_graphic
 
-
-
-=======
-    shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black')
-    ax.add_feature(shape_feature)
-# plt.save('country_polygon.png')
-plt.show()
-
-
->>>>>>> factsheetgenerator
-#
-#
-# for c, shape in enumerate(sf.shapeRecords()):
-#     if c in ugid:
-#         x = [i[0] for i in shape.shape.points[:]]
-#         y = [i[1] for i in shape.shape.points[:]]
-#         plt.plot(x, y)
-# plt.show()
-#
-# import matplotlib.pyplot as plt
-# import matplotlib.patches as patches
-# from matplotlib.patches import Polygon
-# from matplotlib.collections import PatchCollection
-#
-# import cartopy.io.shapereader as shpreader
-# from os.path import join
-# from flyingpigeon import config
-# DIR_SHP = config.shapefiles_dir()
-#
-# reader = shpreader.Reader(join(DIR_SHP, "countries.shp"))
-# countries = reader.records()
-# geos = reader.geometries()
-#
-# fig, ax = plt.subplots()
-# polygons = []
-# for i in countries:
-#     polygon = geos.next()
-#     if i.attributes['ISO_A3'] in ['DEU']:
-#         polygons.append(polygon[0])
-#
-# p = PatchCollection(polygons, alpha=0.4)
-# ax.add_collection(p)
-#
-# plt.show()
-#
-#
-#
-# import matplotlib.pyplot as plt
-# import matplotlib.patches as mpatches
-#
-# import cartopy.crs as ccrs
-#
-# desired_projections = [ccrs.PlateCarree(),
-#                        ccrs.RotatedPole(pole_latitude=45, pole_longitude=180)]
-# for plot_num, desired_proj in enumerate(desired_projections):
-#
-#     ax = plt.subplot(2, 1, plot_num + 1, projection=desired_proj)
-#
-#     ax.set_global()
-#
-#     ax.add_patch(mpatches.Rectangle(xy=[-70, -45], width=90, height=90,
-#                                     facecolor='blue',
-#                                     alpha=0.2,
-#                                     transform=ccrs.PlateCarree())
-#                  )
-#
-#     ax.add_patch(mpatches.Rectangle(xy=polygon[0], width=90, height=90,
-#                                     facecolor='red',
-#                                     alpha=0.2,
-#                                     transform=ccrs.Geodetic())
-#                  )
-#
-#     ax.gridlines()
-#     ax.coastlines()
-#
-# plt.show()
+png =   plot_polygons()
