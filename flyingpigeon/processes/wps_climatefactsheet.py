@@ -139,7 +139,7 @@ class climatefactsheetProcess(WPSProcess):
             from flyingpigeon.utils import get_variable
             variable = get_variable(ncs[0])
 
-            signal, low_agreement_mask, high_agreement_mask, text_src = erob.method_A(resource=ncs,  # subsets,
+            signal, low_agreement_mask, high_agreement_mask, text_src = erob.method_A(resource=subsets,
                                                                                       # start=None, end=None,
                                                                                       # timeslice=None,
                                                                                       variable=variable

@@ -391,12 +391,13 @@ def get_coordinates(resource):
             lons = ds.variables['lon']
         else:
             msg = 'could not find coordinates: %s ' % resource
-            logger.debug(msg)
+            logger.exception(msg)
             raise Exception(msg)
         ds.close()
-    except Exception as e:
-        msg = 'failed to extract coordinates: %s ' % e
-        logger.debug(msg)
+        logger.info('coordinate extracted')
+    except:
+        msg = 'failed to extract coordinates'
+        logger.exception(msg)
         raise Exception(msg)
     return lats, lons
 

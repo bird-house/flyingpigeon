@@ -117,7 +117,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
         try:
             _, pdf_robustness = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_robustness)
-            c.drawImage(png_robustness, 50, 85, width=250, height=180)  # , mask=None, preserveAspectRatio=False)
+            c.drawImage(png_robustness, 55, 90, width=250, height=180)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_robustness = PdfFileReader(open(pdf_robustness, 'rb'))
         except:
@@ -344,20 +344,22 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, variable, cm
 
         logger.info('data loaded')
 
-        lons = np.squeeze(ds_signal.variables['lon'][:])
-        lats = np.squeeze(ds_signal.variables['lat'][:])
-
-        cyclic_var, cyclic_lons = add_cyclic_point(var_signal, coord=lons)
-        mask_l, cyclic_lons = add_cyclic_point(mask_l, coord=lons)
-        mask_h, cyclic_lons = add_cyclic_point(mask_h, coord=lons)
-
-        lons = cyclic_lons.data
-        var_signal = cyclic_var
-
-        logger.info('lat lon loaded')
-
-        minval = round(np.nanmin(var_signal))
-        maxval = round(np.nanmax(var_signal)+.5)
+        # from flyingpigeon.utils import get_coordinates
+        # lats, lons = get_coordinates(signal)
+        # # np.squeeze(ds_signal.variables['lon'][:])
+        # # lats = np.squeeze(ds_signal.variables['lat'][:])
+        #
+        # cyclic_var, cyclic_lons = add_cyclic_point(var_signal, coord=lons)
+        # mask_l, cyclic_lons = add_cyclic_point(mask_l, coord=lons)
+        # mask_h, cyclic_lons = add_cyclic_point(mask_h, coord=lons)
+        #
+        # lons = cyclic_lons.data
+        # var_signal = cyclic_var
+        #
+        # logger.info('lat lon loaded')
+        #
+        # minval = round(np.nanmin(var_signal))
+        # maxval = round(np.nanmax(var_signal)+.5)
 
         logger.info('prepared data for plotting')
     except:
@@ -366,17 +368,17 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, variable, cm
 
     try:
         fig = plt.figure(facecolor='w', edgecolor='k')  # figsize=(20,10), dpi=600,
-        ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
-        norm = MidpointNormalize(midpoint=0)
+        # ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
+        # norm = MidpointNormalize(midpoint=0)
 
-        cs = plt.contourf(lons, lats, var_signal, 60, norm=norm, transform=ccrs.PlateCarree(),
+        cs = plt.contourf(var_signal, 60,  # norm=norm,  # transform=ccrs.PlateCarree(), lons, lats,
                           cmap=cmap, interpolation='nearest')
-        cl = plt.contourf(lons, lats, mask_l, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['//'])
-        ch = plt.contourf(lons, lats, mask_h, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['.'])
+        cl = plt.contourf(mask_l, 60,  colors='none', hatches=['//'])  # transform=ccrs.PlateCarree(),lons, lats,
+        ch = plt.contourf(mask_h, 60,  colors='none', hatches=['.'])  # transform=ccrs.PlateCarree(), lons, lats,
 
         # plt.clim(minval,maxval)
-        ax.coastlines()
-        ax.set_global()
+        # ax.coastlines()
+        # ax.set_global()
 
         if title is None:
             plt.title('%s with Agreement' % variable)

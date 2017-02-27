@@ -235,11 +235,11 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     else:
         output = geom_file
 
-    try:
-        from flyingpigeon.utils import unrotate_pole
-        lat, lon = unrotate_pole(output)
-    except:
-        logger.exception('failed to unrotate pole') 
+    # try:
+    #     from flyingpigeon.utils import unrotate_pole
+    #     lat, lon = unrotate_pole(output)
+    # except:
+    #     logger.exception('failed to unrotate pole')
     return output
 
 

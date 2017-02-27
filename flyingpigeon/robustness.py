@@ -168,5 +168,6 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
         _, high_agreement_mask = mkstemp(dir='.', suffix='.nc')
         _, low_agreement_mask = mkstemp(dir='.', suffix='.nc')
 
-    return nc_ensmean, nc_ensstd, selyearstart, selyearend
-    # signal, low_agreement_mask, high_agreement_mask, text_src  # graphic,
+    return signal, low_agreement_mask, high_agreement_mask, text_src
+    #   nc_ensmean, nc_ensstd, selyearstart, selyearend
+    #   # graphic,
