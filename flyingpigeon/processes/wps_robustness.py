@@ -74,15 +74,15 @@ class robustnessProcess(WPSProcess):
           # allowedValues=range(1,50)
           )
 
-        self.variableIn = self.addLiteralInput(
-          identifier="variable",
-          title="Variable",
-          abstract="Variable to be expected in the input files (Variable will be detected if not set, )",
-          # default=None,
-          type=type(''),
-          minOccurs=0,
-          maxOccurs=1,
-          )
+        # self.variableIn = self.addLiteralInput(
+        #   identifier="variable",
+        #   title="Variable",
+        #   abstract="Variable to be expected in the input files (Variable will be detected if not set, )",
+        #   # default=None,
+        #   type=type(''),
+        #   minOccurs=0,
+        #   maxOccurs=1,
+        #   )
 
         # output
 
@@ -151,37 +151,33 @@ class robustnessProcess(WPSProcess):
         start = self.start.getValue()
         end = self.end.getValue()
         timeslice = self.timeslice.getValue()
-        variable = self.variableIn.getValue()
+        # variable = self.variableIn.getValue()
         method = self.method.getValue()
 
         self.status.set('arguments read', 5)
 
-        if variable is None:
-            from flyingpigeon.utils import get_variable
-            variable = get_variable(ncfiles[0])
-
-        logger.debug('variable set to %s' % variable)
+        #  logger.debug('variable set to %s' % variable)
 
         # if method == 'Method_A':
         signal, low_agreement_mask, high_agreement_mask, text_src = erob.method_A(
                 resource=ncfiles,
                 start=start, end=end,
                 timeslice=timeslice,
-                variable=variable
+                # variable=variable
                 )  # graphic,
 
         logger.debug('Robustness calculated')
 
         try:
-            logger.info('variable to be plotted: %s' % variable)
+            # logger.info('variable to be plotted: %s' % variable)
             from flyingpigeon.visualisation import map_robustness
             # if title is None:
-            title = 'signal robustness of %s ' % (variable)  # , end1, end2, start1, start2
+            title = 'signal robustness'  # , end1, end2, start1, start2
 
             graphic = map_robustness(signal,
                                      high_agreement_mask,
                                      low_agreement_mask,
-                                     variable=variable,
+                                     # variable=variable,
                                      # cmap=cmap,
                                      title=title)
 

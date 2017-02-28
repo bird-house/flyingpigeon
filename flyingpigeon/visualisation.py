@@ -315,7 +315,7 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
     return output_png
 
 
-def map_robustness(signal, high_agreement_mask, low_agreement_mask, variable, cmap='seismic', title=None):
+def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismic', title=None):
     """
     generates a graphic for the output of the ensembleRobustness process for a lat/long file.
 
@@ -328,19 +328,23 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, variable, cm
     :returns str: path/to/file.png
     """
 
+    from flyingpigeon.utils import get_values
     try:
         # get the path of the file. It can be found in the repo data directory.
+        # ds_signal = Dataset(signal, mode='r')
+        # ds_lagree = Dataset(low_agreement_mask, mode='r')
+        # ds_hagree = Dataset(high_agreement_mask, mode='r')
+        #
+        # var_signal = np.squeeze(ds_signal.variables[variable])
+        # mask_l = np.squeeze(ds_lagree.variables[variable])
+        # mask_h = np.squeeze(ds_hagree.variables[variable])
+        #
+        # mask_l[mask_l is 0] = np.nan
+        # mask_h[mask_h is 0] = np.nan
 
-        ds_signal = Dataset(signal, mode='r')
-        ds_lagree = Dataset(low_agreement_mask, mode='r')
-        ds_hagree = Dataset(high_agreement_mask, mode='r')
-
-        var_signal = np.squeeze(ds_signal.variables[variable])
-        mask_l = np.squeeze(ds_lagree.variables[variable])
-        mask_h = np.squeeze(ds_hagree.variables[variable])
-
-        mask_l[mask_l is 0] = np.nan
-        mask_h[mask_h is 0] = np.nan
+        var_signal = get_values(signal)
+        mask_l = get_values(low_agreement_mask)
+        mask_h = get_values(high_agreement_mask)
 
         logger.info('data loaded')
 
@@ -373,15 +377,15 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, variable, cm
 
         cs = plt.contourf(var_signal, 60,  # norm=norm,  # transform=ccrs.PlateCarree(), lons, lats,
                           cmap=cmap, interpolation='nearest')
-        cl = plt.contourf(mask_l, 60,  colors='none', hatches=['//'])  # transform=ccrs.PlateCarree(),lons, lats,
-        ch = plt.contourf(mask_h, 60,  colors='none', hatches=['.'])  # transform=ccrs.PlateCarree(), lons, lats,
+        cl = plt.contourf(mask_l, colors='none', hatches=['//'])  # transform=ccrs.PlateCarree(),lons, lats,
+        ch = plt.contourf(mask_h, colors='none', hatches=['.'])  # transform=ccrs.PlateCarree(), lons, lats,
 
         # plt.clim(minval,maxval)
         # ax.coastlines()
         # ax.set_global()
 
         if title is None:
-            plt.title('%s with Agreement' % variable)
+            plt.title('Robustness')
         else:
             plt.title(title)
         plt.colorbar(cs)

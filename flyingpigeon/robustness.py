@@ -16,8 +16,7 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
                   the first year of the consistent ensemble will be detected)
     :param end: end of comparison period (if None (default), the last year of the consistent ensemble will be detected)
     :param timeslice: period length for mean calculation of reference and comparison period
-    :param variable: variable name to be detected in the netCDF file. If not set (not recommended),
-                     the variable name will be detected
+    :param variable: OBSOLETE
     :param title: str to be used as title for the signal mal
     :param cmap: define the color scheme for signal map plotting
 
@@ -37,13 +36,31 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
         msg = 'failed to sort the input files'
         logger.exception(msg)
 
+    # check that all datasets contains the same variable
+
+    try:
+        var_name = set()
+        for key in file_dic.keys():
+            var_name = var_name.union([get_variable(file_dic[key])])
+        logger.debug(var_name)
+    except:
+        logger.exception('failed to get the variable in common')
+
+    if len(var_name) == 1:
+        variable = [str(n) for n in var_name][0]
+        logger.info('varible %s detected in all members of the ensemble' % variable)
+    else:
+        raise Exception('none or more than one variables are found in the ensemble members')
+
+    # TODO: drop missfitting grids
+
     # timemerge for seperate datasets
     try:
         mergefiles = []
         for key in file_dic.keys():
-            if variable is None:
-                variable = get_variable(file_dic[key])
-                logger.info('variable detected %s ' % variable)
+            # if variable is None:
+            #     variable = get_variable(file_dic[key])
+            #     logger.info('variable detected %s ' % variable)
             try:
                 if type(file_dic[key]) == list and len(file_dic[key]) > 1:
                     _, nc_merge = mkstemp(dir='.', suffix='.nc')
@@ -69,6 +86,8 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
         _, text_src = mkstemp(dir='.', suffix='.txt')
 
     # configure reference and compare period
+    # TODO: filter files by time
+
     try:
         if start is None:
             st_set = set()
