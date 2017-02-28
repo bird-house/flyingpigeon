@@ -151,7 +151,6 @@ class climatefactsheetProcess(WPSProcess):
             png_robustness = map_robustness(signal,
                                             high_agreement_mask,
                                             low_agreement_mask,
-                                            variable=variable,
                                             # cmap=cmap,
                                             title=title)
             logger.info('graphic generated')
