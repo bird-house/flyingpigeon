@@ -383,18 +383,15 @@ def get_coordinates(resource):
         if 'lat' in ds.variables.keys():
             lats = ds.variables['lat']
             lons = ds.variables['lon']
-        elif 'rlat' in ds.variables.keys():
             ds.close()
-            unrotate_pole(resource, write_to_file=True)
-            ds = Dataset(resource)
-            lats = ds.variables['lat']
-            lons = ds.variables['lon']
+            logger.debug('coordinate extracted')
         else:
-            msg = 'could not find coordinates: %s ' % resource
-            logger.exception(msg)
-            raise Exception(msg)
-        ds.close()
-        logger.info('coordinate extracted')
+            logger.debug('lat/lon not found, will try to unrotate pole')
+            ds.close()
+            lats, lons = unrotate_pole(resource, write_to_file=False)
+            # ds = Dataset(resource)
+            # lats = ds.variables['lat']
+            # lons = ds.variables['lon']
     except:
         msg = 'failed to extract coordinates'
         logger.exception(msg)

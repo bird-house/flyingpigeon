@@ -11,7 +11,6 @@ matplotlib.use('Agg')   # use this if no xserver is available
 from matplotlib import pyplot as plt
 from matplotlib.colors import Normalize
 from cartopy import config as cartopy_config
-from cartopy.util import add_cyclic_point
 import cartopy.crs as ccrs
 from flyingpigeon import utils
 
@@ -328,30 +327,25 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismi
     :returns str: path/to/file.png
     """
 
-    from flyingpigeon.utils import get_values
     try:
-        # get the path of the file. It can be found in the repo data directory.
-        # ds_signal = Dataset(signal, mode='r')
-        # ds_lagree = Dataset(low_agreement_mask, mode='r')
-        # ds_hagree = Dataset(high_agreement_mask, mode='r')
-        #
-        # var_signal = np.squeeze(ds_signal.variables[variable])
-        # mask_l = np.squeeze(ds_lagree.variables[variable])
-        # mask_h = np.squeeze(ds_hagree.variables[variable])
-        #
-        # mask_l[mask_l is 0] = np.nan
-        # mask_h[mask_h is 0] = np.nan
-
-        var_signal = get_values(signal)
-        mask_l = get_values(low_agreement_mask)
-        mask_h = get_values(high_agreement_mask)
-
-        logger.info('data loaded')
-
+        # from flyingpigeon.utils import get_values
+        from cartopy.util import add_cyclic_point
         # from flyingpigeon.utils import get_coordinates
-        # lats, lons = get_coordinates(signal)
-        # # np.squeeze(ds_signal.variables['lon'][:])
-        # # lats = np.squeeze(ds_signal.variables['lat'][:])
+
+        var_signal = utils.get_values(signal)
+        mask_l = utils.get_values(low_agreement_mask)
+        mask_h = utils.get_values(high_agreement_mask)
+
+        mask_l.mask = var_signal.mask
+        mask_h.mask = var_signal.mask
+
+        mask_l.mask[mask_l.data is 0] = False
+        mask_h.mask[mask_h.data is 0] = False
+
+        logger.debug('values loaded')
+
+        lats, lons = utils.get_coordinates(signal)
+
         #
         # cyclic_var, cyclic_lons = add_cyclic_point(var_signal, coord=lons)
         # mask_l, cyclic_lons = add_cyclic_point(mask_l, coord=lons)
@@ -360,10 +354,10 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismi
         # lons = cyclic_lons.data
         # var_signal = cyclic_var
         #
-        # logger.info('lat lon loaded')
+        logger.debug('coordinates loaded')
         #
-        # minval = round(np.nanmin(var_signal))
-        # maxval = round(np.nanmax(var_signal)+.5)
+        minval = round(np.nanmin(var_signal))
+        maxval = round(np.nanmax(var_signal)+.5)
 
         logger.info('prepared data for plotting')
     except:
@@ -372,22 +366,24 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismi
 
     try:
         fig = plt.figure(facecolor='w', edgecolor='k')  # figsize=(20,10), dpi=600,
-        # ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
-        # norm = MidpointNormalize(midpoint=0)
+        ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
+        norm = MidpointNormalize(midpoint=0)
 
-        cs = plt.contourf(var_signal, 60,  # norm=norm,  # transform=ccrs.PlateCarree(), lons, lats,
-                          cmap=cmap, interpolation='nearest')
-        cl = plt.contourf(mask_l, colors='none', hatches=['//'])  # transform=ccrs.PlateCarree(),lons, lats,
-        ch = plt.contourf(mask_h, colors='none', hatches=['.'])  # transform=ccrs.PlateCarree(), lons, lats,
+        cs = plt.contourf(lons, lats, var_signal,
+                          60, transform=ccrs.PlateCarree(),
+                          norm=norm, cmap=cmap, interpolation='nearest')
+        cl = plt.contourf(lons, lats, mask_l, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['//'])
+        ch = plt.contourf(lons, lats, mask_h, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['.'])
 
-        # plt.clim(minval,maxval)
-        # ax.coastlines()
+        # plt.clim(minval, maxval)
+        ax.coastlines()
         # ax.set_global()
 
         if title is None:
             plt.title('Robustness')
         else:
             plt.title(title)
+
         plt.colorbar(cs)
 
         plt.annotate('// = low model ensemble agreement', (0, 0), (0, -10),
@@ -395,7 +391,7 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismi
         plt.annotate('..  = high model ensemble agreement', (0, 0), (0, -20),
                      xycoords='axes fraction', textcoords='offset points', va='top')
 
-        graphic = 'modelAgreement.png'
+        _, graphic = mkstemp(dir='.', suffix='.png')
         fig.savefig(graphic)
         plt.close()
 
