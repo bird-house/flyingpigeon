@@ -4,6 +4,7 @@ import tarfile
 from flyingpigeon.subset import clipping
 from flyingpigeon.subset import countries, countries_longname
 from flyingpigeon.log import init_process_logger
+from flyingpigeon.utils import archive, archiveextract
 
 from pywps import Process
 from pywps import LiteralInput
@@ -80,18 +81,28 @@ class ClippingProcess(Process):
         )
 
     def _handler(self, request, response):
-        from ast import literal_eval
-        from flyingpigeon.utils import archive, archiveextract
+        # from ast import literal_eval
 
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
-        ncs = archiveextract([inp.file for inp in request.inputs['resource']])
+        # input files
+        LOGGER.debug("url=%s", request.inputs['resource'][0].url)
+        resources = []
+        for inpt in request.inputs['resource']:
+            new_name = inpt.url.split('/')[-1]
+            os.rename(inpt.file, new_name)
+            resources.append(os.path.abspath(new_name))
+        ncs = archiveextract(
+            resource=resources,
+            mime_type=request.inputs['resource'][0].data_format.mime_type)
+        # mosaic option
         # TODO: fix defaults in pywps 4.x
         if 'mosaic' in request.inputs:
             mosaic = request.inputs['mosaic'][0].data
         else:
             mosaic = False
+        # regions used for subsetting
         regions = [inp.data for inp in request.inputs['region']]
 
         LOGGER.info('ncs = %s', ncs)
