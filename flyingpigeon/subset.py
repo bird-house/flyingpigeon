@@ -48,7 +48,7 @@ def masking(resource, sftlf, threshold=50, land_area=True, prefix=None):
     #######################
     # TODO check sftlf unit
     #######################
-    th = threshold/100
+    th = threshold / 100
 
     ###################
     # generate the mask
@@ -71,7 +71,7 @@ def masking(resource, sftlf, threshold=50, land_area=True, prefix=None):
     return nc_masked
 
 
-def clipping(resource=[], variable=None, dimension_map=None, calc=None,  output_format='nc',
+def clipping(resource=[], variable=None, dimension_map=None, calc=None, output_format='nc',
              calc_grouping=None, time_range=None, time_region=None,
              historical_concatination=True, prefix=None,
              spatial_wrapping='wrap', polygons=None, mosaic=False,
@@ -155,7 +155,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None,  output_
                             name = key + '_' + polygon.replace(' ', '')
                         else:
                             name = prefix[i]
-                        geom_file = call(resource=ncs[key], variable=variable,  calc=calc, calc_grouping=calc_grouping,
+                        geom_file = call(resource=ncs[key], variable=variable, calc=calc, calc_grouping=calc_grouping,
                                          output_format=output_format,
                                          prefix=name, geom=geom, select_ugid=ugid, dir_output=dir_output,
                                          dimension_map=dimension_map, spatial_wrapping=spatial_wrapping,
