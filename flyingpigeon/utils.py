@@ -1,3 +1,4 @@
+import six
 import urlparse
 import os
 import wget
@@ -164,7 +165,7 @@ def archive(resources, format='tar', dir_output='.', mode='w'):
     return archive
 
 
-def archiveextract(resource, path='.'):
+def archiveextract(resource, path='.', mime_type="application/x-netcdf"):
     """
     extracts archives (tar/zip)
 
@@ -179,20 +180,23 @@ def archiveextract(resource, path='.'):
     from os.path import basename, join
 
     try:
-        if type(resource) is str:
+        if isinstance(resource, six.string_types):
             resource = [resource]
         files = []
 
         for archive in resource:
             try:
-                if basename(archive).split('.')[1] == 'nc':
+                # if basename(archive).split('.')[1] == 'nc':
+                if mime_type == 'application/x-netcdf':
                     files.append(join(path, archive))
-                elif basename(archive).split('.')[1] == 'tar':
+                # elif basename(archive).split('.')[1] == 'tar':
+                elif mime_type == 'application/x-tar':
                     tar = open(archive, mode='r')
                     tar.extractall()
                     files.extend([join(path, nc) for nc in tar.getnames()])
                     tar.close()
-                elif basename(archive).split('.')[1] == 'zip':
+                # elif basename(archive).split('.')[1] == 'zip':
+                elif mime_type == 'application/zip':
                     zf = zipfile.open(archive, mode='r')
                     zf.extractall()
                     files.extend([join(path, nc) for nc in zf.filelist])
