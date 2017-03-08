@@ -5,132 +5,102 @@ from flyingpigeon.subset import clipping
 from flyingpigeon.subset import countries, countries_longname
 from flyingpigeon.log import init_process_logger
 
-from pywps.Process import WPSProcess
+from pywps import Process
+from pywps import LiteralInput
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format, FORMATS
+from pywps.app.Common import Metadata
 
 import logging
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger("PYWPS")
 
 
-class ClippingProcess(WPSProcess):
+class ClippingProcess(Process):
     def __init__(self):
-        WPSProcess.__init__(
-            self,
+        inputs = [
+            LiteralInput('region', 'Region',
+                         data_type='string',
+                         # abstract= countries_longname(), # need to handle special non-ascii char in countries.
+                         min_occurs=1,
+                         max_occurs=len(countries()),
+                         default='DEU',
+                         allowed_values=countries()),  # REGION_EUROPE #COUNTRIES
+
+            LiteralInput('mosaic', 'Mosaic',
+                         data_type='boolean',
+                         abstract="If Mosaic is checked, selected polygons will be merged"
+                                  " to one Mosaic for each input file.",
+                         min_occurs=0,
+                         max_occurs=1,
+                         default=False),
+
+            ComplexInput('resource', 'Resource',
+                         abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
+                         metadata=[Metadata('Info')],
+                         min_occurs=1,
+                         max_occurs=1000,
+                         supported_formats=[
+                             Format('application/x-netcdf'),
+                             Format('application/x-tar'),
+                             Format('application/zip'),
+                         ]),
+        ]
+
+        outputs = [
+            ComplexOutput('output', 'Subsets',
+                          abstract="Tar archive containing the netCDF files",
+                          as_reference=True,
+                          supported_formats=[Format('application/x-tar')]),
+
+            ComplexOutput('ncout', 'Subsets for one dataset',
+                          abstract="NetCDF file with subsets of one dataset.",
+                          as_reference=True,
+                          supported_formats=[Format('application/x-netcdf')]),
+
+            ComplexOutput('output_log', 'Logging information',
+                          abstract="Collected logs during process run.",
+                          as_reference=True,
+                          supported_formats=[Format('text/plain')]),
+        ]
+
+        super(ClippingProcess, self).__init__(
+            self._handler,
             identifier="subset_countries",
             title="Subset countries",
             version="0.9",
             abstract="Returns only the selected polygon for each input dataset",
             metadata=[
-                {"title": "LSCE", "href": "http://www.lsce.ipsl.fr/en/index.php"},
-                {"title": "Documentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
-                ],
-            statusSupported=True,
-            storeSupported=True
-            )
-
-        self.resource = self.addComplexInput(
-            identifier="resource",
-            title="Resource",
-            abstract="NetCDF Files or archive (tar/zip) containing netCDF files",
-            minOccurs=1,
-            maxOccurs=1000,
-            maxmegabites=5000,
-            formats=[{"mimeType": "application/x-netcdf"},
-                     {"mimeType": "application/x-tar"},
-                     {"mimeType": "application/zip"}],
-            )
-
-        self.region = self.addLiteralInput(
-            identifier="region",
-            title="Region",
-            # abstract= countries_longname(), # need to handle special non-ascii char in countries.
-            default='DEU',
-            type=type(''),
-            minOccurs=1,
-            maxOccurs=len(countries()),
-            allowedValues=countries()  # REGION_EUROPE #COUNTRIES #
-            )
-
-        self.mosaic = self.addLiteralInput(
-            identifier="mosaic",
-            title="Mosaic",
-            abstract="If Mosaic is checked, selected polygons will be merged to one Mosaic for each input file",
-            default=False,
-            type=type(False),
-            minOccurs=0,
-            maxOccurs=1,
-            )
-
-        # self.dimension_map = self.addLiteralInput(
-        #     identifier="dimension_map",
-        #     title="Dimension Map",
-        #     abstract= 'if not ordered in lon/lat a dimension map has to be provided',
-        #     type=type(''),
-        #     minOccurs=0,
-        #     maxOccurs=1
-        #     )
-
-        # self.variable = self.addLiteralInput(
-        #     identifier="variable",
-        #     title="Variable",
-        #     abstract="Variable to be expected in the input files (Variable will be detected if not set)",
-        #     default=None,
-        #     type=type(''),
-        #     minOccurs=0,
-        #     maxOccurs=1,
-        #     )
-
-        ###########
-        # OUTPUTS
-        ###########
-
-        self.output = self.addComplexOutput(
-            title="Subsets",
-            abstract="Tar archive containing the netCDF files",
-            formats=[{"mimeType": "application/x-tar"}],
-            asReference=True,
-            identifier="output",
-            )
-
-        self.output_netcdf = self.addComplexOutput(
-            title="Subsets for one dataset",
-            abstract="NetCDF file with subsets of one dataset.",
-            formats=[{"mimeType": "application/x-netcdf"}],
-            asReference=True,
-            identifier="ncout",
-            )
-
-        self.output_log = self.addComplexOutput(
-            identifier="output_log",
-            title="Logging information",
-            abstract="Collected logs during process run.",
-            formats=[{"mimeType": "text/plain"}],
-            asReference=True,
+                Metadata('LSCE', 'http://www.lsce.ipsl.fr/en/index.php'),
+                Metadata('Documentation', 'http://flyingpigeon.readthedocs.io/en/latest/'),
+            ],
+            inputs=inputs,
+            outputs=outputs,
+            status_supported=True,
+            store_supported=True,
         )
 
-    def execute(self):
+    def _handler(self, request, response):
         from ast import literal_eval
         from flyingpigeon.utils import archive, archiveextract
 
         init_process_logger('log.txt')
-        self.output_log.setValue('log.txt')
+        response.outputs['output_log'].file = 'log.txt'
 
-        ncs = archiveextract(self.getInputValues(identifier='resource'))
-        mosaic = self.mosaic.getValue()
-        regions = self.region.getValue()
-        # variable = self.variable.getValue()
+        ncs = archiveextract([inp.file for inp in request.inputs['resource']])
+        # TODO: fix defaults in pywps 4.x
+        if 'mosaic' in request.inputs:
+            mosaic = request.inputs['mosaic'][0].data
+        else:
+            mosaic = False
+        regions = [inp.data for inp in request.inputs['region']]
 
-        # logger.info('regions: %s' % regions)
-        # dimension_map = self.dimension_map.getValue()
-        # if dimension_map != None:
-        #     dimension_map = literal_eval(dimension_map)
+        LOGGER.info('ncs = %s', ncs)
+        LOGGER.info('regions = %s', regions)
+        LOGGER.info('mosaic = %s', mosaic)
 
-        logger.info('ncs = %s', ncs)
-        logger.info('regions = %s', regions)
-        logger.info('mosaic = %s', mosaic)
-        # logger.info('dimension_map = %s', dimension_map)
+        response.update_status("Arguments set for subset process", 0)
+        LOGGER.debug('starting: regions=%s, num_files=%s', len(regions), len(ncs))
 
-        self.status.set('Arguments set for subset process', 0)
-        logger.debug('starting: regions=%s, num_files=%s' % (len(regions), len(ncs)))
         try:
             results = clipping(
                 resource=ncs,
@@ -140,11 +110,11 @@ class ClippingProcess(WPSProcess):
                 # variable=variable,
                 dir_output=os.path.abspath(os.curdir),
                 # dimension_map=dimension_map,
-                )
-            logger.info('results %s' % results)
+            )
+            LOGGER.info('results %s' % results)
         except Exception as e:
             msg = 'clipping failed'
-            logger.exception(msg)
+            LOGGER.exception(msg)
             raise Exception(msg)
 
         if not results:
@@ -153,15 +123,16 @@ class ClippingProcess(WPSProcess):
         # prepare tar file
         try:
             tarf = archive(results)
-            logger.info('Tar file prepared')
+            LOGGER.info('Tar file prepared')
         except Exception as e:
             msg = 'Tar file preparation failed'
-            logger.exception(msg)
+            LOGGER.exception(msg)
             raise Exception(msg)
 
-        self.output.setValue(tarf)
+        response.outputs['output'].file = tarf
 
         i = next((i for i, x in enumerate(results) if x), None)
-        self.output_netcdf.setValue(results[i])
+        response.outputs['ncout'].file = results[i]
 
-        self.status.set('done', 100)
+        response.update_status("done", 100)
+        return response

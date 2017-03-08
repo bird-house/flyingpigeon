@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 GROUPING = ["day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON",
             "Jan", 'Feb', "Mar", "Apr", "May", "Jun", 'Jul', "Aug", 'Sep', 'Oct', 'Nov', 'Dec']
 
+
 def make_dirs(directory):
     """
     creates a dictionary if not already existing
@@ -44,8 +45,8 @@ def check_creationtime(path, url):
 
         # CONVERTING HEADER TIME TO UTC TIMESTAMP
         # ASSUMING 'Sun, 28 Jun 2015 06:30:17 GMT' FORMAT
-        meta_modifiedtime = time.mktime(datetime.datetime.strptime(
-                            meta.getheaders("Last-Modified")[0], "%a, %d %b %Y %X GMT").timetuple())
+        meta_modifiedtime = time.mktime(
+            datetime.datetime.strptime(meta.getheaders("Last-Modified")[0], "%a, %d %b %Y %X GMT").timetuple())
 
         # file = 'C:\Path\ToFile\somefile.xml'
         if os.path.getmtime(path) < meta_modifiedtime:
@@ -323,7 +324,7 @@ def drs_filename(resource, skip_timestamp=False, skip_format=False,
                 model=ds.model_id,
                 experiment=ds.experiment,
                 ensemble=ds.parent_experiment_rip
-                )
+            )
         else:
             raise Exception('unknown project %s' % ds.project_id)
         ds.close()
@@ -505,7 +506,7 @@ def get_timerange(resource):
 
         # TODO: include frequency
         start = '%s%s%s' % (s.year, str(s.month).zfill(2), str(s.day).zfill(2))
-        end = '%s%s%s' % (e.year,  str(e.month).zfill(2), str(e.day).zfill(2))
+        end = '%s%s%s' % (e.year, str(e.month).zfill(2), str(e.day).zfill(2))
         ds.close()
     except Exception as e:
         msg = 'failed to get time range: %s ' % e
@@ -599,7 +600,7 @@ def aggregations(resource):
         key = drs_filename(nc, skip_timestamp=True, skip_format=True)
 
         # collect files of each aggregation (time axis)
-        if aggregations.has_key(key):
+        if key in aggregations:
             aggregations[key]['files'].append(nc)
         else:
             aggregations[key] = dict(files=[nc])
@@ -713,8 +714,9 @@ def sort_by_filename(resource, historical_concatination=False):
 
                         elif historical_concatination is True:
                             key_hist = key.replace('rcp26', 'historical').\
-                                        replace('rcp45', 'historical').replace('rcp65', 'historical').\
-                                        replace('rcp85', 'historical')
+                                replace('rcp45', 'historical').\
+                                replace('rcp65', 'historical').\
+                                replace('rcp85', 'historical')
                             for n in resource:
                                 if '%s_' % key in n or '%s_' % key_hist in n:
                                     ndic[key].append(path.join(p, n))
@@ -729,7 +731,7 @@ def sort_by_filename(resource, historical_concatination=False):
                 try:
                     ndic[key].sort()
                     start, end = get_timerange(ndic[key])
-                    newkey = key+'_'+start+'-'+end
+                    newkey = key + '_' + start + '-' + end
                     tmp_dic[newkey] = ndic[key]
                 except:
                     msg = 'failed to sort the list of resources and add dates to keyname: %s' % key
@@ -830,6 +832,7 @@ def searchfile(pattern, base_dir):
 #     dimension_map = None
 #   return dimension_map
 
+
 def unrotate_pole(resource, write_to_file=True):
     """
     Calculates the unrotatated coordinates for a rotated pole grid
@@ -928,11 +931,11 @@ class FreeMemory(object):
         if self.unit == 'k':
             return 1024.0
         if self.unit == 'MB':
-            return 1/1024.0
+            return 1 / 1024.0
         if self.unit == 'GB':
-            return 1/1024.0/1024.0
+            return 1 / 1024.0 / 1024.0
         if self.unit == '%':
-            return 1.0/self._tot
+            return 1.0 / self._tot
         else:
             raise Exception("Unit not understood")
 

@@ -1,4 +1,7 @@
+from .wps_subset_countries import ClippingProcess
+
 processes = [
+    ClippingProcess(),
 ]
 
 """
