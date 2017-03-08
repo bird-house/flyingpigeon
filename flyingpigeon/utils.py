@@ -14,6 +14,18 @@ GROUPING = ["day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", 
             "Jan", 'Feb', "Mar", "Apr", "May", "Jun", 'Jul', "Aug", 'Sep', 'Oct', 'Nov', 'Dec']
 
 
+def rename_complexinputs(complexinputs):
+    """
+    TODO: this method is just a dirty workaround to rename input files according to the url name.
+    """
+    resources = []
+    for inpt in complexinputs:
+        new_name = inpt.url.split('/')[-1]
+        os.rename(inpt.file, new_name)
+        resources.append(os.path.abspath(new_name))
+    return resources
+
+
 def make_dirs(directory):
     """
     creates a dictionary if not already existing
@@ -165,7 +177,7 @@ def archive(resources, format='tar', dir_output='.', mode='w'):
     return archive
 
 
-def archiveextract(resource, path='.', mime_type="application/x-netcdf"):
+def archiveextract(resource, path='.'):
     """
     extracts archives (tar/zip)
 
@@ -186,17 +198,17 @@ def archiveextract(resource, path='.', mime_type="application/x-netcdf"):
 
         for archive in resource:
             try:
-                # if basename(archive).split('.')[1] == 'nc':
-                if mime_type == 'application/x-netcdf':
+                if basename(archive).split('.')[1] == 'nc':
+                # if mime_type == 'application/x-netcdf':
                     files.append(join(path, archive))
-                # elif basename(archive).split('.')[1] == 'tar':
-                elif mime_type == 'application/x-tar':
+                elif basename(archive).split('.')[1] == 'tar':
+                # elif mime_type == 'application/x-tar':
                     tar = open(archive, mode='r')
                     tar.extractall()
                     files.extend([join(path, nc) for nc in tar.getnames()])
                     tar.close()
-                # elif basename(archive).split('.')[1] == 'zip':
-                elif mime_type == 'application/zip':
+                elif basename(archive).split('.')[1] == 'zip':
+                # elif mime_type == 'application/zip':
                     zf = zipfile.open(archive, mode='r')
                     zf.extractall()
                     files.extend([join(path, nc) for nc in zf.filelist])

@@ -5,6 +5,7 @@ from flyingpigeon.subset import clipping
 from flyingpigeon.subset import countries, countries_longname
 from flyingpigeon.log import init_process_logger
 from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import rename_complexinputs
 
 from pywps import Process
 from pywps import LiteralInput
@@ -87,15 +88,12 @@ class ClippingProcess(Process):
         response.outputs['output_log'].file = 'log.txt'
 
         # input files
-        LOGGER.debug("url=%s", request.inputs['resource'][0].url)
-        resources = []
-        for inpt in request.inputs['resource']:
-            new_name = inpt.url.split('/')[-1]
-            os.rename(inpt.file, new_name)
-            resources.append(os.path.abspath(new_name))
+        LOGGER.debug("url=%s, mime_type=%s",
+                     request.inputs['resource'][0].url,
+                     request.inputs['resource'][0].data_format.mime_type)
         ncs = archiveextract(
-            resource=resources,
-            mime_type=request.inputs['resource'][0].data_format.mime_type)
+            resource=rename_complexinputs(request.inputs['resource']))
+            # mime_type=request.inputs['resource'][0].data_format.mime_type)
         # mosaic option
         # TODO: fix defaults in pywps 4.x
         if 'mosaic' in request.inputs:
