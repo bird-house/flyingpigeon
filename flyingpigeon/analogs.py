@@ -290,10 +290,8 @@ def reformat_analogs(analogs):
             suffix='.tsv', prefix='modified-analogfile', dir=output_path, text=False)
         df_all.to_csv(analogs_mod, sep='\t')
         logger.info('successfully reformatted analog file')
-
     except:
-        logger.exepiton('failed to reformat analog file')
-
+        logger.exception('failed to reformat analog file')
     return analogs_mod
 
 
