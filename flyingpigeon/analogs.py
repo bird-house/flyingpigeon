@@ -433,14 +433,9 @@ def get_viewer(analogs_mod, configfile):
     return html: analog viewer html page
     """
 
-<<<<<<< HEAD
-  :param analogs_mod: modified analogs file (output of reformat_analogs)
-  :param configfile: configuration file
-=======
     from os.path import basename
     from flyingpigeon.config import JSsrc_dir
     tmpl = JSsrc_dir() + '/template_analogviewer.html'
->>>>>>> cdb1ffd22e714d4c7d0bbbd6cdf3ff5856b9612d
 
     ip, output_av = mkstemp(
         suffix='.html', prefix='analogviewer', dir='.', text=False)
