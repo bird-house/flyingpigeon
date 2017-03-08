@@ -1,3 +1,7 @@
+processes = [
+]
+
+"""
 __all__ = [
         "wps_subset_continents",
         "wps_subset_countries",
@@ -34,3 +38,4 @@ __all__ = [
         # "wps_c4i_percentile_indice",
         # "wps_c4i_compound_indice",
         ]
+"""
