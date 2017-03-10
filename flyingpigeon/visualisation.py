@@ -357,12 +357,13 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismi
         logger.debug('coordinates loaded')
         #
         minval = round(np.nanmin(var_signal))
-        maxval = round(np.nanmax(var_signal)+.5)
+        maxval = round(np.nanmax(var_signal) + .5)
 
         logger.info('prepared data for plotting')
     except:
         msg = 'failed to get data for plotting'
         logger.exception(msg)
+        raise Exception(msg)
 
     try:
         fig = plt.figure(facecolor='w', edgecolor='k')  # figsize=(20,10), dpi=600,
@@ -399,6 +400,7 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismi
     except:
         msg = 'failed to plot graphic'
         logger.exception(msg)
+        raise Exception(msg)
     return graphic
 
 
