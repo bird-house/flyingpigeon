@@ -3,8 +3,8 @@ import tarfile
 
 from flyingpigeon.subset import countries, countries_longname
 from flyingpigeon.log import init_process_logger
+from flyingpigeon.utils import rename_complexinputs
 
-from pywps.Process import WPSProcess
 from pywps import Process
 from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
@@ -14,33 +14,28 @@ from pywps.app.Common import Metadata
 import logging
 LOGGER = logging.getLogger("PYWPS")
 
-#
-# import logging
-# logger = logging.getLogger(__name__)
 
-
-class FactsheetProcess(WPSProcess):
+class FactsheetProcess(Process):
     def __init__(self):
         inputs = [
-            ComplexInput('resource', 'Resource'
+            ComplexInput('resource', 'Resource',
                          abstract="NetCDF Files or archive (tar/zip) containing netCDF files",
                          min_occurs=1,
                          max_occurs=1000,
                          #  maxmegabites=5000,
                          supported_formats=[
-                            Format('application/x-netcdf'),
-                            Format('application/x-tar'),
-                            Format('application/zip'),
-                            ]),
+                             Format('application/x-netcdf'),
+                             Format('application/x-tar'),
+                             Format('application/zip'),
+                         ]),
 
             LiteralInput("region", "Region",
                          # abstract= countries_longname(), # need to handle special non-ascii char in countries.
                          default='DEU',
-                         data_type=type(''),
+                         data_type='string',
                          min_occurs=1,
                          max_occurs=len(countries()),
-                         allowed_values=countries()  # REGION_EUROPE #COUNTRIES #
-                         )
+                         allowed_values=countries()),  # REGION_EUROPE #COUNTRIES
         ]
 
         ###########
@@ -49,20 +44,20 @@ class FactsheetProcess(WPSProcess):
         outputs = [
             ComplexOutput('output_nc', "Subsets",
                           abstract="Tar archive containing the netCDF files",
-                          asReference=True,
-                          formats=[{"mimeType": "application/x-tar"}],
-                          )
+                          as_reference=True,
+                          supported_formats=[Format("application/x-tar")],
+                          ),
 
             ComplexOutput('output_factsheet', "Climate Fact Sheet",
                           abstract="Short overview of the climatological situation of the selected countries",
-                          asReference=True,
-                          supported_formats=[{"mimeType": "application/pdf"}],
-                          )
+                          as_reference=True,
+                          supported_formats=[Format('application/pdf')],
+                          ),
 
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",
-                          asReference=True,
-                          supported_formats=[{"mimeType": "text/plain"}]),
+                          as_reference=True,
+                          supported_formats=[Format("text/plain")]),
         ]
 
         super(FactsheetProcess, self).__init__(
@@ -77,8 +72,8 @@ class FactsheetProcess(WPSProcess):
             ],
             inputs=inputs,
             outputs=outputs,
-            statusSupported=True,
-            storeSupported=True
+            status_supported=True,
+            store_supported=True
         )
 
     def _handler(self, request, response):
@@ -162,7 +157,7 @@ class FactsheetProcess(WPSProcess):
             LOGGER.info('graphic generated')
 
         except:
-            logger.exception('failed to generate the robustness plot')
+            LOGGER.exception('failed to generate the robustness plot')
             _, png_robustness = mkstemp(dir='.', suffix='.png')
 
         from flyingpigeon.visualisation import factsheetbrewer
