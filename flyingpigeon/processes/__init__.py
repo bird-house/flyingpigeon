@@ -4,6 +4,7 @@ from .wps_climatefactsheet import FactsheetProcess
 processes = [
     ClippingProcess(),
     FactsheetProcess(),
+    FetchProcess(),
 ]
 
 """

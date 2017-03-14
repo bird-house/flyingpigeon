@@ -69,7 +69,7 @@ class ClippingProcess(Process):
             self._handler,
             identifier="subset_countries",
             title="Subset countries",
-            version="0.9",
+            version="0.10",
             abstract="Returns only the selected polygon for each input dataset",
             metadata=[
                 Metadata('LSCE', 'http://www.lsce.ipsl.fr/en/index.php'),
