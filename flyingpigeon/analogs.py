@@ -245,7 +245,6 @@ def reformat_analogs(analogs):
     import pandas as pd
 
     try:
-
         num_cols = 3  # dateAnlg, Dis, Corr
 
         # Create dataframe and read in output csv file of analogs process

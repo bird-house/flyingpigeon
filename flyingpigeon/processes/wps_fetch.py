@@ -47,8 +47,7 @@ class FetchProcess(Process):
             abstract="This process downloads resources (limited to 50GB) \
                       to the local file system of the birdhouse compute provider",
             metadata=[
-                # {"title": "LSCE", "href": "http://www.lsce.ipsl.fr/en/index.php"},
-                {"title": "Doc", "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
+                Metadata('Documentation', 'http://flyingpigeon.readthedocs.io/en/latest/'),
             ],
             inputs=inputs,
             outputs=outputs,
