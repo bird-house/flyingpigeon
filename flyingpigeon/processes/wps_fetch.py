@@ -23,11 +23,8 @@ class FetchProcess(Process):
                              Format('application/x-tar'),
                              Format('application/zip'),
                          ]),
-            ]
+        ]
 
-        #  ##########
-        # OUTPUTS
-        # ##########
         outputs = [
             ComplexOutput("output", "Fetched Files",
                           abstract="File containing the local pathes to downloades files",
@@ -40,7 +37,7 @@ class FetchProcess(Process):
                           formats=[Format("text/plain")],
                           as_reference=True,
                           )
-                  ]
+        ]
 
         super(FetchProcess, self).__init__(
             self._handler,
@@ -57,7 +54,7 @@ class FetchProcess(Process):
             outputs=outputs,
             status_supported=True,
             store_supported=True,
-            )
+        )
 
     def _handler(self, request, response):
         response.update_status("start fetching resources", 10)

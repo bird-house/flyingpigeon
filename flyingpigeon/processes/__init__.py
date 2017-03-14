@@ -1,5 +1,6 @@
 from .wps_subset_countries import ClippingProcess
 from .wps_climatefactsheet import FactsheetProcess
+from .wps_fetch import FetchProcess
 
 processes = [
     ClippingProcess(),
