@@ -166,7 +166,7 @@ class FactsheetProcess(Process):
                                     png_spaghetti=png_spaghetti,
                                     png_robustness=png_robustness)
 
-        response.outputs['output_nc'] = tar_subsets
-        response.outputs['output_factsheet'] = factsheet
+        response.outputs['output_nc'].file = tar_subsets
+        response.outputs['output_factsheet'].file = factsheet
         response.update_status("done", 100)
         return response
