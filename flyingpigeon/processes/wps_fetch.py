@@ -1,5 +1,3 @@
-import os
-
 from pywps import Process
 # from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
@@ -18,11 +16,11 @@ class FetchProcess(Process):
                          min_occurs=1,
                          max_occurs=1000,
                          #  maxmegabites=5000,
-                         supported_formats=[
-                             Format('application/x-netcdf'),
-                             Format('application/x-tar'),
-                             Format('application/zip'),
-                         ]),
+                         supported_formats=[Format('application/x-netcdf'),
+                                            Format('application/x-tar'),
+                                            Format('application/zip'),
+                                            ]
+                         )
         ]
 
         outputs = [
@@ -34,7 +32,7 @@ class FetchProcess(Process):
 
             ComplexOutput("output_log", "Logging information",
                           abstract="Collected logs during process run.",
-                          formats=[Format("text/plain")],
+                          supported_formats=[Format("text/plain")],
                           as_reference=True,
                           )
         ]
@@ -56,20 +54,24 @@ class FetchProcess(Process):
         )
 
     def _handler(self, request, response):
+        from flyingpigeon.log import init_process_logger
+        from flyingpigeon.utils import rename_complexinputs
+        import os
+
         response.update_status("start fetching resources", 10)
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
-        resources = request.inputs['resource']
+        resources = rename_complexinputs(request.inputs['resource'])
         filepathes = 'out.txt'
         with open(filepathes, 'w') as fp:
             fp.write('###############################################\n')
             fp.write('###############################################\n')
             fp.write('Following files are stored to your local discs: \n')
             fp.write('\n')
-            for resource in resources:
-                fp.write('%s \n' % os.path.realpath(resource))
+            for f in resources:
+                fp.write('%s \n' % os.path.realpath(f))
 
-        response.outputs['output'] = filepathes
+        response.outputs['output'].file = filepathes
         response.update_status("done", 100)
         return response

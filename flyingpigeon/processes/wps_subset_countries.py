@@ -52,17 +52,20 @@ class ClippingProcess(Process):
             ComplexOutput('output', 'Subsets',
                           abstract="Tar archive containing the netCDF files",
                           as_reference=True,
-                          supported_formats=[Format('application/x-tar')]),
+                          supported_formats=[Format('application/x-tar')]
+                          ),
 
             ComplexOutput('ncout', 'Subsets for one dataset',
                           abstract="NetCDF file with subsets of one dataset.",
                           as_reference=True,
-                          supported_formats=[Format('application/x-netcdf')]),
+                          supported_formats=[Format('application/x-netcdf')]
+                          ),
 
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",
                           as_reference=True,
-                          supported_formats=[Format('text/plain')]),
+                          supported_formats=[Format('text/plain')]
+                          )
         ]
 
         super(ClippingProcess, self).__init__(
