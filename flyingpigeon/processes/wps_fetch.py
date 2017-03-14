@@ -1,55 +1,68 @@
 import os
 
-from pywps.Process import WPSProcess
-import logging
-from flyingpigeon.log import init_process_logger
+from pywps import Process
+from pywps import LiteralInput
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format, FORMATS
+from pywps.app.Common import Metadata
 
-logger = logging.getLogger(__name__)
+import logging
+LOGGER = logging.getLogger("PYWPS")
 
 
 class FetchProcess(WPSProcess):
     def __init__(self):
-        WPSProcess.__init__(self,
-                            identifier="fetch",
-                            title="Download Resources",
-                            version="0.9",
-                            abstract="This process downloads resources (limited to 50GB) \
-                            to the local file system of the birdhouse compute provider",
-                            statusSupported=True,
-                            storeSupported=True)
+        inputs = [
+            ComplexInput("resource", "NetCDF File",
+                         # abstract="NetCDF File",
+                         min_occurs=1,
+                         max_occurs=100,
+                         # maxmegabites=5000,
+                         supported_formats=[
+                            Format("application/x-netcdf")
+                         ]),
+            ]
 
-        self.resource = self.addComplexInput(
-            identifier="resource",
-            title="NetCDF File",
-            abstract="NetCDF File",
-            minOccurs=1,
-            maxOccurs=100,
-            maxmegabites=5000,
-            formats=[{"mimeType": "application/x-netcdf"}],
+        #  ##########
+        # OUTPUTS
+        # ##########
+
+        outputs = [
+            ComplexOutput("output", "Fetched Files",
+                          abstract="File containing the local pathes to downloades files",
+                          supported_formats=[
+                              Format('text/plain')
+                              ],
+                          as_reference=True,
+                          )
+
+            ComplexOutput("output_log", "Logging information",
+                          abstract="Collected logs during process run.",
+                          formats=[
+                              Format("text/plain")
+                              ],
+                          as_reference=True,
+                          )
+            ]
+
+        super(FetchProcess, self).__init__(
+            self._handler,
+            identifier="fetch",
+            title="Download Resources",
+            version="0.9.1",
+            abstract="This process downloads resources (limited to 50GB) \
+                      to the local file system of the birdhouse compute provider",
+            inputs=inputs,
+            outputs=outputs,
+            status_supported=True,
+            store_supported=True,
             )
 
-        self.output = self.addComplexOutput(
-            identifier="output",
-            title="Fetched Files",
-            abstract="File containing the local pathes to downloades files",
-            formats=[{"mimeType": "text/plain"}],
-            asReference=True,
-            )
-
-        self.output_log = self.addComplexOutput(
-            identifier="output_log",
-            title="Logging information",
-            abstract="Collected logs during process run.",
-            formats=[{"mimeType": "text/plain"}],
-            asReference=True,
-        )
-
-    def execute(self):
-
+    def _handler(self, request, response):
         init_process_logger('log.txt')
-        self.output_log.setValue('log.txt')
+        response.outputs['output_log'].file = 'log.txt'
 
-        resources = self.getInputValues(identifier='resource')
+        resources = request.inputs['resource']
         filename = 'out.txt'
         with open(filename, 'w') as fp:
             fp.write('###############################################\n')
@@ -58,4 +71,5 @@ class FetchProcess(WPSProcess):
             fp.write('\n')
             for resource in resources:
                 fp.write('%s \n' % os.path.realpath(resource))
-        self.output.setValue(filename)
+
+        response.outputs['output'] = filename
