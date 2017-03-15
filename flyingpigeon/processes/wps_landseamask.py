@@ -11,7 +11,7 @@ import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
-class LandseamaskProcess(WPSProcess):
+class LandseamaskProcess(Process):
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
@@ -27,28 +27,28 @@ class LandseamaskProcess(WPSProcess):
 
             LiteralInput("threshold", "Threshold",
                          abstract="Percentage of Land Area",
-                         default=50,
+                         default="50",
                          data_type='integer',
                          min_occurs=1,
                          max_occurs=1,
                          ),
 
-            ComplexInput("mask", "Land Area Fraction File",
-                         abstract="optional provide a url to an appropriate Land Area Fraction File. If no file is\
-                          provided, the process will search an appropriate mask in the local cache.\
-                          Make sure the land area fraction are allready fetched (use 'Download Resources' Process)",
-                         min_occurs=0,
-                         max_occurs=100,
-                         # maxmegabites=50,
-                         supported_formats=[
-                              Format('application/x-netcdf'),
-                              Format('application/x-tar'),
-                              Format('application/zip'),
-                              ]),
+            # ComplexInput("mask", "Land Area Fraction File",
+            #              abstract="optional provide a url to an appropriate Land Area Fraction File. If no file is\
+            #               provided, the process will search an appropriate mask in the local cache.\
+            #               Make sure the land area fraction are allready fetched (use 'Download Resources' Process)",
+            #              min_occurs=0,
+            #              max_occurs=100,
+            #              # maxmegabites=50,
+            #              supported_formats=[
+            #                   Format('application/x-netcdf'),
+            #                   Format('application/x-tar'),
+            #                   Format('application/zip'),
+            #                   ]),
 
             LiteralInput("land_area", "Land/Sea",
                          abstract="If land_area (default) is checked, sea areas will be set to missing value",
-                         default=True,
+                         default='1',
                          data_type='boolean',
                          )
             ]
@@ -80,9 +80,8 @@ class LandseamaskProcess(WPSProcess):
             abstract="Find the appropriate land_area fraction file and perform a\
                       CDO division to mask either land or sea areas",
             metadata=[
-                # {"title": "LSCE", "href": "http://www.lsce.ipsl.fr/en/index.php"},
                 {"title": "Doc", "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
-            ],
+                ],
             inputs=inputs,
             outputs=outputs,
             status_supported=True,
