@@ -2,12 +2,14 @@ from .wps_subset_countries import ClippingProcess
 from .wps_climatefactsheet import FactsheetProcess
 from .wps_fetch import FetchProcess
 from .wps_landseamask import LandseamaskProcess
+from .wps_indices_percentile import IndicespercentileProcess
 
 processes = [
     ClippingProcess(),
     FactsheetProcess(),
     FetchProcess(),
     LandseamaskProcess(),
+    IndicespercentileProcess(),
 ]
 
 """
