@@ -8,7 +8,7 @@ from flyingpigeon.utils import rename_complexinputs
 from pywps import Process
 from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
-from pywps import Format, FORMATS
+from pywps import Format
 from pywps.app.Common import Metadata
 
 import logging

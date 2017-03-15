@@ -1,11 +1,13 @@
 from .wps_subset_countries import ClippingProcess
 from .wps_climatefactsheet import FactsheetProcess
 from .wps_fetch import FetchProcess
+from .wps_landseamask import LandseamaskProcess
 
 processes = [
     ClippingProcess(),
     FactsheetProcess(),
     FetchProcess(),
+    LandseamaskProcess(),
 ]
 
 """
