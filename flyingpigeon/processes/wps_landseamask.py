@@ -101,8 +101,8 @@ class LandseamaskProcess(Process):
 
         resources = archiveextract(
             resource=rename_complexinputs(request.inputs['resource']))
-        masks = archiveextract(
-            resource=rename_complexinputs(request.inputs['mask']))
+        # masks = archiveextract(
+        #     resource=rename_complexinputs(request.inputs['mask']))
         land_area = request.inputs['land_area']
 
         fp_cache = config.cache_path().split('/')
