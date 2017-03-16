@@ -1,4 +1,5 @@
 from .wps_subset_countries import ClippingProcess
+from .wps_subset_continents import ClipcontinentProcess
 from .wps_climatefactsheet import FactsheetProcess
 from .wps_fetch import FetchProcess
 from .wps_landseamask import LandseamaskProcess
@@ -6,6 +7,7 @@ from .wps_indices_percentile import IndicespercentileProcess
 
 processes = [
     ClippingProcess(),
+    ClipcontinentProcess(),
     FactsheetProcess(),
     FetchProcess(),
     LandseamaskProcess(),
@@ -15,12 +17,12 @@ processes = [
 """
 __all__ = [
         "wps_subset_continents",
-        "wps_subset_countries",
+        "wps_subset_countries",                 # adopted to pywps4
         "wps_subset_regionseurope",
         "wps_subset_points",
-        "wps_landseamask",
+        "wps_landseamask",                      # adopted to pywps4
         "wps_indices_simple",
-        "wps_indices_percentile",
+        "wps_indices_percentile",               # adopted to pywps4
         "wps_weatherregimes_reanalyse",
         "wps_weatherregimes_model",
         "wps_weatherregimes_projection",
@@ -36,8 +38,8 @@ __all__ = [
         "wps_sdm_allinone",
         "wps_robustness",
         "wps_plot_timeseries",
-        "wps_climatefactsheet",
-        "wps_fetch",
+        "wps_climatefactsheet",                 # adopted to pywps4
+        "wps_fetch",                            # adopted to pywps4
         # climate for impact processes
         "wps_c4i_simple_indice",
         # processes under development

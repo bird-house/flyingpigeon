@@ -1,6 +1,3 @@
-import os
-import tarfile
-
 from flyingpigeon.subset import clipping
 from flyingpigeon.subset import countries, countries_longname
 from flyingpigeon.log import init_process_logger
@@ -71,7 +68,7 @@ class ClippingProcess(Process):
         super(ClippingProcess, self).__init__(
             self._handler,
             identifier="subset_countries",
-            title="Subset countries",
+            title="Subset (World Countries)",
             version="0.10",
             abstract="Returns only the selected polygon for each input dataset",
             metadata=[
@@ -85,8 +82,6 @@ class ClippingProcess(Process):
         )
 
     def _handler(self, request, response):
-        # from ast import literal_eval
-
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
@@ -120,11 +115,11 @@ class ClippingProcess(Process):
                 mosaic=mosaic,
                 spatial_wrapping='wrap',
                 # variable=variable,
-                dir_output=os.path.abspath(os.curdir),
+                # dir_output=os.path.abspath(os.curdir),
                 # dimension_map=dimension_map,
             )
             LOGGER.info('results %s' % results)
-        except Exception as e:
+        except:
             msg = 'clipping failed'
             LOGGER.exception(msg)
             raise Exception(msg)
@@ -136,7 +131,7 @@ class ClippingProcess(Process):
         try:
             tarf = archive(results)
             LOGGER.info('Tar file prepared')
-        except Exception as e:
+        except:
             msg = 'Tar file preparation failed'
             LOGGER.exception(msg)
             raise Exception(msg)
