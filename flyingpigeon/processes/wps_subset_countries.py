@@ -20,7 +20,7 @@ class ClippingProcess(Process):
             LiteralInput('region', 'Region',
                          data_type='string',
                          # abstract= countries_longname(), # need to handle special non-ascii char in countries.
-                         abstract="Country shortname: GBR=Great Britain, FRA=France, ...",
+                         abstract="Country ISO: GBR=Great Britain, FRA=France, ...",
                          min_occurs=1,
                          max_occurs=len(countries()),
                          default='DEU',
