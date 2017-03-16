@@ -1,5 +1,4 @@
-from flyingpigeon.log import init_process_logger
-from flyingpigeon.utils import rename_complexinputs
+import os
 
 from pywps import Process
 from pywps import LiteralInput
@@ -8,8 +7,13 @@ from pywps import Format
 from pywps.app.Common import Metadata
 
 from flyingpigeon.indices import indices, indices_description
+from flyingpigeon.indices import calc_indice_percentile
 from flyingpigeon.subset import countries, countries_longname
 from flyingpigeon.utils import GROUPING
+from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon import config
+from flyingpigeon.log import init_process_logger
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
@@ -91,7 +95,7 @@ class IndicespercentileProcess(Process):
                          max_occurs=1,
                          ),
 
-            ]
+        ]
 
         outputs = [
             ComplexOutput("output_archive", "Masked Files Archive",
@@ -110,7 +114,7 @@ class IndicespercentileProcess(Process):
                           abstract="Collected logs during process run.",
                           as_reference=True,
                           supported_formats=[Format("text/plain")])
-            ]
+        ]
 
         super(IndicespercentileProcess, self).__init__(
             self._handler,
@@ -127,45 +131,48 @@ class IndicespercentileProcess(Process):
                  "href": "http://icclim.readthedocs.io/en/latest/"},
                 {"title": "Percentile-based indices", "href": "http://flyingpigeon.readthedocs.io/en/\
                 latest/descriptions/indices.html#percentile-based-indices"},
-                ],
+            ],
             inputs=inputs,
             outputs=outputs,
             status_supported=True,
             store_supported=True
-            )
+        )
 
     def _handler(self, request, response):
-        from flyingpigeon.indices import calc_indice_percentile
-        from flyingpigeon.utils import archive, archiveextract
-
-        from flyingpigeon import config
-        from os import path
-
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
         resources = archiveextract(
             resource=rename_complexinputs(request.inputs['resource']))
-        indices = request.inputs['indices']
-        region = request.inputs['region']
-        percentile = request.inputs['percentile']
-        groupings = request.inputs['groupings']
-        mosaic = request.inputs['mosaic']
-        refperiod = request.inputs['refperiod']
+        indices = request.inputs['indices'][0].data
+        region = request.inputs['region'][0].data
+        if 'percentile' in request.inputs:
+            percentile = request.inputs['percentile'][0].data
+        else:
+            percentile = 90
+        groupings = [inpt.data for inpt in request.inputs['groupings']]
+        if 'mosaic' in request.inputs:
+            mosaic = request.inputs['mosaic'][0].data
+        else:
+            mosaic = False
+        if 'refperiod' in request.inputs:
+            refperiod = request.inputs['refperiod'][0].data
+        else:
+            refperiod = "19700101-20101231"
 
         response.update_status('starting: indices=%s, refperiod=%s, groupings=%s, num_files=%s'
-                               % (indices, refperiod, groupings, len(ncs)), 2)
+                               % (indices, refperiod, groupings, len(resources)), 2)
 
         results = calc_indice_percentile(
-            resources=resource,
+            resources=resources,
             indices=indices,
             percentile=percentile,
             mosaic=mosaic,
             polygons=region,
             refperiod=refperiod,
             groupings=groupings,
-            dir_output=path.curdir,
-            )
+            dir_output=os.curdir,
+        )
 
 #         # if not results:
 #         #     raise Exception("failed to produce results")
@@ -174,6 +181,6 @@ class IndicespercentileProcess(Process):
         tarf = archive(results)
 
         response.outputs['output_archive'].file = tarf
-#         # response.update_status('done: indice=%s, num_files=%s' % (indices, len(ncs)), 100)
+#         # response.update_status('done: indice=%s, num_files=%s' % (indices, len(resources)), 100)
         response.update_status("done", 100)
         return response
