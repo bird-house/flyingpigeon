@@ -20,6 +20,7 @@ class ClippingProcess(Process):
             LiteralInput('region', 'Region',
                          data_type='string',
                          # abstract= countries_longname(), # need to handle special non-ascii char in countries.
+                         abstract="Country shortname: GBR=Great Britain, FRA=France, ...",
                          min_occurs=1,
                          max_occurs=len(countries()),
                          default='DEU',
@@ -34,7 +35,7 @@ class ClippingProcess(Process):
                          default=False),
 
             ComplexInput('resource', 'Resource',
-                         abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
+                         abstract='NetCDF Files or archive (tar/zip) containing NetCDF files.',
                          metadata=[Metadata('Info')],
                          min_occurs=1,
                          max_occurs=1000,
