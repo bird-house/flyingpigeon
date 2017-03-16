@@ -83,9 +83,9 @@ class LandseamaskProcess(Process):
                 {"title": "Doc", "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
             ],
             inputs=inputs,
-            status_supported=True,
-            store_supported=True
             outputs=outputs,
+            status_supported=True,
+            store_supported=True,
         )
 
     def _handler(self, request, response):
@@ -134,12 +134,14 @@ class LandseamaskProcess(Process):
                     prefix = 'masked%s' % basename.replace('.nc', '')
                     nc_mask = masking(nc, sftlf[0], land_area=land_area, prefix=prefix)
                     ncs.extend([nc_mask])
-                    LOGGER.info('masking processed for %s' % basename)
+                    LOGGER.info('masking processed for %s', basename)
                 else:
                     LOGGER.warn('no masked found. Please perform a "Download Resources"\
                      to make sure the land_area file is in cache')
             except:
-                LOGGER.exception('failed to mask file: %s' % basename)
+                LOGGER.exception('failed to mask file: %s', basename)
+        if not ncs:
+            raise Exception("Could not mask input files. Maybe appropriate mask files are not available?")
         nc_archive = archive(ncs)
 
         response.outputs['output_archive'].file = nc_archive
