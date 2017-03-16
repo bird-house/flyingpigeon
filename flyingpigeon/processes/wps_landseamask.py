@@ -34,9 +34,9 @@ class LandseamaskProcess(Process):
                          ),
 
             # ComplexInput("mask", "Land Area Fraction File",
-            #              abstract="optional provide a url to an appropriate Land Area Fraction File. If no file is\
-            #               provided, the process will search an appropriate mask in the local cache.\
-            #               Make sure the land area fraction are allready fetched (use 'Download Resources' Process)",
+            #              abstract="optional provide a url to an appropriate Land Area Fraction File. If no file is"
+            #               "provided, the process will search an appropriate mask in the local cache."
+            #               "Make sure the land area fraction are allready fetched (use 'Download Resources' Process)",
             #              min_occurs=0,
             #              max_occurs=100,
             #              # maxmegabites=50,
@@ -51,7 +51,7 @@ class LandseamaskProcess(Process):
                          default='1',
                          data_type='boolean',
                          )
-            ]
+        ]
 
         outputs = [
             ComplexOutput("output_archive", "Masked Files Archive",
@@ -70,7 +70,7 @@ class LandseamaskProcess(Process):
                           abstract="Collected logs during process run.",
                           as_reference=True,
                           supported_formats=[Format("text/plain")])
-            ]
+        ]
 
         super(LandseamaskProcess, self).__init__(
             self._handler,
@@ -81,12 +81,12 @@ class LandseamaskProcess(Process):
                       CDO division to mask either land or sea areas",
             metadata=[
                 {"title": "Doc", "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
-                ],
+            ],
             inputs=inputs,
-            outputs=outputs,
             status_supported=True,
             store_supported=True
-            )
+            outputs=outputs,
+        )
 
     def _handler(self, request, response):
         from flyingpigeon.utils import searchfile
