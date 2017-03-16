@@ -1,7 +1,3 @@
-from flyingpigeon.indices import indices, indices_description
-from flyingpigeon.subset import countries, countries_longname
-from flyingpigeon.utils import GROUPING
-
 from flyingpigeon.log import init_process_logger
 from flyingpigeon.utils import rename_complexinputs
 
@@ -11,8 +7,12 @@ from pywps import ComplexInput, ComplexOutput
 from pywps import Format
 from pywps.app.Common import Metadata
 
+from flyingpigeon.indices import indices, indices_description
+from flyingpigeon.subset import countries, countries_longname
+from flyingpigeon.utils import GROUPING
+
 import logging
-LOGGER = LOGGER.getLogger("PYWPS")
+LOGGER = logging.getLogger("PYWPS")
 
 
 class IndicespercentileProcess(Process):
@@ -54,7 +54,7 @@ class IndicespercentileProcess(Process):
                          min_occurs=0,
                          max_occurs=1,
                          ),
-
+            #
             # self.refperiod = self.addLiteralInput(
             #     identifier="refperiod",
             #     title="Reference refperiod",
@@ -75,14 +75,13 @@ class IndicespercentileProcess(Process):
                          allowed_values=GROUPING
                          ),
 
-            LiteralInput("polygons", "Country subset",
-                         abstract=countries_longname(),
-                         default='DEU',
+            LiteralInput('region', 'Region',
                          data_type='string',
-                         min_occurs=0,
+                         # abstract= countries_longname(), # need to handle special non-ascii char in countries.
+                         min_occurs=1,
                          max_occurs=len(countries()),
-                         allowed_values=countries()
-                         ),
+                         default='DEU',
+                         allowed_values=countries()),  # REGION_EUROPE #COUNTRIES
 
             LiteralInput("mosaic", "Mosaic",
                          abstract="If Mosaic is checked, selected polygons be clipped as a mosaic for each input file",
@@ -91,26 +90,32 @@ class IndicespercentileProcess(Process):
                          min_occurs=0,
                          max_occurs=1,
                          ),
-        ]
+
+            ]
 
         outputs = [
-            ComplexOutput("output", "Index",
-                          abstract="Calculated index as NetCDF file",
-                          metadata=[],
+            ComplexOutput("output_archive", "Masked Files Archive",
+                          abstract="Tar file of the masked netCDF files",
                           supported_formats=[Format("application/x-tar")],
-                          as_reference=True
+                          as_reference=True,
                           ),
+
+            # ComplexOutput("output_example", "Example",
+            #               abstract="one example file to display in the WMS",
+            #               supported_formats=[Format("application/x-netcdf")],
+            #               as_reference=True,
+            #               ),
 
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",
                           as_reference=True,
                           supported_formats=[Format("text/plain")])
-        ]
+            ]
 
         super(IndicespercentileProcess, self).__init__(
-            self.__handler,
+            self._handler,
             identifier="indices_percentile",
-            title="Climate indices -- Percentile",
+            title="Climate indices (Percentile)",
             version="0.10",
             abstract="Climate indices based on one single input variable\
              and the percentile of a reference period.",
@@ -133,13 +138,16 @@ class IndicespercentileProcess(Process):
         from flyingpigeon.indices import calc_indice_percentile
         from flyingpigeon.utils import archive, archiveextract
 
+        from flyingpigeon import config
+        from os import path
+
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
-        ncs == archiveextract(
+        resources = archiveextract(
             resource=rename_complexinputs(request.inputs['resource']))
         indices = request.inputs['indices']
-        polygons = request.inputs['polygons']
+        region = request.inputs['region']
         percentile = request.inputs['percentile']
         groupings = request.inputs['groupings']
         mosaic = request.inputs['mosaic']
@@ -149,25 +157,23 @@ class IndicespercentileProcess(Process):
                                % (indices, refperiod, groupings, len(ncs)), 2)
 
         results = calc_indice_percentile(
-            resources=ncs,
+            resources=resource,
             indices=indices,
             percentile=percentile,
             mosaic=mosaic,
-            polygons=polygons,
+            polygons=region,
             refperiod=refperiod,
             groupings=groupings,
             dir_output=path.curdir,
             )
 
-        if not results:
-            raise Exception("failed to produce results")
-        response.update_status('num results %s' % len(results), 90)
+#         # if not results:
+#         #     raise Exception("failed to produce results")
+#         # response.update_status('num results %s' % len(results), 90)
 
-        try:
-            tarf = archive(results)
-        except:
-            msg = "Tar file preparation failed."
-            LOGGER.exception(msg)
+        tarf = archive(results)
 
-        response.outputs['output'].file = tarf
-        response.update_status('done: indice=%s, num_files=%s' % (indices, len(ncs)), 100)
+        response.outputs['output_archive'].file = tarf
+#         # response.update_status('done: indice=%s, num_files=%s' % (indices, len(ncs)), 100)
+        response.update_status("done", 100)
+        return response
