@@ -63,7 +63,7 @@ class FactsheetProcess(Process):
         super(FactsheetProcess, self).__init__(
             self._handler,
             identifier="climatefactsheet",
-            title="Climate Fact Sheet Generator",
+            title="Climate Fact Sheet Generator___(init)",
             version="0.2",
             abstract="Returns a pdf with a short overview of the climatological situation for the selected countries",
             metadata=[

@@ -70,7 +70,7 @@ class ClipregionseuropeProcess(Process):
         super(ClipregionseuropeProcess, self).__init__(
             self._handler,
             identifier="subset_regionseurope",
-            title="Subset (European Regions)",
+            title="Subset_______(European Regions)",
             version="0.10",
             abstract="Returns only the selected polygon for each input dataset",
             metadata=[

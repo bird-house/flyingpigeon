@@ -70,7 +70,7 @@ class ClippingProcess(Process):
         super(ClippingProcess, self).__init__(
             self._handler,
             identifier="subset_countries",
-            title="Subset (World Countries)",
+            title="Subset________(World Countries)",
             version="0.10",
             abstract="Returns only the selected polygon for each input dataset",
             metadata=[

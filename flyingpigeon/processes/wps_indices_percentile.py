@@ -119,7 +119,7 @@ class IndicespercentileProcess(Process):
         super(IndicespercentileProcess, self).__init__(
             self._handler,
             identifier="indices_percentile",
-            title="Climate indices (Percentile based)",
+            title="Climate indices___(Percentile based)",
             version="0.10",
             abstract="Climate indices based on one single input variable\
              and the percentile of a reference period.",

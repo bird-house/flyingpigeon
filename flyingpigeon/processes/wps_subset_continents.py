@@ -68,7 +68,7 @@ class ClipcontinentProcess(Process):
         super(ClipcontinentProcess, self).__init__(
             self._handler,
             identifier="subset_continents",
-            title="Subset (Continents)",
+            title="Subset_____________(Continents)",
             version="0.10",
             abstract="Returns only the selected polygon for each input dataset",
             metadata=[
