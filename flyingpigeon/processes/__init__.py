@@ -20,7 +20,7 @@ processes = [
 __all__ = [
         "wps_subset_continents",                # adopted to pywps4
         "wps_subset_countries",                 # adopted to pywps4
-        "wps_subset_regionseurope",
+        "wps_subset_regionseurope",             # adopted to pywps4
         "wps_subset_points",
         "wps_landseamask",                      # adopted to pywps4
         "wps_indices_simple",
