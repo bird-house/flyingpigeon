@@ -5,8 +5,8 @@ from pywps import Format
 from pywps.app.Common import Metadata
 
 from flyingpigeon.indices import indices, indices_description
-from flyingpigeon.indices import calc_indice_percentile
 from flyingpigeon.subset import countries, countries_longname
+from flyingpigeon.indices import calc_indice_simple
 from flyingpigeon.utils import GROUPING
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import archive, archiveextract
@@ -36,37 +36,9 @@ class IndicessingleProcess(Process):
                          default='TG',
                          data_type='string',
                          min_occurs=1,
-                         max_occurs=1,  # len(indices()),
-                         allowed_values=['TG', 'TN', 'TX'],  # indices()
-                         ),
-
-            LiteralInput("percentile", "Percentile",
-                         abstract='Select an percentile',
-                         default='90',
-                         data_type='integer',
-                         min_occurs=1,
-                         max_occurs=1,  # len(indices()),
-                         allowed_values=range(1, 100),  # indices()
-                         ),
-
-            LiteralInput("refperiod", "Reference Period",
-                         abstract="Time refperiod to retrieve the percentile level",
-                         default="19700101-20101231",
-                         data_type='string',
-                         min_occurs=0,
                          max_occurs=1,
+                         allowed_values=indices()
                          ),
-            #
-            # self.refperiod = self.addLiteralInput(
-            #     identifier="refperiod",
-            #     title="Reference refperiod",
-            #     abstract="Reference refperiod for climate condition (all = entire timeserie)",
-            #     default=None,
-            #     type=type(''),
-            #     minOccurs=0,
-            #     maxOccurs=1,
-            #     allowedValues=['all','1951-1980', '1961-1990', '1971-2000','1981-2010']
-            #     )
 
             LiteralInput("groupings", "Grouping",
                          abstract="Select an time grouping (time aggregation)",
@@ -80,6 +52,8 @@ class IndicessingleProcess(Process):
             LiteralInput('region', 'Region',
                          data_type='string',
                          # abstract= countries_longname(), # need to handle special non-ascii char in countries.
+                         abstract="Country ISO-3166-3:\
+                          https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3#Officially_assigned_code_elements",
                          min_occurs=1,
                          max_occurs=len(countries()),
                          default='DEU',
@@ -117,10 +91,9 @@ class IndicessingleProcess(Process):
         super(IndicessingleProcess, self).__init__(
             self._handler,
             identifier="indices_single",
-            title="Climate indices (Percentile based)",
+            title="Climate indices (Single variable)",
             version="0.10",
-            abstract="Climate indices based on one single input variable\
-             and the percentile of a reference period.",
+            abstract="Climate indices based on one single input variable",
             metadata=[
                 {'title': 'Doc',
                  'href': 'http://flyingpigeon.readthedocs.io/en/latest/descriptions/\
@@ -144,33 +117,23 @@ class IndicessingleProcess(Process):
             resource=rename_complexinputs(request.inputs['resource']))
         indices = request.inputs['indices'][0].data
         region = request.inputs['region'][0].data
-        if 'percentile' in request.inputs:
-            percentile = request.inputs['percentile'][0].data
-        else:
-            percentile = 90
         groupings = [inpt.data for inpt in request.inputs['groupings']]
         if 'mosaic' in request.inputs:
             mosaic = request.inputs['mosaic'][0].data
         else:
             mosaic = False
-        if 'refperiod' in request.inputs:
-            refperiod = request.inputs['refperiod'][0].data
-        else:
-            refperiod = "19700101-20101231"
 
         response.update_status('starting: indices=%s, refperiod=%s, groupings=%s, num_files=%s'
                                % (indices, refperiod, groupings, len(resources)), 2)
 
-        results = calc_indice_percentile(
-            resources=resources,
-            indices=indices,
-            percentile=percentile,
+        results = calc_indice_simple(
+            resource=ncs,
             mosaic=mosaic,
-            polygons=region,
-            refperiod=refperiod,
+            indices=indices,
+            polygons=polygons,
             groupings=groupings,
-            # dir_output=os.curdir,
-        )
+            # dir_output=path.curdir,
+            )
 
 #         # if not results:
 #         #     raise Exception("failed to produce results")

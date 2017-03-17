@@ -5,6 +5,7 @@ from .wps_climatefactsheet import FactsheetProcess
 from .wps_fetch import FetchProcess
 from .wps_landseamask import LandseamaskProcess
 from .wps_indices_percentile import IndicespercentileProcess
+from .wps_indices_single import IndicessingleProcess
 
 processes = [
     ClippingProcess(),
@@ -14,6 +15,7 @@ processes = [
     FetchProcess(),
     LandseamaskProcess(),
     IndicespercentileProcess(),
+    IndicessingleProcess(),
 ]
 
 """
@@ -23,7 +25,7 @@ __all__ = [
         "wps_subset_regionseurope",             # adopted to pywps4
         "wps_subset_points",
         "wps_landseamask",                      # adopted to pywps4
-        "wps_indices_simple",
+        "wps_indices_simple",                   # adopted to pywps4
         "wps_indices_percentile",               # adopted to pywps4
         "wps_weatherregimes_reanalyse",
         "wps_weatherregimes_model",

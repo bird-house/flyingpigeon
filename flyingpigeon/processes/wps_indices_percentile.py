@@ -1,5 +1,3 @@
-import os
-
 from pywps import Process
 from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
@@ -82,6 +80,8 @@ class IndicespercentileProcess(Process):
             LiteralInput('region', 'Region',
                          data_type='string',
                          # abstract= countries_longname(), # need to handle special non-ascii char in countries.
+                         abstract="Country ISO-3166-3:\
+                          https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3#Officially_assigned_code_elements",
                          min_occurs=1,
                          max_occurs=len(countries()),
                          default='DEU',
@@ -119,7 +119,7 @@ class IndicespercentileProcess(Process):
         super(IndicespercentileProcess, self).__init__(
             self._handler,
             identifier="indices_percentile",
-            title="Climate indices (Percentile)",
+            title="Climate indices (Percentile based)",
             version="0.10",
             abstract="Climate indices based on one single input variable\
              and the percentile of a reference period.",
@@ -171,7 +171,7 @@ class IndicespercentileProcess(Process):
             polygons=region,
             refperiod=refperiod,
             groupings=groupings,
-            dir_output=os.curdir,
+            # dir_output=os.curdir,
         )
 
 #         # if not results:
