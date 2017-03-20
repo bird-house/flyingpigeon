@@ -75,7 +75,7 @@ class GBIFfetchProcess(Process):
             store_supported=True,
         )
 
-    def _handler(self):
+    def _handler(self, request, response):
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
         #
@@ -88,7 +88,7 @@ class GBIFfetchProcess(Process):
 
         try:
             LOGGER.info('reading the arguments')
-            taxon_name = request.inputs['taxon_name']
+            taxon_name = request.inputs['taxon_name'][0].data
             bbox = [-180, -90, 180, 90]
             # bbox_obj = self.BBox.getValue()
             # bbox = [bbox_obj.coords[0][0],
