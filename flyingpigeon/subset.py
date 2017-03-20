@@ -55,7 +55,7 @@ def masking(resource, sftlf, threshold=50, land_area=True, prefix=None):
     if land_area is True:
         mask = cdo.gtc(th, input=sftlf, output='mask.nc')
     else:
-        # TODO: fix the operator stc
+        # TODO: check the operator ltc/stc
         mask = cdo.ltc(th, input=sftlf, output='mask.nc')
 
     # generate output filename
