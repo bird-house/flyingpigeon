@@ -4,6 +4,7 @@ from pywps import Process
 from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
+from pywps.inout.literaltypes import AllowedValue
 from pywps.app.Common import Metadata
 
 from flyingpigeon import config
@@ -21,8 +22,9 @@ LOGGER = logging.getLogger("PYWPS")
 class LandseamaskProcess(Process):
     def __init__(self):
         inputs = [
-            ComplexInput('resource', 'Resource',
-                         abstract="NetCDF Files or archive (tar/zip) containing netCDF files",
+            ComplexInput('dataset', 'Dataset',
+                         abstract="Enter either URL pointing to a NetCDF File"
+                                  " or an archive (tar/zip) containing NetCDF files.",
                          min_occurs=1,
                          max_occurs=1000,
                          supported_formats=[
@@ -32,15 +34,16 @@ class LandseamaskProcess(Process):
                          ]),
 
             LiteralInput("threshold", "Threshold",
-                         abstract="Percentage of Land Area",
+                         abstract="Percentage of Land Area Fraction",
                          default="50",
                          data_type='integer',
+                         allowed_values=AllowedValue(minval=1, maxval=100),
                          min_occurs=1,
                          max_occurs=1,
                          ),
 
             LiteralInput("mask", "Land Area Fraction File",
-                         abstract="Optionally provide a OpenDAP URL to an appropriate Land Area Fraction File."
+                         abstract="Optionally provide an OpenDAP URL to an appropriate Land Area Fraction File."
                                   " If no file is provided, the process will search an"
                                   " appropriate mask in the local cache.",
                          data_type='string',
@@ -48,10 +51,13 @@ class LandseamaskProcess(Process):
                          max_occurs=1,
                          ),
 
-            LiteralInput("land_area", "Land/Sea",
-                         abstract="If land_area (default) is checked, sea areas will be set to missing value",
-                         default='1',
-                         data_type='boolean',
+            LiteralInput("land_or_sea", "Land or Sea",
+                         abstract="Either the land or the sea area of the mask will be subsetted.",
+                         default='land',
+                         data_type='string',
+                         allowed_values=['land', 'sea'],
+                         min_occurs=1,
+                         max_occurs=1,
                          )
         ]
 
@@ -95,8 +101,8 @@ class LandseamaskProcess(Process):
         response.outputs['output_log'].file = 'log.txt'
 
         datasets = archiveextract(
-            resource=rename_complexinputs(request.inputs['resource']))
-        land_area = request.inputs['land_area'][0].data
+            resource=rename_complexinputs(request.inputs['dataset']))
+        land_area_flag = request.inputs['land_or_sea'][0].data == 'land'
 
         masked_datasets = []
         count = 0
@@ -109,7 +115,7 @@ class LandseamaskProcess(Process):
                 landsea_mask = search_landsea_mask_by_esgf(ds)
             LOGGER.debug("using landsea_mask: %s", landsea_mask)
             prefix = 'masked_{}'.format(os.path.basename(ds).replace('.nc', ''))
-            masked_datasets.append(masking(ds, landsea_mask, land_area=land_area, prefix=prefix))
+            masked_datasets.append(masking(ds, landsea_mask, land_area=land_area_flag, prefix=prefix))
             count = count + 1
             response.update_status("masked: %d/%d".format(count, max_count), int(100.0 * count / max_count))
 
