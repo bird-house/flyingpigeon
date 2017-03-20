@@ -118,12 +118,12 @@ class LandseamaskProcess(Process):
             prefix = 'masked_{}'.format(ds_name.replace('.nc', ''))
             try:
                 new_ds = masking(ds, landsea_mask, land_area=land_area_flag, prefix=prefix)
-                masked_datasets.append(ds)
+                masked_datasets.append(new_ds)
             except:
                 LOGGER.exception("Could not subset dataset.")
                 raise Exception("Could not subset dataset: %s", ds_name)
             count = count + 1
-            response.update_status("masked: %d/%d".format(count, max_count), int(100.0 * count / max_count))
+            response.update_status("masked: {:d}/{:d}".format(count, max_count), int(100.0 * count / max_count))
 
         response.outputs['output_archive'].file = archive(masked_datasets)
         response.outputs['output_example'].file = masked_datasets[0]
