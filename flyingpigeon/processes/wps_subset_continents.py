@@ -68,12 +68,12 @@ class ClipcontinentProcess(Process):
         super(ClipcontinentProcess, self).__init__(
             self._handler,
             identifier="subset_continents",
-            title="Subset_____________(Continents)",
+            title="Subset (Continents)",
             version="0.10",
             abstract="Returns only the selected polygon for each input dataset",
             metadata=[
-                Metadata('LSCE', 'http://www.lsce.ipsl.fr/en/index.php'),
-                Metadata('Documentation', 'http://flyingpigeon.readthedocs.io/en/latest/'),
+                # Metadata('LSCE', 'http://www.lsce.ipsl.fr/en/index.php'),
+                Metadata('Doc', 'http://flyingpigeon.readthedocs.io/en/latest/'),
             ],
             inputs=inputs,
             outputs=outputs,

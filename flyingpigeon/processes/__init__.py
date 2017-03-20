@@ -6,6 +6,7 @@ from .wps_fetch import FetchProcess
 from .wps_landseamask import LandseamaskProcess
 from .wps_indices_percentile import IndicespercentileProcess
 from .wps_indices_single import IndicessingleProcess
+from .wps_sdm_gbiffetch import GBIFfetchProcess
 
 processes = [
     ClippingProcess(),
@@ -16,6 +17,7 @@ processes = [
     LandseamaskProcess(),
     IndicespercentileProcess(),
     IndicessingleProcess(),
+    GBIFfetchProcess()
 ]
 
 """
@@ -35,7 +37,7 @@ __all__ = [
         "wps_analogs_compare",
         "wps_analogs_viewer",
         "wps_segetalflora",
-        "wps_sdm_gbiffetch",
+        "wps_sdm_gbiffetch",                    # adopted to pywps4
         "wps_sdm_getindices",
         "wps_sdm_csvindices",
         "wps_sdm_csv",
