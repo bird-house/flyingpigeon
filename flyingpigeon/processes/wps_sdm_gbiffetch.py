@@ -105,7 +105,7 @@ class GBIFfetchProcess(Process):
         try:
             response.update_status('Fetching GBIF Data', 10)
             gbifdic = sdm.get_gbif(taxon_name, bbox=bbox)
-        except Exception as e:
+        except:
             msg = 'failed to search gbif.'
             LOGGER.exception(msg)
             raise Exception(msg)
@@ -113,7 +113,7 @@ class GBIFfetchProcess(Process):
         try:
             response.update_status('write csv file', 70)
             gbifcsv = sdm.gbifdic2csv(gbifdic)
-        except Exception as e:
+        except:
             msg = 'failed to write csv file.'
             LOGGER.exception(msg)
             raise Exception(msg)
@@ -123,13 +123,15 @@ class GBIFfetchProcess(Process):
             from flyingpigeon.visualisation import map_gbifoccurrences
             latlon = sdm.latlon_gbifdic(gbifdic)
             occurence_map = map_gbifoccurrences(latlon)
-        except Exception as e:
+        except:
             msg = 'failed to plot occurence map.'
             LOGGER.exception(msg)
             raise Exception(msg)
 
         response.outputs['output_map'].file = occurence_map
-        response.outputs['setValue'].file = gbifcsv
+        response.outputs['output_csv'].file = gbifcsv
+        response.update_status('done', 100)
+        return response
         #
         # # write folder statistics:
         # import shlex
@@ -146,4 +148,3 @@ class GBIFfetchProcess(Process):
         #                 ).communicate()
         #
         # LOGGER.debug('temp folder statistics: %s  ERRORS: %s' % (output, error))
-        response.update_status('done', 100)

@@ -5,89 +5,87 @@ Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 
 from pywps.Process import WPSProcess
 from flyingpigeon.sdm import _SDMINDICES_
-from flyingpigeon.log import init_process_logger
+
+from pywps import Process
+from pywps import LiteralInput
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format, FORMATS
+from pywps.app.Common import Metadata
 
 import logging
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger("PYWPS")
 
 
-class SDMgetindicesProcess(WPSProcess):
-
+class SDMgetindicesProcess(Process):
     def __init__(self):
-        WPSProcess.__init__(
-            self,
+        inputs = [
+            ComplexInput('resource', 'Resource',
+                         abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
+                         metadata=[Metadata('Info')],
+                         min_occurs=1,
+                         max_occurs=1000,
+                         supported_formats=[
+                             Format('application/x-netcdf'),
+                             Format('application/x-tar'),
+                             Format('application/zip'),
+                         ]),
+
+            LiteralInput("input_indices", "Indices",
+                         abstract="Climate indices related to growth conditions \
+                                    of tree species",
+                         default=['TG_JJA', 'TNn_Jan'],
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=10,
+                         allowed_values=_SDMINDICES_
+                         S)
+
+            LiteralInput("archive_format", "Archive format",
+                         abstract="Result files will be compressed into archives. \
+                                   Choose an appropriate format",
+                         default="tar",
+                         type='string',
+                         min_occurs=1,
+                         max_occurs=1,
+                         allowed_values=['zip', 'tar']
+                         )
+        ]
+
+        outputs = [
+            ComplexOutput("output_indices", "Climate indices for growth conditions over all timesteps",
+                          abstract="Archive (tar/zip) containing calculated climate indices",
+                          formats=[{"mimeType": "application/x-tar"},
+                                   {"mimeType": "application/zip"}],
+                          as_reference=True,
+                )
+
+            ComplexOutput('output_log', 'Logging information',
+                          abstract="Collected logs during process run.",
+                          as_reference=True,
+                          supported_formats=[Format('text/plain')]
+                          )
+        ]
+
+        super(SDMgetindicesProcess, self).__init__(
+            self._handler,
             identifier="sdm_getindices",
             title="SDM -- calculation only indices",
-            version="0.9",
+            version="0.10",
             metadata=[
-                {"title": "LWF", "href": "http://www.lwf.bayern.de/"},
-                {"title": "Doc",
-                    "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#species-distribution-model"},  # noqa
-                {"title": "Paper",
-                    "href": "http://www.hindawi.com/journals/jcli/2013/787250/"},
-                {"title": "Tutorial",
-                    "href": "http://flyingpigeon.readthedocs.io/en/latest/tutorials/sdm.html"},
+                Metadata("LWF", "http://www.lwf.bayern.de/"),
+                Metadata(
+                    "Doc",
+                    "http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#species-distribution-model"),
+                Metadata("paper",
+                         "http://www.hindawi.com/journals/jcli/2013/787250/"),
+                Metadata("Tutorial",
+                         "http://flyingpigeon.readthedocs.io/en/latest/tutorials/sdm.html"),
             ],
             abstract="Indices preparation for SDM process",
-            statusSupported=True,
-            storeSupported=True
-        )
-
-        # Literal Input Data
-        # ------------------
-        self.resources = self.addComplexInput(
-            identifier="resources",
-            title="NetCDF File",
-            abstract="NetCDF File",
-            minOccurs=1,
-            maxOccurs=500,
-            maxmegabites=50000,
-            formats=[{"mimeType": "application/x-netcdf"}],
-        )
-
-        self.input_indices = self.addLiteralInput(
-            identifier="input_indices",
-            title="Indices",
-            abstract="Climate indices related to growth conditions \
-                of tree species",
-            default=['TG_JJA', 'TNn_Jan'],
-            type=type(''),
-            minOccurs=1,
-            maxOccurs=10,
-            allowedValues=_SDMINDICES_
-        )
-
-        self.archive_format = self.addLiteralInput(
-            identifier="archive_format",
-            title="Archive format",
-            abstract="Result files will be compressed into archives. \
-                Choose an appropriate format",
-            default="tar",
-            type=type(''),
-            minOccurs=1,
-            maxOccurs=1,
-            allowedValues=['zip', 'tar']
-        )
-
-        ###########
-        # OUTPUTS
-        ###########
-
-        self.output_indices = self.addComplexOutput(
-            identifier="output_indices",
-            title="Climate indices for growth conditions over all timesteps",
-            abstract="Archive (tar/zip) containing calculated climate indices",
-            formats=[{"mimeType": "application/x-tar"},
-                     {"mimeType": "application/zip"}],
-            asReference=True,
-        )
-
-        self.output_log = self.addComplexOutput(
-            identifier="output_log",
-            title="Logging information",
-            abstract="Collected logs during process run.",
-            formats=[{"mimeType": "text/plain"}],
-            asReference=True,
+            inputs=inputs,
+            outputs=outputs,
+            status_supported=True,
+            store_supported=True,
         )
 
     def execute(self):
