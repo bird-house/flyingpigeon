@@ -9,8 +9,9 @@ from pywps.app.Common import Metadata
 from flyingpigeon import config
 from flyingpigeon.subset import masking
 from flyingpigeon.utils import searchfile
+from flyingpigeon.utils import search_landsea_mask
 from flyingpigeon.utils import archive, archiveextract
-from flyingpigeon.utils import rename_complexinuts
+from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.log import init_process_logger
 
 import logging
@@ -102,43 +103,18 @@ class LandseamaskProcess(Process):
             resource=rename_complexinputs(request.inputs['resource']))
         # masks = archiveextract(
         #     resource=rename_complexinputs(request.inputs['mask']))
-        land_area = request.inputs['land_area']
-
-        fp_cache = config.cache_path().split('/')
-        base_dir = '/'.join(fp_cache[0:-1])  # base dir for all birds
-
-        LOGGER.debug('base dir of directory tree: %s' % base_dir)
+        land_area = request.inputs['land_area'][0].data
 
         ncs = []
-        sftlf = []
         for nc in resources:
             try:
-                basename = os.path.basename(nc)
-                bs = basename.split('_')
-                pattern = 'sftlf_' + '_'.join(bs[1:-2]) + '_fx.nc'
-                pattern = pattern.replace('historical',
-                                          '*').replace('rcp85',
-                                                       '*').replace('rcp65',
-                                                                    '*').replace('rcp45',
-                                                                                 '*').replace('rcp26', '*')
-                LOGGER.debug('searching for %s ' % pattern)
-                sftlf.extend(searchfile(pattern, os.curdir))
-                sftlf.extend(searchfile(pattern, base_dir))
-                LOGGER.debug('lenght of sftlf: %s' % len(sftlf))
-                if len(sftlf) >= 1:
-                    if len(sftlf) > 1:
-                        LOGGER.warn(
-                            'more than one sftlf file is found fitting to the pattern, first one will be taken %s'
-                            % sftlf[0])
-                    prefix = 'masked%s' % basename.replace('.nc', '')
-                    nc_mask = masking(nc, sftlf[0], land_area=land_area, prefix=prefix)
-                    ncs.extend([nc_mask])
-                    LOGGER.info('masking processed for %s', basename)
-                else:
-                    LOGGER.warn('no masked found. Please perform a "Download Resources"\
-                     to make sure the land_area file is in cache')
+                landsea_mask = search_landsea_mask(nc)
+                prefix = 'masked{}'.format(os.path.basename(nc).replace('.nc', ''))
+                nc_masked = masking(nc, landsea_mask, land_area=land_area, prefix=prefix)
+                ncs.extend([nc_masked])
+                LOGGER.info('masking processed for %s', nc)
             except:
-                LOGGER.exception('failed to mask file: %s', basename)
+                LOGGER.exception('failed to mask file: %s', nc)
         if not ncs:
             raise Exception("Could not mask input files. Maybe appropriate mask files are not available?")
         nc_archive = archive(ncs)

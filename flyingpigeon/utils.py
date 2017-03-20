@@ -14,6 +14,35 @@ GROUPING = ["day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", 
             "Jan", 'Feb', "Mar", "Apr", "May", "Jun", 'Jul', "Aug", 'Sep', 'Oct', 'Nov', 'Dec']
 
 
+def search_landsea_mask(resource):
+    fp_cache = config.cache_path().split('/')
+    base_dir = '/'.join(fp_cache[0:-1])  # base dir for all birds
+
+    logger.debug('base dir of directory tree: %s' % base_dir)
+
+    sftlf = []
+    basename = os.path.basename(resource)
+    bs = basename.split('_')
+    pattern = 'sftlf_' + '_'.join(bs[1:-2]) + '_fx.nc'
+    pattern = pattern.replace('historical',
+                              '*').replace('rcp85',
+                                           '*').replace('rcp65',
+                                                        '*').replace('rcp45',
+                                                                     '*').replace('rcp26', '*')
+    logger.debug('searching for %s ' % pattern)
+    sftlf.extend(searchfile(pattern, os.curdir))
+    sftlf.extend(searchfile(pattern, base_dir))
+    logger.debug('lenght of sftlf: %s', len(sftlf))
+    if not sftlf:
+        raise Exception(
+            'no masked found. Please perform a "Download Resources"'
+            ' to make sure the land_area file is in cache')
+    if len(sftlf) > 1:
+        logger.warn(
+            'more than one sftlf file is found fitting to the pattern, first one will be taken %s', sftlf[0])
+    return sftlf[0]
+
+
 def rename_complexinputs(complexinputs):
     """
     TODO: this method is just a dirty workaround to rename input files according to the url name.
