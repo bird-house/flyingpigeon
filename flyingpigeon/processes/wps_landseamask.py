@@ -1,11 +1,17 @@
-from flyingpigeon.log import init_process_logger
-from flyingpigeon.utils import rename_complexinputs
+import os
 
 from pywps import Process
 from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
 from pywps.app.Common import Metadata
+
+from flyingpigeon import config
+from flyingpigeon.subset import masking
+from flyingpigeon.utils import searchfile
+from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import rename_complexinuts
+from flyingpigeon.log import init_process_logger
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
@@ -89,13 +95,6 @@ class LandseamaskProcess(Process):
         )
 
     def _handler(self, request, response):
-        from flyingpigeon.utils import searchfile
-        from flyingpigeon.subset import masking
-        from flyingpigeon.utils import archive, archiveextract
-
-        from flyingpigeon import config
-        from os import path
-
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
@@ -114,7 +113,7 @@ class LandseamaskProcess(Process):
         sftlf = []
         for nc in resources:
             try:
-                basename = path.basename(nc)
+                basename = os.path.basename(nc)
                 bs = basename.split('_')
                 pattern = 'sftlf_' + '_'.join(bs[1:-2]) + '_fx.nc'
                 pattern = pattern.replace('historical',
@@ -123,7 +122,7 @@ class LandseamaskProcess(Process):
                                                                     '*').replace('rcp45',
                                                                                  '*').replace('rcp26', '*')
                 LOGGER.debug('searching for %s ' % pattern)
-                sftlf.extend(searchfile(pattern, path.curdir))
+                sftlf.extend(searchfile(pattern, os.curdir))
                 sftlf.extend(searchfile(pattern, base_dir))
                 LOGGER.debug('lenght of sftlf: %s' % len(sftlf))
                 if len(sftlf) >= 1:
