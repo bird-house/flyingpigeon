@@ -42,27 +42,24 @@ def cache_path():
 
 
 def output_path():
-    try:
-        output_path = configuration.get_config_value("server", "outputpath")
-    except:
+    output_path = configuration.get_config_value("server", "outputpath")
+    if not output_path:
         output_path = None
         LOGGER.warn('no output path configured')
     return output_path
 
 
 def outputUrl_path():
-    try:
-        outputUrl = configuration.get_config_value("server", "outputurl")
-    except:
-        outputUrl = None
+    url = configuration.get_config_value("server", "outputurl")
+    if not url:
+        url = None
         LOGGER.warn('no outputUrl configured')
-    return outputUrl
+    return url
 
 
 def www_url():
-    try:
-        url = configuration.get_config_value("extra", "www_url")
-    except:
+    url = configuration.get_config_value("extra", "www_url")
+    if not url:
         url = None
         LOGGER.warn('no www-url configured')
     return url
