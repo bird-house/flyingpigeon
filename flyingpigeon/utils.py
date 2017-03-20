@@ -17,57 +17,41 @@ logger = logging.getLogger(__name__)
 GROUPING = ["day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON",
             "Jan", 'Feb', "Mar", "Apr", "May", "Jun", 'Jul', "Aug", 'Sep', 'Oct', 'Nov', 'Dec']
 
+ATTRIBUTE_TO_FACETS_MAP = dict(
+    project_id='project',
+    experiment='experiment',
+    CORDEX_domain='domain',
+    institute_id='institute',
+    driving_model_id='driving_model',
+)
+
 
 def search_landsea_mask_by_esgf(resource):
+    """
+    Searches a landsea mask (variable sftlf) in ESGF which matches the
+    NetCDF attributes in the NetCDF files ``resource``.
+
+    Raises an Exception if no mask is found.
+
+    Returns the OpenDAP URL of the first found mask file.
+    """
+    # fill search constraints from nc attributes
     ds = Dataset(resource)
     attributes = ds.ncattrs()
     constraints = dict(variable="sftlf")
-    if 'project_id' in attributes:
-        constraints['project'] = ds.getncattr('project_id')
-    if 'experiment' in attributes:
-        constraints['experiment'] = ds.getncattr('experiment')
-    if 'CORDEX_domain' in attributes:
-        constraints['domain'] = ds.getncattr('CORDEX_domain')
-    if 'institute_id' in attributes:
-        constraints['institute'] = ds.getncattr('institute_id')
-    if 'driving_model_id' in attributes:
-        constraints['driving_model'] = ds.getncattr('driving_model_id')
+    for attr, facet in ATTRIBUTE_TO_FACETS_MAP.iteritems():
+        if attr in attributes:
+            constraints[facet] = ds.getncattr(attr)
 
-    conn = SearchConnection('https://esgf-data.dkrz.de/esg-search', distrib=False)
+    # run file search
+    conn = SearchConnection(config.esgfsearch_url(), distrib=True)
     ctx = conn.new_context(search_type=TYPE_FILE, **constraints)
     if ctx.hit_count == 0:
         raise Exception("Could not find a mask in ESGF.")
+    if ctx.hit_count > 1:
+        logger.warn("Found more then one mask file.")
     results = ctx.search(batch_size=1)
     return results[0].opendap_url
-
-
-def search_landsea_mask_in_cache(resource):
-    fp_cache = config.cache_path().split('/')
-    base_dir = '/'.join(fp_cache[0:-1])  # base dir for all birds
-
-    logger.debug('base dir of directory tree: %s' % base_dir)
-
-    sftlf = []
-    basename = os.path.basename(resource)
-    bs = basename.split('_')
-    pattern = 'sftlf_' + '_'.join(bs[1:-2]) + '_fx.nc'
-    pattern = pattern.replace('historical',
-                              '*').replace('rcp85',
-                                           '*').replace('rcp65',
-                                                        '*').replace('rcp45',
-                                                                     '*').replace('rcp26', '*')
-    logger.debug('searching for %s ' % pattern)
-    sftlf.extend(searchfile(pattern, os.curdir))
-    sftlf.extend(searchfile(pattern, base_dir))
-    logger.debug('lenght of sftlf: %s', len(sftlf))
-    if not sftlf:
-        raise Exception(
-            'no masked found. Please perform a "Download Resources"'
-            ' to make sure the land_area file is in cache')
-    if len(sftlf) > 1:
-        logger.warn(
-            'more than one sftlf file is found fitting to the pattern, first one will be taken %s', sftlf[0])
-    return sftlf[0]
 
 
 def rename_complexinputs(complexinputs):
