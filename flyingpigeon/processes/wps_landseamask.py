@@ -94,26 +94,24 @@ class LandseamaskProcess(Process):
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
-        resources = archiveextract(
+        datasets = archiveextract(
             resource=rename_complexinputs(request.inputs['resource']))
         land_area = request.inputs['land_area'][0].data
 
         ncs = []
-        for nc in resources:
-            try:
-                if 'mask' in request.inputs:
-                    landsea_mask = request.inputs['mask'][0].data
-                else:
-                    landsea_mask = search_landsea_mask_by_esgf(nc)
-                LOGGER.debug("using landsea_mask: %s", landsea_mask)
-                prefix = 'masked{}'.format(os.path.basename(nc).replace('.nc', ''))
-                nc_masked = masking(nc, landsea_mask, land_area=land_area, prefix=prefix)
-                ncs.extend([nc_masked])
-                LOGGER.info('masking processed for %s', nc)
-            except:
-                LOGGER.exception('failed to mask file: %s', nc)
-        if not ncs:
-            raise Exception("Could not mask input files. Maybe appropriate mask files are not available?")
+        count = 0
+        max_count = len(datasets)
+        for ds in datasets:
+            if 'mask' in request.inputs:
+                landsea_mask = request.inputs['mask'][0].data
+            else:
+                landsea_mask = search_landsea_mask_by_esgf(ds)
+            LOGGER.debug("using landsea_mask: %s", landsea_mask)
+            prefix = 'masked_{}'.format(os.path.basename(ds).replace('.nc', ''))
+            ds_masked = masking(ds, landsea_mask, land_area=land_area, prefix=prefix)
+            ncs.extend([ds_masked])
+            count = count + 1
+            response.update_status("masked: %d/%d".format(count, max_count), int(100 * count / max_count))
         nc_archive = archive(ncs)
 
         response.outputs['output_archive'].file = nc_archive
