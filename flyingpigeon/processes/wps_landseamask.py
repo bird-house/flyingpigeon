@@ -25,7 +25,6 @@ class LandseamaskProcess(Process):
                          abstract="NetCDF Files or archive (tar/zip) containing netCDF files",
                          min_occurs=1,
                          max_occurs=1000,
-                         #  maxmegabites=5000,
                          supported_formats=[
                              Format('application/x-netcdf'),
                              Format('application/x-tar'),
@@ -40,18 +39,14 @@ class LandseamaskProcess(Process):
                          max_occurs=1,
                          ),
 
-            # ComplexInput("mask", "Land Area Fraction File",
-            #              abstract="optional provide a url to an appropriate Land Area Fraction File. If no file is"
-            #               "provided, the process will search an appropriate mask in the local cache."
-            #               "Make sure the land area fraction are allready fetched (use 'Download Resources' Process)",
-            #              min_occurs=0,
-            #              max_occurs=100,
-            #              # maxmegabites=50,
-            #              supported_formats=[
-            #                   Format('application/x-netcdf'),
-            #                   Format('application/x-tar'),
-            #                   Format('application/zip'),
-            #                   ]),
+            LiteralInput("mask", "Land Area Fraction File",
+                         abstract="Optionally provide a OpenDAP URL to an appropriate Land Area Fraction File."
+                                  " If no file is provided, the process will search an"
+                                  " appropriate mask in the local cache.",
+                         data_type='string',
+                         min_occurs=0,
+                         max_occurs=1,
+                         ),
 
             LiteralInput("land_area", "Land/Sea",
                          abstract="If land_area (default) is checked, sea areas will be set to missing value",
@@ -83,9 +78,9 @@ class LandseamaskProcess(Process):
             self._handler,
             identifier="landseamask",
             title="Masking Land-Sea",
-            version="0.2",
-            abstract="Find the appropriate land_area fraction file and perform a\
-                      CDO division to mask either land or sea areas",
+            version="0.3",
+            abstract="Find the appropriate land_area fraction file and perform a"
+                     " CDO division to mask either land or sea areas",
             metadata=[
                 {"title": "Doc", "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
             ],
@@ -108,7 +103,11 @@ class LandseamaskProcess(Process):
         ncs = []
         for nc in resources:
             try:
-                landsea_mask = search_landsea_mask(nc)
+                if 'mask' in request.inputs:
+                    landsea_mask = request.inputs['mask'][0].data
+                else:
+                    landsea_mask = search_landsea_mask(nc)
+                LOGGER.debug("using landsea_mask: %s", landsea_mask)
                 prefix = 'masked{}'.format(os.path.basename(nc).replace('.nc', ''))
                 nc_masked = masking(nc, landsea_mask, land_area=land_area, prefix=prefix)
                 ncs.extend([nc_masked])

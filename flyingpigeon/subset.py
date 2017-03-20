@@ -6,7 +6,7 @@ from flyingpigeon.utils import drs_filename, get_variable, calc_grouping, sort_b
 from flyingpigeon import config
 
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("PYWPS")
 
 DIR_MASKS = config.masks_dir()
 DIR_SHP = config.shapefiles_dir()
@@ -48,14 +48,15 @@ def masking(resource, sftlf, threshold=50, land_area=True, prefix=None):
     #######################
     # TODO check sftlf unit
     #######################
-    th = threshold / 100
+    th = threshold / 100.0
 
     ###################
     # generate the mask
     if land_area is True:
         mask = cdo.gtc(th, input=sftlf, output='mask.nc')
     else:
-        mask = cdo.stc(th, input=sftlf, output='mask.nc')
+        # TODO: fix the operator stc
+        mask = cdo.ltc(th, input=sftlf, output='mask.nc')
 
     # generate output filename
     if prefix is not None:
