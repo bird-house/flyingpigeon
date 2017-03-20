@@ -313,14 +313,14 @@ def get_viewer_configfile(analogs):
     from os.path import basename
 
     try:
-        outputUrl_path = config.outputUrl_path()
+        output_url = config.output_url()
         output_path = config.output_path()
 
         # Config file with path (server URL address)
         configfile = analogs.replace('analogs-', 'config-')
         logger.info('config filename generated %s' % configfile)
 
-        configfile_with_path = path.join(outputUrl_path, configfile)
+        configfile_with_path = path.join(output_url, configfile)
         logger.debug('configfile_with_path: %s' % configfile_with_path)
 
         # Check if config file exists
@@ -407,7 +407,7 @@ def copy_configfile(configfile):
     from shutil import copyfile
     from os import path
 
-    outputUrl_path = config.outputUrl_path()
+    output_url = config.output_url()
     output_path = config.output_path()
 
     # configfile = path.basename(configfile) #just file name
@@ -415,7 +415,7 @@ def copy_configfile(configfile):
     config_output_path = path.join(output_path, path.basename(configfile))
     # Copy out of local working dir to output_path
     copyfile(configfile, config_output_path)
-    config_output_url = path.join(outputUrl_path, configfile)
+    config_output_url = path.join(output_url, configfile)
 
     return config_output_path, config_output_url
 

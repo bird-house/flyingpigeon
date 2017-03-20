@@ -49,11 +49,11 @@ def output_path():
     return output_path
 
 
-def outputUrl_path():
+def output_url():
     url = configuration.get_config_value("server", "outputurl")
     if not url:
         url = None
-        LOGGER.warn('no outputUrl configured')
+        LOGGER.warn('no outputurl configured')
     return url
 
 
