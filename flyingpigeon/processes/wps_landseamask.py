@@ -108,14 +108,20 @@ class LandseamaskProcess(Process):
         count = 0
         max_count = len(datasets)
         for ds in datasets:
-            LOGGER.debug('masking dataset: %s', os.path.basename(ds))
+            ds_name = os.path.basename(ds)
+            LOGGER.debug('masking dataset: %s', ds_name)
             if 'mask' in request.inputs:
                 landsea_mask = request.inputs['mask'][0].data
             else:
                 landsea_mask = search_landsea_mask_by_esgf(ds)
             LOGGER.debug("using landsea_mask: %s", landsea_mask)
-            prefix = 'masked_{}'.format(os.path.basename(ds).replace('.nc', ''))
-            masked_datasets.append(masking(ds, landsea_mask, land_area=land_area_flag, prefix=prefix))
+            prefix = 'masked_{}'.format(ds_name.replace('.nc', ''))
+            try:
+                new_ds = masking(ds, landsea_mask, land_area=land_area_flag, prefix=prefix)
+                masked_datasets.append(ds)
+            except:
+                LOGGER.exception("Could not subset dataset.")
+                raise Exception("Could not subset dataset: %s", ds_name)
             count = count + 1
             response.update_status("masked: %d/%d".format(count, max_count), int(100.0 * count / max_count))
 
