@@ -98,25 +98,23 @@ class LandseamaskProcess(Process):
             resource=rename_complexinputs(request.inputs['resource']))
         land_area = request.inputs['land_area'][0].data
 
-        ncs = []
+        masked_datasets = []
         count = 0
         max_count = len(datasets)
         for ds in datasets:
+            LOGGER.debug('masking dataset: %s', os.path.basename(ds))
             if 'mask' in request.inputs:
                 landsea_mask = request.inputs['mask'][0].data
             else:
                 landsea_mask = search_landsea_mask_by_esgf(ds)
             LOGGER.debug("using landsea_mask: %s", landsea_mask)
             prefix = 'masked_{}'.format(os.path.basename(ds).replace('.nc', ''))
-            ds_masked = masking(ds, landsea_mask, land_area=land_area, prefix=prefix)
-            ncs.extend([ds_masked])
+            masked_datasets.append(masking(ds, landsea_mask, land_area=land_area, prefix=prefix))
             count = count + 1
-            response.update_status("masked: %d/%d".format(count, max_count), int(100 * count / max_count))
-        nc_archive = archive(ncs)
+            response.update_status("masked: %d/%d".format(count, max_count), int(100.0 * count / max_count))
 
-        response.outputs['output_archive'].file = nc_archive
-        i = next((i for i, x in enumerate(ncs) if x), None)
-        response.outputs['output_example'].file = ncs[i]
+        response.outputs['output_archive'].file = archive(masked_datasets)
+        response.outputs['output_example'].file = masked_datasets[0]
 
         response.update_status("done", 100)
         return response
