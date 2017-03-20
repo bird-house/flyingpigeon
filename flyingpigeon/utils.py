@@ -19,15 +19,21 @@ GROUPING = ["day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", 
 
 
 def search_landsea_mask_by_esgf(resource):
+    ds = Dataset(resource)
+    attributes = ds.ncattrs()
+    constraints = dict(variable="sftlf")
+    if 'project_id' in attributes:
+        constraints['project'] = ds.getncattr('project_id')
+    if 'experiment' in attributes:
+        constraints['experiment'] = ds.getncattr('experiment')
+    if 'CORDEX_domain' in attributes:
+        constraints['domain'] = ds.getncattr('CORDEX_domain')
+    if 'institute_id' in attributes:
+        constraints['institute'] = ds.getncattr('institute_id')
+    if 'driving_model_id' in attributes:
+        constraints['driving_model'] = ds.getncattr('driving_model_id')
+
     conn = SearchConnection('https://esgf-data.dkrz.de/esg-search', distrib=False)
-    constraints = dict(
-        project="CORDEX",
-        experiment="historical",
-        domain="EUR-44",
-        institute="MPI-CSC",
-        driving_model="MPI-M-MPI-ESM-LR",
-        variable="sftlf",
-    )
     ctx = conn.new_context(search_type=TYPE_FILE, **constraints)
     if ctx.hit_count == 0:
         raise Exception("Could not find a mask in ESGF.")
