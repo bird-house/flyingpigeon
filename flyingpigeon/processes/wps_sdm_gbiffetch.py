@@ -56,30 +56,52 @@ class GBIFfetchProcess(WPSProcess):
         # OUTPUTS
         ###########
 
-        self.output_csv = self.addComplexOutput(
-            identifier="output_csv",
-            title="Tree species table",
-            abstract="Extracted CSV file containing the tree species table ",
-            formats=[{"mimeType": "text/csv"}],
-            asReference=True,
-        )
+    outputs = [
+        ComplexOutput('output_map', 'Graphic of species occurences',
+                      abstract="PNG graphic file showing the presence of tree species \
+                           according to GBIF data fetch",
+                      as_reference=True,
+                      supported_formats=[Format('image/png')]
+                      ),
 
-        self.output_map = self.addComplexOutput(
-            identifier="output_map",
-            title="Graphic of species occurences",
-            abstract="PNG graphic file showing the presence of tree species \
-            according to GBIF data fetch",
-            formats=[{"mimeType": "image/png"}],
-            asReference=True,
-        )
+        ComplexOutput('output_csv', 'Tree species table',
+                      abstract="Extracted CSV file containing the tree species table",
+                      as_reference=True,
+                      supported_formats=[Format('text/csv')]
+                      ),
 
-        self.output_log = self.addComplexOutput(
-            identifier="output_log",
-            title="Logging information",
-            abstract="Collected logs during process run.",
-            formats=[{"mimeType": "text/plain"}],
-            asReference=True,
-            )
+        ComplexOutput('output_log', 'Logging information',
+                      abstract="Collected logs during process run.",
+                      as_reference=True,
+                      supported_formats=[Format('text/plain')]
+                      )
+    ]
+
+        #
+        # self.output_csv = self.addComplexOutput(
+        #     identifier="output_csv",
+        #     title="Tree species table",
+        #     abstract="Extracted CSV file containing the tree species table ",
+        #     formats=[{"mimeType": "text/csv"}],
+        #     asReference=True,
+        # )
+        #
+        # self.output_map = self.addComplexOutput(
+        #     identifier="output_map",
+        #     title="Graphic of species occurences",
+        #     abstract="PNG graphic file showing the presence of tree species \
+        #     according to GBIF data fetch",
+        #     formats=[{"mimeType": "image/png"}],
+        #     asReference=True,
+        # )
+        #
+        # self.output_log = self.addComplexOutput(
+        #     identifier="output_log",
+        #     title="Logging information",
+        #     abstract="Collected logs during process run.",
+        #     formats=[{"mimeType": "text/plain"}],
+        #     asReference=True,
+        #     )
 
     def execute(self):
 
