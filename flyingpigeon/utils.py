@@ -5,6 +5,10 @@ import wget
 from ocgis import RequestDataset  # does not support NETCDF4
 from netCDF4 import Dataset, num2date
 from netCDF4 import MFDataset  # does not support NETCDF4
+
+from pyesgf.search.connection import SearchConnection
+from pyesgf.search import TYPE_FILE
+
 from flyingpigeon import config
 
 import logging
@@ -14,7 +18,24 @@ GROUPING = ["day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", 
             "Jan", 'Feb', "Mar", "Apr", "May", "Jun", 'Jul', "Aug", 'Sep', 'Oct', 'Nov', 'Dec']
 
 
-def search_landsea_mask(resource):
+def search_landsea_mask_by_esgf(resource):
+    conn = SearchConnection('https://esgf-data.dkrz.de/esg-search', distrib=False)
+    constraints = dict(
+        project="CORDEX",
+        experiment="historical",
+        domain="EUR-44",
+        institute="MPI-CSC",
+        driving_model="MPI-M-MPI-ESM-LR",
+        variable="sftlf",
+    )
+    ctx = conn.new_context(search_type=TYPE_FILE, **constraints)
+    if ctx.hit_count == 0:
+        raise Exception("Could not find a mask in ESGF.")
+    results = ctx.search(batch_size=1)
+    return results[0].opendap_url
+
+
+def search_landsea_mask_in_cache(resource):
     fp_cache = config.cache_path().split('/')
     base_dir = '/'.join(fp_cache[0:-1])  # base dir for all birds
 

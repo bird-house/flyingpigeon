@@ -9,7 +9,7 @@ from pywps.app.Common import Metadata
 from flyingpigeon import config
 from flyingpigeon.subset import masking
 from flyingpigeon.utils import searchfile
-from flyingpigeon.utils import search_landsea_mask
+from flyingpigeon.utils import search_landsea_mask_by_esgf
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.log import init_process_logger
@@ -96,8 +96,6 @@ class LandseamaskProcess(Process):
 
         resources = archiveextract(
             resource=rename_complexinputs(request.inputs['resource']))
-        # masks = archiveextract(
-        #     resource=rename_complexinputs(request.inputs['mask']))
         land_area = request.inputs['land_area'][0].data
 
         ncs = []
@@ -106,7 +104,7 @@ class LandseamaskProcess(Process):
                 if 'mask' in request.inputs:
                     landsea_mask = request.inputs['mask'][0].data
                 else:
-                    landsea_mask = search_landsea_mask(nc)
+                    landsea_mask = search_landsea_mask_by_esgf(nc)
                 LOGGER.debug("using landsea_mask: %s", landsea_mask)
                 prefix = 'masked{}'.format(os.path.basename(nc).replace('.nc', ''))
                 nc_masked = masking(nc, landsea_mask, land_area=land_area, prefix=prefix)
