@@ -78,6 +78,9 @@ dependencies:
 - r-gridextra #=2.0.0
 - harfbuzz
 #- r-cairo#=1.5_9 build in r-base
+################
+# esgf
+- esgf-pyclient
 - pip:
   - genshi==0.7
   - pygbif==0.2.0 #0.1.4

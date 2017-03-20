@@ -5,6 +5,10 @@ import wget
 from ocgis import RequestDataset  # does not support NETCDF4
 from netCDF4 import Dataset, num2date
 from netCDF4 import MFDataset  # does not support NETCDF4
+
+from pyesgf.search.connection import SearchConnection
+from pyesgf.search import TYPE_FILE
+
 from flyingpigeon import config
 
 import logging
@@ -12,6 +16,42 @@ logger = logging.getLogger(__name__)
 
 GROUPING = ["day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON",
             "Jan", 'Feb', "Mar", "Apr", "May", "Jun", 'Jul', "Aug", 'Sep', 'Oct', 'Nov', 'Dec']
+
+ATTRIBUTE_TO_FACETS_MAP = dict(
+    project_id='project',
+    experiment='experiment',
+    CORDEX_domain='domain',
+    institute_id='institute',
+    driving_model_id='driving_model',
+)
+
+
+def search_landsea_mask_by_esgf(resource):
+    """
+    Searches a landsea mask (variable sftlf) in ESGF which matches the
+    NetCDF attributes in the NetCDF files ``resource``.
+
+    Raises an Exception if no mask is found.
+
+    Returns the OpenDAP URL of the first found mask file.
+    """
+    # fill search constraints from nc attributes
+    ds = Dataset(resource)
+    attributes = ds.ncattrs()
+    constraints = dict(variable="sftlf")
+    for attr, facet in ATTRIBUTE_TO_FACETS_MAP.iteritems():
+        if attr in attributes:
+            constraints[facet] = ds.getncattr(attr)
+
+    # run file search
+    conn = SearchConnection(config.esgfsearch_url(), distrib=True)
+    ctx = conn.new_context(search_type=TYPE_FILE, **constraints)
+    if ctx.hit_count == 0:
+        raise Exception("Could not find a mask in ESGF.")
+    if ctx.hit_count > 1:
+        logger.warn("Found more then one mask file.")
+    results = ctx.search(batch_size=1)
+    return results[0].opendap_url
 
 
 def rename_complexinputs(complexinputs):
