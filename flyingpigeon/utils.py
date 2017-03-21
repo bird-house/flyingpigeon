@@ -44,7 +44,7 @@ def search_landsea_mask_by_esgf(resource):
             constraints[facet] = ds.getncattr(attr)
 
     # run file search
-    conn = SearchConnection(config.esgfsearch_url(), distrib=True)
+    conn = SearchConnection(config.esgfsearch_url(), distrib=config.esgfsearch_distrib())
     ctx = conn.new_context(search_type=TYPE_FILE, **constraints)
     if ctx.hit_count == 0:
         raise Exception("Could not find a mask in ESGF.")

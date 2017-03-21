@@ -13,6 +13,14 @@ def esgfsearch_url():
     return url
 
 
+def esgfsearch_distrib():
+    distrib = configuration.get_config_value("extra", "esgfsearch_distrib")
+    if distrib is None:
+        LOGGER.warn("No ESGF Search distrib option configured. Using default value.")
+        distrib = True
+    return distrib
+
+
 def shapefiles_dir():
     return os.path.join(os.path.abspath(os.path.dirname(__file__)), 'shapefiles')
 
