@@ -37,15 +37,14 @@ class LandseamaskProcess(Process):
                          abstract="Percentage of Land Area Fraction",
                          default="50",
                          data_type='integer',
-                         allowed_values=AllowedValue(minval=1, maxval=100),
+                         allowed_values=[10, 25, 50, 75, 90],
                          min_occurs=1,
                          max_occurs=1,
                          ),
 
             LiteralInput("mask", "Land Area Fraction File",
                          abstract="Optionally provide an OpenDAP URL to an appropriate Land Area Fraction File."
-                                  " If no file is provided, the process will search an"
-                                  " appropriate mask in the local cache.",
+                                  " If no file is provided, the process will run a search on the ESGF archive.",
                          data_type='string',
                          min_occurs=0,
                          max_occurs=1,
@@ -109,12 +108,12 @@ class LandseamaskProcess(Process):
         max_count = len(datasets)
         for ds in datasets:
             ds_name = os.path.basename(ds)
-            LOGGER.debug('masking dataset: %s', ds_name)
+            LOGGER.info('masking dataset: %s', ds_name)
             if 'mask' in request.inputs:
                 landsea_mask = request.inputs['mask'][0].data
             else:
                 landsea_mask = search_landsea_mask_by_esgf(ds)
-            LOGGER.debug("using landsea_mask: %s", landsea_mask)
+            LOGGER.info("using landsea_mask: %s", landsea_mask)
             prefix = 'masked_{}'.format(ds_name.replace('.nc', ''))
             try:
                 new_ds = masking(ds, landsea_mask, land_area=land_area_flag, prefix=prefix)
