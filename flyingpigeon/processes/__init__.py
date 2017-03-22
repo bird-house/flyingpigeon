@@ -8,6 +8,7 @@ from .wps_indices_percentile import IndicespercentileProcess
 from .wps_indices_single import IndicessingleProcess
 from .wps_sdm_gbiffetch import GBIFfetchProcess
 from .wps_robustness import RobustnessProcess
+from .wps_plot_timeseries import PlottimeseriesProcess
 
 processes = [
     ClippingProcess(),
@@ -19,7 +20,8 @@ processes = [
     IndicespercentileProcess(),
     IndicessingleProcess(),
     GBIFfetchProcess(),
-    RobustnessProcess()
+    RobustnessProcess(),
+    PlottimeseriesProcess()
 ]
 
 """
@@ -45,7 +47,7 @@ __all__ = [
         "wps_sdm_csv",
         "wps_sdm_allinone",
         "wps_robustness",                       # adopted to pywps4
-        "wps_plot_timeseries",
+        "wps_plot_timeseries",                  # adopted to pywps4
         "wps_climatefactsheet",                 # adopted to pywps4
         "wps_fetch",                            # adopted to pywps4
         # climate for impact processes

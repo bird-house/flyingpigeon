@@ -1,7 +1,6 @@
 from flyingpigeon import visualisation as vs
 from flyingpigeon.utils import archiveextract
 
-
 from pywps import Process
 from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
@@ -29,7 +28,6 @@ class PlottimeseriesProcess(Process):
                              Format('application/zip'),
                          ]),
 
-
             LiteralInput("variable", "Variable",
                          abstract="Variable to be expected in the input files (variable will be detected if not set)",
                          default=None,
@@ -38,6 +36,7 @@ class PlottimeseriesProcess(Process):
                          max_occurs=1,
                          ),
         ]
+
         outputs = [
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",
@@ -49,9 +48,9 @@ class PlottimeseriesProcess(Process):
                           abstract="Visualisation of single variables as a spaghetti plot",
                           supported_formats=[Format("image/png")],
                           as_reference=True,
-                          )
+                          ),
 
-            ComplexOutput("plotout_uncertainty", "Visualisation, Uncertainty plot",
+            ComplexOutput("plotout_uncertainty", "Visualisation Uncertainty plot",
                           abstract="Visualisation of single variables ensemble mean with uncertainty",
                           supported_formats=[Format("image/png")],
                           as_reference=True,
@@ -115,3 +114,4 @@ class PlottimeseriesProcess(Process):
         response.outputs['plotout_spagetti'].file = plotout_spagetti_file
         response.outputs['plotout_uncertainty'].file = plotout_uncertainty_file
         response.update_status('visualisation done', 100)
+        return response
