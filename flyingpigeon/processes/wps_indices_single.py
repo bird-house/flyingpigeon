@@ -91,7 +91,7 @@ class IndicessingleProcess(Process):
         super(IndicessingleProcess, self).__init__(
             self._handler,
             identifier="indices_single",
-            title="Climate indices_____(Single variable)",
+            title="Climate indices (Single variable)",
             version="0.10",
             abstract="Climate indices based on one single input variable",
             metadata=[
