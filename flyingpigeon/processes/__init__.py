@@ -7,6 +7,7 @@ from .wps_landseamask import LandseamaskProcess
 from .wps_indices_percentile import IndicespercentileProcess
 from .wps_indices_single import IndicessingleProcess
 from .wps_sdm_gbiffetch import GBIFfetchProcess
+from .wps_robustness import RobustnessProcess
 
 processes = [
     ClippingProcess(),
@@ -17,7 +18,8 @@ processes = [
     LandseamaskProcess(),
     IndicespercentileProcess(),
     IndicessingleProcess(),
-    GBIFfetchProcess()
+    GBIFfetchProcess(),
+    RobustnessProcess()
 ]
 
 """
@@ -42,7 +44,7 @@ __all__ = [
         "wps_sdm_csvindices",
         "wps_sdm_csv",
         "wps_sdm_allinone",
-        "wps_robustness",
+        "wps_robustness",                       # adopted to pywps4
         "wps_plot_timeseries",
         "wps_climatefactsheet",                 # adopted to pywps4
         "wps_fetch",                            # adopted to pywps4

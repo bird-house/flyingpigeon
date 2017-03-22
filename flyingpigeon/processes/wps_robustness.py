@@ -79,22 +79,21 @@ class RobustnessProcess(Process):
         outputs = [
             ComplexOutput('output_high', 'Mask for areas with high agreement',
                           abstract="netCDF file containing calculated robustness mask",
+                          supported_formats=[Format('application/x-netcdf')],
                           as_reference=True,
-                          supported_formats=[Format('application/x-netcdf')]
                           ),
 
             ComplexOutput('output_low', 'Mask for areas with low agreement',
                           abstract="netCDF file containing calculated robustness mask",
+                          supported_formats=[Format('application/x-netcdf')],
                           as_reference=True,
-                          supported_formats=[Format('application/x-netcdf')]
                           ),
 
             ComplexOutput('output_signal', 'Signal',
                           abstract="netCDF file containing calculated change of mean over the timeperiod and ensemble",
+                          supported_formats=[Format('application/x-netcdf')],
                           as_reference=True,
-                          supported_formats=[Format('application/x-netcdf')]
                           ),
-
 
             ComplexOutput("output_graphic", "Graphic",
                           abstract="Graphic showing the signal difference with high and low ensemble agreement",
@@ -104,14 +103,14 @@ class RobustnessProcess(Process):
 
             ComplexOutput("output_text", "Sourcefiles",
                           abstract="text file with a list of the used input data sets",
-                          data_formats=[Format(text/plain")],
+                          supported_formats=[Format("text/plain")],
                           as_reference=True,
                           ),
 
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",
+                          supported_formats=[Format('text/plain')],
                           as_reference=True,
-                          supported_formats=[Format('text/plain')]
                           )
         ]
 
@@ -122,7 +121,7 @@ class RobustnessProcess(Process):
             version="0.4",
             metadata=[
                 Metadata("LSCE", "http://www.lsce.ipsl.fr/")
-            ],
+                ],
             abstract="Calculates the robustness as the ratio of noise to signal in an ensemle of timeseries",
             inputs=inputs,
             outputs=outputs,
@@ -131,13 +130,12 @@ class RobustnessProcess(Process):
             )
 
     def _handler(self, request, response):
-
         response.update_status('starting uncertainty process', 0)
 
         init_process_logger('log.txt')
-        self.output_log.setValue('log.txt')
+        response.outputs['output_log'].file = 'log.txt'
 
-        ncfiles = ncs = archiveextract(resource=rename_complexinputs(request.inputs['resource']))
+        ncfiles = archiveextract(resource=rename_complexinputs(request.inputs['resource']))
         start = request.inputs['start']
         end = request.inputs['end']
         timeslice = request.inputs['timeslice']
