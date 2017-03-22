@@ -70,12 +70,12 @@ class ClippingProcess(Process):
         super(ClippingProcess, self).__init__(
             self._handler,
             identifier="subset_countries",
-            title="Subset________(World Countries)",
+            title="Subset (World Countries)",
             version="0.10",
             abstract="Returns only the selected polygon for each input dataset",
             metadata=[
                 Metadata('LSCE', 'http://www.lsce.ipsl.fr/en/index.php'),
-                Metadata('Documentation', 'http://flyingpigeon.readthedocs.io/en/latest/'),
+                Metadata('Doc', 'http://flyingpigeon.readthedocs.io/en/latest/'),
             ],
             inputs=inputs,
             outputs=outputs,
@@ -93,7 +93,7 @@ class ClippingProcess(Process):
                      request.inputs['resource'][0].data_format.mime_type)
         ncs = archiveextract(
             resource=rename_complexinputs(request.inputs['resource']))
-            # mime_type=request.inputs['resource'][0].data_format.mime_type)
+        # mime_type=request.inputs['resource'][0].data_format.mime_type)
         # mosaic option
         # TODO: fix defaults in pywps 4.x
         if 'mosaic' in request.inputs:

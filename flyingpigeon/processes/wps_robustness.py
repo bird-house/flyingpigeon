@@ -1,162 +1,152 @@
+from flyingpigeon.utils import archiveextract
+from flyingpigeon import robustness as erob
+from tempfile import mkstemp
 from flyingpigeon.log import init_process_logger
 
-from pywps.Process import WPSProcess
+from pywps import Process
+from pywps import LiteralInput
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format, FORMATS
+from pywps.app.Common import Metadata
+
 import logging
+LOGGER = logging.getLogger("PYWPS")
 
 
-class robustnessProcess(WPSProcess):
+class RobustnessProcess(Process):
     def __init__(self):
-        # definition of this process
-        WPSProcess.__init__(
-            self,
+
+        inputs = [
+            ComplexInput('resource', 'Resource',
+                         abstract='NetCDF Files or archive (tar/zip) containing NetCDF files.',
+                         metadata=[Metadata('Info')],
+                         min_occurs=1,
+                         max_occurs=1000,
+                         supported_formats=[
+                             Format('application/x-netcdf'),
+                             Format('application/x-tar'),
+                             Format('application/zip'),
+                         ]),
+
+            LiteralInput("method", "Method of robustness calculation",
+                         abstract="Detailed information about the methods can be found in the documentation",
+                         data_type='string',
+                         default='Method_A',
+                         min_occurs=0,
+                         max_occurs=1,
+                         allowed_values=['Method_A', 'Method_B', 'Method_C']
+                         ),
+
+            LiteralInput("start", "Start Year",
+                         abstract="Beginn of the analysed period (e.g 1971; if not set, the first consistend \
+                                  year of the ensemble will be taken)",
+                         data_type='integer',
+                         min_occurs=0,
+                         max_occurs=1,
+                         # default=None,
+                         # allowedValues=range(1900,2200)
+                         ),
+
+            LiteralInput("end", "End Year",
+                         abstract="End of the analysed period (e.g. 2050 if not set, \
+                                   the last consistend year of the ensemble will be taken)",
+                         data_type='integer',
+                         min_occurs=0,
+                         max_occurs=1,
+                         # default=None,
+                         ),
+
+            LiteralInput("timeslice", "Time slice",
+                         abstract="Time slice (in years) for robustness reference (default=10))",
+                         data_type='integer',
+                         min_occurs=0,
+                         max_occurs=1,
+                         # allowedValues=range(1,50)
+                         ),
+
+            # self.variableIn = self.addLiteralInput(
+            #   identifier="variable",
+            #   title="Variable",
+            #   abstract="Variable to be expected in the input files (Variable will be detected if not set, )",
+            #   # default=None,
+            #   type=type(''),
+            #   minOccurs=0,
+            #   maxOccurs=1,
+            #   )
+
+        ]
+
+        outputs = [
+            ComplexOutput('output_high', 'Mask for areas with high agreement',
+                          abstract="netCDF file containing calculated robustness mask",
+                          as_reference=True,
+                          supported_formats=[Format('application/x-netcdf')]
+                          ),
+
+            ComplexOutput('output_low', 'Mask for areas with low agreement',
+                          abstract="netCDF file containing calculated robustness mask",
+                          as_reference=True,
+                          supported_formats=[Format('application/x-netcdf')]
+                          ),
+
+            ComplexOutput('output_signal', 'Signal',
+                          abstract="netCDF file containing calculated change of mean over the timeperiod and ensemble",
+                          as_reference=True,
+                          supported_formats=[Format('application/x-netcdf')]
+                          ),
+
+
+            ComplexOutput("output_graphic", "Graphic",
+                          abstract="Graphic showing the signal difference with high and low ensemble agreement",
+                          supported_formats=[Format("image/png")],
+                          as_reference=True,
+                          ),
+
+            ComplexOutput("output_text", "Sourcefiles",
+                          abstract="text file with a list of the used input data sets",
+                          data_formats=[Format(text/plain")],
+                          as_reference=True,
+                          ),
+
+            ComplexOutput('output_log', 'Logging information',
+                          abstract="Collected logs during process run.",
+                          as_reference=True,
+                          supported_formats=[Format('text/plain')]
+                          )
+        ]
+
+        super(RobustnessProcess, self).__init__(
+            self._handler,
             identifier="robustness",
-            title="Robustness",
-            version="0.3",
-            metadata=[{"title": "LSCE", "href": "http://www.lsce.ipsl.fr/"}],
+            title="Ensemble robustness",
+            version="0.4",
+            metadata=[
+                Metadata("LSCE", "http://www.lsce.ipsl.fr/")
+            ],
             abstract="Calculates the robustness as the ratio of noise to signal in an ensemle of timeseries",
-            statusSupported=True,
-            storeSupported=True
+            inputs=inputs,
+            outputs=outputs,
+            status_supported=True,
+            store_supported=True
             )
 
-        # input arguments
-        self.resource = self.addComplexInput(
-            identifier="resource",
-            title="NetCDF Files",
-            abstract="NetCDF Files",
-            minOccurs=1,
-            maxOccurs=100,
-            maxmegabites=5000,
-            formats=[{"mimeType": "application/x-netcdf"}],
-            )
+    def _handler(self, request, response):
 
-        self.method = self.addLiteralInput(
-          identifier="method",
-          title="Method of robustness calculation",
-          abstract="Detailed information about the methods can be found in the documentation",
-          type=type(''),
-          default='Method_A',
-          minOccurs=1,
-          maxOccurs=1,
-          allowedValues=['Method_A', 'Method_B', 'Method_C']
-          )
-
-        self.start = self.addLiteralInput(
-          identifier="start",
-          title="Start Year",
-          abstract="Beginn of the analysed period (e.g 1971; if not set, the first consistend \
-                    year of the ensemble will be taken)",
-          type=type(1950),
-          # default=None,
-          minOccurs=0,
-          maxOccurs=1,
-          # allowedValues=range(1900,2200)
-          )
-
-        self.end = self.addLiteralInput(
-          identifier="end",
-          title="End Year",
-          abstract="End of the analysed period (e.g. 2050 if not set, \
-                    the last consistend year of the ensemble will be taken)",
-          type=type(2050),
-          # default=None,
-          minOccurs=0,
-          maxOccurs=1,
-          )
-
-        self.timeslice = self.addLiteralInput(
-          identifier="timeslice",
-          title="Time slice",
-          abstract="Time slice (in years) for robustness reference (default=10))",
-          type=type(10),
-          # default=10,
-          minOccurs=0,
-          maxOccurs=1,
-          # allowedValues=range(1,50)
-          )
-
-        # self.variableIn = self.addLiteralInput(
-        #   identifier="variable",
-        #   title="Variable",
-        #   abstract="Variable to be expected in the input files (Variable will be detected if not set, )",
-        #   # default=None,
-        #   type=type(''),
-        #   minOccurs=0,
-        #   maxOccurs=1,
-        #   )
-
-        # output
-
-        self.output_high = self.addComplexOutput(
-            identifier="output_high",
-            title="Mask for areas with high agreement",
-            abstract="netCDF file containing calculated robustness mask",
-            formats=[{"mimeType": "application/x-netcdf"}],
-            asReference=True,
-            )
-
-        self.output_low = self.addComplexOutput(
-            identifier="output_low",
-            title="Mask for areas with low agreement",
-            abstract="netCDF file containing calculated robustness mask",
-            formats=[{"mimeType": "application/x-netcdf"}],
-            asReference=True,
-            )
-
-        self.output_signal = self.addComplexOutput(
-            identifier="output_signal",
-            title="Signal",
-            abstract="netCDF file containing calculated change of mean over the timeperiod and ensemble members",
-            formats=[{"mimeType": "application/x-netcdf"}],
-            asReference=True,
-            )
-
-        self.output_graphic = self.addComplexOutput(
-            identifier="output_graphic",
-            title="Graphic",
-            abstract="PNG graphic file showing the signal difference with high and low ensemble agreement marked out",
-            formats=[{"mimeType": "image/png"}],
-            asReference=True,
-            )
-
-        self.output_text = self.addComplexOutput(
-            identifier="output_text",
-            title="Sourcefiles",
-            abstract="text file with a list of the used input data sets",
-            formats=[{"mimeType": "text/plain"}],
-            asReference=True,
-            )
-
-        self.output_log = self.addComplexOutput(
-            identifier="output_log",
-            title="Logging information",
-            abstract="Collected logs during process run.",
-            formats=[{"mimeType": "text/plain"}],
-            asReference=True,
-            )
-
-    def execute(self):
-        from flyingpigeon.utils import archiveextract
-        from flyingpigeon import robustness as erob
-        from tempfile import mkstemp
-
-        import logging
-        logger = logging.getLogger(__name__)
-
-        self.status.set('starting uncertainty process', 0)
+        response.update_status('starting uncertainty process', 0)
 
         init_process_logger('log.txt')
         self.output_log.setValue('log.txt')
 
-        ncfiles = archiveextract(self.getInputValues(identifier='resource'))
-        start = self.start.getValue()
-        end = self.end.getValue()
-        timeslice = self.timeslice.getValue()
+        ncfiles = ncs = archiveextract(resource=rename_complexinputs(request.inputs['resource']))
+        start = request.inputs['start']
+        end = request.inputs['end']
+        timeslice = request.inputs['timeslice']
         # variable = self.variableIn.getValue()
-        method = self.method.getValue()
+        method = request.inputs['method']
 
-        self.status.set('arguments read', 5)
+        response.update_status('arguments read', 5)
 
-        #  logger.debug('variable set to %s' % variable)
+        #  LOGGER.debug('variable set to %s' % variable)
 
         # if method == 'Method_A':
         signal, low_agreement_mask, high_agreement_mask, text_src = erob.method_A(
@@ -166,10 +156,10 @@ class robustnessProcess(WPSProcess):
                 # variable=variable
                 )  # graphic,
 
-        logger.debug('Robustness calculated')
+        LOGGER.debug('Robustness calculated')
 
         try:
-            # logger.info('variable to be plotted: %s' % variable)
+            # LOGGER.info('variable to be plotted: %s' % variable)
             from flyingpigeon.visualisation import map_robustness
             # if title is None:
             title = 'signal robustness'  # , end1, end2, start1, start2
@@ -181,18 +171,19 @@ class robustnessProcess(WPSProcess):
                                      # cmap=cmap,
                                      title=title)
 
-            logger.info('graphic generated')
+            LOGGER.info('graphic generated')
         except:
             msg = 'graphic generation failed'
-            logger.exception(msg)
+            LOGGER.exception(msg)
             _, graphic = mkstemp(dir='.', suffix='.png')
 
-        self.status.set('process worker done', 95)
+        response.update_status('process worker done', 95)
 
-        self.output_signal.setValue(signal)
-        self.output_high.setValue(high_agreement_mask)
-        self.output_low.setValue(low_agreement_mask)
-        self.output_graphic.setValue(graphic)
-        self.output_text.setValue(text_src)
+        response.outputs['output_signal'].file = signal
+        response.outputs['output_high'].file = high_agreement_mask
+        response.outputs['output_low'].file = low_agreement_mask
+        response.outputs['output_graphic'].file = graphic
+        response.outputs['output_text'].file = text_src
 
-        self.status.set('uncertainty process done', 100)
+        response.update_status('uncertainty process done', 100)
+        return response
