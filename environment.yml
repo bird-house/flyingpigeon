@@ -50,8 +50,8 @@ dependencies:
 - scikit-learn #=0.17.1
 ################
 # visualisation
-- matplotlib
-- functools32 # badly pinned matplotlib dependency
+- matplotlib=2.0.0=np112py27_2
+- functools32=3.2.3.2=py27_0 # badly pinned matplotlib dependency
 - cartopy
 - iris
 - reportlab
