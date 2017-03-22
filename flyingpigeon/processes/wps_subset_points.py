@@ -1,72 +1,80 @@
-from flyingpigeon.utils import sort_by_filename
-from pywps.Process import WPSProcess
+from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.ocgis_module import call
+from flyingpigeon.utils import sort_by_filename, get_values, get_time
+from numpy import savetxt, column_stack
+from shapely.geometry import Point
+
+from pywps import Process
+from pywps import LiteralInput
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format, FORMATS
+from pywps.app.Common import Metadata
 
 import logging
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger("PYWPS")
 
 
-class SubsetPointsProcess(WPSProcess):
-
+class SubsetpointsProcess(Process):
     def __init__(self):
-        WPSProcess.__init__(
-            self,
+        inputs = [
+            ComplexInput('resource', 'Resource',
+                         abstract='NetCDF Files or archive (tar/zip) containing NetCDF files.',
+                         metadata=[Metadata('Info')],
+                         min_occurs=1,
+                         max_occurs=1000,
+                         supported_formats=[
+                             Format('application/x-netcdf'),
+                             Format('application/x-tar'),
+                             Format('application/zip'),
+                         ]),
+
+            LiteralInput("coords", "Coordinates",
+                         abstract="a comma-seperated tuple of WGS85 lon,lat decimal coordinates (e.g. 2.356138, 48.846450)",
+                         # default="2.356138, 48.846450",
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=100,
+                         ),
+                         ]
+        outputs = [
+            ComplexOutput('tarout', 'Subsets',
+                          abstract="Tar archive containing the netCDF files",
+                          as_reference=True,
+                          supported_formats=[Format('application/x-tar')]
+                          ),
+        ]
+
+        super(SubsetpointsProcess, self).__init__(
+            self._handler,
             identifier="subset_points",
-            title="Subset Points",
-            version="0.9",
+            title="Subset (Points)",
+            abstract='Extracts the timeseries of the given coordinates',
+            version="0.10",
             metadata=[
-                    {"title": "LSCE", "href": "http://www.lsce.ipsl.fr/en/index.php"},
-                    {"title": "Documentation", "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
-                    ],
-            abstract="Extract timeseries for specified coordinates from gridded datasets",
-            statusSupported=True,
-            storeSupported=True
+                Metadata('LSCE', 'http://www.lsce.ipsl.fr/en/index.php'),
+                Metadata('Doc', 'http://flyingpigeon.readthedocs.io/en/latest/'),
+                ],
+            inputs=inputs,
+            outputs=outputs,
+            status_supported=True,
+            store_supported=True,
             )
 
-        self.resource = self.addComplexInput(
-          identifier="resource",
-          title="NetCDF File",
-          abstract="NetCDF File",
-          minOccurs=1,
-          maxOccurs=1000,
-          maxmegabites=5000,
-          formats=[{"mimeType": "application/x-netcdf"}],
-          )
+    def _handler(self, request, response):
+        init_process_logger('log.txt')
+        response.outputs['output_log'].file = 'log.txt'
 
-        self.coords = self.addLiteralInput(
-          identifier="coords",
-          title="Coordinates",
-          abstract="a comma-seperated tuple of WGS85 lon,lat decimal coordinates",
-          default="2.356138, 48.846450",
-          type=type(''),
-          minOccurs=1,
-          maxOccurs=100,
-          )
-
-        self.tarout = self.addComplexOutput(
-          identifier="tarout",
-          title="Tarfile",
-          abstract="tar archive containing the value tables",
-          formats=[{"mimeType": "application/x-tar"}],
-          asReference=True,
-          )
-
-    def execute(self):
-        from flyingpigeon.ocgis_module import call
-        from flyingpigeon.utils import sort_by_filename, archive, get_values, get_time
-
-        ncs = self.getInputValues(identifier='resource')
-        logger.info("ncs: %s " % ncs)
-        coords = self.getInputValues(identifier='coords')
-        logger.info("coords %s", coords)
+        ncs = archiveextract(
+            resource=rename_complexinputs(request.inputs['resource']))
+        LOGGER.info("ncs: %s " % ncs)
+        coords = request.inputs['coords']  # self.getInputValues(identifier='coords')
+        LOGGER.info("coords %s", coords)
         filenames = []
         nc_exp = sort_by_filename(ncs, historical_concatination=True)
 
-        from numpy import savetxt, column_stack
-        from shapely.geometry import Point
-
         for key in nc_exp.keys():
             try:
-                logger.info('start calculation for %s ' % key)
+                LOGGER.info('start calculation for %s ' % key)
                 ncs = nc_exp[key]
                 times = get_time(ncs, format='%Y-%m-%d_%H:%M:%S')
                 concat_vals = times  # ['%s-%02d-%02d_%02d:%02d:%02d' %
@@ -77,7 +85,7 @@ class SubsetPointsProcess(WPSProcess):
 
                 for p in coords:
                     try:
-                        self.status.set('processing point : {0}'.format(p), 20)
+                        response.update_status('processing point : {0}'.format(p), 20)
                         # define the point:
                         p = p.split(',')
                         point = Point(float(p[0]), float(p[1]))
@@ -90,13 +98,14 @@ class SubsetPointsProcess(WPSProcess):
                         header = header + ',%s-%s' % (p[0], p[1])
                         concat_vals = column_stack([concat_vals, vals])
                     except Exception as e:
-                        logger.debug('failed for point %s %s' % (p, e))
-                self.status.set('*** all points processed for {0} ****'.format(key), 50)
+                        LOGGER.debug('failed for point %s %s' % (p, e))
+                response.update_status('*** all points processed for {0} ****'.format(key), 50)
                 savetxt(filename, concat_vals, fmt='%s', delimiter=',', header=header)
             except Exception as e:
-                logger.debug('failed for %s %s' % (key, e))
+                LOGGER.debug('failed for %s %s' % (key, e))
 
     # set the outputs
-        self.status.set('*** creating output tar archive ****', 90)
+        response.update_status('*** creating output tar archive ****', 90)
         tarout_file = archive(filenames)
-        self.tarout.setValue(tarout_file)
+        response.outputs['tarout'].file = tarout_file
+        return response

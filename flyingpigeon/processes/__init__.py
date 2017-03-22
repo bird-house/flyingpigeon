@@ -1,6 +1,7 @@
 from .wps_subset_countries import ClippingProcess
 from .wps_subset_continents import ClipcontinentProcess
 from .wps_subset_regionseurope import ClipregionseuropeProcess
+from .wps_subset_points import SubsetpointsProcess
 from .wps_climatefactsheet import FactsheetProcess
 from .wps_fetch import FetchProcess
 from .wps_landseamask import LandseamaskProcess
@@ -14,6 +15,7 @@ processes = [
     ClippingProcess(),
     ClipcontinentProcess(),
     ClipregionseuropeProcess(),
+    SubsetpointsProcess(),
     FactsheetProcess(),
     FetchProcess(),
     LandseamaskProcess(),
@@ -29,7 +31,7 @@ __all__ = [
         "wps_subset_continents",                # adopted to pywps4
         "wps_subset_countries",                 # adopted to pywps4
         "wps_subset_regionseurope",             # adopted to pywps4
-        "wps_subset_points",
+        "wps_subset_points",                    # adopted to pywps4
         "wps_landseamask",                      # adopted to pywps4
         "wps_indices_simple",                   # adopted to pywps4
         "wps_indices_percentile",               # adopted to pywps4
