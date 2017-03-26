@@ -18,9 +18,9 @@ LOGGER = logging.getLogger("PYWPS")
 class SDMgetindicesProcess(Process):
     def __init__(self):
         inputs = [
-            ComplexInput('resource', 'Resource',
-                         abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
-                         metadata=[Metadata('Info')],
+            ComplexInput('dataset', 'Dataset',
+                         abstract="Enter either URL pointing to a NetCDF File"
+                                  " or an archive (tar/zip) containing NetCDF files.",
                          min_occurs=1,
                          max_occurs=1000,
                          supported_formats=[
@@ -28,6 +28,17 @@ class SDMgetindicesProcess(Process):
                              Format('application/x-tar'),
                              Format('application/zip'),
                          ]),
+
+            # ComplexInput('resource', 'Resource',
+            #              abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
+            #              metadata=[Metadata('Info')],
+            #              min_occurs=1,
+            #              max_occurs=1000,
+            #              supported_formats=[
+            #                  Format('application/x-netcdf'),
+            #                  Format('application/x-tar'),
+            #                  Format('application/zip'),
+            #              ]),
 
             LiteralInput("input_indices", "Indices",
                          abstract="Climate indices related to growth conditions \
@@ -100,12 +111,13 @@ class SDMgetindicesProcess(Process):
 
         try:
             LOGGER.info('reading the arguments')
-            resources = self.getInputValues(identifier='resources')
-            indices = self.getInputValues(identifier='input_indices')
+            resources = archiveextract(
+                resource=rename_complexinputs(request.inputs['dataset']))
+            indices = request.inputs['input_indices']
             LOGGER.debug("indices = %s", indices)
-            archive_format = self.archive_format.getValue()
-        except Exception as e:
-            LOGGER.error('failed to read in the arguments %s ' % e)
+            archive_format = request.inputs['archive_format']
+        except:
+            LOGGER.exception('failed to read in the arguments')
         LOGGER.info('indices %s ' % indices)
 
         #################################

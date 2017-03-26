@@ -2,15 +2,17 @@ from .wps_subset_countries import ClippingProcess
 from .wps_subset_continents import ClipcontinentProcess
 from .wps_subset_regionseurope import ClipregionseuropeProcess
 from .wps_subset_points import SubsetpointsProcess
+from .wps_landseamask import LandseamaskProcess
 from .wps_climatefactsheet import FactsheetProcess
 from .wps_fetch import FetchProcess
-from .wps_landseamask import LandseamaskProcess
 from .wps_indices_percentile import IndicespercentileProcess
 from .wps_indices_single import IndicessingleProcess
-from .wps_sdm_gbiffetch import GBIFfetchProcess
 from .wps_robustness import RobustnessProcess
 from .wps_plot_timeseries import PlottimeseriesProcess
+from .wps_sdm_gbiffetch import GBIFfetchProcess
 from .wps_sdm_getindices import SDMgetindicesProcess
+from .wps_sdm_csv import SDMcsvProcess
+from .wps_sdm_csvindices import SDMcsvindicesProcess
 
 processes = [
     ClippingProcess(),
@@ -24,6 +26,8 @@ processes = [
     IndicessingleProcess(),
     GBIFfetchProcess(),
     SDMgetindicesProcess(),
+    SDMcsvProcess(),
+    SDMcsvindicesProcess(),
     RobustnessProcess(),
     PlottimeseriesProcess()
 ]
@@ -46,9 +50,9 @@ __all__ = [
         "wps_analogs_viewer",
         "wps_segetalflora",
         "wps_sdm_gbiffetch",                    # adopted to pywps4
-        "wps_sdm_getindices",
+        "wps_sdm_getindices",                   # adopted to pywps4
         "wps_sdm_csvindices",
-        "wps_sdm_csv",
+        "wps_sdm_csv",                          # adopted to pywps4
         "wps_sdm_allinone",
         "wps_robustness",                       # adopted to pywps4
         "wps_plot_timeseries",                  # adopted to pywps4
