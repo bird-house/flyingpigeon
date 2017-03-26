@@ -57,7 +57,7 @@ class SDMgetindicesProcess(Process):
                           formats=[{"mimeType": "application/x-tar"},
                                    {"mimeType": "application/zip"}],
                           as_reference=True,
-                )
+                          )
 
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",
@@ -88,25 +88,25 @@ class SDMgetindicesProcess(Process):
             store_supported=True,
         )
 
-    def execute(self):
+    def _handler(self, request, response):
         from os.path import basename
         from flyingpigeon import sdm
         from flyingpigeon.utils import archive
 
         init_process_logger('log.txt')
-        self.output_log.setValue('log.txt')
+        response.outputs['output_log'].file = 'log.txt'
 
-        self.status.set('Start process', 0)
+        response.update_status('Start process', 0)
 
         try:
-            logger.info('reading the arguments')
+            LOGGER.info('reading the arguments')
             resources = self.getInputValues(identifier='resources')
             indices = self.getInputValues(identifier='input_indices')
-            logger.debug("indices = %s", indices)
+            LOGGER.debug("indices = %s", indices)
             archive_format = self.archive_format.getValue()
         except Exception as e:
-            logger.error('failed to read in the arguments %s ' % e)
-        logger.info('indices %s ' % indices)
+            LOGGER.error('failed to read in the arguments %s ' % e)
+        LOGGER.info('indices %s ' % indices)
 
         #################################
         # calculate the climate indices
@@ -115,23 +115,24 @@ class SDMgetindicesProcess(Process):
         # indices calculation
         ncs_indices = None
         try:
-            self.status.set('start calculation of climate indices for %s'
-                            % indices, 30)
+            response.update_status('start calculation of climate indices for %s'
+                                   % indices, 30)
             ncs_indices = sdm.get_indices(resources=resources, indices=indices)
-            logger.info('indice calculation done')
+            LOGGER.info('indice calculation done')
         except:
             msg = 'failed to calculate indices'
-            logger.exception(msg)
+            LOGGER.exception(msg)
             raise Exception(msg)
 
         # archive multiple output files to one archive file
         try:
             archive_indices = archive(ncs_indices, format=archive_format)
-            logger.info('indices 3D added to tarfile')
+            LOGGER.info('indices 3D added to tarfile')
         except:
             msg = 'failed adding indices to tar'
-            logger.exception(msg)
+            LOGGER.exception(msg)
             raise Exception(msg)
 
-        self.output_indices.setValue(archive_indices)
-        self.status.set('done', 100)
+        response.outputs['output_indices'].file = archive_indices
+        response.update_status('done', 100)
+        return response
