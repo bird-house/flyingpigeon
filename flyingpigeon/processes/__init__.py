@@ -13,6 +13,7 @@ from .wps_sdm_gbiffetch import GBIFfetchProcess
 from .wps_sdm_getindices import SDMgetindicesProcess
 from .wps_sdm_csv import SDMcsvProcess
 from .wps_sdm_csvindices import SDMcsvindicesProcess
+from .wps_sdm_allinone import SDMallinoneProcess
 
 processes = [
     ClippingProcess(),
@@ -28,6 +29,7 @@ processes = [
     SDMgetindicesProcess(),
     SDMcsvProcess(),
     SDMcsvindicesProcess(),
+    SDMallinoneProcess(),
     RobustnessProcess(),
     PlottimeseriesProcess()
 ]

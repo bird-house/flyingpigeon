@@ -5,10 +5,11 @@ Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 
 from flyingpigeon.sdm import _SDMINDICES_
 
-from flyingpigeon import config
-from flyingpigeon.subset import masking
-from flyingpigeon.utils import searchfile
-from flyingpigeon.utils import search_landsea_mask_by_esgf
+from pywps import Process
+from pywps import LiteralInput
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format, FORMATS
+from pywps.app.Common import Metadata
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.log import init_process_logger
