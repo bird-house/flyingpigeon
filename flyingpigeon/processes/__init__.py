@@ -51,7 +51,7 @@ __all__ = [
         "wps_segetalflora",
         "wps_sdm_gbiffetch",                    # adopted to pywps4
         "wps_sdm_getindices",                   # adopted to pywps4
-        "wps_sdm_csvindices",
+        "wps_sdm_csvindices",                   # adopted to pywps4
         "wps_sdm_csv",                          # adopted to pywps4
         "wps_sdm_allinone",
         "wps_robustness",                       # adopted to pywps4

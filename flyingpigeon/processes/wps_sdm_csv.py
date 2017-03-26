@@ -96,6 +96,7 @@ class SDMcsvProcess(Process):
                           supported_formats=[Format('image/png')],
                           as_reference=True,
                           ),
+
             ComplexOutput("output_indices", "Climate indices for growth conditions over all timesteps",
                           abstract="Archive (tar/zip) containing calculated climate indices",
                           supported_formats=[Format('application/x-tar'),
