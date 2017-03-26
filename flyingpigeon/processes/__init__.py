@@ -10,6 +10,7 @@ from .wps_indices_single import IndicessingleProcess
 from .wps_sdm_gbiffetch import GBIFfetchProcess
 from .wps_robustness import RobustnessProcess
 from .wps_plot_timeseries import PlottimeseriesProcess
+from .wps_sdm_getindices import SDMgetindicesProcess
 
 processes = [
     ClippingProcess(),
@@ -22,6 +23,7 @@ processes = [
     IndicespercentileProcess(),
     IndicessingleProcess(),
     GBIFfetchProcess(),
+    SDMgetindicesProcess(),
     RobustnessProcess(),
     PlottimeseriesProcess()
 ]

@@ -3,7 +3,6 @@ Processes for Species distribution
 Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 """
 
-from pywps.Process import WPSProcess
 from flyingpigeon.sdm import _SDMINDICES_
 
 from pywps import Process
@@ -38,13 +37,13 @@ class SDMgetindicesProcess(Process):
                          min_occurs=1,
                          max_occurs=10,
                          allowed_values=_SDMINDICES_
-                         S)
+                         ),
 
             LiteralInput("archive_format", "Archive format",
                          abstract="Result files will be compressed into archives. \
                                    Choose an appropriate format",
                          default="tar",
-                         type='string',
+                         data_type='string',
                          min_occurs=1,
                          max_occurs=1,
                          allowed_values=['zip', 'tar']
@@ -54,10 +53,11 @@ class SDMgetindicesProcess(Process):
         outputs = [
             ComplexOutput("output_indices", "Climate indices for growth conditions over all timesteps",
                           abstract="Archive (tar/zip) containing calculated climate indices",
-                          formats=[{"mimeType": "application/x-tar"},
-                                   {"mimeType": "application/zip"}],
+                          supported_formats=[Format('application/x-tar'),
+                                             Format('application/zip')
+                                             ],
                           as_reference=True,
-                          )
+                          ),
 
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",
@@ -69,7 +69,7 @@ class SDMgetindicesProcess(Process):
         super(SDMgetindicesProcess, self).__init__(
             self._handler,
             identifier="sdm_getindices",
-            title="SDM -- calculation only indices",
+            title="Species distribution Model (only indices calculation )",
             version="0.10",
             metadata=[
                 Metadata("LWF", "http://www.lwf.bayern.de/"),

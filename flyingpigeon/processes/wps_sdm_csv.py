@@ -3,108 +3,78 @@ Processes for Species distribution
 Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 """
 
-from pywps.Process import WPSProcess
 from flyingpigeon.sdm import _SDMINDICES_
 
 from flyingpigeon.log import init_process_logger
 
+from pywps import Process
+from pywps import LiteralInput
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format
+from pywps.inout.literaltypes import AllowedValue
+from pywps.app.Common import Metadata
+
+
 import logging
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger("PYWPS")
 
 
-class sdmcsvProcess(WPSProcess):
+class SDMcsvProcess(Process):
     def __init__(self):
-        WPSProcess.__init__(
-            self,
-            identifier="sdm_csv",
-            title="SDM -- CSV table",
-            version="0.9",
-            metadata=[
-                {"title": "LWF",
-                 "href": "http://www.lwf.bayern.de/"},
-                {"title": "Doc",
-                 "href": "http://flyingpigeon.readthedocs.io/en/latest/\
-                        descriptions/index.html#species-distribution-model"},
-                {"title": "Paper",
-                 "href": "http://www.hindawi.com/journals/jcli/2013/787250/"},
-                {"title": "Tutorial",
-                 "href": "http://flyingpigeon.readthedocs.io/en/latest/\
-                 tutorials/sdm.html"},
-                ],
-            abstract="Species distribution model for tree species based on\
-             GBIF presence/absence data and climate model data. Indices will\
-             be calculated while processing",
-            statusSupported=True,
-            storeSupported=True
-            )
+        inputs = [
+            ComplexInput('resource', 'Resource',
+                         abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
+                         metadata=[Metadata('Info')],
+                         min_occurs=1,
+                         max_occurs=1000,
+                         supported_formats=[
+                             Format('application/x-netcdf'),
+                             Format('application/x-tar'),
+                             Format('application/zip'),
+                         ]),
 
-        # Literal Input Data
-        # ------------------
-        self.resources = self.addComplexInput(
-            identifier="resources",
-            title="tas/pr files",
-            abstract="Raw climate model outputs as stored in netCDF files. archives (tar/zip) can also be provided",
-            minOccurs=1,
-            maxOccurs=500,
-            maxmegabites=50000,
-            formats=[{"mimeType": "application/x-netcdf"},
-                     {"mimeType": "application/x-tar"},
-                     {"mimeType": "application/zip"}],
-            )
+            LiteralInput("gbif", "GBIF csv file",
+                         abstract="GBIF table (csv) with tree occurence \
+                         (output of 'GBIF data fetch' process )",
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=1,
+                         default='http://localhost:8090/wpsoutputs/flyingpigeon/output_csv-abe15f64-c30d-11e6-bf63-142d277ef1f3.csv'
+                         )
 
-        self.gbif = self.addLiteralInput(
-            identifier="gbif",
-            title="GBIF csv file",
-            abstract="GBIF table (csv) with tree occurence \
-            (output of 'GBIF data fetch' process )",
-            type=type(''),
-            minOccurs=1,
-            maxOccurs=1,
-            default='http://localhost:8090/wpsoutputs/flyingpigeon/output_csv-abe15f64-c30d-11e6-bf63-142d277ef1f3.csv'
-            # maxmegabites=50,
-            # formats=[{"mimeType": "text/csv"}],
-            )
+            LiteralInput("input_indices", "Indices",
+                         abstract="Climate indices related to growth conditions \
+                                    of tree species",
+                         default=['TG_JJA', 'TNn_Jan'],
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=10,
+                         allowed_values=_SDMINDICES_
+                         ),
 
-        self.input_indices = self.addLiteralInput(
-            identifier="input_indices",
-            title="Indices",
-            abstract="Climate indices related to growth conditions",
-            # default=['TG_JJA', 'TNn_Jan'],
-            type=type(''),
-            minOccurs=1,
-            maxOccurs=10,
-            allowedValues=_SDMINDICES_
-            )
+            LiteralInput("period", "Reference period",
+                         abstract="Reference period for climate conditions\
+                         (all = entire timeseries)",
+                         default="all",
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=1,
+                         allowed_values=['all', '1951-1980', '1961-1990',
+                                         '1971-2000', '1981-2010']
+                         )
 
-        self.period = self.addLiteralInput(
-            identifier="period",
-            title="Reference period",
-            abstract="Reference period for climate conditions\
-            (all = entire timeseries)",
-            default="all",
-            type=type(''),
-            minOccurs=1,
-            maxOccurs=1,
-            allowedValues=['all', '1951-1980', '1961-1990',
-                           '1971-2000', '1981-2010']
-            )
+            LiteralInput("archive_format", "Archive format",
+                         abstract="Result files will be compressed into archives.\
+                                  Choose an appropriate format",
+                         default="tar",
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=1,
+                         allowed_values=['zip', 'tar']
+                         )
+        ]
+        outputs[
 
-        self.archive_format = self.addLiteralInput(
-            identifier="archive_format",
-            title="Archive format",
-            abstract="Result files will be compressed into archives.\
-                Choose an appropriate format",
-            default="tar",
-            type=type(''),
-            minOccurs=1,
-            maxOccurs=1,
-            allowedValues=['zip', 'tar']
-            )
-
-        ###########
-        # OUTPUTS
-        ###########
-        #
         # self.output_csv = self.addComplexOutput(
         #     identifier="output_csv",
         #     title="Tree species table",
@@ -113,73 +83,83 @@ class sdmcsvProcess(WPSProcess):
         #     asReference=True,
         #     )
 
-        self.output_gbif = self.addComplexOutput(
-            identifier="output_gbif",
-            title="Graphic of GBIF coordinates",
-            abstract="PNG graphic file showing the presence of tree species\
-             according to the CSV file",
-            formats=[{"mimeType": "image/png"}],
-            asReference=True,
-            )
+            ComplexOutput("output_gbif", "Graphic of GBIF coordinates",
+                          abstract="PNG graphic file showing the presence of tree species\
+                                    according to the CSV file",
+                          supported_formats=[Format('image/png')]
+                          as_reference=True,
+                          ),
 
-        self.output_PA = self.addComplexOutput(
-            identifier="output_PA",
-            title="Graphic of PA mask",
-            abstract="PNG graphic file showing PA mask generated based on\
-             netCDF spatial increment",
-            formats=[{"mimeType": "image/png"}],
-            asReference=True,
-            )
+            ComplexOutput("output_PA", "Graphic of PA mask",
+                          abstract="PNG graphic file showing PA mask generated based on\
+                                    netCDF spatial increment",
+                          data_formats=[{"mimeType": "image/png"}],
+                          as_reference=True,
+                          ),
+            ComplexOutput("output_indices", "Climate indices for growth conditions over all timesteps",
+                          abstract="Archive (tar/zip) containing calculated climate indices",
+                          supported_formats=[Format('application/x-tar'),
+                                             Format('application/zip')
+                                             ],
+                          as_reference=True,
+                          ),
 
-        self.output_indices = self.addComplexOutput(
-            identifier="output_indices",
-            title="Climate indices for growth conditions over all timesteps",
-            abstract="Archive (tar/zip) containing calculated climate indices",
-            formats=[{"mimeType": "application/x-tar"},
-                     {"mimeType": "application/zip"}],
-            asReference=True,
-            )
+            ComplexOutput("output_reference", "Climate indices for growth conditions of reference period",
+                          abstract="Archive (tar/zip) containing calculated climate indices",
+                          supported_formats=[Format('application/x-tar'),
+                                             Format('application/zip')
+                                             ],
+                          as_reference=True,
+                          ),
 
-        self.output_reference = self.addComplexOutput(
-            identifier="output_reference",
-            title="Climate indices for growth conditions of reference period",
-            abstract="Archive (tar/zip) containing calculated climate indices",
-            formats=[{"mimeType": "application/x-tar"},
-                     {"mimeType": "application/zip"}],
-            asReference=True,
-            )
+            ComplexOutput("output_prediction", "predicted growth conditions",
+                          abstract="Archive containing files of the predicted\
+                                     growth conditions",
+                          supported_formats=[Format('application/x-tar'),
+                                             Format('application/zip')
+                                             ],
+                          as_reference=True,
+                          ),
 
-        self.output_prediction = self.addComplexOutput(
-            identifier="output_prediction",
-            title="predicted growth conditions",
-            abstract="Archive containing files of the predicted\
-             growth conditions",
-            formats=[{"mimeType": "application/x-tar"},
-                     {"mimeType": "application/zip"}],
-            asReference=True,
-            )
+            ComplexOutput("output_info", "GAM statistics information",
+                          abstract="Graphics and information of the learning statistics",
+                          supported_formats=[Format("application/pdf")],
+                          as_reference=True,
+                          ),
+            ComplexOutput('output_log', 'Logging information',
+                          abstract="Collected logs during process run.",
+                          as_reference=True,
+                          supported_formats=[Format('text/plain')]
+                          )
+        ]
 
-        self.output_info = self.addComplexOutput(
-            identifier="output_info",
-            title="GAM statistics information",
-            abstract="Graphics and information of the learning statistics",
-            formats=[{"mimeType": "application/pdf"}],
-            asReference=True,
-            )
-
-        self.output_log = self.addComplexOutput(
-            identifier="output_log",
-            title="Logging information",
-            abstract="Collected logs during process run.",
-            formats=[{"mimeType": "text/plain"}],
-            asReference=True,
+        super(SDMcsvProcess, self).__init__(
+            self._handler_,
+            identifier="sdm_csv",
+            title="Species distribution Model (GBIF-CSV table as input)",
+            version="0.10",
+            metadata=[
+                Metadata("LWF", "http://www.lwf.bayern.de/"),
+                Metadata(
+                    "Doc",
+                    "http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#species-distribution-model"),
+                Metadata("paper",
+                         "http://www.hindawi.com/journals/jcli/2013/787250/"),
+                Metadata("Tutorial",
+                         "http://flyingpigeon.readthedocs.io/en/latest/tutorials/sdm.html"),
+            ],
+            abstract="Indices preparation for SDM process",
+            inputs=inputs,
+            outputs=outputs,
+            status_supported=True,
+            store_supported=True,
             )
 
     def execute(self):
 
         init_process_logger('log.txt')
         self.output_log.setValue('log.txt')
-    
+
         from os.path import basename
         from flyingpigeon import sdm
         from flyingpigeon.utils import archive, archiveextract, download
