@@ -14,6 +14,7 @@ from .wps_sdm_getindices import SDMgetindicesProcess
 from .wps_sdm_csv import SDMcsvProcess
 from .wps_sdm_csvindices import SDMcsvindicesProcess
 from .wps_sdm_allinone import SDMallinoneProcess
+from .wps_weatherregimes_reanalyse import WeatherregimesreanalyseProcess
 
 processes = [
     ClippingProcess(),
@@ -30,6 +31,7 @@ processes = [
     SDMcsvProcess(),
     SDMcsvindicesProcess(),
     SDMallinoneProcess(),
+    WeatherregimesreanalyseProcess(),
     RobustnessProcess(),
     PlottimeseriesProcess()
 ]
@@ -43,7 +45,7 @@ __all__ = [
         "wps_landseamask",                      # adopted to pywps4
         "wps_indices_simple",                   # adopted to pywps4
         "wps_indices_percentile",               # adopted to pywps4
-        "wps_weatherregimes_reanalyse",
+        "wps_weatherregimes_reanalyse",         # adopted to pywps4
         "wps_weatherregimes_model",
         "wps_weatherregimes_projection",
         "wps_analogs_detection",
@@ -55,7 +57,7 @@ __all__ = [
         "wps_sdm_getindices",                   # adopted to pywps4
         "wps_sdm_csvindices",                   # adopted to pywps4
         "wps_sdm_csv",                          # adopted to pywps4
-        "wps_sdm_allinone",
+        "wps_sdm_allinone",                     # adopted to pywps4
         "wps_robustness",                       # adopted to pywps4
         "wps_plot_timeseries",                  # adopted to pywps4
         "wps_climatefactsheet",                 # adopted to pywps4
