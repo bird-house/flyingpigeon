@@ -79,11 +79,11 @@ class WeatherregimesreanalyseProcess(Process):
 
             LiteralInput("kappa", "Nr of Weather regimes",
                          abstract="Set the number of clusters to be detected",
-                         default=4,
+                         default='4',
                          data_type='integer',
                          min_occurs=1,
                          max_occurs=1,
-                         allowed_values=range(2, 11)
+                         allowed_values=['2', '3', '4', '5', '6', '7', '8', '9', '10', '11']  # int(range(2, 11))
                          ),
         ]
         outputs = [
