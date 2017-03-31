@@ -77,14 +77,14 @@ class WeatherregimesreanalyseProcess(Process):
                          allowed_values=_PRESSUREDATA_
                          ),
 
-            LiteralInput("kappa", "Nr of Weather regimes",
-                         abstract="Set the number of clusters to be detected",
-                         default='4',
-                         data_type='integer',
-                         min_occurs=1,
-                         max_occurs=1,
-                         allowed_values=['2', '3', '4', '5', '6', '7', '8', '9', '10', '11']  # int(range(2, 11))
-                         ),
+            # LiteralInput("kappa", "Nr of Weather regimes",
+            #              abstract="Set the number of clusters to be detected",
+            #              default='4',
+            #              data_type='integer',
+            #              min_occurs=1,
+            #              max_occurs=1,
+            #              allowed_values=['2', '3', '4', '5', '6', '7', '8', '9', '10', '11']  # int(range(2, 11))
+            #              ),
         ]
         outputs = [
             ComplexOutput("Routput_graphic", "Weather Regime Pressure map",
@@ -158,8 +158,9 @@ class WeatherregimesreanalyseProcess(Process):
 
             period = request.inputs['period'][0].data
             anualcycle = request.inputs['anualcycle'][0].data
+            kappa = 4
 
-            kappa = request.inputs['kappa'][0].data
+            # kappa = request.inputs['kappa'][0].data
             LOGGER.info('period %s' % str(period))
             LOGGER.info('season %s' % str(season))
             start = dt.strptime(period.split('-')[0], '%Y%m%d')
