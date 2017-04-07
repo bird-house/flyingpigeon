@@ -36,7 +36,7 @@ class WeatherregimesreanalyseProcess(Process):
             #     identifier="BBox",
             #     title="Region",
             #     abstract="coordinates to define the region: (minlon,maxlon,minlat,maxlat)",
-            #     default='-80,22.5,50,70', #  cdo syntax: 'minlon,maxlon,minlat,maxlat' ;\
+            #     default='-80,22.5,50,70', #  cdo syntax: 'minlon,maxlon,minlat,maxlat' ;
             #  ocgis syntax (minlon,minlat,maxlon,maxlat)
             #     type=type(''),
             #     minOccurs=1,
@@ -77,14 +77,14 @@ class WeatherregimesreanalyseProcess(Process):
                          allowed_values=_PRESSUREDATA_
                          ),
 
-            # LiteralInput("kappa", "Nr of Weather regimes",
-            #              abstract="Set the number of clusters to be detected",
-            #              default='4',
-            #              data_type='integer',
-            #              min_occurs=1,
-            #              max_occurs=1,
-            #              allowed_values=['2', '3', '4', '5', '6', '7', '8', '9', '10', '11']  # int(range(2, 11))
-            #              ),
+            LiteralInput("kappa", "Nr of Weather regimes",
+                         abstract="Set the number of clusters to be detected",
+                         default='4',
+                         data_type='integer',
+                         min_occurs=1,
+                         max_occurs=1,
+                         allowed_values=range(2, 11)
+                         ),
         ]
         outputs = [
             ComplexOutput("Routput_graphic", "Weather Regime Pressure map",
@@ -143,31 +143,28 @@ class WeatherregimesreanalyseProcess(Process):
         from flyingpigeon import weatherregimes as wr
         from tempfile import mkstemp
 
-        response.update_status('execution started at : %s ' % dt.now(), 5)
+        response.update_status('execution started at : {}'.format(dt.now()), 5)
 
         ################################
         # reading in the input arguments
         ################################
-        try:
-            LOGGER.info('read in the arguments')
-            # resources = self.getInputValues(identifier='resources')
-            season = request.inputs['season'][0].data
-            bbox = [-180, -90, 180, 90]
-            # bbox_obj = self.BBox.getValue()
-            model_var = request.inputs['reanalyses'][0].data
-            model, variable = model_var.split('_')
+        LOGGER.info('read in the arguments')
+        # resources = self.getInputValues(identifier='resources')
+        season = request.inputs['season'][0].data
+        LOGGER.info('season %s', season)
+        bbox = [-180, -90, 180, 90]
+        # bbox_obj = self.BBox.getValue()
+        model_var = request.inputs['reanalyses'][0].data
+        model, variable = model_var.split('_')
 
-            period = request.inputs['period'][0].data
-            anualcycle = request.inputs['anualcycle'][0].data
-            kappa = 4
+        period = request.inputs['period'][0].data
+        LOGGER.info('period %s', period)
+        anualcycle = request.inputs['anualcycle'][0].data
+        kappa = request.inputs['kappa'][0].data
+        LOGGER.info('kappa %s', kappa)
 
-            # kappa = request.inputs['kappa'][0].data
-            LOGGER.info('period %s' % str(period))
-            LOGGER.info('season %s' % str(season))
-            start = dt.strptime(period.split('-')[0], '%Y%m%d')
-            end = dt.strptime(period.split('-')[1], '%Y%m%d')
-        except:
-            LOGGER.exception('failed to read in the arguments')
+        start = dt.strptime(period.split('-')[0], '%Y%m%d')
+        end = dt.strptime(period.split('-')[1], '%Y%m%d')
 
         # try:
         #
@@ -240,7 +237,7 @@ class WeatherregimesreanalyseProcess(Process):
                             geom=bbox, spatial_wrapping='wrap', time_range=time_range,
                             # conform_units_to=conform_units_to
                             )
-        LOGGER.info('Dataset subset done: %s ' % model_subset)
+        LOGGER.info('Dataset subset done: %s ', model_subset)
 
         response.update_status('dataset subsetted', 19)
         ##############################################
@@ -251,7 +248,7 @@ class WeatherregimesreanalyseProcess(Process):
         cycst = anualcycle.split('-')[0]
         cycen = anualcycle.split('-')[0]
         reference = [dt.strptime(cycst, '%Y%m%d'), dt.strptime(cycen, '%Y%m%d')]
-        LOGGER.exception('reference time: %s' % reference)
+        LOGGER.exception('reference time: %s', reference)
         model_anomal = wr.get_anomalies(model_subset, reference=reference)
 
         #####################
