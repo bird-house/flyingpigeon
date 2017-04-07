@@ -122,6 +122,7 @@ class WeatherregimesreanalyseProcess(Process):
             self._handler,
             identifier="weatherregimes_reanalyse",
             title="Weather Regimes (based on reanalyses data)",
+            abstract='k-mean cluster analyse of the pressure patterns. Clusters are equivalent to weather regimes'
             version="0.10",
             metadata=[
                 Metadata('LSCE', 'http://www.lsce.ipsl.fr/en/index.php'),
