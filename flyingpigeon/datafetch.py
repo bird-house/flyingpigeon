@@ -1,7 +1,11 @@
 from flyingpigeon import utils
 
+# import logging
+# logger = logging.getLogger(__name__)
+
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("PYWPS")
+
 
 
 _PRESSUREDATA_ = [
@@ -58,6 +62,7 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP'):
 
     try:
         for year in range(start, end + 1):
+            logger.debug('fetching single file for %s ear %s ' % (dataset, year))
             try:
                 if dataset == 'NCEP':
                     if variable == 'slp':
@@ -75,40 +80,41 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP'):
                     if 'z' in variable:
                         url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/pressure/hgt.%s.nc' % (year)
                 else:
-                    logger.warn('Dataset %s not known' % dataset)
+                    logger.debug('Dataset %s not known' % dataset)
+                logger.debug('url: %s' % url)
             except:
                 msg = "could not set url"
                 logger.exception(msg)
-
             try:
                 obs_data.append(utils.download(url, cache=True))
+                logger.debug('single file fetched %s ' % year)
             except:
                 msg = "wget failed on {0}.".format(url)
                 logger.exception(msg)
-
-            # convert to NETCDF4_CLASSIC
-            try:
-                from os import path
-                from flyingpigeon.ocgis_module import call
-                from shutil import move
-                # move data to workingdir
-                for ob in obs_data:
-                    p, f = path.split(ob)
-                    logger.debug("path = %s , file %s " % (p, f))
-                    move(ob, f)
-                    conv = call(resource=f,
-                                output_format_options={'data_model': 'NETCDF4_CLASSIC'},
-                                dir_output=p,
-                                prefix=f.replace('.nc', ''))
-                    logger.debug('file %s to NETCDF4_CLASSIC converted' % conv)
-            except:
-                logger.exception('failed to convert into NETCDF4_CLASSIC')
-
         logger.info('Reanalyses data fetched for %s files' % len(obs_data))
     except:
         msg = "get reanalyses module failed to fetch data"
         logger.exception(msg)
         raise Exception(msg)
+
+    # convert to NETCDF4_CLASSIC
+    try:
+        from os import path
+        from flyingpigeon.ocgis_module import call
+        from shutil import move
+        # move data to workingdir
+        for ob in obs_data:
+            p, f = path.split(path.abspath(ob))
+            logger.debug("path = %s , file %s " % (p, f))
+            move(ob, f)
+            conv = call(resource=f,
+                        output_format_options={'data_model': 'NETCDF4_CLASSIC'},
+                        dir_output=p,
+                        prefix=f.replace('.nc', ''))
+            logger.debug('file %s to NETCDF4_CLASSIC converted' % conv)
+    except:
+        logger.exception('failed to convert into NETCDF4_CLASSIC')
+
 
     if level is None:
         data = obs_data

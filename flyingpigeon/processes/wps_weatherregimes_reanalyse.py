@@ -165,6 +165,7 @@ class WeatherregimesreanalyseProcess(Process):
 
         start = dt.strptime(period.split('-')[0], '%Y%m%d')
         end = dt.strptime(period.split('-')[1], '%Y%m%d')
+        LOGGER.debug('start: %s , end: %s ' % (start, end))
 
         # try:
         #
@@ -201,7 +202,7 @@ class WeatherregimesreanalyseProcess(Process):
                     conform_units_to = 'hPa'
             else:
                 LOGGER.exception('Reanalyses dataset not known')
-            LOGGER.info('environment set')
+            LOGGER.info('environment set for model: %s' % model)
         except:
             msg = 'failed to set environment'
             LOGGER.exception(msg)
