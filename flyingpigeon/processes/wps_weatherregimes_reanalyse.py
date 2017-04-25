@@ -152,7 +152,7 @@ class WeatherregimesreanalyseProcess(Process):
         # resources = self.getInputValues(identifier='resources')
         season = request.inputs['season'][0].data
         LOGGER.info('season %s', season)
-        bbox = [-180, -90, 180, 90]
+        bbox = [-80, 20, 50, 70]
         # bbox_obj = self.BBox.getValue()
         model_var = request.inputs['reanalyses'][0].data
         model, variable = model_var.split('_')
