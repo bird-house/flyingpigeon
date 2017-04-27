@@ -86,6 +86,7 @@ class WeatherregimesreanalyseProcess(Process):
                          allowed_values=range(2, 11)
                          ),
         ]
+
         outputs = [
             ComplexOutput("Routput_graphic", "Weather Regime Pressure map",
                           abstract="Weather Classification",

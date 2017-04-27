@@ -41,40 +41,41 @@ processes = [
 ]
 
 """
-__all__ = [
-        "wps_subset_continents",                # adopted to pywps4
-        "wps_subset_countries",                 # adopted to pywps4
-        "wps_subset_regionseurope",             # adopted to pywps4
-        "wps_subset_points",                    # adopted to pywps4
-        "wps_landseamask",                      # adopted to pywps4
-        "wps_indices_simple",                   # adopted to pywps4
-        "wps_indices_percentile",               # adopted to pywps4
-        "wps_weatherregimes_reanalyse",         # adopted to pywps4
-        "wps_weatherregimes_model",
-        "wps_weatherregimes_projection",
-        "wps_analogs_detection",
-        "wps_analogs_model",
-        "wps_analogs_compare",
-        "wps_analogs_viewer",
-        "wps_segetalflora",
-        "wps_sdm_gbiffetch",                    # adopted to pywps4
-        "wps_sdm_getindices",                   # adopted to pywps4
-        "wps_sdm_csvindices",                   # adopted to pywps4
-        "wps_sdm_csv",                          # adopted to pywps4
-        "wps_sdm_allinone",                     # adopted to pywps4
-        "wps_robustness",                       # adopted to pywps4
-        "wps_plot_timeseries",                  # adopted to pywps4
-        "wps_climatefactsheet",                 # adopted to pywps4
-        "wps_fetch",                            # adopted to pywps4
-        # climate for impact processes
-        "wps_c4i_simple_indice",
-        # processes under development
-        # "wps_spatial_analog",
-        # "wps_eobs2cordex",
+pywps3 processes:
 
-        # TODO: c4i processes with multiple input sources
-        # "wps_c4i_multivar_indice",
-        # "wps_c4i_percentile_indice",
-        # "wps_c4i_compound_indice",
-        ]
+"wps_subset_continents",                # adopted to pywps4
+"wps_subset_countries",                 # adopted to pywps4
+"wps_subset_regionseurope",             # adopted to pywps4
+"wps_subset_points",                    # adopted to pywps4
+"wps_landseamask",                      # adopted to pywps4
+"wps_indices_simple",                   # adopted to pywps4
+"wps_indices_percentile",               # adopted to pywps4
+"wps_weatherregimes_reanalyse",         # adopted to pywps4
+"wps_weatherregimes_model",             # adopted to pywps4
+"wps_weatherregimes_projection",        # adopted to pywps4
+"wps_analogs_detection",
+"wps_analogs_model",
+"wps_analogs_compare",
+"wps_analogs_viewer",
+"wps_segetalflora",
+"wps_sdm_gbiffetch",                    # adopted to pywps4
+"wps_sdm_getindices",                   # adopted to pywps4
+"wps_sdm_csvindices",                   # adopted to pywps4
+"wps_sdm_csv",                          # adopted to pywps4
+"wps_sdm_allinone",                     # adopted to pywps4
+"wps_robustness",                       # adopted to pywps4
+"wps_plot_timeseries",                  # adopted to pywps4
+"wps_climatefactsheet",                 # adopted to pywps4
+"wps_fetch",                            # adopted to pywps4
+
+# climate for impact processes
+"wps_c4i_simple_indice",
+# processes under development
+# "wps_spatial_analog",
+# "wps_eobs2cordex",
+
+# TODO: c4i processes with multiple input sources
+# "wps_c4i_multivar_indice",
+# "wps_c4i_percentile_indice",
+# "wps_c4i_compound_indice",
 """
