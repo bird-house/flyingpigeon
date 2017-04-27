@@ -1,94 +1,94 @@
-import logging
-logger = logging.getLogger(__name__)
-
-from os import path , mkdir, listdir
+from os import path, mkdir, listdir
 import ocgis
+import logging
+LOGGER = logging.getLogger("PYWPS")
+
 
 def get_equation(culture_type='fallow', climate_type=2):
-  """ 
+  """
   returns the equation as basis to calculate the segetal flora
   :param culture_type: Type of culture. Possible values are
                        'fallow', 'intensive', 'extensive' (default:'fallow')
   :param climate_type: Type of climate: number 1 to 7 or 'all' (default: 2)
   :example: eq = get_equation(culture_type= 'fallow', climate_type=2)
   """
-  logger.debug('equation for %s %s '% (culture_type, climate_type))
+  LOGGER.debug('equation for %s %s '% (culture_type, climate_type))
   climate_type = str(climate_type)
-  if culture_type == 'fallow':  
-    if climate_type == '1': 
+  if culture_type == 'fallow':
+    if climate_type == '1':
       #equation = "sffallow1=exp(46.4619-15.4355*(%s-273.15)+power(0.7070*(%s-273.15),2))" %('tas','tas')
       equation = "sffallow1=exp(46.4619-15.4355*(%s-273.15)+0.7070*power((%s-273.15),2))" %('tas','tas')
-    elif climate_type == '2': 
+    elif climate_type == '2':
       equation = "sffallow2=66.463*exp(-0.1315*(%s-273.15))"  %('tas')
-    elif climate_type == '3': 
+    elif climate_type == '3':
       equation ="sffallow3=exp(1.837+0.2856*(%s-273.15)-0.0156*power((%s-273.15),2))" %('tas','tas')
-    elif climate_type == '4': 
+    elif climate_type == '4':
       equation ="sffallow4=0.0685*power((%s-273.15),3-2.9184)*power((%s-273.15),2)+38.864*(%s-273.15)-80.046" %('tas','tas','tas')
-    elif climate_type == '5': 
+    elif climate_type == '5':
       equation ="sffallow5=1.68*exp(0.735*exp(0.1134*(%s-273.15)))" %('tas')
-    elif climate_type == '6': 
+    elif climate_type == '6':
       equation ="sffallow6=0.0088*power((%s-273.15),3-0.3457)*power((%s-273.15),2)+3.6656*(%s-273.15)+5.3486" %('tas','tas','tas')
-    elif climate_type == '7': 
+    elif climate_type == '7':
       equation ="sffallow7=3.4655*exp(0.1303*(%s-273.15))" %('tas')
-    elif climate_type == 'all': 
+    elif climate_type == 'all':
       equation ="sffallowall=0.2787*power((%s-273.15),3)-7.5658*power((%s-273.15),2)+72.4143*(%s-273.15)-76.29" %('tas','tas','tas')
-    else: 
+    else:
       equation = None
-      logger.debug('No equations determinated for %s %s' %  (culture_type , climate_type ) )
-        
-  elif culture_type == 'extensive': 
-    if climate_type == '1': 
+      LOGGER.debug('No equations determinated for %s %s' %  (culture_type , climate_type ) )
+
+  elif culture_type == 'extensive':
+    if climate_type == '1':
       equation ="sfextensive1=exp(46.0518-15.4597*(%s-273.15)+0.7143*power((%s-273.15),2))" %('tas','tas')
-    elif climate_type == '2': 
+    elif climate_type == '2':
       equation ="sfextensive2=45.6589*exp(-0.0987*(%s-273.15))"%('tas')
-    elif climate_type == '3': 
+    elif climate_type == '3':
       equation ="sfextensive3=exp(1.4383+0.33*(%s-273.15)-0.0176*power((%s-273.15),2))"%('tas','tas')
-    elif climate_type == '4': 
+    elif climate_type == '4':
       equation ="sfextensive4=-0.7587*power((%s-273.15),2)+17.8515*(%s-273.15)-32.8794"%('tas','tas')
-    elif climate_type == '5': 
+    elif climate_type == '5':
       equation ="sfextensive5=0.0817*exp(0.4597*(%s-273.15))"%('tas')
-    elif climate_type == '6': 
+    elif climate_type == '6':
       equation ="sfextensive6=-0.0263*power((%s-273.15),3)+0.7119*power((%s-273.15),2)-4.878*(%s-273.15)+11.154" %('tas','tas','tas')
-    elif climate_type == '7': 
+    elif climate_type == '7':
       equation ="sfextensive7=1.1653*exp(0.1711*(%s-273.15))"%('tas')
-    elif climate_type == 'all': 
+    elif climate_type == 'all':
       equation ="sfextensiveall=0.2386*power((%s-273.15),3)-6.5351*power((%s-273.15),2)+62.475*(%s-273.15)-73.9023" %('tas','tas','tas')
-    else: 
+    else:
       equation = None
-      logger.debug('No equations determinated for (%s-273.15) (%s-273.15)' %  (culture_type , climate_type ) )
-  
-  elif culture_type == 'intensive': 
-    if climate_type == '1': 
+      LOGGER.debug('No equations determinated for (%s-273.15) (%s-273.15)' %  (culture_type , climate_type ) )
+
+  elif culture_type == 'intensive':
+    if climate_type == '1':
       equation ="sfintensive1=exp(46.0518-15.4597*(%s-273.15)+0.7143*power((%s-273.15),2))" %('tas','tas')
-    elif climate_type == '2': 
+    elif climate_type == '2':
       equation ="sfintensive2=31.3493*exp(-0.1108*(%s-273.15))" %('tas')
-    elif climate_type == '3': 
+    elif climate_type == '3':
       equation ="sfintensive3=exp(1.0791+0.3449*(%s-273.15)-0.0189*power((%s-273.15),2))" %('tas','tas')
-    elif climate_type == '4': 
+    elif climate_type == '4':
       equation ="sfintensive4=-0.0919*power((%s-273.15),3)+2.3824*power((%s-273.15),2)-14.29*(%s-273.15)+38.93" %('tas','tas','tas')
-    elif climate_type == '5': 
+    elif climate_type == '5':
       equation ="sfintensive5=exp(0.1663+0.0457*(%s-273.15)+0.0128*power((%s-273.15),2))" %('tas','tas')
-    elif climate_type == '6': 
+    elif climate_type == '6':
       equation ="sfintensive6=14.1641*exp(-0.0363*(%s-273.15))" %('tas')
-    elif climate_type == '7': 
+    elif climate_type == '7':
       equation ="sfintensive7=1.704*exp(0.0982*(%s-273.15))" %('tas')
-    elif climate_type == 'all': 
+    elif climate_type == 'all':
       equation ="sfintensiveall=43.2846*exp(0.071*(%s-273.15))" %('tas')
-    else: 
+    else:
       equation = None
-      logger.debug('No equations determinated for %s %s' %  (culture_type , climate_type ) )
+      LOGGER.debug('No equations determinated for %s %s' %  (culture_type , climate_type ) )
   else:
     equation = None
-    logger.debug('No equations determinated for %s %s' %  (culture_type , climate_type ) )
+    LOGGER.debug('No equations determinated for %s %s' %  (culture_type , climate_type ) )
   return equation
 
-def remove_rows(infile, outfile , indicator='1e+20'): 
+def remove_rows(infile, outfile , indicator='1e+20'):
   with open(infile,"r") as input:
-    with open(outfile,"w") as output: 
+    with open(outfile,"w") as output:
         for line in input:
             if not indicator in line: #!="nickname_to_delete"+"\n":
                 output.write(line)
-  return outfile                
+  return outfile
 
 def plot_ascii(infile):
   ''' plot first timestep based on ascii files'''
@@ -98,16 +98,16 @@ def plot_ascii(infile):
   try:
     p, basename = path.split(infile)
     dir_output = p.replace('ascii','pics')
-    if not path.exists(dir_output): 
+    if not path.exists(dir_output):
       makedirs(dir_output)
-    
-    
+
+
     f = open(infile, 'r')
     lat = []
     lon = []
     val = []
     print basename
-    c = 0 
+    c = 0
     while 1:
       lines = f.readlines(10000)
       if not lines:
@@ -119,18 +119,18 @@ def plot_ascii(infile):
           if c == 1:
             testyear = year
             variable = line[0]
-          if year == testyear: 
+          if year == testyear:
             lat.append(float(line[2]))
             lon.append(float(line[3]))
             val.append(float(line[4]))
         c = c + 1
-    if 'sf' in variable:    
+    if 'sf' in variable:
       cm = plt.cm.get_cmap('BuGn')
-    else: 
+    else:
       cm = plt.cm.get_cmap('jet')
     #m = cm.ScalarMappable(cmap=cm.jet)
     #m.set_array(val)
-    
+
     fig = plt.figure()
     #fig.subplots_adjust(bottom = 0)
     #fig.subplots_adjust(top = 1)
@@ -146,85 +146,85 @@ def plot_ascii(infile):
     print ('ascii plotted')
     # fig.close()
   except Exception as e:
-    logger.exception('plotting failed for file %s' % basename)
+    LOGGER.exception('plotting failed for file %s' % basename)
     raise
 
-def get_yrmean(resource=[]): 
+def get_yrmean(resource=[]):
   """
-  calculation of annual mean temperature and clipping Europe 
-  
+  calculation of annual mean temperature and clipping Europe
+
   :param resource: list or netCDF tas input files
-  
-  :return list: list of output files 
+
+  :return list: list of output files
   """
-  
+
   from flyingpigeon.utils import calc_grouping, sort_by_filename
   from flyingpigeon.ocgis_module import call
   from flyingpigeon.subset import clipping
   ncs = sort_by_filename(resource)
   nc_tasmean = []
-  
+
   try:
     for key in ncs.keys():
       try:
-        logger.info('process %s' % (key))
+        LOGGER.info('process %s' % (key))
         calc =  [{'func':'mean','name':'tas'}]
         calc_group = calc_grouping('yr')
         prefix = key.replace(key.split('_')[7],'yr')
-        nc_tasmean.append(clipping(resource=ncs[key], 
-                                   variable='tas', 
-                                   calc=calc, calc_grouping= calc_group, 
+        nc_tasmean.append(clipping(resource=ncs[key],
+                                   variable='tas',
+                                   calc=calc, calc_grouping= calc_group,
                                    prefix=prefix, polygons='Europe')[0])
-        logger.info('clipping and mean tas calculation done for %s' % (key))
-      except Exception as e: 
-        logger.debug('mean tas calculation failed for %s : %s ' % (key,e))
+        LOGGER.info('clipping and mean tas calculation done for %s' % (key))
+      except Exception as e:
+        LOGGER.debug('mean tas calculation failed for %s : %s ' % (key,e))
   except Exception as e:
-    logger.debug('clipping failed for %s: %s' % (key, e))
+    LOGGER.debug('clipping failed for %s: %s' % (key, e))
   return nc_tasmean
 
-def get_segetalflora(resource=[], culture_type='fallow', climate_type=3): 
+def get_segetalflora(resource=[], culture_type='fallow', climate_type=3):
   """
-  calulation of segetalflora species numbers based on yearly mean temperature 
-  
-  :param resource: list of netCDF yearly mean temperature (tas) files. 
+  calulation of segetalflora species numbers based on yearly mean temperature
+
+  :param resource: list of netCDF yearly mean temperature (tas) files.
   :param culture_type: Type of culture. Possible values are:
                        'fallow', 'intensive', 'extensive' (default:'fallow')
   :param climate_type: Type of climate: number 1 to 7 or 'all' (default: 2)
-  
+
   :return list: list of result segeltaflora files
   """
-  
+
   from flyingpigeon.ocgis_module import call
   from os import path
-    
+
   if not type(culture_type) == list:
     culture_type = list([culture_type])
   if not type(climate_type) == list:
     climate_type = list([climate_type])
-   
-  outputs = []  
-  
+
+  outputs = []
+
   for name in resource:
-    for cult in culture_type: 
+    for cult in culture_type:
       for climat in climate_type:
         try:
           calc = get_equation(culture_type=cult, climate_type=climat)
           if type(calc) != None:
               var = 'sf%s%s' %(cult, climat)
               prefix = path.basename(name).replace('tas', var).strip('.nc')
-              
+
               outputs.append(call(resource=name, calc=calc, prefix=prefix))
-                              
-              logger.info('segetalflora done for %s' % (prefix))
-          else: 
-            logger.debug('NO EQUATION found for %s %s ' % (cult, climat))
-        except Exception as e: 
-          logger.debug('Segetal flora failed: %s' % (e))  
+
+              LOGGER.info('segetalflora done for %s' % (prefix))
+          else:
+            LOGGER.debug('NO EQUATION found for %s %s ' % (cult, climat))
+        except Exception as e:
+          LOGGER.debug('Segetal flora failed: %s' % (e))
   return outputs
 
 
 
-                
+
               #dir_ascii_sf = os.path.join(dir_ascii,var)
               #if not os.path.exists(dir_ascii_sf):
                 #os.makedirs(dir_ascii_sf)
@@ -242,7 +242,7 @@ def get_segetalflora(resource=[], culture_type='fallow', climate_type=3):
               #else:
                 #print 'ascii file already exists'
               #plot_ascii(asc_sf)
-            #except Exception as e: 
+            #except Exception as e:
               #print 'failed for ascii file: %s %s ' % (name, e)
               #if os.path.exists(tmp):
                 #remove(tmp)

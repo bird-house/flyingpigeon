@@ -2,7 +2,8 @@ from os.path import join, abspath, dirname, getsize, curdir
 from netCDF4 import Dataset
 from flyingpigeon import config
 import logging
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger("PYWPS")
+
 DIR_SHP = config.shapefiles_dir()
 
 
@@ -63,7 +64,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     :param output_format:
     :return: output file path
     '''
-    logger.info('Start ocgis module call function')
+    LOGGER.info('Start ocgis module call function')
     from ocgis import OcgOperations, RequestDataset, env
     from ocgis.util.large_array import compute
     import uuid
@@ -72,7 +73,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     env.DIR_SHPCABINET = DIR_SHP
     env.OVERWRITE = True
     # env.DIR_OUTPUT = dir_output
-    # logger.debug(' **** env.DIR_OUTPUT  = %s ' % env.DIR_OUTPUT)
+    # LOGGER.debug(' **** env.DIR_OUTPUT  = %s ' % env.DIR_OUTPUT)
 
     if dir_output is None:
         dir_output = abspath(curdir)
@@ -90,7 +91,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         spatial_reorder = True
     else:
         spatial_reorder = False
-    logger.debug('spatial_reorder: %s and spatial_wrapping: %s ' % (spatial_reorder, spatial_wrapping))
+    LOGGER.debug('spatial_reorder: %s and spatial_wrapping: %s ' % (spatial_reorder, spatial_wrapping))
 
     if prefix is None:
         prefix = str(uuid.uuid1())
@@ -101,20 +102,20 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         output_format_options = {'data_model': 'NETCDF4',  # NETCDF4_CLASSIC
                                  'variable_kwargs': {'zlib': True, 'complevel': 9}}
     else:
-        logger.info('output_format_options are set to %s ' % (output_format_options))
+        LOGGER.info('output_format_options are set to %s ' % (output_format_options))
 
     if type(resource) != list:
         resource = list([resource])
     # execute ocgis
-    logger.info('Execute ocgis module call function')
+    LOGGER.info('Execute ocgis module call function')
 
     # if has_Lambert_Conformal(resource) is True and geom is not None:
-    #     logger.debug('input has Lambert_Conformal projection and can not prcessed with ocgis:\
+    #     LOGGER.debug('input has Lambert_Conformal projection and can not prcessed with ocgis:\
     #      https://github.com/NCPP/ocgis/issues/424')
     #     return None
     # else:
     try:
-        logger.debug('call module curdir = %s ' % abspath(curdir))
+        LOGGER.debug('call module curdir = %s ' % abspath(curdir))
         rd = RequestDataset(resource, variable=variable, level_range=level_range,
                             dimension_map=dimension_map, conform_units_to=conform_units_to,
                             time_region=time_region, t_calendar=t_calendar, time_range=time_range)
@@ -134,9 +135,9 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
                             select_nearest=select_nearest,
                             select_ugid=select_ugid,
                             add_auxiliary_files=False)
-        logger.info('OcgOperations set')
+        LOGGER.info('OcgOperations set')
     except Exception as e:
-        logger.debug('failed to setup OcgOperations: %s' % e)
+        LOGGER.debug('failed to setup OcgOperations: %s' % e)
         raise
         return None
     try:
@@ -160,20 +161,20 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
 
         if variable is None:
             variable = rd.variable
-            logger.info('%s as variable dedected' % (variable))
+            LOGGER.info('%s as variable dedected' % (variable))
 
         # data_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
-        logger.info('data_mb  = %s ; memory_limit = %s ' % (data_mb, mem_limit))
+        LOGGER.info('data_mb  = %s ; memory_limit = %s ' % (data_mb, mem_limit))
     except Exception as e:
-        logger.debug('failed to compare dataload with free memory %s ' % e)
+        LOGGER.debug('failed to compare dataload with free memory %s ' % e)
         raise
 
     if data_mb <= mem_limit:  # input is smaler than the half of free memory size
         try:
-            logger.info('ocgis module call as ops.execute()')
+            LOGGER.info('ocgis module call as ops.execute()')
             geom_file = ops.execute()
         except Exception as e:
-            logger.debug('failed to execute ocgis operation')
+            LOGGER.debug('failed to execute ocgis operation')
             raise
             return None
     else:
@@ -187,10 +188,10 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
             element_in_mb = element_in_kb / 1024.
             tile_dim = sqrt(mem_limit/(element_in_mb*nb_time_coordinates_rd))  # maximum chunk size
 
-            logger.info('ocgis module call compute with chunks')
+            LOGGER.info('ocgis module call compute with chunks')
             if calc is None:
                 calc = '%s=%s*1' % (variable, variable)
-                logger.info('calc set to = %s ' % calc)
+                LOGGER.info('calc set to = %s ' % calc)
             ops = OcgOperations(dataset=rd,
                                 output_format_options=output_format_options,
                                 dir_output=dir_output,
@@ -210,10 +211,10 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
             geom_file = compute(ops, tile_dimension=int(tile_dim), verbose=True)
             print 'ocgis calculated'
         except Exception as e:
-            logger.debug('failed to compute ocgis with chunks')
+            LOGGER.debug('failed to compute ocgis with chunks')
             raise
             return None
-    logger.info('Succeeded with ocgis module call function')
+    LOGGER.info('Succeeded with ocgis module call function')
     ############################################
     # remapping according to regrid informations
     ############################################
@@ -229,7 +230,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
                   % (str(call[0]), regrid_destination, geom_file, output)
             exec cmd
         except Exception as e:
-            logger.debug('failed to remap')
+            LOGGER.debug('failed to remap')
             raise
             return None
     else:
@@ -239,7 +240,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     #     from flyingpigeon.utils import unrotate_pole
     #     lat, lon = unrotate_pole(output)
     # except:
-    #     logger.exception('failed to unrotate pole')
+    #     LOGGER.exception('failed to unrotate pole')
     return output
 
 
@@ -254,7 +255,7 @@ def eval_timerange(resource, time_range):
     """
     from flyingpigeon.utils import get_time
 
-    logger.info('time_range: %s' % time_range)
+    LOGGER.info('time_range: %s' % time_range)
 
     if type(resource) != str:
         resource.sort()
@@ -263,17 +264,17 @@ def eval_timerange(resource, time_range):
     end = time[-1]
 
     if (time_range[0] > start or time_range[0] < end):
-        logger.debug('time range start %s not in input dataset covering: %s to %s' % (time_range[0], start, end))
+        LOGGER.debug('time range start %s not in input dataset covering: %s to %s' % (time_range[0], start, end))
         time_range[0] = start
-    logger.debug('time_range start changed to first timestep of dataset')
+    LOGGER.debug('time_range start changed to first timestep of dataset')
     if (time_range[1] > end or time_range[1] < start):
-        logger.debug('time range end %s not in input dataset covering: %s to %s' % (time_range[0], start, end))
+        LOGGER.debug('time range end %s not in input dataset covering: %s to %s' % (time_range[0], start, end))
         time_range[1] = end
-    logger.debug('time_range end changed to last timestep of dataset')
+    LOGGER.debug('time_range end changed to last timestep of dataset')
     if (time_range[0] > time_range[1]):
         time_range = reversed(time_range)
-        logger.debug('time range reversed! start was later than end ')
-    logger.info('time range start and end set')
+        LOGGER.debug('time range reversed! start was later than end ')
+    LOGGER.info('time range start and end set')
     return time_range
 
 # # check memory load
@@ -300,4 +301,4 @@ def eval_timerange(resource, time_range):
 #
 #   if variable == None:
 #     variable = rd.variable
-#     logger.info('%s as variable dedected' % (variable))
+#     LOGGER.info('%s as variable dedected' % (variable))

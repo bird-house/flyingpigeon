@@ -2,7 +2,7 @@ import os
 from pywps import configuration
 
 import logging
-LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger("PYWPS")
 
 
 def esgfsearch_url():

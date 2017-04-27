@@ -3,7 +3,7 @@ from flyingpigeon.ocgis_module import call
 from tempfile import mkstemp
 
 import logging
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger("PYWPS")
 
 
 _TIMEREGIONS_ = {'JJA': {'month': [6, 7, 8]},
@@ -41,10 +41,10 @@ def get_anomalies(nc_file, frac=0.2, reference=None):
                               calc=calc,
                               calc_grouping=calc_grouping,
                               time_range=reference)
-        logger.info('annual cycle calculated')
+        LOGGER.info('annual cycle calculated')
     except Exception as e:
         msg = 'failed to calcualte annual cycle %s' % e
-        logger.error(msg)
+        LOGGER.error(msg)
         raise Exception(msg)
 
     try:
@@ -69,23 +69,23 @@ def get_anomalies(nc_file, frac=0.2, reference=None):
                     vals_sm[:, lat, lon] = ys
                 except:
                     msg = 'failed for lat %s lon %s' % (lat, lon)
-                    logger.exception(msg)
+                    LOGGER.exception(msg)
                     raise Exception(msg)
-            logger.debug('done for %s - %s ' % (lat, lon))
+            LOGGER.debug('done for %s - %s ' % (lat, lon))
         vals[:, :, :] = vals_sm[:, :, :]
         ds.close()
-        logger.info('smothing of annual cycle done')
+        LOGGER.info('smothing of annual cycle done')
     except:
         msg = 'failed smothing of annual cycle'
-        logger.exception(msg)
+        LOGGER.exception(msg)
         raise Exception(msg)
     try:
         ip, nc_anomal = mkstemp(dir='.', suffix='.nc')
         nc_anomal = cdo.sub(input=[nc_file, nc_anual_cycle], output=nc_anomal)
-        logger.info('cdo.sub; anomalisation done: %s ' % nc_anomal)
+        LOGGER.info('cdo.sub; anomalisation done: %s ' % nc_anomal)
     except:
         msg = 'failed substraction of annual cycle'
-        logger.exception(msg)
+        LOGGER.exception(msg)
         raise Exception(msg)
     return nc_anomal
 
@@ -101,11 +101,11 @@ def get_season(nc_file, season='DJF'):
     """
     try:
         time_region = _TIMEREGIONS_[season]
-        logger.info('time_region: %s ' % time_region)
+        LOGGER.info('time_region: %s ' % time_region)
         nc_season = call(nc_file, time_region=time_region)
-        logger.info('season selection done %s ' % nc_season)
+        LOGGER.info('season selection done %s ' % nc_season)
     except:
         msg = 'failed to select season, input file is passed '
-        logger.exception(msg)
+        LOGGER.exception(msg)
         nc_season = nc_file
     return nc_season

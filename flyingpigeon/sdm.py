@@ -1,7 +1,7 @@
 from tempfile import mkstemp
 
 import logging
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger("PYWPS")
 
 _SDMINDICES_ = [
     'CDD_AMJJAS',
@@ -46,10 +46,10 @@ def latlon_gbifdic(gbifdic):
             latlon[i][0] = coord['decimalLatitude']
             latlon[i][1] = coord['decimalLongitude']
 
-        logger.info('read in PA coordinates for %s rows ', len(coords))
+        LOGGER.info('read in PA coordinates for %s rows ', len(coords))
     except:
         msg = 'failed search GBIF data.'
-        logger.exception(msg)
+        LOGGER.exception(msg)
         raise
     return latlon
 
@@ -88,10 +88,10 @@ def latlon_gbifcsv(csvfile):
 
         nz = (ll == 0).sum(1)
         latlon = ll[nz == 0, :]
-        logger.info('read in PA coordinates for %s rows ' % len(latlon[:, 0]))
-        logger.warn('failed to read in PA coordinates for %s rows ' % c)
+        LOGGER.info('read in PA coordinates for %s rows ' % len(latlon[:, 0]))
+        LOGGER.warn('failed to read in PA coordinates for %s rows ' % c)
     except:
-        logger.exception('failed to get lat/lon coordinates from csv table')
+        LOGGER.exception('failed to get lat/lon coordinates from csv table')
     return latlon
 
 
@@ -108,16 +108,16 @@ def get_gbif(taxon_name='Fagus sylvatica', bbox=[-10, -10, 10, 10]):
     from pygbif import occurrences as occ
     from pygbif import species
 
-    logger.info('libs loaded in get_gbif function')
+    LOGGER.info('libs loaded in get_gbif function')
 
     try:
         nm = species.name_backbone(taxon_name)['usageKey']
-        logger.info('taxon name set')
+        LOGGER.info('taxon name set')
         print('taxon name set')
         # generate polygons with gridwidth 10_degree
         # x_len = (bbox[2] - bbox[0] ) / 10
         # y_len = (bbox[3] - bbox[1] ) / 10
-        # logger.info('length = %s , %s ' % (x_len, y_len))
+        # LOGGER.info('length = %s , %s ' % (x_len, y_len))
         polys = []
         gridlen = 10
 
@@ -129,11 +129,11 @@ def get_gbif(taxon_name='Fagus sylvatica', bbox=[-10, -10, 10, 10]):
                 polys.extend([poly])
         print(polys)
 
-        logger.info('%s polygons created' % len(polys))
+        LOGGER.info('%s polygons created' % len(polys))
         gbifdic = []
 
         for i in polys:
-            logger.info('processing polyon')
+            LOGGER.info('processing polyon')
             res = []
             x = occ.search(taxonKey=nm, geometry=i)
             res.append(x['results'])
@@ -141,12 +141,12 @@ def get_gbif(taxon_name='Fagus sylvatica', bbox=[-10, -10, 10, 10]):
                 x = occ.search(taxonKey=nm, geometry=i, offset=sum([len(x) for x in res]))
                 res.append(x['results'])
             gbifdic.append([w for z in res for w in z])
-            logger.info('polyon fetched')
+            LOGGER.info('polyon fetched')
 
         results = [w for z in gbifdic for w in z]
     except:
         msg = 'failed search GBIF data.'
-        logger.exception(msg)
+        LOGGER.exception(msg)
         raise
     return results
 
@@ -159,7 +159,7 @@ def get_gbif(taxon_name='Fagus sylvatica', bbox=[-10, -10, 10, 10]):
 #      latlon[i][1] = Longitude
 #    nz = (latlon == 0).sum(1)
 #    ll = latlon[nz == 0, :]
-#    logger.info('read in PA coordinates for %s rows ' % len(ll[:,0]))
+#    LOGGER.info('read in PA coordinates for %s rows ' % len(ll[:,0]))
 
 
 def gbifdic2csv(gbifdic):
@@ -239,7 +239,7 @@ def get_indices(resources, indices):
 
     ncs = sort_by_filename(resources, historical_concatination=True)
     ncs_indices = []
-    logger.info('resources sorted found %s datasets' % len(ncs.keys()))
+    LOGGER.info('resources sorted found %s datasets' % len(ncs.keys()))
     for key in ncs.keys():
         for indice in indices:
             try:
@@ -247,7 +247,7 @@ def get_indices(resources, indices):
                 variable = key.split('_')[0]
                 # print name, month , variable
                 if variable == indice_variable(name):
-                    logger.info('calculating indice %s ' % indice)
+                    LOGGER.info('calculating indice %s ' % indice)
                     prefix = key.replace(variable, name).replace('_day_', '_%s_' % month)
                     nc = calc_indice_simple(resource=ncs[key],
                                             variable=variable,
@@ -258,13 +258,13 @@ def get_indices(resources, indices):
                     if nc is not None:
                         coords = unrotate_pole(nc[0], write_to_file=True)
                         ncs_indices.append(nc[0])
-                        logger.info('Successful calculated indice %s %s' % (key, indice))
+                        LOGGER.info('Successful calculated indice %s %s' % (key, indice))
                     else:
                         msg = 'failed to calculate indice %s %s' % (key, indice)
-                        logger.exception(msg)
+                        LOGGER.exception(msg)
             except:
                 msg = 'failed to calculate indice %s %s' % (key, indice)
-                logger.exception(msg)
+                LOGGER.exception(msg)
                 raise
     return ncs_indices
 
@@ -354,19 +354,19 @@ def get_gam(ncs_reference, PAmask, modelname=None):
         base = importr("base")
         stats = importr("stats")
         mgcv = importr("mgcv")
-        logger.info('rpy2 modules imported')
+        LOGGER.info('rpy2 modules imported')
     except:
         msg = 'failed to import rpy2 modules'
-        logger.exception(msg)
+        LOGGER.exception(msg)
         raise
 
     try:
         data = {'PA': ro.FloatVector(ravel(PAmask))}
         domain = PAmask.shape
-        logger.info('mask data converted to R float vector')
+        LOGGER.info('mask data converted to R float vector')
     except:
         msg = 'failed to convert mask to R vector'
-        logger.exception(msg)
+        LOGGER.exception(msg)
         raise Exception
 
     try:
@@ -385,10 +385,10 @@ def get_gam(ncs_reference, PAmask, modelname=None):
                 form = form + 's(%s, k=3)' % indice
             else:
                 form = form + ' + s(%s, k=3)' % indice
-        logger.info('form string generated for gam model')
+        LOGGER.info('form string generated for gam model')
     except:
         msg = 'form string generation for gam failed'
-        logger.exception(msg)
+        LOGGER.exception(msg)
         # raise Exception
 
     try:
@@ -399,10 +399,10 @@ def get_gam(ncs_reference, PAmask, modelname=None):
                              family=stats.binomial(),
                              scale=-1,
                              na_action=stats.na_exclude)
-        logger.info('GAM model trained')
+        LOGGER.info('GAM model trained')
     except:
         msg = 'failed to train the GAM model'
-        logger.exception(msg)
+        LOGGER.exception(msg)
 
     # ####################
     # plot response curves
@@ -421,23 +421,23 @@ def get_gam(ncs_reference, PAmask, modelname=None):
                                       col='black', select=i, ylab='Predicted Probability',
                                       main=modelname,
                                       rug=False, cex_lab=1.4, cex_axis=4.2)
-                    logger.info('plot GAM curves for %s.', i)
+                    LOGGER.info('plot GAM curves for %s.', i)
                 except:
-                    logger.exception('failed to plot GAM curves for %s.', i)
+                    LOGGER.exception('failed to plot GAM curves for %s.', i)
             _ = grdevices.dev_off()
         except:
-            logger.exception('GAM plot failedin SDM process')
+            LOGGER.exception('GAM plot failedin SDM process')
 
         try:
             predict_gam = mgcv.predict_gam(gam_model, type="response",
                                            progress="text", na_action=stats.na_pass)
             prediction = array(predict_gam).reshape(domain)
-            logger.info('SDM prediction for reference period processed')
+            LOGGER.info('SDM prediction for reference period processed')
         except:
-            logger.exception('failed to process SDM prediction')
+            LOGGER.exception('failed to process SDM prediction')
             prediction = None
     except:
-        logger.exception('failed to plot GAM curves')
+        LOGGER.exception('failed to plot GAM curves')
         _, infos_concat = mkstemp(dir='.', suffix='.pdf')
 
     return gam_model, prediction, statinfos
@@ -531,5 +531,5 @@ def write_to_file(nc_indice, data):
         ds.close()
     except:
         msg = 'failed to fill data to netCDF file'
-        logger.exception(msg)
+        LOGGER.exception(msg)
     return nc

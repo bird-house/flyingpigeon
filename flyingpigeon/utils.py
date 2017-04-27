@@ -12,7 +12,7 @@ from pyesgf.search import TYPE_FILE
 from flyingpigeon import config
 
 import logging
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger("PYWPS")
 
 GROUPING = ["day", "mon", "sem", "yr", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON",
             "Jan", 'Feb', "Mar", "Apr", "May", "Jun", 'Jul', "Aug", 'Sep', 'Oct', 'Nov', 'Dec']
@@ -49,7 +49,7 @@ def search_landsea_mask_by_esgf(resource):
     if ctx.hit_count == 0:
         raise Exception("Could not find a mask in ESGF.")
     if ctx.hit_count > 1:
-        logger.warn("Found more then one mask file.")
+        LOGGER.warn("Found more then one mask file.")
     results = ctx.search(batch_size=1)
     return results[0].opendap_url
 
@@ -94,7 +94,7 @@ def check_creationtime(path, url):
 
         u = urllib2.urlopen(url)
         meta = u.info()
-        logger.info("Last Modified: " + str(meta.getheaders("Last-Modified")[0]))
+        LOGGER.info("Last Modified: " + str(meta.getheaders("Last-Modified")[0]))
 
         # CONVERTING HEADER TIME TO UTC TIMESTAMP
         # ASSUMING 'Sun, 28 Jun 2015 06:30:17 GMT' FORMAT
@@ -103,14 +103,14 @@ def check_creationtime(path, url):
 
         # file = 'C:\Path\ToFile\somefile.xml'
         if os.path.getmtime(path) < meta_modifiedtime:
-            logger.info("local file is older than archive file.")
+            LOGGER.info("local file is older than archive file.")
             newer = True
         else:
-            logger.info("local file is up-to-date. Nothing to fetch.")
+            LOGGER.info("local file is up-to-date. Nothing to fetch.")
             newer = False
     except:
         msg = 'failed to check arichve and cache creation time assuming newer = False'
-        logger.exception(msg)
+        LOGGER.exception(msg)
         newer = False
     return newer
 
@@ -125,15 +125,15 @@ def download(url, cache=False):
             parsed_url = urlparse.urlparse(url)
             filename = os.path.join(config.cache_path(), parsed_url.netloc, parsed_url.path.strip('/'))
             if os.path.exists(filename):
-                logger.info('file already in cache: %s', os.path.basename(filename))
+                LOGGER.info('file already in cache: %s', os.path.basename(filename))
                 if check_creationtime(filename, url):
-                    logger.info('file in cache older than archive file, downloading: %s ', os.path.basename(filename))
+                    LOGGER.info('file in cache older than archive file, downloading: %s ', os.path.basename(filename))
                     os.remove(filename)
                     filename = wget.download(url, out=filename, bar=None)
             else:
                 if not os.path.exists(os.path.dirname(filename)):
                     os.makedirs(os.path.dirname(filename))
-                logger.info('downloading: %s', url)
+                LOGGER.info('downloading: %s', url)
                 filename = wget.download(url, out=filename, bar=None)
                 # make softlink to current dir
                 # os.symlink(filename, os.path.basename(filename))
@@ -141,7 +141,7 @@ def download(url, cache=False):
         else:
             filename = wget.download(url, bar=None)
     except:
-        logger.exception('failed to download data')
+        LOGGER.exception('failed to download data')
     return filename
 
 
@@ -168,7 +168,7 @@ def archive(resources, format='tar', dir_output='.', mode='w'):
     from tempfile import mkstemp
     from os.path import basename
 
-    logger.info('compressing files to archive')
+    LOGGER.info('compressing files to archive')
     try:
         if isinstance(resources, str):
             resources = list([resources])
@@ -177,7 +177,7 @@ def archive(resources, format='tar', dir_output='.', mode='w'):
         resources = resources_filter
     except Exception as e:
         msg = 'failed to prepare file list: %s' % e
-        logger.debug(msg)
+        LOGGER.debug(msg)
 
     if format == 'tar':
         import tarfile
@@ -190,17 +190,17 @@ def archive(resources, format='tar', dir_output='.', mode='w'):
                     tar.add(f, arcname=basename(f))
                 except Exception as e:
                     msg = 'archiving failed for %s: %s' % (f, e)
-                    logger.debug(msg)
+                    LOGGER.debug(msg)
                     raise(msg)
             tar.close()
         except Exception as e:
             msg = 'failed to compress into archive %s', e
-            logger.exception(msg)
+            LOGGER.exception(msg)
             raise(msg)
     elif format == 'zip':
         import zipfile
 
-        logger.info('creating zip archive')
+        LOGGER.info('creating zip archive')
         try:
             o1, archive = mkstemp(dir=dir_output, suffix='.zip')
             zf = zipfile.ZipFile(archive, mode=mode)
@@ -209,11 +209,11 @@ def archive(resources, format='tar', dir_output='.', mode='w'):
             zf.close()
         except Exception as e:
             msg = 'failed to create zip archive: %s' % msg
-            logger.debug(msg)
+            LOGGER.debug(msg)
             raise
-            # logger.info(print_info('zipfile_write.zip'))
+            # LOGGER.info(print_info('zipfile_write.zip'))
     else:
-        logger.error('no common archive format like: zip / tar')
+        LOGGER.error('no common archive format like: zip / tar')
     return archive
 
 
@@ -254,11 +254,11 @@ def archiveextract(resource, path='.'):
                     files.extend([join(path, nc) for nc in zf.filelist])
                     zf.close()
                 else:
-                    logger.debug('file extention unknown')
+                    LOGGER.debug('file extention unknown')
             except Exception as e:
-                logger.debug('failed to extract sub archive: %s' % e)
+                LOGGER.debug('failed to extract sub archive: %s' % e)
     except Excepion as e:
-        logger.debug('failed to extract archive resource: %s' % e)
+        LOGGER.debug('failed to extract archive resource: %s' % e)
     return files
 
 
@@ -326,7 +326,7 @@ def calc_grouping(grouping):
         calc_grouping = [grouping]
     else:
         msg = 'Unknown calculation grouping: %s' % grouping
-        logger.debug(msg)
+        LOGGER.debug(msg)
         raise Exception(msg)
     return calc_grouping
 
@@ -385,13 +385,13 @@ def drs_filename(resource, skip_timestamp=False, skip_format=False,
             raise Exception('unknown project %s' % ds.project_id)
         ds.close()
     except:
-        logger.exception('Could not read metadata %s', resource)
+        LOGGER.exception('Could not read metadata %s', resource)
     try:
         # add from/to timestamp if not skipped
         if skip_timestamp is False:
-            logger.debug("add timestamp")
+            LOGGER.debug("add timestamp")
             from_timestamp, to_timestamp = get_timerange(resource)
-            logger.debug("from_timestamp %s", from_timestamp)
+            LOGGER.debug("from_timestamp %s", from_timestamp)
             filename = "%s_%s-%s" % (filename, int(from_timestamp), int(to_timestamp))
 
         # add format extension
@@ -408,7 +408,7 @@ def drs_filename(resource, skip_timestamp=False, skip_format=False,
             if path.exists(path.join(resource)):
                 rename(resource, path.join(pf, filename))
     except:
-        logger.exception('Could not generate DRS filename for %s', resource)
+        LOGGER.exception('Could not generate DRS filename for %s', resource)
 
     return filename
 
@@ -441,9 +441,9 @@ def get_coordinates(resource):
             lats = ds.variables['lat']
             lons = ds.variables['lon']
             ds.close()
-            logger.debug('coordinate extracted')
+            LOGGER.debug('coordinate extracted')
         else:
-            logger.debug('lat/lon not found, will try to unrotate pole')
+            LOGGER.debug('lat/lon not found, will try to unrotate pole')
             ds.close()
             lats, lons = unrotate_pole(resource, write_to_file=False)
             # ds = Dataset(resource)
@@ -451,7 +451,7 @@ def get_coordinates(resource):
             # lons = ds.variables['lon']
     except:
         msg = 'failed to extract coordinates'
-        logger.exception(msg)
+        LOGGER.exception(msg)
         raise Exception(msg)
     return lats, lons
 
@@ -468,15 +468,15 @@ def get_domain(resource):
         ds = Dataset(resource)
         if 'CMIP' in ds.project_id or 'EUCLEIA' in ds.project_id:
             domain = None
-            logger.debug('resource belongs to a global experiment project')
+            LOGGER.debug('resource belongs to a global experiment project')
         elif 'CORDEX' in ds.project_id:
             domain = ds.CORDEX_domain
-            logger.info('resource belongs to CORDEX')
+            LOGGER.info('resource belongs to CORDEX')
         else:
-            logger.debug('No known project_id found in meta data')
+            LOGGER.debug('No known project_id found in meta data')
         ds.close()
     except Exception as e:
-        logger.debug('Could not specify domain for %s: %s' % (resource, e))
+        LOGGER.debug('Could not specify domain for %s: %s' % (resource, e))
     return domain
 
 
@@ -492,10 +492,10 @@ def get_frequency(resource):
 
     try:
         frequency = ds.frequency
-        logger.info('frequency written in the meta data:  %s', frequency)
+        LOGGER.info('frequency written in the meta data:  %s', frequency)
     except Exception as e:
         msg = "Could not specify frequency for %s" % (resource)
-        logger.exception(msg)
+        LOGGER.exception(msg)
         raise Exception(msg)
     else:
         ds.close()
@@ -538,7 +538,7 @@ def get_timerange(resource):
 
     if type(resource) != list:
         resource = [resource]
-    logger.debug('length of recources: %s files' % len(resource))
+    LOGGER.debug('length of recources: %s files' % len(resource))
 
     try:
         if len(resource) > 1:
@@ -567,7 +567,7 @@ def get_timerange(resource):
     except:
         ds.close()
         msg = 'failed to get time range'
-        logger.exception(msg)
+        LOGGER.exception(msg)
         raise Exception(msg)
     return start, end
 
@@ -584,7 +584,7 @@ def get_timerange(resource):
 #         to_timestamp = '%s%s%s'  %   (end.year,  str(end.month).zfill(2) ,str(end.day).zfill(2))
 #     except Exception as e:
 #       msg = 'failed to get_timestamps'
-#       logger.exception(msg)
+#       LOGGER.exception(msg)
 #       raise Exception(msg)
 
 #     return (from_timestamp, to_timestamp)
@@ -610,7 +610,7 @@ def get_time(resource, format=None):
         time = ds.variables['time']
     except:
         msg = 'failed to get time'
-        logger.exception(msg)
+        LOGGER.exception(msg)
         raise Exception(msg)
 
     try:
@@ -627,10 +627,10 @@ def get_time(resource, format=None):
         except:
             msg = 'failed to convert times to string'
             print msg
-            logger.debug(msg)
+            LOGGER.debug(msg)
     except:
         msg = 'failed to convert time'
-        logger.exception(msg)
+        LOGGER.exception(msg)
         raise Exception(msg)
     return timestamps
 
@@ -696,10 +696,10 @@ def rename_variable(resource, oldname=None, newname='newname'):
             ds = Dataset(resource, mode='a')
             ds.renameVariable(oldname, newname)
             ds.close()
-            logger.info('varname %s in netCDF renamed to %s' % (oldname, newname))
+            LOGGER.info('varname %s in netCDF renamed to %s' % (oldname, newname))
     except Exception as e:
         msg = 'failed to rename variable in target files %s ' % e
-        logger.debug(msg)
+        LOGGER.debug(msg)
         raise Exception(msg)
 
 
@@ -733,20 +733,20 @@ def sort_by_filename(resource, historical_concatination=False):
 
     try:
         if len(resource) > 1:
-            logger.debug('sort_by_filename module start sorting %s files' % len(resource))
-            # logger.debug('resource is list with %s files' % len(resource))
+            LOGGER.debug('sort_by_filename module start sorting %s files' % len(resource))
+            # LOGGER.debug('resource is list with %s files' % len(resource))
             try:  # if len(resource) > 1:
                 # collect the different experiment names
                 for nc in resource:
-                    logger.info('file: %s' % nc)
+                    LOGGER.info('file: %s' % nc)
                     p, f = path.split(path.abspath(nc))
                     n = f.split('_')
                     bn = '_'.join(n[0:-1])  # skipping the date information in the filename
                     ndic[bn] = []  # dictionary containing all datasets names
-                logger.info('found %s datasets', len(ndic.keys()))
+                LOGGER.info('found %s datasets', len(ndic.keys()))
             except Exception as e:
-                logger.exception('failed to find names of datasets! %s ' % e)
-            logger.info('check for historical/RCP datasets')
+                LOGGER.exception('failed to find names of datasets! %s ' % e)
+            LOGGER.info('check for historical/RCP datasets')
             try:
                 if historical_concatination is True:
                     # select only necessary names
@@ -754,12 +754,12 @@ def sort_by_filename(resource, historical_concatination=False):
                         for key in ndic.keys():
                             if 'historical' in key:
                                 ndic.pop(key)
-                        logger.info('historical data set names removed from dictionary')
+                        LOGGER.info('historical data set names removed from dictionary')
                     else:
-                        logger.info('no RCP dataset names found in dictionary')
+                        LOGGER.info('no RCP dataset names found in dictionary')
             except Exception as e:
-                logger.exception('failed to pop historical data set names! %s ' % e)
-            logger.info('start sorting the files')
+                LOGGER.exception('failed to pop historical data set names! %s ' % e)
+            LOGGER.info('start sorting the files')
             try:
                 for key in ndic:
                     try:
@@ -777,12 +777,12 @@ def sort_by_filename(resource, historical_concatination=False):
                                 if '%s_' % key in n or '%s_' % key_hist in n:
                                     ndic[key].append(path.join(p, n))
                         else:
-                            logger.error('append file paths to dictionary for key %s failed' % key)
+                            LOGGER.error('append file paths to dictionary for key %s failed' % key)
                         ndic[key].sort()
                     except:
-                        logger.exception('failed for %s ' % key)
+                        LOGGER.exception('failed for %s ' % key)
             except:
-                logger.exception('failed to populate the dictionary with appropriate files')
+                LOGGER.exception('failed to populate the dictionary with appropriate files')
             for key in ndic.keys():
                 try:
                     ndic[key].sort()
@@ -791,18 +791,18 @@ def sort_by_filename(resource, historical_concatination=False):
                     tmp_dic[newkey] = ndic[key]
                 except:
                     msg = 'failed to sort the list of resources and add dates to keyname: %s' % key
-                    logger.exception(msg)
+                    LOGGER.exception(msg)
                     raise Exception(msg)
         elif len(resource) == 1:
             p, f = path.split(path.abspath(resource[0]))
             tmp_dic[f.replace('.nc', '')] = path.abspath(resource[0])
-            logger.debug('only one file! Nothing to sort, resource is passed into dictionary')
+            LOGGER.debug('only one file! Nothing to sort, resource is passed into dictionary')
         else:
-            logger.debug('sort_by_filename module failed: resource is not 1 or >1')
-        logger.info('sort_by_filename module done: %s datasets found' % len(ndic))
+            LOGGER.debug('sort_by_filename module failed: resource is not 1 or >1')
+        LOGGER.info('sort_by_filename module done: %s datasets found' % len(ndic))
     except:
         msg = 'failed to sort files by filename'
-        logger.exception(msg)
+        LOGGER.exception(msg)
         raise Exception(msg)
     return tmp_dic
 
@@ -813,7 +813,7 @@ def has_variable(resource, variable):
         rd = RequestDataset(uri=resource)
         success = rd.variable == variable
     except:
-        logger.exception('has_variable failed.')
+        LOGGER.exception('has_variable failed.')
         raise
     return success
 
@@ -902,7 +902,7 @@ def unrotate_pole(resource, write_to_file=True):
     ds = Dataset(resource, mode='a')
 
     if 'lat' in ds.variables.keys():
-        logger.info('coordinates already unrotated')
+        LOGGER.info('coordinates already unrotated')
         lats = ds.variables['lat'][:]
         lons = ds.variables['lon'][:]
 
@@ -913,11 +913,11 @@ def unrotate_pole(resource, write_to_file=True):
             elif 'rotated_pole' in ds.variables:
                 rp = ds.variables['rotated_pole']
             else:
-                logger.debug('rotated pole variable not found')
+                LOGGER.debug('rotated pole variable not found')
             pole_lat = rp.grid_north_pole_latitude
             pole_lon = rp.grid_north_pole_longitude
         except Exception as e:
-            logger.debug('failed to find rotated_pole coordinates: %s' % e)
+            LOGGER.debug('failed to find rotated_pole coordinates: %s' % e)
         try:
             if 'rlat' in ds.variables:
                 rlats = ds.variables['rlat']
@@ -927,7 +927,7 @@ def unrotate_pole(resource, write_to_file=True):
                 rlats = ds.variables['y']
                 rlons = ds.variables['x']
         except Exception as e:
-            logger.debug('failed to read in rotated coordiates %s' % e)
+            LOGGER.debug('failed to read in rotated coordiates %s' % e)
 
         try:
             rlons_i = reshape(rlons, (1, len(rlons)))
@@ -935,7 +935,7 @@ def unrotate_pole(resource, write_to_file=True):
             grid_rlats = repeat(rlats_i, (len(rlons)), axis=1)
             grid_rlons = repeat(rlons_i, (len(rlats)), axis=0)
         except Exception as e:
-            logger.debug('failed to repeat coordinates %s' % e)
+            LOGGER.debug('failed to repeat coordinates %s' % e)
 
         lons, lats = ct.unrotate_pole(grid_rlons, grid_rlats, pole_lon, pole_lat)
 

@@ -4,9 +4,7 @@ from flyingpigeon import utils
 # logger = logging.getLogger(__name__)
 
 import logging
-logger = logging.getLogger("PYWPS")
-
-
+LOGGER = logging.getLogger("PYWPS")
 
 _PRESSUREDATA_ = [
     'NCEP_slp', 'NCEP_z1000', 'NCEP_z925', 'NCEP_z850', 'NCEP_z700', 'NCEP_z600', 'NCEP_z500', 'NCEP_z400', 'NCEP_z300',
@@ -53,10 +51,10 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP'):
                 start = 1948
             if dataset == '20CR':
                 start = 1851
-        logger.info('start / end date set')
+        LOGGER.info('start / end date set')
     except:
         msg = "get_OBS module failed to get start end dates"
-        logger.exception(msg)
+        LOGGER.exception(msg)
         raise Exception(msg)
 
     if 'z' in variable:
@@ -64,11 +62,11 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP'):
     else:
         level = None
 
-    logger.info('level: %s' % level)
+    LOGGER.info('level: %s' % level)
 
     try:
         for year in range(start, end + 1):
-            logger.debug('fetching single file for %s year %s ' % (dataset, year))
+            LOGGER.debug('fetching single file for %s year %s ' % (dataset, year))
             try:
                 if dataset == 'NCEP':
                     if variable == 'slp':
@@ -86,40 +84,40 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP'):
                     if 'z' in variable:
                         url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/pressure/hgt.%s.nc' % (year)
                 else:
-                    logger.debug('Dataset %s not known' % dataset)
-                logger.debug('url: %s' % url)
+                    LOGGER.debug('Dataset %s not known' % dataset)
+                LOGGER.debug('url: %s' % url)
             except:
                 msg = "could not set url"
-                logger.exception(msg)
+                LOGGER.exception(msg)
             try:
                 df = utils.download(url, cache=True)
-                logger.debug('single file fetched %s ' % year)
+                LOGGER.debug('single file fetched %s ' % year)
                 # convert to NETCDF4_CLASSIC
                 try:
                     p, f = path.split(path.abspath(df))
-                    logger.debug("path = %s , file %s " % (p, f))
+                    LOGGER.debug("path = %s , file %s " % (p, f))
                     move(df, f)
                     conv = call(resource=f,
                                 output_format_options={'data_model': 'NETCDF4_CLASSIC'},
                                 dir_output=p,
                                 prefix=f.replace('.nc', ''))
                     obs_data.append(conv)
-                    logger.debug('file %s to NETCDF4_CLASSIC converted' % conv)
+                    LOGGER.debug('file %s to NETCDF4_CLASSIC converted' % conv)
                 except:
-                    logger.exception('failed to convert into NETCDF4_CLASSIC')
+                    LOGGER.exception('failed to convert into NETCDF4_CLASSIC')
             except:
                 msg = "wget failed on {0}.".format(url)
-                logger.exception(msg)
-        logger.info('Reanalyses data fetched for %s files' % len(obs_data))
+                LOGGER.exception(msg)
+        LOGGER.info('Reanalyses data fetched for %s files' % len(obs_data))
     except:
         msg = "get reanalyses module failed to fetch data"
-        logger.exception(msg)
+        LOGGER.exception(msg)
         raise Exception(msg)
 
     if level is None:
         data = obs_data
     else:
-        logger.info('get level: %s' % level)
+        LOGGER.info('get level: %s' % level)
         data = get_level(obs_data, level=level)
     return data
 
@@ -135,7 +133,7 @@ def get_level(resource, level):
         if type(resource) == list:
             resource.sort()
         variable = get_variable(level_data)
-        logger.info('found %s in file' % variable)
+        LOGGER.info('found %s in file' % variable)
         ds = Dataset(level_data, mode='a')
         var = ds.variables.pop(variable)
         dims = var.dimensions
@@ -143,9 +141,9 @@ def get_level(resource, level):
         # i = where(var[:]==level)
         new_var[:, :, :] = squeeze(var[:, 0, :, :])
         ds.close()
-        logger.info('level %s extracted' % level)
+        LOGGER.info('level %s extracted' % level)
         data = call(level_data, variable='z%s' % level)
     except:
-        logger.exception('failed to extract level')
+        LOGGER.exception('failed to extract level')
 
     return data
