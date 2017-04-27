@@ -30,29 +30,26 @@ class WeatherregimesreanalyseProcess(Process):
                              Format('application/zip'),
                          ]),
 
+            LiteralInput("Rdat", "R - workspace",
+                         abstract="R workspace as output from weather regime reference process",
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=1,
+                         ),
 
-            # self.BBox = self.addBBoxInput(
-            #     identifier="BBox",
-            #     title="Bounding Box",
-            #     abstract="coordinates to define the region for weather classification ('EPSG:4326')",
-            #     minOccurs=1,
-            #     maxOccurs=1,
-            #     crss=['EPSG:4326']
-            #     )
+            LiteralInput("dat", "R - datafile",
+                         abstract="R datafile as output from weather regime reference process",
+                         type=type(''),
+                         minOccurs=1,
+                         maxOccurs=1,
+                         ),
 
-            # Literal Input Data
-            # ------------------
-
-            # self.BBox = self.addLiteralInput(
-            #     identifier="BBox",
-            #     title="Region",
-            #     abstract="coordinates to define the region: (minlon,maxlon,minlat,maxlat)",
-            #     default='-80,22.5,50,70', #  cdo syntax: 'minlon,maxlon,minlat,maxlat' ;
-            #  ocgis syntax (minlon,minlat,maxlon,maxlat)
-            #     type=type(''),
-            #     minOccurs=1,
-            #     maxOccurs=1,
-            #     )
+            LiteralInput("netCDF", "netCDF reference",
+                         abstract="netCDF file as output from weather regime reference process",
+                         data_type='string',
+                         min_occurs=0,
+                         max_occurs=1,
+                        ),
 
             LiteralInput("season", "Time region",
                          abstract="Select the months to define the time region (all == whole year will be analysed)",
@@ -79,31 +76,8 @@ class WeatherregimesreanalyseProcess(Process):
                          max_occurs=1,
                          ),
 
-            LiteralInput("reanalyses", "Reanalyses Data",
-                         abstract="Choose a reanalyses dataset for comparison",
-                         default="NCEP_slp",
-                         data_type='string',
-                         min_occurs=1,
-                         max_occurs=1,
-                         allowed_values=_PRESSUREDATA_
-                         ),
-
-            LiteralInput("kappa", "Nr of Weather regimes",
-                         abstract="Set the number of clusters to be detected",
-                         default='4',
-                         data_type='integer',
-                         min_occurs=1,
-                         max_occurs=1,
-                         allowed_values=range(2, 11)
-                         ),
                 ]
         outputs = [
-            ComplexOutput("Routput_graphic", "Weather Regime Pressure map",
-                          abstract="Weather Classification",
-                          supported_formats=[Format('image/pdf')],
-                          as_reference=True,
-                          ),
-
             ComplexOutput("output_pca", "R - datafile",
                           abstract="Principal components (PCA)",
                           supported_formats=[Format('text/plain')],
@@ -113,6 +87,11 @@ class WeatherregimesreanalyseProcess(Process):
             ComplexOutput("output_classification", "R - workspace",
                           abstract="Weather regime classification",
                           supported_formats=[Format("application/octet-stream")],
+                          as_reference=True,
+                          ),
+            ComplexOutput("output_frequency", "Frequency",
+                          abstract="Weather regime frequency values per year",
+                          supported_formats=[Format('text/plain')],
                           as_reference=True,
                           ),
 
@@ -146,166 +125,43 @@ class WeatherregimesreanalyseProcess(Process):
             store_supported=True,
         )
 
-
-
-        self.resource = self.addComplexInput(
-            identifier="resource",
-            title="Resource",
-            abstract="NetCDF File",
-            minOccurs=1,
-            maxOccurs=1000,
-            maxmegabites=5000,
-            formats=[{"mimeType": "application/x-netcdf"}],
-            )
-
-        self.Rdat = self.addLiteralInput(
-            identifier="Rdat",
-            title="R - workspace",
-            abstract="R workspace as output from weather regime reference process",
-            type=type(''),
-            minOccurs=1,
-            maxOccurs=1,
-            # default=' http://api.gbif.org/v1/occurrence/download/request/0013848-160118175350007.zip'
-            # maxmegabites=50,
-            # formats=[{"mimeType":"application/zip"}],
-            )
-
-        self.dat = self.addLiteralInput(
-            identifier="dat",
-            title="R - datafile",
-            abstract="R datafile as output from weather regime reference process",
-            type=type(''),
-            minOccurs=1,
-            maxOccurs=1,
-            # default=' http://api.gbif.org/v1/occurrence/download/request/0013848-160118175350007.zip'
-            # maxmegabites=50,
-            # formats=[{"mimeType":"application/zip"}],
-            )
-
-        self.netCDF = self.addLiteralInput(
-            identifier="netCDF",
-            title="netCDF reference",
-            abstract="netCDF file as output from weather regime reference process",
-            type=type(''),
-            minOccurs=0,
-            maxOccurs=1,
-            # default=' http://api.gbif.org/v1/occurrence/download/request/0013848-160118175350007.zip'
-            # maxmegabites=50,
-            # formats=[{"mimeType":"application/zip"}],
-            )
-
-        self.season = self.addLiteralInput(
-            identifier="season",
-            title="Time region",
-            abstract="Select the months to define the time region (all == whole year will be analysed)",
-            default="DJF",
-            type=type(''),
-            minOccurs=1,
-            maxOccurs=1,
-            allowedValues=_TIMEREGIONS_.keys()
-            )
-
-        self.period = self.addLiteralInput(
-            identifier="period",
-            title="Period for weather regime calculation",
-            abstract="Period for analysing the dataset",
-            default="19700101-20101231",
-            type=type(''),
-            minOccurs=1,
-            maxOccurs=1,
-            )
-
-        self.anualcycle = self.addLiteralInput(
-            identifier="anualcycle",
-            title="Period for annual cycle calculation",
-            abstract="Period for annual cycle calculation",
-            default="19700101-19991231",
-            type=type(''),
-            minOccurs=1,
-            maxOccurs=1,
-            )
-
-        ####################
-        # define the outputs
-        ####################
-
-        # self.Routput_graphic = self.addComplexOutput(
-        #     identifier="Routput_graphic",
-        #     title="Graphics and Tables",
-        #     abstract="Weather classification pressure map and frequency table",
-        #     formats=[{"mimeType":"image/pdf"}],
-        #     asReference=True,
-        #     )
-
-        self.output_pca = self.addComplexOutput(
-            identifier="output_pca",
-            title="PCA",
-            abstract="Principal components",
-            formats=[{"mimeType": "text/plain"}],
-            asReference=True,
-            )
-
-        self.output_classification = self.addComplexOutput(
-            identifier="output_classification",
-            title="classification",
-            abstract="Weather regime classification",
-            formats=[{"mimeType": "application/octet-stream"}],
-            asReference=True,
-            )
-
-        self.output_frequency = self.addComplexOutput(
-            identifier="output_frequency",
-            title="Frequency",
-            abstract="Weather regime frequency values per year",
-            formats=[{"mimeType": "text/plain"}],
-            asReference=True,
-            )
-
-        self.output_netcdf = self.addComplexOutput(
-            identifier="output_netcdf",
-            title="netCDF file",
-            abstract="Prepared netCDF file as input for weather regime calculation",
-            formats=[{"mimeType": "application/x-netcdf"}],
-            asReference=True,
-            )
-
-        self.output_log = self.addComplexOutput(
-            identifier="output_log",
-            title="Logging information",
-            abstract="Collected logs during process run.",
-            formats=[{"mimeType": "text/plain"}],
-            asReference=True,
-            )
-
-    def execute(self):
-        LOGGER.info('Start process')
-
+    def _handler(self, request, response):
         init_process_logger('log.txt')
-        self.output_log.setValue('log.txt')
+        response.outputs['output_log'].file = 'log.txt'
 
         from datetime import datetime as dt
         from flyingpigeon import weatherregimes as wr
         from tempfile import mkstemp
+        from flyingpigeon.utils import archive, archiveextract
+        from flyingpigeon.utils import download, get_time
+        from os.path import abspath
+
+        response.update_status('execution started at : {}'.format(dt.now()), 5)
 
         ################################
         # reading in the input arguments
         ################################
         try:
-            resource = self.getInputValues(identifier='resource')
-            url_Rdat = self.getInputValues(identifier='Rdat')[0]
-            url_dat = self.getInputValues(identifier='dat')[0]
-            url_ref_file = self.getInputValues(identifier='netCDF')  # can be None
-            season = self.getInputValues(identifier='season')[0]
-            period = self.getInputValues(identifier='period')[0]
-            anualcycle = self.getInputValues(identifier='anualcycle')[0]
-        except Exception as e:
-            LOGGER.debug('failed to read in the arguments %s ' % e)
+            LOGGER.info('read in the arguments')
+            # resources = self.getInputValues(identifier='resources')
+            season = request.inputs['season'][0].data
+            LOGGER.info('season %s', season)
 
-        try:
+            period = request.inputs['period'][0].data
+            LOGGER.info('period %s', period)
+            anualcycle = request.inputs['anualcycle'][0].data
+
             start = dt.strptime(period.split('-')[0], '%Y%m%d')
             end = dt.strptime(period.split('-')[1], '%Y%m%d')
-            # kappa = int(self.getInputValues(identifier='kappa')[0])
+            LOGGER.debug('start: %s , end: %s ' % (start, end))
 
+            resource = archiveextract(resource=rename_complexinputs(request.inputs['resource']))
+            url_Rdat = request.inputs['Rdat'][0].data
+            url_dat = request.inputs['dat'][0].data
+            url_ref_file = request.inputs['netCDF'][0].data  # can be None
+            # season = self.getInputValues(identifier='season')[0]
+            # period = self.getInputValues(identifier='period')[0]
+            # anualcycle = self.getInputValues(identifier='anualcycle')[0]
             LOGGER.info('period %s' % str(period))
             LOGGER.info('season %s' % str(season))
             LOGGER.info('read in the arguments')
@@ -318,9 +174,6 @@ class WeatherregimesreanalyseProcess(Process):
         ############################
         # fetching trainging data
         ############################
-
-        from flyingpigeon.utils import download, get_time
-        from os.path import abspath
 
         try:
             dat = abspath(download(url_dat))
@@ -431,8 +284,12 @@ class WeatherregimesreanalyseProcess(Process):
         # set the outputs
         #################
 
-        # self.Routput_graphic.setValue( output_graphics )
-        self.output_pca.setValue(file_pca)
-        self.output_classification.setValue(file_class)
-        self.output_netcdf.setValue(model_season)
-        self.output_frequency.setValue(output_frec)
+        response.update_status('Set the process outputs ', 95)
+
+        response.outputs['output_pca'].file = file_pca
+        response.outputs['output_classification'].file = file_class
+        response.outputs['output_netcdf'].file = model_season
+        response.outputs['output_frequency'].file = output_frec
+
+        response.update_status('done', 100)
+        return response
