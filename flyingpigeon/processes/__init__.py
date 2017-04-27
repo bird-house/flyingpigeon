@@ -15,6 +15,7 @@ from .wps_sdm_csv import SDMcsvProcess
 from .wps_sdm_csvindices import SDMcsvindicesProcess
 from .wps_sdm_allinone import SDMallinoneProcess
 from .wps_weatherregimes_reanalyse import WeatherregimesreanalyseProcess
+from .wps_weatherregimes_projection import WeatherregimesprojectionProcess
 
 processes = [
     ClippingProcess(),
@@ -32,6 +33,7 @@ processes = [
     SDMcsvindicesProcess(),
     SDMallinoneProcess(),
     WeatherregimesreanalyseProcess(),
+    WeatherregimesprojectionProcess(),
     RobustnessProcess(),
     PlottimeseriesProcess()
 ]

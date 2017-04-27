@@ -16,7 +16,7 @@ import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
-class WeatherregimesreanalyseProcess(Process):
+class WeatherregimesprojectionProcess(Process):
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
@@ -109,7 +109,7 @@ class WeatherregimesreanalyseProcess(Process):
         ]
 
 
-        super(WeatherregimesreanalyseProcess, self).__init__(
+        super(WeatherregimesprojectionProcess, self).__init__(
             self._handler,
             identifier="weatherregimes_projection",
             title="Weather Regimes (Projection based on precalculated statistics)",
