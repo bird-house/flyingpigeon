@@ -1,4 +1,7 @@
 from datetime import date
+from datetime import datetime as dt
+import time  # performance test
+
 from pywps.Process import WPSProcess
 from tempfile import mkstemp
 from os import path
@@ -20,7 +23,7 @@ import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
-class AnalogsreanalyseProcess(WPSProcess):
+class AnalogsreanalyseProcess(Process):
     def __init__(self):
         inputs = [
 
@@ -181,9 +184,6 @@ class AnalogsreanalyseProcess(WPSProcess):
         response.outputs['output_log'].file = 'log.txt'
 
         LOGGER.info('Start process')
-        from datetime import datetime as dt
-        import time  # performance test
-
         response.update_status('execution started at : {}'.format(dt.now()), 5)
 
         process_start_time = time.time()  # measure process execution time ...
@@ -511,10 +511,11 @@ class AnalogsreanalyseProcess(WPSProcess):
             LOGGER.debug(msg)
 
         response.update_status('preparting output', 99)
-        self.config.setValue(config_output_url)  # config_file )
-        self.analogs.setValue(output_file)
-        self.output_netcdf.setValue(simulation)
-        self.output_html.setValue(output_av)
+        response.outputs['config'] = config_output_url  # config_file )
+        response.outputs['analogs'] = output_file
+        response.outputs['output_netcdf'] = simulation
+        response.outputs['output_html'] = output_av
         response.update_status('execution ended', 100)
         LOGGER.debug("total execution took %s seconds.",
                      time.time() - process_start_time)
+        return response
