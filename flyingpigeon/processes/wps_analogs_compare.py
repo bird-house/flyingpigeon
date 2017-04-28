@@ -2,246 +2,211 @@ from datetime import date
 from pywps.Process import WPSProcess
 from flyingpigeon.datafetch import _PRESSUREDATA_
 
+from pywps import Process
+from pywps import LiteralInput
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format, FORMATS
+from pywps.app.Common import Metadata
 from flyingpigeon.log import init_process_logger
+
 import logging
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger("PYWPS")
 
 
-class AnalogsProcess(WPSProcess):
-
+class AnalogscompareProcess(Process):
     def __init__(self):
-        # definition of this process
-        WPSProcess.__init__(
-            self,
-            identifier="analogs_compare",
-            title="Analogues -- Comparison",
-            version="0.9",
-            metadata=[
-                  {"title": "LSCE",
-                   "href": "http://www.lsce.ipsl.fr/en/index.php"},
-                  {"title": "Doc",
-                   "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/\
-                   analogues.html#analogues-of-circulation"}
-                  ],
-            abstract="Search in a dataset for days with analogue pressure pattern for a given period in\
-             a reanalyses dataset",
-            statusSupported=True,
-            storeSupported=True
-            )
+        inputs = [
+            ComplexInput('resource', 'Resource',
+                         abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
+                         metadata=[Metadata('Info')],
+                         min_occurs=1,
+                         max_occurs=1000,
+                         supported_formats=[
+                             Format('application/x-netcdf'),
+                             Format('application/x-tar'),
+                             Format('application/zip'),
+                         ]),
 
-        self.resource = self.addComplexInput(
-          identifier="resource",
-          title="Resource",
-          abstract="Input dataset for analougs processing",
-          minOccurs=0,
-          maxOccurs=1000,
-          maxmegabites=5000,
-          formats=[{"mimeType": "application/x-netcdf"}],
-          )
+            LiteralInput("reanalyses", "Reanalyses Data",
+                         abstract="Choose a reanalyses dataset for comparison",
+                         default="NCEP_slp",
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=1,
+                         allowed_values=_PRESSUREDATA_
+                         ),
 
-        self.experiment = self.addLiteralInput(
-          identifier="experiment",
-          title="Data experiment",
-          abstract="Choose the reanalyses experiment",
-          default="NCEP_slp",
-          type=type(''),
-          minOccurs=1,
-          maxOccurs=1,
-          allowedValues=_PRESSUREDATA_
-          )
+        # self.BBox = self.addBBoxInput(
+        #   identifier="BBox",
+        #   title="Bounding Box",
+        #   abstract="coordinates to define the region to be analysed",
+        #   minOccurs=1,
+        #   maxOccurs=1,
+        #   crss=['EPSG:4326']
+        #   )
 
-        self.BBox = self.addBBoxInput(
-          identifier="BBox",
-          title="Bounding Box",
-          abstract="coordinates to define the region to be analysed",
-          minOccurs=1,
-          maxOccurs=1,
-          crss=['EPSG:4326']
-          )
 
-        self.dateSt = self.addLiteralInput(
-          identifier="dateSt",
-          title="Start date of analysis period",
-          abstract="This is a Date: 2013-07-15",
-          default="2013-07-15",
-          type=type(date(2013, 7, 15)),
-          minOccurs=1,
-          maxOccurs=1,
-          )
+            LiteralInput('dateSt', 'Start date of analysis period',
+                         data_type='date',
+                         abstract='First day of the period to be analysed',
+                         default='2013-07-15',
+                         min_occurs=1,
+                         max_occurs=1,
+                         ),
 
-        self.dateEn = self.addLiteralInput(
-          identifier="dateEn",
-          title="End date of analysis period",
-          abstract="This is a Date: 2013-12-31",
-          default="2014-12-31",
-          type=type(date(2014, 12, 31)),
-          minOccurs=1,
-          maxOccurs=1,
-          )
+            LiteralInput('dateEn', 'End date of analysis period',
+                         data_type='date',
+                         abstract='Last day of the period to be analysed',
+                         default='2013-12-31',
+                         min_occurs=1,
+                         max_occurs=1,
+                         ),
 
-        self.refSt = self.addLiteralInput(
-          identifier="refSt",
-          title="Start reference period",
-          abstract="Start YEAR of reference period",
-          default="2013-01-01",
-          type=type(date(1955, 01, 01)),
-          minOccurs=1,
-          maxOccurs=1,
-          )
+            LiteralInput('refSt', 'Start date of reference period',
+                         data_type='date',
+                         abstract='First day of the period where analogues being picked',
+                         default='2013-01-01',
+                         min_occurs=1,
+                         max_occurs=1,
+                         ),
 
-        self.refEn = self.addLiteralInput(
-          identifier="refEn",
-          title="End reference period",
-          abstract="End YEAR of reference period",
-          default="2014-12-31",
-          type=type(date(1957, 12, 31)),
-          minOccurs=1,
-          maxOccurs=1,
-          )
+            LiteralInput('refEn', 'End date of reference period',
+                         data_type='date',
+                         abstract='Last day of the period where analogues being picked',
+                         default='2014-12-31',
+                         min_occurs=1,
+                         max_occurs=1,
+                         ),
 
-        self.direction = self.addLiteralInput(
-          identifier="direction",
-          title="Direction",
-          abstract="Compare direction. Pick analog days in Modeldata for a simulation period in Reanalyses data \
-                    (re2mo) or vice versa",
-          default='re2mo',
-          type=type(''),
-          minOccurs=1,
-          maxOccurs=1,
-          allowedValues=['mo2re', 're2mo']
-            )
+            LiteralInput("normalize", "normalization",
+                         abstract="Normalize by subtraction of annual cycle",
+                         default='base',
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=1,
+                         allowed_values=['None', 'base', 'sim', 'own']
+                         ),
 
-        self.seasonwin = self.addLiteralInput(
-          identifier="seasonwin",
-          title="Seasonal window",
-          abstract="Number of days befor and after the date to be analysed",
-          default=30,
-          type=type(1),
-          minOccurs=0,
-          maxOccurs=1,
-          )
+            LiteralInput("seasonwin", "Seasonal window",
+                         abstract="Number of days befor and after the date to be analysed",
+                         default=30,
+                         data_type='integer',
+                         min_occurs=0,
+                         max_occurs=1,
+                         ),
 
-        self.nanalog = self.addLiteralInput(
-          identifier="nanalog",
-          title="Nr of analogues",
-          abstract="Number of analogues to be detected",
-          default=20,
-          type=type(1),
-          minOccurs=0,
-          maxOccurs=1,
-          )
+            LiteralInput("nanalog", "Nr of analogues",
+                         abstract="Number of analogues to be detected",
+                         default=20,
+                         type='integer',
+                         min_occurs=0,
+                         max_occurs=1,
+                         ),
 
-        self.normalize = self.addLiteralInput(
-          identifier="normalize",
-          title="normalization",
-          abstract="Normalize by subtraction of annual cycle",
-          default='own',
-          type=type(''),
-          minOccurs=1,
-          maxOccurs=1,
-          allowedValues=['None', 'base', 'sim', 'own']
-            )
+            LiteralInput("dist", "Distance",
+                         abstract="Distance function to define analogues",
+                         default='euclidean',
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=1,
+                         allowed_values=['euclidean', 'mahalanobis', 'cosine', 'of']
+                         ),
 
-        self.distance = self.addLiteralInput(
-          identifier="dist",
-          title="Distance",
-          abstract="Distance function to define analogues",
-          default='euclidean',
-          type=type(''),
-          minOccurs=1,
-          maxOccurs=1,
-          allowedValues=['euclidean', 'mahalanobis', 'cosine', 'of']
-            )
+            LiteralInput("outformat", "output file format",
+                         abstract="Choose the format for the analogue output file",
+                         default="ascii",
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=1,
+                         allowed_values=['ascii', 'netCDF4']
+                         ),
 
-        self.outformat = self.addLiteralInput(
-          identifier="outformat",
-          title="output file format",
-          abstract="Choose the format for the analogue output file",
-          default="ascii",
-          type=type(''),
-          minOccurs=1,
-          maxOccurs=1,
-          allowedValues=['ascii', 'netCDF4']
-          )
+            LiteralInput("timewin", "Time window",
+                         abstract="Number of days following the analogue day the distance will be averaged",
+                         default=1,
+                         data_type='inter',
+                         min_occurs=0,
+                         max_occurs=1,
+                         ),
 
-        self.timewin = self.addLiteralInput(
-          identifier="timewin",
-          title="Time window",
-          abstract="Number of days following the analogue day the distance will be averaged",
-          default=1,
-          type=type(1),
-          minOccurs=0,
-          maxOccurs=1,
-          )
-
-        # self.variable = self.addLiteralInput(
-        #   identifier="variable",
-        #   title="Variable",
-        #   abstract="Variable name in resource",
-        #   default='slp',
+        # self.direction = self.addLiteralInput(
+        #   identifier="direction",
+        #   title="Direction",
+        #   abstract="Compare direction. Pick analog days in Modeldata for a simulation period in Reanalyses data \
+        #             (re2mo) or vice versa",
+        #   default='re2mo',
         #   type=type(''),
-        #   minOccurs=0,
+        #   minOccurs=1,
         #   maxOccurs=1,
-        #   )
+        #   allowedValues=['mo2re', 're2mo']
+            # )
+        ]
+        outputs = [
+            LiteralOutput("config", "Config File",
+                          abstract="Config file used for the Fortran process",
+                          default=None,
+                          data_type='string',
+                          # formats=[{"mimeType":"text/plain"}],
+                          # asReference=True,
+                          ),
 
-        # self.seacyc = self.addLiteralInput(
-        #   identifier="seacyc",
-        #   title="Seasonal Cycle",
-        #   abstract="normalized by the Seasonal Cycle",
-        #   default=True,
-        #   type=type(boolean),
-        #   minOccurs=0,
-        #   maxOccurs=1,
-        #   )
+            ComplexOutput("analogs", "Analogues File",
+                          abstract="mulit-column text file",
+                          data_formats=[Format("text/plain")],
+                          asReference=True,
+                          ),
 
-        ######################
-        # define the outputs
-        ######################
+            ComplexOutput('output_netcdf', 'Subsets for dataset',
+                          abstract="Prepared netCDF file as input for weatherregime calculation",
+                          as_reference=True,
+                          supported_formats=[Format('application/x-netcdf')]
+                          ),
 
-        self.config = self.addComplexOutput(
-          identifier="config",
-          title="Config File",
-          abstract="Config file used for the Fortran process",
-          formats=[{"mimeType": "text/plain"}],
-          asReference=True,
-          )
+            ComplexOutput("target_netcdf", 'subset of ref file'
+                          abstract="File with subset and normaized values of target dataset",
+                          formats=[{"mimeType": "application/x-netcdf"}],
+                          as_reference=True,
+                          supported_formats=[Format('application/x-netcdf')]
+                          ),
 
-        self.analogs = self.addComplexOutput(
-          identifier="analogs",
-          title="Analogues File",
-          abstract="mulit-column text file",
-          formats=[{"mimeType": "text/plain"}],
-          asReference=True,
-          )
 
-        self.simulation_netcdf = self.addComplexOutput(
-          title="prepared netCDF",
-          abstract="NetCDF file with subset and normaized values of simulation dataset",
-          formats=[{"mimeType": "application/x-netcdf"}],
-          asReference=True,
-          identifier="simulation_netcdf",
-          )
+            # ComplexOutput("output_html", "Analogues Viewer html page",
+            #               abstract="Interactive visualization of calculated analogues",
+            #               data_formats=[Format("text/html")],
+            #               as_reference=True,
+            #               )
 
-        self.target_netcdf = self.addComplexOutput(
-          title="Target netCDF",
-          abstract="File with subset and normaized values of target dataset",
-          formats=[{"mimeType": "application/x-netcdf"}],
-          asReference=True,
-          identifier="target_netcdf",
-          )
+            ComplexOutput('output_log', 'Logging information',
+                          abstract="Collected logs during process run.",
+                          as_reference=True,
+                          supported_formats=[Format('text/plain')]
+                          ),
+        ]
 
-        self.output_log = self.addComplexOutput(
-          identifier="output_log",
-          title="Logging information",
-          abstract="Collected logs during process run.",
-          formats=[{"mimeType": "text/plain"}],
-          asReference=True,
-          )
+        super(AnalogscompareProcess, self).__init__(
+            self._handler,
+            identifier="analogs_compare",
+            title="Analogues of circulation (based on reanalyses data and climate model data)",
+            abstract='Search for days with analogue pressure pattern for reanalyses data sets',
+            version="0.10",
+            metadata=[
+                Metadata('LSCE', 'http://www.lsce.ipsl.fr/en/index.php'),
+                Metadata('Doc', 'http://flyingpigeon.readthedocs.io/en/latest/'),
+            ],
+            inputs=inputs,
+            outputs=outputs,
+            status_supported=True,
+            store_supported=True,
+        )
+
+
+        # definition of this process
+
 
     def execute(self):
         init_process_logger('log.txt')
         self.output_log.setValue('log.txt')
-        
+
         import time  # performance test
         process_start_time = time.time()  # measure process execution time ...
 
@@ -269,8 +234,8 @@ class AnalogsProcess(WPSProcess):
         distance = self.getInputValues(identifier='dist')[0]
         outformat = self.getInputValues(identifier='outformat')[0]
         timewin = int(self.getInputValues(identifier='timewin')[0])
-        experiment = self.getInputValues(identifier='experiment')[0]
-        dataset, var = experiment.split('_')
+        reanalyses = self.getInputValues(identifier='reanalyses')[0]
+        dataset, var = reanalyses.split('_')
 
         try:
             if direction == 're2mo':
@@ -284,10 +249,10 @@ class AnalogsProcess(WPSProcess):
                 refSt = dt.strptime(dateSt[0], '%Y-%m-%d')
                 refEn = dt.strptime(dateEn[0], '%Y-%m-%d')
             else:
-                logger.exception('failed to find time periods for comparison direction')
+                LOGGER.exception('failed to find time periods for comparison direction')
         except:
             msg = 'failed to put simulation and reference time in order'
-            logger.exception(msg)
+            LOGGER.exception(msg)
             raise Exception(msg)
 
         if normalize == 'None':
@@ -300,14 +265,14 @@ class AnalogsProcess(WPSProcess):
         elif outformat == 'netCDF':
             outformat = '.nc'
         else:
-            logger.exception('output format not valid')
+            LOGGER.exception('output format not valid')
         if bbox_obj is not None:
-            logger.info("bbox_obj={0}".format(bbox_obj.coords))
+            LOGGER.info("bbox_obj={0}".format(bbox_obj.coords))
             bbox = [bbox_obj.coords[0][0],
                     bbox_obj.coords[0][1],
                     bbox_obj.coords[1][0],
                     bbox_obj.coords[1][1]]
-            logger.info("bbox={0}".format(bbox))
+            LOGGER.info("bbox={0}".format(bbox))
         else:
             bbox = None
 
@@ -331,14 +296,14 @@ class AnalogsProcess(WPSProcess):
                     level = None
                     # conform_units_to='hPa'
             else:
-                logger.exception('Reanalyses dataset not known')
-            logger.info('environment set')
+                LOGGER.exception('Reanalyses dataset not known')
+            LOGGER.info('environment set')
         except:
             msg = 'failed to set environment'
-            logger.exception(msg)
+            LOGGER.exception(msg)
             raise Exception(msg)
 
-        logger.exception("init took %s seconds.", time.time() - start_time)
+        LOGGER.exception("init took %s seconds.", time.time() - start_time)
         self.status.set('Read in the arguments', 5)
 
         #################
@@ -350,11 +315,11 @@ class AnalogsProcess(WPSProcess):
             nc_reanalyses = reanalyses(start=anaSt.year, end=anaEn.year,
                                        variable=var, dataset=dataset)
             nc_subset = call(resource=nc_reanalyses, variable=var, geom=bbox)
-            logger.exception("get_input_subset_dataset took %s seconds.", time.time() - start_time)
+            LOGGER.exception("get_input_subset_dataset took %s seconds.", time.time() - start_time)
             self.status.set('**** Input data fetched', 10)
         except:
             msg = 'failed to fetch or subset input files'
-            logger.exception(msg)
+            LOGGER.exception(msg)
             raise Exception(msg)
 
         ########################
@@ -370,7 +335,7 @@ class AnalogsProcess(WPSProcess):
                     reanalyses_subset = call(resource=nc_subset, time_range=[anaSt, anaEn])
                 except:
                     msg = 'failed to prepare simulation period'
-                    logger.exception(msg)
+                    LOGGER.exception(msg)
                 try:
                     self.status.set('Preparing target data', 17)
                     var_target = get_variable(resource)
@@ -385,7 +350,7 @@ class AnalogsProcess(WPSProcess):
                                         regrid_options='bil')
                 except:
                     msg = 'failed subset archive dataset'
-                    logger.exception(msg)
+                    LOGGER.exception(msg)
                     raise Exception(msg)
             else:
                 try:
@@ -401,7 +366,7 @@ class AnalogsProcess(WPSProcess):
                                         )
                 except:
                     msg = 'failed subset archive dataset'
-                    logger.exception(msg)
+                    LOGGER.exception(msg)
                     raise Exception(msg)
                 try:
                     self.status.set('Preparing simulation data', 15)
@@ -411,10 +376,10 @@ class AnalogsProcess(WPSProcess):
                                              regrid_options='bil')
                 except:
                     msg = 'failed to prepare simulation period'
-                    logger.exception(msg)
+                    LOGGER.exception(msg)
         except:
             msg = 'failed to subset simulation or reference data'
-            logger.exception(msg)
+            LOGGER.exception(msg)
             raise Exception(msg)
 
         try:
@@ -425,10 +390,10 @@ class AnalogsProcess(WPSProcess):
                 simulation = reanalyses_subset
                 archive = model_subset
             else:
-                logger.exception('direction not valid: %s ' % direction)
+                LOGGER.exception('direction not valid: %s ' % direction)
         except:
             msg = 'failed to find comparison direction'
-            logger.exception(msg)
+            LOGGER.exception(msg)
             raise Exception(msg)
 
         try:
@@ -436,10 +401,10 @@ class AnalogsProcess(WPSProcess):
             var_simulation = get_variable(simulation)
             if var_archive != var_simulation:
                 rename_variable(archive, oldname=var_archive, newname=var_simulation)
-                logger.info('varname %s in netCDF renamed to %s' % (var_archive, var_simulation))
+                LOGGER.info('varname %s in netCDF renamed to %s' % (var_archive, var_simulation))
         except:
             msg = 'failed to rename variable in target files'
-            logger.exception(msg)
+            LOGGER.exception(msg)
             raise Exception(msg)
 
         try:
@@ -451,14 +416,14 @@ class AnalogsProcess(WPSProcess):
                 seasoncyc_base, seasoncyc_sim = None
         except:
             msg = 'failed to prepare seasonal cycle reference files'
-            logger.exception(msg)
+            LOGGER.exception(msg)
             raise Exception(msg)
 
         ip, output = mkstemp(dir='.', suffix='.txt')
         output_file = path.abspath(output)
         files = [path.abspath(archive), path.abspath(simulation), output_file]
 
-        logger.exception("data preperation took %s seconds.", time.time() - start_time)
+        LOGGER.exception("data preperation took %s seconds.", time.time() - start_time)
 
         ############################
         # generating the config file
@@ -487,10 +452,10 @@ class AnalogsProcess(WPSProcess):
                 bbox="%s,%s,%s,%s" % (bbox[0], bbox[2], bbox[1], bbox[3]))
         except:
             msg = 'failed to generate config file'
-            logger.exception(msg)
+            LOGGER.exception(msg)
             raise Exception(msg)
 
-        logger.exception("write_config took %s seconds.", time.time() - start_time)
+        LOGGER.exception("write_config took %s seconds.", time.time() - start_time)
 
         #######################
         # CASTf90 call
@@ -511,15 +476,15 @@ class AnalogsProcess(WPSProcess):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
                 ).communicate()
-            logger.info('analogue.out info:\n %s ' % output)
-            logger.exception('analogue.out errors:\n %s ' % error)
+            LOGGER.info('analogue.out info:\n %s ' % output)
+            LOGGER.exception('analogue.out errors:\n %s ' % error)
             self.status.set('**** CASTf90 suceeded', 90)
         except:
             msg = 'CASTf90 failed'
-            logger.exception(msg)
+            LOGGER.exception(msg)
             raise Exception(msg)
 
-        logger.exception("castf90 took %s seconds.", time.time() - start_time)
+        LOGGER.exception("castf90 took %s seconds.", time.time() - start_time)
 
         self.status.set('preparting output', 99)
         self.config.setValue(config_file)
@@ -528,4 +493,4 @@ class AnalogsProcess(WPSProcess):
         self.target_netcdf.setValue(archive)
 
         self.status.set('execution ended', 100)
-        logger.exception("total execution took %s seconds.", time.time() - process_start_time)
+        LOGGER.exception("total execution took %s seconds.", time.time() - process_start_time)

@@ -136,13 +136,13 @@ class AnalogsreanalyseProcess(Process):
                           data_type='string',
                           # formats=[{"mimeType":"text/plain"}],
                           # asReference=True,
-                          )
+                          ),
 
             ComplexOutput("analogs", "Analogues File",
                           abstract="mulit-column text file",
                           data_formats=[Format("text/plain")],
                           asReference=True,
-                          )
+                          ),
 
             ComplexOutput('output_netcdf', 'Subsets for one dataset',
                           abstract="Prepared netCDF file as input for weatherregime calculation",
@@ -154,7 +154,7 @@ class AnalogsreanalyseProcess(Process):
                           abstract="Interactive visualization of calculated analogues",
                           data_formats=[Format("text/html")],
                           as_reference=True,
-                          )
+                          ),
 
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",
