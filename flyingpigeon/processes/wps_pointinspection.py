@@ -14,7 +14,7 @@ import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
-class Pointinspection(Process):
+class PointinspectionProcess(Process):
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
