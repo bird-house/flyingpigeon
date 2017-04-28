@@ -14,7 +14,7 @@ import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
-class SubsetpointsProcess(Process):
+class Pointinspection(Process):
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
@@ -44,10 +44,10 @@ class SubsetpointsProcess(Process):
                           ),
         ]
 
-        super(SubsetpointsProcess, self).__init__(
+        super(PointinspectionProcess, self).__init__(
             self._handler,
-            identifier="subset_points",
-            title="Subset (Points)",
+            identifier="pointinspection",
+            title="Pointinspection",
             abstract='Extracts the timeseries of the given coordinates',
             version="0.10",
             metadata=[

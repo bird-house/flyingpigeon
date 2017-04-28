@@ -1,7 +1,7 @@
 from .wps_subset_countries import ClippingProcess
 from .wps_subset_continents import ClipcontinentProcess
 from .wps_subset_regionseurope import ClipregionseuropeProcess
-from .wps_subset_points import SubsetpointsProcess
+from .wps_pointinspection import PointinspectionProcess
 from .wps_landseamask import LandseamaskProcess
 from .wps_climatefactsheet import FactsheetProcess
 from .wps_fetch import FetchProcess
@@ -22,7 +22,7 @@ processes = [
     ClippingProcess(),
     ClipcontinentProcess(),
     ClipregionseuropeProcess(),
-    SubsetpointsProcess(),
+    PointinspectionProcess(),
     FactsheetProcess(),
     FetchProcess(),
     LandseamaskProcess(),
