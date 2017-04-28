@@ -9,6 +9,17 @@ from pywps import Format, FORMATS
 from pywps.app.Common import Metadata
 from flyingpigeon.log import init_process_logger
 
+import time  # performance test
+from os import path
+from tempfile import mkstemp
+from flyingpigeon import analogs
+from datetime import datetime as dt
+from flyingpigeon.ocgis_module import call
+from flyingpigeon.datafetch import reanalyses
+from flyingpigeon.utils import get_variable, rename_variable
+from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.utils import archive, archiveextract
+
 import logging
 LOGGER = logging.getLogger("PYWPS")
 
@@ -28,7 +39,7 @@ class AnalogscompareProcess(Process):
                          ]),
 
             LiteralInput("reanalyses", "Reanalyses Data",
-                         abstract="Choose a reanalyses dataset for comparison",
+                         abstract="Choose a reanalyses model for comparison",
                          default="NCEP_slp",
                          data_type='string',
                          min_occurs=1,
@@ -129,17 +140,15 @@ class AnalogscompareProcess(Process):
                          max_occurs=1,
                          ),
 
-        # self.direction = self.addLiteralInput(
-        #   identifier="direction",
-        #   title="Direction",
-        #   abstract="Compare direction. Pick analog days in Modeldata for a simulation period in Reanalyses data \
-        #             (re2mo) or vice versa",
-        #   default='re2mo',
-        #   type=type(''),
-        #   minOccurs=1,
-        #   maxOccurs=1,
-        #   allowedValues=['mo2re', 're2mo']
-            # )
+            LiteralInput("direction", "Comparison direction",
+                         abstract="Compare direction. Pick analog days in Modeldata for a simulation period in Reanalyses data \
+                                    (re2mo) or vice versa",
+                         default='re2mo',
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=1,
+                         allowed_values=['mo2re', 're2mo']
+                         ),
         ]
         outputs = [
             LiteralOutput("config", "Config File",
@@ -156,14 +165,14 @@ class AnalogscompareProcess(Process):
                           asReference=True,
                           ),
 
-            ComplexOutput('output_netcdf', 'Subsets for dataset',
+            ComplexOutput('output_netcdf', 'Subsets for model',
                           abstract="Prepared netCDF file as input for weatherregime calculation",
                           as_reference=True,
                           supported_formats=[Format('application/x-netcdf')]
                           ),
 
             ComplexOutput("target_netcdf", 'subset of ref file'
-                          abstract="File with subset and normaized values of target dataset",
+                          abstract="File with subset and normaized values of target model",
                           formats=[{"mimeType": "application/x-netcdf"}],
                           as_reference=True,
                           supported_formats=[Format('application/x-netcdf')]
@@ -200,42 +209,33 @@ class AnalogscompareProcess(Process):
         )
 
 
-        # definition of this process
-
-
-    def execute(self):
+    def _handler(self, request, response):
         init_process_logger('log.txt')
-        self.output_log.setValue('log.txt')
-
-        import time  # performance test
+        response.outputs['output_log'].file = 'log.txt'
         process_start_time = time.time()  # measure process execution time ...
 
-        from os import path
-        from tempfile import mkstemp
-        from flyingpigeon import analogs
-        from datetime import datetime as dt
-        from flyingpigeon.ocgis_module import call
-        from flyingpigeon.datafetch import reanalyses
-        from flyingpigeon.utils import get_variable, rename_variable
-        self.status.set('execution started at : %s ' % dt.now(), 5)
+        response.update_status('execution started at : %s ' % dt.now(), 5)
 
         start_time = time.time()  # measure init ...
 
-        resource = self.getInputValues(identifier='resource')
-        bbox_obj = self.BBox.getValue()
-        refSt = self.getInputValues(identifier='refSt')
-        refEn = self.getInputValues(identifier='refEn')
-        dateSt = self.getInputValues(identifier='dateSt')
-        dateEn = self.getInputValues(identifier='dateEn')
-        seasonwin = int(self.getInputValues(identifier='seasonwin')[0])
-        nanalog = int(self.getInputValues(identifier='nanalog')[0])
+        resource = archiveextract(resource=rename_complexinputs(request.inputs['resource']))
+
+        refSt = request.inputs['refSt'][0].data
+        refEn = request.inputs['refEn'][0].data
+        dateSt = request.inputs['dataSt'][0].data
+        dateEn = request.inputs['dataEn'][0].data
+        seasonwin = request.inputs['seasonwin'][0].data
+        nanalog = request.inputs['nanalog'][0].data
+        bbox = [-80, 20, 50, 70]
+
         direction = self.getInputValues(identifier='direction')[0]
-        normalize = self.getInputValues(identifier='normalize')[0]
-        distance = self.getInputValues(identifier='dist')[0]
-        outformat = self.getInputValues(identifier='outformat')[0]
-        timewin = int(self.getInputValues(identifier='timewin')[0])
-        reanalyses = self.getInputValues(identifier='reanalyses')[0]
-        dataset, var = reanalyses.split('_')
+        normalize = request.inputs['normalize'][0].data
+        distance = request.inputs['dist'][0].data
+        outformat = request.inputs['outformat'][0].data
+        timewin = request.inputs['timewin'][0].data
+
+        model_var = request.inputs['reanalyses'][0].data
+        model, var = model_var.split('_')
 
         try:
             if direction == 're2mo':
@@ -266,18 +266,19 @@ class AnalogscompareProcess(Process):
             outformat = '.nc'
         else:
             LOGGER.exception('output format not valid')
-        if bbox_obj is not None:
-            LOGGER.info("bbox_obj={0}".format(bbox_obj.coords))
-            bbox = [bbox_obj.coords[0][0],
-                    bbox_obj.coords[0][1],
-                    bbox_obj.coords[1][0],
-                    bbox_obj.coords[1][1]]
-            LOGGER.info("bbox={0}".format(bbox))
-        else:
-            bbox = None
+
+        # if bbox_obj is not None:
+        #     LOGGER.info("bbox_obj={0}".format(bbox_obj.coords))
+        #     bbox = [bbox_obj.coords[0][0],
+        #             bbox_obj.coords[0][1],
+        #             bbox_obj.coords[1][0],
+        #             bbox_obj.coords[1][1]]
+        #     LOGGER.info("bbox={0}".format(bbox))
+        # else:
+        #     bbox = None
 
         try:
-            if dataset == 'NCEP':
+            if model == 'NCEP':
                 if 'z' in var:
                     variable = 'hgt'
                     level = var.strip('z')
@@ -296,7 +297,7 @@ class AnalogscompareProcess(Process):
                     level = None
                     # conform_units_to='hPa'
             else:
-                LOGGER.exception('Reanalyses dataset not known')
+                LOGGER.exception('Reanalyses model not known')
             LOGGER.info('environment set')
         except:
             msg = 'failed to set environment'
@@ -304,19 +305,19 @@ class AnalogscompareProcess(Process):
             raise Exception(msg)
 
         LOGGER.exception("init took %s seconds.", time.time() - start_time)
-        self.status.set('Read in the arguments', 5)
+        response.update_status('Read in the arguments', 5)
 
         #################
         # get input data
         #################
         start_time = time.time()  # measure get_input_data ...
-        self.status.set('fetching input data', 7)
+        response.update_status('fetching input data', 7)
         try:
             nc_reanalyses = reanalyses(start=anaSt.year, end=anaEn.year,
-                                       variable=var, dataset=dataset)
+                                       variable=var, dataset=model)
             nc_subset = call(resource=nc_reanalyses, variable=var, geom=bbox)
-            LOGGER.exception("get_input_subset_dataset took %s seconds.", time.time() - start_time)
-            self.status.set('**** Input data fetched', 10)
+            LOGGER.exception("get_input_subset_model took %s seconds.", time.time() - start_time)
+            response.update_status('**** Input data fetched', 10)
         except:
             msg = 'failed to fetch or subset input files'
             LOGGER.exception(msg)
@@ -325,19 +326,19 @@ class AnalogscompareProcess(Process):
         ########################
         # input data preperation
         ########################
-        self.status.set('Start preparing input data', 12)
+        response.update_status('Start preparing input data', 12)
         start_time = time.time()  # mesure data preperation ...
 
         try:
             if direction == 're2mo':
                 try:
-                    self.status.set('Preparing simulation data', 15)
+                    response.update_status('Preparing simulation data', 15)
                     reanalyses_subset = call(resource=nc_subset, time_range=[anaSt, anaEn])
                 except:
                     msg = 'failed to prepare simulation period'
                     LOGGER.exception(msg)
                 try:
-                    self.status.set('Preparing target data', 17)
+                    response.update_status('Preparing target data', 17)
                     var_target = get_variable(resource)
                     # var_simulation = get_variable(simulation)
                     model_subset = call(resource=resource, variable=var_target,
@@ -349,12 +350,12 @@ class AnalogscompareProcess(Process):
                                         regrid_destination=reanalyses_subset,
                                         regrid_options='bil')
                 except:
-                    msg = 'failed subset archive dataset'
+                    msg = 'failed subset archive model'
                     LOGGER.exception(msg)
                     raise Exception(msg)
             else:
                 try:
-                    self.status.set('Preparing target data', 17)
+                    response.update_status('Preparing target data', 17)
                     var_target = get_variable(resource)
                     # var_simulation = get_variable(simulation)
                     model_subset = call(resource=resource, variable=var_target,
@@ -365,11 +366,11 @@ class AnalogscompareProcess(Process):
                                         # spatial_wrapping='wrap',
                                         )
                 except:
-                    msg = 'failed subset archive dataset'
+                    msg = 'failed subset archive model'
                     LOGGER.exception(msg)
                     raise Exception(msg)
                 try:
-                    self.status.set('Preparing simulation data', 15)
+                    response.update_status('Preparing simulation data', 15)
                     reanalyses_subset = call(resource=nc_subset,
                                              time_range=[anaSt, anaEn],
                                              regrid_destination=model_subset,
@@ -429,7 +430,7 @@ class AnalogscompareProcess(Process):
         # generating the config file
         ############################
 
-        self.status.set('writing config file', 15)
+        response.update_status('writing config file', 15)
         start_time = time.time()  # measure write config ...
 
         try:
@@ -465,9 +466,9 @@ class AnalogscompareProcess(Process):
 
         start_time = time.time()  # measure call castf90
 
-        self.status.set('Start CASTf90 call', 20)
+        response.update_status('Start CASTf90 call', 20)
         try:
-            # self.status.set('execution of CASTf90', 50)
+            # response.update_status('execution of CASTf90', 50)
             cmd = 'analogue.out %s' % path.relpath(config_file)
             # system(cmd)
             args = shlex.split(cmd)
@@ -478,19 +479,24 @@ class AnalogscompareProcess(Process):
                 ).communicate()
             LOGGER.info('analogue.out info:\n %s ' % output)
             LOGGER.exception('analogue.out errors:\n %s ' % error)
-            self.status.set('**** CASTf90 suceeded', 90)
+            response.update_status('**** CASTf90 suceeded', 90)
         except:
             msg = 'CASTf90 failed'
             LOGGER.exception(msg)
             raise Exception(msg)
 
-        LOGGER.exception("castf90 took %s seconds.", time.time() - start_time)
+        LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
 
-        self.status.set('preparting output', 99)
-        self.config.setValue(config_file)
-        self.analogs.setValue(output_file)
-        self.simulation_netcdf.setValue(simulation)
-        self.target_netcdf.setValue(archive)
+        response.update_status('preparting output', 99)
 
-        self.status.set('execution ended', 100)
-        LOGGER.exception("total execution took %s seconds.", time.time() - process_start_time)
+        response.outputs['config'] = config_output_url  # config_file )
+        response.outputs['analogs'] = output_file
+        response.outputs['output_netcdf'] = simulation
+        response.outputs['target_netcdf'] = archive
+
+        # response.outputs['output_html'] = output_av
+
+        response.update_status('execution ended', 100)
+        LOGGER.debug("total execution took %s seconds.", time.time() - process_start_time)
+        response.update_status('preparting output', 99)
+        return response

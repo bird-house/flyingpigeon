@@ -9,6 +9,8 @@ from flyingpigeon import analogs
 from flyingpigeon.ocgis_module import call
 from flyingpigeon.datafetch import reanalyses
 from flyingpigeon.utils import get_variable
+from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.utils import archive, archiveextract
 
 from pywps import Process
 from pywps import LiteralInput
