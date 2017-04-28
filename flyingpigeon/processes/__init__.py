@@ -55,7 +55,7 @@ pywps3 processes:
 "wps_weatherregimes_reanalyse",         # adopted to pywps4
 "wps_weatherregimes_model",             # adopted to pywps4
 "wps_weatherregimes_projection",        # adopted to pywps4
-"wps_analogs_detection",
+"wps_analogs_detection",                # adopted to pywps4
 "wps_analogs_model",
 "wps_analogs_compare",
 "wps_analogs_viewer",
