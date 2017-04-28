@@ -1,8 +1,6 @@
 from datetime import date
 from datetime import datetime as dt
 import time  # performance test
-
-from pywps.Process import WPSProcess
 from tempfile import mkstemp
 from os import path
 
@@ -13,7 +11,7 @@ from flyingpigeon import analogs
 from flyingpigeon.datafetch import reanalyses
 
 from pywps import Process
-from pywps import LiteralInput
+from pywps import LiteralInput, LiteralOutput
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format, FORMATS
 from pywps.app.Common import Metadata
@@ -46,33 +44,33 @@ class AnalogsreanalyseProcess(Process):
             #   )
 
             LiteralInput('dateSt', 'Start date of analysis period',
-                         data_type='date',
+                         data_type='dateTime',
                          abstract='First day of the period to be analysed',
-                         default='2013-07-15',
+                         default='2013-07-15T12:00:00Z',
                          min_occurs=1,
                          max_occurs=1,
                          ),
 
             LiteralInput('dateEn', 'End date of analysis period',
-                         data_type='date',
+                         data_type='dateTime',
                          abstract='Last day of the period to be analysed',
-                         default='2013-12-31',
+                         default='2013-12-31T12:00:00Z',
                          min_occurs=1,
                          max_occurs=1,
                          ),
 
             LiteralInput('refSt', 'Start date of reference period',
-                         data_type='date',
+                         data_type='dateTime',
                          abstract='First day of the period where analogues being picked',
-                         default='2013-01-01',
+                         default='2013-01-01T12:00:00Z',
                          min_occurs=1,
                          max_occurs=1,
                          ),
 
             LiteralInput('refEn', 'End date of reference period',
-                         data_type='date',
+                         data_type='dateTime',
                          abstract='Last day of the period where analogues being picked',
-                         default='2014-12-31',
+                         default='2014-12-31T12:00:00Z',
                          min_occurs=1,
                          max_occurs=1,
                          ),
@@ -88,7 +86,7 @@ class AnalogsreanalyseProcess(Process):
 
             LiteralInput("seasonwin", "Seasonal window",
                          abstract="Number of days befor and after the date to be analysed",
-                         default=30,
+                         default='30',
                          data_type='integer',
                          min_occurs=0,
                          max_occurs=1,
@@ -96,8 +94,8 @@ class AnalogsreanalyseProcess(Process):
 
             LiteralInput("nanalog", "Nr of analogues",
                          abstract="Number of analogues to be detected",
-                         default=20,
-                         type='integer',
+                         default='20',
+                         data_type='integer',
                          min_occurs=0,
                          max_occurs=1,
                          ),
@@ -122,8 +120,8 @@ class AnalogsreanalyseProcess(Process):
 
             LiteralInput("timewin", "Time window",
                          abstract="Number of days following the analogue day the distance will be averaged",
-                         default=1,
-                         data_type='inter',
+                         default='1',
+                         data_type='integer',
                          min_occurs=0,
                          max_occurs=1,
                          ),
@@ -132,16 +130,13 @@ class AnalogsreanalyseProcess(Process):
         outputs = [
             LiteralOutput("config", "Config File",
                           abstract="Config file used for the Fortran process",
-                          default=None,
                           data_type='string',
-                          # formats=[{"mimeType":"text/plain"}],
-                          # asReference=True,
                           ),
 
             ComplexOutput("analogs", "Analogues File",
                           abstract="mulit-column text file",
-                          data_formats=[Format("text/plain")],
-                          asReference=True,
+                          supported_formats=[Format("text/plain")],
+                          as_reference=True,
                           ),
 
             ComplexOutput('output_netcdf', 'Subsets for one dataset',
@@ -152,7 +147,7 @@ class AnalogsreanalyseProcess(Process):
 
             ComplexOutput("output_html", "Analogues Viewer html page",
                           abstract="Interactive visualization of calculated analogues",
-                          data_formats=[Format("text/html")],
+                          supported_formats=[Format("text/html")],
                           as_reference=True,
                           ),
 
@@ -198,8 +193,8 @@ class AnalogsreanalyseProcess(Process):
 
             refSt = request.inputs['refSt'][0].data
             refEn = request.inputs['refEn'][0].data
-            dateSt = request.inputs['dataSt'][0].data
-            dateEn = request.inputs['dataEn'][0].data
+            dateSt = request.inputs['dateSt'][0].data
+            dateEn = request.inputs['dateEn'][0].data
             seasonwin = request.inputs['seasonwin'][0].data
             nanalog = request.inputs['nanalog'][0].data
             bbox = [-80, 20, 50, 70]
@@ -239,11 +234,16 @@ class AnalogsreanalyseProcess(Process):
         ######################################
         try:
             response.update_status('Preparing enviroment converting arguments', 7)
+            LOGGER.debug('date: %s %s %s %s ' % (type(refSt), refEn, dateSt, dateSt))
 
-            refSt = dt.strptime(refSt[0], '%Y-%m-%d')
-            refEn = dt.strptime(refEn[0], '%Y-%m-%d')
-            dateSt = dt.strptime(dateSt[0], '%Y-%m-%d')
-            dateEn = dt.strptime(dateEn[0], '%Y-%m-%d')
+            start = min(refSt, dateSt)
+            end = max(refEn, dateEn)
+
+            #
+            # refSt = dt.strftime(refSt, '%Y-%m-%d')
+            # refEn = dt.strftime(refEn, '%Y-%m-%d')
+            # dateSt = dt.strftime(dateSt, '%Y-%m-%d')
+            # dateEn = dt.strftime(dateEn, '%Y-%m-%d')
 
             if normalize == 'None':
                 seacyc = False
@@ -257,8 +257,6 @@ class AnalogsreanalyseProcess(Process):
             else:
                 LOGGER.error('output format not valid')
 
-            start = min(refSt, dateSt)
-            end = max(refEn, dateEn)
 
         except Exception as e:
             msg = 'failed to set environment %s ' % e
@@ -273,15 +271,15 @@ class AnalogsreanalyseProcess(Process):
 
         try:
             if model == 'NCEP':
-                if 'z' in variable:
-                    level = variable.strip('z')
+                if 'z' in var:
+                    level = var.strip('z')
                     conform_units_to = None
                 else:
                     level = None
                     conform_units_to = 'hPa'
             elif '20CRV2' in model:
-                if 'z' in variable:
-                    level = variable.strip('z')
+                if 'z' in var:
+                    level = var.strip('z')
                     conform_units_to = None
                 else:
                     level = None
@@ -303,7 +301,7 @@ class AnalogsreanalyseProcess(Process):
             model_nc = rl(start=start.year,
                           end=end.year,
                           dataset=model,
-                          variable=variable)
+                          variable=var)
             LOGGER.info('reanalyses data fetched')
         except:
             msg = 'failed to get reanalyses data'
@@ -317,7 +315,7 @@ class AnalogsreanalyseProcess(Process):
         from flyingpigeon.ocgis_module import call
 
         time_range = [start, end]
-        model_subset = call(resource=model_nc, variable=variable,
+        model_subset = call(resource=model_nc, variable=var,
                             geom=bbox, spatial_wrapping='wrap', time_range=time_range,
                             # conform_units_to=conform_units_to
                             )
