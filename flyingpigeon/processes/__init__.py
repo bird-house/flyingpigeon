@@ -20,6 +20,7 @@ from .wps_weatherregimes_model import WeatherregimesmodelProcess
 from .wps_analogs_reanalyse import AnalogsreanalyseProcess
 from .wps_analogs_model import AnalogsmodelProcess
 from .wps_analogs_compare import AnalogscompareProcess
+from .wps_analogs_viewer import AnalogsviewerProcess
 
 processes = [
     ClippingProcess(),
@@ -42,6 +43,7 @@ processes = [
     AnalogsreanalyseProcess(),
     AnalogsmodelProcess(),
     AnalogscompareProcess(),
+    AnalogsviewerProcess(),
     RobustnessProcess(),
     PlottimeseriesProcess()
 ]

@@ -5,7 +5,7 @@ from flyingpigeon import config
 from os.path import basename
 
 from pywps import Process
-from pywps import LiteralInput
+from pywps import LiteralInput, LiteralOutput
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format, FORMATS
 from pywps.app.Common import Metadata
@@ -31,13 +31,12 @@ class AnalogsviewerProcess(Process):
 
             ComplexOutput("output_html", "html viewer",
                           abstract="web browser compatible html file",
-                          data_formats=[Format("text/html")],
+                          supported_formats=[Format("text/html")],
                           as_reference=True,
                           ),
 
             LiteralOutput("output_txt", "modified analogues txt file",
                           abstract="txt file for analogue viewer",
-                          default=None,
                           data_type='string',
                           ),
 
