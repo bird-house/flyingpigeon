@@ -1,24 +1,23 @@
 from datetime import date
-from pywps.Process import WPSProcess
-from flyingpigeon.datafetch import _PRESSUREDATA_
-
-from pywps import Process
-from pywps import LiteralInput
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format, FORMATS
-from pywps.app.Common import Metadata
-from flyingpigeon.log import init_process_logger
-
+from datetime import datetime as dt
 import time  # performance test
 from os import path
 from tempfile import mkstemp
+
 from flyingpigeon import analogs
-from datetime import datetime as dt
 from flyingpigeon.ocgis_module import call
 from flyingpigeon.datafetch import reanalyses
 from flyingpigeon.utils import get_variable, rename_variable
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.log import init_process_logger
+from flyingpigeon.datafetch import _PRESSUREDATA_
+
+from pywps import Process
+from pywps import LiteralInput, LiteralOutput
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format, FORMATS
+from pywps.app.Common import Metadata
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
@@ -100,7 +99,7 @@ class AnalogscompareProcess(Process):
 
             LiteralInput("seasonwin", "Seasonal window",
                          abstract="Number of days befor and after the date to be analysed",
-                         default=30,
+                         default='30',
                          data_type='integer',
                          min_occurs=0,
                          max_occurs=1,
@@ -108,8 +107,8 @@ class AnalogscompareProcess(Process):
 
             LiteralInput("nanalog", "Nr of analogues",
                          abstract="Number of analogues to be detected",
-                         default=20,
-                         type='integer',
+                         default='20',
+                         data_type='integer',
                          min_occurs=0,
                          max_occurs=1,
                          ),
@@ -134,8 +133,8 @@ class AnalogscompareProcess(Process):
 
             LiteralInput("timewin", "Time window",
                          abstract="Number of days following the analogue day the distance will be averaged",
-                         default=1,
-                         data_type='inter',
+                         default='1',
+                         data_type='integer',
                          min_occurs=0,
                          max_occurs=1,
                          ),
@@ -153,16 +152,13 @@ class AnalogscompareProcess(Process):
         outputs = [
             LiteralOutput("config", "Config File",
                           abstract="Config file used for the Fortran process",
-                          default=None,
                           data_type='string',
-                          # formats=[{"mimeType":"text/plain"}],
-                          # asReference=True,
                           ),
 
             ComplexOutput("analogs", "Analogues File",
                           abstract="mulit-column text file",
-                          data_formats=[Format("text/plain")],
-                          asReference=True,
+                          supported_formats=[Format("text/plain")],
+                          as_reference=True,
                           ),
 
             ComplexOutput('output_netcdf', 'Subsets for model',
@@ -171,9 +167,8 @@ class AnalogscompareProcess(Process):
                           supported_formats=[Format('application/x-netcdf')]
                           ),
 
-            ComplexOutput("target_netcdf", 'subset of ref file'
+            ComplexOutput("target_netcdf", 'subset of ref file',
                           abstract="File with subset and normaized values of target model",
-                          formats=[{"mimeType": "application/x-netcdf"}],
                           as_reference=True,
                           supported_formats=[Format('application/x-netcdf')]
                           ),
