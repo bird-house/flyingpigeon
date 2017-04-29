@@ -5,6 +5,13 @@ Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 
 from flyingpigeon.datafetch import _PRESSUREDATA_
 from flyingpigeon.weatherregimes import _TIMEREGIONS_
+from flyingpigeon import weatherregimes as wr
+from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import download, get_time
+from os.path import abspath
+from datetime import datetime as dt
+from tempfile import mkstemp
+
 from pywps import Process
 from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
@@ -39,9 +46,9 @@ class WeatherregimesprojectionProcess(Process):
 
             LiteralInput("dat", "R - datafile",
                          abstract="R datafile as output from weather regime reference process",
-                         type=type(''),
-                         minOccurs=1,
-                         maxOccurs=1,
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=1,
                          ),
 
             LiteralInput("netCDF", "netCDF reference",
@@ -108,7 +115,6 @@ class WeatherregimesprojectionProcess(Process):
                           ),
         ]
 
-
         super(WeatherregimesprojectionProcess, self).__init__(
             self._handler,
             identifier="weatherregimes_projection",
@@ -128,13 +134,6 @@ class WeatherregimesprojectionProcess(Process):
     def _handler(self, request, response):
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
-
-        from datetime import datetime as dt
-        from flyingpigeon import weatherregimes as wr
-        from tempfile import mkstemp
-        from flyingpigeon.utils import archive, archiveextract
-        from flyingpigeon.utils import download, get_time
-        from os.path import abspath
 
         response.update_status('execution started at : {}'.format(dt.now()), 5)
 

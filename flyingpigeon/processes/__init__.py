@@ -15,8 +15,8 @@ from .wps_sdm_csv import SDMcsvProcess
 from .wps_sdm_csvindices import SDMcsvindicesProcess
 from .wps_sdm_allinone import SDMallinoneProcess
 from .wps_weatherregimes_reanalyse import WeatherregimesreanalyseProcess
-# from .wps_weatherregimes_projection import WeatherregimesprojectionProcess
-# from .wps_weatherregimes_model import WeatherregimesmodelProcess
+from .wps_weatherregimes_projection import WeatherregimesprojectionProcess
+from .wps_weatherregimes_model import WeatherregimesmodelProcess
 from .wps_analogs_reanalyse import AnalogsreanalyseProcess
 
 processes = [
@@ -35,8 +35,8 @@ processes = [
     SDMcsvindicesProcess(),
     SDMallinoneProcess(),
     WeatherregimesreanalyseProcess(),
-    # WeatherregimesprojectionProcess(),
-    # WeatherregimesmodelProcess(),
+    WeatherregimesprojectionProcess(),
+    WeatherregimesmodelProcess(),
     AnalogsreanalyseProcess(),
     RobustnessProcess(),
     PlottimeseriesProcess()
