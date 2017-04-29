@@ -13,7 +13,7 @@ from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import archive, archiveextract
 
 from pywps import Process
-from pywps import LiteralInput
+from pywps import LiteralInput, LiteralOutput
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format, FORMATS
 from pywps.app.Common import Metadata
@@ -89,7 +89,7 @@ class AnalogsmodelProcess(Process):
 
             LiteralInput("seasonwin", "Seasonal window",
                          abstract="Number of days befor and after the date to be analysed",
-                         default=30,
+                         default='30',
                          data_type='integer',
                          min_occurs=0,
                          max_occurs=1,
@@ -97,8 +97,8 @@ class AnalogsmodelProcess(Process):
 
             LiteralInput("nanalog", "Nr of analogues",
                          abstract="Number of analogues to be detected",
-                         default=20,
-                         type='integer',
+                         default='20',
+                         data_type='integer',
                          min_occurs=0,
                          max_occurs=1,
                          ),
@@ -123,8 +123,8 @@ class AnalogsmodelProcess(Process):
 
             LiteralInput("timewin", "Time window",
                          abstract="Number of days following the analogue day the distance will be averaged",
-                         default=1,
-                         data_type='inter',
+                         default='1',
+                         data_type='integer',
                          min_occurs=0,
                          max_occurs=1,
                          ),
@@ -134,17 +134,14 @@ class AnalogsmodelProcess(Process):
 
             LiteralOutput("config", "Config File",
                           abstract="Config file used for the Fortran process",
-                          default=None,
                           data_type='string',
-                          # formats=[{"mimeType":"text/plain"}],
-                          # asReference=True,
-                          )
+                          ),
 
             ComplexOutput("analogs", "Analogues File",
                           abstract="mulit-column text file",
-                          data_formats=[Format("text/plain")],
-                          asReference=True,
-                          )
+                          as_reference=True,
+                          supported_formats=[Format("text/plain")],
+                          ),
 
             ComplexOutput('output_netcdf', 'Subsets for one dataset',
                           abstract="Prepared netCDF file as input for weatherregime calculation",
