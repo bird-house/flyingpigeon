@@ -21,6 +21,7 @@ from .wps_analogs_reanalyse import AnalogsreanalyseProcess
 from .wps_analogs_model import AnalogsmodelProcess
 from .wps_analogs_compare import AnalogscompareProcess
 from .wps_analogs_viewer import AnalogsviewerProcess
+from .wps_segetalflora import SegetalfloraProcess
 
 processes = [
     ClippingProcess(),
@@ -45,7 +46,8 @@ processes = [
     AnalogscompareProcess(),
     AnalogsviewerProcess(),
     RobustnessProcess(),
-    PlottimeseriesProcess()
+    PlottimeseriesProcess(),
+    SegetalfloraProcess()
 ]
 
 """
@@ -63,9 +65,9 @@ pywps3 processes:
 "wps_weatherregimes_projection",        # adopted to pywps4
 "wps_analogs_detection",                # adopted to pywps4
 "wps_analogs_model",                    # adopted to pywps4
-"wps_analogs_compare",
+"wps_analogs_compare",                  # adopted to pywps4
 "wps_analogs_viewer",                   # adopted to pywps4
-"wps_segetalflora",
+"wps_segetalflora",                     # adopted to pywps4
 "wps_sdm_gbiffetch",                    # adopted to pywps4
 "wps_sdm_getindices",                   # adopted to pywps4
 "wps_sdm_csvindices",                   # adopted to pywps4

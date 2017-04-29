@@ -102,3 +102,4 @@ class AnalogsviewerProcess(Process):
         ################################
         response.outputs['output_txt'] = output_data
         response.outputs['output_htm'] = output_av
+        return response
