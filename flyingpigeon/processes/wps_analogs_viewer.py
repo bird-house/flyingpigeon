@@ -18,8 +18,8 @@ LOGGER = logging.getLogger("PYWPS")
 class AnalogsviewerProcess(Process):
     def __init__(self):
         inputs = [
-            ComplexInput("resource", "Analogues result file",
-                         abstract="Analogues text file",
+            ComplexInput("analog_result", "Analogues result file",
+                         abstract="Analogues text file computed by Analogues of Corculation processes",
                          min_occurs=1,
                          max_occurs=1,
                          # maxmegabites=5000,
@@ -28,7 +28,6 @@ class AnalogsviewerProcess(Process):
              ]
 
         outputs = [
-
             ComplexOutput("output_html", "html viewer",
                           abstract="web browser compatible html file",
                           supported_formats=[Format("text/html")],
@@ -77,7 +76,7 @@ class AnalogsviewerProcess(Process):
         try:
             # Get the output csv file of analogs process (input by user in
             # text box)
-            analogs = request.inputs['resource'][0].data
+            analogs = request.inputs['analog_result'][0].data
 
             configfile = anlg.get_viewer_configfile(analogs)
             f = anlg.reformat_analogs(analogs)

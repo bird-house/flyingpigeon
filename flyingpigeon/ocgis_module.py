@@ -28,7 +28,8 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
          calc_grouping=None, conform_units_to=None, memory_limit=None,  prefix=None,
          regrid_destination=None, regrid_options='bil', level_range=None,
          geom=None, output_format_options=False, search_radius_mult=2.,
-         select_nearest=False, select_ugid=None, spatial_wrapping=None, t_calendar=None, time_region=None,
+         select_nearest=False, select_ugid=None, spatial_wrapping=None,
+         t_calendar=None, time_region=None,
          time_range=None, dir_output=None, output_format='nc'):
     '''
     ocgis operation call
@@ -67,6 +68,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     LOGGER.info('Start ocgis module call function')
     from ocgis import OcgOperations, RequestDataset, env
     from ocgis.util.large_array import compute
+    from datetime import datetime as dt
     import uuid
 
     # prepare the environment
@@ -77,6 +79,18 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
 
     if dir_output is None:
         dir_output = abspath(curdir)
+
+    # check time_range fromat:
+
+    if time_range is not None:
+        try:
+            LOGGER.debug('time_range type= %s , %s ' % (type(time_range[0]), type(time_range[1])))
+            if type(time_range[0] is 'datetime.date'):
+                time_range = [dt.combine(time_range[0], dt.min.time()),
+                              dt.combine(time_range[1], dt.min.time())]
+            LOGGER.debug('time_range changed to type= %s , %s ' % (type(time_range[0]), type(time_range[1])))
+        except:
+            LOGGER.exception('failed to confert data to datetime')
 
     #
     # if geom is not None:
@@ -140,6 +154,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         LOGGER.debug('failed to setup OcgOperations: %s' % e)
         raise
         return None
+
     try:
         from numpy import sqrt
         from flyingpigeon.utils import FreeMemory
@@ -156,17 +171,15 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
             mem_limit = 1024. * 4
             # 475.0 MB for openDAP
 
+        LOGGER.info('memory_limit = %s Mb' % (mem_limit))
+
         data_kb = ops.get_base_request_size()['total']
         data_mb = data_kb / 1024.
 
-        if variable is None:
-            variable = rd.variable
-            LOGGER.info('%s as variable dedected' % (variable))
-
         # data_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
-        LOGGER.info('data_mb  = %s ; memory_limit = %s ' % (data_mb, mem_limit))
-    except Exception as e:
-        LOGGER.debug('failed to compare dataload with free memory %s ' % e)
+        LOGGER.info('data_mb  = %s Mb' % (data_mb))
+    except:
+        LOGGER.exception('failed to compare dataload with free memory')
         raise
 
     if data_mb <= mem_limit:  # input is smaler than the half of free memory size

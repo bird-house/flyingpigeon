@@ -5,10 +5,9 @@ from tempfile import mkstemp
 from os import path
 
 from flyingpigeon.datafetch import _PRESSUREDATA_
-from flyingpigeon import weatherregimes as wr
+from flyingpigeon.datafetch import reanalyses as rl
 from flyingpigeon.ocgis_module import call
 from flyingpigeon import analogs
-from flyingpigeon.datafetch import reanalyses
 
 from pywps import Process
 from pywps import LiteralInput, LiteralOutput
@@ -44,33 +43,33 @@ class AnalogsreanalyseProcess(Process):
             #   )
 
             LiteralInput('dateSt', 'Start date of analysis period',
-                         data_type='dateTime',
+                         data_type='date',
                          abstract='First day of the period to be analysed',
-                         default='2013-07-15T12:00:00Z',
+                         default='2013-07-15',
                          min_occurs=1,
                          max_occurs=1,
                          ),
 
             LiteralInput('dateEn', 'End date of analysis period',
-                         data_type='dateTime',
+                         data_type='date',
                          abstract='Last day of the period to be analysed',
-                         default='2013-12-31T12:00:00Z',
+                         default='2013-12-31',
                          min_occurs=1,
                          max_occurs=1,
                          ),
 
             LiteralInput('refSt', 'Start date of reference period',
-                         data_type='dateTime',
+                         data_type='date',
                          abstract='First day of the period where analogues being picked',
-                         default='2013-01-01T12:00:00Z',
+                         default='2013-01-01',
                          min_occurs=1,
                          max_occurs=1,
                          ),
 
             LiteralInput('refEn', 'End date of reference period',
-                         data_type='dateTime',
+                         data_type='date',
                          abstract='Last day of the period where analogues being picked',
-                         default='2014-12-31T12:00:00Z',
+                         default='2014-12-31',
                          min_occurs=1,
                          max_occurs=1,
                          ),
@@ -296,7 +295,6 @@ class AnalogsreanalyseProcess(Process):
         # fetch Data from original data archive
         ##########################################
 
-        from flyingpigeon.datafetch import reanalyses as rl
         try:
             model_nc = rl(start=start.year,
                           end=end.year,
@@ -308,13 +306,11 @@ class AnalogsreanalyseProcess(Process):
             LOGGER.exception(msg)
             raise Exception(msg)
 
-        response.update_status('fetching data done', 15)
-
         response.update_status('subsetting region of interest', 17)
         # from flyingpigeon.weatherregimes import get_level
-        from flyingpigeon.ocgis_module import call
-
+        LOGGER.debug("start and end time: %s - %s" % (start, end))
         time_range = [start, end]
+
         model_subset = call(resource=model_nc, variable=var,
                             geom=bbox, spatial_wrapping='wrap', time_range=time_range,
                             # conform_units_to=conform_units_to
@@ -323,11 +319,9 @@ class AnalogsreanalyseProcess(Process):
 
         response.update_status('dataset subsetted', 19)
 
-
-
-    ############################################################
-    # get the required bbox and time region from resource data
-    ############################################################
+        ############################################################
+        #  get the required bbox and time region from resource data
+        ############################################################
         #
         #
         # try:
@@ -395,10 +389,10 @@ class AnalogsreanalyseProcess(Process):
                                 % (bbox[0], bbox[2], bbox[1], bbox[3])
             simNameString = "sim_" + var + "_" + simDatesString + '_%.1f_%.1f_%.1f_%.1f' \
                             % (bbox[0], bbox[2], bbox[1], bbox[3])
-            archive = call(resource=nc_subset,
+            archive = call(resource=model_subset,
                            time_range=[refSt, refEn],
                            prefix=archiveNameString)
-            simulation = call(resource=nc_subset, time_range=[dateSt, dateEn],
+            simulation = call(resource=model_subset, time_range=[dateSt, dateEn],
                               prefix=simNameString)
             LOGGER.info('archive and simulation files generated: %s, %s'
                         % (archive, simulation))
