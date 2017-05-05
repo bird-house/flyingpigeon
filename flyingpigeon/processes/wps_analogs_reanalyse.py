@@ -1,16 +1,13 @@
-from os import path
-from tempfile import mkstemp
-from datetime import datetime as dt
 from datetime import date
+from datetime import datetime as dt
 import time  # performance test
+from tempfile import mkstemp
+from os import path
 
 from flyingpigeon.datafetch import _PRESSUREDATA_
-from flyingpigeon import analogs
+from flyingpigeon.datafetch import reanalyses as rl
 from flyingpigeon.ocgis_module import call
-from flyingpigeon.datafetch import reanalyses
-from flyingpigeon.utils import get_variable
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon import analogs
 
 from pywps import Process
 from pywps import LiteralInput, LiteralOutput
@@ -23,28 +20,27 @@ import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
-class AnalogsmodelProcess(Process):
+class AnalogsreanalyseProcess(Process):
     def __init__(self):
         inputs = [
-            ComplexInput('resource', 'Resource',
-                         abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
-                         metadata=[Metadata('Info')],
-                         min_occurs=1,
-                         max_occurs=1000,
-                         supported_formats=[
-                             Format('application/x-netcdf'),
-                             Format('application/x-tar'),
-                             Format('application/zip'),
-                         ]),
 
-                # self.BBox = self.addBBoxInput(
-                #     identifier="BBox",
-                #     title="Bounding Box",
-                #     abstract="coordinates to define the region to be analysed",
-                #     minOccurs=1,
-                #     maxOccurs=1,
-                #     crss=['EPSG:4326']
-                #     )
+            LiteralInput("reanalyses", "Reanalyses Data",
+                         abstract="Choose a reanalyses dataset for comparison",
+                         default="NCEP_slp",
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=1,
+                         allowed_values=_PRESSUREDATA_
+                         ),
+
+            # self.BBox = self.addBBoxInput(
+            #   identifier="BBox",
+            #   title="Bounding Box",
+            #   abstract="coordinates to define the region to be analysed",
+            #   minOccurs=1,
+            #   maxOccurs=1,
+            #   crss=['EPSG:4326']
+            #   )
 
             LiteralInput('dateSt', 'Start date of analysis period',
                          data_type='date',
@@ -131,7 +127,6 @@ class AnalogsmodelProcess(Process):
         ]
 
         outputs = [
-
             LiteralOutput("config", "Config File",
                           abstract="Config file used for the Fortran process",
                           data_type='string',
@@ -139,8 +134,8 @@ class AnalogsmodelProcess(Process):
 
             ComplexOutput("analogs", "Analogues File",
                           abstract="mulit-column text file",
-                          as_reference=True,
                           supported_formats=[Format("text/plain")],
+                          as_reference=True,
                           ),
 
             ComplexOutput('output_netcdf', 'Subsets for one dataset',
@@ -149,11 +144,11 @@ class AnalogsmodelProcess(Process):
                           supported_formats=[Format('application/x-netcdf')]
                           ),
 
-            # ComplexOutput("output_html", "Analogues Viewer html page",
-            #               abstract="Interactive visualization of calculated analogues",
-            #               data_formats=[Format("text/html")],
-            #               as_reference=True,
-            #               )
+            ComplexOutput("output_html", "Analogues Viewer html page",
+                          abstract="Interactive visualization of calculated analogues",
+                          supported_formats=[Format("text/html")],
+                          as_reference=True,
+                          ),
 
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",
@@ -162,10 +157,10 @@ class AnalogsmodelProcess(Process):
                           ),
         ]
 
-        super(AnalogsmodelProcess, self).__init__(
+        super(AnalogsreanalyseProcess, self).__init__(
             self._handler,
-            identifier="analogs_model",
-            title="Analogues of circulation (based on climate model data)",
+            identifier="analogs_reanalyse",
+            title="Analogues of circulation (based on reanalyses data)",
             abstract='Search for days with analogue pressure pattern for reanalyses data sets',
             version="0.10",
             metadata=[
@@ -192,22 +187,13 @@ class AnalogsmodelProcess(Process):
         # reading in the input arguments
         ################################
 
-
-        response.update_status('execution started at : %s ' % dt.now(), 5)
-        start_time = time.time()  # measure init ...
-
-        ################################
-        # reading in the input arguments
-        ################################
-
         try:
             response.update_status('read input parameter : %s ' % dt.now(), 5)
 
-            resource = archiveextract(resource=rename_complexinputs(request.inputs['resource']))
             refSt = request.inputs['refSt'][0].data
             refEn = request.inputs['refEn'][0].data
-            dateSt = request.inputs['dataSt'][0].data
-            dateEn = request.inputs['dataEn'][0].data
+            dateSt = request.inputs['dateSt'][0].data
+            dateEn = request.inputs['dateEn'][0].data
             seasonwin = request.inputs['seasonwin'][0].data
             nanalog = request.inputs['nanalog'][0].data
             bbox = [-80, 20, 50, 70]
@@ -246,10 +232,17 @@ class AnalogsmodelProcess(Process):
         # convert types and set environment
         ######################################
         try:
-            refSt = dt.strptime(refSt[0], '%Y-%m-%d')
-            refEn = dt.strptime(refEn[0], '%Y-%m-%d')
-            dateSt = dt.strptime(dateSt[0], '%Y-%m-%d')
-            dateEn = dt.strptime(dateEn[0], '%Y-%m-%d')
+            response.update_status('Preparing enviroment converting arguments', 7)
+            LOGGER.debug('date: %s %s %s %s ' % (type(refSt), refEn, dateSt, dateSt))
+
+            start = min(refSt, dateSt)
+            end = max(refEn, dateEn)
+
+            #
+            # refSt = dt.strftime(refSt, '%Y-%m-%d')
+            # refEn = dt.strftime(refEn, '%Y-%m-%d')
+            # dateSt = dt.strftime(dateSt, '%Y-%m-%d')
+            # dateEn = dt.strftime(dateEn, '%Y-%m-%d')
 
             if normalize == 'None':
                 seacyc = False
@@ -263,69 +256,183 @@ class AnalogsmodelProcess(Process):
             else:
                 LOGGER.error('output format not valid')
 
-            start = min(refSt, dateSt)
-            end = max(refEn, dateEn)
 
-            if bbox_obj is not None:
-                LOGGER.info("bbox_obj={0}".format(bbox_obj.coords))
-                bbox = [bbox_obj.coords[0][0],
-                        bbox_obj.coords[0][1],
-                        bbox_obj.coords[1][0],
-                        bbox_obj.coords[1][1]]
-                LOGGER.info("bbox={0}".format(bbox))
-            else:
-                bbox = None
-
-            LOGGER.info('environment set')
         except Exception as e:
             msg = 'failed to set environment %s ' % e
             LOGGER.error(msg)
             raise Exception(msg)
 
-        LOGGER.debug("init took %s seconds.", time.time() - start_time)
-        response.update_status('Read in and convert the arguments', 5)
+        ###########################
+        # set the environment
+        ###########################
+
+        response.update_status('fetching data from archive', 10)
+
+        try:
+            if model == 'NCEP':
+                if 'z' in var:
+                    level = var.strip('z')
+                    conform_units_to = None
+                else:
+                    level = None
+                    conform_units_to = 'hPa'
+            elif '20CRV2' in model:
+                if 'z' in var:
+                    level = var.strip('z')
+                    conform_units_to = None
+                else:
+                    level = None
+                    conform_units_to = 'hPa'
+            else:
+                LOGGER.exception('Reanalyses dataset not known')
+            LOGGER.info('environment set for model: %s' % model)
+        except:
+            msg = 'failed to set environment'
+            LOGGER.exception(msg)
+            raise Exception(msg)
+
+        ##########################################
+        # fetch Data from original data archive
+        ##########################################
+
+        try:
+            model_nc = rl(start=start.year,
+                          end=end.year,
+                          dataset=model,
+                          variable=var)
+            LOGGER.info('reanalyses data fetched')
+        except:
+            msg = 'failed to get reanalyses data'
+            LOGGER.exception(msg)
+            raise Exception(msg)
+
+        response.update_status('subsetting region of interest', 17)
+        # from flyingpigeon.weatherregimes import get_level
+        LOGGER.debug("start and end time: %s - %s" % (start, end))
+        time_range = [start, end]
+
+        model_subset = call(resource=model_nc, variable=var,
+                            geom=bbox, spatial_wrapping='wrap', time_range=time_range,
+                            # conform_units_to=conform_units_to
+                            )
+        LOGGER.info('Dataset subset done: %s ', model_subset)
+
+        response.update_status('dataset subsetted', 19)
+
+        ############################################################
+        #  get the required bbox and time region from resource data
+        ############################################################
+        #
+        #
+        # try:
+        #     if dataset == 'NCEP':
+        #         if 'z' in var:
+        #             variable = 'hgt'
+        #             level = var.strip('z')
+        #             # conform_units_to=None
+        #         else:
+        #             variable = 'slp'
+        #             level = None
+        #             # conform_units_to='hPa'
+        #     elif '20CRV2' in var:
+        #         if 'z' in level:
+        #             variable = 'hgt'
+        #             level = var.strip('z')
+        #             # conform_units_to=None
+        #         else:
+        #             variable = 'prmsl'
+        #             level = None
+        #             # conform_units_to='hPa'
+        #     else:
+        #         LOGGER.error('Reanalyses dataset not known')
+        #     LOGGER.info('environment set')
+        # except Exception as e:
+        #     msg = 'failed to set environment %s ' % e
+        #     LOGGER.error(msg)
+        #     raise Exception(msg)
+        #
+        # LOGGER.debug("init took %s seconds.", time.time() - start_time)
+        # response.update_status('Read in and convert the arguments done', 8)
+        #
+        # #################
+        # # get input data
+        # #################
+        # start_time = time.time()  # measure get_input_data ...
+        # response.update_status('fetching input data', 7)
+        # try:
+        #     input = reanalyses(start=start.year, end=end.year,
+        #                        variable=var, dataset=dataset)
+        #     LOGGER.info('input files %s' % input)
+        #     nc_subset = call(resource=input, variable=var,
+        #                      geom=bbox, spatial_wrapping='wrap')
+        # except Exception as e:
+        #     msg = 'failed to fetch or subset input files %s' % e
+        #     LOGGER.error(msg)
+        #     raise Exception(msg)
+
+        LOGGER.debug("get_input_subset_dataset took %s seconds.",
+                     time.time() - start_time)
+        response.update_status('**** Input data fetched', 10)
 
         ########################
         # input data preperation
         ########################
-
-        # TODO: Check if files containing more than one dataset
-
         response.update_status('Start preparing input data', 12)
-        start_time = time.time()  # mesure data preperation ...
-        try:
-            variable = get_variable(resource)
+        start_time = time.time()  # measure data preperation ...
 
-            archive = call(resource=resource, time_range=[refSt, refEn], geom=bbox, spatial_wrapping='wrap')
-            simulation = call(resource=resource, time_range=[dateSt, dateEn], geom=bbox, spatial_wrapping='wrap')
-            if seacyc is True:
-                seasoncyc_base, seasoncyc_sim = analogs.seacyc(archive, simulation, method=normalize)
-            else:
-                seasoncyc_base = None
-                seasoncyc_sim = None
+        try:
+            # Construct descriptive filenames for the three files
+            # listed in config file
+            refDatesString = dt.strftime(refSt, '%Y-%m-%d') + "_" + dt.strftime(refEn, '%Y-%m-%d')
+            simDatesString = dt.strftime(dateSt, '%Y-%m-%d') + "_" + dt.strftime(dateEn, '%Y-%m-%d')
+            archiveNameString = "base_" + var + "_" + refDatesString + '_%.1f_%.1f_%.1f_%.1f' \
+                                % (bbox[0], bbox[2], bbox[1], bbox[3])
+            simNameString = "sim_" + var + "_" + simDatesString + '_%.1f_%.1f_%.1f_%.1f' \
+                            % (bbox[0], bbox[2], bbox[1], bbox[3])
+            archive = call(resource=model_subset,
+                           time_range=[refSt, refEn],
+                           prefix=archiveNameString)
+            simulation = call(resource=model_subset, time_range=[dateSt, dateEn],
+                              prefix=simNameString)
+            LOGGER.info('archive and simulation files generated: %s, %s'
+                        % (archive, simulation))
         except Exception as e:
             msg = 'failed to prepare archive and simulation files %s ' % e
             LOGGER.debug(msg)
             raise Exception(msg)
-        ip, output = mkstemp(dir='.', suffix='.txt')
-        output_file = path.abspath(output)
-        files = [path.abspath(archive), path.abspath(simulation), output_file]
 
-        LOGGER.debug("data preperation took %s seconds.", time.time() - start_time)
+        try:
+            if seacyc is True:
+                LOGGER.info('normalization function with method: %s '
+                            % normalize)
+                seasoncyc_base, seasoncyc_sim = analogs.seacyc(
+                    archive,
+                    simulation,
+                    method=normalize)
+            else:
+                seasoncyc_base = seasoncyc_sim = None
+        except Exception as e:
+            msg = 'failed to generate normalization files %s ' % e
+            LOGGER.debug(msg)
+            raise Exception(msg)
+
+        ip, output_file = mkstemp(dir='.', suffix='.txt')
+        files = [path.abspath(archive), path.abspath(simulation), output_file]
+        LOGGER.debug("Data preperation took %s seconds.",
+                     time.time() - start_time)
 
         ############################
-        # generating the config file
+        # generate the config file
         ############################
         response.update_status('writing config file', 15)
         start_time = time.time()  # measure write config ...
-
         try:
             config_file = analogs.get_configfile(
                 files=files,
                 seasoncyc_base=seasoncyc_base,
                 seasoncyc_sim=seasoncyc_sim,
                 timewin=timewin,
-                varname=variable,
+                varname=var,
                 seacyc=seacyc,
                 cycsmooth=91,
                 nanalog=nanalog,
@@ -334,29 +441,35 @@ class AnalogsmodelProcess(Process):
                 outformat=outformat,
                 calccor=True,
                 silent=False,
-                period=[dt.strftime(refSt, '%Y-%m-%d'), dt.strftime(refEn, '%Y-%m-%d')],
-                bbox="%s,%s,%s,%s" % (bbox[0], bbox[2], bbox[1], bbox[3]))
+                period=[dt.strftime(refSt, '%Y-%m-%d'),
+                        dt.strftime(refEn, '%Y-%m-%d')],
+                bbox="%s,%s,%s,%s" % (bbox[0],
+                                      bbox[2],
+                                      bbox[1],
+                                      bbox[3]))
         except Exception as e:
             msg = 'failed to generate config file %s ' % e
             LOGGER.debug(msg)
             raise Exception(msg)
-
         LOGGER.debug("write_config took %s seconds.", time.time() - start_time)
-
-        ##############
+        #######################
         # CASTf90 call
-        ##############
+        #######################
         import subprocess
         import shlex
 
         start_time = time.time()  # measure call castf90
+
         response.update_status('Start CASTf90 call', 20)
         try:
             # response.update_status('execution of CASTf90', 50)
             cmd = 'analogue.out %s' % path.relpath(config_file)
             # system(cmd)
             args = shlex.split(cmd)
-            output, error = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+            output, error = subprocess.Popen(
+                args, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+                ).communicate()
             LOGGER.info('analogue.out info:\n %s ' % output)
             LOGGER.debug('analogue.out errors:\n %s ' % error)
             response.update_status('**** CASTf90 suceeded', 90)
@@ -364,15 +477,36 @@ class AnalogsmodelProcess(Process):
             msg = 'CASTf90 failed %s ' % e
             LOGGER.error(msg)
             raise Exception(msg)
-
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
-        response.update_status('preparting output', 99)
 
+        ########################
+        # generate analog viewer
+        ########################
+
+        try:
+            f = analogs.reformat_analogs(output_file)
+            LOGGER.info('analogs reformated')
+            response.update_status('Successfully reformatted analog file', 50)
+
+            # put config file into output folder
+            config_output_path, config_output_url = analogs.copy_configfile(
+                config_file
+                )
+            output_av = analogs.get_viewer(
+                f,
+                path.basename(config_output_path))
+            LOGGER.info('Viewer generated')
+            response.update_status('Successfully generated analogs viewer', 90)
+            LOGGER.info('output_av: %s ' % output_av)
+        except Exception as e:
+            msg = 'Failed to reformat analogs file or generate viewer%s ' % e
+            LOGGER.debug(msg)
+
+        response.update_status('preparting output', 99)
         response.outputs['config'] = config_output_url  # config_file )
         response.outputs['analogs'] = output_file
         response.outputs['output_netcdf'] = simulation
-        # response.outputs['output_html'] = output_av
-
+        response.outputs['output_html'] = output_av
         response.update_status('execution ended', 100)
         LOGGER.debug("total execution took %s seconds.",
                      time.time() - process_start_time)

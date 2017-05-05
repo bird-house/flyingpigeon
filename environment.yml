@@ -35,7 +35,7 @@ dependencies:
 - supervisor=3.3.1
 - gunicorn
 - gevent
-- pywps=3.2.6=py27_1
+- pywps=4.0.0
 - mako
 ################
 # misc
@@ -48,10 +48,12 @@ dependencies:
 - pandas #=0.18.1
 - statsmodels #=0.6.1
 - scikit-learn #=0.17.1
+################
 # visualisation
-- matplotlib
-- cartopy #=0.14.2 # conflicts with numpy >1.10
-- iris #=1.9.2 # conflicts with numpy >1.10
+- matplotlib=2.0.0=np112py27_2
+- functools32=3.2.3.2=py27_0 # badly pinned matplotlib dependency
+- cartopy
+- iris
 - reportlab
 ################
 ## cdo ocgis
@@ -76,6 +78,9 @@ dependencies:
 - r-gridextra #=2.0.0
 - harfbuzz
 #- r-cairo#=1.5_9 build in r-base
+################
+# esgf
+- esgf-pyclient
 - pip:
   - genshi==0.7
   - pygbif==0.2.0 #0.1.4

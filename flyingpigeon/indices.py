@@ -4,7 +4,7 @@ from flyingpigeon.subset import get_ugid, get_geom
 from flyingpigeon import config
 
 import logging
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger("PYWPS")
 
 _INDICES_ = dict(
     TG=dict(variable='tas', description='Mean of mean temperature (tas as input files)'),
@@ -121,7 +121,7 @@ def indice_description(indice):
     try:
         desc = _INDICES_[indice]['description']
     except:
-        logger.error('unknown indice %s', indice)
+        LOGGER.error('unknown indice %s', indice)
     return desc
 
 
@@ -133,7 +133,7 @@ def indice_variable(indice):
     try:
         variable = _INDICES_[indice]['variable']
     except:
-        logger.error('unknown indice %s', indice)
+        LOGGER.error('unknown indice %s', indice)
     return variable
 
 
@@ -171,7 +171,7 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
         if not exists(dir_output):
             makedirs(dir_output)
 
-    logger.debug(' **** dir_output = %s ' % dir_output)
+    LOGGER.debug(' **** dir_output = %s ' % dir_output)
     # from flyingpigeon.subset import select_ugid
     #    tile_dim = 25
     output = None
@@ -202,19 +202,19 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
             else:
                 ncs = experiments[key]
             for indice in indices:
-                logger.info('indice: %s' % indice)
+                LOGGER.info('indice: %s' % indice)
                 try:
                     calc = [{'func': 'icclim_' + indice, 'name': indice}]
-                    logger.info('calc: %s' % calc)
+                    LOGGER.info('calc: %s' % calc)
                     for grouping in groupings:
-                        logger.info('grouping: %s' % grouping)
+                        LOGGER.info('grouping: %s' % grouping)
                         try:
                             calc_group = calc_grouping(grouping)
-                            logger.info('calc_group: %s' % calc_group)
+                            LOGGER.info('calc_group: %s' % calc_group)
                             if polygons is None:
                                 try:
                                     prefix = key.replace(variable, indice).replace('_day_', '_%s_' % grouping)
-                                    logger.debug(' **** dir_output = %s ' % dir_output)
+                                    LOGGER.debug(' **** dir_output = %s ' % dir_output)
                                     tmp = ocgis_module.call(resource=ncs,
                                                             variable=variable,
                                                             dimension_map=dimension_map,
@@ -227,11 +227,11 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
                                         outputs.extend(tmp)
                                     else:
                                         msg = 'could not calc indice %s for domain in %s' % (indice, key)
-                                        logger.debug(msg)
+                                        LOGGER.debug(msg)
                                         raise Exception(msg)
                                 except Exception as e:
                                     msg = 'could not calc indice %s for domain in %s' % (indice, key)
-                                    logger.debug(msg)
+                                    LOGGER.debug(msg)
                                     raise Exception(msg)
                             else:
                                 try:
@@ -250,28 +250,28 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
                                         outputs.extend(tmp)
                                     else:
                                         msg = 'could not calc clipped indice %s for domain in %s' % (indice, key)
-                                        logger.debug(msg)
+                                        LOGGER.debug(msg)
                                         raise Exception(msg)
                                 except Exception as e:
                                     msg = 'could not calc indice %s for domain in %s' % (indice, key)
-                                    logger.debug(msg)
+                                    LOGGER.debug(msg)
                                     # raise Exception(msg)
-                                logger.info('indice file calculated: %s' % tmp)
+                                LOGGER.info('indice file calculated: %s' % tmp)
                         except Exception as e:
                             msg = 'could not calc indice %s for key %s and grouping %s' % (indice, key, grouping)
-                            logger.debug(msg)
+                            LOGGER.debug(msg)
                             # raise Exception(msg)
                 except Exception as e:
                     msg = 'could not calc indice %s for key %s' % (indice, key)
-                    logger.debug(msg)
+                    LOGGER.debug(msg)
                     # raise Exception(msg)
         except Exception as e:
             msg = 'could not calc key %s' % key
-            logger.debug(msg)
+            LOGGER.debug(msg)
             # raise Exception(msg)
-    logger.info('indice outputs %s ' % outputs)
+    LOGGER.info('indice outputs %s ' % outputs)
     if len(outputs) is 0:
-        logger.debug('No indices are calculated')
+        LOGGER.debug('No indices are calculated')
         return None
     return outputs
 
@@ -403,6 +403,6 @@ def calc_indice_percentile(resources=[], variable=None,
                                                mosaic=mosaic,
                                                ))
     if len(nc_indices) is 0:
-        logger.debug('No indices are calculated')
+        LOGGER.debug('No indices are calculated')
         return None
     return nc_indices

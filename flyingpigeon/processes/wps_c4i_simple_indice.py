@@ -14,7 +14,7 @@ transfer_limit_Mb = 500
 
 import logging
 logger = logging.getLogger()
-    
+
 class ProcessSimpleIndice(WPSProcess):
 
 
@@ -58,7 +58,7 @@ class ProcessSimpleIndice(WPSProcess):
                                                type = type("String"),
                                                minOccurs=1,
                                                maxOccurs=1,
-                                               default = 'TG')        
+                                               default = 'TG')
 
         self.indiceNameIn.values = ["TG","TX","TN","TXx","TXn","TNx","TNn","SU","TR","CSU","GD4","FD","CFD","ID","HD17","CDD","CWD","PRCPTOT","RR1","SDII","R10mm","R20mm","RX1day","RX5day","SD","SD1","SD5cm","SD50cm"]
 
@@ -72,14 +72,14 @@ class ProcessSimpleIndice(WPSProcess):
 
 
         self.thresholdIn = self.addLiteralInput(
-            identifier = 'threshold', 
+            identifier = 'threshold',
             title = "Threshold",
             abstract = "Optional threshold(s) for certain indices (SU, CSU and TR). Can be a comma separated list, e.g. 20,21,22",
             type=type("S"),
             minOccurs=0,
             maxOccurs=50)
 
-                                                
+
         self.varNameIn = self.addLiteralInput(identifier = 'varName',
                                                title = 'Variable name to process',
                                                abstract = 'E.g. tas=temperature at surface.',
@@ -87,24 +87,24 @@ class ProcessSimpleIndice(WPSProcess):
                                                minOccurs=1,
                                                maxOccurs=1,
                                                default = 'tas')
-        
+
 
         self.timeRangeIn = self.addLiteralInput(
-            identifier = 'timeRange', 
+            identifier = 'timeRange',
             title = "Time range",
             abstract = "Optional time range, e.g. 2010-01-01/2012-12-31. If no time range is given, all dates in the file are taken.",
             type=type("String"),
             minOccurs=0,
             maxOccurs=1)
-        
-        ## self.outputFileNameIn = self.addLiteralInput(identifier = 'outputFileName', 
+
+        ## self.outputFileNameIn = self.addLiteralInput(identifier = 'outputFileName',
         ##                                        title = 'Name of output netCDF file',
         ##                                        type = type("String"),
         ##                                        minOccurs=1,
         ##                                        maxOccurs=1,
         ##                                        default = 'out_icclim.nc')
-        
-        self.NLevelIn = self.addLiteralInput(identifier = 'NLevel', 
+
+        self.NLevelIn = self.addLiteralInput(identifier = 'NLevel',
                                                 title = 'Number of levels',
                                                 abstract = 'Optional number of levels (if 4D variable)',
                                                 minOccurs = 0,
@@ -117,21 +117,21 @@ class ProcessSimpleIndice(WPSProcess):
             formats=[{"mimeType":"application/x-netcdf"}],
             asReference=True,
         )
-        
-        #self.opendapURL = self.addLiteralOutput(identifier = "opendapURL",title = "opendapURL");   
-        
+
+        #self.opendapURL = self.addLiteralOutput(identifier = "opendapURL",title = "opendapURL");
+
     def callback(self,message,percentage):
         self.status.set("%s" % str(message),str(percentage));
 
-    
+
     def execute(self):
         # Very important: This allows the NetCDF library to find the users credentials (X509 cert)
         #homedir = os.environ['HOME']
         #os.chdir(homedir)
-        
+
         def callback(b):
           self.callback("Processing",b)
-         
+
         files = self.getInputValues(identifier='files')
         var = self.varNameIn.getValue()
         indice_name = self.indiceNameIn.getValue()
@@ -141,41 +141,41 @@ class ProcessSimpleIndice(WPSProcess):
         out_file_name = 'out.nc'
         level = self.NLevelIn.getValue()
         thresholdlist = self.getInputValues(identifier='threshold')
-        
+
         if (time_range):
             startdate = dateutil.parser.parse(time_range.split("/")[0])
             stopdate  = dateutil.parser.parse(time_range.split("/")[1])
             time_range = [startdate,stopdate]
 
         logger.debug("time_range: %s", time_range)
-        
+
         thresh = None
         if(thresholdlist):
             thresh = [float(threshold) for threshold in threshholdList]
 
         logger.debug("thresh: %s", thresh)
-        
-      
+
+
         self.status.set("Preparing....", 0)
-        
+
         #pathToAppendToOutputDirectory = "/WPS_"+self.identifier+"_" + datetime.now().strftime("%Y%m%dT%H%M%SZ")
-        
+
         """ URL output path """
         from flyingpigeon import config
-        
+
         #fileOutURL  = os.environ['POF_OUTPUT_URL']  + pathToAppendToOutputDirectory+"/"
-        #fileOutURL  = config.outputUrl_path()  + pathToAppendToOutputDirectory+"/"
-        
+        #fileOutURL  = config.output_url()  + pathToAppendToOutputDirectory+"/"
+
         """ Internal output path"""
         #fileOutPath = os.environ['POF_OUTPUT_PATH']  + pathToAppendToOutputDirectory +"/"
         #fileOutPath = config.output_path()  + pathToAppendToOutputDirectory +"/"
 
         """ Create output directory """
         #make_dirs(fileOutPath)
-        
+
 
         self.status.set("Processing input list: "+str(files),0)
-        
+
         icclim.indice(indice_name=indice_name,
                         in_files=files,
                         var_name=var,
@@ -195,11 +195,9 @@ class ProcessSimpleIndice(WPSProcess):
                         interpolation='hyndman_fan',
                         netcdf_version='NETCDF4_CLASSIC',
                         out_unit='days')
-        
+
         """ Set output """
         #url = fileOutURL+"/"+out_file_name
         #self.opendapURL.setValue(url)
         self.output.setValue(out_file_name)
         self.status.set("ready",100)
-        
-        

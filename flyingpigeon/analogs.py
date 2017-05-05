@@ -1,6 +1,6 @@
-import logging
-logger = logging.getLogger(__name__)
 from tempfile import mkstemp
+import logging
+LOGGER = logging.getLogger("PYWPS")
 
 
 def get_configfile(files,
@@ -43,7 +43,7 @@ def get_configfile(files,
     from os.path import relpath
 
     date_stamp = dt.strftime(dt.now(), format='%Y%m%d_%H%M%S')
-    logger.info('start configuration file preparation at: %s' % (date_stamp))
+    LOGGER.info('start configuration file preparation at: %s' % (date_stamp))
 
     # convert True/False to Fortran syntax
     seacyc = str(seacyc)
@@ -125,7 +125,7 @@ def get_configfile(files,
 
 #   ip, nc_subset = mkstemp(dir='.',suffix='.nc')
 #   nc_subset = cdo.sellonlatbox('%s' % bbox, input=nc_concat, output=nc_subset)
-#   logger.info('subset done: %s ' % nc_subset)
+#   LOGGER.info('subset done: %s ' % nc_subset)
 
 #   return nc_subset
 
@@ -144,7 +144,7 @@ def seacyc(archive, simulation, method='base'):
     :return [str,str]: two netCDF filenames for analysis and reference period (located in working directory)
     """
     try:
-        logger.debug('seacyc started with method: %s' % method)
+        LOGGER.debug('seacyc started with method: %s' % method)
 
         from shutil import copy
         from flyingpigeon.ocgis_module import call
@@ -162,7 +162,7 @@ def seacyc(archive, simulation, method='base'):
             #calc=[{'func': 'mean', 'name': variable}],
             # calc_grouping=['day','month'] )
 
-            logger.debug('seasoncyc_base calculated : %s' % seasoncyc_base)
+            LOGGER.debug('seasoncyc_base calculated : %s' % seasoncyc_base)
             cdo.ydaymean(input=archive, output='seasoncyc_base.nc')
             seasoncyc_sim = 'seasoncyc_sim.nc'
             copy(seasoncyc_base, seasoncyc_sim)
@@ -195,7 +195,7 @@ def seacyc(archive, simulation, method='base'):
 
     except:
         msg = 'seacyc function failed:'
-        logger.exception(msg)
+        LOGGER.exception(msg)
         raise Exception(msg)
 
     return seasoncyc_base, seasoncyc_sim
@@ -224,9 +224,9 @@ def config_edits(configfile):
         with open(configfile, 'w') as file:
             file.write(filedata)
 
-        logger.info('configfile modified')
+        LOGGER.info('configfile modified')
     except:
-        logger.exeption('Failed to modify configfile:')
+        LOGGER.exeption('Failed to modify configfile:')
 
     return configfile
 
@@ -245,7 +245,6 @@ def reformat_analogs(analogs):
     import pandas as pd
 
     try:
-
         num_cols = 3  # dateAnlg, Dis, Corr
 
         # Create dataframe and read in output csv file of analogs process
@@ -254,7 +253,7 @@ def reformat_analogs(analogs):
 
         # Find number of analogues
         num_analogues = (dfS.shape[1]) / 3
-        logger.debug('num_analogues: %s ' % num_analogues)
+        LOGGER.debug('num_analogues: %s ' % num_analogues)
 
         # Define temporary df
         df_anlg = dfS.iloc[:, 0:num_analogues]  # store only anlg dates
@@ -289,9 +288,9 @@ def reformat_analogs(analogs):
         ip, analogs_mod = mkstemp(
             suffix='.tsv', prefix='modified-analogfile', dir=output_path, text=False)
         df_all.to_csv(analogs_mod, sep='\t')
-        logger.info('successfully reformatted analog file')
+        LOGGER.info('successfully reformatted analog file')
     except:
-        logger.exception('failed to reformat analog file')
+        LOGGER.exception('failed to reformat analog file')
     return analogs_mod
 
 
@@ -314,55 +313,55 @@ def get_viewer_configfile(analogs):
     from os.path import basename
 
     try:
-        outputUrl_path = config.outputUrl_path()
+        output_url = config.output_url()
         output_path = config.output_path()
 
         # Config file with path (server URL address)
         configfile = analogs.replace('analogs-', 'config-')
-        logger.info('config filename generated %s' % configfile)
+        LOGGER.info('config filename generated %s' % configfile)
 
-        configfile_with_path = path.join(outputUrl_path, configfile)
-        logger.debug('configfile_with_path: %s' % configfile_with_path)
+        configfile_with_path = path.join(output_url, configfile)
+        LOGGER.debug('configfile_with_path: %s' % configfile_with_path)
 
         # Check if config file exists
         r = requests.get(configfile_with_path)
         if r.status_code != 404:
-            logger.debug('Config file exists on server URL address.')
+            LOGGER.debug('Config file exists on server URL address.')
 
         else:
-            logger.debug(
+            LOGGER.debug(
                 'Config file does not exist on server address. Check local disk.')
 
             # Make config file name and get its path on local disk
             configfile = 'config_' + analogs
-            logger.debug('local disk configfile: %s' % configfile)
+            LOGGER.debug('local disk configfile: %s' % configfile)
 
             p, name = path.split(path.realpath(analogs))
             configfile_localAddress = path.join(p, configfile)
-            logger.debug('local disk configfile_localAddress: %s' %
+            LOGGER.debug('local disk configfile_localAddress: %s' %
                          configfile_localAddress)
 
             # Check if config file exists
             if path.isfile(configfile_localAddress):
-                logger.debug('Config file exists on local disk.')
+                LOGGER.debug('Config file exists on local disk.')
 
                 # Copy config file to output_path
                 # (~/birdhouse/var/lib/pywps/outputs/flyingpigeon)
                 configfile_outputlocation = path.join(output_path, configfile)
 
                 copyfile(configfile_localAddress, configfile_outputlocation)
-                logger.info(' time for coffee ')
+                LOGGER.info(' time for coffee ')
 
                 configfile_outputlocation_edited = config_edits(
                     configfile_outputlocation)
-                logger.info('outputlocation_edited: %s' %
+                LOGGER.info('outputlocation_edited: %s' %
                             configfile_outputlocation_edited)
 
                 configfile = path.basename(configfile_outputlocation_edited)
-                logger.info('  configfile %s  ' % configfile)
+                LOGGER.info('  configfile %s  ' % configfile)
 
             else:
-                logger.debug(
+                LOGGER.debug(
                     'There is no config file on local disk. Generating a default one.')
 
                 # Insert analogs filename into config file.
@@ -391,7 +390,7 @@ def get_viewer_configfile(analogs):
 
     except Exception as e:
         msg = 'failed to read number of analogues from config file %s ' % e
-        logger.debug(msg)
+        LOGGER.debug(msg)
     return configfile
 
 
@@ -408,7 +407,7 @@ def copy_configfile(configfile):
     from shutil import copyfile
     from os import path
 
-    outputUrl_path = config.outputUrl_path()
+    output_url = config.output_url()
     output_path = config.output_path()
 
     # configfile = path.basename(configfile) #just file name
@@ -416,7 +415,7 @@ def copy_configfile(configfile):
     config_output_path = path.join(output_path, path.basename(configfile))
     # Copy out of local working dir to output_path
     copyfile(configfile, config_output_path)
-    config_output_url = path.join(outputUrl_path, configfile)
+    config_output_url = path.join(output_url, configfile)
 
     return config_output_path, config_output_url
 

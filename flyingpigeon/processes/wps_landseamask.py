@@ -1,147 +1,131 @@
 import os
 
-from pywps.Process import WPSProcess
-import logging
+from pywps import Process
+from pywps import LiteralInput
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format
+from pywps.inout.literaltypes import AllowedValue
+from pywps.app.Common import Metadata
+
+from flyingpigeon import config
+from flyingpigeon.subset import masking
+from flyingpigeon.utils import searchfile
+from flyingpigeon.utils import search_landsea_mask_by_esgf
+from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.log import init_process_logger
 
-logger = logging.getLogger(__name__)
+import logging
+LOGGER = logging.getLogger("PYWPS")
 
 
-class LandseamaskProcess(WPSProcess):
+class LandseamaskProcess(Process):
     def __init__(self):
-        WPSProcess.__init__(self,
-                            identifier="landseamask",
-                            title="Mask Land/Sea",
-                            version="0.1",
-                            abstract="Find the appropriate land_area fraction file and perform a CDO division",
-                            statusSupported=True,
-                            storeSupported=True)
+        inputs = [
+            ComplexInput('dataset', 'Dataset',
+                         abstract="Enter either URL pointing to a NetCDF File"
+                                  " or an archive (tar/zip) containing NetCDF files.",
+                         min_occurs=1,
+                         max_occurs=1000,
+                         supported_formats=[
+                             Format('application/x-netcdf'),
+                             Format('application/x-tar'),
+                             Format('application/zip'),
+                         ]),
 
-        self.resource = self.addComplexInput(
-            identifier="resource",
-            title="NetCDF File",
-            abstract="NetCDF File",
-            minOccurs=1,
-            maxOccurs=100,
-            maxmegabites=5000,
-            formats=[{"mimeType": "application/x-netcdf"},
-                     {"mimeType": "application/x-tar"},
-                     {"mimeType": "application/zip"}],
-            )
+            LiteralInput("threshold", "Threshold",
+                         abstract="Percentage of Land Area Fraction",
+                         default="50",
+                         data_type='integer',
+                         allowed_values=[10, 25, 50, 75, 90],
+                         min_occurs=1,
+                         max_occurs=1,
+                         ),
 
-        self.threshold = self.addLiteralInput(
-            identifier="threshold",
-            title="Threshold",
-            abstract="Percentage of Land Area",
-            default=50,
-            type=type(1),
-            minOccurs=1,
-            maxOccurs=1,
-            )
+            LiteralInput("mask", "Land Area Fraction File",
+                         abstract="Optionally provide an OpenDAP URL to an appropriate Land Area Fraction File."
+                                  " If no file is provided, the process will run a search on the ESGF archive.",
+                         data_type='string',
+                         min_occurs=0,
+                         max_occurs=1,
+                         ),
 
-        self.mask = self.addComplexInput(
-            identifier="mask",
-            title="Land Area Fraction File",
-            abstract="optional provide a url to an appropriate Land Area Fraction File.\
-                     if no file is provided, the process will search an appropriate mask in the local cache.\
-                     Make sure the land area fraction are allready fetched (use 'Download Resources' Process)",
-            minOccurs=0,
-            maxOccurs=100,
-            # maxmegabites=50,
-            formats=[{"mimeType": "application/x-netcdf"},
-                     {"mimeType": "application/x-tar"},
-                     {"mimeType": "application/zip"}],
-            )
+            LiteralInput("land_or_sea", "Land or Sea",
+                         abstract="Either the land or the sea area of the mask will be subsetted.",
+                         default='land',
+                         data_type='string',
+                         allowed_values=['land', 'sea'],
+                         min_occurs=1,
+                         max_occurs=1,
+                         )
+        ]
 
-        self.land_area = self.addLiteralInput(
-            identifier="land_area",
-            title="Land/Sea",
-            abstract="If land_area (default) is checked, sea areas will be set to missing value",
-            default=True,
-            type=type(False),
-            )
+        outputs = [
+            ComplexOutput("output_archive", "Masked Files Archive",
+                          abstract="Tar file of the masked netCDF files",
+                          supported_formats=[Format("application/x-tar")],
+                          as_reference=True,
+                          ),
 
-        ###########
-        # output
-        ###########
+            ComplexOutput("output_example", "Example",
+                          abstract="one example file to display in the WMS",
+                          supported_formats=[Format("application/x-netcdf")],
+                          as_reference=True,
+                          ),
 
-        self.output_archive = self.addComplexOutput(
-            title="Masked Files Archive",
-            abstract="Tar file of the masked netCDF files",
-            metadata=[],
-            formats=[{"mimeType": "application/x-tar"}],
-            asReference=True,
-            identifier="output_archive",
-            )
+            ComplexOutput('output_log', 'Logging information',
+                          abstract="Collected logs during process run.",
+                          as_reference=True,
+                          supported_formats=[Format("text/plain")])
+        ]
 
-        self.output_example = self.addComplexOutput(
-            title="Example",
-            abstract="one example file to display in the WMS",
-            formats=[{"mimeType": "application/x-netcdf"}],
-            asReference=True,
-            identifier="output_example",
-            )
-
-        self.output_log = self.addComplexOutput(
-            identifier="output_log",
-            title="Logging information",
-            abstract="Collected logs during process run.",
-            formats=[{"mimeType": "text/plain"}],
-            asReference=True,
+        super(LandseamaskProcess, self).__init__(
+            self._handler,
+            identifier="landseamask",
+            title="Masking Land-Sea",
+            version="0.3",
+            abstract="Find the appropriate land_area fraction file and perform a"
+                     " CDO division to mask either land or sea areas",
+            metadata=[
+                {"title": "Doc", "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
+            ],
+            inputs=inputs,
+            outputs=outputs,
+            status_supported=True,
+            store_supported=True,
         )
 
-    def execute(self):
+    def _handler(self, request, response):
         init_process_logger('log.txt')
-        self.output_log.setValue('log.txt')
+        response.outputs['output_log'].file = 'log.txt'
 
-        from flyingpigeon.utils import searchfile
-        from flyingpigeon.subset import masking
-        from flyingpigeon.utils import archive, archiveextract
+        datasets = archiveextract(
+            resource=rename_complexinputs(request.inputs['dataset']))
+        land_area_flag = request.inputs['land_or_sea'][0].data == 'land'
 
-        from flyingpigeon import config
-        from os import path
-
-        resources = archiveextract(self.getInputValues(identifier='resource'))
-        masks = archiveextract(self.getInputValues(identifier='mask'))
-        land_area = self.land_area.getValue()
-
-        fp_cache = config.cache_path().split('/')
-        base_dir = '/'.join(fp_cache[0:-1])  # base dir for all birds
-
-        logger.debug('base dir of directory tree: %s' % base_dir)
-
-        ncs = []
-        sftlf = []
-        for nc in resources:
+        masked_datasets = []
+        count = 0
+        max_count = len(datasets)
+        for ds in datasets:
+            ds_name = os.path.basename(ds)
+            LOGGER.info('masking dataset: %s', ds_name)
+            if 'mask' in request.inputs:
+                landsea_mask = request.inputs['mask'][0].data
+            else:
+                landsea_mask = search_landsea_mask_by_esgf(ds)
+            LOGGER.info("using landsea_mask: %s", landsea_mask)
+            prefix = 'masked_{}'.format(ds_name.replace('.nc', ''))
             try:
-                basename = path.basename(nc)
-                bs = basename.split('_')
-                pattern = 'sftlf_' + '_'.join(bs[1:-2]) + '_fx.nc'
-                pattern = pattern.replace('historical',
-                                          '*').replace('rcp85',
-                                                       '*').replace('rcp65',
-                                                                    '*').replace('rcp45',
-                                                                                 '*').replace('rcp26', '*')
-                logger.debug('searching for %s ' % pattern)
-                sftlf.extend(searchfile(pattern, path.curdir))
-                sftlf.extend(searchfile(pattern, base_dir))
-                logger.debug('lenght of sftlf: %s' % len(sftlf))
-                if len(sftlf) >= 1:
-                    if len(sftlf) > 1:
-                        logger.warn(
-                            'more than one sftlf file is found fitting to the pattern, first one will be taken %s'
-                            % sftlf[0])
-                    prefix = 'masked%s' % basename.replace('.nc', '')
-                    nc_mask = masking(nc, sftlf[0], land_area=land_area, prefix=prefix)
-                    ncs.extend([nc_mask])
-                    logger.info('masking processed for %s' % basename)
-                else:
-                    logger.warn('no masked found. Please perform a "Download Resources"\
-                     to make sure the land_area file is in cache')
+                new_ds = masking(ds, landsea_mask, land_area=land_area_flag, prefix=prefix)
+                masked_datasets.append(new_ds)
             except:
-                logger.exception('failed to mask file: %s' % basename)
-        nc_archive = archive(ncs)
+                LOGGER.exception("Could not subset dataset.")
+                raise Exception("Could not subset dataset: %s", ds_name)
+            count = count + 1
+            response.update_status("masked: {:d}/{:d}".format(count, max_count), int(100.0 * count / max_count))
 
-        self.output_archive.setValue(nc_archive)
-        i = next((i for i, x in enumerate(ncs) if x), None)
-        self.output_example.setValue(ncs[i])
+        response.outputs['output_archive'].file = archive(masked_datasets)
+        response.outputs['output_example'].file = masked_datasets[0]
+
+        response.update_status("done", 100)
+        return response
