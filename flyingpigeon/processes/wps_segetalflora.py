@@ -3,6 +3,7 @@ from datetime import datetime as dt
 
 from flyingpigeon import segetalflora as sf
 from flyingpigeon.subset import countries  # REGION_EUROPE
+from flyingpigeon.utils import rename_complexinputs
 
 from pywps import Process
 from pywps import LiteralInput, LiteralOutput

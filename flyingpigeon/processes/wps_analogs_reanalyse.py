@@ -8,6 +8,7 @@ from flyingpigeon.datafetch import _PRESSUREDATA_
 from flyingpigeon.datafetch import reanalyses as rl
 from flyingpigeon.ocgis_module import call
 from flyingpigeon import analogs
+from flyingpigeon.utils import rename_complexinputs
 
 from pywps import Process
 from pywps import LiteralInput, LiteralOutput

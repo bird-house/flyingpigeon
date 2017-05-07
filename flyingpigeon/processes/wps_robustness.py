@@ -2,6 +2,7 @@ from flyingpigeon.utils import archiveextract
 from flyingpigeon import robustness as erob
 from tempfile import mkstemp
 from flyingpigeon.log import init_process_logger
+from flyingpigeon.utils import rename_complexinputs
 
 from pywps import Process
 from pywps import LiteralInput
