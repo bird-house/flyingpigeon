@@ -290,7 +290,9 @@ def reformat_analogs(analogs):
         df_all.to_csv(analogs_mod, sep='\t')
         LOGGER.info('successfully reformatted analog file')
     except:
-        LOGGER.exception('failed to reformat analog file')
+        msg = 'failed to reformat analog file'
+        LOGGER.exception(msg)
+        raise Exception(msg)
     return analogs_mod
 
 
