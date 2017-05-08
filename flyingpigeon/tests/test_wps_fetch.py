@@ -8,7 +8,7 @@ from flyingpigeon.processes import FetchProcess
 
 
 @pytest.mark.online
-# @pytest.mark.skip(reason="no way of currently testing this")
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_wps_fetch():
     client = client_for(Service(processes=[FetchProcess()]))
     datainputs = "resource@xlink:href={0}".format(TESTDATA['cmip5_tasmax_2006_nc'])

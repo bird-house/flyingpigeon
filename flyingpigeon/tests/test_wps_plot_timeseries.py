@@ -8,7 +8,7 @@ from flyingpigeon.processes import PlottimeseriesProcess
 
 
 @pytest.mark.online
-# @pytest.mark.skip(reason="no way of currently testing this")
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_wps_plot_timeseries():
     client = client_for(Service(processes=[PlottimeseriesProcess()]))
     datainputs = "resource@xlink:href={0};variable=tasmax".format(TESTDATA['cmip5_tasmax_2006_nc'])

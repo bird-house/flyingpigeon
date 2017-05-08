@@ -8,9 +8,9 @@ from flyingpigeon.processes import GBIFfetchProcess
 
 
 @pytest.mark.online
-# @pytest.mark.skip(reason="no way of currently testing this")
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_wps_sdm_gbiffetch():
-    client = client_for(Service(processes=[IndicespercentileProcess()]))
+    client = client_for(Service(processes=[GBIFfetchProcess()]))
     datainputs = "taxon_name=Fagus sylvatica;BBox=-10,20,10,40;"
     resp = client.get(
         service='WPS', request='Execute', version='1.0.0',
