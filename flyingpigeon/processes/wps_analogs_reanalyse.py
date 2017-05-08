@@ -502,6 +502,7 @@ class AnalogsreanalyseProcess(Process):
         except Exception as e:
             msg = 'Failed to reformat analogs file or generate viewer%s ' % e
             LOGGER.debug(msg)
+            raise Exception(msg)
 
         response.update_status('preparting output', 99)
         response.outputs['config'].data = config_output_url  # config_file )
