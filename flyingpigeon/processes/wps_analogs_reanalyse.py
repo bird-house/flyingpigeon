@@ -470,7 +470,7 @@ class AnalogsreanalyseProcess(Process):
             output, error = subprocess.Popen(
                 args, stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
-                ).communicate()
+            ).communicate()
             LOGGER.info('analogue.out info:\n %s ' % output)
             LOGGER.debug('analogue.out errors:\n %s ' % error)
             response.update_status('**** CASTf90 suceeded', 90)
@@ -492,7 +492,7 @@ class AnalogsreanalyseProcess(Process):
             # put config file into output folder
             config_output_path, config_output_url = analogs.copy_configfile(
                 config_file
-                )
+            )
             output_av = analogs.get_viewer(
                 f,
                 path.basename(config_output_path))
@@ -504,10 +504,10 @@ class AnalogsreanalyseProcess(Process):
             LOGGER.debug(msg)
 
         response.update_status('preparting output', 99)
-        response.outputs['config'] = config_output_url  # config_file )
-        response.outputs['analogs'] = output_file
-        response.outputs['output_netcdf'] = simulation
-        response.outputs['output_html'] = output_av
+        response.outputs['config'].data = config_output_url  # config_file )
+        response.outputs['analogs'].file = output_file
+        response.outputs['output_netcdf'].file = simulation
+        response.outputs['output_html'].file = output_av.name
         response.update_status('execution ended', 100)
         LOGGER.debug("total execution took %s seconds.",
                      time.time() - process_start_time)
