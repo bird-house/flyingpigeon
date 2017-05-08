@@ -1,10 +1,19 @@
-from .common import WpsTestClient, TESTDATA, assert_response_success
+import pytest
+
+from pywps import Service
+from pywps.tests import assert_response_success
+
+from .common import TESTDATA, client_for
+from flyingpigeon.processes import FetchProcess
 
 
+@pytest.mark.online
+# @pytest.mark.skip(reason="no way of currently testing this")
 def test_wps_fetch():
-    wps = WpsTestClient()
-    datainputs = "[resource={0};resource={1}]".format(
-        TESTDATA['cmip5_tasmax_2006_nc'], TESTDATA['cmip5_tasmax_2007_nc'])
-    resp = wps.get(service='wps', request='execute', version='1.0.0', identifier='fetch',
-                   datainputs=datainputs)
+    client = client_for(Service(processes=[FetchProcess()]))
+    datainputs = "resource@xlink:href={0}".format(TESTDATA['cmip5_tasmax_2006_nc'])
+    resp = client.get(
+        service='WPS', request='Execute', version='1.0.0',
+        identifier='fetch',
+        datainputs=datainputs)
     assert_response_success(resp)

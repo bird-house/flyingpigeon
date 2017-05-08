@@ -1,6 +1,3 @@
-from .common import WpsTestClient, TESTDATA, assert_response_success
-
-
 def test_plotlibs():
     import matplotlib
     matplotlib.use('Agg')   # use this if no xserver is available

@@ -1,9 +1,15 @@
-from .common import WpsTestClient
+import pytest
+
+from pywps import Service
+from pywps.tests import assert_response_success
+
+from .common import client_for
+from flyingpigeon.processes import processes
 
 
 def test_caps():
-    wps = WpsTestClient()
-    resp = wps.get(service='wps', request='getcapabilities')
+    client = client_for(Service(processes=processes))
+    resp = client.get(service='wps', request='getcapabilities', version='1.0.0')
     names = resp.xpath_text('/wps:Capabilities'
                             '/wps:ProcessOfferings'
                             '/wps:Process'
@@ -12,15 +18,16 @@ def test_caps():
 
     expected_names = [
         'analogs_compare',
-        'analogs_detection',
         'analogs_model',
+        'analogs_reanalyse',
         'analogs_viewer',
         'climatefactsheet',
-        'fetch',
+        'fetch_resources',
         'indices_percentile',
-        'indices_simple',
+        'indices_single',
         'landseamask',
         'plot_timeseries',
+        'pointinspection',
         'robustness',
         'sdm_allinone',
         'sdm_csv',
@@ -30,11 +37,9 @@ def test_caps():
         'segetalflora',
         'subset_continents',
         'subset_countries',
-        'subset_points',
         'subset_regionseurope',
         'weatherregimes_model',
         'weatherregimes_projection',
         'weatherregimes_reanalyse',
-        'wps_c4i_simple_indice'
     ]
     assert sorted_names == expected_names
