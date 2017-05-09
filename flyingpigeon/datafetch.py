@@ -70,19 +70,19 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP'):
             try:
                 if dataset == 'NCEP':
                     if variable == 'slp':
-                        url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/%s.%s.nc' % (variable, year)  # noqa
+                        url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/%s.%s.nc' % (variable, year)  # noqa
                     if 'z' in variable:
-                        url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/pressure/hgt.%s.nc' % (year)  # noqa
+                        url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/pressure/hgt.%s.nc' % (year)  # noqa
                 elif dataset == '20CRV2':
                     if variable == 'prmsl':
-                        url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2/monolevel/prmsl.%s.nc' % year  # noqa
+                        url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2/monolevel/prmsl.%s.nc' % year  # noqa
                     if 'z' in variable:
-                        url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2/pressure/hgt.%s.nc' % (year)  # noqa
+                        url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2/pressure/hgt.%s.nc' % (year)  # noqa
                 elif dataset == '20CRV2c':
                     if variable == 'prmsl':
-                        url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/monolevel/prmsl.%s.nc' % year  # noqa
+                        url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/monolevel/prmsl.%s.nc' % year  # noqa
                     if 'z' in variable:
-                        url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/pressure/hgt.%s.nc' % (year)  # noqa
+                        url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/pressure/hgt.%s.nc' % (year)  # noqa
                 else:
                     LOGGER.debug('Dataset %s not known' % dataset)
                 LOGGER.debug('url: %s' % url)
