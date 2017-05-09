@@ -130,13 +130,20 @@ class AnalogsreanalyseProcess(Process):
         ]
 
         outputs = [
-            LiteralOutput("config", "Config File",
+            ComplexOutput("config", "Config File",
                           abstract="Config file used for the Fortran process",
-                          data_type='string',
+                          supported_formats=[Format("text/plain")],
+                          as_reference=True,
                           ),
 
             ComplexOutput("analogs", "Analogues File",
                           abstract="mulit-column text file",
+                          supported_formats=[Format("text/plain")],
+                          as_reference=True,
+                          ),
+
+            ComplexOutput("formated_analogs", "Formated Analogues File",
+                          abstract="Formated analogues file for viewer",
                           supported_formats=[Format("text/plain")],
                           as_reference=True,
                           ),
@@ -476,32 +483,33 @@ class AnalogsreanalyseProcess(Process):
         ########################
         # generate analog viewer
         ########################
+        response.update_status('preparting output', 50)
+        response.outputs['config'].file = config_file
+        response.outputs['analogs'].file = output_file
+        response.outputs['output_netcdf'].file = simulation
 
         try:
-            f = analogs.reformat_analogs(output_file)
+            formated_analogs_file = analogs.reformat_analogs(output_file)
+            response.outputs['formated_analogs'].file = formated_analogs_file
             LOGGER.info('analogs reformated')
-            response.update_status('Successfully reformatted analog file', 50)
-
-            # put config file into output folder
-            config_output_path, config_output_url = analogs.copy_configfile(
-                config_file
-            )
-            output_av = analogs.get_viewer(
-                f,
-                path.basename(config_output_path))
-            LOGGER.info('Viewer generated')
-            response.update_status('Successfully generated analogs viewer', 90)
-            LOGGER.info('output_av: %s ' % output_av)
+            response.update_status('Successfully reformatted analog file', 60)
         except Exception as e:
-            msg = 'Failed to reformat analogs file or generate viewer: %s' % e
+            msg = 'Failed to reformat analogs file.' % e
             LOGGER.error(msg)
             raise Exception(msg)
 
-        response.update_status('preparting output', 99)
-        response.outputs['config'].data = config_output_url  # config_file )
-        response.outputs['analogs'].file = output_file
-        response.outputs['output_netcdf'].file = simulation
-        response.outputs['output_html'].file = output_av.name
+        try:
+            output_av = analogs.get_viewer(
+                formated_analogs_file,
+                path.basename(config_file))
+            response.outputs['output_html'].file = output_av.name
+            response.update_status('Successfully generated analogs viewer', 90)
+            LOGGER.info('output_av: %s ', output_av)
+        except Exception as e:
+            msg = 'Failed to generate viewer: %s' % e
+            LOGGER.error(msg)
+            raise Exception(msg)
+
         response.update_status('execution ended', 100)
         LOGGER.debug("total execution took %s seconds.",
                      time.time() - process_start_time)

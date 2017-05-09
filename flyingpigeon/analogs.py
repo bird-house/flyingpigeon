@@ -239,8 +239,6 @@ def reformat_analogs(analogs):
 
     :return str: reformatted analogs file for analogues viewer
     """
-
-    from flyingpigeon import config
     import numpy as np
     import pandas as pd
 
@@ -253,7 +251,7 @@ def reformat_analogs(analogs):
 
         # Find number of analogues
         num_analogues = (dfS.shape[1]) / 3
-        LOGGER.debug('num_analogues: %s ' % num_analogues)
+        LOGGER.debug('num_analogues: %s', num_analogues)
 
         # Define temporary df
         df_anlg = dfS.iloc[:, 0:num_analogues]  # store only anlg dates
@@ -284,9 +282,8 @@ def reformat_analogs(analogs):
         df_all.index.name = 'dateRef'
 
         # save to tsv file
-        output_path = config.output_path()
         ip, analogs_mod = mkstemp(
-            suffix='.tsv', prefix='modified-analogfile', dir=output_path, text=False)
+            suffix='.tsv', prefix='modified-analogfile', text=False)
         df_all.to_csv(analogs_mod, sep='\t')
         LOGGER.info('successfully reformatted analog file')
     except:
