@@ -172,13 +172,11 @@ def write_fileinfo(resource, filepath=False):
                 fp.write('\n')
                 for f in resource:
                     fp.write('%s \n' % basename(f))
-            if filepath is True:
-                with open(filepathes, 'w') as fp:
-                    fp.write('Following files are stored to your local discs: \n')
-                    fp.write('\n')
-                    for f in resource:
-                        fp.write('%s \n' % realpath(f))
-
+            else:
+                fp.write('Following files are stored to your local discs: \n')
+                fp.write('\n')
+                for f in resource:
+                    fp.write('%s \n' % realpath(f))
         LOGGER.info('resources filenames written to textfile')
     except:
         LOGGER.exception('failed to write file names to file')
