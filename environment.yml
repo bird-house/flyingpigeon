@@ -39,7 +39,7 @@ dependencies:
 - mako
 ################
 # misc
-- pywget
+#- pywget
 - pyyaml=3.12
 ################
 # numeric
