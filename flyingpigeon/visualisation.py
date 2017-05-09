@@ -222,7 +222,7 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
     except:
         msg = 'matplotlib spaghetti plot failed'
         LOGGER.exception(msg)
-        raise Exception(msg)
+        _, output_png = mkstemp(dir='.', suffix='.png')
     return output_png
 
 
@@ -276,8 +276,8 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
                 hs = pd.Series(ts, index=jd, name=basename(f))
                 hd = hs.to_frame()
                 df[basename(f)] = hs
-            except Exception as e:
-                LOGGER.debug('failed to calculate timeseries for%s :  %s ' % (f, e))
+            except:
+                LOGGER.exception('failed to calculate timeseries for %s ' % (f))
 
         try:
             rollmean = df.rolling(window=30, center=True).mean()
@@ -289,8 +289,8 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
             q95 = rollmean.quantile([0.95], axis=1, )  # numeric_only=False)
 
             LOGGER.info('quantile calculated for all input data')
-        except Exception as e:
-            LOGGER.debug('failed to calculate quantiles %s ' % e)
+        except:
+            LOGGER.exception('failed to calculate quantiles')
 
         try:
             plt.fill_between(rollmean.index.values, np.squeeze(q05.values), np.squeeze(q95.values),
@@ -311,6 +311,7 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
             LOGGER.exception('failed to calculate quantiles')
     except:
         LOGGER.exception('uncertainty plot failed for %s' % variable)
+        _, output_png = mkstemp(dir='.', suffix='.png')
     return output_png
 
 
@@ -363,7 +364,6 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismi
     except:
         msg = 'failed to get data for plotting'
         LOGGER.exception(msg)
-        raise Exception(msg)
 
     try:
         fig = plt.figure(facecolor='w', edgecolor='k')  # figsize=(20,10), dpi=600,
@@ -400,7 +400,7 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismi
     except:
         msg = 'failed to plot graphic'
         LOGGER.exception(msg)
-        raise Exception(msg)
+        _, graphic = mkstemp(dir='.', suffix='.png')
     return graphic
 
 

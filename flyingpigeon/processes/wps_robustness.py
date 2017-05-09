@@ -44,17 +44,17 @@ class RobustnessProcess(Process):
                          data_type='integer',
                          min_occurs=0,
                          max_occurs=1,
-                         # default=None,
+                         default='1971'
                          # allowedValues=range(1900,2200)
                          ),
 
-            LiteralInput("end", "End Year",
+            LiteralInput('end', "End Year",
                          abstract="End of the analysed period (e.g. 2050 if not set, \
                                    the last consistend year of the ensemble will be taken)",
                          data_type='integer',
                          min_occurs=0,
                          max_occurs=1,
-                         # default=None,
+                         default='2000',
                          ),
 
             LiteralInput("timeslice", "Time slice",
@@ -62,6 +62,7 @@ class RobustnessProcess(Process):
                          data_type='integer',
                          min_occurs=0,
                          max_occurs=1,
+                         default='10'
                          # allowedValues=range(1,50)
                          ),
 
@@ -136,15 +137,18 @@ class RobustnessProcess(Process):
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
-        ncfiles = archiveextract(resource=rename_complexinputs(request.inputs['resource']))
-        start = request.inputs['start']
-        end = request.inputs['end']
-        timeslice = request.inputs['timeslice']
-        # variable = self.variableIn.getValue()
-        method = request.inputs['method']
-
-        response.update_status('arguments read', 5)
-
+        try:
+            ncfiles = archiveextract(resource=rename_complexinputs(request.inputs['resource']))
+            start = request.inputs['start'][0].data
+            end = request.inputs['end'][0].data
+            timeslice = request.inputs['timeslice'][0].data
+            # # variable = self.variableIn.getValue()
+            method = request.inputs['method'][0].data
+            response.update_status('arguments read', 5)
+            LOGGER.info('Successfully read in the arguments')
+        except:
+            LOGGER.exception("failed to read in the arguments")
+            raise
         #  LOGGER.debug('variable set to %s' % variable)
 
         # if method == 'Method_A':
@@ -182,6 +186,19 @@ class RobustnessProcess(Process):
         response.outputs['output_high'].file = high_agreement_mask
         response.outputs['output_low'].file = low_agreement_mask
         response.outputs['output_graphic'].file = graphic
+
+        from os.path import basename
+        from tempfile import mkstemp
+        _, text_src = mkstemp(dir='.', suffix='.txt')
+
+        with open(text_src, 'w') as fp:
+            fp.write('###############################################\n')
+            fp.write('###############################################\n')
+            fp.write('Following files are stored to your local discs: \n')
+            fp.write('\n')
+            for f in ncfiles:
+                fp.write('%s \n' % basename(f))
+
         response.outputs['output_text'].file = text_src
 
         response.update_status('uncertainty process done', 100)

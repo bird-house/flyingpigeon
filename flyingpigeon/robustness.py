@@ -110,8 +110,9 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
 
     # set the periodes:
     try:
-        start = int(start)
-        end = int(end)
+        LOGGER.debug(type(start))
+        # start = int(start)
+        # end = int(end)
         if timeslice is None:
             timeslice = int((end - start) / 3)
             if timeslice == 0:
