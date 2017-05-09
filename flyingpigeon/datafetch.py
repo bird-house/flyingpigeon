@@ -147,3 +147,40 @@ def get_level(resource, level):
         LOGGER.exception('failed to extract level')
 
     return data
+
+
+def write_fileinfo(resource, filepath=False):
+    """
+    write path and filenames to a text file
+
+    :param ressource: list of files to be documented
+    :param filepath: if True the absolute filepath is written out as well (default = False)
+
+    :return txt: textfile with appropriate information"""
+
+    from os.path import basename, realpath
+    from tempfile import mkstemp
+    _, text_src = mkstemp(dir='.', suffix='.txt')
+
+    try:
+        with open(text_src, 'w') as fp:
+            fp.write('###############################################\n')
+            fp.write('#######   birdhouse process              ######\n')
+            fp.write('###############################################\n')
+            if filepath is False:
+                fp.write('Following is a list of resource files:         \n')
+                fp.write('\n')
+                for f in resource:
+                    fp.write('%s \n' % basename(f))
+            if filepath is True:
+                with open(filepathes, 'w') as fp:
+                    fp.write('Following files are stored to your local discs: \n')
+                    fp.write('\n')
+                    for f in resource:
+                        fp.write('%s \n' % realpath(f))
+
+        LOGGER.info('resources filenames written to textfile')
+    except:
+        LOGGER.exception('failed to write file names to file')
+
+    return text_src

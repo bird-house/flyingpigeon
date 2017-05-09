@@ -3,6 +3,7 @@ from flyingpigeon import robustness as erob
 from tempfile import mkstemp
 from flyingpigeon.log import init_process_logger
 from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.datafetch import write_fileinfo
 
 from pywps import Process
 from pywps import LiteralInput
@@ -139,18 +140,22 @@ class RobustnessProcess(Process):
 
         try:
             ncfiles = archiveextract(resource=rename_complexinputs(request.inputs['resource']))
+
             start = request.inputs['start'][0].data
             end = request.inputs['end'][0].data
             timeslice = request.inputs['timeslice'][0].data
             # # variable = self.variableIn.getValue()
             method = request.inputs['method'][0].data
+
             response.update_status('arguments read', 5)
             LOGGER.info('Successfully read in the arguments')
         except:
             LOGGER.exception("failed to read in the arguments")
             raise
-        #  LOGGER.debug('variable set to %s' % variable)
 
+        response.outputs['output_text'].file = write_fileinfo(ncfiles)
+        
+        #  LOGGER.debug('variable set to %s' % variable)
         # if method == 'Method_A':
         signal, low_agreement_mask, high_agreement_mask, text_src = erob.method_A(
                 resource=ncfiles,
@@ -186,20 +191,7 @@ class RobustnessProcess(Process):
         response.outputs['output_high'].file = high_agreement_mask
         response.outputs['output_low'].file = low_agreement_mask
         response.outputs['output_graphic'].file = graphic
-
-        from os.path import basename
-        from tempfile import mkstemp
-        _, text_src = mkstemp(dir='.', suffix='.txt')
-
-        with open(text_src, 'w') as fp:
-            fp.write('###############################################\n')
-            fp.write('###############################################\n')
-            fp.write('Following files are stored to your local discs: \n')
-            fp.write('\n')
-            for f in ncfiles:
-                fp.write('%s \n' % basename(f))
-
-        response.outputs['output_text'].file = text_src
+        # = text_src
 
         response.update_status('uncertainty process done', 100)
         return response
