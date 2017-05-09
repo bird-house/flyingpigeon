@@ -7,6 +7,7 @@ from flyingpigeon.weatherregimes import _TIMEREGIONS_
 from pywps import Process
 from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
+from pywps import BoundingBoxInput
 from pywps import Format, FORMATS
 from pywps.app.Common import Metadata
 from flyingpigeon.log import init_process_logger
@@ -29,17 +30,11 @@ class WeatherregimesmodelProcess(Process):
                              Format('application/zip'),
                          ]),
 
-            #
-            # # Literal Input Data
-            # # ------------------
-            # self.BBox = self.addBBoxInput(
-            #     identifier="BBox",
-            #     title="Bounding Box",
-            #     abstract="coordinates to define the region for weather classification",
-            #     minOccurs=1,
-            #     maxOccurs=1,
-            #     crss=['EPSG:4326']
-            #     )
+            # BoundingBoxInput('bbox', 'Bounding Box',
+            #                  abstract='Bounding box to define the region for weather classification.'
+            #                           ' Default: -80, 20, 50, 70.',
+            #                  crss=['epsg:4326'],
+            #                  min_occurs=0),
 
             LiteralInput("season", "Time region",
                          abstract="Select the months to define the time region (all == whole year will be analysed)",
@@ -145,14 +140,16 @@ class WeatherregimesmodelProcess(Process):
             # reading in the input arguments
             ################################
             LOGGER.info('read in the arguments')
-            resource = archiveextract(resource=rename_complexinputs(request.inputs['resource']))
+            resource = archiveextract(resource=[res.file for res in request.inputs['resource']])
 
             # resources = self.getInputValues(identifier='resources')
             season = request.inputs['season'][0].data
             LOGGER.info('season %s', season)
-            bbox = [-80, 20, 50, 70]
-            # bbox_obj = self.BBox.getValue()
-
+            if 'bbox' in request.inputs:
+                bbox = request.inputs['bbox'][0].data
+                bbox = [-80, 20, 50, 70]
+            else:
+                bbox = [-80, 20, 50, 70]
             period = request.inputs['period'][0].data
             LOGGER.info('period %s', period)
             anualcycle = request.inputs['anualcycle'][0].data
@@ -161,26 +158,14 @@ class WeatherregimesmodelProcess(Process):
 
             start = dt.strptime(period.split('-')[0], '%Y%m%d')
             end = dt.strptime(period.split('-')[1], '%Y%m%d')
-            LOGGER.debug('start: %s , end: %s ' % (start, end))
-            LOGGER.info('bbox %s' % bbox)
-            LOGGER.info('period %s' % str(period))
-            LOGGER.info('season %s' % str(season))
+            LOGGER.debug('start: %s , end: %s ', start, end)
+            LOGGER.info('bbox %s', bbox)
+            LOGGER.info('period %s', period)
+            LOGGER.info('season %s', season)
         except Exception as e:
-            LOGGER.debug('failed to read in the arguments %s ' % e)
-
-        try:
-            start = dt.strptime(period.split('-')[0], '%Y%m%d')
-            end = dt.strptime(period.split('-')[1], '%Y%m%d')
-
-            if bbox_obj is not None:
-                LOGGER.info("bbox_obj={0}".format(bbox_obj.coords))
-                bbox = [bbox_obj.coords[0][0], bbox_obj.coords[0][1], bbox_obj.coords[1][0], bbox_obj.coords[1][1]]
-                LOGGER.info("bbox={0}".format(bbox))
-            else:
-                bbox = None
-
-        except Exception as e:
-            LOGGER.debug('failed to transform BBOXObject  %s ' % e)
+            msg = 'failed to read in the arguments'
+            LOGGER.exception(msg)
+            raise Exception(msg)
 
         ############################################################
         # get the required bbox and time region from resource data

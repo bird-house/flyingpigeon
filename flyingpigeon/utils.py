@@ -249,10 +249,11 @@ def archiveextract(resource, path='.'):
 
         for archive in resource:
             try:
-                if basename(archive).split('.')[1] == 'nc':
+                LOGGER.debug("archive=%s", archive)
+                if basename(archive).split('.')[-1] == 'nc':
                 # if mime_type == 'application/x-netcdf':
                     files.append(join(path, archive))
-                elif basename(archive).split('.')[1] == 'tar':
+                elif basename(archive).split('.')[-1] == 'tar':
                 # elif mime_type == 'application/x-tar':
                     tar = open(archive, mode='r')
                     tar.extractall()
@@ -265,11 +266,11 @@ def archiveextract(resource, path='.'):
                     files.extend([join(path, nc) for nc in zf.filelist])
                     zf.close()
                 else:
-                    LOGGER.debug('file extention unknown')
+                    LOGGER.warn('file extention unknown')
             except Exception as e:
-                LOGGER.debug('failed to extract sub archive: %s' % e)
+                LOGGER.exception('failed to extract sub archive')
     except Excepion as e:
-        LOGGER.debug('failed to extract archive resource: %s' % e)
+        LOGGER.exception('failed to extract archive resource')
     return files
 
 
