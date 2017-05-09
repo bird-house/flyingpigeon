@@ -187,5 +187,19 @@ class RobustnessProcess(Process):
         response.outputs['output_low'].file = low_agreement_mask
         response.outputs['output_graphic'].file = graphic
 
+        from os.path import basename
+        from tempfile import mkstemp
+        _, text_src = mkstemp(dir='.', suffix='.txt')
+
+        with open(text_src, 'w') as fp:
+            fp.write('###############################################\n')
+            fp.write('###############################################\n')
+            fp.write('Following files are stored to your local discs: \n')
+            fp.write('\n')
+            for f in ncfiles:
+                fp.write('%s \n' % basename(f))
+
+        response.outputs['output_text'].file = text_src
+
         response.update_status('uncertainty process done', 100)
         return response
