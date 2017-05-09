@@ -106,7 +106,7 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP'):
                 except:
                     LOGGER.exception('failed to convert into NETCDF4_CLASSIC')
             except:
-                msg = "wget failed on {0}.".format(url)
+                msg = "download failed on {0}.".format(url)
                 LOGGER.exception(msg)
         LOGGER.info('Reanalyses data fetched for %s files' % len(obs_data))
     except:
