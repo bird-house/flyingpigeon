@@ -393,32 +393,6 @@ def get_viewer_configfile(analogs):
     return configfile
 
 
-def copy_configfile(configfile):
-    """
-    copy configuration file into output folder
-
-    :param configfile: configuration file (path/to/file.txt) in working dir
-
-    :return str,str: output_path, output_url
-    """
-    from flyingpigeon import config
-
-    from shutil import copyfile
-    from os import path
-
-    output_url = config.output_url()
-    output_path = config.output_path()
-
-    # configfile = path.basename(configfile) #just file name
-    # Add server path to file name
-    config_output_path = path.join(output_path, path.basename(configfile))
-    # Copy out of local working dir to output_path
-    copyfile(configfile, config_output_path)
-    config_output_url = path.join(output_url, configfile)
-
-    return config_output_path, config_output_url
-
-
 def get_viewer(analogs_mod, configfile):
     """
     Generate an analogs viewer based on a template.
