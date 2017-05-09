@@ -19,7 +19,7 @@ _PRESSUREDATA_ = [
     '20CRV2c_z650', '20CRV2c_z600', '20CRV2c_z550', '20CRV2c_z500', '20CRV2c_z450', '20CRV2c_z400', '20CRV2c_z350',
     '20CRV2c_z300', '20CRV2c_z250', '20CRV2c_z200', '20CRV2c_z150', '20CRV2c_z100', '20CRV2c_z70', '20CRV2c_z50',
     '20CRV2c_z30', '20CRV2c_z20', '20CRV2c_z10',
-    ]
+]
 
 _EOBSVARIABLES_ = ['tg', 'tx', 'tn', 'rr']
 
@@ -70,19 +70,19 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP'):
             try:
                 if dataset == 'NCEP':
                     if variable == 'slp':
-                        url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/%s.%s.nc' % (variable, year)
+                        url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/%s.%s.nc' % (variable, year)  # noqa
                     if 'z' in variable:
-                        url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/pressure/hgt.%s.nc' % (year)
+                        url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/pressure/hgt.%s.nc' % (year)  # noqa
                 elif dataset == '20CRV2':
                     if variable == 'prmsl':
-                        url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2/monolevel/prmsl.%s.nc' % year
+                        url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2/monolevel/prmsl.%s.nc' % year  # noqa
                     if 'z' in variable:
-                        url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2/pressure/hgt.%s.nc' % (year)
+                        url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2/pressure/hgt.%s.nc' % (year)  # noqa
                 elif dataset == '20CRV2c':
                     if variable == 'prmsl':
-                        url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/monolevel/prmsl.%s.nc' % year
+                        url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/monolevel/prmsl.%s.nc' % year  # noqa
                     if 'z' in variable:
-                        url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/pressure/hgt.%s.nc' % (year)
+                        url = 'http://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/pressure/hgt.%s.nc' % (year)  # noqa
                 else:
                     LOGGER.debug('Dataset %s not known' % dataset)
                 LOGGER.debug('url: %s' % url)
