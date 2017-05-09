@@ -274,7 +274,6 @@ def archiveextract(resource, path='.'):
 
 
 def local_path(url):
-    from urllib2 import urlparse
     url_parts = urlparse.urlparse(url)
     return url_parts.path
 
