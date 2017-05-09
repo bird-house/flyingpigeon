@@ -3,6 +3,8 @@ from datetime import datetime as dt
 import time  # performance test
 from tempfile import mkstemp
 from os import path
+import subprocess
+from subprocess import CalledProcessError
 
 from flyingpigeon.datafetch import _PRESSUREDATA_
 from flyingpigeon.datafetch import reanalyses as rl
@@ -257,7 +259,6 @@ class AnalogsreanalyseProcess(Process):
             else:
                 LOGGER.error('output format not valid')
 
-
         except Exception as e:
             msg = 'failed to set environment %s ' % e
             LOGGER.error(msg)
@@ -285,7 +286,7 @@ class AnalogsreanalyseProcess(Process):
                     level = None
                     conform_units_to = 'hPa'
             else:
-                LOGGER.exception('Reanalyses dataset not known')
+                LOGGER.error('Reanalyses dataset not known')
             LOGGER.info('environment set for model: %s' % model)
         except:
             msg = 'failed to set environment'
@@ -456,26 +457,18 @@ class AnalogsreanalyseProcess(Process):
         #######################
         # CASTf90 call
         #######################
-        import subprocess
-        import shlex
-
         start_time = time.time()  # measure call castf90
 
         response.update_status('Start CASTf90 call', 20)
         try:
             # response.update_status('execution of CASTf90', 50)
-            cmd = 'analogue.out %s' % path.relpath(config_file)
-            # system(cmd)
-            args = shlex.split(cmd)
-            output, error = subprocess.Popen(
-                args, stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
-            ).communicate()
-            LOGGER.info('analogue.out info:\n %s ' % output)
-            LOGGER.debug('analogue.out errors:\n %s ' % error)
+            cmd = ['analogue.out', path.relpath(config_file)]
+            LOGGER.debug("castf90 command: %s", cmd)
+            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+            LOGGER.info('analogue output:\n %s', output)
             response.update_status('**** CASTf90 suceeded', 90)
-        except Exception as e:
-            msg = 'CASTf90 failed %s ' % e
+        except CalledProcessError as e:
+            msg = 'CASTf90 failed:\n{0}'.format(e.output)
             LOGGER.error(msg)
             raise Exception(msg)
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
@@ -500,8 +493,8 @@ class AnalogsreanalyseProcess(Process):
             response.update_status('Successfully generated analogs viewer', 90)
             LOGGER.info('output_av: %s ' % output_av)
         except Exception as e:
-            msg = 'Failed to reformat analogs file or generate viewer%s ' % e
-            LOGGER.debug(msg)
+            msg = 'Failed to reformat analogs file or generate viewer: %s' % e
+            LOGGER.error(msg)
             raise Exception(msg)
 
         response.update_status('preparting output', 99)
