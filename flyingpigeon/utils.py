@@ -1,7 +1,10 @@
 import six
 import urlparse
 import os
-import wget
+import requests
+import shutil
+import datetime
+import time
 from ocgis import RequestDataset  # does not support NETCDF4
 from netCDF4 import Dataset, num2date
 from netCDF4 import MFDataset  # does not support NETCDF4
@@ -87,19 +90,16 @@ def check_creationtime(path, url):
     """
 
     try:
-        import urllib2
-        import os
-        import datetime
-        import time
-
-        u = urllib2.urlopen(url)
-        meta = u.info()
-        LOGGER.info("Last Modified: " + str(meta.getheaders("Last-Modified")[0]))
+        req = requests.head(url)
+        LOGGER.debug('headers: %s', req.headers.keys())
+        if 'Last-Modified' not in req.headers:
+            return False
+        LOGGER.info("Last Modified: %s", req.headers['Last-Modified'])
 
         # CONVERTING HEADER TIME TO UTC TIMESTAMP
         # ASSUMING 'Sun, 28 Jun 2015 06:30:17 GMT' FORMAT
         meta_modifiedtime = time.mktime(
-            datetime.datetime.strptime(meta.getheaders("Last-Modified")[0], "%a, %d %b %Y %X GMT").timetuple())
+            datetime.datetime.strptime(req.headers['Last-Modified'], "%a, %d %b %Y %X GMT").timetuple())
 
         # file = 'C:\Path\ToFile\somefile.xml'
         if os.path.getmtime(path) < meta_modifiedtime:
@@ -109,15 +109,26 @@ def check_creationtime(path, url):
             LOGGER.info("local file is up-to-date. Nothing to fetch.")
             newer = False
     except:
-        msg = 'failed to check arichve and cache creation time assuming newer = False'
+        msg = 'failed to check archive and cache creation time assuming newer = False'
         LOGGER.exception(msg)
         newer = False
     return newer
 
 
+def download_file(url, out=None):
+    if out:
+        local_filename = out
+    else:
+        local_filename = url.split('/')[-1]
+    r = requests.get(url, stream=True)
+    with open(local_filename, 'wb') as fp:
+        shutil.copyfileobj(r.raw, fp)
+    return local_filename
+
+
 def download(url, cache=False):
     """
-    Downloads URL using the Python wget module to the current directory.
+    Downloads URL using the Python requests module to the current directory.
     :param cache: if True then files will be downloaded to a cache directory.
     """
     try:
@@ -129,17 +140,17 @@ def download(url, cache=False):
                 if check_creationtime(filename, url):
                     LOGGER.info('file in cache older than archive file, downloading: %s ', os.path.basename(filename))
                     os.remove(filename)
-                    filename = wget.download(url, out=filename, bar=None)
+                    filename = download_file(url, out=filename)
             else:
                 if not os.path.exists(os.path.dirname(filename)):
                     os.makedirs(os.path.dirname(filename))
                 LOGGER.info('downloading: %s', url)
-                filename = wget.download(url, out=filename, bar=None)
+                filename = download_file(url, out=filename)
                 # make softlink to current dir
                 # os.symlink(filename, os.path.basename(filename))
 # filename = os.path.basename(filename)
         else:
-            filename = wget.download(url, bar=None)
+            filename = download_file(url)
     except:
         LOGGER.exception('failed to download data')
     return filename
