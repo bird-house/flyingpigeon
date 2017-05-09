@@ -29,17 +29,17 @@ class WeatherregimesmodelProcess(Process):
                              Format('application/zip'),
                          ]),
 
-        #
-        # # Literal Input Data
-        # # ------------------
-        # self.BBox = self.addBBoxInput(
-        #     identifier="BBox",
-        #     title="Bounding Box",
-        #     abstract="coordinates to define the region for weather classification",
-        #     minOccurs=1,
-        #     maxOccurs=1,
-        #     crss=['EPSG:4326']
-        #     )
+            #
+            # # Literal Input Data
+            # # ------------------
+            # self.BBox = self.addBBoxInput(
+            #     identifier="BBox",
+            #     title="Bounding Box",
+            #     abstract="coordinates to define the region for weather classification",
+            #     minOccurs=1,
+            #     maxOccurs=1,
+            #     crss=['EPSG:4326']
+            #     )
 
             LiteralInput("season", "Time region",
                          abstract="Select the months to define the time region (all == whole year will be analysed)",
@@ -133,7 +133,7 @@ class WeatherregimesmodelProcess(Process):
         from flyingpigeon.utils import archive, archiveextract
         from tempfile import mkstemp
 
-        self.status.set('execution started at : %s ' % dt.now(), 5)
+        response.update_status('execution started at : %s ' % dt.now(), 5)
 
         ################################
         # reading in the input arguments
@@ -185,7 +185,7 @@ class WeatherregimesmodelProcess(Process):
         ############################################################
         # get the required bbox and time region from resource data
         ############################################################
-        self.status.set('start subsetting', 17)
+        response.update_status('start subsetting', 17)
         # from flyingpigeon.weatherregimes import get_level
 
         from flyingpigeon.ocgis_module import call
@@ -196,15 +196,15 @@ class WeatherregimesmodelProcess(Process):
         model_subset = call(
             resource=resource, variable=variable,
             geom=bbox, spatial_wrapping='wrap', time_range=time_range,  # conform_units_to=conform_units_to
-            )
+        )
         LOGGER.info('Dataset subset done: %s ' % model_subset)
-        self.status.set('dataset subsetted', 19)
+        response.update_status('dataset subsetted', 19)
 
         #####################
         # computing anomalies
         #####################
 
-        self.status.set('computing anomalies ', 19)
+        response.update_status('computing anomalies ', 19)
 
         cycst = anualcycle.split('-')[0]
         cycen = anualcycle.split('-')[0]
@@ -215,12 +215,12 @@ class WeatherregimesmodelProcess(Process):
         # extracting season
         ####################
         model_season = wr.get_season(model_anomal, season=season)
-        self.status.set('values normalized', 20)
+        response.update_status('values normalized', 20)
 
         ####################
         # call the R scripts
         ####################
-        self.status.set('Start weather regime clustering ', 25)
+        response.update_status('Start weather regime clustering ', 25)
         import shlex
         import subprocess
         from flyingpigeon import config
@@ -256,7 +256,7 @@ class WeatherregimesmodelProcess(Process):
             LOGGER.info('R outlog info:\n %s ' % output)
             LOGGER.debug('R outlog errors:\n %s ' % error)
             if len(output) > 0:
-                self.status.set('**** weatherregime in R suceeded', 90)
+                response.update_status('**** weatherregime in R suceeded', 90)
             else:
                 LOGGER.error('NO! output returned from R call')
         except Exception as e:
@@ -264,7 +264,7 @@ class WeatherregimesmodelProcess(Process):
             LOGGER.error(msg)
             raise Exception(msg)
 
-        response.update_status('Weather regime clustering done ', 80)
+        response.update_status('Weather regime clustering done ', 90)
         ############################################
         # set the outputs
         ############################################
