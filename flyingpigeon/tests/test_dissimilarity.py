@@ -76,6 +76,7 @@ class TestNN():
     def test_simple(self):
         d = 2
         n, m = 200, 200
+        np.random.seed(1)
         x = np.random.randn(n, d)
         y = np.random.randn(m, d)
 
