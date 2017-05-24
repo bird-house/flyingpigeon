@@ -1,6 +1,6 @@
 import pytest
 
-from flyingpigeon import dist_diff as dd
+from flyingpigeon import dissimilarity as dd
 import numpy as np
 from numpy.testing import assert_equal as aeq, assert_almost_equal as aaeq
 from scipy import stats

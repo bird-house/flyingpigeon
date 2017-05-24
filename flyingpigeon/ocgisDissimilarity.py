@@ -5,6 +5,7 @@ from ocgis.calc.base import AbstractParameterizedFunction, AbstractFieldFunction
 from ocgis.collection.field import OcgField
 from ocgis.constants import TagNames, DimensionMapKeys, HeaderNames
 
+metrics = dd.__all__
 
 # NOTE: This code builds on ocgis branch v-2.0.0.dev1
 class Dissimilarity(AbstractFieldFunction, AbstractParameterizedFunction):
@@ -17,17 +18,17 @@ class Dissimilarity(AbstractFieldFunction, AbstractParameterizedFunction):
     standard_name = 'dissimilarity_metric'
     description = 'Metric evaluating the dissimilarity between two ' \
                   'multivariate samples'
-    parms_definition = {'algo': str, 'reference': OcgField, 'candidate':tuple}
-    required_variables = ['candidate', 'reference']
-    _potential_algo = dd.__all__
+    parms_definition = {'algo': str, 'target': OcgField, 'candidate':tuple}
+    required_variables = ['candidate', 'target']
+    _potential_algo = metrics
 
-    def calculate(self, reference=None, candidate=None, algo='seuclidean'):
+    def calculate(self, target=None, candidate=None, algo='seuclidean'):
         """
 
         Parameters
         ----------
-        reference : OgcField
-            The reference distribution the different candidates are compared
+        target : OgcField
+            The target distribution the different candidates are compared
             to.
         candidate : tuple
             Sequence of variable names identifying climate indices on which
@@ -41,8 +42,8 @@ class Dissimilarity(AbstractFieldFunction, AbstractParameterizedFunction):
         # Get the function from the module.
         metric = getattr(dd, algo)
 
-        # Build the (n,d) array for the reference sample.
-        ref = np.array([reference[c].get_value() for c in
+        # Build the (n,d) array for the target sample.
+        ref = np.array([target[c].get_value() for c in
                         candidate]).squeeze().T
         assert ref.ndim == 2
 
@@ -67,14 +68,14 @@ class Dissimilarity(AbstractFieldFunction, AbstractParameterizedFunction):
         arr = self.get_variable_value(fill)
         for ind in itr:
 
-            # Build reference array
+            # Build target array
             dind = list(ind)
             dind.insert(time_axis, slice(None))
             data = np.array([self.field[c][dind].get_value() for c in
                              candidate])
             p = np.ma.masked_invalid(data).squeeze().T
 
-            # Compress masked values from reference array.
+            # Compress masked values from target array.
             pc = p.compress(~p.mask.any(1), 0)
 
             # Compute the actual metric value. The 5 value threshold is
