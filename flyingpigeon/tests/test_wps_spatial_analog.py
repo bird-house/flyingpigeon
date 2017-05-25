@@ -1,10 +1,14 @@
-from .common import WpsTestClient, TESTDATA, assert_response_success
+import pytest
+
+from pywps import Service
+from pywps.tests import assert_response_success
+
+from .common import TESTDATA
 import ocgis
 import numpy as np
-from flyingpigeon.processes import wps_spatial_analog as sa
 
 from ocgis.collection.field import OcgField
-from ocgis import RequestDataset, OcgOperations, FunctionRegistry
+from ocgis import RequestDataset, OcgOperations
 from ocgis.variable.base import Variable
 import datetime as dt
 from ocgis.test.base import TestBase
@@ -34,19 +38,11 @@ class TestDissimilarity(TestBase):
         row = Variable(value=range(4, 4+nrow), name='row', dimensions='row')
         col = Variable(value=range(40, 40+ncol), name='col', dimensions='col')
 
-
-        # grid = SpatialGridDimension(row=row, col=col)
-        # sdim = SpatialDimension(grid=grid, crs=crs)
         grid = GridXY(col, row)
 
-        value_temporal = []
         start = dt.datetime(2000, 1, 1)
         delta = dt.timedelta(days=1)
-        ctr = 0
-        while ctr < ntime:
-            value_temporal.append(start)
-            start += delta
-            ctr += 1
+        value_temporal = [start + i*delta for i in range(ntime)]
 
         temporal = TemporalVariable(value=value_temporal, dimensions='time',
                                     name='time')
@@ -80,7 +76,6 @@ class TestDissimilarity(TestBase):
                                                                    p2]]
         reference = ocgis.MultiRequestDataset(ref)
         reference = reference.get()
-        #rmean = OcgOperations(aggregate=True, geom=(40,4),dataset=reference).execute().get_element()
 
         cand_range = [dt.datetime(2000, 8, 1), dt.datetime(2000, 8, 31)]
         can = [ocgis.RequestDataset(p, time_range=cand_range) for p in [p3,
@@ -91,14 +86,17 @@ class TestDissimilarity(TestBase):
                  'name': 'output_mfpf',
                  'kwds': {'target': reference,
                           'candidate': ('v1', 'v2')}}]
+
         ops = OcgOperations(dataset=candidate, calc=calc)
         ret = ops.execute()
         actual_field = ret.get_element()
         actual_variables = get_variable_names(actual_field.data_variables)
         self.assertEqual(actual_variables[0],
                          ('dissimilarity_seuclidean'))
+        self.assertEqual(actual_field, [[0,1,], [1,1]])
 
-def dissimilarity_op():
+
+def test_dissimilarity_op():
     import json, os
     import datetime as dt
 
@@ -137,16 +135,17 @@ def dissimilarity_op():
     res = ops.execute()
 
 
-
+@pytest.mark.online
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_wps_spatial_analog():
-
-    wps = WpsTestClient()
-
+    client = client_for(Service(processes=[SpatialAnalogProcess()]))
     datainputs = "[candidate={0};target={" \
-                 "0};location={1},{2};indices=meantemp;indices=totalpr]"\
-        .format(TESTDATA['reference_indicators'], -72, 46)
+                 "0};location={1},{2};indices={3};indices={4}]"\
+        .format(TESTDATA['reference_indicators'], -72, 46, 'meantemp',
+                'totalpr')
 
-    resp = wps.get(service='wps', request='execute', version='1.0.0', \
-                                                              identifier='spatial_analog',
-                   datainputs=datainputs)
+    resp = client.get(
+        service='wps', request='execute', version='1.0.0',
+        identifier='spatial_analog',
+        datainputs=datainputs)
     assert_response_success(resp)

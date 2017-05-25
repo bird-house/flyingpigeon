@@ -18,11 +18,11 @@ class Dissimilarity(AbstractFieldFunction, AbstractParameterizedFunction):
     standard_name = 'dissimilarity_metric'
     description = 'Metric evaluating the dissimilarity between two ' \
                   'multivariate samples'
-    parms_definition = {'algo': str, 'target': OcgField, 'candidate':tuple}
+    parms_definition = {'dist': str, 'target': OcgField, 'candidate':tuple}
     required_variables = ['candidate', 'target']
-    _potential_algo = metrics
+    _potential_dist = metrics
 
-    def calculate(self, target=None, candidate=None, algo='seuclidean'):
+    def calculate(self, target=None, candidate=None, dist='seuclidean'):
         """
 
         Parameters
@@ -33,14 +33,14 @@ class Dissimilarity(AbstractFieldFunction, AbstractParameterizedFunction):
         candidate : tuple
             Sequence of variable names identifying climate indices on which
             the comparison will be performed.
-        algo : {'seuclidean', 'nearest_neighbor', 'zech_aslan',
+        dist : {'seuclidean', 'nearest_neighbor', 'zech_aslan',
            'kolmogorov_smirnov', 'friedman_rafsky', 'kldiv'}
-            Name of the dissimilarity metric.
+            Name of the distance measure, or dissimilarity metric.
         """
-        assert (algo in self._potential_algo)
+        assert (dist in self._potential_dist)
 
         # Get the function from the module.
-        metric = getattr(dd, algo)
+        metric = getattr(dd, dist)
 
         # Build the (n,d) array for the target sample.
         ref = np.array([target[c].get_value() for c in
@@ -54,7 +54,7 @@ class Dissimilarity(AbstractFieldFunction, AbstractParameterizedFunction):
         fill_dimensions = list(variable.dimensions)
         fill_dimensions.pop(time_axis)
         fill = self.get_fill_variable(variable,
-                        'dissimilarity_' + algo, fill_dimensions,
+                        'dissimilarity_' + dist, fill_dimensions,
                         self.file_only,
                         add_repeat_record_archetype_name=True)
 
