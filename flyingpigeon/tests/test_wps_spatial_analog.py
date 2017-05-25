@@ -1,20 +1,14 @@
-from flyingpigeon.tests.common import WpsTestClient, TESTDATA, \
-    assert_response_success
+from .common import WpsTestClient, TESTDATA, assert_response_success
 import ocgis
 import numpy as np
 from flyingpigeon.processes import wps_spatial_analog as sa
 
-import pytest
-from ocgis.calc.base import AbstractMultivariateFunction, \
-    AbstractParameterizedFunction, AbstractFieldFunction
-from ocgis.test.base import TestBase, AbstractTestField
 from ocgis.collection.field import OcgField
 from ocgis import RequestDataset, OcgOperations, FunctionRegistry
 from ocgis.variable.base import Variable
-from ocgis.variable.temporal import TemporalVariable
 import datetime as dt
 from ocgis.test.base import TestBase
-
+from shapely.geometry import Point
 
 
 class TestDissimilarity(TestBase):
@@ -95,7 +89,7 @@ class TestDissimilarity(TestBase):
 
         calc = [{'func': 'dissimilarity',
                  'name': 'output_mfpf',
-                 'kwds': {'reference': reference,
+                 'kwds': {'target': reference,
                           'candidate': ('v1', 'v2')}}]
         ops = OcgOperations(dataset=candidate, calc=calc)
         ret = ops.execute()
@@ -104,7 +98,7 @@ class TestDissimilarity(TestBase):
         self.assertEqual(actual_variables[0],
                          ('dissimilarity_seuclidean'))
 
-def test_dissimilarity_op():
+def dissimilarity_op():
     import json, os
     import datetime as dt
 
@@ -112,7 +106,7 @@ def test_dissimilarity_op():
 
     ocgis.env.DIR_DATA = '/home/david/projects/PAVICS/birdhouse/flyingpigeon/flyingpigeon/tests/testdata/spatial_analog/'
     rfn = 'reference_indicators.nc'  # TESTDATA['reference_indicators']
-    tfn = 'target_indicators.nc'
+
     tfjson = 'target_indicators.json'
 
     indices = ['meantemp', 'totalpr']
@@ -123,9 +117,10 @@ def test_dissimilarity_op():
                 )
 
     # Reference fields
-    rrd = ocgis.RequestDataset(tfn,
+    rrd = ocgis.RequestDataset(rfn,
                 variable=indices,
                 time_range=[dt.datetime(1970, 1, 1), dt.datetime(2000, 1, 1)],
+                geom = Point(-72, 46)
                 )
     reference = rrd.get()
     #tarr = json.load(open(os.path.join(ocgis.env.DIR_DATA, tfjson)))
@@ -142,13 +137,16 @@ def test_dissimilarity_op():
     res = ops.execute()
 
 
-@pytest.mark.skip()
+
 def test_wps_spatial_analog():
 
     wps = WpsTestClient()
 
-    datainputs = "[reference_nc={0};target_json={1};indices=meantemp;indices=totalpr]".format(TESTDATA['reference_indicators'], TESTDATA['target_indicators'])
+    datainputs = "[candidate={0};target={" \
+                 "0};location={1},{2};indices=meantemp;indices=totalpr]"\
+        .format(TESTDATA['reference_indicators'], -72, 46)
 
-    resp = wps.get(service='wps', request='execute', version='1.0.0', identifier='spatial_analog',
+    resp = wps.get(service='wps', request='execute', version='1.0.0', \
+                                                              identifier='spatial_analog',
                    datainputs=datainputs)
     assert_response_success(resp)
