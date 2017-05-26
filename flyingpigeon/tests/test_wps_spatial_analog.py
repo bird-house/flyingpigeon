@@ -14,8 +14,10 @@ import datetime as dt
 from ocgis.test.base import TestBase
 from shapely.geometry import Point
 
+from flyingpigeon.utils import local_path
 
 class TestDissimilarity(TestBase):
+    """Simple auto-generated test field."""
     def setUp(self):
         super(self.__class__, self).setUp()
 
@@ -93,46 +95,47 @@ class TestDissimilarity(TestBase):
         actual_variables = get_variable_names(actual_field.data_variables)
         self.assertEqual(actual_variables[0],
                          ('dissimilarity_seuclidean'))
-        self.assertEqual(actual_field, [[0,1,], [1,1]])
+        dist = actual_field['dissimilarity_seuclidean']
+        self.assertEqual(dist.shape, (1, 1, 2, 2))
 
 
 def test_dissimilarity_op():
-    import json, os
+    """Test with a real file."""
     import datetime as dt
+    lon, lat = -72, 46
+    g = Point(-72, 46)
 
-
-
-    ocgis.env.DIR_DATA = '/home/david/projects/PAVICS/birdhouse/flyingpigeon/flyingpigeon/tests/testdata/spatial_analog/'
-    rfn = 'reference_indicators.nc'  # TESTDATA['reference_indicators']
-
-    tfjson = 'target_indicators.json'
+    rfn = local_path(TESTDATA['reference_indicators.nc'] )
 
     indices = ['meantemp', 'totalpr']
+
     # Candidate fields
     crd = ocgis.RequestDataset(rfn,
                 variable=indices,
-                time_range=[dt.datetime(1960, 1, 1), dt.datetime(2000, 1, 1)],
+                time_range=[dt.datetime(1970, 1, 1), dt.datetime(2000, 1, 1)],
                 )
+    # Running the test with the full file takes about 2 minutes, so we'll
+    # crop the data to 4 grid cells.
+    op = ocgis.OcgOperations(dataset=crd, geom=g, select_nearest=False)
+    candidate = op.execute().get_element()
 
     # Reference fields
-    rrd = ocgis.RequestDataset(rfn,
-                variable=indices,
-                time_range=[dt.datetime(1970, 1, 1), dt.datetime(2000, 1, 1)],
-                geom = Point(-72, 46)
-                )
-    reference = rrd.get()
-    #tarr = json.load(open(os.path.join(ocgis.env.DIR_DATA, tfjson)))
-    #reference = np.array([tarr[ind] for ind in indices]).T
+    # Extract values from one grid cell
+    op = ocgis.OcgOperations(dataset=crd, geom=g, select_nearest=True)
+    target = op.execute().get_element()
 
     ops = ocgis.OcgOperations(
         calc=[{'func': 'dissimilarity', 'name': 'spatial_analog',
-               'kwds': {'algo': 'seuclidean', 'reference': reference,
+               'kwds': {'dist': 'seuclidean', 'target': target,
                         'candidate': indices}}],
-        geom=(-72, 46),
-        time_range=[dt.datetime(1960, 1, 1), dt.datetime(2000, 1, 1)],
-        dataset=crd)
+                dataset=candidate)
 
     res = ops.execute()
+    out = res.get_element()
+    i = np.argmin(np.abs(out['lon'].value-lon))
+    j = np.argmin(np.abs(out['lat'].value-lat))
+    np.testing.assert_almost_equal( out['dissimilarity_seuclidean'].value[
+        j,i], 0, 6)
 
 
 @pytest.mark.online
