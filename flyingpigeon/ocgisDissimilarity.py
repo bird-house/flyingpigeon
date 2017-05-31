@@ -2,8 +2,8 @@ import dissimilarity as dd
 import numpy as np
 from ocgis.util.helpers import iter_array
 from ocgis.calc.base import AbstractParameterizedFunction, AbstractFieldFunction
-from ocgis.collection.field import OcgField
-from ocgis.constants import TagNames, DimensionMapKeys, HeaderNames
+from ocgis.collection.field import Field
+from ocgis.constants import NAME_DIMENSION_TEMPORAL
 
 metrics = dd.__all__
 
@@ -18,7 +18,7 @@ class Dissimilarity(AbstractFieldFunction, AbstractParameterizedFunction):
     standard_name = 'dissimilarity_metric'
     description = 'Metric evaluating the dissimilarity between two ' \
                   'multivariate samples'
-    parms_definition = {'dist': str, 'target': OcgField, 'candidate':tuple}
+    parms_definition = {'dist': str, 'target': Field, 'candidate':tuple}
     required_variables = ['candidate', 'target']
     _potential_dist = metrics
 
@@ -27,7 +27,7 @@ class Dissimilarity(AbstractFieldFunction, AbstractParameterizedFunction):
 
         Parameters
         ----------
-        target : OgcField
+        target : ocgis Field
             The target distribution the different candidates are compared
             to.
         candidate : tuple
@@ -50,7 +50,7 @@ class Dissimilarity(AbstractFieldFunction, AbstractParameterizedFunction):
         # Create the fill variable based on the first candidate variable.
         variable = self.field[candidate[0]]
         crosswalk = self._get_dimension_crosswalk_(variable)
-        time_axis = crosswalk.index(DimensionMapKeys.TIME)
+        time_axis = crosswalk.index(NAME_DIMENSION_TEMPORAL)
         fill_dimensions = list(variable.dimensions)
         fill_dimensions.pop(time_axis)
         fill = self.get_fill_variable(variable,

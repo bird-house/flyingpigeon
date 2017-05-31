@@ -7,12 +7,14 @@ from .common import TESTDATA
 import ocgis
 import numpy as np
 
-from ocgis.collection.field import OcgField
 from ocgis import RequestDataset, OcgOperations
+from ocgis.collection.field import Field
 from ocgis.variable.base import Variable
 import datetime as dt
 from ocgis.test.base import TestBase
 from shapely.geometry import Point
+from ocgis.spatial.grid import Grid
+from ocgis.variable.temporal import TemporalVariable
 
 from flyingpigeon.utils import local_path
 
@@ -33,14 +35,12 @@ class TestDissimilarity(TestBase):
         return path
 
     def get_field(self, ntime=2, variable_name='foo', nrow=2, ncol=2):
-        from ocgis.spatial.grid import GridXY
-        from ocgis.variable.temporal import TemporalVariable
         np.random.seed(1)
 
         row = Variable(value=range(4, 4+nrow), name='row', dimensions='row')
         col = Variable(value=range(40, 40+ncol), name='col', dimensions='col')
 
-        grid = GridXY(col, row)
+        grid = Grid(col, row)
 
         start = dt.datetime(2000, 1, 1)
         delta = dt.timedelta(days=1)
@@ -60,7 +60,7 @@ class TestDissimilarity(TestBase):
                                                  ncol),
                             dimensions=['realization', 'time', 'level', 'row',
                                         'col'])
-        field = OcgField(grid=grid, time=temporal, is_data=variable, level=level,
+        field = Field(grid=grid, time=temporal, is_data=variable, level=level,
                          realization=realization)
 
         return field
@@ -117,7 +117,8 @@ def test_dissimilarity_op():
     # Running the test with the full file takes about 2 minutes, so we'll
     # crop the data to 4 grid cells.
     op = ocgis.OcgOperations(dataset=crd, geom=g, select_nearest=False)
-    candidate = op.execute().get_element()
+    res = op.execute()
+    candidate = res.get_element()
 
     # Reference fields
     # Extract values from one grid cell
