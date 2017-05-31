@@ -8,6 +8,8 @@ from ocgis.constants import NAME_DIMENSION_TEMPORAL
 metrics = dd.__all__
 
 # NOTE: This code builds on ocgis branch v-2.0.0.dev1
+
+
 class Dissimilarity(AbstractFieldFunction, AbstractParameterizedFunction):
     """
     OCGIS class to compute a dissimilarity metric between two
@@ -18,7 +20,7 @@ class Dissimilarity(AbstractFieldFunction, AbstractParameterizedFunction):
     standard_name = 'dissimilarity_metric'
     description = 'Metric evaluating the dissimilarity between two ' \
                   'multivariate samples'
-    parms_definition = {'dist': str, 'target': Field, 'candidate':tuple}
+    parms_definition = {'dist': str, 'target': Field, 'candidate': tuple}
     required_variables = ['candidate', 'target']
     _potential_dist = metrics
 
@@ -54,9 +56,9 @@ class Dissimilarity(AbstractFieldFunction, AbstractParameterizedFunction):
         fill_dimensions = list(variable.dimensions)
         fill_dimensions.pop(time_axis)
         fill = self.get_fill_variable(variable,
-                        'dissimilarity_' + dist, fill_dimensions,
-                        self.file_only,
-                        add_repeat_record_archetype_name=True)
+                                      'dissimilarity_' + dist, fill_dimensions,
+                                      self.file_only,
+                                      add_repeat_record_archetype_name=True)
 
         # ================== #
         # Metric computation #

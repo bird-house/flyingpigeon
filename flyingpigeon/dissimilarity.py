@@ -462,22 +462,22 @@ def kldiv(x, y, k=1):
 
     # Get the k'th nearest neighbour from each points in x for both x and y.
     # We get the values for K + 1 to make sure the output is a 2D array.
-    K = max(ka) + 1
-    r, indx = xtree.query(x, k=K, eps=0, p=2, n_jobs=2)
-    s, indy = ytree.query(x, k=K, eps=0, p=2, n_jobs=2)
+    kmax = max(ka) + 1
+    r, indx = xtree.query(x, k=kmax, eps=0, p=2, n_jobs=2)
+    s, indy = ytree.query(x, k=kmax, eps=0, p=2, n_jobs=2)
 
     # There is a mistake in the paper. In Eq. 14, the right side misses a
     # negative sign on the first term of the right hand side.
-    D = []
+    out = []
     for ki in ka:
         # The 0th nearest neighbour of x[i] in x is x[i] itself.
         # Hence we take the k'th + 1, which in 0-based indexing is given by
         # index k.
-        D.append(
+        out.append(
             -np.log(r[:, ki] / s[:, ki - 1]).sum() * d / nx +
             np.log(ny / (nx - 1.)))
 
     if mk:
-        return D
+        return out
     else:
-        return D[0]
+        return out[0]

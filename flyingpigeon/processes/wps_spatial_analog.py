@@ -5,7 +5,7 @@ Author: David Huard (huard.david@ouranos.ca),
 """
 
 from flyingpigeon.log import init_process_logger
-from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import archiveextract
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import get_values
 from flyingpigeon.ocgis_module import call
@@ -14,10 +14,11 @@ from shapely.geometry import Point
 from pywps import Process
 from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
-from pywps import Format, FORMATS
+from pywps import Format
 from pywps.app.Common import Metadata
 
-import datetime as dt
+from datetime import datetime as dt
+import os
 
 from ocgis import FunctionRegistry
 from ..ocgisDissimilarity import Dissimilarity, metrics
@@ -27,11 +28,12 @@ FunctionRegistry.append(Dissimilarity)
 import logging
 LOGGER = logging.getLogger("PYWPS")
 
+
 class SpatialAnalogProcess(Process):
     def __init__(self):
         inputs = [
             ComplexInput('candidate', 'Candidate netCDF dataset',
-                         abstract='NetCDF fils of archive (tar/zip) containing netcdf '
+                         abstract='NetCDF files or archive (tar/zip) containing netcdf '
                                   'files storing the candidate indices.',
                          metadata=[Metadata('Info')],
                          min_occurs=1,
@@ -43,7 +45,7 @@ class SpatialAnalogProcess(Process):
                          ]),
 
             ComplexInput('target', 'Target netCDF dataset',
-                         abstract='NetCDF fils of archive (tar/zip) '
+                         abstract='NetCDF files or archive (tar/zip) '
                                   'containing netcdf files storing the '
                                   'target indices.',
                          metadata=[Metadata('Info')],
@@ -74,7 +76,7 @@ class SpatialAnalogProcess(Process):
                          data_type='string',
                          min_occurs=0,
                          max_occurs=1,
-                         default="kldiv",
+                         default='kldiv',
                          allowed_values=metrics,
                          ),
 
@@ -87,7 +89,7 @@ class SpatialAnalogProcess(Process):
                          default='',
                          ),
 
-            LiteralInput('dateEndCandidate','Candidate end date',
+            LiteralInput('dateEndCandidate', 'Candidate end date',
                          abstract="End of period (YYYY-MM_DD) for candidate data. Defaults to last entry.",
                          data_type='string',
                          min_occurs=0,
@@ -151,13 +153,12 @@ class SpatialAnalogProcess(Process):
         )
 
     def _handler(self, request, response):
+        tic = dt.now()
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
         LOGGER.info('Start process')
-        reponse.update_status('execution started at : {}'.format(dt.now()), 5)
-
-        process_start_time = time.time()
+        response.update_status('execution started at : {}'.format(tic, 5))
 
         ######################################
         # Read inputs
@@ -181,7 +182,8 @@ class SpatialAnalogProcess(Process):
             response.update_status('Read in and convert the arguments', 5)
 
         except Exception as e:
-            msg = 'failed to read input parameter {} '.format(e)
+            msg = 'failed to read input parameter {} {} {}'.format(e,
+                            request.inputs['candidate'],request.inputs['target'])
             LOGGER.error(msg)
             raise Exception(msg)
 
@@ -191,18 +193,18 @@ class SpatialAnalogProcess(Process):
         ######################################
 
         try:
-            point = Point(*map(float, location[0].split(',')))
-            dateStartCandidate = dt.strptime(dateStartCandidate[0], '%Y-%m-%d')
-            dateEndCandidate = dt.strptime(dateEndCandidate[0], '%Y-%m-%d')
-            dateStartTarget = dt.strptime(dateStartTarget[0], '%Y-%m-%d')
-            dateEndTarget = dt.strptime(dateEndTarget[0], '%Y-%m-%d')
+            point = Point(*map(float, location.split(',')))
+            dateStartCandidate = dt.strptime(dateStartCandidate, '%Y-%m-%d')
+            dateEndCandidate = dt.strptime(dateEndCandidate, '%Y-%m-%d')
+            dateStartTarget = dt.strptime(dateStartTarget, '%Y-%m-%d')
+            dateEndTarget = dt.strptime(dateEndTarget, '%Y-%m-%d')
 
         except Exception as e:
             msg = 'failed to process inputs {} '.format(e)
             LOGGER.error(msg)
             raise Exception(msg)
 
-        LOGGER.debug("init took {} seconds.".format( time.time() - start_time) )
+        LOGGER.debug("init took {}".format(dt.now() - tic ) )
         response.update_status('Read in and convert the arguments', 5)
 
         ######################################
@@ -236,19 +238,17 @@ class SpatialAnalogProcess(Process):
                           )
 
         except Exception as e:
-            msg = 'Spatial analog failed.'
-            logger.exception(msg)
+            msg = 'Spatial analog failed: {}'.format(e)
+            LOGGER.exception(msg)
             raise Exception(msg)
 
-        LOGGER.debug("spatial_analog took {} seconds."
-                     .format(time.time()-start_time))
-        response.update_status('preparting output', 99)
+        LOGGER.debug("spatial_analog took {}.".format(dt.now() - tic))
+        response.update_status('preparing output', 99)
 
 
 
         response.outputs['output_netcdf'] = output
         response.update_status('execution ended', 100)
-        LOGGER.debug("total execution took %s seconds.",
-                     time.time() - process_start_time)
+        LOGGER.debug("total execution took {}".format( dt.now() - tic) )
         return response
 
