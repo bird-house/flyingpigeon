@@ -3,20 +3,22 @@ import pytest
 from pywps import Service
 from pywps.tests import assert_response_success
 
-from .common import TESTDATA
-import ocgis
-import numpy as np
+from flyingpigeon.processes import SpatialAnalogProcess
+from flyingpigeon.utils import local_path
+from flyingpigeon.tests.common import TESTDATA
 
+import numpy as np
+import datetime as dt
+from shapely.geometry import Point
+
+import ocgis
 from ocgis import RequestDataset, OcgOperations
 from ocgis.collection.field import Field
 from ocgis.variable.base import Variable
-import datetime as dt
-from ocgis.test.base import TestBase
-from shapely.geometry import Point
 from ocgis.spatial.grid import Grid
 from ocgis.variable.temporal import TemporalVariable
 
-from flyingpigeon.utils import local_path
+from ocgis.test.base import TestBase
 
 class TestDissimilarity(TestBase):
     """Simple auto-generated test field."""
@@ -103,7 +105,7 @@ def test_dissimilarity_op():
     """Test with a real file."""
     import datetime as dt
     lon, lat = -72, 46
-    g = Point(-72, 46)
+    g = Point(lon, lat)
 
     rfn = local_path(TESTDATA['reference_indicators.nc'] )
 
