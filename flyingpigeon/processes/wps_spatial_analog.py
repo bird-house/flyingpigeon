@@ -20,8 +20,8 @@ from pywps.app.Common import Metadata
 from datetime import datetime as dt
 import os
 
-from ocgis import FunctionRegistry
-from ..ocgisDissimilarity import Dissimilarity, metrics
+from ocgis import FunctionRegistry, RequestDataset, OcgOperations
+from flyingpigeon.ocgisDissimilarity import Dissimilarity, metrics
 
 FunctionRegistry.append(Dissimilarity)
 
@@ -153,19 +153,18 @@ class SpatialAnalogProcess(Process):
         )
 
     def _handler(self, request, response):
+
         tic = dt.now()
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
         LOGGER.info('Start process')
-        response.update_status('execution started at : {}'.format(tic, 5))
+        response.update_status('Execution started at : {}'.format(tic), 1)
 
         ######################################
         # Read inputs
         ######################################
         try:
-            response.update_status('read input parameter : {}'.format(dt.now()), 5)
-
             candidate = archiveextract(resource=rename_complexinputs(
                 request.inputs['candidate']))
             target = archiveextract(resource=rename_complexinputs(
@@ -178,15 +177,12 @@ class SpatialAnalogProcess(Process):
             dateStartTarget = request.inputs['dateStartTarget'][0].data
             dateEndTarget = request.inputs['dateEndTarget'][0].data
 
-            LOGGER.info('input parameters set')
-            response.update_status('Read in and convert the arguments', 5)
-
         except Exception as e:
-            msg = 'failed to read input parameter {} {} {}'.format(e,
-                            request.inputs['candidate'],request.inputs['target'])
+            msg = 'Failed to read input parameter {}'.format(e)
             LOGGER.error(msg)
             raise Exception(msg)
 
+        response.update_status('Input parameters ingested', 2)
 
         ######################################
         # Process inputs
@@ -205,25 +201,41 @@ class SpatialAnalogProcess(Process):
             raise Exception(msg)
 
         LOGGER.debug("init took {}".format(dt.now() - tic ) )
-        response.update_status('Read in and convert the arguments', 5)
+        response.update_status('Processed input parameters', 3)
+
 
         ######################################
         # Extract target time series
         ######################################
-
+        savetarget=False
         try:
-            target_ts = call(resource=target,
-                             geom=point,
-                             variables=indices,
-                             time_range=[dateStartTarget, dateEndTarget],
-                             select_nearest=True)
+            # Using `call` creates a netCDF file in the tmp directory.
+            #
+            # Here we keep this stuff in memory
+            if savetarget:
+                prefix = 'target_ts'
+                target_ts = call(resource=target, geom=point, variable=indices,
+                                 time_range=[dateStartTarget, dateEndTarget],
+                                 select_nearest=True, prefix=prefix)
 
-            target_values = get_values(target_ts)
+                #target_ts = [get_values(prefix+'.nc', ind) for ind in indices]
+
+            else:
+                trd = RequestDataset(target, variable=indices,
+                                     time_range=[dateStartTarget, dateEndTarget])
+
+                op = OcgOperations(trd, geom=point, select_nearest=True,
+                                   search_radius_mult=1.75)
+                out = op.execute()
+                target_ts = out.get_element()
 
         except Exception as e:
-            LOGGER.debug('target extraction failed {}'.format(e))
+            msg = 'Target extraction failed {}'.format(e)
+            LOGGER.debug(msg)
+            raise Exception(msg)
 
-        response.update_status('Extracted target time series', 10)
+        response.update_status('Extracted target series'.format(target_ts), 5)
+
 
         ######################################
         # Compute dissimilarity metric
@@ -232,7 +244,7 @@ class SpatialAnalogProcess(Process):
         try:
             output = call(resource=candidate,
                           calc=[{'func': 'dissimilarity', 'name': 'spatial_analog',
-                                 'kwds': {'algo': dist, 'target': target_values,
+                                 'kwds': {'dist': dist, 'target': target_ts,
                                           'candidate': indices}}],
                           time_range=[dateStartCandidate, dateEndCandidate],
                           )
@@ -242,13 +254,11 @@ class SpatialAnalogProcess(Process):
             LOGGER.exception(msg)
             raise Exception(msg)
 
-        LOGGER.debug("spatial_analog took {}.".format(dt.now() - tic))
-        response.update_status('preparing output', 99)
-
-
+        response.update_status('Computed spatial analog', 95)
 
         response.outputs['output_netcdf'] = output
-        response.update_status('execution ended', 100)
+
+        response.update_status('Execution completed', 100)
         LOGGER.debug("total execution took {}".format( dt.now() - tic) )
         return response
 

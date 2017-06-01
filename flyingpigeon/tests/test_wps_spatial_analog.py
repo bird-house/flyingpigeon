@@ -107,24 +107,42 @@ def test_dissimilarity_op():
     lon, lat = -72, 46
     g = Point(lon, lat)
 
-    rfn = local_path(TESTDATA['reference_indicators.nc'] )
+    cfn = local_path(TESTDATA['indicators_small.nc'] )
+    tfn = local_path(TESTDATA['indicators_medium.nc'])
 
     indices = ['meantemp', 'totalpr']
 
     # Candidate fields
-    crd = ocgis.RequestDataset(rfn,
-                variable=indices,
-                time_range=[dt.datetime(1970, 1, 1), dt.datetime(2000, 1, 1)],
-                )
+    candidate = ocgis.RequestDataset(cfn,
+                               variable=indices,
+                               time_range=[dt.datetime(1970, 1, 1), dt.datetime(2000, 1, 1)],
+                               )
+
+    # The indicators_small dataset is just a subset of the indicators_medium
+    # dataset. Below is the code to create the small dataset.
     # Running the test with the full file takes about 2 minutes, so we'll
     # crop the data to 4 grid cells.
-    op = ocgis.OcgOperations(dataset=crd, geom=g, select_nearest=False)
+    """
+    op = ocgis.OcgOperations(dataset=crd, geom=g,
+                             select_nearest=False, search_radius_mult=1.75,
+                             output_format='nc',
+                             output_format_options={'data_model': 'NETCDF4'},
+                             dir_output='/tmp', prefix='indicators_small'
+                             )
     res = op.execute()
-    candidate = res.get_element()
+    """
 
-    # Reference fields
+
+    # Target fields
     # Extract values from one grid cell
-    op = ocgis.OcgOperations(dataset=crd, geom=g, select_nearest=True)
+    trd = ocgis.RequestDataset(tfn,
+                                     variable=indices,
+                                     time_range=[dt.datetime(1970, 1, 1),
+                                                 dt.datetime(2000, 1, 1)],
+                                     )
+
+    op = ocgis.OcgOperations(dataset=trd, geom=g,
+                             search_radius_mult=1.75, select_nearest=True)
     target = op.execute().get_element()
 
     ops = ocgis.OcgOperations(
@@ -135,20 +153,20 @@ def test_dissimilarity_op():
 
     res = ops.execute()
     out = res.get_element()
-    i = np.argmin(np.abs(out['lon'].value-lon))
-    j = np.argmin(np.abs(out['lat'].value-lat))
-    np.testing.assert_almost_equal( out['dissimilarity_seuclidean'].value[
+    i = np.argmin(np.abs(out['lon'].get_value()-lon))
+    j = np.argmin(np.abs(out['lat'].get_value()-lat))
+    np.testing.assert_almost_equal( out['dissimilarity_seuclidean'].get_value()[
         j,i], 0, 6)
 
 
 @pytest.mark.online
 #@pytest.mark.skip(reason="no way of currently testing this")
-def test_wps_spatial_analog():
+def test_wps_spatial_analog_process():
     client = client_for(Service(processes=[SpatialAnalogProcess()]))
     datainputs = "[candidate=files@xlink:href={0};target=files@xlink:href={" \
-                 "0};location={1},{2};indices={3};indices={4}]"\
-        .format(TESTDATA['reference_indicators.nc'], -72, 46, 'meantemp',
-                'totalpr')
+                 "1};location={2},{3};indices={4};indices={5};dist={6};dateStartCandidate={7};dateEndCandidate={8};dateStartTarget={7};dateEndTarget={8}]"\
+        .format(TESTDATA['indicators_small.nc'], TESTDATA['indicators_medium.nc'], -72, 46, 'meantemp',
+                'totalpr', 'kldiv', '1970-01-01', '1990-01-01')
 
     resp = client.get(
         service='wps', request='execute', version='1.0.0',
@@ -157,6 +175,3 @@ def test_wps_spatial_analog():
 
     assert_response_success(resp)
 
-#http://localhost:8093/wps?service=WPS&version=1.0.0&request=DescribeProcess\&identifier=spatial_analog
-
-#http://localhost:8093/wps?service=WPS&version=1.0.0&request=execute&identifier=spatial_analog&DataInputs=candidate=file://home/david/projects/PAVICS/birdhouse/flyingpigeon/flyingpigeon/tests/testdata/spatial_analog/reference_indicators.nc;target=file://home/david/projects/PAVICS/birdhouse/flyingpigeon/flyingpigeon/tests/testdata/spatial_analog/reference_indicators.nc;location=-72,46;indices=meantemp;indices=totalpr
