@@ -126,11 +126,11 @@ class SpatialAnalogProcess(Process):
                           supported_formats=[Format('application/x-netcdf')]
                           ),
 
-            ComplexOutput('output_log', 'Logging information',
-                          abstract="Collected logs during process run.",
-                          as_reference=True,
-                          supported_formats=[Format('text/plain')]
-                          ),
+#            ComplexOutput('output_log', 'Logging information',
+#                          abstract="Collected logs during process run.",
+#                          as_reference=True,
+#                          supported_formats=[Format('text/plain')]
+#                          ),
         ]
 
         super(SpatialAnalogProcess, self).__init__(
@@ -156,7 +156,7 @@ class SpatialAnalogProcess(Process):
 
         tic = dt.now()
         init_process_logger('log.txt')
-        response.outputs['output_log'].file = 'log.txt'
+ #       response.outputs['output_log'].file = 'log.txt'
 
         LOGGER.info('Start process')
         response.update_status('Execution started at : {}'.format(tic), 1)

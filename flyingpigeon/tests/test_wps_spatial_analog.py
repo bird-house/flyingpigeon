@@ -163,8 +163,8 @@ def test_dissimilarity_op():
 #@pytest.mark.skip(reason="no way of currently testing this")
 def test_wps_spatial_analog_process():
     client = client_for(Service(processes=[SpatialAnalogProcess()]))
-    datainputs = "[candidate=files@xlink:href={0};target=files@xlink:href={" \
-                 "1};location={2},{3};indices={4};indices={5};dist={6};dateStartCandidate={7};dateEndCandidate={8};dateStartTarget={7};dateEndTarget={8}]"\
+    datainputs = "candidate=files@xlink:href={0};target=files@xlink:href={" \
+                 "1};location={2},{3};indices={4};indices={5};dist={6};dateStartCandidate={7};dateEndCandidate={8};dateStartTarget={7};dateEndTarget={8}"\
         .format(TESTDATA['indicators_small.nc'], TESTDATA['indicators_medium.nc'], -72, 46, 'meantemp',
                 'totalpr', 'kldiv', '1970-01-01', '1990-01-01')
 
