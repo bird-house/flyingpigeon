@@ -1,4 +1,5 @@
 from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.ocgis_module import call
 from flyingpigeon.utils import sort_by_filename, get_values, get_time
 from numpy import savetxt, column_stack
@@ -9,6 +10,8 @@ from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format, FORMATS
 from pywps.app.Common import Metadata
+
+from flyingpigeon.log import init_process_logger
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
@@ -30,13 +33,19 @@ class PointinspectionProcess(Process):
 
             LiteralInput("coords", "Coordinates",
                          abstract="a comma-seperated tuple of WGS85 lon,lat decimal coordinates (e.g. 2.356138, 48.846450)",
-                         # default="2.356138, 48.846450",
+                         default="2.356138, 48.846450",
                          data_type='string',
                          min_occurs=1,
                          max_occurs=100,
                          ),
                          ]
         outputs = [
+            ComplexOutput('output_log', 'Logging information',
+                          abstract="Collected logs during process run.",
+                          as_reference=True,
+                          supported_formats=[Format('text/plain')]
+                          ),
+
             ComplexOutput('tarout', 'Subsets',
                           abstract="Tar archive containing the netCDF files",
                           as_reference=True,
