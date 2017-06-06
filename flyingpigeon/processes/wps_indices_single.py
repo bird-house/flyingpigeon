@@ -123,14 +123,14 @@ class IndicessingleProcess(Process):
         else:
             mosaic = False
 
-        response.update_status('starting: indices=%s, refperiod=%s, groupings=%s, num_files=%s'
-                               % (indices, refperiod, groupings, len(resources)), 2)
+        response.update_status('starting: indices=%s, groupings=%s, num_files=%s'
+                               % (indices,  groupings, len(resources)), 2)
 
         results = calc_indice_simple(
-            resource=ncs,
+            resource=resources,
             mosaic=mosaic,
             indices=indices,
-            polygons=polygons,
+            polygons=region,
             groupings=groupings,
             # dir_output=path.curdir,
             )
