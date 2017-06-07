@@ -27,7 +27,7 @@ def has_Lambert_Conformal(resource):
 def call(resource=[], variable=None, dimension_map=None, calc=None,
          calc_grouping=None, conform_units_to=None, memory_limit=None,  prefix=None,
          regrid_destination=None, regrid_options='bil', level_range=None,
-         geom=None, output_format_options=False, search_radius_mult=2.,
+         geom=None, output_format_options=None, search_radius_mult=2.,
          select_nearest=False, select_ugid=None, spatial_wrapping=None,
          t_calendar=None, time_region=None,
          time_range=None, dir_output=None, output_format='nc'):
@@ -110,12 +110,14 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     if prefix is None:
         prefix = str(uuid.uuid1())
         env.PREFIX = prefix
-    if output_format_options is False:
-        output_format_options = None
-    elif output_format_options is True:
-        output_format_options = {'data_model': 'NETCDF4',  # NETCDF4_CLASSIC
-                                 'variable_kwargs': {'zlib': True, 'complevel': 9}}
-    else:
+    #
+    # if output_format_options is False:
+    #     output_format_options = None
+    # elif output_format_options is True:
+    #     output_format_options = {'data_model': 'NETCDF4',  # NETCDF4_CLASSIC
+    #                              'variable_kwargs': {'zlib': True, 'complevel': 9}}
+    # else:
+    if output_format_options is not None:
         LOGGER.info('output_format_options are set to %s ' % (output_format_options))
 
     if type(resource) != list:
