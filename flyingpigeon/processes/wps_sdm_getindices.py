@@ -45,7 +45,7 @@ class SDMgetindicesProcess(Process):
             LiteralInput("input_indices", "Indices",
                          abstract="Climate indices related to growth conditions \
                                     of tree species",
-                         default=['TG_JJA', 'TNn_Jan'],
+                         default='TG_JJA',
                          data_type='string',
                          min_occurs=1,
                          max_occurs=10,
