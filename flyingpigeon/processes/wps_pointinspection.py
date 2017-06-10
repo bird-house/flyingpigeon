@@ -56,7 +56,7 @@ class PointinspectionProcess(Process):
         super(PointinspectionProcess, self).__init__(
             self._handler,
             identifier="pointinspection",
-            title="Pointinspection",
+            title="Point Inspection",
             abstract='Extracts the timeseries of the given coordinates',
             version="0.10",
             metadata=[
