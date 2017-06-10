@@ -8,7 +8,20 @@ p = '/home/nils/birdhouse/var/lib/pywps/cache/malleefowl/esgf1.dkrz.de/thredds/f
 
 ncs = [path.join(p, nc) for nc in listdir(p)]
 ncs.sort()
+rd = RequestDataset(ncs[0])
+indice = 'TG'
+geom = OcgOperations(rd,
+                     calc=[{'func': 'icclim_' + indice, 'name': indice}],
+                     calc_grouping=['month'],
+                     prefix='single_file',
+                     output_format='nc').execute()
+print geom
+
 rd = RequestDataset(ncs)
 indice = 'TG'
-geom = OcgOperations(rd, calc=[{'func': 'icclim_' + indice, 'name': indice}], calc_grouping=['month']).execute()
+geom = OcgOperations(rd,
+                     calc=[{'func': 'icclim_' + indice, 'name': indice}],
+                     calc_grouping=['month'],
+                     prefix='multi_file',
+                     output_format='nc').execute()
 print geom
