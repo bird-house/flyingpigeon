@@ -12,7 +12,7 @@ rd = RequestDataset(ncs[0])
 indice = 'TG'
 geom = OcgOperations(rd,
                      calc=[{'func': 'icclim_' + indice, 'name': indice}],
-                     calc_grouping=['month'],
+                     calc_grouping=['year', 'month'],
                      prefix='single_file',
                      output_format='nc').execute()
 print geom
@@ -21,7 +21,7 @@ rd = RequestDataset(ncs)
 indice = 'TG'
 geom = OcgOperations(rd,
                      calc=[{'func': 'icclim_' + indice, 'name': indice}],
-                     calc_grouping=['month'],
+                     calc_grouping=['year', 'month'],
                      prefix='multi_file',
                      output_format='nc').execute()
 print geom
