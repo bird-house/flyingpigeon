@@ -152,84 +152,90 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
                             select_ugid=select_ugid,
                             add_auxiliary_files=False)
         LOGGER.info('OcgOperations set')
-    except Exception as e:
-        LOGGER.debug('failed to setup OcgOperations: %s' % e)
-        raise
+    except:
+        LOGGER.exception('failed to setup OcgOperations')
         return None
 
     try:
-        from numpy import sqrt
-        from flyingpigeon.utils import FreeMemory
-
-        if memory_limit is None:
-            f = FreeMemory()
-            mem_kb = f.user_free
-            mem_mb = mem_kb / 1024.
-            mem_limit = mem_mb / 2.  # set limit to half of the free memory
-        else:
-            mem_limit = memory_limit
-
-        if mem_limit >= 1024. * 4:
-            mem_limit = 1024. * 4
-            # 475.0 MB for openDAP
-
-        LOGGER.info('memory_limit = %s Mb' % (mem_limit))
-
-        data_kb = ops.get_base_request_size()['total']
-        data_mb = data_kb / 1024.
-
-        # data_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
-        LOGGER.info('data_mb  = %s Mb' % (data_mb))
-
-        if data_mb <= mem_limit:  # input is smaler than the half of free memory size
-            try:
-                LOGGER.info('ocgis module call as ops.execute()')
-                geom_file = ops.execute()
-            except Exception as e:
-                LOGGER.debug('failed to execute ocgis operation')
-                raise
-                return None
-        else:
-            ##########################
-            # calcultion of chunk size
-            ##########################
-            try:
-                size = ops.get_base_request_size()
-                nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
-                element_in_kb = size['total']/reduce(lambda x, y: x*y, size['variables'][variable]['value']['shape'])
-                element_in_mb = element_in_kb / 1024.
-                tile_dim = sqrt(mem_limit/(element_in_mb*nb_time_coordinates_rd))  # maximum chunk size
-
-                LOGGER.info('ocgis module call compute with chunks')
-                if calc is None:
-                    calc = '%s=%s*1' % (variable, variable)
-                    LOGGER.info('calc set to = %s ' % calc)
-                ops = OcgOperations(dataset=rd,
-                                    output_format_options=output_format_options,
-                                    dir_output=dir_output,
-                                    spatial_wrapping=spatial_wrapping,
-                                    spatial_reorder=spatial_reorder,
-                                    # regrid_destination=rd_regrid,
-                                    # options=options,
-                                    calc=calc,
-                                    calc_grouping=calc_grouping,
-                                    geom=geom,
-                                    output_format=output_format,
-                                    prefix=prefix,
-                                    search_radius_mult=search_radius_mult,
-                                    select_nearest=select_nearest,
-                                    select_ugid=select_ugid,
-                                    add_auxiliary_files=False)
-                geom_file = compute(ops, tile_dimension=int(tile_dim), verbose=True)
-                print 'ocgis calculated'
-            except Exception as e:
-                LOGGER.debug('failed to compute ocgis with chunks')
-                raise
-                return None
-        LOGGER.info('Succeeded with ocgis module call function')
-    except:
-        LOGGER.exception('failed to compare dataload with free memory, calling as execute instead')
+        LOGGER.info('ocgis module call as ops.execute()')
         geom_file = ops.execute()
+    except:
+        LOGGER.exception('failed to execute ocgis operation')
+        return None
+    #
+    # try:
+    #     from numpy import sqrt
+    #     from flyingpigeon.utils import FreeMemory
+    #
+    #     if memory_limit is None:
+    #         f = FreeMemory()
+    #         mem_kb = f.user_free
+    #         mem_mb = mem_kb / 1024.
+    #         mem_limit = mem_mb / 2.  # set limit to half of the free memory
+    #     else:
+    #         mem_limit = memory_limit
+    #
+    #     if mem_limit >= 1024. * 4:
+    #         mem_limit = 1024. * 4
+    #         # 475.0 MB for openDAP
+    #
+    #     LOGGER.info('memory_limit = %s Mb' % (mem_limit))
+    #
+    #     data_kb = ops.get_base_request_size()['total']
+    #     data_mb = data_kb / 1024.
+    #
+    #     # data_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
+    #     LOGGER.info('data_mb  = %s Mb' % (data_mb))
+    #
+    #     if data_mb <= mem_limit:  # input is smaler than the half of free memory size
+    #         try:
+    #             LOGGER.info('ocgis module call as ops.execute()')
+    #             geom_file = ops.execute()
+    #         except Exception as e:
+    #             LOGGER.debug('failed to execute ocgis operation')
+    #             raise
+    #             return None
+    #
+    #     else:
+    #         ##########################
+    #         # calcultion of chunk size
+    #         ##########################
+    #         try:
+    #             size = ops.get_base_request_size()
+    #             nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
+    #             element_in_kb = size['total']/reduce(lambda x, y: x*y, size['variables'][variable]['value']['shape'])
+    #             element_in_mb = element_in_kb / 1024.
+    #             tile_dim = sqrt(mem_limit/(element_in_mb*nb_time_coordinates_rd))  # maximum chunk size
+    #
+    #             LOGGER.info('ocgis module call compute with chunks')
+    #             if calc is None:
+    #                 calc = '%s=%s*1' % (variable, variable)
+    #                 LOGGER.info('calc set to = %s ' % calc)
+    #             ops = OcgOperations(dataset=rd,
+    #                                 output_format_options=output_format_options,
+    #                                 dir_output=dir_output,
+    #                                 spatial_wrapping=spatial_wrapping,
+    #                                 spatial_reorder=spatial_reorder,
+    #                                 # regrid_destination=rd_regrid,
+    #                                 # options=options,
+    #                                 calc=calc,
+    #                                 calc_grouping=calc_grouping,
+    #                                 geom=geom,
+    #                                 output_format=output_format,
+    #                                 prefix=prefix,
+    #                                 search_radius_mult=search_radius_mult,
+    #                                 select_nearest=select_nearest,
+    #                                 select_ugid=select_ugid,
+    #                                 add_auxiliary_files=False)
+    #             geom_file = compute(ops, tile_dimension=int(tile_dim), verbose=True)
+    #             print 'ocgis calculated'
+    #         except Exception as e:
+    #             LOGGER.debug('failed to compute ocgis with chunks')
+    #             raise
+    #             return None
+    #     LOGGER.info('Succeeded with ocgis module call function')
+    # except:
+    #     LOGGER.exception('failed to compare dataload with free memory, calling as execute instead')
 
     ############################################
     # remapping according to regrid informations
