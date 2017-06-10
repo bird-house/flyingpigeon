@@ -751,14 +751,14 @@ def sort_by_filename(resource, historical_concatination=False):
             try:  # if len(resource) > 1:
                 # collect the different experiment names
                 for nc in resource:
-                    LOGGER.info('file: %s' % nc)
+                    # LOGGER.info('file: %s' % nc)
                     p, f = path.split(path.abspath(nc))
                     n = f.split('_')
                     bn = '_'.join(n[0:-1])  # skipping the date information in the filename
                     ndic[bn] = []  # dictionary containing all datasets names
                 LOGGER.info('found %s datasets', len(ndic.keys()))
-            except Exception as e:
-                LOGGER.exception('failed to find names of datasets! %s ' % e)
+            except:
+                LOGGER.exception('failed to find names of datasets!')
             LOGGER.info('check for historical/RCP datasets')
             try:
                 if historical_concatination is True:
@@ -770,8 +770,8 @@ def sort_by_filename(resource, historical_concatination=False):
                         LOGGER.info('historical data set names removed from dictionary')
                     else:
                         LOGGER.info('no RCP dataset names found in dictionary')
-            except Exception as e:
-                LOGGER.exception('failed to pop historical data set names! %s ' % e)
+            except:
+                LOGGER.exception('failed to pop historical data set names!')
             LOGGER.info('start sorting the files')
             try:
                 for key in ndic:

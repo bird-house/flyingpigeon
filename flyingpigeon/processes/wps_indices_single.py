@@ -76,11 +76,12 @@ class IndicessingleProcess(Process):
                           as_reference=True,
                           ),
 
-            ComplexOutput('output_log', 'Logging information',
-                          abstract="Collected logs during process run.",
+            ComplexOutput('ncout', 'Subsets for one dataset',
+                          abstract="NetCDF file with subsets of one dataset.",
                           as_reference=True,
-                          supported_formats=[Format('text/plain')]
+                          supported_formats=[Format('application/x-netcdf')]
                           ),
+
 
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",
@@ -148,15 +149,23 @@ class IndicessingleProcess(Process):
                 for indice in indices:
                     for key in datasets.keys():
                         try:
-                            response.update_status('Calculating %s' % key, 10)
+                            response.update_status('Dataset %s: %s' % (len(results)+1,  key), 10)
+
+                            LOGGER.debug("group %s " % group)
+                            LOGGER.debug("mosaic %s " % mosaic)
+                            LOGGER.debug('indice %s ' % indice)
+                            LOGGER.debug('region %s' % region)
+                            LOGGER.debug('Nr of input files %s ' % len(datasets[key]))
+
                             result = calc_indice_simple(
                                 resource=datasets[key],
                                 mosaic=mosaic,
                                 indice=indice,
-                                polygons=region,
+                                polygons=None,  # region,
                                 grouping=group,
                                 # dir_output=path.curdir,
                                 )
+                            LOGGER.debug('result: %s' % result)
                             results.extend(result)
                         except:
                             LOGGER.exception('failed for %s', key)
@@ -166,11 +175,14 @@ class IndicessingleProcess(Process):
 #         #     raise Exception("failed to produce results")
 #         # response.update_status('num results %s' % len(results), 90)
 
+
         tarf = archive(results)
 
         response.outputs['output_archive'].file = tarf
 
         i = next((i for i, x in enumerate(results) if x), None)
+        if i is None:
+            i = "dummy.nc"
         response.outputs['ncout'].file = results[i]
 
 #       response.update_status("done", 100)
