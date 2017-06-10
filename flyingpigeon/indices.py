@@ -137,15 +137,15 @@ def indice_variable(indice):
     return variable
 
 
-def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
-                       polygons=None, mosaic=False, groupings='yr', dir_output=None,
+def calc_indice_simple(resource=[], variable=None, prefix=None, indice='SU',
+                       polygons=None, mosaic=False, grouping='yr', dir_output=None,
                        dimension_map=None, memory_limit=None):
     """
     Calculates given simple indices for suitable files in the appropriate time grouping and polygon.
 
     :param resource: list of filenames in data reference syntax (DRS) convention (netcdf)
     :param variable: variable name to be selected in the in netcdf file (default=None)
-    :param indices: list of indices (default ='SU')
+    :param indices: Indice (default ='SU')
     :param polygons: list of polgons (default ='FRA')
     :param grouping: indices time aggregation (default='yr')
     :param out_dir: output directory for result file (netcdf)
@@ -160,116 +160,117 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
 
     if type(resource) != list:
         resource = list([resource])
-    if type(indices) != list:
-        indices = list([indices])
+    # if type(indices) != list:
+    #     indices = list([indices])
     if type(polygons) != list and polygons is None:
         polygons = list([polygons])
-    if type(groupings) != list:
-        groupings = list([groupings])
+    # if type(groupings) != list:
+    #     groupings = list([groupings])
 
     if dir_output is not None:
         if not exists(dir_output):
             makedirs(dir_output)
 
-    LOGGER.debug(' **** dir_output = %s ' % dir_output)
+    datasets = sort_by_filename(resource).keys()
+
+    if len(datasets) is 1:
+        key = datasets[0]
+    else:
+        LOGGER.warning('more than one dataset in resource')
+
     # from flyingpigeon.subset import select_ugid
     #    tile_dim = 25
     output = None
 
-    experiments = sort_by_filename(resource)
+    # experiments = sort_by_filename(resource)
     outputs = []
 
-    for key in experiments:
-        if variable is None:
-            if type(experiments[key]) == str:
-                variable = get_variable(experiments[key])
-            else:
-                variable = get_variable(experiments[key][0])
-        # variable = key.split('_')[0]
+    # for key in experiments:
+
+    if variable is None:
+        variable = get_variable(resource)
+        LOGGER.debug('Variable detected % s ' % variable)
+
+    # variable = key.split('_')[0]
+    try:
+        # icclim can't handling 'kg m2 sec' needs to be 'mm/day'
+        if variable == 'pr':
+            calc = 'pr=pr*86400'
+            ncs = ocgis_module.call(resource=resource,
+                                    variable=variable,
+                                    dimension_map=dimension_map,
+                                    calc=calc,
+                                    memory_limit=memory_limit,
+                                    # calc_grouping= calc_group,
+                                    prefix=str(uuid.uuid4()),
+                                    dir_output=dir_output,
+                                    output_format='nc')
+        else:
+            ncs = resource
+
         try:
-            # icclim can't handling 'kg m2 sec' needs to be 'mm/day'
-            if variable == 'pr':
-                calc = 'pr=pr*86400'
-                ncs = ocgis_module.call(resource=experiments[key],
-                                        variable=variable,
-                                        dimension_map=dimension_map,
-                                        calc=calc,
-                                        memory_limit=memory_limit,
-                                        # calc_grouping= calc_group,
-                                        prefix=str(uuid.uuid4()),
-                                        dir_output=dir_output,
-                                        output_format='nc')
-            else:
-                ncs = experiments[key]
-            for indice in indices:
-                LOGGER.info('indice: %s' % indice)
-                try:
-                    calc = [{'func': 'icclim_' + indice, 'name': indice}]
-                    LOGGER.info('calc: %s' % calc)
-                    for grouping in groupings:
-                        LOGGER.info('grouping: %s' % grouping)
-                        try:
-                            calc_group = calc_grouping(grouping)
-                            LOGGER.info('calc_group: %s' % calc_group)
-                            if polygons is None:
-                                try:
-                                    prefix = key.replace(variable, indice).replace('_day_', '_%s_' % grouping)
-                                    LOGGER.debug(' **** dir_output = %s ' % dir_output)
-                                    tmp = ocgis_module.call(resource=ncs,
-                                                            variable=variable,
-                                                            dimension_map=dimension_map,
-                                                            calc=calc,
-                                                            calc_grouping=calc_group,
-                                                            prefix=prefix,
-                                                            dir_output=dir_output,
-                                                            output_format='nc')
-                                    if len(tmp) is not 0:
-                                        outputs.extend(tmp)
-                                    else:
-                                        msg = 'could not calc indice %s for domain in %s' % (indice, key)
-                                        LOGGER.debug(msg)
-                                        raise Exception(msg)
-                                except Exception as e:
-                                    msg = 'could not calc indice %s for domain in %s' % (indice, key)
-                                    LOGGER.debug(msg)
-                                    raise Exception(msg)
-                            else:
-                                try:
-                                    prefix = key.replace(variable, indice).replace('_day_', '_%s_' % grouping)
-                                    tmp = clipping(resource=ncs,
-                                                   variable=variable,
-                                                   dimension_map=dimension_map,
-                                                   calc=calc,
-                                                   calc_grouping=calc_group,
-                                                   prefix=prefix,
-                                                   polygons=polygons,
-                                                   mosaic=mosaic,
-                                                   dir_output=dir_output,
-                                                   output_format='nc')
-                                    if len(tmp) is not 0:
-                                        outputs.extend(tmp)
-                                    else:
-                                        msg = 'could not calc clipped indice %s for domain in %s' % (indice, key)
-                                        LOGGER.debug(msg)
-                                        raise Exception(msg)
-                                except Exception as e:
-                                    msg = 'could not calc indice %s for domain in %s' % (indice, key)
-                                    LOGGER.debug(msg)
-                                    # raise Exception(msg)
-                                LOGGER.info('indice file calculated: %s' % tmp)
-                        except Exception as e:
-                            msg = 'could not calc indice %s for key %s and grouping %s' % (indice, key, grouping)
-                            LOGGER.debug(msg)
-                            # raise Exception(msg)
-                except Exception as e:
-                    msg = 'could not calc indice %s for key %s' % (indice, key)
-                    LOGGER.debug(msg)
-                    # raise Exception(msg)
-        except Exception as e:
-            msg = 'could not calc key %s' % key
-            LOGGER.debug(msg)
+            calc = [{'func': 'icclim_' + indice, 'name': indice}]
+            LOGGER.info('calc: %s' % calc)
+            try:
+                calc_group = calc_grouping(grouping)
+                LOGGER.info('calc_group: %s' % calc_group)
+                if polygons is None:
+                    try:
+                        prefix = key.replace(variable, indice).replace('_day_', '_%s_' % grouping)
+                        LOGGER.debug(' **** dir_output = %s ' % dir_output)
+                        tmp = ocgis_module.call(resource=ncs,
+                                                variable=variable,
+                                                dimension_map=dimension_map,
+                                                calc=calc,
+                                                calc_grouping=calc_group,
+                                                prefix=prefix,
+                                                dir_output=dir_output,
+                                                output_format='nc')
+                        if len(tmp) is not 0:
+                            outputs.extend(tmp)
+                        else:
+                            msg = 'could not calc indice %s for domain ' % (indice)
+                            LOGGER.exception(msg)
+                    except:
+                        msg = 'could not calc indice %s for domain in %s' % (indice)
+                        LOGGER.exception(msg)
+                else:
+                    try:
+                        prefix = key.replace(variable, indice).replace('_day_', '_%s_' % grouping)
+                        tmp = clipping(resource=ncs,
+                                       variable=variable,
+                                       dimension_map=dimension_map,
+                                       calc=calc,
+                                       calc_grouping=calc_group,
+                                       prefix=prefix,
+                                       polygons=polygons,
+                                       mosaic=mosaic,
+                                       dir_output=dir_output,
+                                       output_format='nc')
+                        if len(tmp) is not 0:
+                            outputs.extend(tmp)
+                        else:
+                            msg = 'could not calc clipped indice %s ' % (indice)
+                            LOGGER.exception(msg)
+                    except:
+                        msg = 'could not calc indice %s for domai' % (indice)
+                        LOGGER.debug(msg)
+                        # raise Exception(msg)
+                    LOGGER.info('indice file calculated: %s' % tmp)
+            except:
+                msg = 'could not calc indice %s for key %s and grouping %s' % (indice, grouping)
+                LOGGER.exception(msg)
+                # raise Exception(msg)
+        except:
+            msg = 'could not calc indice %s ' % (indice)
+            LOGGER.exception(msg)
             # raise Exception(msg)
+    except:
+        msg = 'could not calculate indices'
+        LOGGER.exception(msg)
+        # raise Exception(msg)
     LOGGER.info('indice outputs %s ' % outputs)
+
     if len(outputs) is 0:
         LOGGER.debug('No indices are calculated')
         return None
@@ -306,7 +307,7 @@ def calc_indice_percentile(resource=[], variable=None,
 
     if type(resource) != list:
         resource = list([resource])
-        
+
     # if type(indices) != list:
     #     indices = list([indices])
     #
@@ -395,4 +396,4 @@ def calc_indice_percentile(resource=[], variable=None,
     # if len(nc_indices) is 0:
     #     LOGGER.debug('No indices are calculated')
     #     return None
-    return nc_reference# , nc_indices
+    return nc_reference  # , nc_indices

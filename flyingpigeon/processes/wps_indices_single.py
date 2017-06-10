@@ -40,11 +40,11 @@ class IndicessingleProcess(Process):
                          allowed_values=indices()
                          ),
 
-            LiteralInput("groupings", "Grouping",
+            LiteralInput("grouping", "Grouping",
                          abstract="Select an time grouping (time aggregation)",
                          default='yr',
                          data_type='string',
-                         min_occurs=1,
+                         min_occurs=0,
                          max_occurs=len(GROUPING),
                          allowed_values=GROUPING
                          ),
@@ -115,9 +115,9 @@ class IndicessingleProcess(Process):
 
         resources = archiveextract(
             resource=rename_complexinputs(request.inputs['resource']))
-        indices = request.inputs['indices'][0].data
 
-        groupings = [inpt.data for inpt in request.inputs['groupings']]
+        indices = [inpt.data for inpt in request.inputs['indices']]
+        grouping = [inpt.data for inpt in request.inputs['grouping']]
 
         if 'mosaic' in request.inputs:
             mosaic = request.inputs['mosaic'][0].data
@@ -129,18 +129,39 @@ class IndicessingleProcess(Process):
         else:
             region = None
 
-        response.update_status('starting: indices=%s, groupings=%s, num_files=%s'
-                               % (indices,  groupings, len(resources)), 2)
+        LOGGER.debug("grouping %s " % grouping)
+        LOGGER.debug("mosaic %s " % mosaic)
+        LOGGER.debug('indices= %s ' % indices)
+        LOGGER.debug('region %s' % region)
+        LOGGER.debug('Nr of input files %s ' % len(resources))
 
-        results = calc_indice_simple(
-            resource=resources,
-            mosaic=mosaic,
-            indices=indices,
-            polygons=region,
-            groupings=groupings,
-            # dir_output=path.curdir,
-            )
+        response.update_status('starting: indices=%s, grouping=%s, num_files=%s'
+                               % (indices,  grouping, len(resources)), 2)
 
+        results = []
+
+        from flyingpigeon.utils import sort_by_filename
+        datasets = sort_by_filename(resources, historical_concatination=True)
+        results = []
+        try:
+            for group in grouping:
+                for indice in indices:
+                    for key in datasets.keys():
+                        try:
+                            response.update_status('Calculating %s' % key, 10)
+                            result = calc_indice_simple(
+                                resource=datasets[key],
+                                mosaic=mosaic,
+                                indice=indice,
+                                polygons=region,
+                                grouping=group,
+                                # dir_output=path.curdir,
+                                )
+                            results.extend(result)
+                        except:
+                            LOGGER.exception('failed for %s', key)
+        except:
+            LOGGER.exception('Failed to calculate indices')
 #         # if not results:
 #         #     raise Exception("failed to produce results")
 #         # response.update_status('num results %s' % len(results), 90)
