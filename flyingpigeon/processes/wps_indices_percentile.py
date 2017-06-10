@@ -68,12 +68,12 @@ class IndicespercentileProcess(Process):
             #     allowedValues=['all','1951-1980', '1961-1990', '1971-2000','1981-2010']
             #     )
 
-            LiteralInput("groupings", "Grouping",
+            LiteralInput("grouping", "Grouping",
                          abstract="Select an time grouping (time aggregation)",
                          default='yr',
                          data_type='string',
                          min_occurs=1,
-                         max_occurs=len(GROUPING),
+                         max_occurs=1,
                          allowed_values=GROUPING
                          ),
 
@@ -82,9 +82,8 @@ class IndicespercentileProcess(Process):
                          # abstract= countries_longname(), # need to handle special non-ascii char in countries.
                          abstract="Country ISO-3166-3:\
                           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3#Officially_assigned_code_elements",
-                         min_occurs=1,
+                         min_occurs=0,
                          max_occurs=len(countries()),
-                         default='DEU',
                          allowed_values=countries()),  # REGION_EUROPE #COUNTRIES
 
             LiteralInput("mosaic", "Mosaic",
@@ -142,45 +141,73 @@ class IndicespercentileProcess(Process):
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
-        resources = archiveextract(
-            resource=rename_complexinputs(request.inputs['resource']))
-        indices = request.inputs['indices'][0].data
-        region = request.inputs['region'][0].data
-        if 'percentile' in request.inputs:
+        try:
+            resources = archiveextract(
+                resource=rename_complexinputs(request.inputs['resource']))
+            indices = request.inputs['indices'][0].data
+
+            grouping = request.inputs['grouping'][0].data
+            # grouping = [inpt.data for inpt in request.inputs['grouping']]
+
+            if 'region' in request.inputs:
+                region = request.inputs['region'][0].data
+            else:
+                region = None
+
+            if 'mosaic' in request.inputs:
+                mosaic = request.inputs['mosaic'][0].data
+            else:
+                mosaic = False
+
             percentile = request.inputs['percentile'][0].data
-        else:
-            percentile = 90
-        groupings = [inpt.data for inpt in request.inputs['groupings']]
-        if 'mosaic' in request.inputs:
-            mosaic = request.inputs['mosaic'][0].data
-        else:
-            mosaic = False
-        if 'refperiod' in request.inputs:
             refperiod = request.inputs['refperiod'][0].data
-        else:
-            refperiod = "19700101-20101231"
 
-        response.update_status('starting: indices=%s, refperiod=%s, groupings=%s, num_files=%s'
-                               % (indices, refperiod, groupings, len(resources)), 2)
+            from datetime import datetime as dt
 
-        results = calc_indice_percentile(
-            resources=resources,
-            indices=indices,
-            percentile=percentile,
-            mosaic=mosaic,
-            polygons=region,
-            refperiod=refperiod,
-            groupings=groupings,
-            # dir_output=os.curdir,
-        )
+            if refperiod is not None:
+                start = dt.strptime(refperiod.split('-')[0], '%Y%m%d')
+                end = dt.strptime(refperiod.split('-')[1], '%Y%m%d')
+                refperiod = [start, end]
 
-#         # if not results:
-#         #     raise Exception("failed to produce results")
-#         # response.update_status('num results %s' % len(results), 90)
+            # response.update_status('starting: indices=%s, grouping=%s, num_files=%s'
+            #                        % (indices,  grouping, len(resources)), 2)
 
-        tarf = archive(results)
+            LOGGER.debug("grouping %s " % grouping)
+            LOGGER.debug("mosaic %s " % mosaic)
+            LOGGER.debug("refperiod set to %s, %s " % (start, end))
+            LOGGER.debug('indices= %s ' % indices)
+            LOGGER.debug('percentile: %s' % percentile)
+            LOGGER.debug('region %s' % region)
+            LOGGER.debug('Nr of input files %s ' % len(resources))
 
-        response.outputs['output_archive'].file = tarf
-#         # response.update_status('done: indice=%s, num_files=%s' % (indices, len(resources)), 100)
+        except:
+            LOGGER.exception('failed to read in the arguments')
+
+        from flyingpigeon.utils import sort_by_filename
+
+        datasets = sort_by_filename(resources, historical_concatination=True)
+        results = []
+        try:
+            for key in datasets.keys():
+                try:
+                    result = calc_indice_percentile(resource=datasets[key],
+                                         indices=indices,
+                                         percentile=percentile,
+                                         mosaic=mosaic,
+                                         polygons=region,
+                                         refperiod=refperiod,
+                                         grouping=grouping,
+                                         # dir_output=os.curdir,
+                                         )
+                    LOGGER.debug('percentile based indice done for %s' % result)
+                    results.extend(result)
+                except:
+                    LOGGER.exception("failed to calculate percentil based indice for %s " % key)
+        except:
+            LOGGER.exception("failed to calculate percentile indices")
+
+        output_archive = archive(results)
+
+        response.outputs['output_archive'].file = output_archive
         response.update_status("done", 100)
         return response

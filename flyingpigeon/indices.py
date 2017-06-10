@@ -276,23 +276,23 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
     return outputs
 
 
-def calc_indice_percentile(resources=[], variable=None,
+def calc_indice_percentile(resource=[], variable=None,
                            prefix=None, indices='TG90p', refperiod=None,
-                           groupings='yr', polygons=None, percentile=90, mosaic=False,
+                           grouping='yr', polygons=None, percentile=90, mosaic=False,
                            dir_output=None, dimension_map=None):
     """
-    Calculates given indices for suitable files in the appropriate time grouping and polygon.
+    Calculates given indices for suitable dataset in the appropriate time grouping and polygon.
 
     :param resource: list of filenames in data reference syntax (DRS) convention (netcdf)
     :param variable: variable name to be selected in the in netcdf file (default=None)
-    :param indices: list of indices (default ='TG90p')
+    :param indices: string of indice (default ='TG90p')
     :param prefix: filename prefix
-    :param refperiod: reference period tuple = (start,end)
+    :param refperiod: reference period  = [datetime,datetime]
     :param grouping: indices time aggregation (default='yr')
     :param dir_output: output directory for result file (netcdf)
     :param dimension_map: optional dimension map if different to standard (default=None)
 
-    :return: list of netcdf files with calculated indices. Files are saved into out_dir.
+    :return: reference_file, indice_file
     """
     from os.path import join, dirname, exists
     from os import remove
@@ -304,105 +304,95 @@ def calc_indice_percentile(resources=[], variable=None,
     from flyingpigeon.subset import clipping
     from flyingpigeon.utils import get_values, get_time
 
-    if type(resources) != list:
-        resources = list([resources])
-    if type(indices) != list:
-        indices = list([indices])
-
-    if type(groupings) != list:
-        groupings = list([groupings])
-
-    if type(refperiod) == list:
-        refperiod = refperiod[0]
-
-    if refperiod is None:
-        start = dt.strptime(refperiod.split('-')[0], '%Y%m%d')
-        end = dt.strptime(refperiod.split('-')[1], '%Y%m%d')
-        time_range = [start, end]
-    else:
-        time_range = None
-
-    if dir_output is None:
-        if not exists(dir_output):
-            makedirs(dir_output)
+    if type(resource) != list:
+        resource = list([resource])
+        
+    # if type(indices) != list:
+    #     indices = list([indices])
+    #
+    # if type(groupings) != list:
+    #     groupings = list([groupings])
+    #
+    # if type(refperiod) == list:
+    #     refperiod = refperiod[0]
+    #
+    # if refperiod is not None:
+    #     start = dt.strptime(refperiod.split('-')[0], '%Y%m%d')
+    #     end = dt.strptime(refperiod.split('-')[1], '%Y%m%d')
+    #     time_range = [start, end]
+    # else:
+    #     time_range = None
 
     ################################################
     # Compute a custom percentile basis using ICCLIM
     ################################################
     from ocgis.contrib import library_icclim as lic
-    nc_indices = []
-    nc_dic = sort_by_filename(resources)
 
-    for grouping in groupings:
-        calc_group = calc_grouping(grouping)
-        for key in nc_dic.keys():
-            resource = nc_dic[key]
-            if variable is None:
-                variable = get_variable(resource)
-            if polygons is None:
-                nc_reference = call(resource=resource,
-                                    prefix=str(uuid.uuid4()),
-                                    time_range=time_range,
-                                    output_format='nc',
-                                    dir_output=dir_output)
-        else:
-            nc_reference = clipping(resource=resource,
-                                    prefix=str(uuid.uuid4()),
-                                    time_range=time_range,
-                                    output_format='nc',
-                                    polygons=polygons,
-                                    dir_output=dir_output,
-                                    mosaic=mosaic)
+    calc_group = calc_grouping(grouping)
 
-        arr = get_values(resource=nc_reference)
-        dt_arr = get_time(resource=nc_reference)
-        arr = ma.masked_array(arr)
-        dt_arr = ma.masked_array(dt_arr)
-        percentile = percentile
-        window_width = 5
+    if variable is None:
+        variable = get_variable(resource)
 
-        for indice in indices:
-            name = indice.replace('_', str(percentile))
-            var = indice.split('_')[0]
+    if polygons is None:
+        nc_reference = call(resource=resource,
+                            prefix=str(uuid.uuid4()),
+                            time_range=refperiod,
+                            output_format='nc')
+    else:
+        nc_reference = clipping(resource=resource,
+                                prefix=str(uuid.uuid4()),
+                                time_range=refperiod,
+                                output_format='nc',
+                                polygons=polygons,
+                                mosaic=mosaic)
 
-            operation = None
-            if 'T' in var:
-                if percentile >= 50:
-                    operation = 'Icclim%s90p' % var
-                    func = 'icclim_%s90p' % var  # icclim_TG90p
-                else:
-                    operation = 'Icclim%s10p' % var
-                    func = 'icclim_%s10p' % var
+    # arr = get_values(resource=nc_reference)
+    # dt_arr = get_time(resource=nc_reference)
+    # arr = ma.masked_array(arr)
+    # dt_arr = ma.masked_array(dt_arr)
+    # percentile = percentile
+    # window_width = 5
 
-                ################################
-                # load the appropriate operation
-                ################################
-
-                ops = [op for op in dir(lic) if operation in op]
-                if len(ops) == 0:
-                    raise Exception("operator does not exist %s", operation)
-
-                exec "percentile_dict = lic.%s.get_percentile_dict(arr, dt_arr, percentile, window_width)" % ops[0]
-                calc = [{'func': func, 'name': name, 'kwds': {'percentile_dict': percentile_dict}}]
-
-                if polygons is None:
-                    nc_indices.extend(call(resource=resource,
-                                           prefix=key.replace(variable, name).replace('_day_', '_%s_' % grouping),
-                                           calc=calc,
-                                           calc_grouping=calc_group,
-                                           output_format='nc',
-                                           dir_output=dir_output))
-                else:
-                    nc_indices.extend(clipping(resource=resource,
-                                               prefix=key.replace(variable, name).replace('_day_', '_%s_' % grouping),
-                                               calc=calc,
-                                               calc_grouping=calc_group,
-                                               output_format='nc',
-                                               dir_output=dir_output,
-                                               polygons=polygons,
-                                               mosaic=mosaic,
-                                               ))
-    if len(nc_indices) is 0:
-        LOGGER.debug('No indices are calculated')
-        return None
-    return nc_indices
+    #     for indice in indices:
+    #         name = indice.replace('_', str(percentile))
+    #         var = indice.split('_')[0]
+    #
+    #         operation = None
+    #         if 'T' in var:
+    #             if percentile >= 50:
+    #                 operation = 'Icclim%s90p' % var
+    #                 func = 'icclim_%s90p' % var  # icclim_TG90p
+    #             else:
+    #                 operation = 'Icclim%s10p' % var
+    #                 func = 'icclim_%s10p' % var
+    #
+    #             ################################
+    #             # load the appropriate operation
+    #             ################################
+    #
+    #             ops = [op for op in dir(lic) if operation in op]
+    #             if len(ops) == 0:
+    #                 raise Exception("operator does not exist %s", operation)
+    #
+    #             exec "percentile_dict = lic.%s.get_percentile_dict(arr, dt_arr, percentile, window_width)" % ops[0]
+    #             calc = [{'func': func, 'name': name, 'kwds': {'percentile_dict': percentile_dict}}]
+    #
+    #             if polygons is None:
+    #                 nc_indices.extend(call(resource=resource,
+    #                                        prefix=key.replace(variable, name).replace('_day_', '_%s_' % grouping),
+    #                                        calc=calc,
+    #                                        calc_grouping=calc_group,
+    #                                        output_format='nc'))
+    #             else:
+    #                 nc_indices.extend(clipping(resource=resource,
+    #                                            prefix=key.replace(variable, name).replace('_day_', '_%s_' % grouping),
+    #                                            calc=calc,
+    #                                            calc_grouping=calc_group,
+    #                                            output_format='nc',
+    #                                            polygons=polygons,
+    #                                            mosaic=mosaic,
+    #                                            ))
+    # if len(nc_indices) is 0:
+    #     LOGGER.debug('No indices are calculated')
+    #     return None
+    return nc_reference# , nc_indices
