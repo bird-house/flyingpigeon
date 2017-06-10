@@ -180,56 +180,57 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
 
         # data_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
         LOGGER.info('data_mb  = %s Mb' % (data_mb))
+
+        if data_mb <= mem_limit:  # input is smaler than the half of free memory size
+            try:
+                LOGGER.info('ocgis module call as ops.execute()')
+                geom_file = ops.execute()
+            except Exception as e:
+                LOGGER.debug('failed to execute ocgis operation')
+                raise
+                return None
+        else:
+            ##########################
+            # calcultion of chunk size
+            ##########################
+            try:
+                size = ops.get_base_request_size()
+                nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
+                element_in_kb = size['total']/reduce(lambda x, y: x*y, size['variables'][variable]['value']['shape'])
+                element_in_mb = element_in_kb / 1024.
+                tile_dim = sqrt(mem_limit/(element_in_mb*nb_time_coordinates_rd))  # maximum chunk size
+
+                LOGGER.info('ocgis module call compute with chunks')
+                if calc is None:
+                    calc = '%s=%s*1' % (variable, variable)
+                    LOGGER.info('calc set to = %s ' % calc)
+                ops = OcgOperations(dataset=rd,
+                                    output_format_options=output_format_options,
+                                    dir_output=dir_output,
+                                    spatial_wrapping=spatial_wrapping,
+                                    spatial_reorder=spatial_reorder,
+                                    # regrid_destination=rd_regrid,
+                                    # options=options,
+                                    calc=calc,
+                                    calc_grouping=calc_grouping,
+                                    geom=geom,
+                                    output_format=output_format,
+                                    prefix=prefix,
+                                    search_radius_mult=search_radius_mult,
+                                    select_nearest=select_nearest,
+                                    select_ugid=select_ugid,
+                                    add_auxiliary_files=False)
+                geom_file = compute(ops, tile_dimension=int(tile_dim), verbose=True)
+                print 'ocgis calculated'
+            except Exception as e:
+                LOGGER.debug('failed to compute ocgis with chunks')
+                raise
+                return None
+        LOGGER.info('Succeeded with ocgis module call function')
     except:
-        LOGGER.exception('failed to compare dataload with free memory')
-        raise
+        LOGGER.exception('failed to compare dataload with free memory, calling as execute instead')
+        geom_file = ops.execute()
 
-    if data_mb <= mem_limit:  # input is smaler than the half of free memory size
-        try:
-            LOGGER.info('ocgis module call as ops.execute()')
-            geom_file = ops.execute()
-        except Exception as e:
-            LOGGER.debug('failed to execute ocgis operation')
-            raise
-            return None
-    else:
-        ##########################
-        # calcultion of chunk size
-        ##########################
-        try:
-            size = ops.get_base_request_size()
-            nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
-            element_in_kb = size['total']/reduce(lambda x, y: x*y, size['variables'][variable]['value']['shape'])
-            element_in_mb = element_in_kb / 1024.
-            tile_dim = sqrt(mem_limit/(element_in_mb*nb_time_coordinates_rd))  # maximum chunk size
-
-            LOGGER.info('ocgis module call compute with chunks')
-            if calc is None:
-                calc = '%s=%s*1' % (variable, variable)
-                LOGGER.info('calc set to = %s ' % calc)
-            ops = OcgOperations(dataset=rd,
-                                output_format_options=output_format_options,
-                                dir_output=dir_output,
-                                spatial_wrapping=spatial_wrapping,
-                                spatial_reorder=spatial_reorder,
-                                # regrid_destination=rd_regrid,
-                                # options=options,
-                                calc=calc,
-                                calc_grouping=calc_grouping,
-                                geom=geom,
-                                output_format=output_format,
-                                prefix=prefix,
-                                search_radius_mult=search_radius_mult,
-                                select_nearest=select_nearest,
-                                select_ugid=select_ugid,
-                                add_auxiliary_files=False)
-            geom_file = compute(ops, tile_dimension=int(tile_dim), verbose=True)
-            print 'ocgis calculated'
-        except Exception as e:
-            LOGGER.debug('failed to compute ocgis with chunks')
-            raise
-            return None
-    LOGGER.info('Succeeded with ocgis module call function')
     ############################################
     # remapping according to regrid informations
     ############################################
