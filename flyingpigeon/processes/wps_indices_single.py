@@ -126,7 +126,7 @@ class IndicessingleProcess(Process):
             mosaic = False
 
         if 'region' in request.inputs:
-            region = request.inputs['region'][0].data
+            region = [inpt.data for inpt in request.inputs['region']]
         else:
             region = None
 
@@ -161,7 +161,7 @@ class IndicessingleProcess(Process):
                                 resource=datasets[key],
                                 mosaic=mosaic,
                                 indice=indice,
-                                polygons=None,  # region,
+                                polygons=region,
                                 grouping=group,
                                 # dir_output=path.curdir,
                                 )
