@@ -252,9 +252,9 @@ def get_indices(resource, indices):
                 prefix = key.replace(variable, name).replace('_day_', '_%s_' % month)
                 nc = calc_indice_simple(resource=resource,
                                         variable=variable,
-                                        polygons=['Europe', 'Africa', 'Asia', 'North America', 'Oceania',
-                                                  'South America', 'Antarctica'],
-                                        mosaic=True,
+                                        # polygons=['Europe', 'Africa', 'Asia', 'North America', 'Oceania',
+                                        #           'South America', 'Antarctica'],
+                                        # mosaic=True,
                                         prefix=prefix, indice=name, grouping=month)
                 if nc is not None:
                     # coords = unrotate_pole(nc[0], write_to_file=True)

@@ -120,7 +120,7 @@ class LandseamaskProcess(Process):
                 masked_datasets.append(new_ds)
             except:
                 LOGGER.exception("Could not subset dataset.")
-                raise Exception("Could not subset dataset: %s", ds_name)
+                raise Exception("Could not subset dataset: %s" % ds_name)
             count = count + 1
             response.update_status("masked: {:d}/{:d}".format(count, max_count), int(100.0 * count / max_count))
 
