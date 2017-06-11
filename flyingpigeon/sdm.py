@@ -254,7 +254,7 @@ def get_indices(resources, indices):
                                             polygons=['Europe', 'Africa', 'Asia', 'North America', 'Oceania',
                                                       'South America', 'Antarctica'],
                                             mosaic=True,
-                                            prefix=prefix, indices=name, groupings=month)
+                                            prefix=prefix, indice=name, grouping=month)
                     if nc is not None:
                         coords = unrotate_pole(nc[0], write_to_file=True)
                         ncs_indices.append(nc[0])
