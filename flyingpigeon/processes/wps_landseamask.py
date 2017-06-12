@@ -25,13 +25,25 @@ class LandseamaskProcess(Process):
             ComplexInput('dataset', 'Dataset',
                          abstract="Enter either URL pointing to a NetCDF File"
                                   " or an archive (tar/zip) containing NetCDF files.",
-                         min_occurs=1,
-                         max_occurs=1000,
+                         min_occurs=0,
+                         max_occurs=100,
                          supported_formats=[
                              Format('application/x-netcdf'),
                              Format('application/x-tar'),
                              Format('application/zip'),
                          ]),
+
+            LiteralInput('dataset_opendap', 'Remote OpenDAP Data URL',
+                         data_type='string',
+                         abstract="Or provide a remote OpenDAP data URL,"
+                                  " for example:"
+                                  " http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis2.dailyavgs/surface/mslp.2016.nc",  # noqa
+                         metadata=[
+                            Metadata(
+                                'application/x-ogc-dods',
+                                'https://www.iana.org/assignments/media-types/media-types.xhtml')],
+                         min_occurs=0,
+                         max_occurs=100),
 
             LiteralInput("threshold", "Threshold",
                          abstract="Percentage of Land Area Fraction",
@@ -99,8 +111,16 @@ class LandseamaskProcess(Process):
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
-        datasets = archiveextract(
-            resource=rename_complexinputs(request.inputs['dataset']))
+        datasets = []
+        # append file urls
+        if 'dataset' in request.inputs:
+            datasets.extend(archiveextract(
+                resource=rename_complexinputs(request.inputs['dataset'])))
+        # append opendap urls
+        if 'dataset_opendap' in request.inputs:
+            for dataset in request.inputs['dataset_opendap']:
+                datasets.append(dataset.data)
+        # land or sea flag
         land_area_flag = request.inputs['land_or_sea'][0].data == 'land'
 
         masked_datasets = []
