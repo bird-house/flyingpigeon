@@ -6,8 +6,8 @@ channels:
 # ocgis
 - nesii
 # the r hell ...
-- r
-- bioconda
+#- r
+#- bioconda
 dependencies:
 - python=2.7
 - ipython
@@ -59,8 +59,8 @@ dependencies:
 ## cdo ocgis
 - cdo #=1.7.1=2
 - python-cdo
-# - ocgis=2.0.0
-- ocgis-next=1.4.0.dev1=py27_7  #  nesii/channel/ocgis-next
+- ocgis=2.0.0
+# - ocgis-next=1.4.0.dev1=py27_7  #  nesii/channel/ocgis-next
 - icclim
 - proj4=4.9.3
 - geos=3.5.1
