@@ -29,7 +29,7 @@ Process identifiers:
 Input Parameter:
 ................
 
-.. _indices_simple:
+.. _indices_simple::
 
 *for simple indices*
 

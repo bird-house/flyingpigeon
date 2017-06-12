@@ -233,13 +233,37 @@ def get_indices(resource, indices):
     from flyingpigeon.utils import sort_by_filename, calc_grouping, drs_filename, unrotate_pole, get_variable
     # from flyingpigeon.ocgis_module import call
     from flyingpigeon.indices import indice_variable, calc_indice_simple
+    from flyingpigeon.subset import masking
+    from flyingpigeon.utils import searchfile
+    from flyingpigeon.utils import search_landsea_mask_by_esgf
+    from os.path import basename
+
 
     # names = [drs_filename(nc, skip_timestamp=False, skip_format=False,
     #               variable=None, rename_file=True, add_file_path=True) for nc in resources]
 
     variable = get_variable(resource)
 
-    ncs = sort_by_filename(resource, historical_concatination=True)
+    masked_datasets = []
+    count = 0
+    max_count = len(resource)
+    for ds in resource:
+        ds_name = basename(ds)
+        LOGGER.info('masking dataset: %s', ds_name)
+
+        landsea_mask = search_landsea_mask_by_esgf(ds)
+        LOGGER.info("using landsea_mask: %s", landsea_mask)
+        prefix = ds_name.replace('.nc', '')
+        try:
+            new_ds = masking(ds, landsea_mask, land_area=True, prefix=prefix)
+            masked_datasets.append(new_ds)
+        except:
+            LOGGER.exception("Could not subset dataset.")
+            return
+        count = count + 1
+        LOGGER.debug("masked: {:d}/{:d}".format(count, max_count), int(100.0 * count / max_count))
+
+    ncs = sort_by_filename(masked_datasets, historical_concatination=True)
     key = ncs.keys()[0]
     ncs_indices = []
     LOGGER.info('resources sorted found %s datasets' % len(ncs.keys()))
