@@ -247,6 +247,7 @@ def get_indices(resource, indices):
     masked_datasets = []
     count = 0
     max_count = len(resource)
+
     for ds in resource:
         ds_name = basename(ds)
         LOGGER.info('masking dataset: %s', ds_name)
