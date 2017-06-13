@@ -50,9 +50,10 @@ def search_landsea_mask_by_esgf(resource):
     conn = SearchConnection(config.esgfsearch_url(), distrib=config.esgfsearch_distrib())
     ctx = conn.new_context(search_type=TYPE_FILE, **constraints)
     if ctx.hit_count == 0:
-        # raise Exception("Could not find a mask in ESGF.")
-        LOGGER.exception("Could not find a mask in ESGF.")
-        return
+        raise Exception("Could not find a mask in ESGF for dataset {0}".format(
+            os.path.basename(resource)))
+        #LOGGER.exception("Could not find a mask in ESGF.")
+        #return
     if ctx.hit_count > 1:
         LOGGER.warn("Found more then one mask file.")
     results = ctx.search(batch_size=1)
