@@ -40,3 +40,31 @@ ops = OcgOperations(dataset=rd, calc=calc,
                     time_region={'year': [1980, 1990]}
                     ).execute()
 print ops
+
+
+from flyingpigeon.utils import sort_by_filename
+from flyingpigeon.ocgis_module import call
+
+        #
+        # kwds = {'percentile': percentile, 'window_width': 5}
+        # calc = [{'func': 'daily_perc', 'name': 'dp', 'kwds': kwds}]
+        # #
+        # ops = OcgOperations(dataset=rd, calc=calc,
+        #                     output_format='nc',
+        #                     time_region={'year': [1980, 1990]}
+#                     ).execute()
+
+datasets = sort_by_filename(resource, historical_concatination=True)
+results = []
+
+print datasets.keys()
+
+for key in datasets.keys():
+    result = call(resource=datasets[key],
+                  output_format='nc',
+                  calc=calc,
+                  prefix='call_',
+                  # time_region={'year': [1995, 2000]}
+                #   calc_grouping='year'
+                  )
+    results.extend(result)

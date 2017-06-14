@@ -17,7 +17,7 @@ import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
-class IndicespercentileProcess(Process):
+class IndicespercentiledaysProcess(Process):
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
@@ -31,14 +31,14 @@ class IndicespercentileProcess(Process):
                              Format('application/zip'),
                          ]),
 
-            LiteralInput("indices", "Index",
-                         abstract='Select an index',
-                         default='TG',
-                         data_type='string',
-                         min_occurs=1,
-                         max_occurs=1,  # len(indices()),
-                         allowed_values=['TG', 'TN', 'TX'],  # indices()
-                         ),
+            # LiteralInput("indices", "Index",
+            #              abstract='Select an index',
+            #              default='TG',
+            #              data_type='string',
+            #              min_occurs=1,
+            #              max_occurs=1,  # len(indices()),
+            #              allowed_values=['TG', 'TN', 'TX'],  # indices()
+            #              ),
 
             LiteralInput("percentile", "Percentile",
                          abstract='Select an percentile',
@@ -49,13 +49,13 @@ class IndicespercentileProcess(Process):
                          allowed_values=range(1, 100),  # indices()
                          ),
 
-            LiteralInput("refperiod", "Reference Period",
-                         abstract="Time refperiod to retrieve the percentile level",
-                         default="19700101-20101231",
-                         data_type='string',
-                         min_occurs=0,
-                         max_occurs=1,
-                         ),
+            # LiteralInput("refperiod", "Reference Period",
+            #              abstract="Time refperiod to retrieve the percentile level",
+            #              default="19700101-20101231",
+            #              data_type='string',
+            #              min_occurs=0,
+            #              max_occurs=1,
+            #              ),
             #
             # self.refperiod = self.addLiteralInput(
             #     identifier="refperiod",
@@ -103,11 +103,11 @@ class IndicespercentileProcess(Process):
                           as_reference=True,
                           ),
 
-            # ComplexOutput("output_example", "Example",
-            #               abstract="one example file to display in the WMS",
-            #               supported_formats=[Format("application/x-netcdf")],
-            #               as_reference=True,
-            #               ),
+            ComplexOutput('ncout', 'Subsets for one dataset',
+                          abstract="NetCDF file with subsets of one dataset.",
+                          as_reference=True,
+                          supported_formats=[Format('application/x-netcdf')]
+                          ),
 
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",
@@ -115,13 +115,13 @@ class IndicespercentileProcess(Process):
                           supported_formats=[Format("text/plain")])
         ]
 
-        super(IndicespercentileProcess, self).__init__(
+        super(IndicespercentiledaysProcess, self).__init__(
             self._handler,
-            identifier="indices_percentile",
-            title="Climate indices (Percentile based)",
+            identifier="indices_percentiledays",
+            title="Climate indices (Daily percentiles)",
             version="0.10",
             abstract="Climate indices based on one single input variable\
-             and the percentile of a reference period.",
+             Calculating the percentiles for each day in the year.",
             metadata=[
                 {'title': 'Doc',
                  'href': 'http://flyingpigeon.readthedocs.io/en/latest/descriptions/\
@@ -144,7 +144,7 @@ class IndicespercentileProcess(Process):
         try:
             resources = archiveextract(
                 resource=rename_complexinputs(request.inputs['resource']))
-            indices = request.inputs['indices'][0].data
+            # indices = request.inputs['indices'][0].data
 
             grouping = request.inputs['grouping'][0].data
             # grouping = [inpt.data for inpt in request.inputs['grouping']]
@@ -160,22 +160,22 @@ class IndicespercentileProcess(Process):
                 mosaic = False
 
             percentile = request.inputs['percentile'][0].data
-            refperiod = request.inputs['refperiod'][0].data
+            # refperiod = request.inputs['refperiod'][0].data
 
             from datetime import datetime as dt
-
-            if refperiod is not None:
-                start = dt.strptime(refperiod.split('-')[0], '%Y%m%d')
-                end = dt.strptime(refperiod.split('-')[1], '%Y%m%d')
-                refperiod = [start, end]
+            #
+            # if refperiod is not None:
+            #     start = dt.strptime(refperiod.split('-')[0], '%Y%m%d')
+            #     end = dt.strptime(refperiod.split('-')[1], '%Y%m%d')
+            #     refperiod = [start, end]
 
             # response.update_status('starting: indices=%s, grouping=%s, num_files=%s'
             #                        % (indices,  grouping, len(resources)), 2)
 
             LOGGER.debug("grouping %s " % grouping)
             LOGGER.debug("mosaic %s " % mosaic)
-            LOGGER.debug("refperiod set to %s, %s " % (start, end))
-            LOGGER.debug('indices= %s ' % indices)
+            # LOGGER.debug("refperiod set to %s, %s " % (start, end))
+            # LOGGER.debug('indices= %s ' % indices)
             LOGGER.debug('percentile: %s' % percentile)
             LOGGER.debug('region %s' % region)
             LOGGER.debug('Nr of input files %s ' % len(resources))
@@ -184,21 +184,25 @@ class IndicespercentileProcess(Process):
             LOGGER.exception('failed to read in the arguments')
 
         from flyingpigeon.utils import sort_by_filename
+        from flyingpigeon.ocgis_module import call
 
         datasets = sort_by_filename(resources, historical_concatination=True)
         results = []
+
+        kwds = {'percentile': percentile, 'window_width': 5}
+        calc = [{'func': 'daily_perc', 'name': 'dp', 'kwds': kwds}]
+        #
+        # ops = OcgOperations(dataset=rd, calc=calc,
+        #                     output_format='nc',
+        #                     time_region={'year': [1980, 1990]}
+        #                     ).execute()
         try:
             for key in datasets.keys():
                 try:
-                    result = calc_indice_percentile(resource=datasets[key],
-                                         indices=indices,
-                                         percentile=percentile,
-                                         mosaic=mosaic,
-                                         polygons=region,
-                                         refperiod=refperiod,
-                                         grouping=grouping,
-                                         # dir_output=os.curdir,
-                                         )
+                    result = calc(resource=datasets[key],
+                                  calc=calc,
+                                #   calc_grouping='year'
+                                  )
                     LOGGER.debug('percentile based indice done for %s' % result)
                     results.extend(result)
                 except:
@@ -209,5 +213,11 @@ class IndicespercentileProcess(Process):
         output_archive = archive(results)
 
         response.outputs['output_archive'].file = output_archive
+
+        i = next((i for i, x in enumerate(results) if x), None)
+        if i is None:
+            i = "dummy.nc"
+        response.outputs['ncout'].file = results[i]
+
         response.update_status("done", 100)
         return response
