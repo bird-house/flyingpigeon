@@ -38,7 +38,7 @@ _INDICES_ = dict(
     SD1=dict(variable='prsn', description='Nr of days with snow >= 1cm  (prsn as input files)'),
     SD5cm=dict(variable='prsn', description='Nr of days with snow >= 5cm (prsn as input files)'),
     SD50cm=dict(variable='prsn', description='Nr of days with snow >= 50 cm (prsn as input files)'),
-    )
+)
 
 _INDICESper_ = dict(
     TG10p=dict(variable='tas',
@@ -69,7 +69,7 @@ _INDICESper_ = dict(
               description='Days with PRCPTOT > 99th percentile of daily amounts (extremely wet days)(days)'),
     R99pTOT=dict(variable='pr',
                  description='recipitation fraction due to extremely wet days (>99th percentile)(%)'),
-    )
+)
 
 _INDICEScomp_ = dict(
     CD=dict(variable=['tas', 'pr'],
@@ -84,14 +84,14 @@ _INDICEScomp_ = dict(
     WW=dict(variable=['tas', 'pr'],
             description='Days with TG > 75th percentile of daily mean temperature and\
              PRCPTOT > 75th percentile of daily precipitation sum (warm/wet days)'),
-    )
+)
 
 _INDICESunconventional_ = dict(
     TGx=dict(variable=['tas'], description='Max of daily mean temperature'),
     TGx5day=dict(variable=['tas'], description='max of 5-day running average of daily mean temperature'),
     TGn=dict(variable=['tas'], description='Min of daily mean temperature'),
     TGn5day=dict(variable=['tas'], description='Min of 5-day running average of daily mean temperature'),
-    )
+)
 
 
 def indices():
