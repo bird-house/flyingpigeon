@@ -136,8 +136,8 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
                             dimension_map=dimension_map, conform_units_to=conform_units_to,
                             time_region=time_region, t_calendar=t_calendar, time_range=time_range)
 
-        # from ocgis.constants import DimensionMapKey
-        # rd.dimension_map.set_bounds(DimensionMapKey.TIME, None)
+        from ocgis.constants import DimensionMapKey
+        rd.dimension_map.set_bounds(DimensionMapKey.TIME, None)
 
         ops = OcgOperations(dataset=rd,
                             output_format_options=output_format_options,
