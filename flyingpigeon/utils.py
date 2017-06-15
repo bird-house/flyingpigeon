@@ -579,9 +579,9 @@ def get_timerange(resource):
         end = '%s%s%s' % (e.year, str(e.month).zfill(2), str(e.day).zfill(2))
         ds.close()
     except:
-        ds.close()
         msg = 'failed to get time range'
         LOGGER.exception(msg)
+        ds.close()
         raise Exception(msg)
     return start, end
 

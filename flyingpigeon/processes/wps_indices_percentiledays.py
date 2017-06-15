@@ -68,14 +68,14 @@ class IndicespercentiledaysProcess(Process):
             #     allowedValues=['all','1951-1980', '1961-1990', '1971-2000','1981-2010']
             #     )
 
-            LiteralInput("grouping", "Grouping",
-                         abstract="Select an time grouping (time aggregation)",
-                         default='yr',
-                         data_type='string',
-                         min_occurs=1,
-                         max_occurs=1,
-                         allowed_values=GROUPING
-                         ),
+            # LiteralInput("grouping", "Grouping",
+            #              abstract="Select an time grouping (time aggregation)",
+            #              default='yr',
+            #              data_type='string',
+            #              min_occurs=1,
+            #              max_occurs=1,
+            #              allowed_values=GROUPING
+            #              ),
 
             LiteralInput('region', 'Region',
                          data_type='string',
@@ -146,7 +146,7 @@ class IndicespercentiledaysProcess(Process):
                 resource=rename_complexinputs(request.inputs['resource']))
             # indices = request.inputs['indices'][0].data
 
-            grouping = request.inputs['grouping'][0].data
+            # grouping = request.inputs['grouping'][0].data
             # grouping = [inpt.data for inpt in request.inputs['grouping']]
 
             if 'region' in request.inputs:
@@ -172,7 +172,7 @@ class IndicespercentiledaysProcess(Process):
             # response.update_status('starting: indices=%s, grouping=%s, num_files=%s'
             #                        % (indices,  grouping, len(resources)), 2)
 
-            LOGGER.debug("grouping %s " % grouping)
+            # LOGGER.debug("grouping %s " % grouping)
             LOGGER.debug("mosaic %s " % mosaic)
             # LOGGER.debug("refperiod set to %s, %s " % (start, end))
             # LOGGER.debug('indices= %s ' % indices)
@@ -185,7 +185,6 @@ class IndicespercentiledaysProcess(Process):
 
         from flyingpigeon.utils import sort_by_filename
         from flyingpigeon.ocgis_module import call
-
 
         kwds = {'percentile': percentile, 'window_width': 5}
         calc = [{'func': 'daily_perc', 'name': 'dp', 'kwds': kwds}]
@@ -206,10 +205,10 @@ class IndicespercentiledaysProcess(Process):
                                   calc=calc,
                                   prefix=key,
                                   # time_region={'year': [1995, 2000]}
-                                #   calc_grouping='year'
+                                  # calc_grouping='year'
                                   )
                     LOGGER.debug('percentile based indice done for %s' % result)
-                    results.extend(result)
+                    results.extend([result])
                 except:
                     LOGGER.exception("failed to calculate percentil based indice for %s " % key)
         except:
