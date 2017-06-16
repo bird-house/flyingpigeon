@@ -243,29 +243,29 @@ def get_indices(resource, indices):
     variable = get_variable(resource)
 
     masked_datasets = []
-    count = 0
     max_count = len(resource)
 
     for ds in resource:
         ds_name = basename(ds)
-        LOGGER.info('masking dataset: %s', ds_name)
-
-        landsea_mask = search_landsea_mask_by_esgf(ds)
-        LOGGER.info("using landsea_mask: %s", landsea_mask)
-        prefix = ds_name.replace('.nc', '')
+        LOGGER.debug('masking dataset: %s', ds_name)
         try:
+            landsea_mask = search_landsea_mask_by_esgf(ds)
+            LOGGER.debug("using landsea_mask: %s", landsea_mask)
+            prefix = ds_name.replace('.nc', '')
             new_ds = masking(ds, landsea_mask, land_area=True, prefix=prefix)
             masked_datasets.append(new_ds)
         except:
             LOGGER.exception("Could not subset dataset.")
-            return
-        count = count + 1
-        LOGGER.debug("masked: {:d}/{:d}".format(count, max_count), int(100.0 * count / max_count))
+            break
+        else:
+            LOGGER.info("masked: %d/%d", len(masked_datasets), max_count)
+    if not masked_datasets:
+        raise Exception("Could not mask input files.")
 
     ncs = sort_by_filename(masked_datasets, historical_concatination=True)
     key = ncs.keys()[0]
     ncs_indices = []
-    LOGGER.info('resources sorted found %s datasets' % len(ncs.keys()))
+    LOGGER.info('resources sorted found %s datasets', len(ncs.keys()))
     for indice in indices:
         try:
             name, month = indice.split('_')

@@ -116,7 +116,9 @@ class SDMgetindicesProcess(Process):
             LOGGER.debug("indices = %s", indices)
             archive_format = request.inputs['archive_format'][0].data
         except:
-            LOGGER.exception('failed to read in the arguments')
+            msg = 'failed to read the arguments.'
+            LOGGER.exception(msg)
+            raise Exception(msg)
         LOGGER.info('indices %s ' % indices)
 
         #################################
@@ -127,17 +129,15 @@ class SDMgetindicesProcess(Process):
         ncs_indices = None
         datasets = sort_by_filename(resources, historical_concatination=True)
 
-        try:
-            for key in datasets.keys():
-                try:
-                    response.update_status('calculation of %s' % key, 30)
-                    ncs_indices = sdm.get_indices(resource=datasets[key], indices=indices)
-                except:
-                    LOGGER.exception('indice failed for %s' % key)
-        except:
-            msg = 'failed to calculate indices'
-            LOGGER.exception(msg)
-            raise Exception(msg)
+        for ds in datasets:
+            try:
+                response.update_status('calculation of {}'.format(ds), 30)
+                # TODO: what is happening with the results for each key?
+                ncs_indices = sdm.get_indices(resource=datasets[ds], indices=indices)
+            except:
+                msg = 'indice calculation failed for {}'.format(ds)
+                LOGGER.exception(msg)
+                raise Exception(msg)
 
         # archive multiple output files to one archive file
         try:
