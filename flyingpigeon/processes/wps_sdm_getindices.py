@@ -128,14 +128,15 @@ class SDMgetindicesProcess(Process):
         # indices calculation
         ncs_indices = None
         datasets = sort_by_filename(resources, historical_concatination=True)
+        LOGGER.debug("datasets=%s", datasets.keys())
 
-        for ds in datasets:
+        for ds_name in datasets:
             try:
-                response.update_status('calculation of {}'.format(ds), 30)
-                # TODO: what is happening with the results for each key?
-                ncs_indices = sdm.get_indices(resource=datasets[ds], indices=indices)
+                response.update_status('calculation of {}'.format(ds_name), 30)
+                # TODO: what is happening with the results for each ds?
+                ncs_indices = sdm.get_indices(resource=datasets[ds_name], indices=indices)
             except:
-                msg = 'indice calculation failed for {}'.format(ds)
+                msg = 'indice calculation failed for {}'.format(ds_name)
                 LOGGER.exception(msg)
                 raise Exception(msg)
 
