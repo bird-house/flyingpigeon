@@ -238,10 +238,8 @@ def get_indices(resource, indices):
     from flyingpigeon.utils import search_landsea_mask_by_esgf
     from os.path import basename
 
-
     # names = [drs_filename(nc, skip_timestamp=False, skip_format=False,
     #               variable=None, rename_file=True, add_file_path=True) for nc in resources]
-
     variable = get_variable(resource)
 
     masked_datasets = []
