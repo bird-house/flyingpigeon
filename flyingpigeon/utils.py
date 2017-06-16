@@ -191,7 +191,8 @@ def archive(resources, format='tar', dir_output='.', mode='w'):
         resources = resources_filter
     except Exception as e:
         msg = 'failed to prepare file list: %s' % e
-        LOGGER.debug(msg)
+        LOGGER.exception(msg)
+        raise Exception(msg)
 
     if format == 'tar':
         import tarfile
@@ -204,13 +205,13 @@ def archive(resources, format='tar', dir_output='.', mode='w'):
                     tar.add(f, arcname=basename(f))
                 except Exception as e:
                     msg = 'archiving failed for %s: %s' % (f, e)
-                    LOGGER.debug(msg)
-                    raise(msg)
+                    LOGGER.exception(msg)
+                    raise Exception(msg)
             tar.close()
         except Exception as e:
             msg = 'failed to compress into archive %s', e
             LOGGER.exception(msg)
-            raise(msg)
+            raise Exception(msg)
     elif format == 'zip':
         import zipfile
 
@@ -223,11 +224,11 @@ def archive(resources, format='tar', dir_output='.', mode='w'):
             zf.close()
         except Exception as e:
             msg = 'failed to create zip archive: %s' % msg
-            LOGGER.debug(msg)
-            raise
+            LOGGER.exception(msg)
+            raise Exception(msg)
             # LOGGER.info(print_info('zipfile_write.zip'))
     else:
-        LOGGER.error('no common archive format like: zip / tar')
+        raise Exception('no common archive format like: zip / tar')
     return archive
 
 
