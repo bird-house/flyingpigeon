@@ -6,9 +6,8 @@ from pywps.tests import assert_response_success
 from .common import TESTDATA, client_for
 from flyingpigeon.processes import IndicespercentiledaysProcess
 
-# @pytest.mark.skip(reason="no way of currently testing this")
 
-
+@pytest.mark.skip(reason="ocgis fails in this test")
 def test_wps_indices_percentiledays():
     client = client_for(Service(processes=[IndicespercentiledaysProcess()]))
     datainputs = "resource@xlink:href={0};percentile=90".format(TESTDATA['cordex_tasmax_2006_nc'])
