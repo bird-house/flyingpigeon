@@ -68,3 +68,4 @@ for key in datasets.keys():
                 #   calc_grouping='year'
                   )
     results.extend(result)
+    print result

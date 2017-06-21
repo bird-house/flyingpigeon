@@ -200,14 +200,24 @@ class IndicespercentiledaysProcess(Process):
         try:
             for key in datasets.keys():
                 try:
-                    result = call(resource=datasets[key],
-                                  output_format='nc',
-                                  calc=calc,
-                                  prefix=key,
-                                  # time_region={'year': [1995, 2000]}
-                                  # calc_grouping='year'
-                                  )
-                    LOGGER.debug('percentile based indice done for %s' % result)
+                    if region is None:
+                        result = call(resource=datasets[key],
+                                      output_format='nc',
+                                      calc=calc,
+                                      prefix=key,
+                                      # time_region={'year': [1995, 2000]}
+                                      # calc_grouping='year'
+                                      )
+                        LOGGER.debug('percentile based indice done for %s' % result)
+                    else:
+                        clipping(resource=datasets[key], variable=None,
+                                 calc=calc,
+                                 calc_grouping=None,
+                                 time_range=None,
+                                 time_region=None,
+                                 polygons=region,
+                                 mosaic=mosaic)
+
                     results.extend([result])
                 except:
                     LOGGER.exception("failed to calculate percentil based indice for %s " % key)
