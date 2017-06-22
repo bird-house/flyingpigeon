@@ -40,9 +40,9 @@ class FetchProcess(Process):
         super(FetchProcess, self).__init__(
             self._handler,
             identifier="fetch_resources",
-            title="Download Resources",
+            title="Fetch Resources",
             version="0.10",
-            abstract="This process downloads resources (limited to 50GB) \
+            abstract="This process fetches data resources (limited to 50GB) \
                       to the local file system of the birdhouse compute provider",
             metadata=[
                 Metadata('Documentation', 'http://flyingpigeon.readthedocs.io/en/latest/'),

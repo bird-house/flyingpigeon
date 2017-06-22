@@ -6,7 +6,7 @@ from pywps.app.Common import Metadata
 
 from flyingpigeon.indices import indices, indices_description
 from flyingpigeon.indices import calc_indice_percentile
-from flyingpigeon.subset import countries, countries_longname
+from flyingpigeon.subset import countries, countries_longname, clipping
 from flyingpigeon.utils import GROUPING
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import archive, archiveextract
