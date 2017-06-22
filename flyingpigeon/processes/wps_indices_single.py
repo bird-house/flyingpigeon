@@ -21,7 +21,7 @@ class IndicessingleProcess(Process):
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
-                         abstract="NetCDF Files or archive (tar/zip) containing netCDF files",
+                         abstract="NetCDF Files or archive (tar/zip) containing netCDF files.",
                          min_occurs=1,
                          max_occurs=1000,
                          #  maxmegabites=5000,
@@ -32,7 +32,7 @@ class IndicessingleProcess(Process):
                          ]),
 
             LiteralInput("indices", "Index",
-                         abstract='Select an index',
+                         abstract='Climate index code.',
                          default='TG',
                          data_type='string',
                          min_occurs=1,
@@ -41,7 +41,7 @@ class IndicessingleProcess(Process):
                          ),
 
             LiteralInput("grouping", "Grouping",
-                         abstract="Select an time grouping (time aggregation)",
+                         abstract="Temporal group over which the index is computed.",
                          default='yr',
                          data_type='string',
                          min_occurs=0,
@@ -52,7 +52,7 @@ class IndicessingleProcess(Process):
             LiteralInput('region', 'Region',
                          data_type='string',
                          # abstract= countries_longname(), # need to handle special non-ascii char in countries.
-                         abstract="Country ISO-3166-3:\
+                         abstract="Country code, see ISO-3166-3:\
                           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3#Officially_assigned_code_elements",
                          min_occurs=0,
                          max_occurs=len(countries()),
@@ -70,14 +70,14 @@ class IndicessingleProcess(Process):
         ]
 
         outputs = [
-            ComplexOutput("output_archive", "Masked Files Archive",
-                          abstract="Tar file of the masked netCDF files",
+            ComplexOutput("output_archive", "Tar archive",
+                          abstract="Tar archive of the netCDF files storing the index values.",
                           supported_formats=[Format("application/x-tar")],
                           as_reference=True,
                           ),
 
-            ComplexOutput('ncout', 'Subsets for one dataset',
-                          abstract="NetCDF file with subsets of one dataset.",
+            ComplexOutput('ncout', 'Example netCDF file',
+                          abstract="NetCDF file storing the index computed over one dataset.",
                           as_reference=True,
                           supported_formats=[Format('application/x-netcdf')]
                           ),
@@ -94,7 +94,7 @@ class IndicessingleProcess(Process):
             identifier="indices_single",
             title="Climate indices (Single variable)",
             version="0.10",
-            abstract="Climate indices based on one single input variable",
+            abstract="Climate index calculated from one daily input variable.",
             metadata=[
                 {'title': 'Doc',
                  'href': 'http://flyingpigeon.readthedocs.io/en/latest/descriptions/\

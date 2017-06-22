@@ -23,7 +23,7 @@ class LandseamaskProcess(Process):
     def __init__(self):
         inputs = [
             ComplexInput('dataset', 'Dataset',
-                         abstract="Enter either URL pointing to a NetCDF File"
+                         abstract="URL pointing to a NetCDF File"
                                   " or an archive (tar/zip) containing NetCDF files.",
                          min_occurs=0,
                          max_occurs=100,
@@ -35,8 +35,7 @@ class LandseamaskProcess(Process):
 
             LiteralInput('dataset_opendap', 'Remote OpenDAP Data URL',
                          data_type='string',
-                         abstract="Or provide a remote OpenDAP data URL,"
-                                  " for example:"
+                         abstract="Remote OpenDAP data URL, for example:"
                                   " http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis2.dailyavgs/surface/mslp.2016.nc",  # noqa
                          metadata=[
                             Metadata(
@@ -46,7 +45,7 @@ class LandseamaskProcess(Process):
                          max_occurs=100),
 
             LiteralInput("threshold", "Threshold",
-                         abstract="Percentage of Land Area Fraction",
+                         abstract="Land Area Fraction in percent.",
                          default="50",
                          data_type='integer',
                          allowed_values=[10, 25, 50, 75, 90],
@@ -55,7 +54,7 @@ class LandseamaskProcess(Process):
                          ),
 
             LiteralInput("mask", "Land Area Fraction File",
-                         abstract="Optionally provide an OpenDAP URL to an appropriate Land Area Fraction File."
+                         abstract="Optionally provide an OpenDAP URL to an appropriate land area fraction file."
                                   " If no file is provided, the process will run a search on the ESGF archive.",
                          data_type='string',
                          min_occurs=0,
@@ -73,14 +72,14 @@ class LandseamaskProcess(Process):
         ]
 
         outputs = [
-            ComplexOutput("output_archive", "Masked Files Archive",
-                          abstract="Tar file of the masked netCDF files",
+            ComplexOutput("output_archive", "Tar archive",
+                          abstract="Tar archive of the masked netCDF files.",
                           supported_formats=[Format("application/x-tar")],
                           as_reference=True,
                           ),
 
-            ComplexOutput("output_example", "Example",
-                          abstract="one example file to display in the WMS",
+            ComplexOutput("output_example", "Example netCDF file",
+                          abstract="An example file to display in the WMS.",
                           supported_formats=[Format("application/x-netcdf")],
                           as_reference=True,
                           ),
@@ -94,10 +93,9 @@ class LandseamaskProcess(Process):
         super(LandseamaskProcess, self).__init__(
             self._handler,
             identifier="landseamask",
-            title="Masking Land-Sea",
+            title="Land-Sea Mask",
             version="0.3",
-            abstract="Find the appropriate land_area fraction file and perform a"
-                     " CDO division to mask either land or sea areas",
+            abstract="Mask grid cells according to their land area fraction.",
             metadata=[
                 {"title": "Doc", "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
             ],

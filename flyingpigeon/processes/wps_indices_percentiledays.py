@@ -21,7 +21,7 @@ class IndicespercentiledaysProcess(Process):
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
-                         abstract="NetCDF Files or archive (tar/zip) containing netCDF files",
+                         abstract="NetCDF Files or archive (tar/zip) containing netCDF files.",
                          min_occurs=1,
                          max_occurs=1000,
                          #  maxmegabites=5000,
@@ -41,7 +41,7 @@ class IndicespercentiledaysProcess(Process):
             #              ),
 
             LiteralInput("percentile", "Percentile",
-                         abstract='Select an percentile',
+                         abstract='Percentile value [1-100].',
                          default='90',
                          data_type='integer',
                          min_occurs=1,
@@ -79,15 +79,14 @@ class IndicespercentiledaysProcess(Process):
 
             LiteralInput('region', 'Region',
                          data_type='string',
-                         # abstract= countries_longname(), # need to handle special non-ascii char in countries.
-                         abstract="Country ISO-3166-3:\
+                         abstract="Country code, see ISO-3166-3:\
                           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3#Officially_assigned_code_elements",
                          min_occurs=0,
                          max_occurs=len(countries()),
                          allowed_values=countries()),  # REGION_EUROPE #COUNTRIES
 
             LiteralInput("mosaic", "Mosaic",
-                         abstract="If Mosaic is checked, selected polygons be clipped as a mosaic for each input file",
+                         abstract="If Mosaic is checked, selected polygons be clipped as a mosaic for each input file.",
                          default='0',
                          data_type='boolean',
                          min_occurs=0,
@@ -97,14 +96,14 @@ class IndicespercentiledaysProcess(Process):
         ]
 
         outputs = [
-            ComplexOutput("output_archive", "Masked Files Archive",
-                          abstract="Tar file of the masked netCDF files",
+            ComplexOutput("output_archive", "Tar archive",
+                          abstract="Tar archive of the netCDF files storing the percentile values.",
                           supported_formats=[Format("application/x-tar")],
                           as_reference=True,
                           ),
 
-            ComplexOutput('ncout', 'Subsets for one dataset',
-                          abstract="NetCDF file with subsets of one dataset.",
+            ComplexOutput('ncout', 'Example netCDF file',
+                          abstract="NetCDF file storing the percentiles computed over one dataset.",
                           as_reference=True,
                           supported_formats=[Format('application/x-netcdf')]
                           ),
@@ -120,8 +119,8 @@ class IndicespercentiledaysProcess(Process):
             identifier="indices_percentiledays",
             title="Climate indices (Daily percentiles)",
             version="0.10",
-            abstract="Climate indices based on one single input variable\
-             Calculating the percentiles for each day in the year.",
+            abstract="Climatological percentile for each day of the year "
+                    "computed over the entire dataset.",
             metadata=[
                 {'title': 'Doc',
                  'href': 'http://flyingpigeon.readthedocs.io/en/latest/descriptions/\

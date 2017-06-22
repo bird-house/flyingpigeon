@@ -20,17 +20,17 @@ class ClippingProcess(Process):
             LiteralInput('region', 'Region',
                          data_type='string',
                          # abstract= countries_longname(), # need to handle special non-ascii char in countries.
-                         abstract="Country ISO-3166-3:\
+                         abstract="Country code, see ISO-3166-3:\
                           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3#Officially_assigned_code_elements",
                          min_occurs=1,
                          max_occurs=len(countries()),
                          default='DEU',
                          allowed_values=countries()),  # REGION_EUROPE #COUNTRIES
 
-            LiteralInput('mosaic', 'Mosaic',
+            LiteralInput('mosaic', 'Union of multiple regions',
                          data_type='boolean',
-                         abstract="If Mosaic is checked, selected polygons will be merged"
-                                  " to one Mosaic for each input file.",
+                         abstract="If True, selected regions will be merged"
+                                  " into a single geometry.",
                          min_occurs=0,
                          max_occurs=1,
                          default=False),
@@ -48,14 +48,14 @@ class ClippingProcess(Process):
         ]
 
         outputs = [
-            ComplexOutput('output', 'Subsets',
-                          abstract="Tar archive containing the netCDF files",
+            ComplexOutput('output', 'Tar archive',
+                          abstract="Tar archive of the subsetted netCDF files.",
                           as_reference=True,
                           supported_formats=[Format('application/x-tar')]
                           ),
 
-            ComplexOutput('ncout', 'Subsets for one dataset',
-                          abstract="NetCDF file with subsets of one dataset.",
+            ComplexOutput('ncout', 'Example netCDF file',
+                          abstract="NetCDF file with subset for one dataset.",
                           as_reference=True,
                           supported_formats=[Format('application/x-netcdf')]
                           ),
@@ -72,7 +72,7 @@ class ClippingProcess(Process):
             identifier="subset_countries",
             title="Subset (World Countries)",
             version="0.10",
-            abstract="Returns only the selected polygon for each input dataset",
+            abstract="Return the data whose grid cells intersect the selected countries for each input dataset.",
             metadata=[
                 Metadata('LSCE', 'http://www.lsce.ipsl.fr/en/index.php'),
                 Metadata('Doc', 'http://flyingpigeon.readthedocs.io/en/latest/'),
