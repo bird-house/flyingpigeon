@@ -184,7 +184,7 @@ def get_yrmean(resource=[]):
 
 def get_segetalflora(resource=[], culture_type='fallow', climate_type=3):
   """
-  Calulation of segetalflora species numbers based on yearly mean temperature.
+  Calculation of segetalflora species numbers based on yearly mean temperature.
 
   :param resource: list of netCDF yearly mean temperature (tas) files.
   :param culture_type: Type of culture. Possible values are:
