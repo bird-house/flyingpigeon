@@ -19,7 +19,7 @@ After successful installation, you need to start the services. All installed fil
    $ make start  # starts supervisor services
    $ make status # shows supervisor status
 
-The depolyed WPS service is available on http://localhost:8093/wps?service=WPS&version=1.0.0&request=GetCapabilities.
+The deployed WPS service is available on ``http://localhost:8093/wps?service=WPS&version=1.0.0&request=GetCapabilities``.
 
 Check the log files for errors::
 
@@ -37,7 +37,7 @@ Start flyingpigeon with docker-compose (docker-compose version > 1.7):
 
    $ docker-compose up
 
-By default the WPS is available on port 8080: http://localhost:8080/wps?service=WPS&version=1.0.0&request=GetCapabilities.
+By default the WPS is available on port 8080: ``http://localhost:8080/wps?service=WPS&version=1.0.0&request=GetCapabilities``.
 
 You can change the ports and hostname with environment variables:
 
@@ -45,4 +45,4 @@ You can change the ports and hostname with environment variables:
 
   $ HOSTNAME=flyingpigeon HTTP_PORT=8093 SUPERVISOR_PORT=48093 docker-compose up
 
-Now the WPS is available on port 8093: http://flyingpigeon:8093/wps?service=WPS&version=1.0.0&request=GetCapabilities.
+Now the WPS is available on port 8093: ``http://flyingpigeon:8093/wps?service=WPS&version=1.0.0&request=GetCapabilities``.

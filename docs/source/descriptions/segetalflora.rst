@@ -2,4 +2,4 @@
 Segetal flora
 --------------
 
-Species biodiversity of segetal flora. Imput files: variable:tas, domain: EUR-11 or EUR-44.
+Species biodiversity of segetal flora. Input files: variable:tas, domain: EUR-11 or EUR-44.
