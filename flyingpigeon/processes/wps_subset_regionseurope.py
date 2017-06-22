@@ -26,10 +26,10 @@ class ClipregionseuropeProcess(Process):
                          default='DEU',
                          allowed_values=_EUREGIONS_),
 
-            LiteralInput('mosaic', 'Mosaic',
+            LiteralInput('mosaic', 'Union of multiple regions',
                          data_type='boolean',
-                         abstract="If Mosaic is checked, selected polygons will be merged"
-                                  " to one Mosaic for each input file.",
+                         abstract="If True, selected regions will be merged"
+                                  " into a single geometry.",
                          min_occurs=0,
                          max_occurs=1,
                          default=False),
