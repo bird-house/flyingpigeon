@@ -19,7 +19,7 @@ class ClipcontinentProcess(Process):
         inputs = [
             LiteralInput('region', 'Region',
                          data_type='string',
-                         # abstract= countries_longname(), # need to handle special non-ascii char in countries.
+                         abstract= "Continent name.",
                          min_occurs=1,
                          max_occurs=len(_CONTINENTS_),
                          default='Africa',
@@ -46,14 +46,14 @@ class ClipcontinentProcess(Process):
         ]
 
         outputs = [
-            ComplexOutput('output', 'Subsets',
-                          abstract="Tar archive containing the netCDF files",
+            ComplexOutput('output', 'Tar archive',
+                          abstract="Tar archive of the subsetted netCDF files.",
                           as_reference=True,
                           supported_formats=[Format('application/x-tar')]
                           ),
 
-            ComplexOutput('ncout', 'Subsets for one dataset',
-                          abstract="NetCDF file with subsets of one dataset.",
+            ComplexOutput('ncout', 'Example netCDF file',
+                          abstract="NetCDF file with subset for one dataset.",
                           as_reference=True,
                           supported_formats=[Format('application/x-netcdf')]
                           ),
@@ -70,7 +70,7 @@ class ClipcontinentProcess(Process):
             identifier="subset_continents",
             title="Subset (Continents)",
             version="0.10",
-            abstract="Returns only the selected polygon for each input dataset",
+            abstract="Return the data whose grid cells intersect the selected continents for each input dataset.",
             metadata=[
                 # Metadata('LSCE', 'http://www.lsce.ipsl.fr/en/index.php'),
                 Metadata('Doc', 'http://flyingpigeon.readthedocs.io/en/latest/'),

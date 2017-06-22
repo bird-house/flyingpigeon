@@ -32,7 +32,7 @@ class PointinspectionProcess(Process):
                          ]),
 
             LiteralInput("coords", "Coordinates",
-                         abstract="a comma-seperated tuple of WGS85 lon,lat decimal coordinates (e.g. 2.356138, 48.846450)",
+                         abstract="A comma-seperated tuple of WGS85 lon,lat decimal coordinates (e.g. 2.356138, 48.846450)",
                          default="2.356138, 48.846450",
                          data_type='string',
                          min_occurs=1,
@@ -57,7 +57,7 @@ class PointinspectionProcess(Process):
             self._handler,
             identifier="pointinspection",
             title="Point Inspection",
-            abstract='Extracts the timeseries of the given coordinates',
+            abstract='Extract the timeseries at the given coordinates.',
             version="0.10",
             metadata=[
                 Metadata('LSCE', 'http://www.lsce.ipsl.fr/en/index.php'),

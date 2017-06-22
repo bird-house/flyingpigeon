@@ -73,8 +73,7 @@ class SegetalfloraProcess(Process):
             self._handler,
             identifier="segetalflora",
             title="Segetal Flora",
-            abstract="Species biodiversity of segetal flora. Imput files: variable:tas , \
-                    domain: EUR-11 or EUR-44",
+            abstract="Species biodiversity of segetal flora. ",
             version="0.10",
             metadata=[
                 Metadata('LSCE', 'http://www.lsce.ipsl.fr/en/index.php'),

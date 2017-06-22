@@ -20,8 +20,7 @@ class ClipregionseuropeProcess(Process):
         inputs = [
             LiteralInput('region', 'Region',
                          data_type='string',
-                         # abstract= countries_longname(), # need to handle special non-ascii char in countries.
-                         abstract="Region ISO-3166 Alpha2: https://en.wikipedia.org/wiki/ISO_3166-2 ",
+                         abstract="European region code, see ISO-3166 Alpha2: https://en.wikipedia.org/wiki/ISO_3166-2 ",
                          min_occurs=1,
                          max_occurs=len(_EUREGIONS_),
                          default='DEU',
@@ -48,14 +47,14 @@ class ClipregionseuropeProcess(Process):
         ]
 
         outputs = [
-            ComplexOutput('output', 'Subsets',
-                          abstract="Tar archive containing the netCDF files",
+            ComplexOutput('output', 'Tar archive',
+                          abstract="Tar archive of the subsetted netCDF files.",
                           as_reference=True,
                           supported_formats=[Format('application/x-tar')]
                           ),
 
-            ComplexOutput('ncout', 'Subsets for one dataset',
-                          abstract="NetCDF file with subsets of one dataset.",
+            ComplexOutput('ncout', 'Example netCDF file',
+                          abstract="NetCDF file with subset for one dataset.",
                           as_reference=True,
                           supported_formats=[Format('application/x-netcdf')]
                           ),
@@ -72,7 +71,7 @@ class ClipregionseuropeProcess(Process):
             identifier="subset_regionseurope",
             title="Subset (European Regions)",
             version="0.10",
-            abstract="Returns only the selected polygon for each input dataset",
+            abstract="Return the data whose grid cells inteserct the selected regions for each input dataset.",
             metadata=[
                 Metadata('LSCE', 'http://www.lsce.ipsl.fr/en/index.php'),
                 Metadata('Documentation', 'http://flyingpigeon.readthedocs.io/en/latest/'),
