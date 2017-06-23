@@ -44,7 +44,7 @@ class IndicessingleProcess(Process):
                          abstract="Temporal group over which the index is computed.",
                          default='yr',
                          data_type='string',
-                         min_occurs=0,
+                         min_occurs=1,
                          max_occurs=len(GROUPING),
                          allowed_values=GROUPING
                          ),
@@ -114,27 +114,31 @@ class IndicessingleProcess(Process):
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
-        resources = archiveextract(
-            resource=rename_complexinputs(request.inputs['resource']))
+        try:
+            resources = archiveextract(
+                resource=rename_complexinputs(request.inputs['resource']))
 
-        indices = [inpt.data for inpt in request.inputs['indices']]
-        grouping = [inpt.data for inpt in request.inputs['grouping']]
+            indices = [inpt.data for inpt in request.inputs['indices']]
+            grouping = [inpt.data for inpt in request.inputs['grouping']]
 
-        if 'mosaic' in request.inputs:
-            mosaic = request.inputs['mosaic'][0].data
-        else:
-            mosaic = False
+            if 'mosaic' in request.inputs:
+                mosaic = request.inputs['mosaic'][0].data
+            else:
+                mosaic = False
 
-        if 'region' in request.inputs:
-            region = [inpt.data for inpt in request.inputs['region']]
-        else:
-            region = None
+            if 'region' in request.inputs:
+                region = [inpt.data for inpt in request.inputs['region']]
+            else:
+                region = None
 
-        LOGGER.debug("grouping %s " % grouping)
-        LOGGER.debug("mosaic %s " % mosaic)
-        LOGGER.debug('indices= %s ' % indices)
-        LOGGER.debug('region %s' % region)
-        LOGGER.debug('Nr of input files %s ' % len(resources))
+            LOGGER.debug("grouping %s " % grouping)
+            LOGGER.debug("mosaic %s " % mosaic)
+            LOGGER.debug('indices= %s ' % indices)
+            LOGGER.debug('region %s' % region)
+            LOGGER.debug('Nr of input files %s ' % len(resources))
+        except:
+            LOGGER.exception('failed to read in the arguments')
+
 
         response.update_status('starting: indices=%s, grouping=%s, num_files=%s'
                                % (indices,  grouping, len(resources)), 2)

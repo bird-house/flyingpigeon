@@ -227,9 +227,13 @@ class IndicespercentiledaysProcess(Process):
 
         response.outputs['output_archive'].file = output_archive
 
-        i = next((i for i, x in enumerate(results) if x), None)
-        if i is None:
-            i = "dummy.nc"
+        if type(results) is 'str':
+            i = results
+        else:
+            i = next((i for i, x in enumerate(results) if x), None)
+            if i is None:
+                i = "dummy.nc"
+
         response.outputs['ncout'].file = results[i]
 
         response.update_status("done", 100)
