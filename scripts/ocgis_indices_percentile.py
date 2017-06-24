@@ -36,6 +36,8 @@ rd.dimension_map.set_bounds(DimensionMapKey.TIME, None)
 
 kwds = {'percentile': 90, 'window_width': 5}
 calc = [{'func': 'daily_perc', 'name': 'dp', 'kwds': kwds}]
+
+
 ops = OcgOperations(dataset=rd, calc=calc,
                     output_format='nc',
                     time_region={'year': [1980, 1990]}

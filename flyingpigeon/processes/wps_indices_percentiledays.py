@@ -143,10 +143,6 @@ class IndicespercentiledaysProcess(Process):
         try:
             resources = archiveextract(
                 resource=rename_complexinputs(request.inputs['resource']))
-            # indices = request.inputs['indices'][0].data
-
-            # grouping = request.inputs['grouping'][0].data
-            # grouping = [inpt.data for inpt in request.inputs['grouping']]
 
             if 'region' in request.inputs:
                 region = request.inputs['region'][0].data
@@ -159,22 +155,8 @@ class IndicespercentiledaysProcess(Process):
                 mosaic = False
 
             percentile = request.inputs['percentile'][0].data
-            # refperiod = request.inputs['refperiod'][0].data
 
-            from datetime import datetime as dt
-            #
-            # if refperiod is not None:
-            #     start = dt.strptime(refperiod.split('-')[0], '%Y%m%d')
-            #     end = dt.strptime(refperiod.split('-')[1], '%Y%m%d')
-            #     refperiod = [start, end]
-
-            # response.update_status('starting: indices=%s, grouping=%s, num_files=%s'
-            #                        % (indices,  grouping, len(resources)), 2)
-
-            # LOGGER.debug("grouping %s " % grouping)
             LOGGER.debug("mosaic %s " % mosaic)
-            # LOGGER.debug("refperiod set to %s, %s " % (start, end))
-            # LOGGER.debug('indices= %s ' % indices)
             LOGGER.debug('percentile: %s' % percentile)
             LOGGER.debug('region %s' % region)
             LOGGER.debug('Nr of input files %s ' % len(resources))
@@ -185,56 +167,49 @@ class IndicespercentiledaysProcess(Process):
         from flyingpigeon.utils import sort_by_filename
         from flyingpigeon.ocgis_module import call
 
-        kwds = {'percentile': percentile, 'window_width': 5}
-        calc = [{'func': 'daily_perc', 'name': 'dp', 'kwds': kwds}]
-        #
-        # ops = OcgOperations(dataset=rd, calc=calc,
-        #                     output_format='nc',
-        #                     time_region={'year': [1980, 1990]}
-        #                     ).execute()
-
         datasets = sort_by_filename(resources, historical_concatination=True)
         results = []
+
+        kwds = {'percentile': 90, 'window_width': 5}
+        calc = [{'func': 'daily_perc', 'name': 'dp', 'kwds': kwds}]
 
         try:
             for key in datasets.keys():
                 try:
-                    if region is None:
-                        result = call(resource=datasets[key],
-                                      output_format='nc',
-                                      calc=calc,
-                                      prefix=key,
-                                      # time_region={'year': [1995, 2000]}
-                                      # calc_grouping='year'
-                                      )
-                        LOGGER.debug('percentile based indice done for %s' % result)
-                    else:
-                        clipping(resource=datasets[key], variable=None,
-                                 calc=calc,
-                                 calc_grouping=None,
-                                 time_range=None,
-                                 time_region=None,
-                                 polygons=region,
-                                 mosaic=mosaic
-                                 )
+                    # if region is None:
+                    result = call(resource=datasets[key],
+                                  output_format='nc',
+                                  calc=calc,
+                                  # prefix=key,
+                                  # time_region={'year': [1995, 2000]}
+                                  # calc_grouping='year'
+                                  )
+                    LOGGER.debug('percentile based indice done for %s' % result)
+                    # else:
+                    #     clipping(resource=datasets[key], variable=None,
+                    #              calc=calc,
+                    #              calc_grouping=None,
+                    #              time_range=None,
+                    #              time_region=None,
+                    #              polygons=region,
+                    #              mosaic=mosaic
+                    #              )
                     results.extend([result])
                 except:
                     LOGGER.exception("failed to calculate percentil based indice for %s " % key)
         except:
             LOGGER.exception("failed to calculate percentile indices")
 
-        output_archive = archive(results)
 
-        response.outputs['output_archive'].file = output_archive
+        tarf = archive(results)
 
-        if type(results) is 'str':
-            i = results
-        else:
-            i = next((i for i, x in enumerate(results) if x), None)
-            if i is None:
-                i = "dummy.nc"
+        response.outputs['output_archive'].file = tarf
 
+        i = next((i for i, x in enumerate(results) if x), None)
+        if i is None:
+            i = "dummy.nc"
         response.outputs['ncout'].file = results[i]
 
+#       response.update_status("done", 100)
         response.update_status("done", 100)
         return response
