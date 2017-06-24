@@ -215,8 +215,8 @@ class IndicespercentiledaysProcess(Process):
                                  time_range=None,
                                  time_region=None,
                                  polygons=region,
-                                 mosaic=mosaic)
-
+                                 mosaic=mosaic
+                                 )
                     results.extend([result])
                 except:
                     LOGGER.exception("failed to calculate percentil based indice for %s " % key)

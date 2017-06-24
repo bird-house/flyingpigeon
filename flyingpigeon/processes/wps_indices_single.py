@@ -45,7 +45,7 @@ class IndicessingleProcess(Process):
                          default='yr',
                          data_type='string',
                          min_occurs=1,
-                         max_occurs=len(GROUPING),
+                         max_occurs=1,  # len(GROUPING),
                          allowed_values=GROUPING
                          ),
 
@@ -139,7 +139,6 @@ class IndicessingleProcess(Process):
         except:
             LOGGER.exception('failed to read in the arguments')
 
-
         response.update_status('starting: indices=%s, grouping=%s, num_files=%s'
                                % (indices,  grouping, len(resources)), 2)
 
@@ -149,30 +148,30 @@ class IndicessingleProcess(Process):
         datasets = sort_by_filename(resources, historical_concatination=True)
         results = []
         try:
-            for group in grouping:
-                for indice in indices:
-                    for key in datasets.keys():
-                        try:
-                            response.update_status('Dataset %s: %s' % (len(results)+1,  key), 10)
+            group = grouping[0]  # for group in grouping:
+            indice = indices[0]  # for indice in indices:
+            for key in datasets.keys():
+                try:
+                    response.update_status('Dataset %s: %s' % (len(results)+1,  key), 10)
 
-                            LOGGER.debug("group %s " % group)
-                            LOGGER.debug("mosaic %s " % mosaic)
-                            LOGGER.debug('indice %s ' % indice)
-                            LOGGER.debug('region %s' % region)
-                            LOGGER.debug('Nr of input files %s ' % len(datasets[key]))
+                    LOGGER.debug("group %s " % group)
+                    LOGGER.debug("mosaic %s " % mosaic)
+                    LOGGER.debug('indice %s ' % indice)
+                    LOGGER.debug('region %s' % region)
+                    LOGGER.debug('Nr of input files %s ' % len(datasets[key]))
 
-                            result = calc_indice_simple(
-                                resource=datasets[key],
-                                mosaic=mosaic,
-                                indice=indice,
-                                polygons=region,
-                                grouping=group,
-                                # dir_output=path.curdir,
-                                )
-                            LOGGER.debug('result: %s' % result)
-                            results.extend(result)
-                        except:
-                            LOGGER.exception('failed for %s', key)
+                    result = calc_indice_simple(
+                        resource=datasets[key],
+                        mosaic=mosaic,
+                        indice=indice,
+                        polygons=region,
+                        grouping=group,
+                        # dir_output=path.curdir,
+                        )
+                    LOGGER.debug('result: %s' % result)
+                    results.extend(result)
+                except:
+                    LOGGER.exception('failed for %s', key)
         except:
             LOGGER.exception('Failed to calculate indices')
 #         # if not results:
