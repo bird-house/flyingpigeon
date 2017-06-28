@@ -101,6 +101,7 @@ class TestDissimilarity(TestBase):
         self.assertEqual(dist.shape, (1, 1, 2, 2))
 
 
+
 def test_dissimilarity_op():
     """Test with a real file."""
     import datetime as dt
@@ -153,15 +154,15 @@ def test_dissimilarity_op():
 
     res = ops.execute()
     out = res.get_element()
+    val = out['dissimilarity_seuclidean'].get_value()
     i = np.argmin(np.abs(out['lon'].get_value()-lon))
     j = np.argmin(np.abs(out['lat'].get_value()-lat))
-    np.testing.assert_almost_equal( out['dissimilarity_seuclidean'].get_value()[
-        j,i], 0, 6)
+    np.testing.assert_almost_equal( val[j,i], 0, 6)
+    np.testing.assert_array_equal(val > 0, True)
 
 
 @pytest.mark.online
-#@pytest.mark.skip(reason="no way of currently testing this")
-def test_wps_spatial_analog_process():
+def test_wps_spatial_analog_process_small_sample():
     client = client_for(Service(processes=[SpatialAnalogProcess()]))
     datainputs = "candidate=files@xlink:href={0};target=files@xlink:href={" \
                  "1};location={2},{3};indices={4};indices={5};dist={6};dateStartCandidate={7};dateEndCandidate={8};dateStartTarget={7};dateEndTarget={8}"\
@@ -175,3 +176,30 @@ def test_wps_spatial_analog_process():
 
     assert_response_success(resp)
 
+
+
+# @pytest.mark.slow
+# @pytest.mark.online
+# def test_wps_spatial_analog_process():
+#     """Switch small and medium to compute over larger array. This is too slow."""
+#     client = client_for(Service(processes=[SpatialAnalogProcess()]))
+#     datainputs = "candidate=files@xlink:href={1};target=files@xlink:href={" \
+#                  "0};location={2},{3};indices={4};indices={5};dist={6};dateStartCandidate={7};dateEndCandidate={8};dateStartTarget={7};dateEndTarget={8}"\
+#         .format(TESTDATA['indicators_small.nc'], TESTDATA['indicators_medium.nc'], -72, 46, 'meantemp',
+#                 'totalpr', 'kldiv', '1970-01-01', '1990-01-01')
+#
+#     resp = client.get(
+#         service='wps', request='execute', version='1.0.0',
+#         identifier='spatial_analog',
+#         datainputs=datainputs)
+#
+#     assert_response_success(resp)
+
+"""
+Testing notes
+-------------
+If you run a test function in ipython and launch %debug, you can access the error
+message by going up the stack into the fonction and print resp.response
+
+
+"""

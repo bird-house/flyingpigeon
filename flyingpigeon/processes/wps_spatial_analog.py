@@ -33,8 +33,8 @@ class SpatialAnalogProcess(Process):
     def __init__(self):
         inputs = [
             ComplexInput('candidate', 'Candidate netCDF dataset',
-                         abstract='NetCDF files or archive (tar/zip) containing netcdf '
-                                  'files storing the candidate indices.',
+                         abstract='NetCDF files or archive (tar/zip)  '
+                                  'storing the candidate indices. The output will be stored on this grid.',
                          metadata=[Metadata('Info')],
                          min_occurs=1,
                          max_occurs=1000,
@@ -45,7 +45,7 @@ class SpatialAnalogProcess(Process):
                          ]),
 
             ComplexInput('target', 'Target netCDF dataset',
-                         abstract='NetCDF files or archive (tar/zip) '
+                         abstract='NetCDF files or archive (tar/zip).'
                                   'containing netcdf files storing the '
                                   'target indices.',
                          metadata=[Metadata('Info')],
@@ -141,7 +141,7 @@ class SpatialAnalogProcess(Process):
                      "indices. The algorithm compares the distribution of the "
                      "target indices with the distribution of spatially "
                      "distributed candidate indices and returns a value  "
-                     "measuring the dissimilarity between both distributions.",
+                     "measuring the dissimilarity between both distributions over the candidate grid.",
             version="0.1",
             metadata=[
                 Metadata('Doc', 'http://flyingpigeon.readthedocs.io/en/latest/'),
