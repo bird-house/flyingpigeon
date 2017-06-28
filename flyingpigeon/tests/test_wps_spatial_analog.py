@@ -17,7 +17,7 @@ from ocgis.collection.field import Field
 from ocgis.variable.base import Variable
 from ocgis.spatial.grid import Grid
 from ocgis.variable.temporal import TemporalVariable
-
+from ocgis.base import get_variable_names
 from ocgis.test.base import TestBase
 
 class TestDissimilarity(TestBase):
@@ -39,10 +39,11 @@ class TestDissimilarity(TestBase):
     def get_field(self, ntime=2, variable_name='foo', nrow=2, ncol=2):
         np.random.seed(1)
 
-        row = Variable(value=range(4, 4+nrow), name='row', dimensions='row')
-        col = Variable(value=range(40, 40+ncol), name='col', dimensions='col')
+        row = Variable(value=np.arange(nrow)-nrow/2., name='row', dimensions='row')
+        col = Variable(value=np.arange(ncol) - ncol/2., name='col', dimensions='col')
 
         grid = Grid(col, row)
+        x,y = grid.get_value_stacked()
 
         start = dt.datetime(2000, 1, 1)
         delta = dt.timedelta(days=1)
@@ -56,10 +57,9 @@ class TestDissimilarity(TestBase):
 
         nrlz = 1
         realization = None
-
+        value = np.random.rand(nrlz, ntime, nlevel, nrow, ncol) * np.arctan2(x, y).clip(.1) + np.hypot(x,y)
         variable = Variable(name=variable_name,
-                            value=np.random.rand(nrlz, ntime, nlevel, nrow,
-                                                 ncol),
+                            value=value,
                             dimensions=['realization', 'time', 'level', 'row',
                                         'col'])
         field = Field(grid=grid, time=temporal, is_data=variable, level=level,
@@ -67,8 +67,49 @@ class TestDissimilarity(TestBase):
 
         return field
 
-    def test(self):
-        from ocgis.base import get_variable_names
+    def test_full(self):
+        from flyingpigeon import dissimilarity
+        from matplotlib import pyplot as plt
+
+        p1 = self.write_field_data('v1', ncol=1, nrow=1)
+        p2 = self.write_field_data('v2', ncol=1, nrow=1)
+        p3 = self.write_field_data('v1', ncol=11, nrow=10, dir='c')
+        p4 = self.write_field_data('v2', ncol=11, nrow=10, dir='c')
+
+        ref_range = [dt.datetime(2000, 3, 1), dt.datetime(2000, 3, 31)]
+        ref = [ocgis.RequestDataset(p, time_range=ref_range) for p in [p1,
+                                                                       p2]]
+        reference = ocgis.MultiRequestDataset(ref)
+        reference = reference.get()
+
+        cand_range = [dt.datetime(2000, 8, 1), dt.datetime(2000, 8, 31)]
+        can = [ocgis.RequestDataset(p, time_range=cand_range) for p in [p3,
+                                                                        p4]]
+        candidate = ocgis.MultiRequestDataset(can)
+
+        fig, axes = plt.subplots(2,3)
+        for i, dist in enumerate(dissimilarity.__all__):
+
+            calc = [{'func': 'dissimilarity',
+                     'name': 'output_mfpf',
+                     'kwds': {'target': reference,
+                              'candidate': ('v1', 'v2'),
+                              'dist':dist}}]
+
+            ops = OcgOperations(dataset=candidate, calc=calc)
+            ret = ops.execute()
+            out_field = ret.get_element()
+            var_name = get_variable_names(out_field.data_variables)[0]
+            out = out_field[var_name].get_value()[0,0]
+
+            axes.flat[i].imshow(out);
+            axes.flat[i].set_title(dist)
+
+        plt.savefig('test_spatial_analog_metrics.png')
+        plt.close()
+
+    def test_simple(self):
+
 
         p1 = self.write_field_data('v1', ncol=1, nrow=1)
         p2 = self.write_field_data('v2', ncol=1, nrow=1)
@@ -99,8 +140,6 @@ class TestDissimilarity(TestBase):
                          ('dissimilarity_seuclidean'))
         dist = actual_field['dissimilarity_seuclidean']
         self.assertEqual(dist.shape, (1, 1, 2, 2))
-
-
 
 def test_dissimilarity_op():
     """Test with a real file."""
