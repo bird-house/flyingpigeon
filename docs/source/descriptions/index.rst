@@ -8,6 +8,7 @@ A combination of processes will be called a 'workflow'.
    :maxdepth: 1
 
    analogues
+   spatial_analogs
    indices
    sdm
    subset
