@@ -101,11 +101,10 @@ class TestDissimilarity(TestBase):
             out_field = ret.get_element()
             var_name = get_variable_names(out_field.data_variables)[0]
             out = out_field[var_name].get_value()[0,0]
-
             axes.flat[i].imshow(out);
             axes.flat[i].set_title(dist)
 
-        plt.savefig('test_spatial_analog_metrics.png')
+        plt.savefig('flyingpigeon/tests/__pycache__/test_spatial_analog_metrics.png')
         plt.close()
 
     def test_simple(self):
