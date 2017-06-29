@@ -37,6 +37,9 @@ class TestDissimilarity(TestBase):
         return path
 
     def get_field(self, ntime=2, variable_name='foo', nrow=2, ncol=2):
+        """Create random field where mean varies with radius and std with the
+        angle around the center of the grid.
+        """
         np.random.seed(1)
 
         row = Variable(value=np.arange(nrow)-nrow/2., name='row', dimensions='row')
@@ -68,6 +71,7 @@ class TestDissimilarity(TestBase):
         return field
 
     def test_full(self):
+        """Compute the dissimilarity will all metrics."""
         from flyingpigeon import dissimilarity
         from matplotlib import pyplot as plt
 
@@ -108,8 +112,6 @@ class TestDissimilarity(TestBase):
         plt.close()
 
     def test_simple(self):
-
-
         p1 = self.write_field_data('v1', ncol=1, nrow=1)
         p2 = self.write_field_data('v2', ncol=1, nrow=1)
         p3 = self.write_field_data('v1', dir='b')
