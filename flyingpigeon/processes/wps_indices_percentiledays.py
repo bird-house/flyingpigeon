@@ -200,7 +200,6 @@ class IndicespercentiledaysProcess(Process):
         except:
             LOGGER.exception("failed to calculate percentile indices")
 
-
         tarf = archive(results)
 
         response.outputs['output_archive'].file = tarf
