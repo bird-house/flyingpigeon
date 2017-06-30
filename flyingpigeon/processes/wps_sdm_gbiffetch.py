@@ -35,7 +35,6 @@ class GBIFfetchProcess(Process):
             # #         maxOccurs=1,
             # #         crss=['EPSG:4326']
 
-
         outputs = [
             ComplexOutput('output_map', 'Graphic of species occurences',
                           abstract="PNG graphic file showing the presence of tree species \
