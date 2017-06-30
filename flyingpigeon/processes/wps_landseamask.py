@@ -95,7 +95,8 @@ class LandseamaskProcess(Process):
             identifier="landseamask",
             title="Land-Sea Mask",
             version="0.3",
-            abstract="Mask grid cells according to their land area fraction.",
+            abstract="Mask grid cells according to their land area fraction."
+                     " This process uses the ESGF datastore to access an appropriate land/sea mask.",
             metadata=[
                 {"title": "Doc", "href": "http://flyingpigeon.readthedocs.io/en/latest/"},
             ],
