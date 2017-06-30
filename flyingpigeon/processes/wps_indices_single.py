@@ -18,6 +18,10 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class IndicessingleProcess(Process):
+    """
+    TODO: improved description
+    TODO: additional ows:metadata to display indices and regions.
+    """
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
@@ -140,7 +144,7 @@ class IndicessingleProcess(Process):
             LOGGER.exception('failed to read in the arguments')
 
         response.update_status('starting: indices=%s, grouping=%s, num_files=%s'
-                               % (indices,  grouping, len(resources)), 2)
+                               % (indices, grouping, len(resources)), 2)
 
         results = []
 
@@ -152,7 +156,7 @@ class IndicessingleProcess(Process):
             indice = indices[0]  # for indice in indices:
             for key in datasets.keys():
                 try:
-                    response.update_status('Dataset %s: %s' % (len(results)+1,  key), 10)
+                    response.update_status('Dataset %s: %s' % (len(results) + 1, key), 10)
 
                     LOGGER.debug("group %s " % group)
                     LOGGER.debug("mosaic %s " % mosaic)
@@ -167,7 +171,7 @@ class IndicessingleProcess(Process):
                         polygons=region,
                         grouping=group,
                         # dir_output=path.curdir,
-                        )
+                    )
                     LOGGER.debug('result: %s' % result)
                     results.extend(result)
                 except:
@@ -177,7 +181,6 @@ class IndicessingleProcess(Process):
 #         # if not results:
 #         #     raise Exception("failed to produce results")
 #         # response.update_status('num results %s' % len(results), 90)
-
 
         tarf = archive(results)
 

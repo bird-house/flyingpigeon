@@ -18,6 +18,10 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class IndicespercentiledaysProcess(Process):
+    """
+    TODO: need a more detailed description and an example.
+    TODO: data input might need a data selection filter? metadata attributes could be used for this.
+    """
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
@@ -199,7 +203,6 @@ class IndicespercentiledaysProcess(Process):
                     LOGGER.exception("failed to calculate percentil based indice for %s " % key)
         except:
             LOGGER.exception("failed to calculate percentile indices")
-
 
         tarf = archive(results)
 
