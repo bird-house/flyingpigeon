@@ -25,6 +25,7 @@ rd.dimension_map.set_bounds(DimensionMapKey.TIME, None)
 kwds = {'percentile': percentile, 'window_width': window_width}
 calc = [{'func': 'daily_perc', 'name': 'dp', 'kwds': kwds}]
 
+
 ops = OcgOperations(dataset=rd,
                     calc=calc,
                     output_format='nc',
@@ -34,11 +35,9 @@ print ops
 
 from flyingpigeon.config import shapefiles_dir
 from ocgis import env
-
 from flyingpigeon.subset import get_geom, get_ugid
 
 env.DIR_SHPCABINET = shapefiles_dir()
-
 geom = get_geom('CMR')
 ugid = get_ugid(polygons='CMR', geom=geom)
 
@@ -49,4 +48,23 @@ ops = OcgOperations(dataset=rd,
                     output_format='nc',
                     prefix='polygonsubset'
                     ).execute()
+print ops
+
+from flyingpigeon import subset
+ops = subset.clipping(resource=resource,
+                      variable=None,
+                      # dimension_map=None,
+                      calc=calc,
+                      output_format='nc',
+                      # calc_grouping=None,
+                      # time_range=None,
+                      # time_region=None,
+                      # historical_concatination=True,
+                      prefix="clipping_call",
+                      spatial_wrapping='wrap',
+                      polygons='CMR',
+                      mosaic=False,
+                      dir_output=None,
+                      memory_limit=None)
+
 print ops
