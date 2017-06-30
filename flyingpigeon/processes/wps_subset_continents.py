@@ -19,7 +19,7 @@ class ClipcontinentProcess(Process):
         inputs = [
             LiteralInput('region', 'Region',
                          data_type='string',
-                         abstract= "Continent name.",
+                         abstract="Continent name.",
                          min_occurs=1,
                          max_occurs=len(_CONTINENTS_),
                          default='Africa',
