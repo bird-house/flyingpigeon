@@ -43,7 +43,7 @@ class FetchProcess(Process):
             title="Fetch Resources",
             version="0.10",
             abstract="Fetch data resources (limited to 50GB) to the local file"
-                        "system of the birdhouse compute provider.",
+                     "system of the birdhouse compute provider.",
             metadata=[
                 Metadata('Documentation', 'http://flyingpigeon.readthedocs.io/en/latest/'),
             ],
