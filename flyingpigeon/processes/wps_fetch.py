@@ -9,6 +9,13 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class FetchProcess(Process):
+    """
+    TODO: rename process to Copy? Could be a base process (hummingbird).
+    TODO: Provide first output directly.
+    TODO: should provide urls of copied files.
+    TODO: Need a better way to provide multiple outputs (json file ... could be interpreted and displayed by UI),
+    COWS has done somthing like this with an xml output.
+    """
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
