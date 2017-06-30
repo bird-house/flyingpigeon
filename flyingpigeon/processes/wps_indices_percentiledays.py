@@ -18,6 +18,10 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class IndicespercentiledaysProcess(Process):
+    """
+    TODO: need a more detailed description and an example.
+    TODO: data input might need a data selection filter? metadata attributes could be used for this.
+    """
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
