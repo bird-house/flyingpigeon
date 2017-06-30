@@ -16,6 +16,9 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class ClipregionseuropeProcess(Process):
+    """
+    TODO: opendap input support, additional metadata to display region names.
+    """
     def __init__(self):
         inputs = [
             LiteralInput('region', 'Region',
