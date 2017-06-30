@@ -20,7 +20,7 @@ class ClipregionseuropeProcess(Process):
         inputs = [
             LiteralInput('region', 'Region',
                          data_type='string',
-                         abstract="European region code, see ISO-3166 Alpha2: https://en.wikipedia.org/wiki/ISO_3166-2 ",
+                         abstract="European region code, see ISO-3166 Alpha2: https://en.wikipedia.org/wiki/ISO_3166-2 ",  # noqa
                          min_occurs=1,
                          max_occurs=len(_EUREGIONS_),
                          default='DEU',
