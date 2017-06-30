@@ -18,6 +18,10 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class IndicessingleProcess(Process):
+    """
+    TODO: improved description
+    TODO: additional ows:metadata to display indices and regions.
+    """
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
