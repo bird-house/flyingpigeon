@@ -18,6 +18,9 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class PointinspectionProcess(Process):
+    """
+    TODO: optionally provide point list as file (csv, geojson) and WFS service
+    """
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
