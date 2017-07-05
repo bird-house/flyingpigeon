@@ -93,6 +93,13 @@ Input Parameter:
 | SD50cm |       prsn     | Nr of days with snow >= 50 cm                                                  |
 +--------+----------------+--------------------------------------------------------------------------------+
 
+.. _indices_dailypercentile:
+
+*Indice Dailypercentile*
+
+For a given percentil value (default=90) the according value will be calculated for each day in the year.
+The reslult is an anual cycle of corresponding values.
+
 .. _indices_percentile:
 
 *Percentile-based indices*

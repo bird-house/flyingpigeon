@@ -4,6 +4,8 @@ Releasenotes
 next:
 =====
 
+* Translate code pywps4 conform
+* Climate indices dailypercentile
 * Climate Fact sheet Generator
 * R plot for SDM response cuvres running under CentOS
 * Species distribution model Processes modularized in five processes
