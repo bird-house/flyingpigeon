@@ -26,7 +26,7 @@ class ClipregionseuropeProcess(Process):
                          abstract="European region code, see ISO-3166 Alpha2: https://en.wikipedia.org/wiki/ISO_3166-2 ",  # noqa
                          min_occurs=1,
                          max_occurs=len(_EUREGIONS_),
-                         default='DEU',
+                         default='DE.HH',
                          allowed_values=_EUREGIONS_),
 
             LiteralInput('mosaic', 'Union of multiple regions',
@@ -39,7 +39,6 @@ class ClipregionseuropeProcess(Process):
 
             ComplexInput('resource', 'Resource',
                          abstract='NetCDF Files or archive (tar/zip) containing NetCDF files.',
-                         metadata=[Metadata('Info')],
                          min_occurs=1,
                          max_occurs=1000,
                          supported_formats=[
