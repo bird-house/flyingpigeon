@@ -1,8 +1,8 @@
 Releasenotes
 ************
 
-next:
-=====
+0.10.0 (2017-07-10)
+===================
 
 * Climate Fact sheet Generator
 * R plot for SDM response cuvres running under CentOS
