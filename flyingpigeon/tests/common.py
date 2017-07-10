@@ -14,14 +14,30 @@ SERVICE = "http://localhost:8093/wps"
 
 TESTS_HOME = os.path.abspath(os.path.dirname(__file__))
 
-TESTDATA = { 
-    'cmip5_tasmax_2006_nc': "file://{0}".format(os.path.join(TESTS_HOME, 'testdata', 'cmip5', 'tasmax_Amon_MPI-ESM-MR_rcp45_r1i1p1_200601-200612.nc')),
-    'cmip5_tasmax_2007_nc': "file://{0}".format(os.path.join(TESTS_HOME, 'testdata', 'cmip5', 'tasmax_Amon_MPI-ESM-MR_rcp45_r1i1p1_200701-200712.nc')),
-    'cordex_tasmax_2006_nc': "file://{0}".format(os.path.join(TESTS_HOME, 'testdata', 'cordex', 'tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon_200602-200612.nc')),
-    'cordex_tasmax_2007_nc': "file://{0}".format(os.path.join(TESTS_HOME, 'testdata', 'cordex', 'tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon_200701-200712.nc')),
-    }
+TESTDATA = {
+    'cmip5_tasmax_2006_nc': "file://{0}".format(os.path.join(
+        TESTS_HOME,
+        'testdata',
+        'cmip5',
+        'tasmax_Amon_MPI-ESM-MR_rcp45_r1i1p1_200601-200612.nc')),
+    'cmip5_tasmax_2007_nc': "file://{0}".format(os.path.join(
+        TESTS_HOME,
+        'testdata',
+        'cmip5',
+        'tasmax_Amon_MPI-ESM-MR_rcp45_r1i1p1_200701-200712.nc')),
+    'cordex_tasmax_2006_nc': "file://{0}".format(os.path.join(
+        TESTS_HOME,
+        'testdata',
+        'cordex',
+        'tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon_200602-200612.nc')),
+    'cordex_tasmax_2007_nc': "file://{0}".format(os.path.join(
+        TESTS_HOME,
+        'testdata',
+        'cordex',
+        'tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon_200701-200712.nc')),
+}
 
-    
+
 class WpsTestClient(object):
     def __init__(self):
         pywps_path = os.path.dirname(pywps.__file__)
@@ -32,14 +48,15 @@ class WpsTestClient(object):
         os.environ['PATH'] = "{0}:{1}".format(os.path.join(home_path, 'bin'), os.environ['PATH'])
         os.environ['GDAL_DATA'] = os.path.join(home_path, 'share', 'gdal')
         self.wps = pywps.Pywps(os.environ["REQUEST_METHOD"], os.environ.get("PYWPS_CFG"))
-   
+
     def get(self, *args, **kwargs):
         query = ""
-        for key,value in kwargs.iteritems():
+        for key, value in kwargs.iteritems():
             query += "{0}={1}&".format(key, value)
         inputs = self.wps.parseRequest(query)
         self.wps.performRequest(inputs)
         return WpsTestResponse(self.wps.response)
+
 
 class WpsTestResponse(object):
 
@@ -57,6 +74,3 @@ class WpsTestResponse(object):
 def assert_response_success(resp):
     success = resp.xpath('/wps:ExecuteResponse/wps:Status/wps:ProcessSucceeded')
     assert len(success) == 1
-    
-
-
