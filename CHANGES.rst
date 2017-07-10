@@ -8,6 +8,7 @@ Releasenotes
 * R plot for SDM response cuvres running under CentOS
 * Species distribution model Processes modularized in five processes
 * Direction switch for analogs comparison process
+* Added clipping proceses for continents, countries and regions.
 
 
 0.9.1 (2016-11-16)
