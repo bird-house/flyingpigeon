@@ -50,6 +50,8 @@ class AnalogsProcess(WPSProcess):
           allowedValues=_PRESSUREDATA_
           )
 
+        """
+        # TODO: bbox does not work
         self.BBox = self.addBBoxInput(
           identifier="BBox",
           title="Bounding Box",
@@ -58,6 +60,7 @@ class AnalogsProcess(WPSProcess):
           maxOccurs=1,
           crss=['EPSG:4326']
           )
+        """
 
         self.dateSt = self.addLiteralInput(
           identifier="dateSt",
@@ -241,7 +244,7 @@ class AnalogsProcess(WPSProcess):
     def execute(self):
         init_process_logger('log.txt')
         self.output_log.setValue('log.txt')
-        
+
         import time  # performance test
         process_start_time = time.time()  # measure process execution time ...
 
@@ -257,7 +260,7 @@ class AnalogsProcess(WPSProcess):
         start_time = time.time()  # measure init ...
 
         resource = self.getInputValues(identifier='resource')
-        bbox_obj = self.BBox.getValue()
+        bbox_obj = None  # self.BBox.getValue()
         refSt = self.getInputValues(identifier='refSt')
         refEn = self.getInputValues(identifier='refEn')
         dateSt = self.getInputValues(identifier='dateSt')
