@@ -40,6 +40,8 @@ class WeatherRegimesRProcess(WPSProcess):
 
         # Literal Input Data
         # ------------------
+        """
+        # TODO: fix bbox parameter
         self.BBox = self.addBBoxInput(
             identifier="BBox",
             title="Bounding Box",
@@ -48,6 +50,7 @@ class WeatherRegimesRProcess(WPSProcess):
             maxOccurs=1,
             crss=['EPSG:4326']
             )
+        """
 
         # self.BBox = self.addLiteralInput(
         #     identifier="BBox",
@@ -164,7 +167,7 @@ class WeatherRegimesRProcess(WPSProcess):
             logger.info('read in the arguments')
             resource = self.getInputValues(identifier='resource')
             season = self.getInputValues(identifier='season')[0]
-            bbox_obj = self.BBox.getValue()
+            bbox_obj = None  # self.BBox.getValue()
             period = self.getInputValues(identifier='period')[0]
             anualcycle = self.getInputValues(identifier='anualcycle')[0]
 
@@ -173,7 +176,6 @@ class WeatherRegimesRProcess(WPSProcess):
 
             kappa = int(self.getInputValues(identifier='kappa')[0])
 
-            logger.info('bbox %s' % bbox)
             logger.info('period %s' % str(period))
             logger.info('season %s' % str(season))
 
