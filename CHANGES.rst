@@ -1,8 +1,8 @@
 Releasenotes
 ************
 
-next:
-=====
+0.10.0 (2017-07-10)
+===================
 
 * Translate code pywps4 conform
 * Climate indices dailypercentile
@@ -10,7 +10,6 @@ next:
 * R plot for SDM response cuvres running under CentOS
 * Species distribution model Processes modularized in five processes
 * Direction switch for analogs comparison process
-
 
 0.9.1 (2016-11-16)
 ==================

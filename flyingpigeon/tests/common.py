@@ -6,11 +6,27 @@ SERVICE = "http://localhost:8093/wps"
 TESTS_HOME = os.path.abspath(os.path.dirname(__file__))
 
 TESTDATA = {
-    'cmip5_tasmax_2006_nc': "file://{0}".format(os.path.join(TESTS_HOME, 'testdata', 'cmip5', 'tasmax_Amon_MPI-ESM-MR_rcp45_r1i1p1_200601-200612.nc')),  # noqa
-    'cmip5_tasmax_2007_nc': "file://{0}".format(os.path.join(TESTS_HOME, 'testdata', 'cmip5', 'tasmax_Amon_MPI-ESM-MR_rcp45_r1i1p1_200701-200712.nc')),  # noqa
-    'cordex_tasmax_2006_nc': "file://{0}".format(os.path.join(TESTS_HOME, 'testdata', 'cordex', 'tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon_200602-200612.nc')),  # noqa
-    'cordex_tasmax_2007_nc': "file://{0}".format(os.path.join(TESTS_HOME, 'testdata', 'cordex', 'tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon_200701-200712.nc')),  # noqa
-    }
+    'cmip5_tasmax_2006_nc': "file://{0}".format(os.path.join(
+        TESTS_HOME,
+        'testdata',
+        'cmip5',
+        'tasmax_Amon_MPI-ESM-MR_rcp45_r1i1p1_200601-200612.nc')),
+    'cmip5_tasmax_2007_nc': "file://{0}".format(os.path.join(
+        TESTS_HOME,
+        'testdata',
+        'cmip5',
+        'tasmax_Amon_MPI-ESM-MR_rcp45_r1i1p1_200701-200712.nc')),
+    'cordex_tasmax_2006_nc': "file://{0}".format(os.path.join(
+        TESTS_HOME,
+        'testdata',
+        'cordex',
+        'tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon_200602-200612.nc')),
+    'cordex_tasmax_2007_nc': "file://{0}".format(os.path.join(
+        TESTS_HOME,
+        'testdata',
+        'cordex',
+        'tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon_200701-200712.nc')),
+}
 
 
 class WpsTestClient(WpsClient):

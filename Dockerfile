@@ -2,7 +2,7 @@
 FROM birdhouse/bird-base:latest
 MAINTAINER https://github.com/bird-house
 
-LABEL Description="flyingpigeon application" Vendor="Birdhouse" Version="0.2.1"
+LABEL Description="flyingpigeon application" Vendor="Birdhouse" Version="0.10"
 
 # Configure hostname and ports for services
 ENV HTTP_PORT 8080
