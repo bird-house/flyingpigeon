@@ -53,6 +53,8 @@ class SDMallinoneProcess(WPSProcess):
             default='Fagus sylvatica'
             )
 
+        """
+        # TODO: bbox parameter is not working
         self.BBox = self.addBBoxInput(
             identifier="BBox",
             title="Bounding Box",
@@ -61,6 +63,7 @@ class SDMallinoneProcess(WPSProcess):
             maxOccurs=1,
             crss=['EPSG:4326']
             )
+        """
 
         self.input_indices = self.addLiteralInput(
             identifier="input_indices",
@@ -184,11 +187,12 @@ class SDMallinoneProcess(WPSProcess):
             logger.info('reading the arguments')
             resources = archiveextract(self.getInputValues(identifier='resources'))
             taxon_name = self.getInputValues(identifier='taxon_name')[0]
-            bbox_obj = self.BBox.getValue()
-            bbox = [bbox_obj.coords[0][0],
-                    bbox_obj.coords[0][1],
-                    bbox_obj.coords[1][0],
-                    bbox_obj.coords[1][1]]
+            # bbox_obj = self.BBox.getValue()
+            # bbox = [bbox_obj.coords[0][0],
+            #         bbox_obj.coords[0][1],
+            #         bbox_obj.coords[1][0],
+            #         bbox_obj.coords[1][1]]
+            bbox = [-180, -90, 180, 90]
             period = self.getInputValues(identifier='period')
             period = period[0]
             indices = self.getInputValues(identifier='input_indices')
