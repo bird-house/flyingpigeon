@@ -13,6 +13,13 @@ converted processes to pywps-4:
 * point inspection
 * fetch resources
 
+0.10.1 (2017-07-11)
+===================
+
+* disabled bbox parameter ... needs to be fixed in OWSLib.
+* updated titles of analogs processes.
+* updated version in docs.
+
 0.10.0 (2017-07-10)
 ===================
 
