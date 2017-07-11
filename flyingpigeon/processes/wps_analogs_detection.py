@@ -39,6 +39,8 @@ class AnalogsProcess(WPSProcess):
           allowedValues=_PRESSUREDATA_
           )
 
+        """
+        # TODO: bbox parameter is not working
         self.BBox = self.addBBoxInput(
           identifier="BBox",
           title="Bounding Box",
@@ -47,6 +49,7 @@ class AnalogsProcess(WPSProcess):
           maxOccurs=1,
           crss=['EPSG:4326']
           )
+         """
 
         self.dateSt = self.addLiteralInput(
           identifier="dateSt",
@@ -227,7 +230,7 @@ class AnalogsProcess(WPSProcess):
             dateEn = self.getInputValues(identifier='dateEn')
             seasonwin = int(self.getInputValues(identifier='seasonwin')[0])
             nanalog = int(self.getInputValues(identifier='nanalog')[0])
-            bbox_obj = self.BBox.getValue()
+            bbox_obj = None  # self.BBox.getValue()
             normalize = self.getInputValues(identifier='normalize')[0]
             distance = self.getInputValues(identifier='dist')[0]
             outformat = self.getInputValues(identifier='outformat')[0]
