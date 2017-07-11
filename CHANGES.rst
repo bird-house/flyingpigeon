@@ -1,10 +1,10 @@
 Releasenotes
 ************
 
-current
-=======
+0.11.0 (2017-07-11)
+===================
 
-converted processes to pywps-4:
+converted processes to pywps-4 from next:
 
 * subsetting countries, continents and european regions
 * climate indices (daily percentiles, single variable)
