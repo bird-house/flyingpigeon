@@ -1,6 +1,18 @@
 Releasenotes
 ************
 
+current
+=======
+
+converted processes to pywps-4:
+
+* subsetting countries, continents and european regions
+* climate indices (daily percentiles, single variable)
+* species distribution model
+* land-sea mask
+* point inspection
+* fetch resources
+
 0.10.0 (2017-07-10)
 ===================
 
