@@ -19,6 +19,7 @@ converted processes to pywps-4:
 * disabled bbox parameter ... needs to be fixed in OWSLib.
 * updated titles of analogs processes.
 * updated version in docs.
+* disabled wps_gbiffetch test ... was stalled.
 
 0.10.0 (2017-07-10)
 ===================
