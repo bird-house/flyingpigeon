@@ -43,6 +43,8 @@ class GBIFfetchProcess(WPSProcess):
             default='Fagus sylvatica'
         )
 
+        """
+        # TODO: bbox does not work
         self.BBox = self.addBBoxInput(
             identifier="BBox",
             title="Bounding Box",
@@ -51,6 +53,7 @@ class GBIFfetchProcess(WPSProcess):
             maxOccurs=1,
             crss=['EPSG:4326']
         )
+        """
 
         ###########
         # OUTPUTS
@@ -92,11 +95,12 @@ class GBIFfetchProcess(WPSProcess):
         try:
             logger.info('reading the arguments')
             taxon_name = self.getInputValues(identifier='taxon_name')[0]
-            bbox_obj = self.BBox.getValue()
-            bbox = [bbox_obj.coords[0][0],
-                    bbox_obj.coords[0][1],
-                    bbox_obj.coords[1][0],
-                    bbox_obj.coords[1][1]]
+            # bbox_obj = self.BBox.getValue()
+            # bbox = [bbox_obj.coords[0][0],
+            #         bbox_obj.coords[0][1],
+            #         bbox_obj.coords[1][0],
+            #         bbox_obj.coords[1][1]]
+            bbox = [-180, -90, 180, 90]
             logger.info("bbox={0}".format(bbox))
             logger.info("Taxon Name = %s", taxon_name)
         except Exception as e:
