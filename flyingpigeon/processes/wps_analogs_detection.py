@@ -14,7 +14,7 @@ class AnalogsProcess(WPSProcess):
         WPSProcess.__init__(
             self,
             identifier="analogs_detection",
-            title="Analogues -- Detection",
+            title="Analogues of circulation (based on reanalyses data)",
             version="0.9",
             metadata=[
                   {"title": "LSCE",

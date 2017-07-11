@@ -15,7 +15,7 @@ class AnalogsProcess(WPSProcess):
         WPSProcess.__init__(
             self,
             identifier="analogs_model",
-            title="Analogues -- Detection",
+            title="Analogues of circulation (based on climate model data)",
             version="0.9",
             metadata=[
                   {"title": "LSCE", "href": "http://www.lsce.ipsl.fr/en/index.php"},
