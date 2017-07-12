@@ -6,8 +6,8 @@ channels:
 # ocgis
 - nesii
 # the r hell ...
-#- r
-#- bioconda
+- r
+- bioconda  # for r-mclust
 dependencies:
 - python=2.7
 - ipython
@@ -71,14 +71,14 @@ dependencies:
 # - castf90=0.1.6
 # ################
 # # r
-# - cairo # for X11 independend plot support
-# - r=3.2  # 3.3 conflicts with icu=56
-# - rpy2 #=2.7.0
-# - r-mclust #=5.1 subsuituted by cluster
-# - r-ncdf4=1.15=1
-# - r-fields #=8.4 conflicts with r3.3.1 needs 3.2
-# - r-gridextra #=2.0.0
-# - harfbuzz
+- cairo # for X11 independend plot support
+- r=3.2  # 3.3 conflicts with icu=56
+- rpy2 #=2.7.0
+- r-mclust #=5.1 subsuituted by cluster
+- r-ncdf4=1.15=1
+- r-fields #=8.4 conflicts with r3.3.1 needs 3.2
+- r-gridextra #=2.0.0
+- harfbuzz
 # #- r-cairo#=1.5_9 build in r-base
 ################
 # esgf

@@ -38,7 +38,7 @@ processes = [
     #    SDMcsvProcess(),
     #    SDMcsvindicesProcess(),
     #    SDMallinoneProcess(),
-    #    WeatherregimesreanalyseProcess(),
+    WeatherregimesreanalyseProcess(),
     #    WeatherregimesprojectionProcess(),
     #    WeatherregimesmodelProcess(),
     #    AnalogsreanalyseProcess(),
