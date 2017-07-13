@@ -88,23 +88,23 @@ class WeatherregimesreanalyseProcess(Process):
         ]
 
         outputs = [
-            ComplexOutput("Routput_graphic", "Weather Regime Pressure map",
-                          abstract="Weather Classification",
-                          supported_formats=[Format('image/pdf')],
-                          as_reference=True,
-                          ),
-
-            ComplexOutput("output_pca", "R - datafile",
-                          abstract="Principal components (PCA)",
-                          supported_formats=[Format('text/plain')],
-                          as_reference=True,
-                          ),
-
-            ComplexOutput("output_classification", "R - workspace",
-                          abstract="Weather regime classification",
-                          supported_formats=[Format("application/octet-stream")],
-                          as_reference=True,
-                          ),
+            # ComplexOutput("Routput_graphic", "Weather Regime Pressure map",
+            #               abstract="Weather Classification",
+            #               supported_formats=[Format('image/pdf')],
+            #               as_reference=True,
+            #               ),
+            #
+            # ComplexOutput("output_pca", "R - datafile",
+            #               abstract="Principal components (PCA)",
+            #               supported_formats=[Format('text/plain')],
+            #               as_reference=True,
+            #               ),
+            #
+            # ComplexOutput("output_classification", "R - workspace",
+            #               abstract="Weather regime classification",
+            #               supported_formats=[Format("application/octet-stream")],
+            #               as_reference=True,
+            #               ),
 
             ComplexOutput('output_netcdf', 'Subsets for one dataset',
                           abstract="Prepared netCDF file as input for weatherregime calculation",
@@ -248,73 +248,73 @@ class WeatherregimesreanalyseProcess(Process):
         response.update_status('computing anomalies ', 19)
 
         cycst = anualcycle.split('-')[0]
-        cycen = anualcycle.split('-')[0]
+        cycen = anualcycle.split('-')[1]
         reference = [dt.strptime(cycst, '%Y%m%d'), dt.strptime(cycen, '%Y%m%d')]
         LOGGER.exception('reference time: %s', reference)
         model_anomal = wr.get_anomalies(model_subset, reference=reference)
-
-        #####################
-        # extracting season
-        #####################
-        response.update_status('normalizing data', 21)
-        model_season = wr.get_season(model_anomal, season=season)
-
-        response.update_status('anomalies computed and  normalized', 24)
-        #######################
-        # call the R scripts
-        #######################
-        response.update_status('Start weather regime clustering ', 25)
-        import shlex
-        import subprocess
-        from flyingpigeon import config
-        from os.path import curdir, exists, join
-
-        try:
-            rworkspace = curdir
-            Rsrc = config.Rsrc_dir()
-            Rfile = 'weatherregimes_model.R'
-
-            infile = model_season  # model_subset #model_ponderate
-            modelname = model
-            yr1 = start.year
-            yr2 = end.year
-            ip, output_graphics = mkstemp(dir=curdir, suffix='.pdf')
-            ip, file_pca = mkstemp(dir=curdir, suffix='.txt')
-            ip, file_class = mkstemp(dir=curdir, suffix='.Rdat')
-
-            args = ['Rscript', join(Rsrc, Rfile), '%s/' % curdir,
-                    '%s/' % Rsrc, '%s' % infile, '%s' % variable,
-                    '%s' % output_graphics, '%s' % file_pca,
-                    '%s' % file_class, '%s' % season,
-                    '%s' % start.year, '%s' % end.year,
-                    '%s' % model_var, '%s' % kappa]
-            LOGGER.info('Rcall builded')
-        except:
-            msg = 'failed to build the R command'
-            LOGGER.exception(msg)
-            raise Exception(msg)
-        try:
-            output, error = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-            LOGGER.info('R outlog info:\n %s ' % output)
-            LOGGER.exception('R outlog errors:\n %s ' % error)
-            if len(output) > 0:
-                response.update_status('**** weatherregime in R suceeded', 90)
-            else:
-                LOGGER.exception('NO! output returned from R call')
-        except:
-            msg = 'weatherregime in R'
-            LOGGER.exception(msg)
-            raise Exception(msg)
-
-        response.update_status('Weather regime clustering done ', 80)
+        #
+        # #####################
+        # # extracting season
+        # #####################
+        # response.update_status('normalizing data', 21)
+        # model_season = wr.get_season(model_anomal, season=season)
+        #
+        # response.update_status('anomalies computed and  normalized', 24)
+        # #######################
+        # # call the R scripts
+        # #######################
+        # response.update_status('Start weather regime clustering ', 25)
+        # import shlex
+        # import subprocess
+        # from flyingpigeon import config
+        # from os.path import curdir, exists, join
+        #
+        # try:
+        #     rworkspace = curdir
+        #     Rsrc = config.Rsrc_dir()
+        #     Rfile = 'weatherregimes_model.R'
+        #
+        #     infile = model_season  # model_subset #model_ponderate
+        #     modelname = model
+        #     yr1 = start.year
+        #     yr2 = end.year
+        #     ip, output_graphics = mkstemp(dir=curdir, suffix='.pdf')
+        #     ip, file_pca = mkstemp(dir=curdir, suffix='.txt')
+        #     ip, file_class = mkstemp(dir=curdir, suffix='.Rdat')
+        #
+        #     args = ['Rscript', join(Rsrc, Rfile), '%s/' % curdir,
+        #             '%s/' % Rsrc, '%s' % infile, '%s' % variable,
+        #             '%s' % output_graphics, '%s' % file_pca,
+        #             '%s' % file_class, '%s' % season,
+        #             '%s' % start.year, '%s' % end.year,
+        #             '%s' % model_var, '%s' % kappa]
+        #     LOGGER.info('Rcall builded')
+        # except:
+        #     msg = 'failed to build the R command'
+        #     LOGGER.exception(msg)
+        #     raise Exception(msg)
+        # try:
+        #     output, error = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+        #     LOGGER.info('R outlog info:\n %s ' % output)
+        #     LOGGER.exception('R outlog errors:\n %s ' % error)
+        #     if len(output) > 0:
+        #         response.update_status('**** weatherregime in R suceeded', 90)
+        #     else:
+        #         LOGGER.exception('NO! output returned from R call')
+        # except:
+        #     msg = 'weatherregime in R'
+        #     LOGGER.exception(msg)
+        #     raise Exception(msg)
+        #
+        # response.update_status('Weather regime clustering done ', 80)
         ############################################
         # set the outputs
         ############################################
         response.update_status('Set the process outputs ', 95)
 
-        response.outputs['Routput_graphic'].file = output_graphics
-        response.outputs['output_pca'].file = file_pca
-        response.outputs['output_classification'].file = file_class
-        response.outputs['output_netcdf'].file = model_season
+        # response.outputs['Routput_graphic'].file = output_graphics
+        # response.outputs['output_pca'].file = file_pca
+        # response.outputs['output_classification'].file = file_class
+        response.outputs['output_netcdf'].file = model_subset
         response.update_status('done', 100)
         return response
