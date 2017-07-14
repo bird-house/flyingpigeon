@@ -39,7 +39,7 @@ processes = [
     #    SDMcsvindicesProcess(),
     #    SDMallinoneProcess(),
     WeatherregimesreanalyseProcess(),
-    # WeatherregimesprojectionProcess(),
+    WeatherregimesprojectionProcess(),
     WeatherregimesmodelProcess(),
     #    AnalogsreanalyseProcess(),
     #    AnalogsmodelProcess(),
