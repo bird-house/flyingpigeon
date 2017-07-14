@@ -195,7 +195,7 @@ class WeatherregimesprojectionProcess(Process):
         variable = get_variable(resource)
 
         if len(url_ref_file) > 0:
-            ref_file = download(url_ref_file[0])
+            ref_file = download(url_ref_file)
             model_subset = call(
                 resource=resource, variable=variable,
                 time_range=time_range,  # conform_units_to=conform_units_to, geom=bbox, spatial_wrapping='wrap',
