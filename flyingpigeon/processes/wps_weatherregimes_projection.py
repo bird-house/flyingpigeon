@@ -7,6 +7,7 @@ from flyingpigeon.datafetch import _PRESSUREDATA_
 from flyingpigeon.weatherregimes import _TIMEREGIONS_
 from flyingpigeon import weatherregimes as wr
 from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import download, get_time
 from os.path import abspath
 from datetime import datetime as dt
@@ -155,6 +156,7 @@ class WeatherregimesprojectionProcess(Process):
             LOGGER.debug('start: %s , end: %s ' % (start, end))
 
             resource = archiveextract(resource=rename_complexinputs(request.inputs['resource']))
+            # resource = archiveextract(resource=[res.file for res in request.inputs['resource']])
             url_Rdat = request.inputs['Rdat'][0].data
             url_dat = request.inputs['dat'][0].data
             url_ref_file = request.inputs['netCDF'][0].data  # can be None
