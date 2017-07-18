@@ -86,28 +86,28 @@ class WeatherregimesprojectionProcess(Process):
 
                 ]
         outputs = [
-            # ComplexOutput("output_pca", "R - datafile",
-            #               abstract="Principal components (PCA)",
-            #               supported_formats=[Format('text/plain')],
-            #               as_reference=True,
-            #               ),
-            #
-            # ComplexOutput("output_classification", "R - workspace",
-            #               abstract="Weather regime classification",
-            #               supported_formats=[Format("application/octet-stream")],
-            #               as_reference=True,
-            #               ),
-            # ComplexOutput("output_frequency", "Frequency",
-            #               abstract="Weather regime frequency values per year",
-            #               supported_formats=[Format('text/plain')],
-            #               as_reference=True,
-            #               ),
-            #
-            # ComplexOutput('output_netcdf', 'Subsets for one dataset',
-            #               abstract="Prepared netCDF file as input for weatherregime calculation",
-            #               as_reference=True,
-            #               supported_formats=[Format('application/x-netcdf')]
-            #               ),
+            ComplexOutput("output_pca", "R - datafile",
+                          abstract="Principal components (PCA)",
+                          supported_formats=[Format('text/plain')],
+                          as_reference=True,
+                          ),
+
+            ComplexOutput("output_classification", "R - workspace",
+                          abstract="Weather regime classification",
+                          supported_formats=[Format("application/octet-stream")],
+                          as_reference=True,
+                          ),
+            ComplexOutput("output_frequency", "Frequency",
+                          abstract="Weather regime frequency values per year",
+                          supported_formats=[Format('text/plain')],
+                          as_reference=True,
+                          ),
+
+            ComplexOutput('output_netcdf', 'Subsets for one dataset',
+                          abstract="Prepared netCDF file as input for weatherregime calculation",
+                          as_reference=True,
+                          supported_formats=[Format('application/x-netcdf')]
+                          ),
 
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",
@@ -277,7 +277,7 @@ class WeatherregimesprojectionProcess(Process):
             LOGGER.info('R outlog info:\n %s ' % output)
             LOGGER.debug('R outlog errors:\n %s ' % error)
             if len(output) > 0:
-                self.status.set('**** weatherregime in R suceeded', 90)
+                response.update_status('**** weatherregime in R suceeded', 90)
             else:
                 LOGGER.error('NO! output returned from R call')
         except Exception as e:
@@ -289,12 +289,12 @@ class WeatherregimesprojectionProcess(Process):
         # set the outputs
         #################
 
-        # response.update_status('Set the process outputs ', 95)
-        #
-        # response.outputs['output_pca'].file = file_pca
-        # response.outputs['output_classification'].file = file_class
-        # response.outputs['output_netcdf'].file = model_season
-        # response.outputs['output_frequency'].file = output_frec
-        #
-        # response.update_status('done', 100)
+        response.update_status('Set the process outputs ', 95)
+
+        response.outputs['output_pca'].file = file_pca
+        response.outputs['output_classification'].file = file_class
+        response.outputs['output_netcdf'].file = model_season
+        response.outputs['output_frequency'].file = output_frec
+
+        response.update_status('done', 100)
         return response
