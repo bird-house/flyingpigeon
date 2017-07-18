@@ -57,7 +57,7 @@ class WeatherregimesprojectionProcess(Process):
                          data_type='string',
                          min_occurs=0,
                          max_occurs=1,
-                        ),
+                         ),
 
             LiteralInput("season", "Time region",
                          abstract="Select the months to define the time region (all == whole year will be analysed)",
@@ -82,9 +82,7 @@ class WeatherregimesprojectionProcess(Process):
                          data_type='string',
                          min_occurs=1,
                          max_occurs=1,
-                         ),
-
-                ]
+                         ), ]
         outputs = [
             ComplexOutput("output_pca", "R - datafile",
                           abstract="Principal components (PCA)",
@@ -205,7 +203,7 @@ class WeatherregimesprojectionProcess(Process):
                 model_subset = call(
                     resource=resource, variable=variable,
                     time_range=time_range,  # conform_units_to=conform_units_to, geom=bbox, spatial_wrapping='wrap',
-                    )
+                )
                 LOGGER.info('Dataset time period extracted: %s ' % model_subset)
         except:
             LOGGER.exception('failed to make a data subset ')
