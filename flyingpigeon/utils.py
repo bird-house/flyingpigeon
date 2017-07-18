@@ -118,12 +118,12 @@ def check_creationtime(path, url):
     return newer
 
 
-def download_file(url, out=None):
+def download_file(url, out=None, verify=False):
     if out:
         local_filename = out
     else:
         local_filename = url.split('/')[-1]
-    r = requests.get(url, stream=True)
+    r = requests.get(url, stream=True, verify=verify)
     with open(local_filename, 'wb') as fp:
         shutil.copyfileobj(r.raw, fp)
     return local_filename
