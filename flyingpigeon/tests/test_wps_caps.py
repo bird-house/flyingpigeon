@@ -39,8 +39,8 @@ def test_caps():
         'subset_continents',
         'subset_countries',
         'subset_regionseurope',
-        # 'weatherregimes_model',
-        # 'weatherregimes_projection',
-        # 'weatherregimes_reanalyse',
+        'weatherregimes_model',
+        'weatherregimes_projection',
+        'weatherregimes_reanalyse',
     ]
     assert sorted_names == expected_names
