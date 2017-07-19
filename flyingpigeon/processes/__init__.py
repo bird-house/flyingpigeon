@@ -28,7 +28,7 @@ processes = [
     ClipcontinentProcess(),
     ClipregionseuropeProcess(),
     PointinspectionProcess(),
-    #    FactsheetProcess(),
+    FactsheetProcess(),
     FetchProcess(),
     LandseamaskProcess(),
     IndicespercentiledaysProcess(),
@@ -45,8 +45,8 @@ processes = [
     #    AnalogsmodelProcess(),
     #    AnalogscompareProcess(),
     #    AnalogsviewerProcess(),
-    #    RobustnessProcess(),
-    #    PlottimeseriesProcess(),
+    RobustnessProcess(),
+    PlottimeseriesProcess(),
     SegetalfloraProcess()
 ]
 
