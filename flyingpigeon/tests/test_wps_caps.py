@@ -35,7 +35,7 @@ def test_caps():
         # 'sdm_csvindices',
         'sdm_gbiffetch',
         'sdm_getindices',
-        # 'segetalflora',
+        'segetalflora',
         'subset_continents',
         'subset_countries',
         'subset_regionseurope',
