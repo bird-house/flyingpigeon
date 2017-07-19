@@ -52,19 +52,19 @@ class SegetalfloraProcess(Process):
         ]
 
         outputs = [
-            ComplexOutput("Yearly mean temperature", "out_tasmean",
+            ComplexOutput("out_tasmean", "Yearly mean temperature",
                           abstract="Tar archive containing the netCDF EUR tas mean files",
                           supported_formats=[Format('application/x-tar'),
                                              Format('application/x-netcdf')],
                           as_reference=True,
                           ),
-            #
-            # ComplexOutput("Segetalflora", "out_segetalflora",
-            #               abstract="Tar archive containing the segetalflora data ",
-            #               supported_formats=[Format('application/x-tar'),
-            #                                  Format('application/x-netcdf')],
-            #               as_reference=True,
-            #               ),
+
+            ComplexOutput("out_segetalflora", "Segetalflora",
+                          abstract="Tar archive containing the segetalflora data",
+                          supported_formats=[Format('application/x-tar'),
+                                             Format('application/x-netcdf')],
+                          as_reference=True,
+                          ),
 
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",
@@ -148,18 +148,20 @@ class SegetalfloraProcess(Process):
                 out_tasmean = nc_tasmean[0]
             else:
                 out_tasmean = archive(nc_tasmean, format='tar', dir_output='.', mode='w')
-            LOGGER.info('Archives prepared %s ' % out_sf)
+            LOGGER.info('Output files processed %s ' % out_sf)
         except Exception as e:
-            LOGGER.debug('failed to archive files %s' % e)
+            LOGGER.debug('failed to prepare output files %s' % e)
 
         try:
-            LOGGER.debug('variables types: %s %s ' % (type(out_sf), type(out_tasmean)))
+            # LOGGER.debug('variables types: %s %s ' % (type(out_sf), type(out_tasmean)))
             response.update_status('preparting output', 99)
-            # response.outputs['out_segetalflora'].file = out_sf
+
+            response.outputs['out_segetalflora'].file = '%s' % out_sf
             response.outputs['out_tasmean'].file = out_tasmean
+
             response.update_status('execution ended', 100)
             LOGGER.debug("total execution took %s seconds.", time.time() - process_start_time)
         except:
-            LOGGER.exception('failed to prepare the output files')
+            LOGGER.exception('failed to set outputs')
 
         return response
