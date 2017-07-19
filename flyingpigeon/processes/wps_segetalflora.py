@@ -1,9 +1,11 @@
 from os import mkdir, path, listdir
 from datetime import datetime as dt
+import time
 
 from flyingpigeon import segetalflora as sf
 from flyingpigeon.subset import countries  # REGION_EUROPE
 from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.utils import archive, archiveextract
 
 from pywps import Process
 from pywps import LiteralInput, LiteralOutput
@@ -52,15 +54,17 @@ class SegetalfloraProcess(Process):
         outputs = [
             ComplexOutput("Yearly mean temperature", "out_tasmean",
                           abstract="Tar archive containing the netCDF EUR tas mean files",
-                          supported_formats=[Format('application/x-tar')],
+                          supported_formats=[Format('application/x-tar'),
+                                             Format('application/x-netcdf')],
                           as_reference=True,
                           ),
-
-            ComplexOutput("Segetalflora", "out_segetalflora",
-                          abstract="Tar archive containing the segetalflora data ",
-                          supported_formats=[Format('application/x-tar')],
-                          as_reference=True,
-                          ),
+            #
+            # ComplexOutput("Segetalflora", "out_segetalflora",
+            #               abstract="Tar archive containing the segetalflora data ",
+            #               supported_formats=[Format('application/x-tar'),
+            #                                  Format('application/x-netcdf')],
+            #               as_reference=True,
+            #               ),
 
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",
@@ -134,18 +138,28 @@ class SegetalfloraProcess(Process):
         ####################
 
         try:
-            from flyingpigeon.utils import archive
             response.update_status('files to tar archives', 99)
-            tar_sf = archive(nc_sf, format='tar', dir_output='.', mode='w')
-            tar_tasmean = archive(nc_tasmean, format='tar', dir_output='.', mode='w')
-            LOGGER.info('Archives prepared')
+            LOGGER.debug('length of sf: %s' % len(nc_sf))
+            if len(nc_sf) == 1:
+                out_sf = nc_sf[0]
+            else:
+                out_sf = archive(nc_sf, format='tar', dir_output='.', mode='w')
+            if len(nc_tasmean) == 1:
+                out_tasmean = nc_tasmean[0]
+            else:
+                out_tasmean = archive(nc_tasmean, format='tar', dir_output='.', mode='w')
+            LOGGER.info('Archives prepared %s ' % out_sf)
         except Exception as e:
             LOGGER.debug('failed to archive files %s' % e)
 
-        response.outputs['out_segetalflora'] = tar_sf
-        response.outputs['out_tasmean'] = tar_tasmean
+        try:
+            LOGGER.debug('variables types: %s %s ' % (type(out_sf), type(out_tasmean)))
+            response.update_status('preparting output', 99)
+            # response.outputs['out_segetalflora'].file = out_sf
+            response.outputs['out_tasmean'].file = out_tasmean
+            response.update_status('execution ended', 100)
+            LOGGER.debug("total execution took %s seconds.", time.time() - process_start_time)
+        except:
+            LOGGER.exception('failed to prepare the output files')
 
-        response.update_status('execution ended', 100)
-        LOGGER.debug("total execution took %s seconds.", time.time() - process_start_time)
-        response.update_status('preparting output', 99)
         return response
