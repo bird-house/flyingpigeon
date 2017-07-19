@@ -109,8 +109,10 @@ class SegetalfloraProcess(Process):
 
             LOGGER.info('urls for %s ncs found' % (len(resource)))
             LOGGER.info('culture type: %s ' % (culture_type))
-        except Exception as e:
-            LOGGER.debug('failed to read in the arguments: %s ' % e)
+        except Exception:
+            msg = 'Failed to read in the arguments.'
+            LOGGER.exception(msg)
+            raise Exception(msg)
 
         try:
             if type(climate_type) != list:
@@ -118,8 +120,10 @@ class SegetalfloraProcess(Process):
             if type(culture_type) != list:
                 culture_type = list([culture_type])
             LOGGER.info('arguments are lists')
-        except Exception as e:
-            LOGGER.debug('failed to transform arguments to lists: %s ' % e)
+        except Exception:
+            msg = 'Failed to transform arguments to lists.'
+            LOGGER.exception(msg)
+            raise Exception(msg)
 
         #############################
         # get yearly mean temperature
@@ -138,30 +142,27 @@ class SegetalfloraProcess(Process):
         ####################
 
         try:
-            response.update_status('files to tar archives', 99)
-            LOGGER.debug('length of sf: %s' % len(nc_sf))
-            if len(nc_sf) == 1:
-                out_sf = nc_sf[0]
-            else:
-                out_sf = archive(nc_sf, format='tar', dir_output='.', mode='w')
-            if len(nc_tasmean) == 1:
-                out_tasmean = nc_tasmean[0]
-            else:
-                out_tasmean = archive(nc_tasmean, format='tar', dir_output='.', mode='w')
-            LOGGER.info('Output files processed %s ' % out_sf)
-        except Exception as e:
-            LOGGER.debug('failed to prepare output files %s' % e)
-
-        try:
-            # LOGGER.debug('variables types: %s %s ' % (type(out_sf), type(out_tasmean)))
             response.update_status('preparting output', 99)
+            LOGGER.debug('length of sf: %s', len(nc_sf))
+            if len(nc_sf) == 1:
+                # TODO: fix pywps output formats OR use seperate output params.
+                response.outputs['out_segetalflora'].file = nc_sf[0]
+                response.outputs['out_segetalflora'].format = FORMATS.NETCDF
+            else:
+                response.outputs['out_segetalflora'].file = archive(nc_sf, format='tar', dir_output='.', mode='w')
+                response.outputs['out_segetalflora'].format = Format('application/x-tar')
+            if len(nc_tasmean) == 1:
+                response.outputs['out_tasmean'].file = nc_tasmean[0]
+                response.outputs['out_segetalflora'].format = FORMATS.NETCDF
+            else:
+                response.outputs['out_tasmean'].file = archive(nc_tasmean, format='tar', dir_output='.', mode='w')
+                response.outputs['out_segetalflora'].format = Format('application/x-tar')
+        except Exception:
+            msg = 'Failed to prepare output files.'
+            LOGGER.exception(msg)
+            raise Exception(msg)
 
-            response.outputs['out_segetalflora'].file = '%s' % out_sf
-            response.outputs['out_tasmean'].file = out_tasmean
-
-            response.update_status('execution ended', 100)
-            LOGGER.debug("total execution took %s seconds.", time.time() - process_start_time)
-        except:
-            LOGGER.exception('failed to set outputs')
+        response.update_status('done', 100)
+        LOGGER.debug("total execution took %s seconds.", time.time() - process_start_time)
 
         return response
