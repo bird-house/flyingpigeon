@@ -1,6 +1,5 @@
-Cliamte Fact Sheet Generator
+Climate Fact Sheet Generator
 ----------------------------
 
-Generates PDF - Document with statistical values for one or multiple seleted countries.
+Generates PDF document with statistical values for one or multiple selected countries.
 
-  

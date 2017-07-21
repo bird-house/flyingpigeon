@@ -1,14 +1,35 @@
 Releasenotes
 ************
 
-next:
-=====
+0.11.0 (2017-07-11)
+===================
 
+converted processes to pywps-4 from next:
+
+* subsetting countries, continents and european regions
+* climate indices (daily percentiles, single variable)
+* species distribution model
+* land-sea mask
+* point inspection
+* fetch resources
+
+0.10.1 (2017-07-11)
+===================
+
+* disabled bbox parameter ... needs to be fixed in OWSLib.
+* updated titles of analogs processes.
+* updated version in docs.
+* disabled wps_gbiffetch test ... was stalled.
+
+0.10.0 (2017-07-10)
+===================
+
+* Translate code pywps4 conform
+* Climate indices dailypercentile
 * Climate Fact sheet Generator
 * R plot for SDM response cuvres running under CentOS
 * Species distribution model Processes modularized in five processes
 * Direction switch for analogs comparison process
-
 
 0.9.1 (2016-11-16)
 ==================

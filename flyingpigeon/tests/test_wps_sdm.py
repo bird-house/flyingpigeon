@@ -5,6 +5,7 @@ def test_pygbif():
     import pygbif
 
 
+@pytest.mark.skip(reason="R not available")
 def test_mgcv():
     from rpy2.robjects.packages import importr
     import rpy2.robjects as ro

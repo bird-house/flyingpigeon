@@ -7,7 +7,7 @@ channels:
 - nesii
 # the r hell ...
 - r
-- bioconda
+- bioconda  # for r-mclust
 dependencies:
 - python=2.7
 - ipython
@@ -24,11 +24,14 @@ dependencies:
 ################
 # tests
 - pytest
+# pep8
 - flake8
+- pycodestyle
 ################
 # docs
 - sphinx
 - sphinx_rtd_theme
+- doc8
 ################
 # wps
 - nginx
@@ -37,6 +40,7 @@ dependencies:
 - gevent
 - pywps=4.0.0
 - mako
+- genshi
 ################
 # misc
 #- pywget
@@ -59,16 +63,18 @@ dependencies:
 ## cdo ocgis
 - cdo #=1.7.1=2
 - python-cdo
-- ocgis=2.0
+# - ocgis=2.0.0
+- ocgis-next=2.0.1.dev1=py27_1   # =1.4.0.dev1=py27_7  #  nesii/channel/ocgis-next
+- icclim
 - proj4=4.9.3
 - geos=3.5.1
 - jpeg=9b
 - gdal=2.1.3
-################
-# analogue
-- castf90=0.1.6
-################
-# r
+# ################
+# # analogue
+# - castf90=0.1.6
+# ################
+# # r
 - cairo # for X11 independend plot support
 - r=3.2  # 3.3 conflicts with icu=56
 - rpy2 #=2.7.0
@@ -77,12 +83,11 @@ dependencies:
 - r-fields #=8.4 conflicts with r3.3.1 needs 3.2
 - r-gridextra #=2.0.0
 - harfbuzz
-#- r-cairo#=1.5_9 build in r-base
+# #- r-cairo#=1.5_9 build in r-base
 ################
 # esgf
 - esgf-pyclient
 - pip:
-  - genshi==0.7
   - pygbif==0.2.0 #0.1.4
   - sphinx-autoapi==0.4.0
 #  - cdo==1.3.0

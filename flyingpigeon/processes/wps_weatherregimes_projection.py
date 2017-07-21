@@ -7,6 +7,7 @@ from flyingpigeon.datafetch import _PRESSUREDATA_
 from flyingpigeon.weatherregimes import _TIMEREGIONS_
 from flyingpigeon import weatherregimes as wr
 from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import download, get_time
 from os.path import abspath
 from datetime import datetime as dt
@@ -56,7 +57,7 @@ class WeatherregimesprojectionProcess(Process):
                          data_type='string',
                          min_occurs=0,
                          max_occurs=1,
-                        ),
+                         ),
 
             LiteralInput("season", "Time region",
                          abstract="Select the months to define the time region (all == whole year will be analysed)",
@@ -81,9 +82,7 @@ class WeatherregimesprojectionProcess(Process):
                          data_type='string',
                          min_occurs=1,
                          max_occurs=1,
-                         ),
-
-                ]
+                         ), ]
         outputs = [
             ComplexOutput("output_pca", "R - datafile",
                           abstract="Principal components (PCA)",
@@ -155,6 +154,7 @@ class WeatherregimesprojectionProcess(Process):
             LOGGER.debug('start: %s , end: %s ' % (start, end))
 
             resource = archiveextract(resource=rename_complexinputs(request.inputs['resource']))
+            # resource = archiveextract(resource=[res.file for res in request.inputs['resource']])
             url_Rdat = request.inputs['Rdat'][0].data
             url_dat = request.inputs['dat'][0].data
             url_ref_file = request.inputs['netCDF'][0].data  # can be None
@@ -185,41 +185,45 @@ class WeatherregimesprojectionProcess(Process):
         # get the required bbox and time region from resource data
         ##########################################################
         # from flyingpigeon.weatherregimes import get_level
+        try:
+            from flyingpigeon.ocgis_module import call
+            from flyingpigeon.utils import get_variable
+            time_range = [start, end]
 
-        from flyingpigeon.ocgis_module import call
-        from flyingpigeon.utils import get_variable
-        time_range = [start, end]
+            variable = get_variable(resource)
 
-        variable = get_variable(resource)
-
-        if len(url_ref_file) > 0:
-            ref_file = download(url_ref_file[0])
-            model_subset = call(
-                resource=resource, variable=variable,
-                time_range=time_range,  # conform_units_to=conform_units_to, geom=bbox, spatial_wrapping='wrap',
-                regrid_destination=ref_file, regrid_options='bil')
-            LOGGER.info('Dataset subset with regridding done: %s ' % model_subset)
-        else:
-            model_subset = call(
-                resource=resource, variable=variable,
-                time_range=time_range,  # conform_units_to=conform_units_to, geom=bbox, spatial_wrapping='wrap',
+            if len(url_ref_file) > 0:
+                ref_file = download(url_ref_file)
+                model_subset = call(
+                    resource=resource, variable=variable,
+                    time_range=time_range,  # conform_units_to=conform_units_to, geom=bbox, spatial_wrapping='wrap',
+                    regrid_destination=ref_file, regrid_options='bil')
+                LOGGER.info('Dataset subset with regridding done: %s ' % model_subset)
+            else:
+                model_subset = call(
+                    resource=resource, variable=variable,
+                    time_range=time_range,  # conform_units_to=conform_units_to, geom=bbox, spatial_wrapping='wrap',
                 )
-            LOGGER.info('Dataset time period extracted: %s ' % model_subset)
+                LOGGER.info('Dataset time period extracted: %s ' % model_subset)
+        except:
+            LOGGER.exception('failed to make a data subset ')
 
         #######################
         # computing anomalies
         #######################
+        try:
+            cycst = anualcycle.split('-')[0]
+            cycen = anualcycle.split('-')[0]
+            reference = [dt.strptime(cycst, '%Y%m%d'), dt.strptime(cycen, '%Y%m%d')]
+            model_anomal = wr.get_anomalies(model_subset, reference=reference)
 
-        cycst = anualcycle.split('-')[0]
-        cycen = anualcycle.split('-')[0]
-        reference = [dt.strptime(cycst, '%Y%m%d'), dt.strptime(cycen, '%Y%m%d')]
-        model_anomal = wr.get_anomalies(model_subset, reference=reference)
+            #####################
+            # extracting season
+            #####################
 
-        #####################
-        # extracting season
-        #####################
-
-        model_season = wr.get_season(model_anomal, season=season)
+            model_season = wr.get_season(model_anomal, season=season)
+        except:
+            LOGGER.exception('failed to compute anualcycle or seasons')
 
         #######################
         # call the R scripts
@@ -271,7 +275,7 @@ class WeatherregimesprojectionProcess(Process):
             LOGGER.info('R outlog info:\n %s ' % output)
             LOGGER.debug('R outlog errors:\n %s ' % error)
             if len(output) > 0:
-                self.status.set('**** weatherregime in R suceeded', 90)
+                response.update_status('**** weatherregime in R suceeded', 90)
             else:
                 LOGGER.error('NO! output returned from R call')
         except Exception as e:

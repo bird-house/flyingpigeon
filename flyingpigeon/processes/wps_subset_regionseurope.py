@@ -16,28 +16,29 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class ClipregionseuropeProcess(Process):
+    """
+    TODO: opendap input support, additional metadata to display region names.
+    """
     def __init__(self):
         inputs = [
             LiteralInput('region', 'Region',
                          data_type='string',
-                         # abstract= countries_longname(), # need to handle special non-ascii char in countries.
-                         abstract="Region ISO-3166 Alpha2: https://en.wikipedia.org/wiki/ISO_3166-2 ",
+                         abstract="European region code, see ISO-3166 Alpha2: https://en.wikipedia.org/wiki/ISO_3166-2 ",  # noqa
                          min_occurs=1,
                          max_occurs=len(_EUREGIONS_),
-                         default='DEU',
+                         default='DE.HH',
                          allowed_values=_EUREGIONS_),
 
-            LiteralInput('mosaic', 'Mosaic',
+            LiteralInput('mosaic', 'Union of multiple regions',
                          data_type='boolean',
-                         abstract="If Mosaic is checked, selected polygons will be merged"
-                                  " to one Mosaic for each input file.",
+                         abstract="If True, selected regions will be merged"
+                                  " into a single geometry.",
                          min_occurs=0,
                          max_occurs=1,
                          default=False),
 
             ComplexInput('resource', 'Resource',
                          abstract='NetCDF Files or archive (tar/zip) containing NetCDF files.',
-                         metadata=[Metadata('Info')],
                          min_occurs=1,
                          max_occurs=1000,
                          supported_formats=[
@@ -48,14 +49,14 @@ class ClipregionseuropeProcess(Process):
         ]
 
         outputs = [
-            ComplexOutput('output', 'Subsets',
-                          abstract="Tar archive containing the netCDF files",
+            ComplexOutput('output', 'Tar archive',
+                          abstract="Tar archive of the subsetted netCDF files.",
                           as_reference=True,
                           supported_formats=[Format('application/x-tar')]
                           ),
 
-            ComplexOutput('ncout', 'Subsets for one dataset',
-                          abstract="NetCDF file with subsets of one dataset.",
+            ComplexOutput('ncout', 'Example netCDF file',
+                          abstract="NetCDF file with subset for one dataset.",
                           as_reference=True,
                           supported_formats=[Format('application/x-netcdf')]
                           ),
@@ -72,7 +73,7 @@ class ClipregionseuropeProcess(Process):
             identifier="subset_regionseurope",
             title="Subset (European Regions)",
             version="0.10",
-            abstract="Returns only the selected polygon for each input dataset",
+            abstract="Return the data whose grid cells inteserct the selected regions for each input dataset.",
             metadata=[
                 Metadata('LSCE', 'http://www.lsce.ipsl.fr/en/index.php'),
                 Metadata('Documentation', 'http://flyingpigeon.readthedocs.io/en/latest/'),

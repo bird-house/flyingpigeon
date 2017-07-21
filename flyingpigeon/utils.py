@@ -50,7 +50,10 @@ def search_landsea_mask_by_esgf(resource):
     conn = SearchConnection(config.esgfsearch_url(), distrib=config.esgfsearch_distrib())
     ctx = conn.new_context(search_type=TYPE_FILE, **constraints)
     if ctx.hit_count == 0:
-        raise Exception("Could not find a mask in ESGF.")
+        raise Exception("Could not find a mask in ESGF for dataset {0}".format(
+            os.path.basename(resource)))
+        #LOGGER.exception("Could not find a mask in ESGF.")
+        #return
     if ctx.hit_count > 1:
         LOGGER.warn("Found more then one mask file.")
     results = ctx.search(batch_size=1)
@@ -115,12 +118,12 @@ def check_creationtime(path, url):
     return newer
 
 
-def download_file(url, out=None):
+def download_file(url, out=None, verify=False):
     if out:
         local_filename = out
     else:
         local_filename = url.split('/')[-1]
-    r = requests.get(url, stream=True)
+    r = requests.get(url, stream=True, verify=verify)
     with open(local_filename, 'wb') as fp:
         shutil.copyfileobj(r.raw, fp)
     return local_filename
@@ -188,7 +191,8 @@ def archive(resources, format='tar', dir_output='.', mode='w'):
         resources = resources_filter
     except Exception as e:
         msg = 'failed to prepare file list: %s' % e
-        LOGGER.debug(msg)
+        LOGGER.exception(msg)
+        raise Exception(msg)
 
     if format == 'tar':
         import tarfile
@@ -201,13 +205,13 @@ def archive(resources, format='tar', dir_output='.', mode='w'):
                     tar.add(f, arcname=basename(f))
                 except Exception as e:
                     msg = 'archiving failed for %s: %s' % (f, e)
-                    LOGGER.debug(msg)
-                    raise(msg)
+                    LOGGER.exception(msg)
+                    raise Exception(msg)
             tar.close()
         except Exception as e:
             msg = 'failed to compress into archive %s', e
             LOGGER.exception(msg)
-            raise(msg)
+            raise Exception(msg)
     elif format == 'zip':
         import zipfile
 
@@ -220,11 +224,11 @@ def archive(resources, format='tar', dir_output='.', mode='w'):
             zf.close()
         except Exception as e:
             msg = 'failed to create zip archive: %s' % msg
-            LOGGER.debug(msg)
-            raise
+            LOGGER.exception(msg)
+            raise Exception(msg)
             # LOGGER.info(print_info('zipfile_write.zip'))
     else:
-        LOGGER.error('no common archive format like: zip / tar')
+        raise Exception('no common archive format like: zip / tar')
     return archive
 
 
@@ -576,9 +580,9 @@ def get_timerange(resource):
         end = '%s%s%s' % (e.year, str(e.month).zfill(2), str(e.day).zfill(2))
         ds.close()
     except:
-        ds.close()
         msg = 'failed to get time range'
         LOGGER.exception(msg)
+        ds.close()
         raise Exception(msg)
     return start, end
 
@@ -749,14 +753,14 @@ def sort_by_filename(resource, historical_concatination=False):
             try:  # if len(resource) > 1:
                 # collect the different experiment names
                 for nc in resource:
-                    LOGGER.info('file: %s' % nc)
+                    # LOGGER.info('file: %s' % nc)
                     p, f = path.split(path.abspath(nc))
                     n = f.split('_')
                     bn = '_'.join(n[0:-1])  # skipping the date information in the filename
                     ndic[bn] = []  # dictionary containing all datasets names
                 LOGGER.info('found %s datasets', len(ndic.keys()))
-            except Exception as e:
-                LOGGER.exception('failed to find names of datasets! %s ' % e)
+            except:
+                LOGGER.exception('failed to find names of datasets!')
             LOGGER.info('check for historical/RCP datasets')
             try:
                 if historical_concatination is True:
@@ -768,8 +772,8 @@ def sort_by_filename(resource, historical_concatination=False):
                         LOGGER.info('historical data set names removed from dictionary')
                     else:
                         LOGGER.info('no RCP dataset names found in dictionary')
-            except Exception as e:
-                LOGGER.exception('failed to pop historical data set names! %s ' % e)
+            except:
+                LOGGER.exception('failed to pop historical data set names!')
             LOGGER.info('start sorting the files')
             try:
                 for key in ndic:

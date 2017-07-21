@@ -15,20 +15,23 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class ClipcontinentProcess(Process):
+    """
+    TODO: opendap input support, additional metadata to display region names.
+    """
     def __init__(self):
         inputs = [
             LiteralInput('region', 'Region',
                          data_type='string',
-                         # abstract= countries_longname(), # need to handle special non-ascii char in countries.
+                         abstract="Continent name.",
                          min_occurs=1,
                          max_occurs=len(_CONTINENTS_),
                          default='Africa',
                          allowed_values=_CONTINENTS_),  # REGION_EUROPE #COUNTRIES
 
-            LiteralInput('mosaic', 'Mosaic',
+            LiteralInput('mosaic', 'Union of multiple regions',
                          data_type='boolean',
-                         abstract="If Mosaic is checked, selected polygons will be merged"
-                                  " to one Mosaic for each input file.",
+                         abstract="If True, selected regions will be merged"
+                                  " into a single geometry.",
                          min_occurs=0,
                          max_occurs=1,
                          default=False),
@@ -46,14 +49,14 @@ class ClipcontinentProcess(Process):
         ]
 
         outputs = [
-            ComplexOutput('output', 'Subsets',
-                          abstract="Tar archive containing the netCDF files",
+            ComplexOutput('output', 'Tar archive',
+                          abstract="Tar archive of the subsetted netCDF files.",
                           as_reference=True,
                           supported_formats=[Format('application/x-tar')]
                           ),
 
-            ComplexOutput('ncout', 'Subsets for one dataset',
-                          abstract="NetCDF file with subsets of one dataset.",
+            ComplexOutput('ncout', 'Example netCDF file',
+                          abstract="NetCDF file with subset for one dataset.",
                           as_reference=True,
                           supported_formats=[Format('application/x-netcdf')]
                           ),
@@ -70,7 +73,7 @@ class ClipcontinentProcess(Process):
             identifier="subset_continents",
             title="Subset (Continents)",
             version="0.10",
-            abstract="Returns only the selected polygon for each input dataset",
+            abstract="Return the data whose grid cells intersect the selected continents for each input dataset.",
             metadata=[
                 # Metadata('LSCE', 'http://www.lsce.ipsl.fr/en/index.php'),
                 Metadata('Doc', 'http://flyingpigeon.readthedocs.io/en/latest/'),

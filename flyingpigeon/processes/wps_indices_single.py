@@ -18,10 +18,14 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class IndicessingleProcess(Process):
+    """
+    TODO: improved description
+    TODO: additional ows:metadata to display indices and regions.
+    """
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
-                         abstract="NetCDF Files or archive (tar/zip) containing netCDF files",
+                         abstract="NetCDF Files or archive (tar/zip) containing netCDF files.",
                          min_occurs=1,
                          max_occurs=1000,
                          #  maxmegabites=5000,
@@ -32,7 +36,7 @@ class IndicessingleProcess(Process):
                          ]),
 
             LiteralInput("indices", "Index",
-                         abstract='Select an index',
+                         abstract='Climate index code.',
                          default='TG',
                          data_type='string',
                          min_occurs=1,
@@ -40,23 +44,23 @@ class IndicessingleProcess(Process):
                          allowed_values=indices()
                          ),
 
-            LiteralInput("groupings", "Grouping",
-                         abstract="Select an time grouping (time aggregation)",
+            LiteralInput("grouping", "Grouping",
+                         abstract="Temporal group over which the index is computed.",
                          default='yr',
                          data_type='string',
                          min_occurs=1,
-                         max_occurs=len(GROUPING),
+                         max_occurs=1,  # len(GROUPING),
                          allowed_values=GROUPING
                          ),
 
             LiteralInput('region', 'Region',
                          data_type='string',
                          # abstract= countries_longname(), # need to handle special non-ascii char in countries.
-                         abstract="Country ISO-3166-3:\
+                         abstract="Country code, see ISO-3166-3:\
                           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3#Officially_assigned_code_elements",
-                         min_occurs=1,
+                         min_occurs=0,
                          max_occurs=len(countries()),
-                         default='DEU',
+                         # default='DEU',
                          allowed_values=countries()),  # REGION_EUROPE #COUNTRIES
 
             LiteralInput("mosaic", "Mosaic",
@@ -70,17 +74,18 @@ class IndicessingleProcess(Process):
         ]
 
         outputs = [
-            ComplexOutput("output_archive", "Masked Files Archive",
-                          abstract="Tar file of the masked netCDF files",
+            ComplexOutput("output_archive", "Tar archive",
+                          abstract="Tar archive of the netCDF files storing the index values.",
                           supported_formats=[Format("application/x-tar")],
                           as_reference=True,
                           ),
 
-            # ComplexOutput("output_example", "Example",
-            #               abstract="one example file to display in the WMS",
-            #               supported_formats=[Format("application/x-netcdf")],
-            #               as_reference=True,
-            #               ),
+            ComplexOutput('ncout', 'Example netCDF file',
+                          abstract="NetCDF file storing the index computed over one dataset.",
+                          as_reference=True,
+                          supported_formats=[Format('application/x-netcdf')]
+                          ),
+
 
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",
@@ -93,7 +98,7 @@ class IndicessingleProcess(Process):
             identifier="indices_single",
             title="Climate indices (Single variable)",
             version="0.10",
-            abstract="Climate indices based on one single input variable",
+            abstract="Climate index calculated from one daily input variable.",
             metadata=[
                 {'title': 'Doc',
                  'href': 'http://flyingpigeon.readthedocs.io/en/latest/descriptions/\
@@ -113,28 +118,66 @@ class IndicessingleProcess(Process):
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
-        resources = archiveextract(
-            resource=rename_complexinputs(request.inputs['resource']))
-        indices = request.inputs['indices'][0].data
-        region = request.inputs['region'][0].data
-        groupings = [inpt.data for inpt in request.inputs['groupings']]
-        if 'mosaic' in request.inputs:
-            mosaic = request.inputs['mosaic'][0].data
-        else:
-            mosaic = False
+        try:
+            resources = archiveextract(
+                resource=rename_complexinputs(request.inputs['resource']))
 
-        response.update_status('starting: indices=%s, refperiod=%s, groupings=%s, num_files=%s'
-                               % (indices, refperiod, groupings, len(resources)), 2)
+            indices = [inpt.data for inpt in request.inputs['indices']]
+            grouping = [inpt.data for inpt in request.inputs['grouping']]
 
-        results = calc_indice_simple(
-            resource=ncs,
-            mosaic=mosaic,
-            indices=indices,
-            polygons=polygons,
-            groupings=groupings,
-            # dir_output=path.curdir,
-            )
+            if 'mosaic' in request.inputs:
+                mosaic = request.inputs['mosaic'][0].data
+            else:
+                mosaic = False
 
+            if 'region' in request.inputs:
+                region = [inpt.data for inpt in request.inputs['region']]
+            else:
+                region = None
+
+            LOGGER.debug("grouping %s " % grouping)
+            LOGGER.debug("mosaic %s " % mosaic)
+            LOGGER.debug('indices= %s ' % indices)
+            LOGGER.debug('region %s' % region)
+            LOGGER.debug('Nr of input files %s ' % len(resources))
+        except:
+            LOGGER.exception('failed to read in the arguments')
+
+        response.update_status('starting: indices=%s, grouping=%s, num_files=%s'
+                               % (indices, grouping, len(resources)), 2)
+
+        results = []
+
+        from flyingpigeon.utils import sort_by_filename
+        datasets = sort_by_filename(resources, historical_concatination=True)
+        results = []
+        try:
+            group = grouping[0]  # for group in grouping:
+            indice = indices[0]  # for indice in indices:
+            for key in datasets.keys():
+                try:
+                    response.update_status('Dataset %s: %s' % (len(results) + 1, key), 10)
+
+                    LOGGER.debug("group %s " % group)
+                    LOGGER.debug("mosaic %s " % mosaic)
+                    LOGGER.debug('indice %s ' % indice)
+                    LOGGER.debug('region %s' % region)
+                    LOGGER.debug('Nr of input files %s ' % len(datasets[key]))
+
+                    result = calc_indice_simple(
+                        resource=datasets[key],
+                        mosaic=mosaic,
+                        indice=indice,
+                        polygons=region,
+                        grouping=group,
+                        # dir_output=path.curdir,
+                    )
+                    LOGGER.debug('result: %s' % result)
+                    results.extend(result)
+                except:
+                    LOGGER.exception('failed for %s', key)
+        except:
+            LOGGER.exception('Failed to calculate indices')
 #         # if not results:
 #         #     raise Exception("failed to produce results")
 #         # response.update_status('num results %s' % len(results), 90)
@@ -142,168 +185,11 @@ class IndicessingleProcess(Process):
         tarf = archive(results)
 
         response.outputs['output_archive'].file = tarf
-#         # response.update_status('done: indice=%s, num_files=%s' % (indices, len(resources)), 100)
-        response.update_status("done", 100)
-        return response
 
-    #
-    # """
-    # This process calculates climate indices for the given input datasets.
-    # """
-    # def __init__(self):
-    #     WPSProcess.__init__(
-    #         self,
-    #         identifier="indices_simple",
-    #         title="Climate indices -- Simple",
-    #         version="0.9",
-    #         abstract="Climate indices based on one single input variable.",
-    #         metadata=[
-    #             {'title': 'Documentation',
-    #              'href': 'http://flyingpigeon.readthedocs.io/en/latest/descriptions/index.html#climate-indices'},
-    #             {"title": "ICCLIM",
-    #              "href": "http://icclim.readthedocs.io/en/latest/"},
-    #             {"title": "Simple Indices",
-    #              "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/indices.html"}
-    #             ],
-    #         statusSupported=True,
-    #         storeSupported=True
-    #         )
-    #
-    #     self.resource = self.addComplexInput(
-    #         identifier="resource",
-    #         title="Resouce",
-    #         abstract="NetCDF File",
-    #         minOccurs=1,
-    #         maxOccurs=100,
-    #         maxmegabites=5000,
-    #         formats=[{"mimeType": "application/x-netcdf"}],
-    #         )
-    #
-    #     self.groupings = self.addLiteralInput(
-    #         identifier="groupings",
-    #         title="Grouping",
-    #         abstract="Select an time grouping (time aggregation)",
-    #         default='yr',
-    #         type=type(''),
-    #         minOccurs=1,
-    #         maxOccurs=len(GROUPING),
-    #         allowedValues=GROUPING
-    #         )
-    #
-    #     self.indices = self.addLiteralInput(
-    #         identifier="indices",
-    #         title="Index",
-    #         abstract=indices_description(),
-    #         default='SU',
-    #         type=type(''),
-    #         minOccurs=1,
-    #         maxOccurs=len(indices()),
-    #         allowedValues=indices()
-    #         )
-    #
-    #     self.polygons = self.addLiteralInput(
-    #         identifier="polygons",
-    #         title="Country subset",
-    #         abstract=str(countries_longname()),
-    #         type=type(''),
-    #         minOccurs=0,
-    #         maxOccurs=len(countries()),
-    #         allowedValues=countries()
-    #         )
-    #
-    #     self.mosaic = self.addLiteralInput(
-    #         identifier="mosaic",
-    #         title="Mosaic",
-    #         abstract="If Mosaic is checked, selected polygons be clipped as a mosaic for each input file",
-    #         default=False,
-    #         type=type(False),
-    #         minOccurs=0,
-    #         maxOccurs=1,
-    #         )
-    #
-    #     # complex output
-    #     # -------------
-    #     self.output = self.addComplexOutput(
-    #         identifier="output",
-    #         title="Index",
-    #         abstract="Calculated index as NetCDF file",
-    #         metadata=[],
-    #         formats=[{"mimeType": "application/x-tar"}],
-    #         asReference=True
-    #         )
-    #
-    #     self.output_netcdf = self.addComplexOutput(
-    #         title="one dataset as example",
-    #         abstract="NetCDF file to be dispayed on WMS",
-    #         formats=[{"mimeType": "application/x-netcdf"}],
-    #         asReference=True,
-    #         identifier="ncout",
-    #         )
-    #
-    #     self.output_log = self.addComplexOutput(
-    #         identifier="output_log",
-    #         title="Logging information",
-    #         abstract="Collected logs during process run.",
-    #         formats=[{"mimeType": "text/plain"}],
-    #         asReference=True,
-    #         )
-    #
-    # def execute(self):
-    #     import os
-    #     from flyingpigeon.utils import archive
-    #     # import tarfile
-    #     from tempfile import mkstemp
-    #     from os import path
-    #     from numpy import squeeze
-    #
-    #     init_process_logger('log.txt')
-    #     self.output_log.setValue('log.txt')
-    #
-    #     ncs = self.getInputValues(identifier='resource')
-    #     indices = self.indices.getValue()
-    #     polygons = self.polygons.getValue()
-    #     mosaic = self.mosaic.getValue()
-    #     groupings = self.groupings.getValue()
-    #
-    #     if polygons is None:
-    #         self.status.set('No countries selected, entire domain will be calculated', 10)
-    #     logger.debug('indices=%s', indices)
-    #     logger.debug('groupings=%s', groupings)
-    #     logger.debug('num files=%s', len(ncs))
-    #     self.status.set('processing indices : %s' % indices, 12)
-    #
-    #     results = squeeze(calc_indice_simple(
-    #         resource=ncs,
-    #         mosaic=mosaic,
-    #         indices=indices,
-    #         polygons=polygons,
-    #         groupings=groupings,
-    #         dir_output=path.curdir,
-    #         ))
-    #     results_list = results.tolist()
-    #     self.status.set('indices calculated', 90)
-    #     logger.debug('results type: %s', type(results_list))
-    #     logger.debug('indices files: %s ' % results_list)
-    #
-    #     try:
-    #         archive_indices = archive(results_list)
-    #         logger.info('archive prepared')
-    #     except Exception as e:
-    #         msg = "archive preparation failed"
-    #         logger.exception(msg)
-    #         raise Exception(msg)
-    #     try:
-    #         self.output.setValue(archive_indices)
-    #         if type(results_list) == list:
-    #             i = next((i for i, x in enumerate(results.tolist()) if x), None)
-    #             self.output_netcdf.setValue(str(results[i]))
-    #         elif type(results_list) == str:
-    #             self.output_netcdf.setValue(results_list)
-    #         else:
-    #             logger.debug('results_list type: %s  not extractable ' % type(results_list))
-    #             self.output_netcdf.setValue(None)
-    #     except Exception as e:
-    #         msg = "extraction of example file failed"
-    #         logger.exception(msg)
-    #
-    #     self.status.set('done', 100)
+        i = next((i for i, x in enumerate(results) if x), None)
+        if i is None:
+            i = "dummy.nc"
+        response.outputs['ncout'].file = results[i]
+
+#       response.update_status("done", 100)
+        return response

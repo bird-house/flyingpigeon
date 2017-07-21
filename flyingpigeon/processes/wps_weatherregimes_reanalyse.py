@@ -248,7 +248,7 @@ class WeatherregimesreanalyseProcess(Process):
         response.update_status('computing anomalies ', 19)
 
         cycst = anualcycle.split('-')[0]
-        cycen = anualcycle.split('-')[0]
+        cycen = anualcycle.split('-')[1]
         reference = [dt.strptime(cycst, '%Y%m%d'), dt.strptime(cycen, '%Y%m%d')]
         LOGGER.exception('reference time: %s', reference)
         model_anomal = wr.get_anomalies(model_subset, reference=reference)
@@ -315,6 +315,6 @@ class WeatherregimesreanalyseProcess(Process):
         response.outputs['Routput_graphic'].file = output_graphics
         response.outputs['output_pca'].file = file_pca
         response.outputs['output_classification'].file = file_class
-        response.outputs['output_netcdf'].file = model_season
+        response.outputs['output_netcdf'].file = model_subset
         response.update_status('done', 100)
         return response

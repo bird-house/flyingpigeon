@@ -6,9 +6,9 @@ LOGGER = logging.getLogger("PYWPS")
 
 def get_equation(culture_type='fallow', climate_type=2):
   """
-  returns the equation as basis to calculate the segetal flora
-  :param culture_type: Type of culture. Possible values are
-                       'fallow', 'intensive', 'extensive' (default:'fallow')
+  Return the equation as basis to calculate the segetal flora.
+
+  :param culture_type: Type of culture. Possible values are 'fallow', 'intensive', 'extensive' (default:'fallow')
   :param climate_type: Type of climate: number 1 to 7 or 'all' (default: 2)
   :example: eq = get_equation(culture_type= 'fallow', climate_type=2)
   """
@@ -151,7 +151,7 @@ def plot_ascii(infile):
 
 def get_yrmean(resource=[]):
   """
-  calculation of annual mean temperature and clipping Europe
+  Calculation of annual mean temperature and clipping Europe.
 
   :param resource: list or netCDF tas input files
 
@@ -184,7 +184,7 @@ def get_yrmean(resource=[]):
 
 def get_segetalflora(resource=[], culture_type='fallow', climate_type=3):
   """
-  calulation of segetalflora species numbers based on yearly mean temperature
+  Calculation of segetalflora species numbers based on yearly mean temperature.
 
   :param resource: list of netCDF yearly mean temperature (tas) files.
   :param culture_type: Type of culture. Possible values are:

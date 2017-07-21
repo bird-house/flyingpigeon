@@ -1,4 +1,5 @@
 from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.ocgis_module import call
 from flyingpigeon.utils import sort_by_filename, get_values, get_time
 from numpy import savetxt, column_stack
@@ -10,11 +11,16 @@ from pywps import ComplexInput, ComplexOutput
 from pywps import Format, FORMATS
 from pywps.app.Common import Metadata
 
+from flyingpigeon.log import init_process_logger
+
 import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
 class PointinspectionProcess(Process):
+    """
+    TODO: optionally provide point list as file (csv, geojson) and WFS service
+    """
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
@@ -29,14 +35,20 @@ class PointinspectionProcess(Process):
                          ]),
 
             LiteralInput("coords", "Coordinates",
-                         abstract="a comma-seperated tuple of WGS85 lon,lat decimal coordinates (e.g. 2.356138, 48.846450)",
-                         # default="2.356138, 48.846450",
+                         abstract="A comma-seperated tuple of WGS85 lon,lat decimal coordinates (e.g. 2.356138, 48.846450)",  # noqa
+                         default="2.356138, 48.846450",
                          data_type='string',
                          min_occurs=1,
                          max_occurs=100,
                          ),
                          ]
         outputs = [
+            ComplexOutput('output_log', 'Logging information',
+                          abstract="Collected logs during process run.",
+                          as_reference=True,
+                          supported_formats=[Format('text/plain')]
+                          ),
+
             ComplexOutput('tarout', 'Subsets',
                           abstract="Tar archive containing the netCDF files",
                           as_reference=True,
@@ -47,18 +59,18 @@ class PointinspectionProcess(Process):
         super(PointinspectionProcess, self).__init__(
             self._handler,
             identifier="pointinspection",
-            title="Pointinspection",
-            abstract='Extracts the timeseries of the given coordinates',
+            title="Point Inspection",
+            abstract='Extract the timeseries at the given coordinates.',
             version="0.10",
             metadata=[
                 Metadata('LSCE', 'http://www.lsce.ipsl.fr/en/index.php'),
                 Metadata('Doc', 'http://flyingpigeon.readthedocs.io/en/latest/'),
-                ],
+            ],
             inputs=inputs,
             outputs=outputs,
             status_supported=True,
             store_supported=True,
-            )
+        )
 
     def _handler(self, request, response):
         init_process_logger('log.txt')

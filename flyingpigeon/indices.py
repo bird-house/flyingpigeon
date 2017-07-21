@@ -38,7 +38,7 @@ _INDICES_ = dict(
     SD1=dict(variable='prsn', description='Nr of days with snow >= 1cm  (prsn as input files)'),
     SD5cm=dict(variable='prsn', description='Nr of days with snow >= 5cm (prsn as input files)'),
     SD50cm=dict(variable='prsn', description='Nr of days with snow >= 50 cm (prsn as input files)'),
-    )
+)
 
 _INDICESper_ = dict(
     TG10p=dict(variable='tas',
@@ -69,7 +69,7 @@ _INDICESper_ = dict(
               description='Days with PRCPTOT > 99th percentile of daily amounts (extremely wet days)(days)'),
     R99pTOT=dict(variable='pr',
                  description='recipitation fraction due to extremely wet days (>99th percentile)(%)'),
-    )
+)
 
 _INDICEScomp_ = dict(
     CD=dict(variable=['tas', 'pr'],
@@ -84,14 +84,14 @@ _INDICEScomp_ = dict(
     WW=dict(variable=['tas', 'pr'],
             description='Days with TG > 75th percentile of daily mean temperature and\
              PRCPTOT > 75th percentile of daily precipitation sum (warm/wet days)'),
-    )
+)
 
 _INDICESunconventional_ = dict(
     TGx=dict(variable=['tas'], description='Max of daily mean temperature'),
     TGx5day=dict(variable=['tas'], description='max of 5-day running average of daily mean temperature'),
     TGn=dict(variable=['tas'], description='Min of daily mean temperature'),
     TGn5day=dict(variable=['tas'], description='Min of 5-day running average of daily mean temperature'),
-    )
+)
 
 
 def indices():
@@ -137,15 +137,15 @@ def indice_variable(indice):
     return variable
 
 
-def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
-                       polygons=None, mosaic=False, groupings='yr', dir_output=None,
+def calc_indice_simple(resource=[], variable=None, prefix=None, indice='SU',
+                       polygons=None, mosaic=False, grouping='yr', dir_output=None,
                        dimension_map=None, memory_limit=None):
     """
     Calculates given simple indices for suitable files in the appropriate time grouping and polygon.
 
     :param resource: list of filenames in data reference syntax (DRS) convention (netcdf)
     :param variable: variable name to be selected in the in netcdf file (default=None)
-    :param indices: list of indices (default ='SU')
+    :param indices: Indice (default ='SU')
     :param polygons: list of polgons (default ='FRA')
     :param grouping: indices time aggregation (default='yr')
     :param out_dir: output directory for result file (netcdf)
@@ -160,139 +160,140 @@ def calc_indice_simple(resource=[], variable=None, prefix=None, indices=None,
 
     if type(resource) != list:
         resource = list([resource])
-    if type(indices) != list:
-        indices = list([indices])
+    # if type(indices) != list:
+    #     indices = list([indices])
     if type(polygons) != list and polygons is None:
         polygons = list([polygons])
-    if type(groupings) != list:
-        groupings = list([groupings])
+    # if type(groupings) != list:
+    #     groupings = list([groupings])
 
     if dir_output is not None:
         if not exists(dir_output):
             makedirs(dir_output)
 
-    LOGGER.debug(' **** dir_output = %s ' % dir_output)
+    datasets = sort_by_filename(resource).keys()
+
+    if len(datasets) is 1:
+        key = datasets[0]
+    else:
+        LOGGER.warning('more than one dataset in resource')
+
     # from flyingpigeon.subset import select_ugid
     #    tile_dim = 25
     output = None
 
-    experiments = sort_by_filename(resource)
+    # experiments = sort_by_filename(resource)
     outputs = []
 
-    for key in experiments:
-        if variable is None:
-            if type(experiments[key]) == str:
-                variable = get_variable(experiments[key])
-            else:
-                variable = get_variable(experiments[key][0])
-        # variable = key.split('_')[0]
+    # for key in experiments:
+
+    if variable is None:
+        variable = get_variable(resource)
+        LOGGER.debug('Variable detected % s ' % variable)
+
+    # variable = key.split('_')[0]
+    try:
+        # icclim can't handling 'kg m2 sec' needs to be 'mm/day'
+        if variable == 'pr':
+            calc = 'pr=pr*86400'
+            ncs = ocgis_module.call(resource=resource,
+                                    variable=variable,
+                                    dimension_map=dimension_map,
+                                    calc=calc,
+                                    memory_limit=memory_limit,
+                                    # calc_grouping= calc_group,
+                                    prefix=str(uuid.uuid4()),
+                                    dir_output=dir_output,
+                                    output_format='nc')
+        else:
+            ncs = resource
+
         try:
-            # icclim can't handling 'kg m2 sec' needs to be 'mm/day'
-            if variable == 'pr':
-                calc = 'pr=pr*86400'
-                ncs = ocgis_module.call(resource=experiments[key],
-                                        variable=variable,
-                                        dimension_map=dimension_map,
-                                        calc=calc,
-                                        memory_limit=memory_limit,
-                                        # calc_grouping= calc_group,
-                                        prefix=str(uuid.uuid4()),
-                                        dir_output=dir_output,
-                                        output_format='nc')
-            else:
-                ncs = experiments[key]
-            for indice in indices:
-                LOGGER.info('indice: %s' % indice)
-                try:
-                    calc = [{'func': 'icclim_' + indice, 'name': indice}]
-                    LOGGER.info('calc: %s' % calc)
-                    for grouping in groupings:
-                        LOGGER.info('grouping: %s' % grouping)
-                        try:
-                            calc_group = calc_grouping(grouping)
-                            LOGGER.info('calc_group: %s' % calc_group)
-                            if polygons is None:
-                                try:
-                                    prefix = key.replace(variable, indice).replace('_day_', '_%s_' % grouping)
-                                    LOGGER.debug(' **** dir_output = %s ' % dir_output)
-                                    tmp = ocgis_module.call(resource=ncs,
-                                                            variable=variable,
-                                                            dimension_map=dimension_map,
-                                                            calc=calc,
-                                                            calc_grouping=calc_group,
-                                                            prefix=prefix,
-                                                            dir_output=dir_output,
-                                                            output_format='nc')
-                                    if len(tmp) is not 0:
-                                        outputs.extend(tmp)
-                                    else:
-                                        msg = 'could not calc indice %s for domain in %s' % (indice, key)
-                                        LOGGER.debug(msg)
-                                        raise Exception(msg)
-                                except Exception as e:
-                                    msg = 'could not calc indice %s for domain in %s' % (indice, key)
-                                    LOGGER.debug(msg)
-                                    raise Exception(msg)
-                            else:
-                                try:
-                                    prefix = key.replace(variable, indice).replace('_day_', '_%s_' % grouping)
-                                    tmp = clipping(resource=ncs,
-                                                   variable=variable,
-                                                   dimension_map=dimension_map,
-                                                   calc=calc,
-                                                   calc_grouping=calc_group,
-                                                   prefix=prefix,
-                                                   polygons=polygons,
-                                                   mosaic=mosaic,
-                                                   dir_output=dir_output,
-                                                   output_format='nc')
-                                    if len(tmp) is not 0:
-                                        outputs.extend(tmp)
-                                    else:
-                                        msg = 'could not calc clipped indice %s for domain in %s' % (indice, key)
-                                        LOGGER.debug(msg)
-                                        raise Exception(msg)
-                                except Exception as e:
-                                    msg = 'could not calc indice %s for domain in %s' % (indice, key)
-                                    LOGGER.debug(msg)
-                                    # raise Exception(msg)
-                                LOGGER.info('indice file calculated: %s' % tmp)
-                        except Exception as e:
-                            msg = 'could not calc indice %s for key %s and grouping %s' % (indice, key, grouping)
-                            LOGGER.debug(msg)
-                            # raise Exception(msg)
-                except Exception as e:
-                    msg = 'could not calc indice %s for key %s' % (indice, key)
-                    LOGGER.debug(msg)
-                    # raise Exception(msg)
-        except Exception as e:
-            msg = 'could not calc key %s' % key
-            LOGGER.debug(msg)
+            calc = [{'func': 'icclim_' + indice, 'name': indice}]
+            LOGGER.info('calc: %s' % calc)
+            try:
+                calc_group = calc_grouping(grouping)
+                LOGGER.info('calc_group: %s' % calc_group)
+                if polygons is None:
+                    try:
+                        prefix = key.replace(variable, indice).replace('_day_', '_%s_' % grouping)
+                        LOGGER.debug(' **** dir_output = %s ' % dir_output)
+                        tmp = ocgis_module.call(resource=ncs,
+                                                variable=variable,
+                                                dimension_map=dimension_map,
+                                                calc=calc,
+                                                calc_grouping=calc_group,
+                                                prefix=prefix,
+                                                dir_output=dir_output,
+                                                output_format='nc')
+                        if len(tmp) is not 0:
+                            outputs.extend(tmp)
+                        else:
+                            msg = 'could not calc indice %s for domain ' % (indice)
+                            LOGGER.exception(msg)
+                    except:
+                        msg = 'could not calc indice %s for domain in %s' % (indice)
+                        LOGGER.exception(msg)
+                else:
+                    try:
+                        prefix = key.replace(variable, indice).replace('_day_', '_%s_' % grouping)
+                        tmp = clipping(resource=ncs,
+                                       variable=variable,
+                                       dimension_map=dimension_map,
+                                       calc=calc,
+                                       calc_grouping=calc_group,
+                                       prefix=prefix,
+                                       polygons=polygons,
+                                       mosaic=mosaic,
+                                       dir_output=dir_output,
+                                       output_format='nc')
+                        if len(tmp) is not 0:
+                            outputs.extend(tmp)
+                        else:
+                            msg = 'could not calc clipped indice %s ' % (indice)
+                            LOGGER.exception(msg)
+                    except:
+                        msg = 'could not calc indice %s for domai' % (indice)
+                        LOGGER.debug(msg)
+                        # raise Exception(msg)
+                    LOGGER.info('indice file calculated: %s' % tmp)
+            except:
+                msg = 'could not calc indice %s for key %s and grouping %s' % (indice, grouping)
+                LOGGER.exception(msg)
+                # raise Exception(msg)
+        except:
+            msg = 'could not calc indice %s ' % (indice)
+            LOGGER.exception(msg)
             # raise Exception(msg)
+    except:
+        msg = 'could not calculate indices'
+        LOGGER.exception(msg)
+        # raise Exception(msg)
     LOGGER.info('indice outputs %s ' % outputs)
+
     if len(outputs) is 0:
         LOGGER.debug('No indices are calculated')
         return None
     return outputs
 
 
-def calc_indice_percentile(resources=[], variable=None,
+def calc_indice_percentile(resource=[], variable=None,
                            prefix=None, indices='TG90p', refperiod=None,
-                           groupings='yr', polygons=None, percentile=90, mosaic=False,
+                           grouping='yr', polygons=None, percentile=90, mosaic=False,
                            dir_output=None, dimension_map=None):
     """
-    Calculates given indices for suitable files in the appropriate time grouping and polygon.
+    Calculates given indices for suitable dataset in the appropriate time grouping and polygon.
 
     :param resource: list of filenames in data reference syntax (DRS) convention (netcdf)
     :param variable: variable name to be selected in the in netcdf file (default=None)
-    :param indices: list of indices (default ='TG90p')
+    :param indices: string of indice (default ='TG90p')
     :param prefix: filename prefix
-    :param refperiod: reference period tuple = (start,end)
+    :param refperiod: reference period  = [datetime,datetime]
     :param grouping: indices time aggregation (default='yr')
     :param dir_output: output directory for result file (netcdf)
     :param dimension_map: optional dimension map if different to standard (default=None)
 
-    :return: list of netcdf files with calculated indices. Files are saved into out_dir.
+    :return: reference_file, indice_file
     """
     from os.path import join, dirname, exists
     from os import remove
@@ -304,105 +305,95 @@ def calc_indice_percentile(resources=[], variable=None,
     from flyingpigeon.subset import clipping
     from flyingpigeon.utils import get_values, get_time
 
-    if type(resources) != list:
-        resources = list([resources])
-    if type(indices) != list:
-        indices = list([indices])
+    if type(resource) != list:
+        resource = list([resource])
 
-    if type(groupings) != list:
-        groupings = list([groupings])
-
-    if type(refperiod) == list:
-        refperiod = refperiod[0]
-
-    if refperiod is None:
-        start = dt.strptime(refperiod.split('-')[0], '%Y%m%d')
-        end = dt.strptime(refperiod.split('-')[1], '%Y%m%d')
-        time_range = [start, end]
-    else:
-        time_range = None
-
-    if dir_output is None:
-        if not exists(dir_output):
-            makedirs(dir_output)
+    # if type(indices) != list:
+    #     indices = list([indices])
+    #
+    # if type(groupings) != list:
+    #     groupings = list([groupings])
+    #
+    # if type(refperiod) == list:
+    #     refperiod = refperiod[0]
+    #
+    # if refperiod is not None:
+    #     start = dt.strptime(refperiod.split('-')[0], '%Y%m%d')
+    #     end = dt.strptime(refperiod.split('-')[1], '%Y%m%d')
+    #     time_range = [start, end]
+    # else:
+    #     time_range = None
 
     ################################################
     # Compute a custom percentile basis using ICCLIM
     ################################################
     from ocgis.contrib import library_icclim as lic
-    nc_indices = []
-    nc_dic = sort_by_filename(resources)
 
-    for grouping in groupings:
-        calc_group = calc_grouping(grouping)
-        for key in nc_dic.keys():
-            resource = nc_dic[key]
-            if variable is None:
-                variable = get_variable(resource)
-            if polygons is None:
-                nc_reference = call(resource=resource,
-                                    prefix=str(uuid.uuid4()),
-                                    time_range=time_range,
-                                    output_format='nc',
-                                    dir_output=dir_output)
-        else:
-            nc_reference = clipping(resource=resource,
-                                    prefix=str(uuid.uuid4()),
-                                    time_range=time_range,
-                                    output_format='nc',
-                                    polygons=polygons,
-                                    dir_output=dir_output,
-                                    mosaic=mosaic)
+    calc_group = calc_grouping(grouping)
 
-        arr = get_values(resource=nc_reference)
-        dt_arr = get_time(resource=nc_reference)
-        arr = ma.masked_array(arr)
-        dt_arr = ma.masked_array(dt_arr)
-        percentile = percentile
-        window_width = 5
+    if variable is None:
+        variable = get_variable(resource)
 
-        for indice in indices:
-            name = indice.replace('_', str(percentile))
-            var = indice.split('_')[0]
+    if polygons is None:
+        nc_reference = call(resource=resource,
+                            prefix=str(uuid.uuid4()),
+                            time_range=refperiod,
+                            output_format='nc')
+    else:
+        nc_reference = clipping(resource=resource,
+                                prefix=str(uuid.uuid4()),
+                                time_range=refperiod,
+                                output_format='nc',
+                                polygons=polygons,
+                                mosaic=mosaic)
 
-            operation = None
-            if 'T' in var:
-                if percentile >= 50:
-                    operation = 'Icclim%s90p' % var
-                    func = 'icclim_%s90p' % var  # icclim_TG90p
-                else:
-                    operation = 'Icclim%s10p' % var
-                    func = 'icclim_%s10p' % var
+    # arr = get_values(resource=nc_reference)
+    # dt_arr = get_time(resource=nc_reference)
+    # arr = ma.masked_array(arr)
+    # dt_arr = ma.masked_array(dt_arr)
+    # percentile = percentile
+    # window_width = 5
 
-                ################################
-                # load the appropriate operation
-                ################################
-
-                ops = [op for op in dir(lic) if operation in op]
-                if len(ops) == 0:
-                    raise Exception("operator does not exist %s", operation)
-
-                exec "percentile_dict = lic.%s.get_percentile_dict(arr, dt_arr, percentile, window_width)" % ops[0]
-                calc = [{'func': func, 'name': name, 'kwds': {'percentile_dict': percentile_dict}}]
-
-                if polygons is None:
-                    nc_indices.extend(call(resource=resource,
-                                           prefix=key.replace(variable, name).replace('_day_', '_%s_' % grouping),
-                                           calc=calc,
-                                           calc_grouping=calc_group,
-                                           output_format='nc',
-                                           dir_output=dir_output))
-                else:
-                    nc_indices.extend(clipping(resource=resource,
-                                               prefix=key.replace(variable, name).replace('_day_', '_%s_' % grouping),
-                                               calc=calc,
-                                               calc_grouping=calc_group,
-                                               output_format='nc',
-                                               dir_output=dir_output,
-                                               polygons=polygons,
-                                               mosaic=mosaic,
-                                               ))
-    if len(nc_indices) is 0:
-        LOGGER.debug('No indices are calculated')
-        return None
-    return nc_indices
+    #     for indice in indices:
+    #         name = indice.replace('_', str(percentile))
+    #         var = indice.split('_')[0]
+    #
+    #         operation = None
+    #         if 'T' in var:
+    #             if percentile >= 50:
+    #                 operation = 'Icclim%s90p' % var
+    #                 func = 'icclim_%s90p' % var  # icclim_TG90p
+    #             else:
+    #                 operation = 'Icclim%s10p' % var
+    #                 func = 'icclim_%s10p' % var
+    #
+    #             ################################
+    #             # load the appropriate operation
+    #             ################################
+    #
+    #             ops = [op for op in dir(lic) if operation in op]
+    #             if len(ops) == 0:
+    #                 raise Exception("operator does not exist %s", operation)
+    #
+    #             exec "percentile_dict = lic.%s.get_percentile_dict(arr, dt_arr, percentile, window_width)" % ops[0]
+    #             calc = [{'func': func, 'name': name, 'kwds': {'percentile_dict': percentile_dict}}]
+    #
+    #             if polygons is None:
+    #                 nc_indices.extend(call(resource=resource,
+    #                                        prefix=key.replace(variable, name).replace('_day_', '_%s_' % grouping),
+    #                                        calc=calc,
+    #                                        calc_grouping=calc_group,
+    #                                        output_format='nc'))
+    #             else:
+    #                 nc_indices.extend(clipping(resource=resource,
+    #                                            prefix=key.replace(variable, name).replace('_day_', '_%s_' % grouping),
+    #                                            calc=calc,
+    #                                            calc_grouping=calc_group,
+    #                                            output_format='nc',
+    #                                            polygons=polygons,
+    #                                            mosaic=mosaic,
+    #                                            ))
+    # if len(nc_indices) is 0:
+    #     LOGGER.debug('No indices are calculated')
+    #     return None
+    return nc_reference  # , nc_indices

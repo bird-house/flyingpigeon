@@ -87,6 +87,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None, output_f
     :param historical_concatination: concat files of RCPs with appropriate historical runs into one timeseries
     :param prefix: prefix for output file name
     :param polygons: list of polygons to be used. If more than 1 in the list, an appropriate mosaic will be clipped
+    :param mosaic: Whether the polygons are aggregated into a single geometry (True) or individual files are created for each geometry (False).
     :param output_format: output_format (default='nc')
     :param dir_output: specify an output location
     :param time_range: [start, end] of time subset

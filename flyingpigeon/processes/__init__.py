@@ -5,7 +5,7 @@ from .wps_pointinspection import PointinspectionProcess
 from .wps_landseamask import LandseamaskProcess
 from .wps_climatefactsheet import FactsheetProcess
 from .wps_fetch import FetchProcess
-from .wps_indices_percentile import IndicespercentileProcess
+from .wps_indices_percentiledays import IndicespercentiledaysProcess
 from .wps_indices_single import IndicessingleProcess
 from .wps_robustness import RobustnessProcess
 from .wps_plot_timeseries import PlottimeseriesProcess
@@ -29,26 +29,26 @@ processes = [
     ClipcontinentProcess(),
     ClipregionseuropeProcess(),
     PointinspectionProcess(),
-    FactsheetProcess(),
+    #    FactsheetProcess(),
     FetchProcess(),
     LandseamaskProcess(),
-    IndicespercentileProcess(),
+    IndicespercentiledaysProcess(),
     IndicessingleProcess(),
     GBIFfetchProcess(),
     SDMgetindicesProcess(),
-    SDMcsvProcess(),
-    SDMcsvindicesProcess(),
-    SDMallinoneProcess(),
+    #    SDMcsvProcess(),
+    #    SDMcsvindicesProcess(),
+    #    SDMallinoneProcess(),
     WeatherregimesreanalyseProcess(),
     WeatherregimesprojectionProcess(),
     WeatherregimesmodelProcess(),
-    AnalogsreanalyseProcess(),
-    AnalogsmodelProcess(),
-    AnalogscompareProcess(),
-    AnalogsviewerProcess(),
-    RobustnessProcess(),
-    PlottimeseriesProcess(),
-    SegetalfloraProcess(),
+    #    AnalogsreanalyseProcess(),
+    #    AnalogsmodelProcess(),
+    #    AnalogscompareProcess(),
+    #    AnalogsviewerProcess(),
+    #    RobustnessProcess(),
+    #    PlottimeseriesProcess(),
+    SegetalfloraProcess()
     SpatialAnalogProcess()
 ]
 

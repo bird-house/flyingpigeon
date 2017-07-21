@@ -9,10 +9,17 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class FetchProcess(Process):
+    """
+    TODO: rename process to Copy? Could be a base process (hummingbird).
+    TODO: Provide first output directly.
+    TODO: should provide urls of copied files.
+    TODO: Need a better way to provide multiple outputs (json file ... could be interpreted and displayed by UI),
+    COWS has done somthing like this with an xml output.
+    """
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
-                         abstract="NetCDF Files or archive (tar/zip) containing netCDF files",
+                         abstract="NetCDF Files or archive (tar/zip) containing netCDF files.",
                          min_occurs=1,
                          max_occurs=1000,
                          #  maxmegabites=5000,
@@ -25,7 +32,7 @@ class FetchProcess(Process):
 
         outputs = [
             ComplexOutput("output", "Fetched Files",
-                          abstract="File containing the local pathes to downloades files",
+                          abstract="File containing the local pathes to downloades files.",
                           supported_formats=[Format('text/plain')],
                           as_reference=True,
                           ),
@@ -40,10 +47,10 @@ class FetchProcess(Process):
         super(FetchProcess, self).__init__(
             self._handler,
             identifier="fetch_resources",
-            title="Download Resources",
+            title="Fetch Resources",
             version="0.10",
-            abstract="This process downloads resources (limited to 50GB) \
-                      to the local file system of the birdhouse compute provider",
+            abstract="Fetch data resources (limited to 50GB) to the local file"
+                     "system of the birdhouse compute provider.",
             metadata=[
                 Metadata('Documentation', 'http://flyingpigeon.readthedocs.io/en/latest/'),
             ],

@@ -220,52 +220,75 @@ def get_PAmask(coordinates=[], nc=None):
     return PAmask
 
 
-def get_indices(resources, indices):
+def get_indices(resource, indices):
     """
     calculating indices (netCDF files) defined in _SDMINDICES_
 
-    :param resources:
-    :param indices: indices defined in _SDMINDICES_
+    :param resources: files containing one Dataset
+    :param indices: List of indices defined in _SDMINDICES_. Index needs to be based on the resource variable
 
     :return list: list of filepathes to netCDF files
     """
 
-    from flyingpigeon.utils import sort_by_filename, calc_grouping, drs_filename, unrotate_pole
+    from flyingpigeon.utils import sort_by_filename, calc_grouping, drs_filename, unrotate_pole, get_variable
     # from flyingpigeon.ocgis_module import call
     from flyingpigeon.indices import indice_variable, calc_indice_simple
+    from flyingpigeon.subset import masking
+    from flyingpigeon.utils import searchfile
+    from flyingpigeon.utils import search_landsea_mask_by_esgf
+    from os.path import basename
 
     # names = [drs_filename(nc, skip_timestamp=False, skip_format=False,
     #               variable=None, rename_file=True, add_file_path=True) for nc in resources]
+    variable = get_variable(resource)
 
-    ncs = sort_by_filename(resources, historical_concatination=True)
+    masked_datasets = []
+    max_count = len(resource)
+
+    for ds in resource:
+        ds_name = basename(ds)
+        LOGGER.debug('masking dataset: %s', ds_name)
+        try:
+            landsea_mask = search_landsea_mask_by_esgf(ds)
+            LOGGER.debug("using landsea_mask: %s", landsea_mask)
+            prefix = ds_name.replace('.nc', '')
+            new_ds = masking(ds, landsea_mask, land_area=True, prefix=prefix)
+            masked_datasets.append(new_ds)
+        except:
+            LOGGER.exception("Could not subset dataset.")
+            break
+        else:
+            LOGGER.info("masked: %d/%d", len(masked_datasets), max_count)
+    if not masked_datasets:
+        raise Exception("Could not mask input files.")
+
+    ncs = sort_by_filename(masked_datasets, historical_concatination=True)
+    key = ncs.keys()[0]
     ncs_indices = []
-    LOGGER.info('resources sorted found %s datasets' % len(ncs.keys()))
-    for key in ncs.keys():
-        for indice in indices:
-            try:
-                name, month = indice.split('_')
-                variable = key.split('_')[0]
-                # print name, month , variable
-                if variable == indice_variable(name):
-                    LOGGER.info('calculating indice %s ' % indice)
-                    prefix = key.replace(variable, name).replace('_day_', '_%s_' % month)
-                    nc = calc_indice_simple(resource=ncs[key],
-                                            variable=variable,
-                                            polygons=['Europe', 'Africa', 'Asia', 'North America', 'Oceania',
-                                                      'South America', 'Antarctica'],
-                                            mosaic=True,
-                                            prefix=prefix, indices=name, groupings=month)
-                    if nc is not None:
-                        coords = unrotate_pole(nc[0], write_to_file=True)
-                        ncs_indices.append(nc[0])
-                        LOGGER.info('Successful calculated indice %s %s' % (key, indice))
-                    else:
-                        msg = 'failed to calculate indice %s %s' % (key, indice)
-                        LOGGER.exception(msg)
-            except:
-                msg = 'failed to calculate indice %s %s' % (key, indice)
-                LOGGER.exception(msg)
-                raise
+    LOGGER.info('resources sorted found %s datasets', len(ncs.keys()))
+    for indice in indices:
+        try:
+            name, month = indice.split('_')
+            # print name, month , variable
+            if variable == indice_variable(name):
+                LOGGER.info('calculating indice %s ' % indice)
+                prefix = key.replace(variable, name).replace('_day_', '_%s_' % month)
+                nc = calc_indice_simple(resource=resource,
+                                        variable=variable,
+                                        # polygons=['Europe', 'Africa', 'Asia', 'North America', 'Oceania',
+                                        #           'South America', 'Antarctica'],
+                                        # mosaic=True,
+                                        prefix=prefix, indice=name, grouping=month)
+                if nc is not None:
+                    # coords = unrotate_pole(nc[0], write_to_file=True)
+                    ncs_indices.append(nc[0])
+                    LOGGER.info('Successful calculated indice %s %s' % (key, indice))
+                else:
+                    msg = 'failed to calculate indice %s %s' % (key, indice)
+                    LOGGER.exception(msg)
+        except:
+            msg = 'failed to calculate indice %s %s' % (key, indice)
+            LOGGER.exception(msg)
     return ncs_indices
 
 

@@ -3,7 +3,7 @@ from pywps.app.Service import Service
 
 from flyingpigeon.processes import processes
 
-__version__ = "0.2.1"
+__version__ = "0.11.0"
 
 
 def application(environ, start_response):

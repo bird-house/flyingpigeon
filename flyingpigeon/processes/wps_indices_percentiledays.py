@@ -6,7 +6,7 @@ from pywps.app.Common import Metadata
 
 from flyingpigeon.indices import indices, indices_description
 from flyingpigeon.indices import calc_indice_percentile
-from flyingpigeon.subset import countries, countries_longname
+from flyingpigeon.subset import countries, countries_longname, clipping
 from flyingpigeon.utils import GROUPING
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import archive, archiveextract
@@ -18,10 +18,14 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class IndicespercentiledaysProcess(Process):
+    """
+    TODO: need a more detailed description and an example.
+    TODO: data input might need a data selection filter? metadata attributes could be used for this.
+    """
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
-                         abstract="NetCDF Files or archive (tar/zip) containing netCDF files",
+                         abstract="NetCDF Files or archive (tar/zip) containing netCDF files.",
                          min_occurs=1,
                          max_occurs=1000,
                          #  maxmegabites=5000,
@@ -41,7 +45,7 @@ class IndicespercentiledaysProcess(Process):
             #              ),
 
             LiteralInput("percentile", "Percentile",
-                         abstract='Select an percentile',
+                         abstract='Percentile value [1-100].',
                          default='90',
                          data_type='integer',
                          min_occurs=1,
@@ -68,26 +72,25 @@ class IndicespercentiledaysProcess(Process):
             #     allowedValues=['all','1951-1980', '1961-1990', '1971-2000','1981-2010']
             #     )
 
-            LiteralInput("grouping", "Grouping",
-                         abstract="Select an time grouping (time aggregation)",
-                         default='yr',
-                         data_type='string',
-                         min_occurs=1,
-                         max_occurs=1,
-                         allowed_values=GROUPING
-                         ),
+            # LiteralInput("grouping", "Grouping",
+            #              abstract="Select an time grouping (time aggregation)",
+            #              default='yr',
+            #              data_type='string',
+            #              min_occurs=1,
+            #              max_occurs=1,
+            #              allowed_values=GROUPING
+            #              ),
 
             LiteralInput('region', 'Region',
                          data_type='string',
-                         # abstract= countries_longname(), # need to handle special non-ascii char in countries.
-                         abstract="Country ISO-3166-3:\
+                         abstract="Country code, see ISO-3166-3:\
                           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3#Officially_assigned_code_elements",
                          min_occurs=0,
                          max_occurs=len(countries()),
                          allowed_values=countries()),  # REGION_EUROPE #COUNTRIES
 
             LiteralInput("mosaic", "Mosaic",
-                         abstract="If Mosaic is checked, selected polygons be clipped as a mosaic for each input file",
+                         abstract="If Mosaic is checked, selected polygons be clipped as a mosaic for each input file.",
                          default='0',
                          data_type='boolean',
                          min_occurs=0,
@@ -97,14 +100,14 @@ class IndicespercentiledaysProcess(Process):
         ]
 
         outputs = [
-            ComplexOutput("output_archive", "Masked Files Archive",
-                          abstract="Tar file of the masked netCDF files",
+            ComplexOutput("output_archive", "Tar archive",
+                          abstract="Tar archive of the netCDF files storing the percentile values.",
                           supported_formats=[Format("application/x-tar")],
                           as_reference=True,
                           ),
 
-            ComplexOutput('ncout', 'Subsets for one dataset',
-                          abstract="NetCDF file with subsets of one dataset.",
+            ComplexOutput('ncout', 'Example netCDF file',
+                          abstract="NetCDF file storing the percentiles computed over one dataset.",
                           as_reference=True,
                           supported_formats=[Format('application/x-netcdf')]
                           ),
@@ -120,8 +123,8 @@ class IndicespercentiledaysProcess(Process):
             identifier="indices_percentiledays",
             title="Climate indices (Daily percentiles)",
             version="0.10",
-            abstract="Climate indices based on one single input variable\
-             Calculating the percentiles for each day in the year.",
+            abstract="Climatological percentile for each day of the year "
+                    "computed over the entire dataset.",
             metadata=[
                 {'title': 'Doc',
                  'href': 'http://flyingpigeon.readthedocs.io/en/latest/descriptions/\
@@ -144,10 +147,6 @@ class IndicespercentiledaysProcess(Process):
         try:
             resources = archiveextract(
                 resource=rename_complexinputs(request.inputs['resource']))
-            # indices = request.inputs['indices'][0].data
-
-            grouping = request.inputs['grouping'][0].data
-            # grouping = [inpt.data for inpt in request.inputs['grouping']]
 
             if 'region' in request.inputs:
                 region = request.inputs['region'][0].data
@@ -160,22 +159,8 @@ class IndicespercentiledaysProcess(Process):
                 mosaic = False
 
             percentile = request.inputs['percentile'][0].data
-            # refperiod = request.inputs['refperiod'][0].data
 
-            from datetime import datetime as dt
-            #
-            # if refperiod is not None:
-            #     start = dt.strptime(refperiod.split('-')[0], '%Y%m%d')
-            #     end = dt.strptime(refperiod.split('-')[1], '%Y%m%d')
-            #     refperiod = [start, end]
-
-            # response.update_status('starting: indices=%s, grouping=%s, num_files=%s'
-            #                        % (indices,  grouping, len(resources)), 2)
-
-            LOGGER.debug("grouping %s " % grouping)
             LOGGER.debug("mosaic %s " % mosaic)
-            # LOGGER.debug("refperiod set to %s, %s " % (start, end))
-            # LOGGER.debug('indices= %s ' % indices)
             LOGGER.debug('percentile: %s' % percentile)
             LOGGER.debug('region %s' % region)
             LOGGER.debug('Nr of input files %s ' % len(resources))
@@ -189,35 +174,47 @@ class IndicespercentiledaysProcess(Process):
         datasets = sort_by_filename(resources, historical_concatination=True)
         results = []
 
-        kwds = {'percentile': percentile, 'window_width': 5}
+        kwds = {'percentile': 90, 'window_width': 5}
         calc = [{'func': 'daily_perc', 'name': 'dp', 'kwds': kwds}]
-        #
-        # ops = OcgOperations(dataset=rd, calc=calc,
-        #                     output_format='nc',
-        #                     time_region={'year': [1980, 1990]}
-        #                     ).execute()
+
         try:
             for key in datasets.keys():
                 try:
-                    result = calc(resource=datasets[key],
-                                  calc=calc,
-                                #   calc_grouping='year'
-                                  )
-                    LOGGER.debug('percentile based indice done for %s' % result)
-                    results.extend(result)
+                    if region is None:
+                        result = call(resource=datasets[key],
+                                      output_format='nc',
+                                      calc=calc,
+                                      # prefix=key,
+                                      # time_region={'year': [1995, 2000]}
+                                      # calc_grouping='year'
+                                      )
+                        results.extend([result])
+                        LOGGER.debug('percentile based indice done for %s' % result)
+                    else:
+                        result = clipping(resource=datasets[key],
+                                          #  variable=None,
+                                          calc=calc,
+                                          #  calc_grouping=None,
+                                          #  time_range=None,
+                                          #  time_region=None,
+                                          polygons=region,
+                                          mosaic=mosaic
+                                          )
+                        results.extend(result)
                 except:
                     LOGGER.exception("failed to calculate percentil based indice for %s " % key)
         except:
             LOGGER.exception("failed to calculate percentile indices")
 
-        output_archive = archive(results)
+        tarf = archive(results)
 
-        response.outputs['output_archive'].file = output_archive
+        response.outputs['output_archive'].file = tarf
 
         i = next((i for i, x in enumerate(results) if x), None)
         if i is None:
             i = "dummy.nc"
         response.outputs['ncout'].file = results[i]
 
+#       response.update_status("done", 100)
         response.update_status("done", 100)
         return response

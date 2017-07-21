@@ -12,6 +12,12 @@ from pywps import Format, FORMATS
 from pywps.app.Common import Metadata
 from flyingpigeon.log import init_process_logger
 
+from datetime import datetime as dt
+from flyingpigeon import weatherregimes as wr
+from flyingpigeon.utils import archive, archiveextract
+from tempfile import mkstemp
+
+
 import logging
 LOGGER = logging.getLogger("PYWPS")
 
@@ -123,10 +129,6 @@ class WeatherregimesmodelProcess(Process):
         response.outputs['output_log'].file = 'log.txt'
 
         LOGGER.info('Start process')
-        from datetime import datetime as dt
-        from flyingpigeon import weatherregimes as wr
-        from flyingpigeon.utils import archive, archiveextract
-        from tempfile import mkstemp
 
         response.update_status('execution started at : %s ' % dt.now(), 5)
 

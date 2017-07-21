@@ -1,3 +1,5 @@
+.. _climate_indices:
+
 Climate indices
 ---------------
 
@@ -7,26 +9,28 @@ The climate indices processes in flyingpigeon are based on the `python package i
 They are subclassed to:
 
 
-Process identifiers: 
+Process identifiers:
 ....................
 
   * **Simple indices**
     Simple indices are based on a single input variable, and with and a simple calculation algorithm.
 
   * **Percentile indices**
-    Percentile-based indices are calculated based on an given percentile of a reference period. 
+    Percentile-based indices are calculated based on an given percentile of a reference period.
     The calculation of percentile-based indices is done in two steps:
 
     Calculation of the percentile value for a given reference period
-    Cumulative sum of the number of days beyond the threshold 
-    
+    Cumulative sum of the number of days beyond the threshold
+
   * **Multivariable indices**
   * **User defined indices**
-  
+
 
 Input Parameter:
-................    
-    
+................
+
+.. _indices_simple::
+
 *for simple indices*
 
 +--------+----------------+--------------------------------------------------------------------------------+
@@ -89,6 +93,14 @@ Input Parameter:
 | SD50cm |       prsn     | Nr of days with snow >= 50 cm                                                  |
 +--------+----------------+--------------------------------------------------------------------------------+
 
+.. _indices_dailypercentile:
+
+*Indice Dailypercentile*
+
+For a given percentil value (default=90) the according value will be calculated for each day in the year.
+The reslult is an anual cycle of corresponding values.
+
+.. _indices_percentile:
 
 *Percentile-based indices*
 
@@ -149,26 +161,26 @@ Input Parameter:
 
 +-------------+-------------+---------+
 | Time        |Description  |values   |
-| aggregation |             |per year | 
+| aggregation |             |per year |
 +-------------+-------------+---------+
 | mon         | monthly     | 12      |
 +-------------+-------------+---------+
-| sem         | seasonal    | 4       |          
+| sem         | seasonal    | 4       |
 +-------------+-------------+---------+
 | yr          | yearly      | 1       |
 +-------------+-------------+---------+
 | ONDJFM      | winter half | 1       |
-+-------------+-------------+---------+ 
++-------------+-------------+---------+
 | AMJJAS      | summer half | 1       |
 +-------------+-------------+---------+
-| DJF         | winter      | 1       |                
-+-------------+-------------+---------+ 
+| DJF         | winter      | 1       |
++-------------+-------------+---------+
 | MAM         | Spring      | 1       |
-+-------------+-------------+---------+ 
++-------------+-------------+---------+
 | JJA         | Summer      | 1       |
-+-------------+-------------+---------+ 
++-------------+-------------+---------+
 | SON         | Autumn      | 1       |
-+-------------+-------------+---------+ 
++-------------+-------------+---------+
 | Jan         | Januar      | 1       |
 +-------------+-------------+---------+
 | Feb         | Februar     | 1       |
@@ -200,11 +212,11 @@ Input Parameter:
 To be checked if multiple polygons should be merged into one polygon.
 
 
-Output: 
+Output:
 .......
 
 **tar archive**
-  Tar archive containing all netCDF files. Subsetting is performed for each input dataset. 
+  Tar archive containing all netCDF files. Subsetting is performed for each input dataset.
 
 **netCDF example**
-  One netCDF file is picked out as an example file to be displayed on the web mapping service. 
+  One netCDF file is picked out as an example file to be displayed on the web mapping service.

@@ -27,7 +27,7 @@ def has_Lambert_Conformal(resource):
 def call(resource=[], variable=None, dimension_map=None, calc=None,
          calc_grouping=None, conform_units_to=None, memory_limit=None,  prefix=None,
          regrid_destination=None, regrid_options='bil', level_range=None,
-         geom=None, output_format_options=False, search_radius_mult=2.,
+         geom=None, output_format_options=None, search_radius_mult=2.,
          select_nearest=False, select_ugid=None, spatial_wrapping=None,
          t_calendar=None, time_region=None,
          time_range=None, dir_output=None, output_format='nc'):
@@ -110,12 +110,14 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     if prefix is None:
         prefix = str(uuid.uuid1())
         env.PREFIX = prefix
-    if output_format_options is False:
-        output_format_options = None
-    elif output_format_options is True:
-        output_format_options = {'data_model': 'NETCDF4',  # NETCDF4_CLASSIC
-                                 'variable_kwargs': {'zlib': True, 'complevel': 9}}
-    else:
+    #
+    # if output_format_options is False:
+    #     output_format_options = None
+    # elif output_format_options is True:
+    #     output_format_options = {'data_model': 'NETCDF4',  # NETCDF4_CLASSIC
+    #                              'variable_kwargs': {'zlib': True, 'complevel': 9}}
+    # else:
+    if output_format_options is not None:
         LOGGER.info('output_format_options are set to %s ' % (output_format_options))
 
     if type(resource) != list:
@@ -133,6 +135,10 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         rd = RequestDataset(resource, variable=variable, level_range=level_range,
                             dimension_map=dimension_map, conform_units_to=conform_units_to,
                             time_region=time_region, t_calendar=t_calendar, time_range=time_range)
+
+        # from ocgis.constants import DimensionMapKey
+        # rd.dimension_map.set_bounds(DimensionMapKey.TIME, None)
+
         ops = OcgOperations(dataset=rd,
                             output_format_options=output_format_options,
                             dir_output=dir_output,
@@ -150,84 +156,91 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
                             select_ugid=select_ugid,
                             add_auxiliary_files=False)
         LOGGER.info('OcgOperations set')
-    except Exception as e:
-        LOGGER.debug('failed to setup OcgOperations: %s' % e)
-        raise
+    except:
+        LOGGER.exception('failed to setup OcgOperations')
         return None
 
     try:
-        from numpy import sqrt
-        from flyingpigeon.utils import FreeMemory
-
-        if memory_limit is None:
-            f = FreeMemory()
-            mem_kb = f.user_free
-            mem_mb = mem_kb / 1024.
-            mem_limit = mem_mb / 2.  # set limit to half of the free memory
-        else:
-            mem_limit = memory_limit
-
-        if mem_limit >= 1024. * 4:
-            mem_limit = 1024. * 4
-            # 475.0 MB for openDAP
-
-        LOGGER.info('memory_limit = %s Mb' % (mem_limit))
-
-        data_kb = ops.get_base_request_size()['total']
-        data_mb = data_kb / 1024.
-
-        # data_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
-        LOGGER.info('data_mb  = %s Mb' % (data_mb))
+        LOGGER.info('ocgis module call as ops.execute()')
+        geom_file = ops.execute()
     except:
-        LOGGER.exception('failed to compare dataload with free memory')
-        raise
+        LOGGER.exception('failed to execute ocgis operation')
+        return None
+    #
+    # try:
+    #     from numpy import sqrt
+    #     from flyingpigeon.utils import FreeMemory
+    #
+    #     if memory_limit is None:
+    #         f = FreeMemory()
+    #         mem_kb = f.user_free
+    #         mem_mb = mem_kb / 1024.
+    #         mem_limit = mem_mb / 2.  # set limit to half of the free memory
+    #     else:
+    #         mem_limit = memory_limit
+    #
+    #     if mem_limit >= 1024. * 4:
+    #         mem_limit = 1024. * 4
+    #         # 475.0 MB for openDAP
+    #
+    #     LOGGER.info('memory_limit = %s Mb' % (mem_limit))
+    #
+    #     data_kb = ops.get_base_request_size()['total']
+    #     data_mb = data_kb / 1024.
+    #
+    #     # data_kb = size['total']/reduce(lambda x,y: x*y,size['variables'][variable]['value']['shape'])
+    #     LOGGER.info('data_mb  = %s Mb' % (data_mb))
+    #
+    #     if data_mb <= mem_limit:  # input is smaler than the half of free memory size
+    #         try:
+    #             LOGGER.info('ocgis module call as ops.execute()')
+    #             geom_file = ops.execute()
+    #         except Exception as e:
+    #             LOGGER.debug('failed to execute ocgis operation')
+    #             raise
+    #             return None
+    #
+    #     else:
+    #         ##########################
+    #         # calcultion of chunk size
+    #         ##########################
+    #         try:
+    #             size = ops.get_base_request_size()
+    #             nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
+    #             element_in_kb = size['total']/reduce(lambda x, y: x*y, size['variables'][variable]['value']['shape'])
+    #             element_in_mb = element_in_kb / 1024.
+    #             tile_dim = sqrt(mem_limit/(element_in_mb*nb_time_coordinates_rd))  # maximum chunk size
+    #
+    #             LOGGER.info('ocgis module call compute with chunks')
+    #             if calc is None:
+    #                 calc = '%s=%s*1' % (variable, variable)
+    #                 LOGGER.info('calc set to = %s ' % calc)
+    #             ops = OcgOperations(dataset=rd,
+    #                                 output_format_options=output_format_options,
+    #                                 dir_output=dir_output,
+    #                                 spatial_wrapping=spatial_wrapping,
+    #                                 spatial_reorder=spatial_reorder,
+    #                                 # regrid_destination=rd_regrid,
+    #                                 # options=options,
+    #                                 calc=calc,
+    #                                 calc_grouping=calc_grouping,
+    #                                 geom=geom,
+    #                                 output_format=output_format,
+    #                                 prefix=prefix,
+    #                                 search_radius_mult=search_radius_mult,
+    #                                 select_nearest=select_nearest,
+    #                                 select_ugid=select_ugid,
+    #                                 add_auxiliary_files=False)
+    #             geom_file = compute(ops, tile_dimension=int(tile_dim), verbose=True)
+    #             print 'ocgis calculated'
+    #         except Exception as e:
+    #             LOGGER.debug('failed to compute ocgis with chunks')
+    #             raise
+    #             return None
+    #     LOGGER.info('Succeeded with ocgis module call function')
+    # except:
+    #     LOGGER.exception('failed to compare dataload with free memory, calling as execute instead')
 
-    if data_mb <= mem_limit:  # input is smaler than the half of free memory size
-        try:
-            LOGGER.info('ocgis module call as ops.execute()')
-            geom_file = ops.execute()
-        except Exception as e:
-            LOGGER.debug('failed to execute ocgis operation')
-            raise
-            return None
-    else:
-        ##########################
-        # calcultion of chunk size
-        ##########################
-        try:
-            size = ops.get_base_request_size()
-            nb_time_coordinates_rd = size['variables'][variable]['temporal']['shape'][0]
-            element_in_kb = size['total']/reduce(lambda x, y: x*y, size['variables'][variable]['value']['shape'])
-            element_in_mb = element_in_kb / 1024.
-            tile_dim = sqrt(mem_limit/(element_in_mb*nb_time_coordinates_rd))  # maximum chunk size
-
-            LOGGER.info('ocgis module call compute with chunks')
-            if calc is None:
-                calc = '%s=%s*1' % (variable, variable)
-                LOGGER.info('calc set to = %s ' % calc)
-            ops = OcgOperations(dataset=rd,
-                                output_format_options=output_format_options,
-                                dir_output=dir_output,
-                                spatial_wrapping=spatial_wrapping,
-                                spatial_reorder=spatial_reorder,
-                                # regrid_destination=rd_regrid,
-                                # options=options,
-                                calc=calc,
-                                calc_grouping=calc_grouping,
-                                geom=geom,
-                                output_format=output_format,
-                                prefix=prefix,
-                                search_radius_mult=search_radius_mult,
-                                select_nearest=select_nearest,
-                                select_ugid=select_ugid,
-                                add_auxiliary_files=False)
-            geom_file = compute(ops, tile_dimension=int(tile_dim), verbose=True)
-            print 'ocgis calculated'
-        except Exception as e:
-            LOGGER.debug('failed to compute ocgis with chunks')
-            raise
-            return None
-    LOGGER.info('Succeeded with ocgis module call function')
     ############################################
     # remapping according to regrid informations
     ############################################
