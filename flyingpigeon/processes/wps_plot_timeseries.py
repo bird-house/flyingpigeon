@@ -1,6 +1,7 @@
 from flyingpigeon import visualisation as vs
 from flyingpigeon.utils import archiveextract
 from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.utils import get_variable
 
 from pywps import Process
 from pywps import LiteralInput
@@ -79,10 +80,10 @@ class PlottimeseriesProcess(Process):
 
         ncfiles = archiveextract(
             resource=rename_complexinputs(request.inputs['resource']))
-        var = request.inputs['variableIn']
 
-        if var is None:
-            from flyingpigeon.utils import get_variable
+        if 'variable' in request.inputs:
+            var = request.inputs['variable'][0].data
+        else:
             var = get_variable(ncfiles[0])
 
         response.update_status('plotting variable %s' % var, 10)
