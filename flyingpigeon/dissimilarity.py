@@ -7,7 +7,7 @@ from scipy.spatial import cKDTree as KDTree
 Methods to compute the (dis)similarity between samples
 ======================================================
 
-This module implements five of the six methods described in [1]_ to measure
+This module implements five of the six methods described in [Grenier20131]_ to measure
 the dissimilarity between two samples. Some of these algorithms can be used to
 test whether or not two samples have been drawn from the same distribution.
 Here, they are used to find areas with analog climate conditions to a target
@@ -21,13 +21,6 @@ Methods available
  * Friedman-Rafsky runs statistic
  * Kolmogorov-Smirnov statistic
  * Kullback-Leibler divergence
-
-
-References
-----------
-.. [1] Grenier, Patrick, et al. (2013) "An assessment of six dissimilarity
-   metrics for climate analogs." Journal of Applied Meteorology and Climatology
-   52.4, 733-752, DOI: 10.1175/JAMC-D-12-0170.1
 
 
 :author: David Huard, Patrick Grenier
@@ -337,7 +330,7 @@ def friedman_rafsky(x, y):
 def kolmogorov_smirnov(x, y):
     """
     Compute the Kolmogorov-Smirnov statistic applied to two multivariate
-    samples as described by Fasano and Franceschini [1]_.
+    samples as described by Fasano and Franceschini.
 
     Parameters
     ----------
@@ -353,9 +346,9 @@ def kolmogorov_smirnov(x, y):
 
     References
     ----------
-    .. [1] Fasano G. and Francheschini A. (1987) A multidimensional version
-       of the Kolmogorov-Smirnov test. Monthly Notices of the Royal
-       Astronomical Society, vol. 225, pp. 155-170.
+    Fasano G. and Francheschini A. (1987) A multidimensional version
+    of the Kolmogorov-Smirnov test. Monthly Notices of the Royal
+    Astronomical Society, vol. 225, pp. 155-170.
     """
     x, y = reshape_sample(x, y)
 
@@ -429,7 +422,7 @@ def kldiv(x, y, k=1):
     This formula assumes we have a representation of the probability
     densities p(x) and q(x).  In many cases, we only have samples from the
     distribution, and most methods first estimate the densities from the
-    samples and then proceed to compute the K-L divergence. In [1]_,
+    samples and then proceed to compute the K-L divergence. In Perez-Cruz,
     the authors propose an algorithm to estimate the K-L divergence directly
     from the sample using an empirical CDF. Even though the CDFs do not
     converge to their true values, the paper proves that the K-L divergence
@@ -437,8 +430,8 @@ def kldiv(x, y, k=1):
 
     References
     ----------
-    .. [1] Kullback-Leibler Divergence Estimation of Continuous Distributions (
-       2008). Fernando Pérez-Cruz.
+    Kullback-Leibler Divergence Estimation of Continuous Distributions (2008).
+    Fernando Pérez-Cruz.
     """
 
     mk = np.iterable(k)

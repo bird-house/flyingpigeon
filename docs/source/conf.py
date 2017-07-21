@@ -29,16 +29,16 @@ needs_sphinx = '1.3'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    #'autoapi.extension', # dissimilarity docstrings use the numpy convention, not understood by autoapi. 
+    'autoapi.extension', # dissimilarity docstrings use the numpy convention, not understood by autoapi.
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
-#    'sphinx_autodoc_pywps'  # Uncomment to enable smart autodoc for pywps.Process. Code at https://github.com/huard/sphinx-autodoc-pywps
+#    'sphinx_autodoc_pywps'  # Uncomment these extensions to enable smart autodoc for pywps.Process. Code at https://github.com/huard/sphinx-autodoc-pywps
 ]
 
-#napoleon_numpy_docstring = True # Uncomment to enable smart autodoc for pywps.Process
+napoleon_numpy_docstring = True # Uncomment to enable smart autodoc for pywps.Process
 
 autoapi_type = 'python'
 autoapi_dirs = ['../../flyingpigeon']
