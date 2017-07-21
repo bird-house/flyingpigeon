@@ -1,5 +1,6 @@
 from flyingpigeon import visualisation as vs
 from flyingpigeon.utils import archiveextract
+from flyingpigeon.utils import rename_complexinputs
 
 from pywps import Process
 from pywps import LiteralInput
