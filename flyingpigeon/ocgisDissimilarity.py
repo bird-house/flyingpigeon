@@ -44,9 +44,12 @@ class Dissimilarity(AbstractFieldFunction, AbstractParameterizedFunction):
         # Get the function from the module.
         metric = getattr(dd, dist)
 
+        for var in candidate:
+            if var not in target.keys():
+                raise ValueError("{} not in candidate Field.".format(var))
+
         # Build the (n,d) array for the target sample.
-        ref = np.array([target[c].get_value() for c in
-                        candidate]).squeeze().T
+        ref = np.array([target[c].get_value().squeeze() for c in candidate]).T
         assert ref.ndim == 2
 
         # Create the fill variable based on the first candidate variable.
@@ -73,9 +76,10 @@ class Dissimilarity(AbstractFieldFunction, AbstractParameterizedFunction):
             # Build target array
             dind = list(ind)
             dind.insert(time_axis, slice(None))
-            data = np.array([self.field[c][dind].get_value() for c in
+            data = np.array([self.field[c][dind].get_value().squeeze() for c in
                              candidate])
-            p = np.ma.masked_invalid(data).squeeze().T
+
+            p = np.ma.masked_invalid(data).T
 
             # Compress masked values from target array.
             pc = p.compress(~p.mask.any(1), 0)

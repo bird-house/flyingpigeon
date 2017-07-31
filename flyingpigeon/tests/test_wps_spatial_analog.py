@@ -70,6 +70,30 @@ class TestDissimilarity(TestBase):
 
         return field
 
+    def test1d(self):
+        p1 = self.write_field_data('v1', ncol=1, nrow=1)
+        p3 = self.write_field_data('v1', dir='b')
+
+        ref_range = [dt.datetime(2000, 3, 1), dt.datetime(2000, 3, 31)]
+        reference = ocgis.RequestDataset(p1, time_range=ref_range).get()
+
+        cand_range = [dt.datetime(2000, 8, 1), dt.datetime(2000, 8, 31)]
+        candidate = ocgis.RequestDataset(p3, time_range=cand_range)
+
+        calc = [{'func': 'dissimilarity',
+                 'name': 'output_1d',
+                 'kwds': {'target': reference,
+                          'candidate': ('v1',)}}]
+
+        ops = OcgOperations(dataset=candidate, calc=calc)
+        ret = ops.execute()
+        actual_field = ret.get_element()
+        actual_variables = get_variable_names(actual_field.data_variables)
+        self.assertEqual(actual_variables[0],
+                         ('dissimilarity_seuclidean'))
+        dist = actual_field['dissimilarity_seuclidean']
+        self.assertEqual(dist.shape, (1, 1, 2, 2))
+
     def test_full(self):
         """Compute the dissimilarity will all metrics."""
         from flyingpigeon import dissimilarity
@@ -141,6 +165,8 @@ class TestDissimilarity(TestBase):
                          ('dissimilarity_seuclidean'))
         dist = actual_field['dissimilarity_seuclidean']
         self.assertEqual(dist.shape, (1, 1, 2, 2))
+
+
 
 def test_dissimilarity_op():
     """Test with a real file."""
