@@ -228,6 +228,7 @@ def test_dissimilarity_op():
 
 
 @pytest.mark.online
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_wps_spatial_analog_process_small_sample():
     client = client_for(Service(processes=[SpatialAnalogProcess()]))
     datainputs = "candidate=files@xlink:href={0};target=files@xlink:href={" \
