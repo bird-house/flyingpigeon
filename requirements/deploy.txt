@@ -6,3 +6,5 @@ pygbif>=0.1.4
 #scikit-learn
 #statsmodels
 wget
+pywps >3
+ocgis >1

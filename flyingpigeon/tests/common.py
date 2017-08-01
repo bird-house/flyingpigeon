@@ -26,6 +26,15 @@ TESTDATA = {
         'testdata',
         'cordex',
         'tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon_200701-200712.nc')),
+    'indicators_medium.nc': "file://{0}".format(os.path.join(
+        TESTS_HOME, 'testdata',
+        'spatial_analog',
+        'indicators_medium.nc')),
+    'indicators_small.nc': "file://{0}".format(os.path.join(
+        TESTS_HOME,
+        'testdata',
+        'spatial_analog',
+        'indicators_small.nc'))
 }
 
 

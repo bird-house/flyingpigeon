@@ -273,7 +273,7 @@ def archiveextract(resource, path='.'):
                     LOGGER.warn('file extention unknown')
             except Exception as e:
                 LOGGER.exception('failed to extract sub archive')
-    except Excepion as e:
+    except Exception as e:
         LOGGER.exception('failed to extract archive resource')
     return files
 
