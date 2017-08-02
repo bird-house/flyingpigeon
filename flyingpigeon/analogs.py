@@ -251,7 +251,7 @@ def reformat_analogs(analogs):
 
         # Find number of analogues
         num_analogues = (dfS.shape[1]) / 3
-        LOGGER.debug('num_analogues: %s', num_analogues)
+        # LOGGER.debug('num_analogues: %s', num_analogues)
 
         # Define temporary df
         df_anlg = dfS.iloc[:, 0:num_analogues]  # store only anlg dates
@@ -289,7 +289,6 @@ def reformat_analogs(analogs):
     except:
         msg = 'failed to reformat analog file'
         LOGGER.exception(msg)
-        raise Exception(msg)
     return analogs_mod
 
 
@@ -387,9 +386,9 @@ def get_viewer_configfile(analogs):
                 # Copy out of local working dir to output_path
                 copyfile(configfile_wkdir, configfile_inplace)
 
-    except Exception as e:
-        msg = 'failed to read number of analogues from config file %s ' % e
-        LOGGER.debug(msg)
+    except:
+        msg = 'failed to read number of analogues from config file'
+        LOGGER.exception(msg)
     return configfile
 
 

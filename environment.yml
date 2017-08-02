@@ -73,7 +73,7 @@ dependencies:
 - gdal=2.1.3
 # ################
 # # analogue
-# - castf90=0.1.6
+- castf90=0.1.5-1
 # ################
 # # r
 - cairo # for X11 independend plot support

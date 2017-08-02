@@ -3,6 +3,7 @@ import os
 from flyingpigeon import analogs as anlg
 from flyingpigeon import config
 from os.path import basename
+from flyingpigeon.utils import rename_complexinputs
 
 from pywps import Process
 from pywps import LiteralInput, LiteralOutput
@@ -76,29 +77,33 @@ class AnalogsviewerProcess(Process):
         try:
             # Get the output csv file of analogs process (input by user in
             # text box)
-            analogs = request.inputs['analog_result'][0].data
+            analogs = rename_complexinputs(request.inputs['analog_result'])[0]
 
-            configfile = anlg.get_viewer_configfile(analogs)
-            f = anlg.reformat_analogs(analogs)
-            LOGGER.info('Analog file reformatted')
-            response.update_status('Successfully reformatted analog file', 50)
-            output_av = anlg.get_viewer(f, configfile)
+            # analogs = request.inputs['analog_result'][0]
+            LOGGER.info("analogs file path %s " % analogs)
+
+            configfile = "dummy.txt"  # anlg.get_viewer_configfile(analogs)
+            analogs_mod = anlg.reformat_analogs(analogs)
+            LOGGER.info("analogs for visualisation prepared")
+        except:
+            msg = 'Failed to reformat analogs file'
+            LOGGER.exception(msg)
+
+        try:
+            output_av = anlg.get_viewer(analogs_mod, configfile)
             LOGGER.info('Viewer html page generated')
-            response.update_status(
-                'Successfully generated analogs viewer html page', 90)
-
+            response.update_status('Successfully generated analogs viewer html page', 90)
             output_url = config.output_url()
-            output_data = output_url + '/' + basename(f)
+            output_data = output_url + '/' + basename(analogs_mod)
             LOGGER.info('Data url: %s ' % output_data)
-            LOGGER.info('output_av: %s ' % output_av)
-
-        except Exception as e:
-            msg = 'Failed to reformat analogs file or generate viewer%s ' % e
-            LOGGER.debug(msg)
+            LOGGER.info('output_av: %s ' % output_av.name)
+        except:
+            msg = 'Failed to generate viewer'
+            LOGGER.exception(msg)
 
         ################################
         # set the outputs
         ################################
-        response.outputs['output_txt'] = output_data
-        response.outputs['output_htm'] = output_av
+        response.outputs['output_txt'].file = analogs_mod  # output_data
+        response.outputs['output_html'].file = output_av.name
         return response

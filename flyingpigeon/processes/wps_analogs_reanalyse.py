@@ -235,8 +235,8 @@ class AnalogsreanalyseProcess(Process):
             response.update_status('Read in and convert the arguments', 5)
         except Exception as e:
             msg = 'failed to read input prameter %s ' % e
-            LOGGER.error(msg)
-            raise Exception(msg)
+            LOGGER.exception(msg)
+            # raise Exception(msg)
 
         ######################################
         # convert types and set environment
@@ -264,12 +264,12 @@ class AnalogsreanalyseProcess(Process):
             elif outformat == 'netCDF':
                 outformat = '.nc'
             else:
-                LOGGER.error('output format not valid')
+                LOGGER.exception('output format not valid')
 
         except Exception as e:
             msg = 'failed to set environment %s ' % e
-            LOGGER.error(msg)
-            raise Exception(msg)
+            LOGGER.exception(msg)
+            # raise Exception(msg)
 
         ###########################
         # set the environment
@@ -293,12 +293,12 @@ class AnalogsreanalyseProcess(Process):
                     level = None
                     conform_units_to = 'hPa'
             else:
-                LOGGER.error('Reanalyses dataset not known')
+                LOGGER.exception('Reanalyses dataset not known')
             LOGGER.info('environment set for model: %s' % model)
         except:
             msg = 'failed to set environment'
             LOGGER.exception(msg)
-            raise Exception(msg)
+            # raise Exception(msg)
 
         ##########################################
         # fetch Data from original data archive
@@ -313,7 +313,7 @@ class AnalogsreanalyseProcess(Process):
         except:
             msg = 'failed to get reanalyses data'
             LOGGER.exception(msg)
-            raise Exception(msg)
+            # raise Exception(msg)
 
         response.update_status('subsetting region of interest', 17)
         # from flyingpigeon.weatherregimes import get_level
@@ -353,12 +353,12 @@ class AnalogsreanalyseProcess(Process):
         #             level = None
         #             # conform_units_to='hPa'
         #     else:
-        #         LOGGER.error('Reanalyses dataset not known')
+        #         LOGGER.exception('Reanalyses dataset not known')
         #     LOGGER.info('environment set')
         # except Exception as e:
         #     msg = 'failed to set environment %s ' % e
-        #     LOGGER.error(msg)
-        #     raise Exception(msg)
+        #     LOGGER.exception(msg)
+        #     # raise Exception(msg)
         #
         # LOGGER.debug("init took %s seconds.", time.time() - start_time)
         # response.update_status('Read in and convert the arguments done', 8)
@@ -376,8 +376,8 @@ class AnalogsreanalyseProcess(Process):
         #                      geom=bbox, spatial_wrapping='wrap')
         # except Exception as e:
         #     msg = 'failed to fetch or subset input files %s' % e
-        #     LOGGER.error(msg)
-        #     raise Exception(msg)
+        #     LOGGER.exception(msg)
+        #     # raise Exception(msg)
 
         LOGGER.debug("get_input_subset_dataset took %s seconds.",
                      time.time() - start_time)
@@ -408,7 +408,7 @@ class AnalogsreanalyseProcess(Process):
         except Exception as e:
             msg = 'failed to prepare archive and simulation files %s ' % e
             LOGGER.debug(msg)
-            raise Exception(msg)
+            # raise Exception(msg)
 
         try:
             if seacyc is True:
@@ -423,7 +423,7 @@ class AnalogsreanalyseProcess(Process):
         except Exception as e:
             msg = 'failed to generate normalization files %s ' % e
             LOGGER.debug(msg)
-            raise Exception(msg)
+            # raise Exception(msg)
 
         ip, output_file = mkstemp(dir='.', suffix='.txt')
         files = [path.abspath(archive), path.abspath(simulation), output_file]
@@ -459,7 +459,7 @@ class AnalogsreanalyseProcess(Process):
         except Exception as e:
             msg = 'failed to generate config file %s ' % e
             LOGGER.debug(msg)
-            raise Exception(msg)
+            # raise Exception(msg)
         LOGGER.debug("write_config took %s seconds.", time.time() - start_time)
         #######################
         # CASTf90 call
@@ -476,18 +476,19 @@ class AnalogsreanalyseProcess(Process):
             response.update_status('**** CASTf90 suceeded', 90)
         except CalledProcessError as e:
             msg = 'CASTf90 failed:\n{0}'.format(e.output)
-            LOGGER.error(msg)
-            raise Exception(msg)
+            LOGGER.exception(msg)
+            # raise Exception(msg)
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
 
-        ########################
-        # generate analog viewer
-        ########################
         response.update_status('preparting output', 50)
         response.outputs['config'].file = config_file
         response.outputs['analogs'].file = output_file
         response.outputs['output_netcdf'].file = simulation
 
+        ########################
+        # generate analog viewer
+        ########################
+        
         try:
             formated_analogs_file = analogs.reformat_analogs(output_file)
             response.outputs['formated_analogs'].file = formated_analogs_file
@@ -495,8 +496,8 @@ class AnalogsreanalyseProcess(Process):
             response.update_status('Successfully reformatted analog file', 60)
         except Exception as e:
             msg = 'Failed to reformat analogs file.' % e
-            LOGGER.error(msg)
-            raise Exception(msg)
+            LOGGER.exception(msg)
+            # raise Exception(msg)
 
         try:
             output_av = analogs.get_viewer(
@@ -507,8 +508,8 @@ class AnalogsreanalyseProcess(Process):
             LOGGER.info('output_av: %s ', output_av)
         except Exception as e:
             msg = 'Failed to generate viewer: %s' % e
-            LOGGER.error(msg)
-            raise Exception(msg)
+            LOGGER.exception(msg)
+            # raise Exception(msg)
 
         response.update_status('execution ended', 100)
         LOGGER.debug("total execution took %s seconds.",
