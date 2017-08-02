@@ -10,6 +10,7 @@ from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import get_values
 from flyingpigeon.ocgis_module import call
 from shapely.geometry import Point
+import netCDF4 as nc
 
 from pywps import Process
 from pywps import LiteralInput
@@ -254,6 +255,16 @@ class SpatialAnalogProcess(Process):
             LOGGER.exception(msg)
             raise Exception(msg)
 
+        add_metadata(output,
+                     dist=dist,
+                     indices=",".join(indices),
+                     target_location=location,
+                     candidate_time_range="{},{}".format(dateStartCandidate,
+                                                         dateEndCandidate),
+                     target_time_range="{},{}".format(dateStartTarget,
+                                                      dateEndTarget)
+                     )
+
         response.update_status('Computed spatial analog', 95)
 
         response.outputs['output_netcdf'].file = output
@@ -262,3 +273,10 @@ class SpatialAnalogProcess(Process):
         LOGGER.debug("Total execution took {}".format( dt.now() - tic) )
         return response
 
+def add_metadata(ncfile, **kwds):
+    """Add metadata to the dissimilarity variable."""
+    D = nc.Dataset(ncfile, 'a')
+    V = D.variables['dissimilarity']
+    for key, val in kwds.items():
+        V.setncattr(key, val)
+    D.close()

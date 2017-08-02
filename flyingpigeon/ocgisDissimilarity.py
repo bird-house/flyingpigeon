@@ -59,7 +59,7 @@ class Dissimilarity(AbstractFieldFunction, AbstractParameterizedFunction):
         fill_dimensions = list(variable.dimensions)
         fill_dimensions.pop(time_axis)
         fill = self.get_fill_variable(variable,
-                                      'dissimilarity_' + dist, fill_dimensions,
+                                      'dissimilarity', fill_dimensions,
                                       self.file_only,
                                       add_repeat_record_archetype_name=True)
 
@@ -86,7 +86,7 @@ class Dissimilarity(AbstractFieldFunction, AbstractParameterizedFunction):
 
             # Compute the actual metric value. The 5 value threshold is
             # arbitrary.
-            if pc.shape[0] > 5:
+            if pc.shape[0] >= 5:
                 arr.data[ind] = metric(ref, pc)
             else:
                 arr.data[ind] = np.nan
