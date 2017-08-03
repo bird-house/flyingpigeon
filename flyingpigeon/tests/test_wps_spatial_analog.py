@@ -5,7 +5,7 @@ from pywps.tests import assert_response_success
 
 from flyingpigeon.processes import SpatialAnalogProcess
 from flyingpigeon.utils import local_path
-from flyingpigeon.tests.common import TESTDATA, client_for
+from flyingpigeon.tests.common import TESTDATA, client_for, CFG_FILE
 
 import numpy as np
 import datetime as dt
@@ -227,23 +227,39 @@ def test_dissimilarity_op():
     np.testing.assert_array_equal(val > 0, True)
 
 
-@pytest.mark.online
-@pytest.mark.skip(reason="no way of currently testing this")
+# @pytest.mark.online
+# @pytest.mark.skip(reason="no way of currently testing this")
 def test_wps_spatial_analog_process_small_sample():
-    client = client_for(Service(processes=[SpatialAnalogProcess()]))
-    datainputs = "candidate=files@xlink:href={0};target=files@xlink:href={" \
-                 "1};location={2},{3};indices={4};indices={5};dist={6};dateStartCandidate={7};dateEndCandidate={8};dateStartTarget={7};dateEndTarget={8}"\
-        .format(TESTDATA['indicators_small.nc'], TESTDATA['indicators_medium.nc'], -72, 46, 'meantemp',
-                'totalpr', 'kldiv', '1970-01-01', '1990-01-01')
-
+    client = client_for(
+        Service(processes=[SpatialAnalogProcess()], cfgfiles=CFG_FILE))
+    datainputs = (
+        "candidate=files@xlink:href={0};"
+        "target=files@xlink:href={1};"
+        "location={2},{3};"
+        "indices={4};"
+        "indices={5};"
+        "dist={6};"
+        "dateStartCandidate={7};"
+        "dateEndCandidate={8};"
+        "dateStartTarget={7};"
+        "dateEndTarget={8}"
+    ).format(
+        TESTDATA['indicators_small.nc'],
+        TESTDATA['indicators_medium.nc'],
+        -72,
+        46,
+        'meantemp',
+        'totalpr',
+        'kldiv',
+        '1970-01-01',
+        '1990-01-01')
+    print datainputs
     resp = client.get(
         service='wps', request='execute', version='1.0.0',
         identifier='spatial_analog',
         datainputs=datainputs)
 
     assert_response_success(resp)
-
-
 
 # @pytest.mark.slow
 # @pytest.mark.online
