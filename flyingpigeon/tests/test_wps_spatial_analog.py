@@ -270,4 +270,14 @@ If you run a test function in ipython and launch %debug, you can access the erro
 message by going up the stack into the fonction and print resp.response
 
 
+birdy spatial_analog \
+--candidate https://bovec.dkrz.de/download/wpsoutputs/flyingpigeon/8d7aed7a-72d9-11e7-9ab2-109836a7cf3a/FD_NAM-44_CCCma-CanESM2_historical_r1i1p1_SMHI-RCA4_v1_yr_20010101-20051231.nc  \
+--target https://bovec.dkrz.de/download/wpsoutputs/flyingpigeon/ba4bd292-72d9-11e7-a663-109836a7cf3a/FD_NAM-44_CCCma-CanESM2_rcp85_r1i1p1_SMHI-RCA4_v1_yr_20510101-20551231.nc  \
+--location=-100,54  \
+--indices FD  \
+--dist kldiv  \
+--dateStartCandidate 2001-01-01  \
+--dateEndCandidate 2006-12-31 \
+--dateStartTarget 2051-01-01  \
+--dateEndTarget 2056-12-31
 """
