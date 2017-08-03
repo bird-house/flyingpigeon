@@ -1,9 +1,10 @@
 import os
 from pywps.tests import WpsClient, WpsTestResponse
 
-SERVICE = "http://localhost:8093/wps"
+# SERVICE = "http://localhost:8093/wps"
 
 TESTS_HOME = os.path.abspath(os.path.dirname(__file__))
+CFG_FILE = os.path.join(TESTS_HOME, 'test.cfg')
 
 TESTDATA = {
     'cmip5_tasmax_2006_nc': "file://{0}".format(os.path.join(
