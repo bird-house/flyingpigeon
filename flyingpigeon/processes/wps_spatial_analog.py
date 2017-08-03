@@ -235,13 +235,14 @@ class SpatialAnalogProcess(Process):
             LOGGER.debug(msg)
             raise Exception(msg)
 
-        response.update_status('Extracted target series'.format(target_ts), 5)
+        response.update_status('Extracted target series', 5)
 
 
         ######################################
         # Compute dissimilarity metric
         ######################################
 
+        response.update_status('Computing spatial analog', 6)
         try:
             output = call(resource=candidate,
                           calc=[{'func': 'dissimilarity', 'name': 'spatial_analog',
@@ -254,6 +255,7 @@ class SpatialAnalogProcess(Process):
             msg = 'Spatial analog failed: {}'.format(e)
             LOGGER.exception(msg)
             raise Exception(msg)
+
 
         add_metadata(output,
                      dist=dist,
