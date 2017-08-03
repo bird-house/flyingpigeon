@@ -646,3 +646,44 @@ def plot_pressuremap(data, lats=None, lons=None,
     # plt.savefig(image)
     # plt.close()
     # return image
+
+def spatial_analog_map(ncfile, **kwds):
+    import ocgis
+    from shapely.geometry import Point
+    from cartopy.feature import ShapelyFeature
+    from salem.gis import proj_to_cartopy
+    import pyproj
+
+    proj = ccrs.Mollweide()
+
+    rd = ocgis.RequestDataset(ncfile)
+
+    field = rd.get_field()
+    lon = [val for (key, val) in field.items() if
+           val.attrs.get('standard_name', '') == 'longitude'][0]
+    lat = [val for (key, val) in field.items() if
+           val.attrs.get('standard_name', '') == 'latitude'][0]
+
+    x = lon.get_value()
+    y = lat.get_value()
+
+    #field.grid.crs.value()
+    #x = field.grid.x.get_value()
+    #y = field.grid.y.get_value()
+    d = field.get('dissimilarity')
+
+
+
+    ax = plt.axes(projection=proj)
+    ax.coastlines()
+    ax.contourf(x, y, d.get_value(), transform=proj, cmap=kwds.get('cmap', None))
+
+    #lon, lat = map(float, d.attrs['target_location'].split(','))
+    #point = Point(*map(float, d.attrs['target_location'].split(',')))
+    #feature = ShapelyFeature([point,], proj)
+    #ax.add_feature(feature)
+
+    plt.plot(lon, lat, marker='o', color='red', markersize=12,
+             alpha=0.7, transform=proj)
+
+    return ax
