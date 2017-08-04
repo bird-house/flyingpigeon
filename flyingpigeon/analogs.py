@@ -159,7 +159,7 @@ def seacyc(archive, simulation, method='base'):
             # seasoncyc_base = call(resource=archive,
             # variable=variable,
             # prefix='seasoncyc_base',
-            #calc=[{'func': 'mean', 'name': variable}],
+            # calc=[{'func': 'mean', 'name': variable}],
             # calc_grouping=['day','month'] )
 
             LOGGER.debug('seasoncyc_base calculated : %s' % seasoncyc_base)
@@ -168,19 +168,19 @@ def seacyc(archive, simulation, method='base'):
             copy(seasoncyc_base, seasoncyc_sim)
         elif method == 'sim':
             # seasoncyc_sim  = call(resource=archive,
-              # variable=variable,
-              # prefix='seasoncyc_sim',
-              #calc=[{'func': 'mean', 'name': variable}],
-              # calc_grouping=['day','month'] )
+            # variable=variable,
+            # prefix='seasoncyc_sim',
+            # calc=[{'func': 'mean', 'name': variable}],
+            # calc_grouping=['day','month'] )
             cdo.ydaymean(input=simulation, output='seasoncyc_sim.nc')
             seasoncyc_base = 'seasoncyc_base.nc'
             copy(seasoncyc_sim, seasoncyc_base)
         elif method == 'own':
             # seasoncyc_base = call(resource=archive,
-              # variable=variable,
-              # prefix='seasoncyc_base',
-              #calc=[{'func': 'mean', 'name': variable}],
-              # calc_grouping=['day','month'] )
+            # variable=variable,
+            # prefix='seasoncyc_base',
+            # calc=[{'func': 'mean', 'name': variable}],
+            # calc_grouping=['day','month'] )
             seasoncyc_base = cdo.ydaymean(
                 input=archive, output='seasoncyc_base.nc')
             # seasoncyc_sim  = call(resource=archive,
@@ -193,7 +193,7 @@ def seacyc(archive, simulation, method='base'):
         else:
             raise Exception('normalisation method not found')
 
-    except:
+    except Exception:
         msg = 'seacyc function failed:'
         LOGGER.exception(msg)
         raise Exception(msg)
@@ -225,7 +225,7 @@ def config_edits(configfile):
             file.write(filedata)
 
         LOGGER.info('configfile modified')
-    except:
+    except Exception:
         LOGGER.exeption('Failed to modify configfile:')
 
     return configfile
@@ -286,7 +286,7 @@ def reformat_analogs(analogs):
             suffix='.tsv', prefix='modified-analogfile', text=False)
         df_all.to_csv(analogs_mod, sep='\t')
         LOGGER.info('successfully reformatted analog file')
-    except:
+    except Exception:
         msg = 'failed to reformat analog file'
         LOGGER.exception(msg)
     return analogs_mod
@@ -386,7 +386,7 @@ def get_viewer_configfile(analogs):
                 # Copy out of local working dir to output_path
                 copyfile(configfile_wkdir, configfile_inplace)
 
-    except:
+    except Exception:
         msg = 'failed to read number of analogues from config file'
         LOGGER.exception(msg)
     return configfile
