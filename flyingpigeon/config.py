@@ -29,8 +29,8 @@ def Rsrc_dir():
     return os.path.join(os.path.abspath(os.path.dirname(__file__)), 'Rsrc')
 
 
-def JSsrc_dir():
-    return os.path.join(os.path.abspath(os.path.dirname(__file__)), 'JSsrc')
+def templates_dir():
+    return os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
 
 
 def masks_dir():

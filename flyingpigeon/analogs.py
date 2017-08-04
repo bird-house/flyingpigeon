@@ -403,8 +403,8 @@ def get_viewer(analogs_mod, configfile):
     """
 
     from os.path import basename
-    from flyingpigeon.config import JSsrc_dir
-    tmpl = JSsrc_dir() + '/template_analogviewer.html'
+    from flyingpigeon.config import templates_dir
+    tmpl = templates_dir() + '/analogviewer.html'
 
     ip, output_av = mkstemp(
         suffix='.html', prefix='analogviewer', dir='.', text=False)
