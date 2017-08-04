@@ -96,7 +96,7 @@ class AnalogsviewerProcess(Process):
             output_url = config.output_url()
             output_data = output_url + '/' + basename(analogs_mod)
             LOGGER.info('Data url: %s ' % output_data)
-            LOGGER.info('output_av: %s ' % output_av.name)
+            LOGGER.info('output_av: %s ' % output_av)
         except:
             msg = 'Failed to generate viewer'
             LOGGER.exception(msg)

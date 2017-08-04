@@ -401,25 +401,16 @@ def get_viewer(analogs_mod, configfile):
 
     return html: analog viewer html page
     """
-
     from os.path import basename
-    from flyingpigeon.config import templates_dir
-    tmpl = templates_dir() + '/analogviewer.html'
+    from flyingpigeon.config import TEMPLATES
+    template = TEMPLATES['analogviewer.html']
 
-    ip, output_av = mkstemp(
+    _, output_av = mkstemp(
         suffix='.html', prefix='analogviewer', dir='.', text=False)
-
-    tmpl_file = open(tmpl).read()
-
-    viewer = open(output_av, 'w')
-
-    # Insert reformatted analogue file and config file into placeholders in
-    # the js script
-    tmpl_file = tmpl_file.replace(
-        'analogues_placeholder.json', basename(analogs_mod))
-    tmpl_file = tmpl_file.replace(
-        'analogues_config_placeholder.txt', configfile)
-    viewer.write(tmpl_file)
-    viewer.close()
-
-    return viewer
+    with open(output_av, 'w') as fp:
+        # Insert reformatted analogue file and config file into analogviewer template
+        fp.write(
+            template(
+                configfile=configfile,
+                datafile=basename(analogs_mod)))
+    return output_av

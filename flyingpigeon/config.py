@@ -1,6 +1,11 @@
 import os
 from pywps import configuration
 
+_PATH = os.path.abspath(os.path.dirname(__file__))
+
+from chameleon import PageTemplateLoader
+TEMPLATES = PageTemplateLoader(os.path.join(_PATH, "templates"))
+
 import logging
 LOGGER = logging.getLogger("PYWPS")
 
@@ -22,23 +27,19 @@ def esgfsearch_distrib():
 
 
 def shapefiles_dir():
-    return os.path.join(os.path.abspath(os.path.dirname(__file__)), 'shapefiles')
+    return os.path.join(_PATH, 'shapefiles')
 
 
 def Rsrc_dir():
-    return os.path.join(os.path.abspath(os.path.dirname(__file__)), 'Rsrc')
-
-
-def templates_dir():
-    return os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
+    return os.path.join(_PATH, 'Rsrc')
 
 
 def masks_dir():
-    return os.path.join(os.path.abspath(os.path.dirname(__file__)), 'masks')
+    return os.path.join(_PATH, 'masks')
 
 
 def static_dir():
-    return os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static')
+    return os.path.join(_PATH, 'static')
 
 
 def cache_path():
