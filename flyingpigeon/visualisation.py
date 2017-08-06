@@ -242,7 +242,7 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
     import numpy as np
     import netCDF4
     from os.path import basename
-
+    from flyingpigeon.utils import get_values, get_time
     # === prepare invironment
     if type(resouces) == str:
         resouces = list([resouces])
@@ -262,17 +262,18 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
         LOGGER.info('variable %s found in resources.' % variable)
         for f in resouces:
             try:
-                ds = Dataset(f)
-                data = np.squeeze(ds.variables[variable][:])
+                # ds = Dataset(f)
+                data = get_values(f)  # np.squeeze(ds.variables[variable][:])
+                LOGGER.debug("shape of data = %s " % len(data.shape))
                 if len(data.shape) == 3:
                     meanData = np.mean(data, axis=1)
                     ts = np.mean(meanData, axis=1)
                 else:
                     ts = data[:]
 
-                times = ds.variables['time']
-                jd = netCDF4.num2date(times[:], times.units)
-
+                # times = ds.variables['time']
+                # jd = netCDF4.num2date(times[:], times.units)
+                jd = get_time(f)
                 hs = pd.Series(ts, index=jd, name=basename(f))
                 hd = hs.to_frame()
                 df[basename(f)] = hs
