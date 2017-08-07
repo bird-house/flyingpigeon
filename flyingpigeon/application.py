@@ -8,7 +8,9 @@ import flask
 from flyingpigeon.processes import processes
 
 app = flask.Flask('flyingpigeon')
-wps_app = Service(processes, [os.path.join(os.path.dirname(__file__), 'default.cfg')])
+wps_app = Service(processes, [
+    os.path.join(os.path.dirname(__file__), 'default.cfg'),
+    os.environ.get('PYWPS_CFG')])
 
 
 process_descriptor = {}
