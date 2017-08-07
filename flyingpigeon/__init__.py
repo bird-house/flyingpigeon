@@ -11,7 +11,7 @@ __version__ = "0.11.0"
 def application(environ, start_response):
     # see werkzeug example:
     # https://github.com/pallets/werkzeug/blob/master/examples/shortly/shortly.py
-    wps_app = Service(processes, [os.path.join(os.path.dirname(__file__), 'demo.cfg')])
+    wps_app = Service(processes, [os.path.join(os.path.dirname(__file__), 'default.cfg')])
     app = SharedDataMiddleware(
         wps_app,
         {
