@@ -36,6 +36,6 @@ setup(name='flyingpigeon',
       install_requires=reqs,
       entry_points={
           'console_scripts': [
-             'demo=flyingpigeon:main',
+             'flyingpigeon=flyingpigeon:main',
           ]},
       )
