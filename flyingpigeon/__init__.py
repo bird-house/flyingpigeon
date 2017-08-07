@@ -10,13 +10,12 @@ __version__ = "0.11.0"
 def application(environ, start_response):
     # see werkzeug example:
     # https://github.com/pallets/werkzeug/blob/master/examples/shortly/shortly.py
-    wps_app = Service(processes, [os.environ['PYWPS_CFG']])
+    wps_app = Service(processes, [os.path.join(os.path.dirname(__file__), 'demo.cfg')])
     app = SharedDataMiddleware(
         wps_app,
         {
-            # '/static': os.path.join(os.path.dirname(__file__), 'static')
             '/static': ('flyingpigeon', 'static'),
-            '/outputs': '/home/pingu/birdhouse/var/lib/pywps/outputs/flyingpigeon'
+            '/outputs': '/tmp'
         })
     return app(environ, start_response)
 
