@@ -403,14 +403,14 @@ def get_viewer(analogs_mod, configfile):
     """
     from os.path import basename
     from flyingpigeon.config import TEMPLATES
-    template = TEMPLATES['analogviewer.html']
+    template = TEMPLATES.get_template('analogviewer.html')
 
     _, output_av = mkstemp(
         suffix='.html', prefix='analogviewer', dir='.', text=False)
     with open(output_av, 'w') as fp:
         # Insert reformatted analogue file and config file into analogviewer template
         fp.write(
-            template(
+            template.render(
                 configfile=configfile,
                 datafile=basename(analogs_mod)))
     return output_av

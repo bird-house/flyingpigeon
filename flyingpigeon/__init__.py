@@ -15,7 +15,7 @@ def application(environ, start_response):
         wps_app,
         {
             # '/static': os.path.join(os.path.dirname(__file__), 'static')
-            '/static': ('flyingpigeon', 'static')
+            '/wps/static': ('flyingpigeon', 'static')
         })
     return app(environ, start_response)
 

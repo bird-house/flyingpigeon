@@ -3,8 +3,9 @@ from pywps import configuration
 
 _PATH = os.path.abspath(os.path.dirname(__file__))
 
-from chameleon import PageTemplateLoader
-TEMPLATES = PageTemplateLoader(os.path.join(_PATH, "templates"))
+from jinja2 import Environment, FileSystemLoader
+TEMPLATES = Environment(loader=FileSystemLoader(os.path.join(_PATH, "templates")),
+                        autoescape=True)
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
