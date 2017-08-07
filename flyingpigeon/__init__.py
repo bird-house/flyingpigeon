@@ -27,7 +27,8 @@ def main():
 
     parser = argparse.ArgumentParser(
         description="""Script for starting a demo Flyingpigeon WPS
-                       instance with processes for the climate impact community.""",
+                       instance with processes for the climate impact community.
+                       This service is by default available at http://localhost:5000/wps""",
         epilog="""Do not use this service in a production environment.
          It's intended to be running in test environment only!
          For more documentation, visit http://flyingpigeon.readthedocs.io/en/latest/
