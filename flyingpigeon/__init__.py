@@ -1,29 +1,30 @@
 import os
 from pywps.app.Service import Service
 from pywps import configuration
-from werkzeug.wsgi import SharedDataMiddleware
+import flask
 
 from flyingpigeon.processes import processes
 
 __version__ = "0.11.0"
 
 
-def application(environ, start_response):
-    # see werkzeug example:
-    # https://github.com/pallets/werkzeug/blob/master/examples/shortly/shortly.py
-    wps_app = Service(processes, [os.path.join(os.path.dirname(__file__), 'default.cfg')])
-    app = SharedDataMiddleware(
-        wps_app,
-        {
-            '/static': ('flyingpigeon', 'static'),
-            '/outputs': configuration.get_config_value('server', 'outputpath')
-        })
-    return app(environ, start_response)
+app = flask.Flask(__name__)
+wps_app = Service(processes, [os.path.join(os.path.dirname(__file__), 'default.cfg')])
+
+
+@app.route('/wps', methods=['GET', 'POST'])
+def wps():
+    return wps_app
+
+
+@app.route('/outputs/<path:path>')
+def outputfile(path):
+    print path
+    return flask.send_from_directory(configuration.get_config_value('server', 'outputpath'), path)
 
 
 def main():
     import argparse
-    from werkzeug.serving import run_simple
 
     parser = argparse.ArgumentParser(
         description="""Script for starting a demo Flyingpigeon WPS
@@ -49,7 +50,7 @@ def main():
     if args.daemon:
         pass
     else:
-        run_simple(bind_host, 5000, application, use_debugger=True, use_reloader=True)
+        app.run(threaded=False, host=bind_host)
 
 
 if __name__ == '__main__':
