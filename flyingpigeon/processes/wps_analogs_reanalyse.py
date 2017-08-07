@@ -473,14 +473,14 @@ class AnalogsreanalyseProcess(Process):
             LOGGER.debug("castf90 command: %s", cmd)
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
             LOGGER.info('analogue output:\n %s', output)
-            response.update_status('**** CASTf90 suceeded', 90)
+            response.update_status('**** CASTf90 suceeded', 50)
         except CalledProcessError as e:
             msg = 'CASTf90 failed:\n{0}'.format(e.output)
             LOGGER.exception(msg)
             # raise Exception(msg)
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
 
-        response.update_status('preparting output', 50)
+        response.update_status('preparing output', 50)
         response.outputs['config'].file = config_file
         response.outputs['analogs'].file = output_file
         response.outputs['output_netcdf'].file = simulation
