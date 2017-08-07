@@ -1,4 +1,5 @@
 import os
+import tempfile
 from pywps import configuration
 
 _PATH = os.path.abspath(os.path.dirname(__file__))
@@ -47,7 +48,7 @@ def cache_path():
     cache_path = configuration.get_config_value("cache", "cache_path")
     if not cache_path:
         LOGGER.warn("No cache path configured. Using default value.")
-        cache_path = os.path.join(os.sep, "tmp", "cache")
+        cache_path = os.path.join(tempfile.gettempdir(), "cache")
     return cache_path
 
 
