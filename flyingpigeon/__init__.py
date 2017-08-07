@@ -1,3 +1,5 @@
+# based on pywps-flask demo: https://github.com/geopython/pywps-flask
+
 import os
 from pywps.app.Service import Service
 from pywps import configuration
@@ -10,6 +12,22 @@ __version__ = "0.11.0"
 
 app = flask.Flask(__name__)
 wps_app = Service(processes, [os.path.join(os.path.dirname(__file__), 'default.cfg')])
+
+
+process_descriptor = {}
+for process in processes:
+    abstract = process.abstract
+    identifier = process.identifier
+    process_descriptor[identifier] = abstract
+
+
+@app.route("/")
+def hello():
+    server_url = configuration.get_config_value("server", "url")
+    request_url = flask.request.url
+    return flask.render_template('home.html', request_url=request_url,
+                                 server_url=server_url,
+                                 process_descriptor=process_descriptor)
 
 
 @app.route('/wps', methods=['GET', 'POST'])
@@ -50,7 +68,7 @@ def main():
     if args.daemon:
         pass
     else:
-        app.run(threaded=False, host=bind_host)
+        app.run(host=bind_host, port=5000, debug=True, threaded=False)
 
 
 if __name__ == '__main__':
