@@ -282,7 +282,9 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
         else:
             df_smooth = df
             LOGGER.debug('timeseries too short, no rolling mean calculated')
-            # TODO: plot warning watermark in graphic
+            fig.text(0.95, 0.05, '!!! Plot not valide: timeseries too short !!!',
+                     fontsize=20, color='red',
+                     ha='right', va='bottom', alpha=0.5)
         try:
             rmean = df_smooth.quantile([0.5], axis=1,)  # df_smooth.median(axis=1)
             # skipna=False  quantile([0.5], axis=1, numeric_only=False )
