@@ -36,7 +36,6 @@ def wps():
 
 @app.route('/outputs/<path:path>')
 def outputfile(path):
-    print path
     return flask.send_from_directory(configuration.get_config_value('server', 'outputpath'), path)
 
 
