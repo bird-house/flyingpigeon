@@ -240,9 +240,8 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
 
     import pandas as pd
     import numpy as np
-    import netCDF4
     from os.path import basename
-
+    from flyingpigeon.utils import get_values, get_time
     # === prepare invironment
     if type(resouces) == str:
         resouces = list([resouces])
@@ -262,42 +261,48 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
         LOGGER.info('variable %s found in resources.' % variable)
         for f in resouces:
             try:
-                ds = Dataset(f)
-                data = np.squeeze(ds.variables[variable][:])
+                data = get_values(f)
+                LOGGER.debug("shape of data = %s " % len(data.shape))
                 if len(data.shape) == 3:
                     meanData = np.mean(data, axis=1)
                     ts = np.mean(meanData, axis=1)
                 else:
                     ts = data[:]
-
-                times = ds.variables['time']
-                jd = netCDF4.num2date(times[:], times.units)
-
+                jd = get_time(f)
                 hs = pd.Series(ts, index=jd, name=basename(f))
                 hd = hs.to_frame()
                 df[basename(f)] = hs
             except:
                 LOGGER.exception('failed to calculate timeseries for %s ' % (f))
 
-        try:
-            rollmean = df.rolling(window=30, center=True).mean()
+        if len(df.index.values) >= 90:
+            # TODO: calculate windowsize according to timestapms (day,mon,yr ... with get_frequency)
+            df_smooth = df.rolling(window=30, center=True).mean()
             LOGGER.info('rolling mean calculated for all input data')
-            rmean = rollmean.median(axis=1, skipna=False)  # quantile([0.5], axis=1, numeric_only=False )
-            q05 = rollmean.quantile([0.05], axis=1,)  # numeric_only=False)
-            q33 = rollmean.quantile([0.33], axis=1,)  # numeric_only=False)
-            q66 = rollmean.quantile([0.66], axis=1, )  # numeric_only=False)
-            q95 = rollmean.quantile([0.95], axis=1, )  # numeric_only=False)
-
+        else:
+            df_smooth = df
+            LOGGER.debug('timeseries too short, no rolling mean calculated')
+            fig.text(0.95, 0.05, '!!! Plot not valide: timeseries too short !!!',
+                     fontsize=20, color='red',
+                     ha='right', va='bottom', alpha=0.5)
+        try:
+            rmean = df_smooth.quantile([0.5], axis=1,)  # df_smooth.median(axis=1)
+            # skipna=False  quantile([0.5], axis=1, numeric_only=False )
+            q05 = df_smooth.quantile([0.10], axis=1,)  # numeric_only=False)
+            q33 = df_smooth.quantile([0.33], axis=1,)  # numeric_only=False)
+            q66 = df_smooth.quantile([0.66], axis=1, )  # numeric_only=False)
+            q95 = df_smooth.quantile([0.90], axis=1, )  # numeric_only=False)
             LOGGER.info('quantile calculated for all input data')
         except:
             LOGGER.exception('failed to calculate quantiles')
 
         try:
-            plt.fill_between(rollmean.index.values, np.squeeze(q05.values), np.squeeze(q95.values),
+            plt.fill_between(df_smooth.index.values, np.squeeze(q05.values), np.squeeze(q95.values),
                              alpha=0.5, color='grey')
-            plt.fill_between(rollmean.index.values, np.squeeze(q33.values), np.squeeze(q66.values),
+            plt.fill_between(df_smooth.index.values, np.squeeze(q33.values), np.squeeze(q66.values),
                              alpha=0.5, color='grey')
-            plt.plot(rollmean.index.values, np.squeeze(rmean.values), c='r', lw=3)
+
+            plt.plot(df_smooth.index.values, np.squeeze(rmean.values), c='r', lw=3)
 
             plt.xlim(min(df.index.values), max(df.index.values))
             plt.ylim(ylim)
