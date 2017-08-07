@@ -44,6 +44,9 @@ unit_tests/testdata.json
 # Sublime Text Editor
 *.sublime*
 
+# Dolphin
+.directory
+
 # buildout
 bin
 develop-eggs
