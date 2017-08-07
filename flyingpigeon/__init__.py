@@ -1,5 +1,6 @@
 import os
 from pywps.app.Service import Service
+from pywps import configuration
 from werkzeug.wsgi import SharedDataMiddleware
 
 from flyingpigeon.processes import processes
@@ -15,7 +16,7 @@ def application(environ, start_response):
         wps_app,
         {
             '/static': ('flyingpigeon', 'static'),
-            '/outputs': '/tmp'
+            '/outputs': configuration.get_config_value('server', 'outputpath')
         })
     return app(environ, start_response)
 
