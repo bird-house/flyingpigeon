@@ -65,11 +65,3 @@ def output_url():
         url = None
         LOGGER.warn('no outputurl configured')
     return url
-
-
-def www_url():
-    url = configuration.get_config_value("extra", "www_url")
-    if not url:
-        url = None
-        LOGGER.warn('no www-url configured')
-    return url

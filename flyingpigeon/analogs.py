@@ -302,7 +302,6 @@ def get_viewer_configfile(analogs):
     :return str: configuration file path/name.txt
     """
     from flyingpigeon import config
-    from flyingpigeon.config import www_url
 
     import requests
     from shutil import copyfile
