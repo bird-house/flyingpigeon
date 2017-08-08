@@ -295,7 +295,7 @@ class AnalogsreanalyseProcess(Process):
             else:
                 LOGGER.exception('Reanalyses dataset not known')
             LOGGER.info('environment set for model: %s' % model)
-        except:
+        except Exception:
             msg = 'failed to set environment'
             LOGGER.exception(msg)
             # raise Exception(msg)
@@ -310,7 +310,7 @@ class AnalogsreanalyseProcess(Process):
                           dataset=model,
                           variable=var)
             LOGGER.info('reanalyses data fetched')
-        except:
+        except Exception:
             msg = 'failed to get reanalyses data'
             LOGGER.exception(msg)
             # raise Exception(msg)
