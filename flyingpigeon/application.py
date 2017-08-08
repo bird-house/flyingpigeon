@@ -8,7 +8,7 @@ import flask
 from flyingpigeon.processes import processes
 
 app = flask.Flask('flyingpigeon')
-wps_app = Service(processes, [
+service = Service(processes, [
     os.path.join(os.path.dirname(__file__), 'default.cfg'),
     os.environ.get('PYWPS_CFG', '')])
 
@@ -31,7 +31,7 @@ def hello():
 
 @app.route('/wps', methods=['GET', 'POST'])
 def wps():
-    return wps_app
+    return service
 
 
 @app.route('/outputs/<path:path>')
