@@ -501,8 +501,8 @@ class AnalogsreanalyseProcess(Process):
 
         try:
             output_av = analogs.get_viewer(
-                formated_analogs_file,
-                path.basename(config_file))
+                configfile=path.basename(config_file),
+                datafile=path.basename(formated_analogs_file))
             response.outputs['output_html'].file = output_av
             response.update_status('Successfully generated analogs viewer', 90)
             LOGGER.info('output_av: %s ', output_av)

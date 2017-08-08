@@ -391,25 +391,23 @@ def get_viewer_configfile(analogs):
     return configfile
 
 
-def get_viewer(analogs_mod, configfile):
+def get_viewer(configfile, datafile, filename=None):
     """
     Generate an analogs viewer based on a template.
 
-    :param analogs_mod: modified analogs file (output of reformat_analogs)
+    :param datafile: modified analogs file (output of reformat_analogs)
     :param configfile: configuration file
 
     return html: analog viewer html page
     """
-    from os.path import basename
     from flyingpigeon import templating
 
-    _, output_av = mkstemp(
-        suffix='.html', prefix='analogviewer', dir='.', text=False)
-    with open(output_av, 'w') as fp:
+    filename = filename or 'analogviewer.html'
+    with open(filename, 'w') as fp:
         # Insert reformatted analogue file and config file into analogviewer template
         fp.write(
             templating.render_template(
                 'analogviewer.html',
                 configfile=configfile,
-                datafile=basename(analogs_mod)))
-    return output_av
+                datafile=datafile))
+    return filename
