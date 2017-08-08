@@ -462,14 +462,14 @@ class AnalogsreanalyseProcess(Process):
             LOGGER.debug("castf90 command: %s", cmd)
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
             LOGGER.info('analogue output:\n %s', output)
-            response.update_status('**** CASTf90 suceeded', 50)
+            response.update_status('**** CASTf90 suceeded', 70)
         except CalledProcessError as e:
             msg = 'CASTf90 failed:\n{0}'.format(e.output)
             LOGGER.exception(msg)
             raise Exception(msg)
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
 
-        response.update_status('preparing output', 50)
+        response.update_status('preparing output', 70)
         response.outputs['config'].file = config_file
         response.outputs['analogs'].file = output_file
         response.outputs['output_netcdf'].file = simulation
@@ -478,20 +478,15 @@ class AnalogsreanalyseProcess(Process):
         # generate analog viewer
         ########################
 
-        try:
-            formated_analogs_file = analogs.reformat_analogs(output_file)
-            response.outputs['formated_analogs'].file = formated_analogs_file
-            LOGGER.info('analogs reformated')
-            response.update_status('Successfully reformatted analog file', 60)
-        except Exception as e:
-            msg = 'Failed to reformat analogs file.' % e
-            LOGGER.exception(msg)
-            raise Exception(msg)
+        formated_analogs_file = analogs.reformat_analogs(output_file)
+        response.outputs['formated_analogs'].file = formated_analogs_file
+        LOGGER.info('analogs reformated')
+        response.update_status('reformatted analog file', 80)
 
         try:
             output_av = analogs.get_viewer(
                 configfile=config_file,
-                datafile=path.basename(formated_analogs_file))
+                datafile=formated_analogs_file)
             response.outputs['output'].file = output_av
             response.update_status('Successfully generated analogs viewer', 90)
             LOGGER.info('output_av: %s ', output_av)

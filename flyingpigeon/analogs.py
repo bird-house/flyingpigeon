@@ -287,13 +287,13 @@ def reformat_analogs(analogs):
         df_all.index.name = 'dateRef'
 
         # save to tsv file
-        ip, analogs_mod = mkstemp(
-            suffix='.tsv', prefix='modified-analogfile', text=False)
+        analogs_mod = 'modified-analogfile.tsv'
         df_all.to_csv(analogs_mod, sep='\t')
         LOGGER.info('successfully reformatted analog file')
     except Exception:
         msg = 'failed to reformat analog file'
         LOGGER.exception(msg)
+        raise Exception(msg)
     return analogs_mod
 
 
