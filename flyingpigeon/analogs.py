@@ -313,15 +313,12 @@ def get_viewer_configfile(analogs):
     from os.path import basename
 
     try:
-        output_url = config.output_url()
-        output_path = config.output_path()
-
         # Config file with path (server URL address)
         configfile = analogs.replace('analogs-', 'config-')
-        LOGGER.info('config filename generated %s' % configfile)
+        LOGGER.info('config filename generated %s', configfile)
 
-        configfile_with_path = path.join(output_url, configfile)
-        LOGGER.debug('configfile_with_path: %s' % configfile_with_path)
+        configfile_with_path = path.join(config.output_url(), configfile)
+        LOGGER.debug('configfile_with_path: %s', configfile_with_path)
 
         # Check if config file exists
         r = requests.get(configfile_with_path)
@@ -334,11 +331,11 @@ def get_viewer_configfile(analogs):
 
             # Make config file name and get its path on local disk
             configfile = 'config_' + analogs
-            LOGGER.debug('local disk configfile: %s' % configfile)
+            LOGGER.debug('local disk configfile: %s', configfile)
 
             p, name = path.split(path.realpath(analogs))
             configfile_localAddress = path.join(p, configfile)
-            LOGGER.debug('local disk configfile_localAddress: %s' %
+            LOGGER.debug('local disk configfile_localAddress: %s',
                          configfile_localAddress)
 
             # Check if config file exists
@@ -347,18 +344,18 @@ def get_viewer_configfile(analogs):
 
                 # Copy config file to output_path
                 # (~/birdhouse/var/lib/pywps/outputs/flyingpigeon)
-                configfile_outputlocation = path.join(output_path, configfile)
+                configfile_outputlocation = path.join(config.output_path(), configfile)
 
                 copyfile(configfile_localAddress, configfile_outputlocation)
                 LOGGER.info(' time for coffee ')
 
                 configfile_outputlocation_edited = config_edits(
                     configfile_outputlocation)
-                LOGGER.info('outputlocation_edited: %s' %
+                LOGGER.info('outputlocation_edited: %s',
                             configfile_outputlocation_edited)
 
                 configfile = path.basename(configfile_outputlocation_edited)
-                LOGGER.info('  configfile %s  ' % configfile)
+                LOGGER.info('  configfile %s  ', configfile)
 
             else:
                 LOGGER.debug(
@@ -384,7 +381,7 @@ def get_viewer_configfile(analogs):
 
                 configfile = path.basename(configfile_wkdir)  # just file name
                 # Add server path to file name
-                configfile_inplace = path.join(output_path, configfile)
+                configfile_inplace = path.join(config.output_path(), configfile)
                 # Copy out of local working dir to output_path
                 copyfile(configfile_wkdir, configfile_inplace)
 
