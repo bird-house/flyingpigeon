@@ -26,7 +26,7 @@ class AnalogsviewerProcess(Process):
                          # maxmegabites=5000,
                          supported_formats=[Format('text/plain')]
                          ),
-             ]
+        ]
 
         outputs = [
             ComplexOutput("output_html", "html viewer",
@@ -85,7 +85,7 @@ class AnalogsviewerProcess(Process):
             configfile = "dummy.txt"  # anlg.get_viewer_configfile(analogs)
             analogs_mod = anlg.reformat_analogs(analogs)
             LOGGER.info("analogs for visualisation prepared")
-        except:
+        except Exception:
             msg = 'Failed to reformat analogs file'
             LOGGER.exception(msg)
 
@@ -97,7 +97,7 @@ class AnalogsviewerProcess(Process):
             output_data = output_url + '/' + basename(analogs_mod)
             LOGGER.info('Data url: %s ' % output_data)
             LOGGER.info('output_av: %s ' % output_av)
-        except:
+        except Exception:
             msg = 'Failed to generate viewer'
             LOGGER.exception(msg)
 
