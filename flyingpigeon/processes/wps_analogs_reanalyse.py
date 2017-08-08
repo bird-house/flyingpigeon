@@ -425,7 +425,7 @@ class AnalogsreanalyseProcess(Process):
             LOGGER.exception(msg)
             raise Exception(msg)
 
-        ip, output_file = mkstemp(dir='.', suffix='.txt')
+        output_file = 'output.txt'
         files = [path.abspath(archive), path.abspath(simulation), output_file]
         LOGGER.debug("Data preperation took %s seconds.",
                      time.time() - start_time)
