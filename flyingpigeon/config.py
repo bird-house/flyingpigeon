@@ -34,7 +34,7 @@ def Rsrc_dir():
 
 
 def masks_dir():
-    return os.path.join(_PATH, 'masks')
+    return os.path.join(data_dir(), 'masks')
 
 
 def data_dir():
