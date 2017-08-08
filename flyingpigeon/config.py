@@ -25,6 +25,10 @@ def esgfsearch_distrib():
     return distrib
 
 
+def data_dir():
+    return os.path.join(_PATH, 'data')
+
+
 def shapefiles_dir():
     return os.path.join(data_dir(), 'shapefiles')
 
@@ -35,10 +39,6 @@ def Rsrc_dir():
 
 def masks_dir():
     return os.path.join(data_dir(), 'masks')
-
-
-def data_dir():
-    return os.path.join(_PATH, 'data')
 
 
 def cache_path():
