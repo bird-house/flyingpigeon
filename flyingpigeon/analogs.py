@@ -409,5 +409,6 @@ def get_viewer(configfile, datafile, filename=None):
             templating.render_template(
                 'analogviewer.html',
                 configfile=configfile,
-                datafile=datafile))
+                datafile=datafile,
+                home_url=filename))
     return filename
