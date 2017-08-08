@@ -307,7 +307,6 @@ def get_viewer_configfile(analogs):
     """
     import requests
     from shutil import copyfile
-    from os.path import basename
 
     try:
         # Config file with path (server URL address)
