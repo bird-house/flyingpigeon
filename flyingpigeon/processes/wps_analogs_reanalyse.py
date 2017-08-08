@@ -471,7 +471,6 @@ class AnalogsreanalyseProcess(Process):
 
         response.update_status('preparing output', 70)
         response.outputs['config'].storage = FileStorage()
-        response.outputs['config'].output_format = FORMATS.TEXT
         response.outputs['config'].file = config_file
         response.outputs['analogs'].file = output_file
         response.outputs['output_netcdf'].file = simulation
@@ -482,7 +481,6 @@ class AnalogsreanalyseProcess(Process):
 
         formated_analogs_file = analogs.reformat_analogs(output_file)
         response.outputs['formated_analogs'].storage = FileStorage()
-        response.outputs['formated_analogs'].output_format = FORMATS.TEXT
         response.outputs['formated_analogs'].file = formated_analogs_file
         LOGGER.info('analogs reformated')
         response.update_status('reformatted analog file', 80)
