@@ -58,4 +58,7 @@ def output_path():
 
 
 def output_url():
-    return configuration.get_config_value("server", "outputurl")
+    url = configuration.get_config_value("server", "outputurl")
+    if url:
+        url = url.rstrip('/')
+    return url
