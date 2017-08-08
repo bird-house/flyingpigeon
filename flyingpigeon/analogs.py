@@ -25,6 +25,8 @@ def get_configfile(files,
     """
     Generates the configuration file for the CASTf90 calculation.
 
+    TODO: use jjinja template
+
     :param files: input files (reference period and period for analyses)
     :param timewin: number of days the distance is averaged
     :param varname: variable name in input files
