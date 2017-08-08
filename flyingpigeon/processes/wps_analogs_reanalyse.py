@@ -1,22 +1,22 @@
+import os
 from datetime import date
 from datetime import datetime as dt
 import time  # performance test
-from tempfile import mkstemp
-from os import path
 import subprocess
 from subprocess import CalledProcessError
-
-from flyingpigeon.datafetch import _PRESSUREDATA_
-from flyingpigeon.datafetch import reanalyses as rl
-from flyingpigeon.ocgis_module import call
-from flyingpigeon import analogs
-from flyingpigeon.utils import rename_complexinputs
 
 from pywps import Process
 from pywps import LiteralInput, LiteralOutput
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format, FORMATS
 from pywps.app.Common import Metadata
+from pywps.inout.storage import FileStorage
+
+from flyingpigeon.datafetch import _PRESSUREDATA_
+from flyingpigeon.datafetch import reanalyses as rl
+from flyingpigeon.ocgis_module import call
+from flyingpigeon import analogs
+from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.log import init_process_logger
 
 import logging
@@ -426,7 +426,7 @@ class AnalogsreanalyseProcess(Process):
             raise Exception(msg)
 
         output_file = 'output.txt'
-        files = [path.abspath(archive), path.abspath(simulation), output_file]
+        files = [os.path.abspath(archive), os.path.abspath(simulation), output_file]
         LOGGER.debug("Data preperation took %s seconds.",
                      time.time() - start_time)
 
@@ -470,6 +470,8 @@ class AnalogsreanalyseProcess(Process):
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
 
         response.update_status('preparing output', 70)
+        response.outputs['config'].storage = FileStorage()
+        response.outputs['config'].output_format = FORMATS.TEXT
         response.outputs['config'].file = config_file
         response.outputs['analogs'].file = output_file
         response.outputs['output_netcdf'].file = simulation
@@ -479,21 +481,18 @@ class AnalogsreanalyseProcess(Process):
         ########################
 
         formated_analogs_file = analogs.reformat_analogs(output_file)
+        response.outputs['formated_analogs'].storage = FileStorage()
+        response.outputs['formated_analogs'].output_format = FORMATS.TEXT
         response.outputs['formated_analogs'].file = formated_analogs_file
         LOGGER.info('analogs reformated')
         response.update_status('reformatted analog file', 80)
 
-        try:
-            output_av = analogs.get_viewer(
-                configfile=config_file,
-                datafile=formated_analogs_file)
-            response.outputs['output'].file = output_av
-            response.update_status('Successfully generated analogs viewer', 90)
-            LOGGER.info('output_av: %s ', output_av)
-        except Exception as e:
-            msg = 'Failed to generate viewer: %s' % e
-            LOGGER.exception(msg)
-            raise Exception(msg)
+        output_av = analogs.get_viewer(
+            configfile=response.outputs['config'].get_url(),
+            datafile=response.outputs['formated_analogs'].get_url())
+        response.outputs['output'].file = output_av
+        response.update_status('Successfully generated analogs viewer', 90)
+        LOGGER.info('output_av: %s ', output_av)
 
         response.update_status('execution ended', 100)
         LOGGER.debug("total execution took %s seconds.",
