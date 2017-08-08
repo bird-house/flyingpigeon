@@ -29,16 +29,16 @@ def static_path():
     return os.path.join(_PATH, 'static')
 
 
-def data_dir():
+def data_path():
     return os.path.join(_PATH, 'data')
 
 
 def shapefiles_dir():
-    return os.path.join(data_dir(), 'shapefiles')
+    return os.path.join(data_path(), 'shapefiles')
 
 
 def masks_dir():
-    return os.path.join(data_dir(), 'masks')
+    return os.path.join(data_path(), 'masks')
 
 
 def Rsrc_dir():

@@ -11,7 +11,9 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import Normalize
 from cartopy import config as cartopy_config
 import cartopy.crs as ccrs
+
 from flyingpigeon import utils
+from flyingpigeon import config
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
@@ -84,7 +86,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
     """
     from PyPDF2 import PdfFileWriter, PdfFileReader
     from reportlab.pdfgen import canvas
-    from flyingpigeon.config import data_dir
+
     try:
         try:
             _, pdf_country = mkstemp(dir='.', suffix='.pdf')
@@ -123,7 +125,8 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
             LOGGER.exception('failed to convert png to pdf')
 
         output_file = PdfFileWriter()
-        pfr_template = PdfFileReader(file(data_dir() + '/pdf/climatefactsheettemplate.pdf', 'rb'))
+        pfr_template = PdfFileReader(
+            file(os.path.join(config.data_path(), 'pdf', 'climatefactsheettemplate.pdf'), 'rb'))
         LOGGER.debug('template: %s' % pfr_template)
 
         page_count = pfr_template.getNumPages()
@@ -157,7 +160,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
             LOGGER.info('sucessfully brewed the demanded factsheet')
         except:
             LOGGER.exception('failed write filled template to pdf. empty template will be set as output')
-            climatefactsheet = data_dir() + '/pdf/climatefactsheettemplate.pdf'
+            climatefactsheet = os.path.join(config.data_path(), 'pdf', 'climatefactsheettemplate.pdf')
     except:
         LOGGER.exception("failed to brew the factsheet, empty template will be set as output")
     return climatefactsheet

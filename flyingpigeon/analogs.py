@@ -1,7 +1,7 @@
 import os
-from tempfile import mkstemp
 
 from flyingpigeon import config
+from flyingpigeon import templating
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
@@ -306,8 +306,6 @@ def get_viewer(configfile, datafile, filename=None):
 
     return html: analog viewer html page
     """
-    from flyingpigeon import templating
-
     filename = filename or 'analogviewer.html'
     with open(filename, 'w') as fp:
         import os
