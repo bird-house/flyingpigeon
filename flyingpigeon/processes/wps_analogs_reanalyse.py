@@ -470,7 +470,7 @@ class AnalogsreanalyseProcess(Process):
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
 
         response.update_status('preparing output', 70)
-        response.outputs['config'].storage = FileStorage()
+        # response.outputs['config'].storage = FileStorage()
         response.outputs['config'].file = config_file
         response.outputs['analogs'].file = output_file
         response.outputs['output_netcdf'].file = simulation
@@ -480,14 +480,16 @@ class AnalogsreanalyseProcess(Process):
         ########################
 
         formated_analogs_file = analogs.reformat_analogs(output_file)
-        response.outputs['formated_analogs'].storage = FileStorage()
+        # response.outputs['formated_analogs'].storage = FileStorage()
         response.outputs['formated_analogs'].file = formated_analogs_file
         LOGGER.info('analogs reformated')
         response.update_status('reformatted analog file', 80)
 
         output_av = analogs.get_viewer(
-            configfile=response.outputs['config'].get_url(),
-            datafile=response.outputs['formated_analogs'].get_url())
+            # configfile=response.outputs['config'].get_url(),
+            configfile=config_file,
+            # datafile=response.outputs['formated_analogs'].get_url())
+            datafile=formated_analogs_file)
         response.outputs['output'].file = output_av
         response.update_status('Successfully generated analogs viewer', 90)
         LOGGER.info('output_av: %s ', output_av)

@@ -316,7 +316,8 @@ def get_viewer(configfile, datafile, filename=None):
                 configfile=configfile,
                 datafile=datafile,
                 home_url=filename,
-                static_url=config.output_url() + '/static'))
+                # static_url=config.output_url() + '/static'))
+                static_url='../static'))
         destination = os.path.join(config.output_path(), 'static')
         if not os.path.exists(destination):
             os.symlink(config.static_path(), destination)
