@@ -304,11 +304,8 @@ def get_viewer_configfile(analogs):
     :param analogs: text file containing the analogs values
     :return str: configuration file path/name.txt
     """
-    from flyingpigeon import config
-
     import requests
     from shutil import copyfile
-    from tempfile import mkstemp
     from os import path
     from os.path import basename
 
