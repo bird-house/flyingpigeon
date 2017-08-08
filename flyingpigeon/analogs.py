@@ -1,4 +1,7 @@
 from tempfile import mkstemp
+
+from flyingpigeon import config
+
 import logging
 LOGGER = logging.getLogger("PYWPS")
 
@@ -404,11 +407,16 @@ def get_viewer(configfile, datafile, filename=None):
 
     filename = filename or 'analogviewer.html'
     with open(filename, 'w') as fp:
+        import os
         # Insert reformatted analogue file and config file into analogviewer template
         fp.write(
             templating.render_template(
                 'analogviewer.html',
                 configfile=configfile,
                 datafile=datafile,
-                home_url=filename))
+                home_url=filename,
+                static_url=config.output_url() + '/static'))
+        destination = os.path.join(config.output_path(), 'static')
+        if not os.path.exists(destination):
+            os.symlink(config.static_path(), destination)
     return filename

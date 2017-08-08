@@ -25,6 +25,10 @@ def esgfsearch_distrib():
     return distrib
 
 
+def static_path():
+    return os.path.join(_PATH, 'static')
+
+
 def data_dir():
     return os.path.join(_PATH, 'data')
 
@@ -33,12 +37,12 @@ def shapefiles_dir():
     return os.path.join(data_dir(), 'shapefiles')
 
 
-def Rsrc_dir():
-    return os.path.join(_PATH, 'Rsrc')
-
-
 def masks_dir():
     return os.path.join(data_dir(), 'masks')
+
+
+def Rsrc_dir():
+    return os.path.join(_PATH, 'Rsrc')
 
 
 def cache_path():
@@ -50,16 +54,8 @@ def cache_path():
 
 
 def output_path():
-    output_path = configuration.get_config_value("server", "outputpath")
-    if not output_path:
-        output_path = None
-        LOGGER.warn('no output path configured')
-    return output_path
+    return configuration.get_config_value("server", "outputpath")
 
 
 def output_url():
-    url = configuration.get_config_value("server", "outputurl")
-    if not url:
-        url = None
-        LOGGER.warn('no outputurl configured')
-    return url
+    return configuration.get_config_value("server", "outputurl")
