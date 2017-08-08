@@ -154,7 +154,7 @@ class AnalogsreanalyseProcess(Process):
                           supported_formats=[Format('application/x-netcdf')]
                           ),
 
-            ComplexOutput("output_html", "Analogues Viewer html page",
+            ComplexOutput("output", "Analogues Viewer html page",
                           abstract="Interactive visualization of calculated analogues",
                           supported_formats=[Format("text/html")],
                           as_reference=True,
@@ -503,7 +503,7 @@ class AnalogsreanalyseProcess(Process):
             output_av = analogs.get_viewer(
                 configfile=path.basename(config_file),
                 datafile=path.basename(formated_analogs_file))
-            response.outputs['output_html'].file = output_av
+            response.outputs['output'].file = output_av
             response.update_status('Successfully generated analogs viewer', 90)
             LOGGER.info('output_av: %s ', output_av)
         except Exception as e:
