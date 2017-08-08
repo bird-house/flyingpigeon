@@ -433,32 +433,23 @@ class AnalogsreanalyseProcess(Process):
         ############################
         # generate the config file
         ############################
-        response.update_status('writing config file', 15)
-        try:
-            config_file = analogs.get_configfile(
-                files=files,
-                seasoncyc_base=seasoncyc_base,
-                seasoncyc_sim=seasoncyc_sim,
-                timewin=timewin,
-                varname=var,
-                seacyc=seacyc,
-                cycsmooth=91,
-                nanalog=nanalog,
-                seasonwin=seasonwin,
-                distfun=distance,
-                outformat=outformat,
-                calccor=True,
-                silent=False,
-                period=[dt.strftime(refSt, '%Y-%m-%d'),
-                        dt.strftime(refEn, '%Y-%m-%d')],
-                bbox="%s,%s,%s,%s" % (bbox[0],
-                                      bbox[2],
-                                      bbox[1],
-                                      bbox[3]))
-        except Exception as e:
-            msg = 'failed to generate config file %s ' % e
-            LOGGER.exception(msg)
-            raise Exception(msg)
+        config_file = analogs.get_configfile(
+            files=files,
+            seasoncyc_base=seasoncyc_base,
+            seasoncyc_sim=seasoncyc_sim,
+            timewin=timewin,
+            varname=var,
+            seacyc=seacyc,
+            cycsmooth=91,
+            nanalog=nanalog,
+            seasonwin=seasonwin,
+            distfun=distance,
+            outformat=outformat,
+            calccor=True,
+            silent=False,
+            period=[dt.strftime(refSt, '%Y-%m-%d'), dt.strftime(refEn, '%Y-%m-%d')],
+            bbox="{0[0]},{0[2]},{0[1]},{0[3]}".format(bbox))
+        response.update_status('generated config file', 15)
         #######################
         # CASTf90 call
         #######################
@@ -467,7 +458,7 @@ class AnalogsreanalyseProcess(Process):
         response.update_status('Start CASTf90 call', 20)
         try:
             # response.update_status('execution of CASTf90', 50)
-            cmd = ['analogue.out', path.relpath(config_file)]
+            cmd = ['analogue.out', config_file]
             LOGGER.debug("castf90 command: %s", cmd)
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
             LOGGER.info('analogue output:\n %s', output)
@@ -499,7 +490,7 @@ class AnalogsreanalyseProcess(Process):
 
         try:
             output_av = analogs.get_viewer(
-                configfile=path.basename(config_file),
+                configfile=config_file,
                 datafile=path.basename(formated_analogs_file))
             response.outputs['output'].file = output_av
             response.update_status('Successfully generated analogs viewer', 90)
