@@ -46,7 +46,6 @@ def get_configfile(files,
     :returns: configuration file
     """
     from datetime import datetime as dt
-    from os.path import relpath
 
     date_stamp = dt.strftime(dt.now(), format='%Y%m%d_%H%M%S')
     LOGGER.info('start configuration file preparation at: %s' % (date_stamp))
@@ -70,15 +69,15 @@ def get_configfile(files,
     config.write('!Version : 0.1.5 \n')
     config.write('&FILES \n')
     config.write(' my_files%archivefile = "{file}" \n'.format(
-        file=relpath(files[0])))
+        file=os.path.relpath(files[0])))
     config.write(' my_files%simulationfile = "{file}" \n'.format(
-        file=relpath(files[1])))
+        file=os.path.relpath(files[1])))
     config.write(' my_files%outputfile = "{file}" \n'.format(
-        file=relpath(files[2])))
+        file=os.path.relpath(files[2])))
     config.write('  my_files%seacycfilebase = "{file}" \n'.format(
-        file=relpath(seasoncyc_base)))
+        file=os.path.relpath(seasoncyc_base)))
     config.write(' my_files%seacycfilesim = "{file}" \n'.format(
-        file=relpath(seasoncyc_sim)))
+        file=os.path.relpath(seasoncyc_sim)))
     config.write('/ \n')
     config.write('&PARAM \n')
     config.write(' my_params%timewin = {timewin} \n'.format(timewin=timewin))
@@ -109,7 +108,7 @@ def get_configfile(files,
     config.write('/\n')
 
     config.close()
-    return relpath(config_file)
+    return os.path.relpath(config_file)
 
 # def subset(resource=[], bbox='-80,50,22.5,70'):
 #   """
