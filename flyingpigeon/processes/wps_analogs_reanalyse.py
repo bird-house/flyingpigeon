@@ -236,7 +236,7 @@ class AnalogsreanalyseProcess(Process):
         except Exception as e:
             msg = 'failed to read input prameter %s ' % e
             LOGGER.exception(msg)
-            # raise Exception(msg)
+            raise Exception(msg)
 
         ######################################
         # convert types and set environment
@@ -269,7 +269,7 @@ class AnalogsreanalyseProcess(Process):
         except Exception as e:
             msg = 'failed to set environment %s ' % e
             LOGGER.exception(msg)
-            # raise Exception(msg)
+            raise Exception(msg)
 
         ###########################
         # set the environment
@@ -298,7 +298,7 @@ class AnalogsreanalyseProcess(Process):
         except Exception:
             msg = 'failed to set environment'
             LOGGER.exception(msg)
-            # raise Exception(msg)
+            raise Exception(msg)
 
         ##########################################
         # fetch Data from original data archive
@@ -313,7 +313,7 @@ class AnalogsreanalyseProcess(Process):
         except Exception:
             msg = 'failed to get reanalyses data'
             LOGGER.exception(msg)
-            # raise Exception(msg)
+            raise Exception(msg)
 
         response.update_status('subsetting region of interest', 17)
         # from flyingpigeon.weatherregimes import get_level
@@ -407,8 +407,8 @@ class AnalogsreanalyseProcess(Process):
                         % (archive, simulation))
         except Exception as e:
             msg = 'failed to prepare archive and simulation files %s ' % e
-            LOGGER.debug(msg)
-            # raise Exception(msg)
+            LOGGER.exception(msg)
+            raise Exception(msg)
 
         try:
             if seacyc is True:
@@ -422,8 +422,8 @@ class AnalogsreanalyseProcess(Process):
                 seasoncyc_base = seasoncyc_sim = None
         except Exception as e:
             msg = 'failed to generate normalization files %s ' % e
-            LOGGER.debug(msg)
-            # raise Exception(msg)
+            LOGGER.exception(msg)
+            raise Exception(msg)
 
         ip, output_file = mkstemp(dir='.', suffix='.txt')
         files = [path.abspath(archive), path.abspath(simulation), output_file]
@@ -434,7 +434,6 @@ class AnalogsreanalyseProcess(Process):
         # generate the config file
         ############################
         response.update_status('writing config file', 15)
-        start_time = time.time()  # measure write config ...
         try:
             config_file = analogs.get_configfile(
                 files=files,
@@ -458,9 +457,8 @@ class AnalogsreanalyseProcess(Process):
                                       bbox[3]))
         except Exception as e:
             msg = 'failed to generate config file %s ' % e
-            LOGGER.debug(msg)
-            # raise Exception(msg)
-        LOGGER.debug("write_config took %s seconds.", time.time() - start_time)
+            LOGGER.exception(msg)
+            raise Exception(msg)
         #######################
         # CASTf90 call
         #######################
@@ -477,7 +475,7 @@ class AnalogsreanalyseProcess(Process):
         except CalledProcessError as e:
             msg = 'CASTf90 failed:\n{0}'.format(e.output)
             LOGGER.exception(msg)
-            # raise Exception(msg)
+            raise Exception(msg)
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
 
         response.update_status('preparing output', 50)
@@ -497,7 +495,7 @@ class AnalogsreanalyseProcess(Process):
         except Exception as e:
             msg = 'Failed to reformat analogs file.' % e
             LOGGER.exception(msg)
-            # raise Exception(msg)
+            raise Exception(msg)
 
         try:
             output_av = analogs.get_viewer(
@@ -509,7 +507,7 @@ class AnalogsreanalyseProcess(Process):
         except Exception as e:
             msg = 'Failed to generate viewer: %s' % e
             LOGGER.exception(msg)
-            # raise Exception(msg)
+            raise Exception(msg)
 
         response.update_status('execution ended', 100)
         LOGGER.debug("total execution took %s seconds.",
