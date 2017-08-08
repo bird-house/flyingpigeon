@@ -21,7 +21,7 @@ def get_configfile(files,
                    period=["1973-01-01", "2012-12-31"],
                    bbox="-180.0,-90.0,180,90.0",
                    calccor=True,
-                   silent=False, ):
+                   silent=False):
     """
     Generates the configuration file for the CASTf90 calculation.
 
@@ -59,7 +59,7 @@ def get_configfile(files,
     # NB: if order or format or number changes, need to edit wps_analogs_viewer.py
     # and template_analogviewer.html where these scripts read in the config
     # params
-    ip, config_file = mkstemp(dir='.', suffix='.txt')
+    config_file = "config.txt"
 
     config = open(config_file, "w")
 
@@ -108,7 +108,7 @@ def get_configfile(files,
     config.write('/\n')
 
     config.close()
-    return os.path.relpath(config_file)
+    return config_file
 
 # def subset(resource=[], bbox='-80,50,22.5,70'):
 #   """
