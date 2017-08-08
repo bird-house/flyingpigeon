@@ -80,7 +80,7 @@ class AnalogsviewerProcess(Process):
             analogs = rename_complexinputs(request.inputs['analog_result'])[0]
 
             # analogs = request.inputs['analog_result'][0]
-            LOGGER.info("analogs file path %s " % analogs)
+            LOGGER.info("analogs file path %s ", analogs)
 
             configfile = "dummy.txt"  # anlg.get_viewer_configfile(analogs)
             analogs_mod = anlg.reformat_analogs(analogs)
@@ -89,6 +89,7 @@ class AnalogsviewerProcess(Process):
         except Exception:
             msg = 'Failed to reformat analogs file'
             LOGGER.exception(msg)
+            raise Exception(msg)
 
         try:
             output_av = anlg.get_viewer(
@@ -96,13 +97,11 @@ class AnalogsviewerProcess(Process):
                 datafile=basename(analogs_mod))
             LOGGER.info('Viewer html page generated')
             response.update_status('Successfully generated analogs viewer html page', 90)
-            output_url = config.output_url()
-            output_data = output_url + '/' + basename(analogs_mod)
             response.outputs['output_html'].file = output_av
-            LOGGER.info('Data url: %s ' % output_data)
-            LOGGER.info('output_av: %s ' % output_av)
+            LOGGER.info('output_av: %s ', output_av)
         except Exception:
             msg = 'Failed to generate viewer'
             LOGGER.exception(msg)
+            raise Exception(msg)
 
         return response
