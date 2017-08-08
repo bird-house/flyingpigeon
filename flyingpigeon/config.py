@@ -26,7 +26,7 @@ def esgfsearch_distrib():
 
 
 def shapefiles_dir():
-    return os.path.join(_PATH, 'shapefiles')
+    return os.path.join(data_dir(), 'shapefiles')
 
 
 def Rsrc_dir():
