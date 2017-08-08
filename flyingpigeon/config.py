@@ -37,8 +37,8 @@ def masks_dir():
     return os.path.join(_PATH, 'masks')
 
 
-def static_dir():
-    return os.path.join(_PATH, 'static')
+def data_dir():
+    return os.path.join(_PATH, 'data')
 
 
 def cache_path():
