@@ -297,7 +297,7 @@ def reformat_analogs(analogs):
     return analogs_mod
 
 
-def get_viewer(configfile, datafile, filename=None):
+def render_viewer(configfile, datafile):
     """
     Generate an analogs viewer based on a template.
 
@@ -306,19 +306,17 @@ def get_viewer(configfile, datafile, filename=None):
 
     return html: analog viewer html page
     """
-    filename = filename or 'analogviewer.html'
-    with open(filename, 'w') as fp:
-        import os
-        # Insert reformatted analogue file and config file into analogviewer template
-        fp.write(
-            templating.render_template(
-                'analogviewer.html',
-                configfile=configfile,
-                datafile=datafile,
-                home_url=filename,
-                # static_url=config.output_url() + '/static'))
-                static_url='../static'))
-        destination = os.path.join(config.output_path(), 'static')
-        if not os.path.exists(destination):
-            os.symlink(config.static_path(), destination)
-    return filename
+    context = dict(
+        configfile=configfile,
+        datafile=datafile,
+        # static_url=config.output_url() + '/static'))
+        static_url='../static')
+    pages = ['analogviewer.html', 'help.html', 'contact.html']
+    for page in pages:
+        with open(page, 'w') as fp:
+            fp.write(templating.render_template(page, **context))
+    # link static folder to outputfolder
+    destination = os.path.join(config.output_path(), 'static')
+    if not os.path.exists(destination):
+        os.symlink(config.static_path(), destination)
+    return pages[0]

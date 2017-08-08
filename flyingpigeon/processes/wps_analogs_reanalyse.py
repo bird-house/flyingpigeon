@@ -485,14 +485,14 @@ class AnalogsreanalyseProcess(Process):
         LOGGER.info('analogs reformated')
         response.update_status('reformatted analog file', 80)
 
-        output_av = analogs.get_viewer(
+        viewer_html = analogs.render_viewer(
             # configfile=response.outputs['config'].get_url(),
             configfile=config_file,
             # datafile=response.outputs['formated_analogs'].get_url())
             datafile=formated_analogs_file)
-        response.outputs['output'].file = output_av
+        response.outputs['output'].file = viewer_html
         response.update_status('Successfully generated analogs viewer', 90)
-        LOGGER.info('output_av: %s ', output_av)
+        LOGGER.info('rendered pages: %s ', viewer_html)
 
         response.update_status('execution ended', 100)
         LOGGER.debug("total execution took %s seconds.",
