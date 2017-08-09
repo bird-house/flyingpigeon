@@ -37,6 +37,9 @@ Use the following instructions:
     # open your browser on the default service url
     $ firefox http://localhost:5000/wps
 
+    # ... and service capabilities url
+    $ firefox http://localhost:5000/wps?service=WPS&request=GetCapabilities
+
 The ``flyingpigeon`` service command-line has more options:
 
 .. code-block:: sh
