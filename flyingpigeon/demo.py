@@ -37,16 +37,20 @@ def main():
          For more documentation, visit http://flyingpigeon.readthedocs.io/en/latest/
         """
     )
+    parser.add_argument('--debug',
+                        action="store_true", help="enable debug logging mode")
     parser.add_argument('-c', '--config',
                         help="path to pywps configuration file")
     parser.add_argument('-d', '--daemon',
                         action='store_true', help="run in daemon mode")
     args = parser.parse_args()
+    cfg_files = []
     if args.config:
-        os.environ['PYWPS_CFG'] = args.config
+        cfg_files.append(args.config)
         LOGGER.warn('using pywps configuration: %s', args.config)
-
-    app = wsgi.create_app()
+    if args.debug:
+        cfg_files.append(os.path.join(os.path.dirname(__file__), 'debug.cfg'))
+    app = wsgi.create_app(cfg_files)
     static_files = {
         # '/static': ('flyingpigeon', 'static'),
         '/outputs': configuration.get_config_value('server', 'outputpath')
