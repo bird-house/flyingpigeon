@@ -44,13 +44,10 @@ def plot_polygons(regions):
     from cartopy.feature import ShapelyFeature
     from os.path import curdir, abspath
 
-    from flyingpigeon import config
-    DIR_SHP = config.shapefiles_dir()
-
     if type(regions) == str:
         regions = list([regions])
 
-    fname = join(DIR_SHP, "countries.shp")
+    fname = join(config.shapefiles_path(), "countries.shp")
     geos = Reader(fname).geometries()
     records = Reader(fname).records()
 

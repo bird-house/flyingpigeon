@@ -32,7 +32,7 @@ def data_path():
     return os.path.join(_PATH, 'data')
 
 
-def shapefiles_dir():
+def shapefiles_path():
     return os.path.join(data_path(), 'shapefiles')
 
 
