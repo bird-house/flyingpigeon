@@ -46,7 +46,7 @@ processes = [
     #    AnalogsmodelProcess(),
     #    AnalogscompareProcess(),
     AnalogsviewerProcess(),
-    #    RobustnessProcess(),
+    RobustnessProcess(),
     PlottimeseriesProcess(),
     SegetalfloraProcess(),
     SpatialAnalogProcess()
