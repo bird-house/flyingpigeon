@@ -1,14 +1,10 @@
-import argparse
-
-from werkzeug.wsgi import SharedDataMiddleware
-from werkzeug.serving import run_simple
-
 from pywps import configuration
-
-from flyingpigeon import wsgi
 
 
 def create_app(with_shared=True):
+    from werkzeug.wsgi import SharedDataMiddleware
+    from flyingpigeon import wsgi
+
     app = wsgi.application
     if with_shared:
         app = SharedDataMiddleware(
@@ -21,6 +17,8 @@ def create_app(with_shared=True):
 
 
 def main():
+    import argparse
+    from werkzeug.serving import run_simple
     # see werkzeug example:
     # https://github.com/pallets/werkzeug/blob/master/examples/shortly/shortly.py
 
