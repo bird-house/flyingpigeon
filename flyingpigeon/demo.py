@@ -1,19 +1,15 @@
-import os
-from pywps.app.Service import Service
+import argparse
+
+from werkzeug.wsgi import SharedDataMiddleware
+from werkzeug.serving import run_simple
+
 from pywps import configuration
 
-from flyingpigeon.processes import processes
-
-
-application = Service(processes, [
-    os.path.join(os.path.dirname(__file__), 'default.cfg'),
-    os.environ.get('PYWPS_CFG', '')])
+from flyingpigeon import wsgi
 
 
 def create_app(with_shared=True):
-    from werkzeug.wsgi import SharedDataMiddleware
-
-    app = application
+    app = wsgi.application
     if with_shared:
         app = SharedDataMiddleware(
             app,
@@ -23,21 +19,10 @@ def create_app(with_shared=True):
             })
     return app
 
-# @app.route('/wps', methods=['GET', 'POST'])
-# def wps():
-#     return service
-#
-#
-# @app.route('/outputs/<path:path>')
-# def outputfile(path):
-#     return flask.send_from_directory(configuration.get_config_value('server', 'outputpath'), path)
-
 
 def main():
     # see werkzeug example:
     # https://github.com/pallets/werkzeug/blob/master/examples/shortly/shortly.py
-    import argparse
-    from werkzeug.serving import run_simple
 
     parser = argparse.ArgumentParser(
         description="""Script for starting a demo Flyingpigeon WPS
@@ -52,7 +37,7 @@ def main():
                         action='store_true', help="run in daemon mode")
     parser.add_argument('-a', '--all-addresses',
                         action='store_true', help="run flask using IPv4 0.0.0.0 (all network interfaces), "
-                        "otherwise bind to 127.0.0.1 (localhost).  This maybe necessary in systems that only run Flask")
+                        "otherwise bind to 127.0.0.1 (localhost). This maybe necessary in systems that only run Flask")
     args = parser.parse_args()
 
     if args.all_addresses:
