@@ -121,7 +121,7 @@ class RobustnessProcess(Process):
             self._handler,
             identifier="robustness",
             title="Ensemble robustness",
-            version="0.4",
+            version="0.5",
             metadata=[
                 Metadata("LSCE", "http://www.lsce.ipsl.fr/")
                 ],
@@ -154,7 +154,7 @@ class RobustnessProcess(Process):
             raise
 
         response.outputs['output_text'].file = write_fileinfo(ncfiles)
-        
+
         #  LOGGER.debug('variable set to %s' % variable)
         # if method == 'Method_A':
         signal, low_agreement_mask, high_agreement_mask, text_src = erob.method_A(
@@ -191,7 +191,6 @@ class RobustnessProcess(Process):
         response.outputs['output_high'].file = high_agreement_mask
         response.outputs['output_low'].file = low_agreement_mask
         response.outputs['output_graphic'].file = graphic
-        # = text_src
-
+        
         response.update_status('uncertainty process done', 100)
         return response
