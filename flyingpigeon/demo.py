@@ -1,5 +1,26 @@
+import os
+
 from pywps import configuration
 from flyingpigeon._compat import urlparse
+
+import logging
+LOGGER = logging.getLogger('demo')
+
+
+def get_host():
+    url = configuration.get_config_value('server', 'url')
+    url = url or 'http://localhost:5000/wps'
+
+    LOGGER.warn("starting WPS service on %s", url)
+
+    parsed_url = urlparse(url)
+    if ':' in parsed_url.netloc:
+        bind_host, port = parsed_url.netloc.split(':')
+        port = int(port)
+    else:
+        bind_host = parsed_url.netloc
+        port = 80
+    return bind_host, port
 
 
 def main():
@@ -17,25 +38,27 @@ def main():
         """
     )
     parser.add_argument('-c', '--config',
-                        help="path to pywps configuration file.")
+                        help="path to pywps configuration file")
     parser.add_argument('-d', '--daemon',
-                        action='store_true', help="run in daemon mode.")
+                        action='store_true', help="run in daemon mode")
     args = parser.parse_args()
+    if args.config:
+        os.environ['PYWPS_CFG'] = args.config
+        LOGGER.warn('using pywps configuration: %s', args.config)
 
+    app = wsgi.create_app()
     static_files = {
-        '/static': ('flyingpigeon', 'static'),
+        # '/static': ('flyingpigeon', 'static'),
         '/outputs': configuration.get_config_value('server', 'outputpath')
     }
 
-    url = configuration.get_config_value('server', 'url')
-    url = url or 'http://localhost:5000/wps'
-    (bind_host, port) = urlparse(url).netloc.split(':')
-    port = int(port)
+    # call this *after* app is initialized ... needs pywps config.
+    bind_host, port = get_host()
 
     run_simple(
         hostname=bind_host,
         port=port,
-        application=wsgi.application,
+        application=app,
         use_debugger=True,
         use_reloader=True,
         static_files=static_files)
