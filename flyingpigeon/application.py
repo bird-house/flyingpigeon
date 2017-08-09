@@ -5,11 +5,9 @@ from pywps import configuration
 from flyingpigeon.processes import processes
 
 
-def application(environ, start_response):
-    app = Service(processes, [
-        os.path.join(os.path.dirname(__file__), 'default.cfg'),
-        os.environ.get('PYWPS_CFG', '')])
-    return app(environ, start_response)
+application = Service(processes, [
+    os.path.join(os.path.dirname(__file__), 'default.cfg'),
+    os.environ.get('PYWPS_CFG', '')])
 
 
 def create_app(with_shared=True):
@@ -18,7 +16,7 @@ def create_app(with_shared=True):
     app = application
     if with_shared:
         app = SharedDataMiddleware(
-            application,
+            app,
             {
                 '/static': ('flyingpigeon', 'static'),
                 '/outputs': configuration.get_config_value('server', 'outputpath')
