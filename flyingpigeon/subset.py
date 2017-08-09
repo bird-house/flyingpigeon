@@ -8,8 +8,6 @@ from flyingpigeon import config
 import logging
 LOGGER = logging.getLogger("PYWPS")
 
-DIR_MASKS = config.masks_dir()
-
 
 def countries():
     """

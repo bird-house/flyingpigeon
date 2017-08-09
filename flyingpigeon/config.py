@@ -36,7 +36,8 @@ def shapefiles_path():
     return os.path.join(data_path(), 'shapefiles')
 
 
-def masks_dir():
+def masks_path():
+    # TODO: currently this folder is not used
     return os.path.join(data_path(), 'masks')
 
 
