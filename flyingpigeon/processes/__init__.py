@@ -29,7 +29,7 @@ processes = [
     ClipcontinentProcess(),
     ClipregionseuropeProcess(),
     PointinspectionProcess(),
-    #    FactsheetProcess(),
+    FactsheetProcess(),
     FetchProcess(),
     LandseamaskProcess(),
     IndicespercentiledaysProcess(),
