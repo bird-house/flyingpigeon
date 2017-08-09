@@ -1,24 +1,8 @@
-from pywps import configuration
-
-
-def create_app(with_shared=True):
-    from werkzeug.wsgi import SharedDataMiddleware
-    from flyingpigeon import wsgi
-
-    app = wsgi.application
-    if with_shared:
-        app = SharedDataMiddleware(
-            app,
-            {
-                '/static': ('flyingpigeon', 'static'),
-                '/outputs': configuration.get_config_value('server', 'outputpath')
-            })
-    return app
-
-
 def main():
     import argparse
     from werkzeug.serving import run_simple
+    from pywps import configuration
+    from flyingpigeon import wsgi
     # see werkzeug example:
     # https://github.com/pallets/werkzeug/blob/master/examples/shortly/shortly.py
 
@@ -31,24 +15,29 @@ def main():
          For more documentation, visit http://flyingpigeon.readthedocs.io/en/latest/
         """
     )
+    parser.add_argument('-c', '--config',
+                        help="path to pywps configuration file.")
     parser.add_argument('-d', '--daemon',
-                        action='store_true', help="run in daemon mode")
-    parser.add_argument('-a', '--all-addresses',
-                        action='store_true', help="run flask using IPv4 0.0.0.0 (all network interfaces), "
-                        "otherwise bind to 127.0.0.1 (localhost). This maybe necessary in systems that only run Flask")
+                        action='store_true', help="run in daemon mode.")
     args = parser.parse_args()
 
-    if args.all_addresses:
-        bind_host = '0.0.0.0'
-    else:
-        bind_host = '127.0.0.1'
+    bind_host = '127.0.0.1'
 
-    app = create_app()
+    static_files = {
+        '/static': ('flyingpigeon', 'static'),
+        '/outputs': configuration.get_config_value('server', 'outputpath')
+    }
 
     if args.daemon:
         pass
     else:
-        run_simple(bind_host, 5000, app, use_debugger=True, use_reloader=True)
+        run_simple(
+            hostname='127.0.0.1',
+            port=5000,
+            application=wsgi.application,
+            use_debugger=True,
+            use_reloader=True,
+            static_files=static_files)
 
 
 if __name__ == '__main__':
