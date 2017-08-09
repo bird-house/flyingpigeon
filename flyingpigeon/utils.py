@@ -52,8 +52,8 @@ def search_landsea_mask_by_esgf(resource):
     if ctx.hit_count == 0:
         raise Exception("Could not find a mask in ESGF for dataset {0}".format(
             os.path.basename(resource)))
-        #LOGGER.exception("Could not find a mask in ESGF.")
-        #return
+        # LOGGER.exception("Could not find a mask in ESGF.")
+        # return
     if ctx.hit_count > 1:
         LOGGER.warn("Found more then one mask file.")
     results = ctx.search(batch_size=1)
@@ -111,7 +111,7 @@ def check_creationtime(path, url):
         else:
             LOGGER.info("local file is up-to-date. Nothing to fetch.")
             newer = False
-    except:
+    except Exception:
         msg = 'failed to check archive and cache creation time assuming newer = False'
         LOGGER.exception(msg)
         newer = False
@@ -154,7 +154,7 @@ def download(url, cache=False):
 # filename = os.path.basename(filename)
         else:
             filename = download_file(url)
-    except:
+    except Exception:
         LOGGER.exception('failed to download data')
     return filename
 
@@ -254,17 +254,17 @@ def archiveextract(resource, path='.'):
         for archive in resource:
             try:
                 LOGGER.debug("archive=%s", archive)
-                if basename(archive).split('.')[-1] == 'nc':
                 # if mime_type == 'application/x-netcdf':
+                if basename(archive).split('.')[-1] == 'nc':
                     files.append(join(path, archive))
-                elif basename(archive).split('.')[-1] == 'tar':
                 # elif mime_type == 'application/x-tar':
+                elif basename(archive).split('.')[-1] == 'tar':
                     tar = open(archive, mode='r')
                     tar.extractall()
                     files.extend([join(path, nc) for nc in tar.getnames()])
                     tar.close()
-                elif basename(archive).split('.')[1] == 'zip':
                 # elif mime_type == 'application/zip':
+                elif basename(archive).split('.')[1] == 'zip':
                     zf = zipfile.open(archive, mode='r')
                     zf.extractall()
                     files.extend([join(path, nc) for nc in zf.filelist])
@@ -399,7 +399,7 @@ def drs_filename(resource, skip_timestamp=False, skip_format=False,
         else:
             raise Exception('unknown project %s' % ds.project_id)
         ds.close()
-    except:
+    except Exception:
         LOGGER.exception('Could not read metadata %s', resource)
     try:
         # add from/to timestamp if not skipped
@@ -422,7 +422,7 @@ def drs_filename(resource, skip_timestamp=False, skip_format=False,
         if rename_file is True:
             if path.exists(path.join(resource)):
                 rename(resource, path.join(pf, filename))
-    except:
+    except Exception:
         LOGGER.exception('Could not generate DRS filename for %s', resource)
 
     return filename
@@ -464,7 +464,7 @@ def get_coordinates(resource):
             # ds = Dataset(resource)
             # lats = ds.variables['lat']
             # lons = ds.variables['lon']
-    except:
+    except Exception:
         msg = 'failed to extract coordinates'
         LOGGER.exception(msg)
         raise Exception(msg)
@@ -579,7 +579,7 @@ def get_timerange(resource):
         start = '%s%s%s' % (s.year, str(s.month).zfill(2), str(s.day).zfill(2))
         end = '%s%s%s' % (e.year, str(e.month).zfill(2), str(e.day).zfill(2))
         ds.close()
-    except:
+    except Exception:
         msg = 'failed to get time range'
         LOGGER.exception(msg)
         ds.close()
@@ -623,7 +623,7 @@ def get_time(resource, format=None):
         else:
             ds = Dataset(resource[0])
         time = ds.variables['time']
-    except:
+    except Exception:
         msg = 'failed to get time'
         LOGGER.exception(msg)
         raise Exception(msg)
@@ -639,11 +639,11 @@ def get_time(resource, format=None):
         try:
             if format is not None:
                 timestamps = [t.strftime(format=format) for t in timestamps]
-        except:
+        except Exception:
             msg = 'failed to convert times to string'
             print msg
             LOGGER.debug(msg)
-    except:
+    except Exception:
         msg = 'failed to convert time'
         LOGGER.exception(msg)
         raise Exception(msg)
@@ -759,7 +759,7 @@ def sort_by_filename(resource, historical_concatination=False):
                     bn = '_'.join(n[0:-1])  # skipping the date information in the filename
                     ndic[bn] = []  # dictionary containing all datasets names
                 LOGGER.info('found %s datasets', len(ndic.keys()))
-            except:
+            except Exception:
                 LOGGER.exception('failed to find names of datasets!')
             LOGGER.info('check for historical/RCP datasets')
             try:
@@ -772,7 +772,7 @@ def sort_by_filename(resource, historical_concatination=False):
                         LOGGER.info('historical data set names removed from dictionary')
                     else:
                         LOGGER.info('no RCP dataset names found in dictionary')
-            except:
+            except Exception:
                 LOGGER.exception('failed to pop historical data set names!')
             LOGGER.info('start sorting the files')
             try:
@@ -794,9 +794,9 @@ def sort_by_filename(resource, historical_concatination=False):
                         else:
                             LOGGER.error('append file paths to dictionary for key %s failed' % key)
                         ndic[key].sort()
-                    except:
+                    except Exception:
                         LOGGER.exception('failed for %s ' % key)
-            except:
+            except Exception:
                 LOGGER.exception('failed to populate the dictionary with appropriate files')
             for key in ndic.keys():
                 try:
@@ -804,7 +804,7 @@ def sort_by_filename(resource, historical_concatination=False):
                     start, end = get_timerange(ndic[key])
                     newkey = key + '_' + start + '-' + end
                     tmp_dic[newkey] = ndic[key]
-                except:
+                except Exception:
                     msg = 'failed to sort the list of resources and add dates to keyname: %s' % key
                     LOGGER.exception(msg)
                     raise Exception(msg)
@@ -815,7 +815,7 @@ def sort_by_filename(resource, historical_concatination=False):
         else:
             LOGGER.debug('sort_by_filename module failed: resource is not 1 or >1')
         LOGGER.info('sort_by_filename module done: %s datasets found' % len(ndic))
-    except:
+    except Exception:
         msg = 'failed to sort files by filename'
         LOGGER.exception(msg)
         raise Exception(msg)
@@ -827,7 +827,7 @@ def has_variable(resource, variable):
     try:
         rd = RequestDataset(uri=resource)
         success = rd.variable == variable
-    except:
+    except Exception:
         LOGGER.exception('has_variable failed.')
         raise
     return success
