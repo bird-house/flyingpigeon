@@ -1,10 +1,11 @@
+from pywps import configuration
+from flyingpigeon._compat import urlparse
+
+
 def main():
     import argparse
     from werkzeug.serving import run_simple
-    from pywps import configuration
     from flyingpigeon import wsgi
-    # see werkzeug example:
-    # https://github.com/pallets/werkzeug/blob/master/examples/shortly/shortly.py
 
     parser = argparse.ArgumentParser(
         description="""Script for starting a demo Flyingpigeon WPS
@@ -21,23 +22,23 @@ def main():
                         action='store_true', help="run in daemon mode.")
     args = parser.parse_args()
 
-    bind_host = '127.0.0.1'
-
     static_files = {
         '/static': ('flyingpigeon', 'static'),
         '/outputs': configuration.get_config_value('server', 'outputpath')
     }
 
-    if args.daemon:
-        pass
-    else:
-        run_simple(
-            hostname='127.0.0.1',
-            port=5000,
-            application=wsgi.application,
-            use_debugger=True,
-            use_reloader=True,
-            static_files=static_files)
+    url = configuration.get_config_value('server', 'url')
+    url = url or 'http://localhost:5000/wps'
+    (bind_host, port) = urlparse(url).netloc.split(':')
+    port = int(port)
+
+    run_simple(
+        hostname=bind_host,
+        port=port,
+        application=wsgi.application,
+        use_debugger=True,
+        use_reloader=True,
+        static_files=static_files)
 
 
 if __name__ == '__main__':
