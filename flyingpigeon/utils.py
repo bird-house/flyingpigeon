@@ -29,6 +29,15 @@ ATTRIBUTE_TO_FACETS_MAP = dict(
 )
 
 
+def prepare_static_folder():
+    """
+    Link static folder to output folder.
+    """
+    destination = os.path.join(config.output_path(), 'static')
+    if not os.path.exists(destination):
+        os.symlink(config.static_path(), destination)
+
+
 def search_landsea_mask_by_esgf(resource):
     """
     Searches a landsea mask (variable sftlf) in ESGF which matches the

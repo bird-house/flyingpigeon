@@ -2,6 +2,7 @@ import os
 
 from flyingpigeon import config
 from flyingpigeon import templating
+from flyingpigeon.utils import prepare_static_folder
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
@@ -297,15 +298,6 @@ def reformat_analogs(analogs):
     return analogs_mod
 
 
-def _prepare_static_folder():
-    """
-    link static folder to outputfolder
-    """
-    destination = os.path.join(config.output_path(), 'static')
-    if not os.path.exists(destination):
-        os.symlink(config.static_path(), destination)
-
-
 def render_viewer(configfile, datafile):
     """
     Generate an analogs viewer HTML page based on a template.
@@ -315,13 +307,19 @@ def render_viewer(configfile, datafile):
 
     return html: analog viewer html page
     """
-    page = 'analogviewer.html'
-    with open(page, 'w') as fp:
-        fp.write(templating.render_template(
-            page,
-            configfile=configfile,
-            datafile=datafile,
-            # static_url=config.output_url() + '/static'))
-            static_url='../static'))
-        _prepare_static_folder()
-    return page
+    try:
+        page = 'analogviewer.html'
+        with open(page, 'w') as fp:
+            fp.write(templating.render_template(
+                page,
+                configfile=configfile,
+                datafile=datafile,
+                # static_url=config.output_url() + '/static'))
+                static_url='../static'))
+            prepare_static_folder()
+    except Exception:
+        msg = "Failed to render analogviewer."
+        LOGGER.exception(msg)
+        raise Exception(msg)
+    else:
+        return page
