@@ -1,46 +1,45 @@
-# based on pywps-flask demo: https://github.com/geopython/pywps-flask
-
 import os
 from pywps.app.Service import Service
 from pywps import configuration
-import flask
 
 from flyingpigeon.processes import processes
 
-app = flask.Flask('flyingpigeon')
-service = Service(processes, [
-    os.path.join(os.path.dirname(__file__), 'default.cfg'),
-    os.environ.get('PYWPS_CFG', '')])
+
+def application(environ, start_response):
+    app = Service(processes, [
+        os.path.join(os.path.dirname(__file__), 'default.cfg'),
+        os.environ.get('PYWPS_CFG', '')])
+    return app(environ, start_response)
 
 
-process_descriptor = {}
-for process in processes:
-    abstract = process.abstract
-    identifier = process.identifier
-    process_descriptor[identifier] = abstract
+def create_app(with_shared=True):
+    from werkzeug.wsgi import SharedDataMiddleware
 
+    app = application
+    if with_shared:
+        app = SharedDataMiddleware(
+            application,
+            {
+                '/static': ('flyingpigeon', 'static'),
+                '/outputs': configuration.get_config_value('server', 'outputpath')
+            })
+    return app
 
-@app.route("/")
-def hello():
-    server_url = configuration.get_config_value("server", "url")
-    request_url = flask.request.url
-    return flask.render_template('home.html', request_url=request_url,
-                                 server_url=server_url,
-                                 process_descriptor=process_descriptor)
-
-
-@app.route('/wps', methods=['GET', 'POST'])
-def wps():
-    return service
-
-
-@app.route('/outputs/<path:path>')
-def outputfile(path):
-    return flask.send_from_directory(configuration.get_config_value('server', 'outputpath'), path)
+# @app.route('/wps', methods=['GET', 'POST'])
+# def wps():
+#     return service
+#
+#
+# @app.route('/outputs/<path:path>')
+# def outputfile(path):
+#     return flask.send_from_directory(configuration.get_config_value('server', 'outputpath'), path)
 
 
 def main():
+    # see werkzeug example:
+    # https://github.com/pallets/werkzeug/blob/master/examples/shortly/shortly.py
     import argparse
+    from werkzeug.serving import run_simple
 
     parser = argparse.ArgumentParser(
         description="""Script for starting a demo Flyingpigeon WPS
@@ -63,10 +62,12 @@ def main():
     else:
         bind_host = '127.0.0.1'
 
+    app = create_app()
+
     if args.daemon:
         pass
     else:
-        app.run(host=bind_host, port=5000, debug=True, threaded=False)
+        run_simple(bind_host, 5000, app, use_debugger=True, use_reloader=True)
 
 
 if __name__ == '__main__':

@@ -46,7 +46,7 @@ dependencies:
 # misc
 #- pywget
 - pyyaml=3.12
-- flask=0.12
+- jinja2=2
 ################
 # numeric
 - numpy
