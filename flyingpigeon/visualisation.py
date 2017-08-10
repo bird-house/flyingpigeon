@@ -50,19 +50,33 @@ def plot_polygons(regions):
     fname = join(config.shapefiles_path(), "countries.shp")
     geos = Reader(fname).geometries()
     records = Reader(fname).records()
+    xs = []
+    ys = []
 
-    LOGGER.debug('')
+    # get central longitudes and latitueds of polygons
+    for r in records:
+        geo = geos.next()
+        if r.attributes['ISO_A3'] in regions:
+            xy = geo.centroid.coords.xy
+            xs.append(xy[0][0])
+            ys.append(xy[1][0])
 
     fig = plt.figure(figsize=(10, 10), facecolor='w', edgecolor='k')  # dpi=600,
-    projection = ccrs.Orthographic(central_longitude=0.0, central_latitude=0.0, globe=None)  # Robinson()
+    projection = ccrs.Orthographic(central_longitude=np.mean(xs), central_latitude=np.mean(ys), globe=None)  # Robinson()
     ax = plt.axes(projection=projection)
+
+    geos = Reader(fname).geometries()
+    records = Reader(fname).records()
 
     for r in records:
         geo = geos.next()
         if r.attributes['ISO_A3'] in regions:
-            shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black')
+            shape_feature = ShapelyFeature(geo,
+                                           ccrs.PlateCarree(),
+                                           edgecolor='black')
             ax.add_feature(shape_feature)
-        ax.coastlines()
+
+    ax.coastlines()
         # ax.set_global()
 
     o1, map_graphic = mkstemp(dir=abspath(curdir), suffix='.png')
@@ -377,14 +391,15 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismi
         ax = plt.axes(projection=ccrs.Robinson(central_longitude=central_longitude))
         norm = MidpointNormalize(midpoint=0)
 
-        cs = ax.contourf(lons, lats, var_signal, 60, transform=ccrs.PlateCarree(), cmap=cmap, norm=norm, interpolation='nearest')  # var_signal,  )
+        cs = ax.contourf(lons, lats, var_signal, 60, transform=ccrs.PlateCarree(), cmap=cmap,
+                         norm=norm, interpolation='nearest')  # var_signal,  )
         cl = ax.contourf(lons, lats, mask_l, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['//'])
         ch = ax.contourf(lons, lats, mask_h, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['.'])
 
         # plt.clim(minval, maxval)
 
         ax.coastlines()
-        ax.gridlines()
+        ax.gridlines(draw_labels=True)
         plt.colorbar(cs)
 
         # ax.set_global()
