@@ -8,6 +8,10 @@ import time
 from ocgis import RequestDataset  # does not support NETCDF4
 from netCDF4 import Dataset, num2date
 from netCDF4 import MFDataset  # does not support NETCDF4
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib2 import urlopen
 
 from pyesgf.search.connection import SearchConnection
 from pyesgf.search import TYPE_FILE
@@ -1060,3 +1064,79 @@ class FreeMemory(object):
     @property
     def swap_used(self):
         return self._convert * self._swapu
+
+
+def guess_main_variable(ncdataset):
+    """Guess main variable in a NetCDF file.
+
+    :param ncdataset: netCDF4.Dataset
+
+    :return str: name of main variable
+
+    Notes
+    -----
+    The main variable is the one with highest dimensionality, if there are
+    more than one, the one with larger size is the main variable. The
+    time, lon, lat variables and variables that are defined as bounds are
+    automatically ignored.
+
+    """
+
+    var_candidates = []
+    bnds_variables = []
+    for var_name in ncdataset.variables:
+        if var_name in ['time', 'lon', 'lat']:
+            continue
+        ncvar = ncdataset.variables[var_name]
+        if hasattr(ncvar, 'bounds'):
+            bnds_variables.append(ncvar.bounds)
+        var_candidates.append(var_name)
+    var_candidates = list(set(var_candidates) - set(bnds_variables))
+
+    # Find main variable among the candidates
+    nd = -1
+    size = -1
+    for var_name in var_candidates:
+        ncvar = ncdataset.variables[var_name]
+        if len(ncvar.shape) > nd:
+            main_var = var_name
+            nd = len(ncvar.shape)
+            size = ncvar.size
+        elif (len(ncvar.shape) == nd) and (ncvar.size > size):
+            main_var = var_name
+            size = ncvar.size
+    return main_var
+
+
+def opendap_or_download(resource, output_path=None):
+    """Check for OPEnDAP support, if not download the resource.
+
+    :param resource: url of a NetCDF resource
+    :param output_path: where to save the non-OPEnDAP resource
+
+    :return str: the original url if OPEnDAP is supported or path of saved file
+
+    """
+
+    try:
+        nc = Dataset(resource, 'r')
+        nc.close()
+    except:
+        response = urlopen(resource)
+        chunk_size = 16 * 1024
+        if not output_path:
+            output_path = os.getcwd()
+        output_file = os.path.join(output_path, os.path.basename(resource))
+        with open(output_file, 'wb') as f:
+            while True:
+                chunk = response.read(chunk_size)
+                if not chunk:
+                    break
+                f.write(chunk)
+        try:
+            nc = Dataset(output_file, 'r')
+            nc.close()
+        except:
+            raise IOError("This does not appear to be a valid NetCDF file.")
+        return output_file
+    return resource

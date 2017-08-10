@@ -23,6 +23,8 @@ from .wps_analogs_compare import AnalogscompareProcess
 from .wps_analogs_viewer import AnalogsviewerProcess
 from .wps_segetalflora import SegetalfloraProcess
 from .wps_spatial_analog import SpatialAnalogProcess
+from .wps_subset_WFS import SubsetWFS
+from .wps_averager_WFS import AveragerWFS
 
 processes = [
     ClippingProcess(),
@@ -49,7 +51,9 @@ processes = [
     RobustnessProcess(),
     PlottimeseriesProcess(),
     SegetalfloraProcess(),
-    SpatialAnalogProcess()
+    SpatialAnalogProcess(),
+    SubsetWFS(),
+    AveragerWFS()
 ]
 
 """
