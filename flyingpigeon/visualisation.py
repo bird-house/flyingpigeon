@@ -328,7 +328,7 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismi
     :param highagreement:
     :param lowagreement:
     :param variable:
-    :param cmap: default='seismic',
+    :param ic: default='seismic',
     :param title: default='Model agreement of signal'
     :returns str: path/to/file.png
     """
@@ -342,15 +342,15 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismi
         mask_l = utils.get_values(low_agreement_mask)
         mask_h = utils.get_values(high_agreement_mask)
 
-        mask_l.mask = var_signal.mask
-        mask_h.mask = var_signal.mask
+        # mask_l.mask = var_signal.mask
+        # mask_h.mask = var_signal.mask
 
-        mask_l.mask[mask_l.data is 0] = False
-        mask_h.mask[mask_h.data is 0] = False
+        # mask_l[mask_l.data is 0] = False
+        # mask_h[mask_h.data is 0] = False
 
         LOGGER.debug('values loaded')
 
-        lats, lons = utils.get_coordinates(signal)
+        lats, lons = utils.unrotate_pole(signal, write_to_file=False)
 
         #
         # cyclic_var, cyclic_lons = add_cyclic_point(var_signal, coord=lons)
@@ -364,6 +364,7 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismi
         #
         minval = round(np.nanmin(var_signal))
         maxval = round(np.nanmax(var_signal) + .5)
+        central_longitude = np.median(lons)
 
         LOGGER.info('prepared data for plotting')
     except:
@@ -372,25 +373,26 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismi
 
     try:
         fig = plt.figure(facecolor='w', edgecolor='k')  # figsize=(20,10), dpi=600,
-        ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
+        central_longitude = int(np.mean(lons))
+        ax = plt.axes(projection=ccrs.Robinson(central_longitude=central_longitude))
         norm = MidpointNormalize(midpoint=0)
 
-        cs = plt.contourf(lons, lats, var_signal,
-                          60, transform=ccrs.PlateCarree(),
-                          norm=norm, cmap=cmap, interpolation='nearest')
-        cl = plt.contourf(lons, lats, mask_l, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['//'])
-        ch = plt.contourf(lons, lats, mask_h, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['.'])
+        cs = ax.contourf(lons, lats, var_signal, 60, transform=ccrs.PlateCarree(), cmap=cmap, norm=norm, interpolation='nearest')  # var_signal,  )
+        cl = ax.contourf(lons, lats, mask_l, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['//'])
+        ch = ax.contourf(lons, lats, mask_h, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['.'])
 
         # plt.clim(minval, maxval)
+
         ax.coastlines()
+        ax.gridlines()
+        plt.colorbar(cs)
+
         # ax.set_global()
 
         if title is None:
             plt.title('Robustness')
         else:
             plt.title(title)
-
-        plt.colorbar(cs)
 
         plt.annotate('// = low model ensemble agreement', (0, 0), (0, -10),
                      xycoords='axes fraction', textcoords='offset points', va='top')
