@@ -105,6 +105,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
             c.drawImage(png_country, 355, 500, width=120, height=120)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_country = PdfFileReader(open(pdf_country, 'rb'))
+            LOGGER.info('converted png to pdf')
         except:
             LOGGER.exception('failed to convert png to pdf')
 
@@ -114,6 +115,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
             c.drawImage(png_uncertainty, 20, 370, width=300, height=120)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_uncertainty = PdfFileReader(open(pdf_uncertainty, 'rb'))
+            LOGGER.info('converted png to pdf')
         except:
             LOGGER.exception('failed to convert png to pdf')
 
@@ -123,6 +125,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
             c.drawImage(png_spaghetti, 280, 370, width=300, height=120)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_spagetthi = PdfFileReader(open(pdf_spaghetti, 'rb'))
+            LOGGER.info('converted png to pdf')
         except:
             LOGGER.exception('failed to convert png to pdf')
 
@@ -132,6 +135,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
             c.drawImage(png_robustness, 55, 90, width=250, height=180)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_robustness = PdfFileReader(open(pdf_robustness, 'rb'))
+            LOGGER.info('converted png to pdf')
         except:
             LOGGER.exception('failed to convert png to pdf')
 
@@ -147,23 +151,23 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
             try:
                 input_page.mergePage(pfr_country.getPage(0))
             except:
-                LOGGER.warn('failed to merge courtry map')
+                LOGGER.exception('failed to merge courtry map')
             try:
                 input_page.mergePage(pfr_uncertainty.getPage(0))
             except:
-                LOGGER.warn('failed to merge uncertainy plot')
+                LOGGER.exception('failed to merge uncertainy plot')
             try:
                 input_page.mergePage(pfr_spagetthi.getPage(0))
             except:
-                LOGGER.warn('failed to merge spaghetti plot')
+                LOGGER.exception('failed to merge spaghetti plot')
             try:
                 input_page.mergePage(pfr_robustness.getPage(0))
             except:
-                LOGGER.warn('failed to merge robustness plot')
+                LOGGER.exception('failed to merge robustness plot')
             try:
                 output_file.addPage(input_page)
             except:
-                LOGGER.warn('failed to add page to output pdf')
+                LOGGER.exception('failed to add page to output pdf')
         try:
             _, climatefactsheet = mkstemp(dir='.', suffix='.pdf')
             with open(climatefactsheet, 'wb') as outputStream:
