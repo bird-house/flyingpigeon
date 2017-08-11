@@ -50,19 +50,33 @@ def plot_polygons(regions):
     fname = join(config.shapefiles_path(), "countries.shp")
     geos = Reader(fname).geometries()
     records = Reader(fname).records()
+    xs = []
+    ys = []
 
-    LOGGER.debug('')
+    # get central longitudes and latitueds of polygons
+    for r in records:
+        geo = geos.next()
+        if r.attributes['ISO_A3'] in regions:
+            xy = geo.centroid.coords.xy
+            xs.append(xy[0][0])
+            ys.append(xy[1][0])
 
     fig = plt.figure(figsize=(10, 10), facecolor='w', edgecolor='k')  # dpi=600,
-    projection = ccrs.Orthographic(central_longitude=0.0, central_latitude=0.0, globe=None)  # Robinson()
+    projection = ccrs.Orthographic(central_longitude=np.mean(xs), central_latitude=np.mean(ys), globe=None)  # Robinson()
     ax = plt.axes(projection=projection)
+
+    geos = Reader(fname).geometries()
+    records = Reader(fname).records()
 
     for r in records:
         geo = geos.next()
         if r.attributes['ISO_A3'] in regions:
-            shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black')
+            shape_feature = ShapelyFeature(geo,
+                                           ccrs.PlateCarree(),
+                                           edgecolor='black')
             ax.add_feature(shape_feature)
-        ax.coastlines()
+
+    ax.coastlines()
         # ax.set_global()
 
     o1, map_graphic = mkstemp(dir=abspath(curdir), suffix='.png')
@@ -91,6 +105,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
             c.drawImage(png_country, 355, 500, width=120, height=120)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_country = PdfFileReader(open(pdf_country, 'rb'))
+            LOGGER.info('converted png to pdf')
         except:
             LOGGER.exception('failed to convert png to pdf')
 
@@ -100,6 +115,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
             c.drawImage(png_uncertainty, 20, 370, width=300, height=120)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_uncertainty = PdfFileReader(open(pdf_uncertainty, 'rb'))
+            LOGGER.info('converted png to pdf')
         except:
             LOGGER.exception('failed to convert png to pdf')
 
@@ -109,6 +125,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
             c.drawImage(png_spaghetti, 280, 370, width=300, height=120)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_spagetthi = PdfFileReader(open(pdf_spaghetti, 'rb'))
+            LOGGER.info('converted png to pdf')
         except:
             LOGGER.exception('failed to convert png to pdf')
 
@@ -118,6 +135,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
             c.drawImage(png_robustness, 55, 90, width=250, height=180)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_robustness = PdfFileReader(open(pdf_robustness, 'rb'))
+            LOGGER.info('converted png to pdf')
         except:
             LOGGER.exception('failed to convert png to pdf')
 
@@ -133,23 +151,23 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
             try:
                 input_page.mergePage(pfr_country.getPage(0))
             except:
-                LOGGER.warn('failed to merge courtry map')
+                LOGGER.exception('failed to merge courtry map')
             try:
                 input_page.mergePage(pfr_uncertainty.getPage(0))
             except:
-                LOGGER.warn('failed to merge uncertainy plot')
+                LOGGER.exception('failed to merge uncertainy plot')
             try:
                 input_page.mergePage(pfr_spagetthi.getPage(0))
             except:
-                LOGGER.warn('failed to merge spaghetti plot')
+                LOGGER.exception('failed to merge spaghetti plot')
             try:
                 input_page.mergePage(pfr_robustness.getPage(0))
             except:
-                LOGGER.warn('failed to merge robustness plot')
+                LOGGER.exception('failed to merge robustness plot')
             try:
                 output_file.addPage(input_page)
             except:
-                LOGGER.warn('failed to add page to output pdf')
+                LOGGER.exception('failed to add page to output pdf')
         try:
             _, climatefactsheet = mkstemp(dir='.', suffix='.pdf')
             with open(climatefactsheet, 'wb') as outputStream:
@@ -328,7 +346,7 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismi
     :param highagreement:
     :param lowagreement:
     :param variable:
-    :param cmap: default='seismic',
+    :param ic: default='seismic',
     :param title: default='Model agreement of signal'
     :returns str: path/to/file.png
     """
@@ -342,15 +360,15 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismi
         mask_l = utils.get_values(low_agreement_mask)
         mask_h = utils.get_values(high_agreement_mask)
 
-        mask_l.mask = var_signal.mask
-        mask_h.mask = var_signal.mask
+        # mask_l.mask = var_signal.mask
+        # mask_h.mask = var_signal.mask
 
-        mask_l.mask[mask_l.data is 0] = False
-        mask_h.mask[mask_h.data is 0] = False
+        # mask_l[mask_l.data is 0] = False
+        # mask_h[mask_h.data is 0] = False
 
         LOGGER.debug('values loaded')
 
-        lats, lons = utils.get_coordinates(signal)
+        lats, lons = utils.unrotate_pole(signal, write_to_file=False)
 
         #
         # cyclic_var, cyclic_lons = add_cyclic_point(var_signal, coord=lons)
@@ -364,6 +382,7 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismi
         #
         minval = round(np.nanmin(var_signal))
         maxval = round(np.nanmax(var_signal) + .5)
+        central_longitude = np.median(lons)
 
         LOGGER.info('prepared data for plotting')
     except:
@@ -372,25 +391,27 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismi
 
     try:
         fig = plt.figure(facecolor='w', edgecolor='k')  # figsize=(20,10), dpi=600,
-        ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
+        central_longitude = int(np.mean(lons))
+        ax = plt.axes(projection=ccrs.Robinson(central_longitude=central_longitude))
         norm = MidpointNormalize(midpoint=0)
 
-        cs = plt.contourf(lons, lats, var_signal,
-                          60, transform=ccrs.PlateCarree(),
-                          norm=norm, cmap=cmap, interpolation='nearest')
-        cl = plt.contourf(lons, lats, mask_l, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['//'])
-        ch = plt.contourf(lons, lats, mask_h, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['.'])
+        cs = ax.contourf(lons, lats, var_signal, 60, transform=ccrs.PlateCarree(), cmap=cmap,
+                         norm=norm, interpolation='nearest')  # var_signal,  )
+        cl = ax.contourf(lons, lats, mask_l, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['//'])
+        ch = ax.contourf(lons, lats, mask_h, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['.'])
 
         # plt.clim(minval, maxval)
+
         ax.coastlines()
+        ax.gridlines(draw_labels=True)
+        plt.colorbar(cs)
+
         # ax.set_global()
 
         if title is None:
             plt.title('Robustness')
         else:
             plt.title(title)
-
-        plt.colorbar(cs)
 
         plt.annotate('// = low model ensemble agreement', (0, 0), (0, -10),
                      xycoords='axes fraction', textcoords='offset points', va='top')
