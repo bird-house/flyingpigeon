@@ -152,16 +152,12 @@ class FactsheetProcess(Process):
             LOGGER.exception('failed to generate the robustness plot')
             _, png_robustness = mkstemp(dir='.', suffix='.png')
 
-<<<<<<< HEAD
-        factsheet = vs.factsheetbrewer(png_country=abspath(png_country),
-=======
-        from flyingpigeon.visualisation import factsheetbrewer
-        from os.path import abspath
-        factsheet = factsheetbrewer(png_country=abspath(png_country),
->>>>>>> b1c03124f61991ed529c08915e0634ce031a6cf4
-                                    png_uncertainty=abspath(png_uncertainty),
-                                    png_spaghetti=abspath(png_spaghetti),
-                                    png_robustness=abspath(png_robustness))
+        factsheet = vs.factsheetbrewer(
+            png_country=abspath(png_country),
+            png_uncertainty=abspath(png_uncertainty),
+            png_spaghetti=abspath(png_spaghetti),
+            png_robustness=abspath(png_robustness)
+            )
 
         response.outputs['output_nc'].file = tar_subsets
         response.outputs['output_factsheet'].file = factsheet
