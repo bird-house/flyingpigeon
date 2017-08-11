@@ -1,9 +1,13 @@
-import os
-import tarfile
+from os.path import abspath
+from tempfile import mkstemp
 
 from flyingpigeon.subset import countries, countries_longname
+from flyingpigeon.subset import clipping
 from flyingpigeon.log import init_process_logger
 from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import get_variable
+from flyingpigeon import visualisation as vs
 
 from pywps import Process
 from pywps import LiteralInput
@@ -76,11 +80,6 @@ class FactsheetProcess(Process):
         )
 
     def _handler(self, request, response):
-        from flyingpigeon.utils import archive, archiveextract
-        from flyingpigeon import visualisation as vs
-        from tempfile import mkstemp
-        from flyingpigeon.utils import get_variable
-
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
@@ -100,12 +99,13 @@ class FactsheetProcess(Process):
                 o1, png_country = mkstemp(dir='.', suffix='.png')
 
             # clip the demanded polygons
-            from flyingpigeon.subset import clipping
-            subsets = clipping(resource=ncs,
-                               variable=var,
-                               polygons=regions,
-                               mosaic=True
-                               )
+            subsets = clipping(
+                resource=ncs,
+                variable=var,
+                polygons=regions,
+                mosaic=True,
+                spatial_wrapping='wrap',
+                )
         else:
             subsets = ncs
             o1, png_country = mkstemp(dir='.', suffix='.png')
@@ -151,9 +151,7 @@ class FactsheetProcess(Process):
             LOGGER.exception('failed to generate the robustness plot')
             _, png_robustness = mkstemp(dir='.', suffix='.png')
 
-        from flyingpigeon.visualisation import factsheetbrewer
-        from os.path import abspath
-        factsheet = factsheetbrewer(png_country=abspath(png_country),
+        factsheet = vs.factsheetbrewer(png_country=abspath(png_country),
                                     png_uncertainty=abspath(png_uncertainty),
                                     png_spaghetti=abspath(png_spaghetti),
                                     png_robustness=abspath(png_robustness))
