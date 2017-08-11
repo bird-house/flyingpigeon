@@ -26,7 +26,10 @@ class TestAveragerWFS(unittest.TestCase):
         sys.path.append('/'.join(os.getcwd().split('/')[:-1]))
         from flyingpigeon.processes import AveragerWFS
         self.client = client_for(Service(processes=[AveragerWFS()]))
-        self.wps_host = None
+        if self.config_dict['wps_host']:
+            self.wps_host = self.config_dict['wps_host']
+        else:
+            self.wps_host = None
 
     def test_getcapabilities(self):
         html_response = wps_tests_utils.wps_response(
@@ -63,31 +66,19 @@ class TestAveragerWFS(unittest.TestCase):
 
     def test_averager_wfs_opendap(self):
         wps_tests_utils.config_is_available(
-            ['netcdf_file_opendap', 'typename_opendap', 'featureids_opendap'],
+            ['pfx5_opendap', 'typename_testpoly01', 'featureids_testpoly01',
+             'geoserver_testpoly01'],
             self.config_dict)
-        if self.config_dict['geoserver_opendap']:
-            html_response = wps_tests_utils.wps_response(
-                self.wps_host,
-                ('?service=WPS&request=execute&version=1.0.0&'
-                 'identifier=averager_WFS&DataInputs=resource={0};'
-                 'typename={1};featureids={2};geoserver={3}').format(
-                    self.config_dict['netcdf_file_opendap'],
-                    self.config_dict['typename_opendap'],
-                    self.config_dict['featureids_opendap'],
-                    self.config_dict['geoserver_opendap']),
-                self.client)
-        # the default geoserver does not work yet, also might want to
-        # move this to a separate test...
-        else:
-            html_response = wps_tests_utils.wps_response(
-                self.wps_host,
-                ('?service=WPS&request=execute&version=1.0.0&'
-                 'identifier=averager_WFS&DataInputs=resource={0};'
-                 'typename={1};featureids={2}').format(
-                    self.config_dict['netcdf_file_opendap'],
-                    self.config_dict['typename_opendap'],
-                    self.config_dict['featureids_opendap']),
-                self.client)
+        html_response = wps_tests_utils.wps_response(
+            self.wps_host,
+            ('?service=WPS&request=execute&version=1.0.0&'
+             'identifier=averager_WFS&DataInputs=resource={0};'
+             'typename={1};featureids={2};geoserver={3}').format(
+                self.config_dict['pfx5_opendap'],
+                self.config_dict['typename_testpoly01'],
+                self.config_dict['featureids_testpoly01'],
+                self.config_dict['geoserver_testpoly01']),
+            self.client)
         outputs = wps_tests_utils.parse_execute_response(html_response)
         output_json = outputs['outputs']['output']
         if output_json[:7] == 'file://':
@@ -96,16 +87,61 @@ class TestAveragerWFS(unittest.TestCase):
             json_data = json.loads(f1.read())
             f1.close()
         else:
-            json_data = wps_tests_utils.get_wps_xlink(output_json)
+            json_data = json.loads(wps_tests_utils.get_wps_xlink(output_json))
         output_netcdf = json_data[0]
         if output_netcdf[:7] == 'file://':
-            output_netcdf = output_netcdf[7:]
+            tmp_output_netcdf = output_netcdf[7:]
         else:
-            output_netcdf = '/tmp/testtmp.nc'
-            f1 = open(output_netcdf, 'w')
+            tmp_output_netcdf = '/tmp/testtmp.nc'
+            f1 = open(tmp_output_netcdf, 'w')
             f1.write(wps_tests_utils.get_wps_xlink(output_netcdf))
             f1.close()
-        nc = netCDF4.Dataset(output_netcdf,'r')
+        nc = netCDF4.Dataset(tmp_output_netcdf,'r')
+        nclon = nc.variables['lon']
+        nclat = nc.variables['lat']
+        ncvar = nc.variables['dummy']
+        nclon = nc.variables['lon']
+        nclat = nc.variables['lat']
+        ncvar = nc.variables['dummy']
+        self.assertEqual(nclon.size, 1)
+        self.assertEqual(nclat.size, 1)
+        self.assertEqual(nclon[0], 19)
+        self.assertEqual(nclat[0], 13)
+        self.assertEqual(ncvar.shape, (1,))
+        self.assertAlmostEqual(ncvar[0], 21.4, delta=0.2)
+
+    def test_averager_wfs_opendap_default_geoserver(self):
+        wps_tests_utils.config_is_available(
+            ['pfx5_opendap', 'typename_testpoly01', 'featureids_testpoly01',
+             'test_default_geoserver'],
+            self.config_dict)
+        html_response = wps_tests_utils.wps_response(
+            self.wps_host,
+            ('?service=WPS&request=execute&version=1.0.0&'
+             'identifier=averager_WFS&DataInputs=resource={0};'
+             'typename={1};featureids={2}').format(
+                self.config_dict['pfx5_opendap'],
+                self.config_dict['typename_testpoly01'],
+                self.config_dict['featureids_testpoly01']),
+            self.client)
+        outputs = wps_tests_utils.parse_execute_response(html_response)
+        output_json = outputs['outputs']['output']
+        if output_json[:7] == 'file://':
+            output_json = output_json[7:]
+            f1 = open(output_json, 'r')
+            json_data = json.loads(f1.read())
+            f1.close()
+        else:
+            json_data = json.loads(wps_tests_utils.get_wps_xlink(output_json))
+        output_netcdf = json_data[0]
+        if output_netcdf[:7] == 'file://':
+            tmp_output_netcdf = output_netcdf[7:]
+        else:
+            tmp_output_netcdf = '/tmp/testtmp.nc'
+            f1 = open(tmp_output_netcdf, 'w')
+            f1.write(wps_tests_utils.get_wps_xlink(output_netcdf))
+            f1.close()
+        nc = netCDF4.Dataset(tmp_output_netcdf,'r')
         nclon = nc.variables['lon']
         nclat = nc.variables['lat']
         ncvar = nc.variables['dummy']
@@ -121,18 +157,18 @@ class TestAveragerWFS(unittest.TestCase):
 
     def test_averager_wfs_fileserver(self):
         wps_tests_utils.config_is_available(
-            ['netcdf_file_fileserver', 'typename_fileserver',
-             'featureids_fileserver', 'geoserver_fileserver'],
+            ['pfx5_fileserver', 'typename_testpoly01',
+             'featureids_testpoly01', 'geoserver_testpoly01'],
             self.config_dict)
         html_response = wps_tests_utils.wps_response(
             self.wps_host,
             ('?service=WPS&request=execute&version=1.0.0&'
              'identifier=averager_WFS&DataInputs=resource={0};'
              'typename={1};featureids={2};geoserver={3}').format(
-                self.config_dict['netcdf_file_fileserver'],
-                self.config_dict['typename_fileserver'],
-                self.config_dict['featureids_fileserver'],
-                self.config_dict['geoserver_fileserver']),
+                self.config_dict['pfx5_fileserver'],
+                self.config_dict['typename_testpoly01'],
+                self.config_dict['featureids_testpoly01'],
+                self.config_dict['geoserver_testpoly01']),
             self.client)
         outputs = wps_tests_utils.parse_execute_response(html_response)
         output_json = outputs['outputs']['output']
@@ -142,16 +178,16 @@ class TestAveragerWFS(unittest.TestCase):
             json_data = json.loads(f1.read())
             f1.close()
         else:
-            json_data = wps_tests_utils.get_wps_xlink(output_json)
+            json_data = json.loads(wps_tests_utils.get_wps_xlink(output_json))
         output_netcdf = json_data[0]
         if output_netcdf[:7] == 'file://':
-            output_netcdf = output_netcdf[7:]
+            tmp_output_netcdf = output_netcdf[7:]
         else:
-            output_netcdf = '/tmp/testtmp.nc'
-            f1 = open(output_netcdf, 'w')
+            tmp_output_netcdf = '/tmp/testtmp.nc'
+            f1 = open(tmp_output_netcdf, 'w')
             f1.write(wps_tests_utils.get_wps_xlink(output_netcdf))
             f1.close()
-        nc = netCDF4.Dataset(output_netcdf,'r')
+        nc = netCDF4.Dataset(tmp_output_netcdf,'r')
         nclon = nc.variables['lon']
         nclat = nc.variables['lat']
         ncvar = nc.variables['dummy']

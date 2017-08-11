@@ -101,9 +101,8 @@ class AveragerWFS(Process):
         if 'geoserver' in request.inputs:
             geoserver = request.inputs['geoserver'][0].data
         else:
-            geoserver = configuration._get_default_config_files_location()
-            #geoserver = configuration.get_config_value(
-            #    'extra', 'geoserver')
+            geoserver = configuration.get_config_value(
+                'extra', 'geoserver')
 
         try:
             conn = WebFeatureService(url=geoserver, version='2.0.0')

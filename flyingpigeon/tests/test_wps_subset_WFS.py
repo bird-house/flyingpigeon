@@ -66,18 +66,18 @@ class TestSubsetWFS(unittest.TestCase):
 
     def test_subset_wfs_opendap(self):
         wps_tests_utils.config_is_available(
-            ['netcdf_file_opendap', 'typename_opendap', 'featureids_opendap',
-             'geoserver_opendap'],
+            ['pfx5_opendap', 'typename_testpoly01', 'featureids_testpoly01',
+             'geoserver_testpoly01'],
             self.config_dict)
         html_response = wps_tests_utils.wps_response(
             self.wps_host,
             ('?service=WPS&request=execute&version=1.0.0&'
              'identifier=subset_WFS&DataInputs=resource={0};'
              'typename={1};featureids={2};geoserver={3}').format(
-                self.config_dict['netcdf_file_opendap'],
-                self.config_dict['typename_opendap'],
-                self.config_dict['featureids_opendap'],
-                self.config_dict['geoserver_opendap']),
+                self.config_dict['pfx5_opendap'],
+                self.config_dict['typename_testpoly01'],
+                self.config_dict['featureids_testpoly01'],
+                self.config_dict['geoserver_testpoly01']),
             self.client)
         outputs = wps_tests_utils.parse_execute_response(html_response)
         output_json = outputs['outputs']['output']
@@ -112,18 +112,18 @@ class TestSubsetWFS(unittest.TestCase):
 
     def test_subset_wfs_fileserver(self):
         wps_tests_utils.config_is_available(
-            ['netcdf_file_fileserver', 'typename_fileserver',
-             'featureids_fileserver', 'geoserver_fileserver'],
+            ['pfx5_fileserver', 'typename_testpoly01',
+             'featureids_testpoly01', 'geoserver_testpoly01'],
             self.config_dict)
         html_response = wps_tests_utils.wps_response(
             self.wps_host,
             ('?service=WPS&request=execute&version=1.0.0&'
              'identifier=subset_WFS&DataInputs=resource={0};'
              'typename={1};featureids={2};geoserver={3}').format(
-                self.config_dict['netcdf_file_fileserver'],
-                self.config_dict['typename_fileserver'],
-                self.config_dict['featureids_fileserver'],
-                self.config_dict['geoserver_fileserver']),
+                self.config_dict['pfx5_fileserver'],
+                self.config_dict['typename_testpoly01'],
+                self.config_dict['featureids_testpoly01'],
+                self.config_dict['geoserver_testpoly01']),
             self.client)
         outputs = wps_tests_utils.parse_execute_response(html_response)
         output_json = outputs['outputs']['output']
