@@ -62,7 +62,9 @@ def plot_polygons(regions):
             ys.append(xy[1][0])
 
     fig = plt.figure(figsize=(10, 10), facecolor='w', edgecolor='k')  # dpi=600,
-    projection = ccrs.Orthographic(central_longitude=np.mean(xs), central_latitude=np.mean(ys), globe=None)  # Robinson()
+    projection = ccrs.Orthographic(central_longitude=np.mean(xs),
+                                   central_latitude=np.mean(ys),
+                                   globe=None)  # Robinson()
     ax = plt.axes(projection=projection)
 
     geos = Reader(fname).geometries()
@@ -77,7 +79,7 @@ def plot_polygons(regions):
             ax.add_feature(shape_feature)
 
     ax.coastlines()
-        # ax.set_global()
+    # ax.set_global()
 
     o1, map_graphic = mkstemp(dir=abspath(curdir), suffix='.png')
     fig.savefig(map_graphic)
@@ -181,11 +183,11 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
     return climatefactsheet
 
 
-def spaghetti(resouces, variable=None, title=None, dir_out=None):
+def spaghetti(resources, variable=None, title=None, dir_out=None):
     """
     creates a png file containing the appropriate spaghetti plot as a field mean of the values.
 
-    :param resouces: list of files containing the same variable
+    :param resources: list of files containing the same variable
     :param variable: variable to be visualised. If None (default), variable will be detected
     :param title: string to be used as title
     :param dir_out: directory for output files
@@ -198,10 +200,10 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
         LOGGER.debug('Start visualisation spaghetti plot')
 
         # === prepare invironment
-        if type(resouces) != list:
-            resouces = [resouces]
+        if type(resources) != list:
+            resources = [resources]
         if variable is None:
-            variable = utils.get_variable(resouces[0])
+            variable = utils.get_variable(resources[0])
         if title is None:
             title = "Field mean of %s " % variable
         if dir_out is None:
@@ -213,7 +215,7 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
         raise Exception(msg)
     try:
         o1, output_png = mkstemp(dir=dir_out, suffix='.png')
-        for c, nc in enumerate(resouces):
+        for c, nc in enumerate(resources):
             # get timestapms
             try:
                 d = utils.get_time(nc)  # [datetime.strptime(elem, '%Y-%m-%d') for elem in strDate[0]]
@@ -266,11 +268,11 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
     return output_png
 
 
-def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
+def uncertainty(resources, variable=None, ylim=None, title=None, dir_out=None):
     """
     creates a png file containing the appropriate uncertainty plot.
 
-    :param resouces: list of files containing the same variable
+    :param resources: list of files containing the same variable
     :param variable: variable to be visualised. If None (default), variable will be detected
     :param title: string to be used as title
 
@@ -280,13 +282,12 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
 
     import pandas as pd
     import numpy as np
-    from os.path import basename
-    from flyingpigeon.utils import get_values, get_time
+    # from flyingpigeon.utils import get_values, get_time
     # === prepare invironment
-    if type(resouces) == str:
-        resouces = list([resouces])
+    if type(resources) == str:
+        resources = list([resources])
     if variable is None:
-        variable = utils.get_variable(resouces[0])
+        variable = utils.get_variable(resources[0])
     if title is None:
         title = "Field mean of %s " % variable
     if dir_out is None:
@@ -295,25 +296,31 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
     try:
         fig = plt.figure(figsize=(20, 10), facecolor='w', edgecolor='k')  # dpi=600,
         o1, output_png = mkstemp(dir=dir_out, suffix='.png')
-        variable = utils.get_variable(resouces[0])
+        variable = utils.get_variable(resources[0])
         df = pd.DataFrame()
 
         LOGGER.info('variable %s found in resources.' % variable)
-        for f in resouces:
+        dts = utils.sort_by_filename(resources, historical_concatination=True)
+
+        for key in dts.keys():
             try:
-                data = get_values(f)
-                LOGGER.debug("shape of data = %s " % len(data.shape))
-                if len(data.shape) == 3:
-                    meanData = np.mean(data, axis=1)
-                    ts = np.mean(meanData, axis=1)
+                vals = utils.get_values(dts[key])
+                ts = utils.get_time(dts[key])
+                LOGGER.debug("shape of data = %s " % len(vals.shape))
+                # TODO: include wieghed average
+                if len(vals.shape) == 3:
+                    meanData = np.mean(vals, axis=1)
+                    valsFieldmean = np.mean(meanData, axis=1)
+                elif len(vals.shape) == 2:
+                    valsFieldmean = np.mean(vals, axis=1)
                 else:
-                    ts = data[:]
-                jd = get_time(f)
-                hs = pd.Series(ts, index=jd, name=basename(f))
+                    LOGGER.error('unexpected shape. fieldmean could not be calculsted')
+                hs = pd.Series(valsFieldmean, index=ts, name=key)
                 hd = hs.to_frame()
-                df[basename(f)] = hs
+                df[key] = hs
+                LOGGER.info('fieldmean calculated and added to DataFrame')
             except:
-                LOGGER.exception('failed to calculate timeseries for %s ' % (f))
+                LOGGER.exception('failed to calculate timeseries for %s ' % (key))
 
         if len(df.index.values) >= 90:
             # TODO: calculate windowsize according to timestapms (day,mon,yr ... with get_frequency)
