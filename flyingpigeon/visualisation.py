@@ -220,15 +220,17 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
                 dt = [datetime.strptime(str(i), '%Y-%m-%d %H:%M:%S') for i in d]
                 ds = Dataset(nc)
                 data = np.squeeze(ds.variables[variable][:])
-                if len(data.shape) == 3: # What if 4...? need to check
+                if len(data.shape) == 3:
+                    # TODO: What if 4...? need to check
                     try:
-                        # get the index of the latitude (var could be Latitude, lat, latx or whatever)    
+                        # TODO: use utils.get_coordinates
+                        # get the index of the latitude (var could be Latitude, lat, latx or whatever)
                         # ds.variables[variable].dimensions.index('lat')
-                        nla=ds.variables[variable].dimensions 
-                        lat_index = [i for i,j in enumerate(nla) if 'lat' in j or 'Lat' in j][0]
+                        nla = ds.variables[variable].dimensions
+                        lat_index = [i for i, j in enumerate(nla) if 'lat' in j or 'Lat' in j][0]
                         # If lat_index is [] we got an exception...
                         lat_units = ds.variables[nla[lat_index]].units
-                        lat_val =  ds.variables[nla[lat_index]][:]
+                        lat_val = ds.variables[nla[lat_index]][:]
 
                         if 'Degree' in lat_units or 'degree' in lat_units:
                             # lat_w = np.cos(lat_val * np.radians(1))
@@ -238,7 +240,8 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
                             title = title + ' weighted by square root of the cosine of the latitude'
                         else:
                             meanData = np.mean(data, axis=1)
-                    except: # variable has no latitude named dimension
+                    except:
+                        # variable has no latitude named dimension
                         meanData = np.mean(data, axis=1)
 
                     ts = np.mean(meanData, axis=1)
