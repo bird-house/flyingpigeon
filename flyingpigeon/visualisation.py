@@ -218,6 +218,7 @@ def spaghetti(resources, variable=None, title=None, dir_out=None):
         for c, nc in enumerate(resources):
             # get timestapms
             try:
+                # TODO: replace by calculation.fieldmean()
                 d = utils.get_time(nc)  # [datetime.strptime(elem, '%Y-%m-%d') for elem in strDate[0]]
                 dt = [datetime.strptime(str(i), '%Y-%m-%d %H:%M:%S') for i in d]
                 ds = Dataset(nc)
