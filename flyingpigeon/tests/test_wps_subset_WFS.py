@@ -22,7 +22,10 @@ class TestSubsetWFS(unittest.TestCase):
             self.config.read('configtests.cfg')
         else:
             self.config.read('flyingpigeon/tests/configtests.cfg')
-        self.config_dict = dict(self.config.items('subsetwfs'))
+        self.config_dict = {}
+        for config_item in ['subsetwfs', 'pairing_fx_testdata_grid5',
+                            'testpoly01']:
+            self.config_dict.update(dict(self.config.items(config_item)))
         sys.path.append('/'.join(os.getcwd().split('/')[:-1]))
         from flyingpigeon.processes import SubsetWFS
         self.client = client_for(Service(processes=[SubsetWFS()]))
@@ -61,13 +64,13 @@ class TestSubsetWFS(unittest.TestCase):
              'identifier=subset_WFS'),
             self.client)
         describe_process = wps_tests_utils.parse_describeprocess(html_response)
-        self.assertTrue('union' in describe_process[0]['inputs'])
+        self.assertTrue('mosaic' in describe_process[0]['inputs'])
         self.assertTrue('output' in describe_process[0]['outputs'])
 
     def test_subset_wfs_opendap(self):
         wps_tests_utils.config_is_available(
-            ['pfx5_opendap', 'typename_testpoly01', 'featureids_testpoly01',
-             'geoserver_testpoly01'],
+            ['pfx5_opendap', 'testpoly01_typename', 'testpoly01_featureids',
+             'testpoly01_geoserver'],
             self.config_dict)
         html_response = wps_tests_utils.wps_response(
             self.wps_host,
@@ -75,9 +78,9 @@ class TestSubsetWFS(unittest.TestCase):
              'identifier=subset_WFS&DataInputs=resource={0};'
              'typename={1};featureids={2};geoserver={3}').format(
                 self.config_dict['pfx5_opendap'],
-                self.config_dict['typename_testpoly01'],
-                self.config_dict['featureids_testpoly01'],
-                self.config_dict['geoserver_testpoly01']),
+                self.config_dict['testpoly01_typename'],
+                self.config_dict['testpoly01_featureids'],
+                self.config_dict['testpoly01_geoserver']),
             self.client)
         outputs = wps_tests_utils.parse_execute_response(html_response)
         output_json = outputs['outputs']['output']
@@ -112,8 +115,8 @@ class TestSubsetWFS(unittest.TestCase):
 
     def test_subset_wfs_fileserver(self):
         wps_tests_utils.config_is_available(
-            ['pfx5_fileserver', 'typename_testpoly01',
-             'featureids_testpoly01', 'geoserver_testpoly01'],
+            ['pfx5_fileserver', 'testpoly01_typename', 'testpoly01_featureids',
+             'testpoly01_geoserver'],
             self.config_dict)
         html_response = wps_tests_utils.wps_response(
             self.wps_host,
@@ -121,9 +124,9 @@ class TestSubsetWFS(unittest.TestCase):
              'identifier=subset_WFS&DataInputs=resource={0};'
              'typename={1};featureids={2};geoserver={3}').format(
                 self.config_dict['pfx5_fileserver'],
-                self.config_dict['typename_testpoly01'],
-                self.config_dict['featureids_testpoly01'],
-                self.config_dict['geoserver_testpoly01']),
+                self.config_dict['testpoly01_typename'],
+                self.config_dict['testpoly01_featureids'],
+                self.config_dict['testpoly01_geoserver']),
             self.client)
         outputs = wps_tests_utils.parse_execute_response(html_response)
         output_json = outputs['outputs']['output']
