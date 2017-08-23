@@ -23,6 +23,9 @@ from .wps_analogs_compare import AnalogscompareProcess
 from .wps_analogs_viewer import AnalogsviewerProcess
 from .wps_segetalflora import SegetalfloraProcess
 from .wps_spatial_analog import SpatialAnalogProcess
+from .wps_ocgis_func import IcclimTNProcess, IcclimTXProcess
+from .wps_ocgis_func import ocgis_processes
+#locals().update({c.__class__.__name__: c for c in ocgis_processes })
 
 processes = [
     ClippingProcess(),
@@ -50,7 +53,7 @@ processes = [
     #    PlottimeseriesProcess(),
     SegetalfloraProcess(),
     SpatialAnalogProcess()
-]
+] + ocgis_processes
 
 """
 pywps3 processes:

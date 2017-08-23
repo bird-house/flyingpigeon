@@ -1,5 +1,14 @@
 """
-Process to compute the number of freeze-thaw cycles.
+The idea with this set of processes is to create one individual process for each
+function. The advantage of using this approach rather than parameterizing the
+function is that it allow platforms to parse the metadata of each function to
+find those matching user search criteria.
+
+These generic processes apply on a full dataset, that is, we assume that they
+have been spatially and temporally cropped beforehand.
+
+
+TODO: Add keywords to each function description once pyWPS implements support for it.
 
 Author: David Huard (Ouranos)
 """
@@ -12,13 +21,14 @@ from pywps.app.Common import Metadata
 
 from flyingpigeon.utils import archiveextract
 from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.ocgis_module import call
 from flyingpigeon.utils import GROUPING
+from flyingpigeon.log import init_process_logger
 
 import ocgis
 from ocgis.calc import base
 from ocgis import RequestDataset, OcgOperations
 from ocgis.calc.library import register
+
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
@@ -27,11 +37,14 @@ LOGGER = logging.getLogger("PYWPS")
 fr = register.FunctionRegistry()
 register.register_icclim(fr)
 
-class IndicatorProcess(Process):
+class IndicatorProcess(Process, object):
     key = 'to_be_subclassed'
     version = '1.0'
 
-    # Generic inputs for all subclasses
+
+    #####################################
+    # Generic inputs for all subclasses #
+    #####################################
     inputs = [
         ComplexInput('resource', 'Resource',
                      abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
@@ -53,7 +66,9 @@ class IndicatorProcess(Process):
                      allowed_values=GROUPING
                      )]
 
-    # Extra inputs that can be customized.
+    ############################
+    # Function-specific inputs #
+    ############################
     extra_inputs = []
 
     outputs = [
@@ -67,8 +82,8 @@ class IndicatorProcess(Process):
         ComplexOutput('output_log', 'Logging information',
                       abstract="Collected logs during process run.",
                       as_reference=True,
-                      supported_formats=[Format('text/plain')]
-                      ),]
+                      supported_formats=[Format('text/plain')]),
+    ]
 
 
     def __init__(self):
@@ -91,7 +106,39 @@ class IndicatorProcess(Process):
             out[obj.identifier] = self.request.inputs[obj.identifier][0].data
         return out
 
+
+    def call(self, resource, calc, calc_grouping):
+        from os.path import join, abspath, dirname, getsize, curdir
+        from ocgis import OcgOperations, RequestDataset, env
+        import uuid
+
+        LOGGER.info('Start ocgis module call function')
+
+        # Prepare the environment
+        env.OVERWRITE = True
+        dir_output = abspath(curdir)
+
+        prefix = str(uuid.uuid1())
+        env.PREFIX = prefix
+
+        rd = RequestDataset(resource)
+
+        ops = OcgOperations(dataset=rd,
+                            calc=calc,
+                            calc_grouping=calc_grouping,
+                            dir_output=dir_output,
+                            prefix=prefix,
+                            add_auxiliary_files=False,
+                            output_format='nc')
+
+        return ops.execute()
+
     def _handler(self, request, response):
+        from flyingpigeon.utils import calc_grouping
+
+        init_process_logger('log.txt')
+        response.outputs['output_log'].file = 'log.txt'
+
 
         ######################################
         # Process standard inputs
@@ -100,6 +147,7 @@ class IndicatorProcess(Process):
             resource = archiveextract(resource=rename_complexinputs(
                 request.inputs['resource']))
             grouping = request.inputs['grouping'][0].data
+            calc_group = calc_grouping(grouping)
 
         except Exception as e:
             msg = 'Failed to read input parameter {}'.format(e)
@@ -125,18 +173,12 @@ class IndicatorProcess(Process):
         # Call ocgis function
         ######################################
 
-        try:
-            output = call(resource=resource,
-                          calc=[{'func': self.identifier,
-                                 'name': self.identifier,
-                                 'kwds': extras}],
-                          )
-
-        except Exception as e:
-            msg = '{} failed: {}'.format(self.title, e)
-            LOGGER.exception(msg)
-            raise Exception(msg)
-
+        output = self.call(resource=resource,
+                           calc=[{'func': self.identifier,
+                             'name': self.identifier,
+                             'kwds': extras}],
+                           calc_grouping=calc_group,
+                      )
 
         response.outputs['output_netcdf'].file = output
 
@@ -146,6 +188,7 @@ class IndicatorProcess(Process):
 
 class ICCLIMProcess(IndicatorProcess):
     def __init__(self):
+        # Scrape the meta data from the docstring
         self.ocgis_cls = fr[self.key]
         self.icclim_func = self.ocgis_cls._get_icclim_func_(self.ocgis_cls())
         doc = self.icclim_func.func_doc
@@ -162,7 +205,10 @@ class ICCLIMProcess(IndicatorProcess):
         )
 
 class IcclimTNProcess(ICCLIMProcess):
-    key = 'icclim_TG'
+    key = 'icclim_TN'
+
+class IcclimTXProcess(ICCLIMProcess):
+    key = 'icclim_TX'
 
 
 class FreezeThawProcess(IndicatorProcess):
@@ -197,3 +243,5 @@ class Duration(IndicatorProcess):
 
 
 p = IcclimTNProcess()
+
+ocgis_processes = [IcclimTNProcess,IcclimTXProcess]
