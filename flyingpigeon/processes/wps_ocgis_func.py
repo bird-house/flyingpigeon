@@ -8,7 +8,8 @@ These generic processes apply on a full dataset, that is, we assume that they
 have been spatially and temporally cropped beforehand.
 
 
-TODO: Add keywords to each function description once pyWPS implements support for it.
+TODO: Add keywords to each function description once pyWPS implements support
+for it.
 
 Author: David Huard (Ouranos)
 """
@@ -24,11 +25,7 @@ from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import GROUPING
 from flyingpigeon.log import init_process_logger
 
-import ocgis
-from ocgis.calc import base
-from ocgis import RequestDataset, OcgOperations
 from ocgis.calc.library import register
-
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
@@ -36,15 +33,15 @@ LOGGER = logging.getLogger("PYWPS")
 # Register ocgis functions, including icclim
 fr = register.FunctionRegistry()
 register.register_icclim(fr)
+icclim_classes = {k:v for (k,v) in fr.items() if type(k) == str and k.startswith('icclim')}
 
 class IndicatorProcess(Process, object):
     key = 'to_be_subclassed'
     version = '1.0'
 
-
-    #####################################
-    # Generic inputs for all subclasses #
-    #####################################
+    #################
+    # Common inputs #
+    #################
     inputs = [
         ComplexInput('resource', 'Resource',
                      abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
@@ -71,10 +68,12 @@ class IndicatorProcess(Process, object):
     ############################
     extra_inputs = []
 
+    ##################
+    # Common outputs #
+    ##################
     outputs = [
-        ComplexOutput('output_netcdf', 'Dissimilarity values',
-                      abstract="Dissimilarity between target at selected "
-                               "location and candidate distributions over the entire grid.",
+        ComplexOutput('output_netcdf', 'Function output in netCDF',
+                      abstract="The indicator values computed on the original input grid.",
                       as_reference=True,
                       supported_formats=[Format('application/x-netcdf')]
                       ),
@@ -84,7 +83,6 @@ class IndicatorProcess(Process, object):
                       as_reference=True,
                       supported_formats=[Format('text/plain')]),
     ]
-
 
     def __init__(self):
         self.ocgis_cls = fr[self.key]
@@ -103,7 +101,7 @@ class IndicatorProcess(Process, object):
     def _extra_input_handler(self, request):
         out = {}
         for obj in self.extra_inputs:
-            out[obj.identifier] = self.request.inputs[obj.identifier][0].data
+            out[obj.identifier] = request.inputs[obj.identifier][0].data
         return out
 
 
@@ -139,7 +137,6 @@ class IndicatorProcess(Process, object):
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
-
         ######################################
         # Process standard inputs
         ######################################
@@ -159,14 +156,15 @@ class IndicatorProcess(Process, object):
         ######################################
         # Process extra inputs
         ######################################
-        try:
-            extras = self._extra_input_handler(request)
+        extras = self._extra_input_handler(request)
+        """try:
+
 
         except Exception as e:
             msg = 'Failed to read inputs {} '.format(e)
             LOGGER.error(msg)
             raise Exception(msg)
-
+        """
         response.update_status('Processed input parameters', 3)
 
         ######################################
@@ -204,16 +202,29 @@ class ICCLIMProcess(IndicatorProcess):
             store_supported=True,
         )
 
-class IcclimTNProcess(ICCLIMProcess):
-    key = 'icclim_TN'
+def _generate_icclim_classes():
+    import operator
+    import ocgis
+    pat = """
+class {0}Process(ICCLIMProcess):
+    key = '{1}'
+    """
+    txt = ""
+    names = []
+    for key, cls in sorted(icclim_classes.items(), key=operator.itemgetter(0)):
+        if issubclass(cls, ocgis.contrib.library_icclim.AbstractIcclimMultivariateFunction):
+            continue
+        else:
+            txt = txt + (pat.format(key.upper(), key))
+            names.append( "{}Process".format(key.upper()) )
 
-class IcclimTXProcess(ICCLIMProcess):
-    key = 'icclim_TX'
+    return txt, names
 
+cls_definition, cls_names = _generate_icclim_classes()
 
 class FreezeThawProcess(IndicatorProcess):
     key = 'freezethaw'
-    extra_inputs = [LiteralInput("treshold", "Threshold",
+    extra_inputs = [LiteralInput("threshold", "Threshold",
                                 abstract="The number of degree-days above or below the freezing point after which the ground is considered frozen or thawed.",
                                 data_type='float',
                                 default=15.0,
@@ -241,7 +252,180 @@ class Duration(IndicatorProcess):
                                  max_occurs=1), ]
 
 
+############################################
+# Automatically generated icclim processes #
+# Univariate functions only so far         #
+############################################
 
-p = IcclimTNProcess()
+class ICCLIM_CDDProcess(ICCLIMProcess):
+    key = 'icclim_CDD'
 
-ocgis_processes = [IcclimTNProcess,IcclimTXProcess]
+
+class ICCLIM_CFDProcess(ICCLIMProcess):
+    key = 'icclim_CFD'
+
+
+class ICCLIM_CSDIProcess(ICCLIMProcess):
+    key = 'icclim_CSDI'
+
+
+class ICCLIM_CSUProcess(ICCLIMProcess):
+    key = 'icclim_CSU'
+
+
+class ICCLIM_CWDProcess(ICCLIMProcess):
+    key = 'icclim_CWD'
+
+
+class ICCLIM_FDProcess(ICCLIMProcess):
+    key = 'icclim_FD'
+
+
+class ICCLIM_GD4Process(ICCLIMProcess):
+    key = 'icclim_GD4'
+
+
+class ICCLIM_HD17Process(ICCLIMProcess):
+    key = 'icclim_HD17'
+
+
+class ICCLIM_IDProcess(ICCLIMProcess):
+    key = 'icclim_ID'
+
+
+class ICCLIM_PRCPTOTProcess(ICCLIMProcess):
+    key = 'icclim_PRCPTOT'
+
+
+class ICCLIM_R10MMProcess(ICCLIMProcess):
+    key = 'icclim_R10mm'
+
+
+class ICCLIM_R20MMProcess(ICCLIMProcess):
+    key = 'icclim_R20mm'
+
+
+class ICCLIM_R75PProcess(ICCLIMProcess):
+    key = 'icclim_R75p'
+
+
+class ICCLIM_R75PTOTProcess(ICCLIMProcess):
+    key = 'icclim_R75pTOT'
+
+
+class ICCLIM_R95PProcess(ICCLIMProcess):
+    key = 'icclim_R95p'
+
+
+class ICCLIM_R95PTOTProcess(ICCLIMProcess):
+    key = 'icclim_R95pTOT'
+
+
+class ICCLIM_R99PProcess(ICCLIMProcess):
+    key = 'icclim_R99p'
+
+
+class ICCLIM_R99PTOTProcess(ICCLIMProcess):
+    key = 'icclim_R99pTOT'
+
+
+class ICCLIM_RR1Process(ICCLIMProcess):
+    key = 'icclim_RR1'
+
+
+class ICCLIM_RX1DAYProcess(ICCLIMProcess):
+    key = 'icclim_RX1day'
+
+
+class ICCLIM_RX5DAYProcess(ICCLIMProcess):
+    key = 'icclim_RX5day'
+
+
+class ICCLIM_SDProcess(ICCLIMProcess):
+    key = 'icclim_SD'
+
+
+class ICCLIM_SD1Process(ICCLIMProcess):
+    key = 'icclim_SD1'
+
+
+class ICCLIM_SD50CMProcess(ICCLIMProcess):
+    key = 'icclim_SD50cm'
+
+
+class ICCLIM_SD5CMProcess(ICCLIMProcess):
+    key = 'icclim_SD5cm'
+
+
+class ICCLIM_SDIIProcess(ICCLIMProcess):
+    key = 'icclim_SDII'
+
+
+class ICCLIM_SUProcess(ICCLIMProcess):
+    key = 'icclim_SU'
+
+
+class ICCLIM_TGProcess(ICCLIMProcess):
+    key = 'icclim_TG'
+
+
+class ICCLIM_TG10PProcess(ICCLIMProcess):
+    key = 'icclim_TG10p'
+
+
+class ICCLIM_TG90PProcess(ICCLIMProcess):
+    key = 'icclim_TG90p'
+
+
+class ICCLIM_TNProcess(ICCLIMProcess):
+    key = 'icclim_TN'
+
+
+class ICCLIM_TN10PProcess(ICCLIMProcess):
+    key = 'icclim_TN10p'
+
+
+class ICCLIM_TN90PProcess(ICCLIMProcess):
+    key = 'icclim_TN90p'
+
+
+class ICCLIM_TNNProcess(ICCLIMProcess):
+    key = 'icclim_TNn'
+
+
+class ICCLIM_TNXProcess(ICCLIMProcess):
+    key = 'icclim_TNx'
+
+
+class ICCLIM_TRProcess(ICCLIMProcess):
+    key = 'icclim_TR'
+
+
+class ICCLIM_TXProcess(ICCLIMProcess):
+    key = 'icclim_TX'
+
+
+class ICCLIM_TX10PProcess(ICCLIMProcess):
+    key = 'icclim_TX10p'
+
+
+class ICCLIM_TX90PProcess(ICCLIMProcess):
+    key = 'icclim_TX90p'
+
+
+class ICCLIM_TXNProcess(ICCLIMProcess):
+    key = 'icclim_TXn'
+
+
+class ICCLIM_TXXProcess(ICCLIMProcess):
+    key = 'icclim_TXx'
+
+
+class ICCLIM_WSDIProcess(ICCLIMProcess):
+    key = 'icclim_WSDI'
+
+########################################
+
+# List of all Process classes used in __init__
+D = locals()
+ocgis_processes = [FreezeThawProcess, Duration] + [D[k] for k in cls_names]
