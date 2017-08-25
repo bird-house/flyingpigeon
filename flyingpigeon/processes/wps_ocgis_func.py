@@ -156,15 +156,14 @@ class IndicatorProcess(Process, object):
         ######################################
         # Process extra inputs
         ######################################
-        extras = self._extra_input_handler(request)
-        """try:
-
+        try:
+            extras = self._extra_input_handler(request)
 
         except Exception as e:
             msg = 'Failed to read inputs {} '.format(e)
             LOGGER.error(msg)
             raise Exception(msg)
-        """
+
         response.update_status('Processed input parameters', 3)
 
         ######################################
@@ -184,6 +183,7 @@ class IndicatorProcess(Process, object):
 
         return response
 
+# TODO: Implement check to make sure that the data is daily ?
 class ICCLIMProcess(IndicatorProcess):
     def __init__(self):
         # Scrape the meta data from the docstring
@@ -231,7 +231,7 @@ class FreezeThawProcess(IndicatorProcess):
                                 min_occurs=0,
                                 max_occurs=1),]
 
-
+# Untested
 class Duration(IndicatorProcess):
     key = 'duration'
     extra_inputs = [LiteralInput("treshold", "Threshold",

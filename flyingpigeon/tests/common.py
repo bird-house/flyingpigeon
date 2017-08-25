@@ -17,6 +17,11 @@ TESTDATA = {
         'testdata',
         'cmip5',
         'tasmax_Amon_MPI-ESM-MR_rcp45_r1i1p1_200701-200712.nc')),
+    'cmip3_tas_sresb1_da_nc': "file://{0}".format(os.path.join(
+        TESTS_HOME,
+        'testdata',
+        'cmip3',
+        'tas.sresb1.giss_model_e_r.run1.atm.da.nc')),
     'cordex_tasmax_2006_nc': "file://{0}".format(os.path.join(
         TESTS_HOME,
         'testdata',
