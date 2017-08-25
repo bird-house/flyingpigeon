@@ -22,6 +22,26 @@ TESTDATA = {
         'testdata',
         'cmip3',
         'tas.sresb1.giss_model_e_r.run1.atm.da.nc')),
+    'cmip3_tas_sresa2_da_nc': "file://{0}".format(os.path.join(
+        TESTS_HOME,
+        'testdata',
+        'cmip3',
+        'tas.sresa2.miub_echo_g.run1.atm.da.nc')),
+    'cmip3_tasmin_sresa2_da_nc': "file://{0}".format(os.path.join(
+        TESTS_HOME,
+        'testdata',
+        'cmip3',
+        'tasmin.sresa2.miub_echo_g.run1.atm.da.nc')),
+    'cmip3_tasmax_sresa2_da_nc': "file://{0}".format(os.path.join(
+        TESTS_HOME,
+        'testdata',
+        'cmip3',
+        'tasmax.sresa2.miub_echo_g.run1.atm.da.nc')),
+    'cmip3_pr_sresa2_da_nc': "file://{0}".format(os.path.join(
+        TESTS_HOME,
+        'testdata',
+        'cmip3',
+        'pr.sresa2.miub_echo_g.run1.atm.da.nc')),
     'cordex_tasmax_2006_nc': "file://{0}".format(os.path.join(
         TESTS_HOME,
         'testdata',
