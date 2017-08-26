@@ -65,4 +65,4 @@ def static_path():
 
 
 def testdata_path():
-    return os.path.join(data_path(), 'tests/testdata')
+    return os.path.join(_PATH, 'tests/testdata')
