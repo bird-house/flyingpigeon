@@ -449,28 +449,29 @@ def get_variable(resource):
     return rds.variable
 
 
-def get_coordinates(resource, variable=None, unrotate_pole=False):
+def get_coordinates(resource, variable=None, unrotate=False):
     """
     reads out the coordinates of a variable
 
     :param resource: netCDF resource file
     :param variable: variable name
-    :param unrotate_pole: If True the coordinates will be returned for unrotated pole
+    :param unrotate: If True the coordinates will be returned for unrotated pole
 
     :returns list, list: latitudes , longitudes
     """
-    if unrotate_pole is False:
+    if variable is None:
+        variable = get_variable(resource)
+
+    if unrotate is False:
         try:
-            if variable is None:
-                variable = get_variable(resource)
-                ds = MFDataset(resource)
-                var = ds.variables[variable]
-                dims = list(var.dimensions)
-                dims.remove('time')
+            ds = MFDataset(resource)
+            var = ds.variables[variable]
+            dims = list(var.dimensions)
+            dims.remove('time')
             # TODO: find position of lat and long in list and replace dims[0] dims[1]
-                lats = ds.variables[dims[0]][:]
-                lons = ds.variables[dims[1]][:]
-                ds.close()
+            lats = ds.variables[dims[0]][:]
+            lons = ds.variables[dims[1]][:]
+            ds.close()
             LOGGER.info('got coordinates without pole rotation')
         except Exception:
             msg = 'failed to extract coordinates'

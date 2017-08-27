@@ -80,6 +80,9 @@ def test_get_coodinates():
     ncs = [local_path(TESTDATA['cordex_tasmax_2006_nc']),
            local_path(TESTDATA['cordex_tasmax_2007_nc'])]
 
+    lats, lons = utils.get_coordinates(ncs, unrotate=True)
+    assert 2 == len(lats.shape)
+
     lats, lons = utils.get_coordinates(ncs)
     assert 103 == len(lats)
     assert 106 == len(lons)
