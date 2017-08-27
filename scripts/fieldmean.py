@@ -13,26 +13,20 @@ def fieldmean(resource):
 
     :return list: averaged values
     """
-    from flyingpigeon.utils import get_values, unrotate_pole  # get_coordinates
+    from flyingpigeon.utils import get_values, get_coordinates
     from numpy import radians, average, cos, sqrt
 
     data = get_values(resource)  # np.squeeze(ds.variables[variable][:])
+    dim = data.shape
     if len(data.shape) == 3:
-        # get the index of the latitude (var could be Latitude, lat, latx or whatever)
-        # ds.variables[variable].dimensions.index('lat')
-        # nla = ds.variables[variable].dimensions
-        # lat_index = [i for i, j in enumerate(nla) if 'lat' in j or 'Lat' in j][0]
-        # If lat_index is [] we got an exception...
-        # lat_units = ds.variables[nla[lat_index]].units
-        # lat_val = ds.variables[nla[lat_index]][:]
-        # if 'Degree' in lat_units or 'degree' in lat_units:
-        #     # lat_w = np.cos(lat_val * np.radians(1))
-        #     # may be add selection of the weighting method in process: cos/sqrt(cos)/none
-        #     lat_w = np.sqrt(np.cos(lat_val * np.radians(1)))
-        #     meanData = np.average(data, axis=lat_index, weights=lat_w)
-        #     title = title + ' weighted by square root of the cosine of the latitude'
+        # TODO if data.shape == 2 , 4 ...
 
-        lons, lats = unrotate_pole(resource[0], write_to_file=False)
+        lats, lons = get_coordinates(resource, unrotate=True)
+
+        if len(lats.shape) == 2:
+            # TODO: calcult weighed average with 2D lats (rotated pole coordinates)
+            lats, lons = get_coordinates(resource)
+
         if dim[0] == len(lats):
             lat_index = 0
         elif dim[1] == len(lats):
@@ -43,14 +37,15 @@ def fieldmean(resource):
             LOGGER.exception('length of latitude is not matching values dimensions')
 
         lat_w = sqrt(cos(lats * radians(1)))
-        meanData = np.average(data, axis=lat_index, weights=lat_w)
+        meanLon = average(data, axis=lat_index, weights=lat_w)
+        meanTimeserie = average(meanLon, axis=1)
         print('fieldmean calculated')
     else:
-        # TODO if data.shape == 2 , 4 ...
         print('not 3D shaped data. Average can not be calculated')
-    return meanData
+    return meanTimeserie
 
 nc = [path.join(testdata_path(), 'cordex', nc) for nc  in (listdir(path.join(testdata_path(), 'cordex')))][0]
 
 fm = fieldmean(nc)
+
 print fm
