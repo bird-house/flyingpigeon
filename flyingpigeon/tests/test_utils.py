@@ -69,6 +69,13 @@ def test_get_time():
     assert 23 == len(values)
 
 
+def test_unrotate_pole():
+    ncs = [local_path(TESTDATA['cordex_tasmax_2006_nc']),
+           local_path(TESTDATA['cordex_tasmax_2007_nc'])]
+    lats,  lons = utils.unrotate_pole(ncs)
+    assert lats.shape == (103, 106)
+
+
 def test_get_coodinates():
     ncs = [local_path(TESTDATA['cordex_tasmax_2006_nc']),
            local_path(TESTDATA['cordex_tasmax_2007_nc'])]

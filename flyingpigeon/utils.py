@@ -454,46 +454,50 @@ def get_coordinates(resource, variable=None, unrotate_pole=False):
     reads out the coordinates of a variable
 
     :param resource: netCDF resource file
+    :param variable: variable name
+    :param unrotate_pole: If True the coordinates will be returned for unrotated pole
 
     :returns list, list: latitudes , longitudes
     """
-    if variable is None:
-        variable = get_variable(resource)
-
-    try:
-        ds = MFDataset(resource)
-        var = ds.variables[variable]
-        dims = list(var.dimensions)
-        dims.remove('time')
-        # TODO: find position of lat and long in list and replace dims[0] dims[1]
-        if unrotate_pole is False:
-            lats = ds.variables[dims[0]][:]
-            lons = ds.variables[dims[1]][:]
-
-    except Exception:
-        msg = 'failed to extract coordinates'
-        LOGGER.exception(msg)
-        raise Exception(msg)
+    if unrotate_pole is False:
+        try:
+            if variable is None:
+                variable = get_variable(resource)
+                ds = MFDataset(resource)
+                var = ds.variables[variable]
+                dims = list(var.dimensions)
+                dims.remove('time')
+            # TODO: find position of lat and long in list and replace dims[0] dims[1]
+                lats = ds.variables[dims[0]][:]
+                lons = ds.variables[dims[1]][:]
+                ds.close()
+            LOGGER.info('got coordinates without pole rotation')
+        except Exception:
+            msg = 'failed to extract coordinates'
+            LOGGER.exception(msg)
+    else:
+        lats, lons = unrotate_pole(resource)
+        LOGGER.info('got coordinates with pole rotation')
     return lats, lons
 
 
-def unrotate_pole(resource, write_to_file=True):
+def unrotate_pole(resource, write_to_file=False):
     """
     Calculates the unrotatated coordinates for a rotated pole grid
 
-    :param resource: netCDF file
+    :param resource: netCDF file or list of files of one datatset
+    :param write_to_file: calculated values will be written to file if True (default=False)
 
     :return list: lats, lons
     """
     from numpy import reshape, repeat
     from iris.analysis import cartography as ct
-    ds = Dataset(resource, mode='a')
+    ds = MFDataset(resource)
 
     if 'lat' in ds.variables.keys():
-        LOGGER.info('coordinates already unrotated')
+        LOGGER.info('file include unrotated coordinate values')
         lats = ds.variables['lat'][:]
         lons = ds.variables['lon'][:]
-
     else:
         try:
             if 'rotated_latitude_longitude' in ds.variables:
@@ -504,8 +508,8 @@ def unrotate_pole(resource, write_to_file=True):
                 LOGGER.debug('rotated pole variable not found')
             pole_lat = rp.grid_north_pole_latitude
             pole_lon = rp.grid_north_pole_longitude
-        except Exception as e:
-            LOGGER.debug('failed to find rotated_pole coordinates: %s' % e)
+        except:
+            LOGGER.exception('failed to find rotated_pole coordinates')
         try:
             if 'rlat' in ds.variables:
                 rlats = ds.variables['rlat']
@@ -514,16 +518,16 @@ def unrotate_pole(resource, write_to_file=True):
             if 'x' in ds.variables:
                 rlats = ds.variables['y']
                 rlons = ds.variables['x']
-        except Exception as e:
-            LOGGER.debug('failed to read in rotated coordiates %s' % e)
+        except:
+            LOGGER.exception('failed to read in rotated coordiates')
 
         try:
             rlons_i = reshape(rlons, (1, len(rlons)))
             rlats_i = reshape(rlats, (len(rlats), 1))
             grid_rlats = repeat(rlats_i, (len(rlons)), axis=1)
             grid_rlons = repeat(rlons_i, (len(rlats)), axis=0)
-        except Exception as e:
-            LOGGER.debug('failed to repeat coordinates %s' % e)
+        except:
+            LOGGER.execption('failed to repeat coordinates')
 
         lons, lats = ct.unrotate_pole(grid_rlons, grid_rlats, pole_lon, pole_lat)
 
@@ -540,6 +544,7 @@ def unrotate_pole(resource, write_to_file=True):
 
         lat[:] = lats
         lon[:] = lons
+
     ds.close()
 
     return lats, lons
