@@ -69,6 +69,15 @@ def test_get_time():
     assert 23 == len(values)
 
 
+def test_get_coodinates():
+    ncs = [local_path(TESTDATA['cordex_tasmax_2006_nc']),
+           local_path(TESTDATA['cordex_tasmax_2007_nc'])]
+
+    lats, lons = utils.get_coordinates(ncs)
+    assert 103 == len(lats)
+    assert 106 == len(lons)
+
+
 def test_get_variable():
     variable = utils.get_variable(local_path(TESTDATA['cmip5_tasmax_2007_nc']))
     assert 'tasmax' == variable
