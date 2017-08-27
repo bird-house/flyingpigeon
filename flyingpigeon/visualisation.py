@@ -147,17 +147,17 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None):
     return climatefactsheet
 
 
-def spaghetti(resouces, variable=None, title=None, dir_out=None):
+def spaghetti(resouces, variable=None, title=None):
     """
     creates a png file containing the appropriate spaghetti plot as a field mean of the values.
 
     :param resouces: list of files containing the same variable
     :param variable: variable to be visualised. If None (default), variable will be detected
     :param title: string to be used as title
-    :param dir_out: directory for output files
 
     :retruns str: path to png file
     """
+    from flyingpigeon.calculation import fieldmean
 
     try:
         fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
@@ -170,27 +170,20 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
             variable = utils.get_variable(resouces[0])
         if title is None:
             title = "Field mean of %s " % variable
-        if dir_out is None:
-            dir_out = os.curdir
+
         logger.info('plot values preparation done')
     except:
         msg = "plot values preparation failed"
         logger.exception(msg)
         raise Exception(msg)
     try:
-        o1, output_png = mkstemp(dir=dir_out, suffix='.png')
+        o1, output_png = mkstemp(dir='.', suffix='.png')
         for c, nc in enumerate(resouces):
             # get timestapms
             try:
                 d = utils.get_time(nc)  # [datetime.strptime(elem, '%Y-%m-%d') for elem in strDate[0]]
                 dt = [datetime.strptime(str(i), '%Y-%m-%d %H:%M:%S') for i in d]
-                ds = Dataset(nc)
-                data = np.squeeze(ds.variables[variable][:])
-                if len(data.shape) == 3:
-                    meanData = np.mean(data, axis=1)
-                    ts = np.mean(meanData, axis=1)
-                else:
-                    ts = data[:]
+                ts = fieldmean(nc)
                 plt.plot(dt, ts)
                 # fig.line( dt,ts )
             except:
@@ -206,11 +199,10 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
     except:
         msg = 'matplotlib spaghetti plot failed'
         logger.exception(msg)
-        raise Exception(msg)
     return output_png
 
 
-def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
+def uncertainty(resouces, variable=None, ylim=None, title=None):
     """
     creates a png file containing the appropriate uncertainty plot.
 
@@ -221,6 +213,8 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
     :returns str: path/to/file.png
     """
     logger.debug('Start visualisation uncertainty plot')
+    from flyingpigeon.calculation import fieldmean
+    from flyingpigeon.utils import get_time
 
     import pandas as pd
     import numpy as np
@@ -234,30 +228,29 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
         variable = utils.get_variable(resouces[0])
     if title is None:
         title = "Field mean of %s " % variable
-    if dir_out is None:
-        dir_out = '.'
 
     try:
         fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
-        o1, output_png = mkstemp(dir=dir_out, suffix='.png')
+        o1, output_png = mkstemp(dir='.', suffix='.png')
         variable = utils.get_variable(resouces[0])
         df = pd.DataFrame()
 
         logger.info('variable %s found in resources.' % variable)
         for f in resouces:
             try:
-                ds = Dataset(f)
-                data = np.squeeze(ds.variables[variable][:])
-                if len(data.shape) == 3:
-                    meanData = np.mean(data, axis=1)
-                    ts = np.mean(meanData, axis=1)
-                else:
-                    ts = data[:]
+                # ds = Dataset(f)
+                # data = np.squeeze(ds.variables[variable][:])
+                # if len(data.shape) == 3:
+                #
+                #     ts = np.mean(meanData, axis=1)
+                # else:
+                #     ts = data[:]
 
-                times = ds.variables['time']
-                jd = netCDF4.num2date(times[:], times.units)
+                times = utils.get_time(f)
+                meanData = fieldmean(f)
+                # jd = netCDF4.num2date(times[:], times.units)
 
-                hs = pd.Series(ts, index=jd, name=basename(f))
+                hs = pd.Series(ts, index=times, name=basename(f))
                 hd = hs.to_frame()
                 df[basename(f)] = hs
             except Exception as e:
@@ -273,8 +266,8 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
             q95 = rollmean.quantile([0.95], axis=1, )  # numeric_only=False)
 
             logger.info('quantile calculated for all input data')
-        except Exception as e:
-            logger.debug('failed to calculate quantiles %s ' % e)
+        except:
+            logger.debug('failed to calculate quantiles')
 
         try:
             plt.fill_between(rollmean.index.values, np.squeeze(q05.values), np.squeeze(q95.values),
@@ -291,15 +284,15 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
             fig.savefig(output_png)
             plt.close()
             logger.debug('timeseries uncertainty plot done for %s' % variable)
-        except Exception as e:
-            logger.debug('failed to calculate quantiles %s ' % e)
-    except Exception as e:
+        except:
+            logger.exception('failed to calculate quantiles')
+    except:
         logger.exception('uncertainty plot failed for %s' % variable)
         raise
     return output_png
 
 
-def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, variable, cmap='seismic', title=None):
+def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, variable=None, cmap='seismic', title=None):
     """
     generates a graphic for the output of the ensembleRobustness process for a lat/long file.
 
@@ -311,32 +304,39 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
     :param title: default='Model agreement of signal'
     :returns str: path/to/file.png
     """
+    from flyingpigeon import utils
+    from  numpy import mean
+
+    if variable is None:
+        variable = utils.get_variable(signal)
 
     try:
         # get the path of the file. It can be found in the repo data directory.
 
-        ds_signal = Dataset(signal, mode='r')
-        ds_lagree = Dataset(low_agreement_mask, mode='r')
-        ds_hagree = Dataset(high_agreement_mask, mode='r')
+        # ds_signal = Dataset(signal, mode='r')
+        # ds_lagree = Dataset(low_agreement_mask, mode='r')
+        # ds_hagree = Dataset(high_agreement_mask, mode='r')
 
-        var_signal = np.squeeze(ds_signal.variables[variable])
-        mask_l = np.squeeze(ds_lagree.variables[variable])
-        mask_h = np.squeeze(ds_hagree.variables[variable])
+        var_signal = utils.get_values(signal)  # np.squeeze(ds_signal.variables[variable])
+        mask_l = utils.get_values(low_agreement_mask)  #  np.squeeze(ds_lagree.variables[variable])
+        mask_h = utils.get_values(high_agreement_mask)  #  np.squeeze(ds_hagree.variables[variable])
 
         mask_l[mask_l is 0] = np.nan
         mask_h[mask_h is 0] = np.nan
 
         logger.info('data loaded')
 
-        lons = np.squeeze(ds_signal.variables['lon'][:])
-        lats = np.squeeze(ds_signal.variables['lat'][:])
+        lats, lons = utils.get_coordinates(signal, unrotate=True)
+        # lons = np.squeeze(ds_signal.variables['lon'][:])
+        # lats = np.squeeze(ds_signal.variables['lat'][:])
 
-        cyclic_var, cyclic_lons = add_cyclic_point(var_signal, coord=lons)
-        mask_l, cyclic_lons = add_cyclic_point(mask_l, coord=lons)
-        mask_h, cyclic_lons = add_cyclic_point(mask_h, coord=lons)
+        if len(lats.shape) == 1:
+            cyclic_var, cyclic_lons = add_cyclic_point(var_signal, coord=lons)
+            mask_l, cyclic_lons = add_cyclic_point(mask_l, coord=lons)
+            mask_h, cyclic_lons = add_cyclic_point(mask_h, coord=lons)
 
-        lons = cyclic_lons.data
-        var_signal = cyclic_var
+            lons = cyclic_lons.data
+            var_signal = cyclic_var
 
         logger.info('lat lon loaded')
 
@@ -351,7 +351,8 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
 
     try:
         fig = plt.figure(facecolor='w', edgecolor='k')  # figsize=(20,10), dpi=600,
-        ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
+
+        ax = plt.axes(projection=ccrs.Robinson(central_longitude=int(mean(lons))))
         norm = MidpointNormalize(midpoint=0)
 
         cs = plt.contourf(lons, lats, var_signal, 60, norm=norm, transform=ccrs.PlateCarree(),
@@ -361,7 +362,7 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
 
         # plt.clim(minval,maxval)
         ax.coastlines()
-        ax.set_global()
+        # ax.set_global()
 
         if title is None:
             plt.title('%s with Agreement' % variable)
@@ -374,15 +375,14 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
         plt.annotate('..  = high model ensemble agreement', (0, 0), (0, -20),
                      xycoords='axes fraction', textcoords='offset points', va='top')
 
-        graphic = 'modelAgreement.png'
+        o1, graphic = mkstemp(dir='.', suffix='.png')
         fig.savefig(graphic)
         plt.close()
 
         logger.info('Plot created and figure saved')
-    except Exception as e:
+    except:
         msg = 'failed to plot graphic'
         logger.exception(msg)
-        raise Exception(msg)
 
     return graphic
 

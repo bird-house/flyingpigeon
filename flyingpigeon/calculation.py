@@ -46,7 +46,7 @@ def fieldmean(resource):
         lat_w = sqrt(cos(lats * radians(1)))
         meanLon = average(data, axis=lat_index, weights=lat_w)
         meanTimeserie = average(meanLon, axis=1)
-        print('fieldmean calculated')
+        LOGGER.debug('fieldmean calculated')
     else:
-        print('not 3D shaped data. Average can not be calculated')
+        LOGGER.error('not 3D shaped data. Average can not be calculated')
     return meanTimeserie

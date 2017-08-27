@@ -93,7 +93,6 @@ class PlottimeseriesProcess(Process):
                                              ncfiles,
                                              variable=var,
                                              title='Fieldmean of %s ' % (var),
-                                             dir_out=None
                                              )
             LOGGER.info("spagetti plot done")
             response.update_status('Spagetti plot for %s %s files done' % (len(ncfiles), var), 50)
@@ -105,7 +104,6 @@ class PlottimeseriesProcess(Process):
                                                   ncfiles,
                                                   variable=var,
                                                   title='Ensemble uncertainty for %s ' % (var),
-                                                  dir_out=None
                                                   )
 
             response.update_status('Uncertainty plot for %s %s files done' % (len(ncfiles), var), 90)
