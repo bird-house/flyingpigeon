@@ -3,7 +3,7 @@ import urlparse
 import os
 import requests
 import shutil
-import datetime
+from datetime import datetime as dt
 import time
 from ocgis import RequestDataset  # does not support NETCDF4
 from netCDF4 import Dataset, num2date
@@ -111,7 +111,7 @@ def check_creationtime(path, url):
         # CONVERTING HEADER TIME TO UTC TIMESTAMP
         # ASSUMING 'Sun, 28 Jun 2015 06:30:17 GMT' FORMAT
         meta_modifiedtime = time.mktime(
-            datetime.datetime.strptime(req.headers['Last-Modified'], "%a, %d %b %Y %X GMT").timetuple())
+            dt.strptime(req.headers['Last-Modified'], "%a, %d %b %Y %X GMT").timetuple())
 
         # file = 'C:\Path\ToFile\somefile.xml'
         if os.path.getmtime(path) < meta_modifiedtime:
@@ -666,24 +666,6 @@ def get_timerange(resource):
         raise Exception(msg)
     return start, end
 
-# def get_timestamps(resource):
-#     """
-#     !OBSOLETE!
-#     replaced by get_timerange
-#     """
-#     try:
-#         start = get_time(resource)[0]
-#         end = get_time(resource)[-1]
-
-#         from_timestamp = '%s%s%s'  % (start.year, str(start.month).zfill(2) ,str(start.day).zfill(2))
-#         to_timestamp = '%s%s%s'  %   (end.year,  str(end.month).zfill(2) ,str(end.day).zfill(2))
-#     except Exception as e:
-#       msg = 'failed to get_timestamps'
-#       LOGGER.exception(msg)
-#       raise Exception(msg)
-
-#     return (from_timestamp, to_timestamp)
-
 
 def get_time(resource, format=None):
     """
@@ -703,7 +685,7 @@ def get_time(resource, format=None):
         else:
             ds = Dataset(resource[0])
         time = ds.variables['time']
-    except Exception:
+    except:
         msg = 'failed to get time'
         LOGGER.exception(msg)
         raise Exception(msg)
@@ -718,16 +700,16 @@ def get_time(resource, format=None):
         ds.close()
         try:
             if format is not None:
-                timestamps = [t.strftime(format=format) for t in timestamps]
-        except Exception:
+                ts = [t.strftime(format=format) for t in timestamps]
+            else:
+                ts = [dt.strptime(str(i), '%Y-%m-%d %H:%M:%S') for i in timestamps]
+        except:
             msg = 'failed to convert times to string'
-            print msg
-            LOGGER.debug(msg)
-    except Exception:
+            LOGGER.exception(msg)
+    except:
         msg = 'failed to convert time'
         LOGGER.exception(msg)
-        raise Exception(msg)
-    return timestamps
+    return ts
 
 
 def aggregations(resource):

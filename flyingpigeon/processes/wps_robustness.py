@@ -169,6 +169,7 @@ class RobustnessProcess(Process):
         try:
             # LOGGER.info('variable to be plotted: %s' % variable)
             from flyingpigeon.visualisation import map_robustness
+
             # if title is None:
             title = 'signal robustness'  # , end1, end2, start1, start2
 
@@ -191,6 +192,6 @@ class RobustnessProcess(Process):
         response.outputs['output_high'].file = high_agreement_mask
         response.outputs['output_low'].file = low_agreement_mask
         response.outputs['output_graphic'].file = graphic
-        
+
         response.update_status('uncertainty process done', 100)
         return response

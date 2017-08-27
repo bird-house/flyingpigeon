@@ -214,12 +214,10 @@ def uncertainty(resouces, variable=None, ylim=None, title=None):
     """
     logger.debug('Start visualisation uncertainty plot')
     from flyingpigeon.calculation import fieldmean
-    from flyingpigeon.utils import get_time
+    from flyingpigeon.utils import get_time, sort_by_filename
 
     import pandas as pd
     import numpy as np
-    import netCDF4
-    from os.path import basename
 
     # === prepare invironment
     if type(resouces) == str:
@@ -228,6 +226,7 @@ def uncertainty(resouces, variable=None, ylim=None, title=None):
         variable = utils.get_variable(resouces[0])
     if title is None:
         title = "Field mean of %s " % variable
+    ncs = sort_by_filename(resouces)
 
     try:
         fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
@@ -236,50 +235,49 @@ def uncertainty(resouces, variable=None, ylim=None, title=None):
         df = pd.DataFrame()
 
         logger.info('variable %s found in resources.' % variable)
-        for f in resouces:
+
+        for key in ncs.keys():
             try:
-                # ds = Dataset(f)
-                # data = np.squeeze(ds.variables[variable][:])
-                # if len(data.shape) == 3:
-                #
-                #     ts = np.mean(meanData, axis=1)
-                # else:
-                #     ts = data[:]
+                d = utils.get_time(ncs[key])  # [datetime.strptime(elem, '%Y-%m-%d') for elem in strDate[0]]
+                dt = [datetime.strptime(str(i), '%Y-%m-%d %H:%M:%S') for i in d]
+                ts = fieldmean(ncs[key])
+                plt.plot(dt, ts)
 
-                times = utils.get_time(f)
-                meanData = fieldmean(f)
-                # jd = netCDF4.num2date(times[:], times.units)
 
-                hs = pd.Series(ts, index=times, name=basename(f))
+                hs = pd.Series(ts, index=dt, name=key)
                 hd = hs.to_frame()
-                df[basename(f)] = hs
-            except Exception as e:
-                logger.debug('failed to calculate timeseries for%s :  %s ' % (f, e))
+                df[key] = hd
+            except:
+                logger.debug('failed to calculate timeseries for %s :' % (key))
 
+        # try:
+        #     if len(df.index) > 90:
+        #         rollmean = df.rolling(window=30, center=True).mean()
+        #         logger.info('rolling mean calculated for all input data')
+        #     else:
+        #         rollmean = df
+        #         # TODO : plot warning into graphic
+        #     rmean = rollmean.median(axis=1, skipna=False)  # quantile([0.5], axis=1, numeric_only=False )
+        #     q05 = rollmean.quantile([0.05], axis=1,)  # numeric_only=False)
+        #     q33 = rollmean.quantile([0.33], axis=1,)  # numeric_only=False)
+        #     q66 = rollmean.quantile([0.66], axis=1, )  # numeric_only=False)
+        #     q95 = rollmean.quantile([0.95], axis=1, )  # numeric_only=False)
+        #
+        #     logger.info('quantile calculated for all input data')
+        # except:
+        #     logger.debug('failed to calculate quantiles')
+        #
         try:
-            rollmean = df.rolling(window=30, center=True).mean()
-            logger.info('rolling mean calculated for all input data')
-            rmean = rollmean.median(axis=1, skipna=False)  # quantile([0.5], axis=1, numeric_only=False )
-            q05 = rollmean.quantile([0.05], axis=1,)  # numeric_only=False)
-            q33 = rollmean.quantile([0.33], axis=1,)  # numeric_only=False)
-            q66 = rollmean.quantile([0.66], axis=1, )  # numeric_only=False)
-            q95 = rollmean.quantile([0.95], axis=1, )  # numeric_only=False)
-
-            logger.info('quantile calculated for all input data')
-        except:
-            logger.debug('failed to calculate quantiles')
-
-        try:
-            plt.fill_between(rollmean.index.values, np.squeeze(q05.values), np.squeeze(q95.values),
-                             alpha=0.5, color='grey')
-            plt.fill_between(rollmean.index.values, np.squeeze(q33.values), np.squeeze(q66.values),
-                             alpha=0.5, color='grey')
-            plt.plot(rollmean.index.values, np.squeeze(rmean.values), c='r', lw=3)
-
-            plt.xlim(min(df.index.values), max(df.index.values))
-            plt.ylim(ylim)
-            plt.title(title, fontsize=20)
-            plt.grid()  # .grid_line_alpha=0.3
+        #     plt.fill_between(rollmean.index.values, np.squeeze(q05.values), np.squeeze(q95.values),
+        #                      alpha=0.5, color='grey')
+        #     plt.fill_between(rollmean.index.values, np.squeeze(q33.values), np.squeeze(q66.values),
+        #                      alpha=0.5, color='grey')
+        #     plt.plot(rollmean.index.values, np.squeeze(rmean.values), c='r', lw=3)
+        #
+        #     plt.xlim(min(df.index.values), max(df.index.values))
+        #     plt.ylim(ylim)
+        #     plt.title(title, fontsize=20)
+        #     plt.grid()  # .grid_line_alpha=0.3
 
             fig.savefig(output_png)
             plt.close()
