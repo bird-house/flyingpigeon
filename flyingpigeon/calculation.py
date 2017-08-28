@@ -31,7 +31,7 @@ def fieldmean(resource):
         lats, lons = get_coordinates(resource, unrotate=True)
 
         if len(lats.shape) == 2:
-            # TODO: calcult weighed average with 2D lats (rotated pole coordinates)
+            # TODO: calculat weighed average with 2D lats (rotated pole coordinates)
             lats, lons = get_coordinates(resource)
 
         if dim[0] == len(lats):
