@@ -413,51 +413,6 @@ def drs_filename(resource, skip_timestamp=False, skip_format=False,
     return filename
 
 
-def get_variable(resource):
-    """
-    detects processable variable name in netCDF file
-
-    :param resource: NetCDF file(s)
-
-    :returns str: variable name
-    """
-    rds = RequestDataset(resource)
-    return rds.variable
-
-
-def get_coordinates(resource, variable=None, unrotate=False):
-    """
-    reads out the coordinates of a variable
-
-    :param resource: netCDF resource file
-    :param variable: variable name
-    :param unrotate: If True the coordinates will be returned for unrotated pole
-
-    :returns list, list: latitudes , longitudes
-    """
-    if variable is None:
-        variable = get_variable(resource)
-
-    if unrotate is False:
-        try:
-            ds = MFDataset(resource)
-            var = ds.variables[variable]
-            dims = list(var.dimensions)
-            dims.remove('time')
-            # TODO: find position of lat and long in list and replace dims[0] dims[1]
-            lats = ds.variables[dims[0]][:]
-            lons = ds.variables[dims[1]][:]
-            ds.close()
-            LOGGER.info('got coordinates without pole rotation')
-        except Exception:
-            msg = 'failed to extract coordinates'
-            LOGGER.exception(msg)
-    else:
-        lats, lons = unrotate_pole(resource)
-        LOGGER.info('got coordinates with pole rotation')
-    return lats, lons
-
-
 def has_variable(resource, variable):
     success = False
     try:
@@ -491,6 +446,39 @@ def prepare_static_folder():
     destination = os.path.join(config.output_path(), 'static')
     if not os.path.exists(destination):
         os.symlink(config.static_path(), destination)
+
+
+def get_coordinates(resource, variable=None, unrotate=False):
+    """
+    reads out the coordinates of a variable
+
+    :param resource: netCDF resource file
+    :param variable: variable name
+    :param unrotate: If True the coordinates will be returned for unrotated pole
+
+    :returns list, list: latitudes , longitudes
+    """
+    if variable is None:
+        variable = get_variable(resource)
+
+    if unrotate is False:
+        try:
+            ds = MFDataset(resource)
+            var = ds.variables[variable]
+            dims = list(var.dimensions)
+            dims.remove('time')
+            # TODO: find position of lat and long in list and replace dims[0] dims[1]
+            lats = ds.variables[dims[0]][:]
+            lons = ds.variables[dims[1]][:]
+            ds.close()
+            LOGGER.info('got coordinates without pole rotation')
+        except Exception:
+            msg = 'failed to extract coordinates'
+            LOGGER.exception(msg)
+    else:
+        lats, lons = unrotate_pole(resource)
+        LOGGER.info('got coordinates with pole rotation')
+    return lats, lons
 
 
 def get_domain(resource):
@@ -539,27 +527,37 @@ def get_frequency(resource):
     return frequency
 
 
-def get_values(resource, variable=None):
+def get_index_lat(resource, variable=None):
     """
-    returns the values for a list of files of files belonging to one dataset
+    returns the dimension index of the latiude values
 
-    :param resource: list of files
-    :param variable: variable to be picked from the files (if not set, variable will be detected)
+    :param resource:  list of path(s) to netCDF file(s) of one Dataset
+    :param variable: variable name
 
-    :returs numpy.array: values
+    :return int: index
     """
-    from numpy import squeeze
+
     if variable is None:
         variable = get_variable(resource)
-
-    if type(resource) is str:
-        ds = Dataset(resource)
-    elif len(resource) == 1:
-        ds = Dataset(resource)
+    if type(resource) != list:
+        resource = [resource]
+    if len(resource) == 1:
+        ds = Dataset(resource[0])
     else:
         ds = MFDataset(resource)
-    vals = squeeze(ds.variables[variable][:])
-    return vals
+
+    var = ds.variables[variable]
+    dims = list(var.dimensions)
+
+    if 'rlat' in dims:
+        index = dims.index('rlat')
+    if 'lat' in dims:
+        index = dims.index('lat')
+    if 'latitude' in dims:
+        index = dims.index('latitude')
+    if 'y' in dims:
+        index = dims.index('y')
+    return index
 
 
 def get_timerange(resource):
@@ -652,6 +650,41 @@ def get_time(resource, format=None):
         msg = 'failed to convert time'
         LOGGER.exception(msg)
     return ts
+
+
+def get_variable(resource):
+    """
+    detects processable variable name in netCDF file
+
+    :param resource: NetCDF file(s)
+
+    :returns str: variable name
+    """
+    rds = RequestDataset(resource)
+    return rds.variable
+
+
+def get_values(resource, variable=None):
+    """
+    returns the values for a list of files of files belonging to one dataset
+
+    :param resource: list of files
+    :param variable: variable to be picked from the files (if not set, variable will be detected)
+
+    :returs numpy.array: values
+    """
+    from numpy import squeeze
+    if variable is None:
+        variable = get_variable(resource)
+
+    if type(resource) is str:
+        ds = Dataset(resource)
+    elif len(resource) == 1:
+        ds = Dataset(resource)
+    else:
+        ds = MFDataset(resource)
+    vals = squeeze(ds.variables[variable][:])
+    return vals
 
 
 def rename_complexinputs(complexinputs):
