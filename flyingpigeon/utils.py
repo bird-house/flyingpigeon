@@ -29,143 +29,47 @@ ATTRIBUTE_TO_FACETS_MAP = dict(
 )
 
 
-def prepare_static_folder():
+def aggregations(resource):
     """
-    Link static folder to output folder.
-    """
-    destination = os.path.join(config.output_path(), 'static')
-    if not os.path.exists(destination):
-        os.symlink(config.static_path(), destination)
+    aggregates netcdf files by experiment. Aggregation examples:
 
+    CORDEX: EUR-11_ICHEC-EC-EARTH_historical_r3i1p1_DMI-HIRHAM5_v1_day
+    CMIP5:
+    We collect for each experiment all files on the time axis:
+    200101-200512, 200601-201012, ...
 
-def search_landsea_mask_by_esgf(resource):
-    """
-    Searches a landsea mask (variable sftlf) in ESGF which matches the
-    NetCDF attributes in the NetCDF files ``resource``.
+    Time axis is sorted by time.
 
-    Raises an Exception if no mask is found.
+    :param resource: list of netcdf files
 
-    Returns the OpenDAP URL of the first found mask file.
-    """
-    # fill search constraints from nc attributes
-    ds = Dataset(resource)
-    attributes = ds.ncattrs()
-    constraints = dict(variable="sftlf")
-    for attr, facet in ATTRIBUTE_TO_FACETS_MAP.iteritems():
-        if attr in attributes:
-            constraints[facet] = ds.getncattr(attr)
-
-    # run file search
-    conn = SearchConnection(config.esgfsearch_url(), distrib=config.esgfsearch_distrib())
-    ctx = conn.new_context(search_type=TYPE_FILE, **constraints)
-    if ctx.hit_count == 0:
-        raise Exception("Could not find a mask in ESGF for dataset {0}".format(
-            os.path.basename(resource)))
-        # LOGGER.exception("Could not find a mask in ESGF.")
-        # return
-    if ctx.hit_count > 1:
-        LOGGER.warn("Found more then one mask file.")
-    results = ctx.search(batch_size=1)
-    return results[0].opendap_url
-
-
-def rename_complexinputs(complexinputs):
-    """
-    TODO: this method is just a dirty workaround to rename input files according to the url name.
-    """
-    resources = []
-    for inpt in complexinputs:
-        new_name = inpt.url.split('/')[-1]
-        os.rename(inpt.file, new_name)
-        resources.append(os.path.abspath(new_name))
-    return resources
-
-
-def make_dirs(directory):
-    """
-    creates a dictionary if not already existing
-
-    :param direcory: directory path
-    """
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-
-
-def check_creationtime(path, url):
-    """
-    Compares the creation time of an archive file with the file creation time of the local disc space.
-
-    :param path: Path to the local file
-    :param url: URL to the archive file
-
-    :returns boolean: True/False (True if archive file is newer)
+    :return: dictionary with key=experiment
     """
 
-    try:
-        req = requests.head(url)
-        LOGGER.debug('headers: %s', req.headers.keys())
-        if 'Last-Modified' not in req.headers:
-            return False
-        LOGGER.info("Last Modified: %s", req.headers['Last-Modified'])
+    aggregations = {}
+    for nc in resource:
+        key = drs_filename(nc, skip_timestamp=True, skip_format=True)
 
-        # CONVERTING HEADER TIME TO UTC TIMESTAMP
-        # ASSUMING 'Sun, 28 Jun 2015 06:30:17 GMT' FORMAT
-        meta_modifiedtime = time.mktime(
-            dt.strptime(req.headers['Last-Modified'], "%a, %d %b %Y %X GMT").timetuple())
-
-        # file = 'C:\Path\ToFile\somefile.xml'
-        if os.path.getmtime(path) < meta_modifiedtime:
-            LOGGER.info("local file is older than archive file.")
-            newer = True
+        # collect files of each aggregation (time axis)
+        if key in aggregations:
+            aggregations[key]['files'].append(nc)
         else:
-            LOGGER.info("local file is up-to-date. Nothing to fetch.")
-            newer = False
-    except Exception:
-        msg = 'failed to check archive and cache creation time assuming newer = False'
-        LOGGER.exception(msg)
-        newer = False
-    return newer
+            aggregations[key] = dict(files=[nc])
 
-
-def download_file(url, out=None, verify=False):
-    if out:
-        local_filename = out
-    else:
-        local_filename = url.split('/')[-1]
-    r = requests.get(url, stream=True, verify=verify)
-    with open(local_filename, 'wb') as fp:
-        shutil.copyfileobj(r.raw, fp)
-    return local_filename
-
-
-def download(url, cache=False):
-    """
-    Downloads URL using the Python requests module to the current directory.
-    :param cache: if True then files will be downloaded to a cache directory.
-    """
-    try:
-        if cache:
-            parsed_url = urlparse.urlparse(url)
-            filename = os.path.join(config.cache_path(), parsed_url.netloc, parsed_url.path.strip('/'))
-            if os.path.exists(filename):
-                LOGGER.info('file already in cache: %s', os.path.basename(filename))
-                if check_creationtime(filename, url):
-                    LOGGER.info('file in cache older than archive file, downloading: %s ', os.path.basename(filename))
-                    os.remove(filename)
-                    filename = download_file(url, out=filename)
-            else:
-                if not os.path.exists(os.path.dirname(filename)):
-                    os.makedirs(os.path.dirname(filename))
-                LOGGER.info('downloading: %s', url)
-                filename = download_file(url, out=filename)
-                # make softlink to current dir
-                # os.symlink(filename, os.path.basename(filename))
-# filename = os.path.basename(filename)
-        else:
-            filename = download_file(url)
-    except Exception:
-        LOGGER.exception('failed to download data')
-    return filename
+    # collect aggregation metadata
+    for key in aggregations.keys():
+        # sort files by time
+        aggregations[key]['files'] = sort_by_time(aggregations[key]['files'])
+        # start timestamp of first file
+        start, _ = get_timerange(aggregations[key]['files'][0])
+        # end timestamp of last file
+        _, end = get_timerange(aggregations[key]['files'][-1])
+        aggregations[key]['from_timestamp'] = start
+        aggregations[key]['to_timestamp'] = end
+        aggregations[key]['start_year'] = int(start[0:4])
+        aggregations[key]['end_year'] = int(end[0:4])
+        aggregations[key]['variable'] = get_variable(aggregations[key]['files'][0])
+        aggregations[key]['filename'] = "%s_%s-%s.nc" % (key, start, end)
+    return aggregations
 
 
 def archive(resources, format='tar', dir_output='.', mode='w'):
@@ -287,9 +191,70 @@ def archiveextract(resource, path='.'):
     return files
 
 
-def local_path(url):
-    url_parts = urlparse.urlparse(url)
-    return url_parts.path
+def check_creationtime(path, url):
+    """
+    Compares the creation time of an archive file with the file creation time of the local disc space.
+
+    :param path: Path to the local file
+    :param url: URL to the archive file
+
+    :returns boolean: True/False (True if archive file is newer)
+    """
+
+    try:
+        req = requests.head(url)
+        LOGGER.debug('headers: %s', req.headers.keys())
+        if 'Last-Modified' not in req.headers:
+            return False
+        LOGGER.info("Last Modified: %s", req.headers['Last-Modified'])
+
+        # CONVERTING HEADER TIME TO UTC TIMESTAMP
+        # ASSUMING 'Sun, 28 Jun 2015 06:30:17 GMT' FORMAT
+        meta_modifiedtime = time.mktime(
+            dt.strptime(req.headers['Last-Modified'], "%a, %d %b %Y %X GMT").timetuple())
+
+        # file = 'C:\Path\ToFile\somefile.xml'
+        if os.path.getmtime(path) < meta_modifiedtime:
+            LOGGER.info("local file is older than archive file.")
+            newer = True
+        else:
+            LOGGER.info("local file is up-to-date. Nothing to fetch.")
+            newer = False
+    except Exception:
+        msg = 'failed to check archive and cache creation time assuming newer = False'
+        LOGGER.exception(msg)
+        newer = False
+    return newer
+
+
+def download(url, cache=False):
+    """
+    Downloads URL using the Python requests module to the current directory.
+    :param cache: if True then files will be downloaded to a cache directory.
+    """
+    try:
+        if cache:
+            parsed_url = urlparse.urlparse(url)
+            filename = os.path.join(config.cache_path(), parsed_url.netloc, parsed_url.path.strip('/'))
+            if os.path.exists(filename):
+                LOGGER.info('file already in cache: %s', os.path.basename(filename))
+                if check_creationtime(filename, url):
+                    LOGGER.info('file in cache older than archive file, downloading: %s ', os.path.basename(filename))
+                    os.remove(filename)
+                    filename = download_file(url, out=filename)
+            else:
+                if not os.path.exists(os.path.dirname(filename)):
+                    os.makedirs(os.path.dirname(filename))
+                LOGGER.info('downloading: %s', url)
+                filename = download_file(url, out=filename)
+                # make softlink to current dir
+                # os.symlink(filename, os.path.basename(filename))
+# filename = os.path.basename(filename)
+        else:
+            filename = download_file(url)
+    except Exception:
+        LOGGER.exception('failed to download data')
+    return filename
 
 
 def calc_grouping(grouping):
@@ -353,6 +318,17 @@ def calc_grouping(grouping):
         LOGGER.debug(msg)
         raise Exception(msg)
     return calc_grouping
+
+
+def download_file(url, out=None, verify=False):
+    if out:
+        local_filename = out
+    else:
+        local_filename = url.split('/')[-1]
+    r = requests.get(url, stream=True, verify=verify)
+    with open(local_filename, 'wb') as fp:
+        shutil.copyfileobj(r.raw, fp)
+    return local_filename
 
 
 def drs_filename(resource, skip_timestamp=False, skip_format=False,
@@ -482,73 +458,39 @@ def get_coordinates(resource, variable=None, unrotate=False):
     return lats, lons
 
 
-def unrotate_pole(resource, write_to_file=False):
+def has_variable(resource, variable):
+    success = False
+    try:
+        rd = RequestDataset(uri=resource)
+        success = rd.variable == variable
+    except Exception:
+        LOGGER.exception('has_variable failed.')
+        raise
+    return success
+
+
+def local_path(url):
+    url_parts = urlparse.urlparse(url)
+    return url_parts.path
+
+
+def make_dirs(directory):
     """
-    Calculates the unrotatated coordinates for a rotated pole grid
+    creates a dictionary if not already existing
 
-    :param resource: netCDF file or list of files of one datatset
-    :param write_to_file: calculated values will be written to file if True (default=False)
-
-    :return list: lats, lons
+    :param direcory: directory path
     """
-    from numpy import reshape, repeat
-    from iris.analysis import cartography as ct
-    ds = MFDataset(resource)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
-    if 'lat' in ds.variables.keys():
-        LOGGER.info('file include unrotated coordinate values')
-        lats = ds.variables['lat'][:]
-        lons = ds.variables['lon'][:]
-    else:
-        try:
-            if 'rotated_latitude_longitude' in ds.variables:
-                rp = ds.variables['rotated_latitude_longitude']
-            elif 'rotated_pole' in ds.variables:
-                rp = ds.variables['rotated_pole']
-            else:
-                LOGGER.debug('rotated pole variable not found')
-            pole_lat = rp.grid_north_pole_latitude
-            pole_lon = rp.grid_north_pole_longitude
-        except:
-            LOGGER.exception('failed to find rotated_pole coordinates')
-        try:
-            if 'rlat' in ds.variables:
-                rlats = ds.variables['rlat']
-                rlons = ds.variables['rlon']
 
-            if 'x' in ds.variables:
-                rlats = ds.variables['y']
-                rlons = ds.variables['x']
-        except:
-            LOGGER.exception('failed to read in rotated coordiates')
-
-        try:
-            rlons_i = reshape(rlons, (1, len(rlons)))
-            rlats_i = reshape(rlats, (len(rlats), 1))
-            grid_rlats = repeat(rlats_i, (len(rlons)), axis=1)
-            grid_rlons = repeat(rlons_i, (len(rlats)), axis=0)
-        except:
-            LOGGER.execption('failed to repeat coordinates')
-
-        lons, lats = ct.unrotate_pole(grid_rlons, grid_rlats, pole_lon, pole_lat)
-
-    if write_to_file is True:
-        lat = ds.createVariable('lat', 'f8', ('rlat', 'rlon'))
-        lon = ds.createVariable('lon', 'f8', ('rlat', 'rlon'))
-
-        lon.standard_name = "longitude"
-        lon.long_name = "longitude coordinate"
-        lon.units = 'degrees_east'
-        lat.standard_name = "latitude"
-        lat.long_name = "latitude coordinate"
-        lat.units = 'degrees_north'
-
-        lat[:] = lats
-        lon[:] = lons
-
-    ds.close()
-
-    return lats, lons
+def prepare_static_folder():
+    """
+    Link static folder to output folder.
+    """
+    destination = os.path.join(config.output_path(), 'static')
+    if not os.path.exists(destination):
+        os.symlink(config.static_path(), destination)
 
 
 def get_domain(resource):
@@ -712,47 +654,16 @@ def get_time(resource, format=None):
     return ts
 
 
-def aggregations(resource):
+def rename_complexinputs(complexinputs):
     """
-    aggregates netcdf files by experiment. Aggregation examples:
-
-    CORDEX: EUR-11_ICHEC-EC-EARTH_historical_r3i1p1_DMI-HIRHAM5_v1_day
-    CMIP5:
-    We collect for each experiment all files on the time axis:
-    200101-200512, 200601-201012, ...
-
-    Time axis is sorted by time.
-
-    :param resource: list of netcdf files
-
-    :return: dictionary with key=experiment
+    TODO: this method is just a dirty workaround to rename input files according to the url name.
     """
-
-    aggregations = {}
-    for nc in resource:
-        key = drs_filename(nc, skip_timestamp=True, skip_format=True)
-
-        # collect files of each aggregation (time axis)
-        if key in aggregations:
-            aggregations[key]['files'].append(nc)
-        else:
-            aggregations[key] = dict(files=[nc])
-
-    # collect aggregation metadata
-    for key in aggregations.keys():
-        # sort files by time
-        aggregations[key]['files'] = sort_by_time(aggregations[key]['files'])
-        # start timestamp of first file
-        start, _ = get_timerange(aggregations[key]['files'][0])
-        # end timestamp of last file
-        _, end = get_timerange(aggregations[key]['files'][-1])
-        aggregations[key]['from_timestamp'] = start
-        aggregations[key]['to_timestamp'] = end
-        aggregations[key]['start_year'] = int(start[0:4])
-        aggregations[key]['end_year'] = int(end[0:4])
-        aggregations[key]['variable'] = get_variable(aggregations[key]['files'][0])
-        aggregations[key]['filename'] = "%s_%s-%s.nc" % (key, start, end)
-    return aggregations
+    resources = []
+    for inpt in complexinputs:
+        new_name = inpt.url.split('/')[-1]
+        os.rename(inpt.file, new_name)
+        resources.append(os.path.abspath(new_name))
+    return resources
 
 
 def rename_variable(resource, oldname=None, newname='newname'):
@@ -884,17 +795,6 @@ def sort_by_filename(resource, historical_concatination=False):
     return tmp_dic
 
 
-def has_variable(resource, variable):
-    success = False
-    try:
-        rd = RequestDataset(uri=resource)
-        success = rd.variable == variable
-    except Exception:
-        LOGGER.exception('has_variable failed.')
-        raise
-    return success
-
-
 def searchfile(pattern, base_dir):
     """
     searches recursive for files with an given pattern,
@@ -915,6 +815,107 @@ def searchfile(pattern, base_dir):
                 nc_list.extend([path.join(root, name)])
 
     return nc_list
+
+
+def search_landsea_mask_by_esgf(resource):
+    """
+    Searches a landsea mask (variable sftlf) in ESGF which matches the
+    NetCDF attributes in the NetCDF files ``resource``.
+
+    Raises an Exception if no mask is found.
+
+    Returns the OpenDAP URL of the first found mask file.
+    """
+    # fill search constraints from nc attributes
+    ds = Dataset(resource)
+    attributes = ds.ncattrs()
+    constraints = dict(variable="sftlf")
+    for attr, facet in ATTRIBUTE_TO_FACETS_MAP.iteritems():
+        if attr in attributes:
+            constraints[facet] = ds.getncattr(attr)
+
+    # run file search
+    conn = SearchConnection(config.esgfsearch_url(), distrib=config.esgfsearch_distrib())
+    ctx = conn.new_context(search_type=TYPE_FILE, **constraints)
+    if ctx.hit_count == 0:
+        raise Exception("Could not find a mask in ESGF for dataset {0}".format(
+            os.path.basename(resource)))
+        # LOGGER.exception("Could not find a mask in ESGF.")
+        # return
+    if ctx.hit_count > 1:
+        LOGGER.warn("Found more then one mask file.")
+    results = ctx.search(batch_size=1)
+    return results[0].opendap_url
+
+
+def unrotate_pole(resource, write_to_file=False):
+    """
+    Calculates the unrotatated coordinates for a rotated pole grid
+
+    :param resource: netCDF file or list of files of one datatset
+    :param write_to_file: calculated values will be written to file if True (default=False)
+
+    :return list: lats, lons
+    """
+    from numpy import reshape, repeat
+    from iris.analysis import cartography as ct
+    ds = MFDataset(resource)
+
+    if 'lat' in ds.variables.keys():
+        LOGGER.info('file include unrotated coordinate values')
+        lats = ds.variables['lat'][:]
+        lons = ds.variables['lon'][:]
+    else:
+        try:
+            if 'rotated_latitude_longitude' in ds.variables:
+                rp = ds.variables['rotated_latitude_longitude']
+            elif 'rotated_pole' in ds.variables:
+                rp = ds.variables['rotated_pole']
+            else:
+                LOGGER.debug('rotated pole variable not found')
+            pole_lat = rp.grid_north_pole_latitude
+            pole_lon = rp.grid_north_pole_longitude
+        except:
+            LOGGER.exception('failed to find rotated_pole coordinates')
+        try:
+            if 'rlat' in ds.variables:
+                rlats = ds.variables['rlat']
+                rlons = ds.variables['rlon']
+
+            if 'x' in ds.variables:
+                rlats = ds.variables['y']
+                rlons = ds.variables['x']
+        except:
+            LOGGER.exception('failed to read in rotated coordiates')
+
+        try:
+            rlons_i = reshape(rlons, (1, len(rlons)))
+            rlats_i = reshape(rlats, (len(rlats), 1))
+            grid_rlats = repeat(rlats_i, (len(rlons)), axis=1)
+            grid_rlons = repeat(rlons_i, (len(rlats)), axis=0)
+        except:
+            LOGGER.execption('failed to repeat coordinates')
+
+        lons, lats = ct.unrotate_pole(grid_rlons, grid_rlats, pole_lon, pole_lat)
+
+    if write_to_file is True:
+        lat = ds.createVariable('lat', 'f8', ('rlat', 'rlon'))
+        lon = ds.createVariable('lon', 'f8', ('rlat', 'rlon'))
+
+        lon.standard_name = "longitude"
+        lon.long_name = "longitude coordinate"
+        lon.units = 'degrees_east'
+        lat.standard_name = "latitude"
+        lat.long_name = "latitude coordinate"
+        lat.units = 'degrees_north'
+
+        lat[:] = lats
+        lon[:] = lons
+
+    ds.close()
+
+    return lats, lons
+
 
 # def get_dimension_map(resource):
 #   OBSOLETE
