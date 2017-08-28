@@ -15,7 +15,7 @@ from cartopy.util import add_cyclic_point
 import cartopy.crs as ccrs
 from flyingpigeon import utils
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger("PYWPS")
 
 
 class MidpointNormalize(Normalize):
@@ -201,7 +201,8 @@ def spaghetti(resouces, variable=None, title=None):
         logger.exception(msg)
     return output_png
 
-def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
+
+def uncertainty(resouces, variable=None, ylim=None, title=None):
     """
     creates a png file containing the appropriate uncertainty plot.
     :param resouces: list of files containing the same variable
@@ -222,12 +223,10 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
         variable = utils.get_variable(resouces[0])
     if title is None:
         title = "Field mean of %s " % variable
-    if dir_out is None:
-        dir_out = '.'
 
     try:
         fig = plt.figure(figsize=(20, 10), facecolor='w', edgecolor='k')  # dpi=600,
-        o1, output_png = mkstemp(dir=dir_out, suffix='.png')
+        o1, output_png = mkstemp(dir='.', suffix='.png')
         variable = utils.get_variable(resouces[0])
         df = pd.DataFrame()
 
@@ -291,96 +290,9 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
         LOGGER.exception('uncertainty plot failed for %s' % variable)
         _, output_png = mkstemp(dir='.', suffix='.png')
     return output_png
-#
-# def uncertainty(resouces, variable=None, ylim=None, title=None):
-#     """
-#     creates a png file containing the appropriate uncertainty plot.
-#
-#     :param resouces: list of files containing the same variable
-#     :param variable: variable to be visualised. If None (default), variable will be detected
-#     :param title: string to be used as title
-#
-#     :returns str: path/to/file.png
-#     """
-#     logger.debug('Start visualisation uncertainty plot')
-#     from flyingpigeon.calculation import fieldmean
-#     from flyingpigeon.utils import get_time, sort_by_filename
-#
-#     import pandas as pd
-#     import numpy as np
-#
-#     # === prepare invironment
-#     if type(resouces) == str:
-#         resouces = list([resouces])
-#     if variable is None:
-#         variable = utils.get_variable(resouces[0])
-#     if title is None:
-#         title = "Field mean of %s " % variable
-#     ncs = sort_by_filename(resouces)
-#
-#     try:
-#         fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
-#         o1, output_png = mkstemp(dir='.', suffix='.png')
-#         variable = utils.get_variable(resouces[0])
-#         df = pd.DataFrame()
-#
-#         logger.info('variable %s found in resources.' % variable)
-#
-#         for key in ncs.keys():
-#             try:
-#                 d = utils.get_time(ncs[key])  # [datetime.strptime(elem, '%Y-%m-%d') for elem in strDate[0]]
-#                 dt = [datetime.strptime(str(i), '%Y-%m-%d %H:%M:%S') for i in d]
-#                 ts = fieldmean(ncs[key])
-#                 plt.plot(dt, ts)
-#
-#
-#                 hs = pd.Series(ts, index=dt, name=key)
-#                 hd = hs.to_frame()
-#                 df[key] = hd
-#             except:
-#                 logger.debug('failed to calculate timeseries for %s :' % (key))
-#
-#         # try:
-#         #     if len(df.index) > 90:
-#         #         rollmean = df.rolling(window=30, center=True).mean()
-#         #         logger.info('rolling mean calculated for all input data')
-#         #     else:
-#         #         rollmean = df
-#         #         # TODO : plot warning into graphic
-#         #     rmean = rollmean.median(axis=1, skipna=False)  # quantile([0.5], axis=1, numeric_only=False )
-#         #     q05 = rollmean.quantile([0.05], axis=1,)  # numeric_only=False)
-#         #     q33 = rollmean.quantile([0.33], axis=1,)  # numeric_only=False)
-#         #     q66 = rollmean.quantile([0.66], axis=1, )  # numeric_only=False)
-#         #     q95 = rollmean.quantile([0.95], axis=1, )  # numeric_only=False)
-#         #
-#         #     logger.info('quantile calculated for all input data')
-#         # except:
-#         #     logger.debug('failed to calculate quantiles')
-#         #
-#         try:
-#         #     plt.fill_between(rollmean.index.values, np.squeeze(q05.values), np.squeeze(q95.values),
-#         #                      alpha=0.5, color='grey')
-#         #     plt.fill_between(rollmean.index.values, np.squeeze(q33.values), np.squeeze(q66.values),
-#         #                      alpha=0.5, color='grey')
-#         #     plt.plot(rollmean.index.values, np.squeeze(rmean.values), c='r', lw=3)
-#         #
-#         #     plt.xlim(min(df.index.values), max(df.index.values))
-#         #     plt.ylim(ylim)
-#         #     plt.title(title, fontsize=20)
-#         #     plt.grid()  # .grid_line_alpha=0.3
-#
-#             fig.savefig(output_png)
-#             plt.close()
-#             logger.debug('timeseries uncertainty plot done for %s' % variable)
-#         except:
-#             logger.exception('failed to calculate quantiles')
-#     except:
-#         logger.exception('uncertainty plot failed for %s' % variable)
-#         raise
-#     return output_png
 
 
-def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, variable=None, cmap='seismic', title=None):
+def map_robustness(signal, high_agreement_mask, low_agreement_mask, variable=None, cmap='seismic', title=None):
     """
     generates a graphic for the output of the ensembleRobustness process for a lat/long file.
 
@@ -393,21 +305,15 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
     :returns str: path/to/file.png
     """
     from flyingpigeon import utils
-    from  numpy import mean
+    from numpy import mean
 
     if variable is None:
         variable = utils.get_variable(signal)
 
     try:
-        # get the path of the file. It can be found in the repo data directory.
-
-        # ds_signal = Dataset(signal, mode='r')
-        # ds_lagree = Dataset(low_agreement_mask, mode='r')
-        # ds_hagree = Dataset(high_agreement_mask, mode='r')
-
-        var_signal = utils.get_values(signal)  # np.squeeze(ds_signal.variables[variable])
-        mask_l = utils.get_values(low_agreement_mask)  #  np.squeeze(ds_lagree.variables[variable])
-        mask_h = utils.get_values(high_agreement_mask)  #  np.squeeze(ds_hagree.variables[variable])
+        var_signal = utils.get_values(signal)
+        mask_l = utils.get_values(low_agreement_mask)
+        mask_h = utils.get_values(high_agreement_mask)
 
         mask_l[mask_l is 0] = np.nan
         mask_h[mask_h is 0] = np.nan
@@ -415,8 +321,6 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
         logger.info('data loaded')
 
         lats, lons = utils.get_coordinates(signal, unrotate=True)
-        # lons = np.squeeze(ds_signal.variables['lon'][:])
-        # lats = np.squeeze(ds_signal.variables['lat'][:])
 
         if len(lats.shape) == 1:
             cyclic_var, cyclic_lons = add_cyclic_point(var_signal, coord=lons)
@@ -432,13 +336,13 @@ def map_ensembleRobustness(signal, high_agreement_mask, low_agreement_mask, vari
         maxval = round(np.nanmax(var_signal)+.5)
 
         logger.info('prepared data for plotting')
-    except Exception as e:
-        msg = 'failed to get data for plotting %s' % e
+    except:
+        msg = 'failed to get data for plotting'
         logger.exception(msg)
         raise Exception(msg)
 
     try:
-        fig = plt.figure(facecolor='w', edgecolor='k')  # figsize=(20,10), dpi=600,
+        fig = plt.figure(facecolor='w', edgecolor='k')
 
         ax = plt.axes(projection=ccrs.Robinson(central_longitude=int(mean(lons))))
         norm = MidpointNormalize(midpoint=0)
@@ -615,124 +519,3 @@ def map_PAmask(PAmask):
             # TODO: needs to be a png file
             fp.write(msg)
     return png_PA_mask
-
-
-# def plot_tSNE(data, title='custer', sub_title='method: principal components'):
-#     """
-#     !!!Obsolete!!!
-#     plot the output of weather classifiaction as a cluster
-#     :param param: values for x y coordinate
-#     :param title: string for title
-#     """
-    # fig = plt.figure(figsize=(10, 10))
-    # plt.scatter(data[:, 0], data[:, 1], marker=".")
-    # plt.title(title)
-    # plt.annotate(sub_title, (0,0), (0, -30), xycoords='axes fraction', textcoords='offset points', va='top')
-    #
-    # ip, image = mkstemp(dir='.',suffix='.png')
-    # plt.savefig(image)
-    # plt.close()
-    #
-    # return image
-
-
-def plot_kMEAN(kmeans, pca, title='kmean', sub_title='file='):
-    """
-    !!!Obsolete!!!
-    """
-    pass
-    # from itertools import cycle
-    # centroids = kmeans.cluster_centers_
-    #
-    # c = kmeans.predict(pca)
-    # x = pca[:, 0]
-    # y = pca[:, 1]
-    #
-    # fig = plt.figure(figsize=(10, 10))
-    #
-    # cx = centroids[:, 0]
-    # cy= centroids[:, 1]
-    # ct = plt.scatter(cx, cy,
-    #         marker='.', s=100, linewidths=3,
-    #         color='black', zorder=10)
-    #
-    # #n = ['1', '2','3','4']
-    #
-    # #for i, txt in enumerate(n):
-    # #plt.annotate(txt, (cx[i],cy[i]))
-    #
-    # colors = cycle(["r", "b", "g", "y"])
-    #
-    # for i in range(max(c)+1):
-    # plt.scatter(x[c==i],y[c==i],marker='.', s=30, lw=None, color=next(colors))
-    #
-    # plt.axvline(0)
-    # plt.axhline(0)
-    # plt.title(title)
-    #
-    # plt.annotate(sub_title, (0,0), (0, -30), xycoords='axes fraction', textcoords='offset points', va='top')
-    #
-    # ip, image = mkstemp(dir='.',suffix='.png')
-    # plt.savefig(image)
-    # plt.close()
-    #
-    # return image
-
-
-def plot_pressuremap(data, lats=None, lons=None,
-                     facecolor=None,  edgecolor=None, vmin=None, vmax=None,
-                     title='Pressure Pattern',
-                     sub_title='plotted in birdhouse'):
-    """
-    !!!Obsolete!!!
-    plots pressure data
-    :param data: 2D or 3D array of pressure data. if data == 3D, a mean will be calculated
-    :param lats: 1D or 2D array for latitude coordinates (geographcal map will be plotted if lats/lons are provided)
-    :param lons: 1D or 2D array for longitude coordinates (geographcal map will be plotted if lats/lons are provided)
-    :param title: string for title
-    :param sub_title: string for sub_title
-    """
-    pass
-    # from numpy import squeeze, mean, meshgrid
-    # norm = MidpointNormalize(midpoint=0, vmin=vmin, vmax=vmax)
-    # d = squeeze(data)
-    #
-    # if len(d.shape)==3:
-    # d = mean(d, axis=0)
-    # if len(d.shape)!=2:
-    # logger.error('data are not in shape for map display')
-    #
-    # # fig = plt.figure( )
-    # # fig.patch.set_facecolor(facecolor)
-    #
-    # if not (lats == None or lons == None):
-    # if len(lats.shape) == 1:
-    # lons, lats = meshgrid( lons, lats)
-    # central_longitude = int(mean(lons))
-    #
-    # #AlbersEqualArea(central_longitude=0.0, central_latitude=0.0, false_easting=0.0, false_northing=0.0,
-    #                  standard_parallels=(20.0, 50.0), globe=None)
-    #
-    # ax = plt.axes(projection=ccrs.AlbersEqualArea(central_longitude=central_longitude), axisbg=facecolor),
-    #               Robinson(central_longitude=central_longitude))
-    # ax.gridlines()
-    # ax.coastlines()
-    #
-    # cf = plt.contourf(lons, lats, d, 60, transform=ccrs.PlateCarree(), norm=norm, cmap='jet', interpolation=None)
-    #                   # 'nearest'
-    # co = plt.contour(lons, lats, d, transform=ccrs.PlateCarree(), lw=2, color='black')
-    # else:
-    # cf = plt.contourf(d, norm=norm, cmap='jet')
-    # co = plt.contour(d, lw=2, c='black')
-    #
-    # plt.colorbar(cf, shrink=0.5,)
-    # # clb = plt.colorbar( ticks=clevs)
-    # plt.clabel(co, inline=1) # fontsize=10
-    # plt.title(title)
-    # plt.annotate(sub_title, (0,0), (0, -30), xycoords='axes fraction',
-    #        textcoords='offset points', va='top')
-    #
-    # ip, image = mkstemp(dir='.',suffix='.png')
-    # plt.savefig(image)
-    # plt.close()
-    # return image
