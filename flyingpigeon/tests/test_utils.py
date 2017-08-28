@@ -87,7 +87,7 @@ def test_get_index_lat():
     assert 1 == index
 
 
-def test_get_coodinates():
+def test_get_coordinates():
     ncs = [local_path(TESTDATA['cordex_tasmax_2006_nc']),
            local_path(TESTDATA['cordex_tasmax_2007_nc'])]
 
