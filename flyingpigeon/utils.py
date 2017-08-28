@@ -458,12 +458,19 @@ def get_coordinates(resource, variable=None, unrotate=False):
 
     :returns list, list: latitudes , longitudes
     """
+    if type(resource) != list:
+        resource = [resource]
+
     if variable is None:
         variable = get_variable(resource)
 
     if unrotate is False:
         try:
-            ds = MFDataset(resource)
+            if len(resource) > 1:
+                ds = MFDataset(resource)
+            else:
+                ds = Dataset(resource[0])
+
             var = ds.variables[variable]
             dims = list(var.dimensions)
             dims.remove('time')
@@ -892,7 +899,13 @@ def unrotate_pole(resource, write_to_file=False):
     """
     from numpy import reshape, repeat
     from iris.analysis import cartography as ct
-    ds = MFDataset(resource)
+
+    if len(resource) == 1:
+        ds = Dataset(resource[0])
+    else:
+        ds = MFDataset(resource)
+
+    # ds = MFDataset(resource)
 
     if 'lat' in ds.variables.keys():
         LOGGER.info('file include unrotated coordinate values')

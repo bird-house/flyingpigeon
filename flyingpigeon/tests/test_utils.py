@@ -76,6 +76,17 @@ def test_unrotate_pole():
     assert lats.shape == (103, 106)
 
 
+def test_get_index_lat():
+    ncs = [local_path(TESTDATA['cordex_tasmax_2006_nc']),
+           local_path(TESTDATA['cordex_tasmax_2007_nc'])]
+    index = utils.get_index_lat(ncs)
+    assert 1 == index
+    index = utils.get_index_lat(ncs[0])
+    assert 1 == index
+    index = utils.get_index_lat(local_path(TESTDATA['cmip5_tasmax_2007_nc']))
+    assert 1 == index
+
+
 def test_get_coodinates():
     ncs = [local_path(TESTDATA['cordex_tasmax_2006_nc']),
            local_path(TESTDATA['cordex_tasmax_2007_nc'])]

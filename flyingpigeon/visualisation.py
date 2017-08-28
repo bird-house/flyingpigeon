@@ -90,7 +90,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None):
             c.save()
             pfr_country = PdfFileReader(open(pdf_country, 'rb'))
         except:
-            logger.exception('failed to convert png to pdf')
+            LOGGER.exception('failed to convert png to pdf')
 
         try:
             _, pdf_uncertainty = mkstemp(dir='.', suffix='.pdf')
@@ -99,7 +99,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None):
             c.save()
             pfr_uncertainty = PdfFileReader(open(pdf_uncertainty, 'rb'))
         except:
-            logger.exception('failed to convert png to pdf')
+            LOGGER.exception('failed to convert png to pdf')
 
         try:
             _, pdf_spaghetti = mkstemp(dir='.', suffix='.pdf')
@@ -108,42 +108,42 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None):
             c.save()
             pfr_spagetthi = PdfFileReader(open(pdf_spaghetti, 'rb'))
         except:
-            logger.exception('failed to convert png to pdf')
+            LOGGER.exception('failed to convert png to pdf')
 
         output_file = PdfFileWriter()
         pfr_template = PdfFileReader(file(static_dir() + '/pdf/climatefactsheettemplate.pdf', 'rb'))
-        logger.debug('template: %s' % pfr_template)
+        LOGGER.debug('template: %s' % pfr_template)
 
         page_count = pfr_template.getNumPages()
         for page_number in range(page_count):
-            logger.debug("Plotting png to {} of {}".format(page_number, page_count))
+            LOGGER.debug("Plotting png to {} of {}".format(page_number, page_count))
             input_page = pfr_template.getPage(page_number)
             try:
                 input_page.mergePage(pfr_country.getPage(0))
             except:
-                logger.warn('failed to merge courtry map')
+                LOGGER.warn('failed to merge courtry map')
             try:
                 input_page.mergePage(pfr_uncertainty.getPage(0))
             except:
-                logger.warn('failed to merge uncertainy plot')
+                LOGGER.warn('failed to merge uncertainy plot')
             try:
                 input_page.mergePage(pfr_spagetthi.getPage(0))
             except:
-                logger.warn('failed to merge spaghetti plot')
+                LOGGER.warn('failed to merge spaghetti plot')
             try:
                 output_file.addPage(input_page)
             except:
-                logger.warn('failed to add page to output pdf')
+                LOGGER.warn('failed to add page to output pdf')
         try:
             _, climatefactsheet = mkstemp(dir='.', suffix='.pdf')
             with open(climatefactsheet, 'wb') as outputStream:
                 output_file.write(outputStream)
-            logger.info('sucessfully brewed the demanded factsheet')
+            LOGGER.info('sucessfully brewed the demanded factsheet')
         except:
-            logger.exception('failed write filled template to pdf. empty template will be set as output')
+            LOGGER.exception('failed write filled template to pdf. empty template will be set as output')
             climatefactsheet = static_dir() + '/pdf/climatefactsheettemplate.pdf'
     except:
-        logger.exception("failed to brew the factsheet, empty template will be set as output")
+        LOGGER.exception("failed to brew the factsheet, empty template will be set as output")
     return climatefactsheet
 
 
@@ -161,7 +161,7 @@ def spaghetti(resouces, variable=None, title=None):
 
     try:
         fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
-        logger.debug('Start visualisation spaghetti plot')
+        LOGGER.debug('Start visualisation spaghetti plot')
 
         # === prepare invironment
         if type(resouces) != list:
@@ -171,10 +171,10 @@ def spaghetti(resouces, variable=None, title=None):
         if title is None:
             title = "Field mean of %s " % variable
 
-        logger.info('plot values preparation done')
+        LOGGER.info('plot values preparation done')
     except:
         msg = "plot values preparation failed"
-        logger.exception(msg)
+        LOGGER.exception(msg)
         raise Exception(msg)
     try:
         o1, output_png = mkstemp(dir='.', suffix='.png')
@@ -188,17 +188,17 @@ def spaghetti(resouces, variable=None, title=None):
                 # fig.line( dt,ts )
             except:
                 msg = "spaghetti plot failed for"
-                logger.exception(msg)
+                LOGGER.exception(msg)
                 raise Exception(msg)
 
         plt.title(title, fontsize=20)
         plt.grid()
         fig.savefig(output_png)
         plt.close()
-        logger.info('timeseries spaghetti plot done for %s with %s lines.' % (variable, c))
+        LOGGER.info('timeseries spaghetti plot done for %s with %s lines.' % (variable, c))
     except:
         msg = 'matplotlib spaghetti plot failed'
-        logger.exception(msg)
+        LOGGER.exception(msg)
     return output_png
 
 
@@ -318,7 +318,7 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, variable=Non
         mask_l[mask_l is 0] = np.nan
         mask_h[mask_h is 0] = np.nan
 
-        logger.info('data loaded')
+        LOGGER.info('data loaded')
 
         lats, lons = utils.get_coordinates(signal, unrotate=True)
 
@@ -330,15 +330,15 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, variable=Non
             lons = cyclic_lons.data
             var_signal = cyclic_var
 
-        logger.info('lat lon loaded')
+        LOGGER.info('lat lon loaded')
 
         minval = round(np.nanmin(var_signal))
         maxval = round(np.nanmax(var_signal)+.5)
 
-        logger.info('prepared data for plotting')
+        LOGGER.info('prepared data for plotting')
     except:
         msg = 'failed to get data for plotting'
-        logger.exception(msg)
+        LOGGER.exception(msg)
         raise Exception(msg)
 
     try:
@@ -371,10 +371,10 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, variable=Non
         fig.savefig(graphic)
         plt.close()
 
-        logger.info('Plot created and figure saved')
+        LOGGER.info('Plot created and figure saved')
     except:
         msg = 'failed to plot graphic'
-        logger.exception(msg)
+        LOGGER.exception(msg)
 
     return graphic
 
@@ -391,7 +391,7 @@ def concat_images(images, orientation='v'):
     from PIL import Image
     import sys
 
-    logger.debug('Images to be concatinated: %s' % images)
+    LOGGER.debug('Images to be concatinated: %s' % images)
 
     if len(images) > 1:
         try:
@@ -426,14 +426,14 @@ def concat_images(images, orientation='v'):
             ip, image = mkstemp(dir='.', suffix='.png')
             result.save(image)
         except:
-            logger.exception('failed to concat images')
+            LOGGER.exception('failed to concat images')
             _, image = mkstemp(dir='.', suffix='.png')
             result = Image.new("RGB", (50, 50))
             result.save(image)
     elif len(images) == 1:
         image = images[0]
     else:
-        logger.exception('No concatable number of images: %s, Dummy will be produced' % len(image))
+        LOGGER.exception('No concatable number of images: %s, Dummy will be produced' % len(image))
         _, image = mkstemp(dir='.', suffix='.png')
         result = Image.new("RGB", (50, 50))
         result.save(image)
@@ -458,7 +458,7 @@ def pdfmerge(pdfs):
         _, mergedpdf = mkstemp(dir='.', suffix='.pdf')
         merger.write(mergedpdf)
     except:
-        logger.excetion('failed to merge pdfs')
+        LOGGER.excetion('failed to merge pdfs')
         _, mergedpdf = mkstemp(dir='.', suffix='.pdf')
 
     return mergedpdf
@@ -494,7 +494,7 @@ def map_gbifoccurrences(latlon, dir='.'):
         plt.close()
     except Exception as e:
         msg = 'failed to plot occurency plot: %s' % e
-        logger.debug(msg)
+        LOGGER.debug(msg)
     return tree_presents
 
 
@@ -514,7 +514,7 @@ def map_PAmask(PAmask):
         plt.close()
     except Exception as e:
         msg = 'failed to plot the PA mask'
-        logger.exception(msg)
+        LOGGER.exception(msg)
         with open(png_PA_mask, 'w') as fp:
             # TODO: needs to be a png file
             fp.write(msg)
