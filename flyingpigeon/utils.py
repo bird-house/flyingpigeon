@@ -649,6 +649,7 @@ def get_time(resource, format=None):
             if format is not None:
                 ts = [t.strftime(format=format) for t in timestamps]
             else:
+                #TODO change format according to frequency
                 ts = [dt.strptime(str(i), '%Y-%m-%d %H:%M:%S') for i in timestamps]
         except:
             msg = 'failed to convert times to string'

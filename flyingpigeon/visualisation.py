@@ -181,15 +181,13 @@ def spaghetti(resouces, variable=None, title=None):
         for c, nc in enumerate(resouces):
             # get timestapms
             try:
-                d = utils.get_time(nc)  # [datetime.strptime(elem, '%Y-%m-%d') for elem in strDate[0]]
-                dt = [datetime.strptime(str(i), '%Y-%m-%d %H:%M:%S') for i in d]
+                dt = utils.get_time(nc)  # [datetime.strptime(elem, '%Y-%m-%d') for elem in strDate[0]]
                 ts = fieldmean(nc)
                 plt.plot(dt, ts)
                 # fig.line( dt,ts )
             except:
-                msg = "spaghetti plot failed for"
+                msg = "spaghetti plot failed for %s " % nc
                 LOGGER.exception(msg)
-                raise Exception(msg)
 
         plt.title(title, fontsize=20)
         plt.grid()
