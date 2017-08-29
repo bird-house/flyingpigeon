@@ -12,6 +12,7 @@ from flyingpigeon.log import init_process_logger
 import ocgis
 from os.path import join, abspath, dirname, getsize, curdir
 from ocgis import OcgOperations, RequestDataset, env
+from ocgis.conv.nc import NcConverter
 import uuid
 
 import logging
@@ -119,29 +120,6 @@ class OuranosPublicIndicatorProcess(Process, object):
             out[obj.identifier] = request.inputs[obj.identifier][0].data
         return out
 
-    def call(self, resource, calc, calc_grouping):
-
-        LOGGER.info('Start ocgis module call function')
-
-        # Prepare the environment
-        env.OVERWRITE = True
-        dir_output = abspath(curdir)
-
-        prefix = str(uuid.uuid1())
-        env.PREFIX = prefix
-
-        rd = RequestDataset(resource)
-
-        ops = OcgOperations(dataset=rd,
-                            calc=calc,
-                            calc_grouping=calc_grouping,
-                            dir_output=dir_output,
-                            prefix=prefix,
-                            add_auxiliary_files=False,
-                            output_format='ocgis')
-
-        return ops.execute()
-
     def _handler(self, request, response):
         from flyingpigeon.utils import calc_grouping
 
@@ -172,17 +150,6 @@ class OuranosPublicIndicatorProcess(Process, object):
 
         response.update_status('Input parameters ingested', 2)
 
-        ######################################
-        # Process extra inputs
-        ######################################
-        try:
-            extras = self._extra_input_handler(request)
-
-        except Exception as e:
-            msg = 'Failed to read inputs {} '.format(e)
-            LOGGER.error(msg)
-            raise Exception(msg)
-
         response.update_status('Processed input parameters', 3)
 
         ######################################
@@ -205,7 +172,8 @@ class OuranosPublicIndicatorProcess(Process, object):
         calc['pr'] = [{'func':'icclim_PRCPTOT', 'name':'PRCPTOT'},
                    {'func': 'icclim_RX5day', 'name': 'RX5day'},]
 
-        out = ocgis.SpatialCollection()
+
+        scs = []
         for key, val in calc.items():
             rd = RequestDataset(res[key])
             ops = OcgOperations(dataset=rd,
@@ -213,23 +181,25 @@ class OuranosPublicIndicatorProcess(Process, object):
                                 calc_grouping=calc_group,
                                 )
 
-            out.add_field(ops.execute().get_element(), None)
+            scs.append(ops.execute())
 
+        out = scs[0]
+        outfield = out.get_element()
+
+        for idx in range(1, len(scs)):
+            for field, container in scs[idx].iter_fields(yield_container=True):
+                for dv in field.data_variables:
+                    outfield.add_variable(dv.extract(), is_data=True)
 
         # Prepare the environment
         env.OVERWRITE = True
         dir_output = abspath(curdir)
         prefix = str(uuid.uuid1())
         env.PREFIX = prefix
+        conv = NcConverter([out], outdir=dir_output, prefix=prefix)
+        conv.write()
 
-        # Write the collection to file
-        ops = OcgOperations(dataset=out,
-                            dir_output=dir_output,
-                            prefix=prefix,
-                            add_auxiliary_files=False,
-                            output_format='nc')
-
-        response.outputs['output_netcdf'].file = ops.execute()
+        response.outputs['output_netcdf'].file = conv.path
 
         response.update_status('Execution completed', 100)
 
