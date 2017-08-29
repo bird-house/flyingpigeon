@@ -156,21 +156,20 @@ class OuranosPublicIndicatorProcess(Process, object):
         # Run all calculations
         ######################################
         calc = {}
-        calc['tas'] = [{'func':'icclim_TG', 'name':'TG'},
-                    {'func': 'icclim_GD4', 'name': 'GD4'}]
+        calc['tas'] = [{'func': 'icclim_TG', 'name':'TG'},
+                       {'func': 'icclim_GD4', 'name': 'GD4'},
+                       {'func': 'freezethaw', 'name': 'freezethaw', 'kwds':{'threshold':15}}]
 
         calc['tasmax'] = [{'func': 'icclim_TX', 'name': 'TX'},
-                       #{'func': 'icclim_custom', 'name': 'HWN',
-                       # 'kwds':{'indice_name': 'HWN',
-                       #         'calc_operation': 'nb_events',
-                       #         'logical_operation': 'gt',
-                       #         'thresh': 30+273.15,}},
+                          {'func':'threshold', 'name':'ND>30', 'kwds':{'threshold':30+273.15, 'operation':'gt'}}
                        ]
 
         calc['tasmin'] = [{'func': 'icclim_TN', 'name': 'TN'},]
 
         calc['pr'] = [{'func':'icclim_PRCPTOT', 'name':'PRCPTOT'},
                    {'func': 'icclim_RX5day', 'name': 'RX5day'},]
+
+
 
 
         scs = []

@@ -19,5 +19,5 @@ def test_wps_OuranosPublicIndicatorProcess():
         service='WPS', request='Execute', version='1.0.0',
         identifier='ouranos_public_indicators',
         datainputs=datainputs)
-    1/0
+
     assert_response_success(resp)
