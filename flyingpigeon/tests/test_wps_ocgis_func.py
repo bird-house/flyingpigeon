@@ -10,7 +10,6 @@ def test_wps_FreezeThaw():
     client = client_for(Service(processes=[FreezeThawProcess(),]))
     datainputs = "resource=files@xlink:href={0};grouping={1};threshold={2}".format(
         TESTDATA['cmip3_tas_sresb1_da_nc'], 'yr', 10.)
-    #datainputs = "resource=files@xlink:href={0};grouping={1};threshold={2}".format(TESTDATA['cmip5_tasmax_2006_nc'], 'yr', 5)
     resp = client.get(
         service='WPS', request='Execute', version='1.0.0',
         identifier='freezethaw',

@@ -105,7 +105,7 @@ class IndicatorProcess(Process, object):
         return out
 
 
-    def call(self, resource, calc, calc_grouping):
+    def _run(self, resource, calc, calc_grouping):
         from os.path import join, abspath, dirname, getsize, curdir
         from ocgis import OcgOperations, RequestDataset, env
         import uuid
@@ -170,7 +170,7 @@ class IndicatorProcess(Process, object):
         # Call ocgis function
         ######################################
 
-        output = self.call(resource=resource,
+        output = self._run(resource=resource,
                            calc=[{'func': self.identifier,
                              'name': self.identifier,
                              'kwds': extras}],
@@ -252,10 +252,11 @@ class Duration(IndicatorProcess):
                                  max_occurs=1), ]
 
 
-############################################
-# Automatically generated icclim processes #
-# Univariate functions only so far         #
-############################################
+#############################################
+# Automatically generated icclim processes  #
+# Univariate functions only so far          #
+# No automated support for extra parameters #
+#############################################
 
 class ICCLIM_CDDProcess(ICCLIMProcess):
     key = 'icclim_CDD'
