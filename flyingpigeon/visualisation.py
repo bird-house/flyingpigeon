@@ -1,3 +1,4 @@
+# encoding: utf8
 import os
 from os.path import join
 from tempfile import mkstemp
@@ -518,44 +519,82 @@ def map_PAmask(PAmask):
             fp.write(msg)
     return png_PA_mask
 
-def map_spatial_analog(ncfile, **kwds):
+
+def map_spatial_analog(ncfile, variable='dissimilarity', cmap='viridis', title='Spatial analog'):
     import ocgis
     from shapely.geometry import Point
     from cartopy.feature import ShapelyFeature
     from salem.gis import proj_to_cartopy
     import pyproj
+    import netCDF4 as nc
+    from flyingpigeon import utils
+    from mpl_toolkits.axes_grid import make_axes_locatable
+    import matplotlib.axes as maxes
+    import mpld3
 
-    proj = ccrs.Mollweide()
+    try:
+        var = utils.get_values(ncfile, variable)
+        LOGGER.info('data loaded')
 
-    rd = ocgis.RequestDataset(ncfile)
+        lats, lons = utils.get_coordinates(ncfile, variable=variable, unrotate=False)
 
-    field = rd.get_field()
-    lon = [val for (key, val) in field.items() if
-           val.attrs.get('standard_name', '') == 'longitude'][0]
-    lat = [val for (key, val) in field.items() if
-           val.attrs.get('standard_name', '') == 'latitude'][0]
+        if len(lats.shape) == 1:
+            cyclic_var, cyclic_lons = add_cyclic_point(var, coord=lons)
 
-    x = lon.get_value()
-    y = lat.get_value()
+            lons = cyclic_lons.data
+            var = cyclic_var
 
-    #field.grid.crs.value()
-    #x = field.grid.x.get_value()
-    #y = field.grid.y.get_value()
-    d = field.get('dissimilarity')
+        with nc.Dataset(ncfile) as D:
+            V = D.variables[variable]
+            lon, lat = map(float, V.target_location.split(','))
+
+        LOGGER.info('lat lon loaded')
+
+    except:
+        msg = 'failed to get data for plotting'
+        LOGGER.exception(msg)
+        raise Exception(msg)
 
 
+    try:
+        fig = plt.figure(facecolor='w', edgecolor='k')
+        fig.subplots_adjust(top=.95, bottom=.05, left=.03, right=.95)
 
-    ax = plt.axes(projection=proj)
-    ax.coastlines()
-    ax.contourf(x, y, d.get_value(), transform=proj, cmap=kwds.get('cmap', None))
+        ax = plt.axes(
+            projection=ccrs.Robinson(central_longitude=int(np.mean(lons))))
 
-    #lon, lat = map(float, d.attrs['target_location'].split(','))
-    #point = Point(*map(float, d.attrs['target_location'].split(',')))
-    #feature = ShapelyFeature([point,], proj)
-    #ax.add_feature(feature)
+        divider = make_axes_locatable(ax)
+        cax = divider.new_horizontal("4%", pad=0.15, axes_class=maxes.Axes)
+        fig.add_axes(cax)
 
-    plt.plot(lon, lat, marker='o', color='red', markersize=12,
-             alpha=0.7, transform=proj)
 
-    return ax
+        ax.plot(lon, lat, marker='o', mfc='#292421', ms=13, transform=ccrs.PlateCarree())
+        ax.plot(lon, lat, marker='o', mfc='#ffffff', ms=7, transform=ccrs.PlateCarree())
 
+
+        cs = ax.contourf(lons, lats, var, 60,
+                          transform=ccrs.PlateCarree(),
+                          cmap=cmap, interpolation='nearest')
+
+        ax.coastlines(color='k', linewidth=.8)
+        #ax.countries(color='k', linewidth=.8)
+        #ax.states(color='gray', linewidth=.5)
+
+        ax.set_title(title)
+
+        cb = plt.colorbar(cs, cax=cax, orientation='vertical')
+        cb.set_label(u"–            Dissimilarity             +")# ha='left', va='center')
+        cb.set_ticks([])
+
+    except:
+        msg = 'failed to plot graphic'
+        LOGGER.exception(msg)
+
+    LOGGER.info('Plot created and figure saved')
+
+    return fig
+
+
+o1, graphic = mkstemp(dir='.', suffix='.svg')
+fig.savefig(graphic)
+plt.close()
