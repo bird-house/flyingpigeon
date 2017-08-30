@@ -3,7 +3,7 @@ import pytest
 from pywps import Service
 from pywps.tests import assert_response_success
 
-from flyingpigeon.processes import SpatialAnalogProcess
+from flyingpigeon.processes import SpatialAnalogProcess, MapSpatialAnalogProcess
 from flyingpigeon.utils import local_path
 from flyingpigeon.tests.common import TESTDATA, client_for, CFG_FILE
 
@@ -90,8 +90,8 @@ class TestDissimilarity(TestBase):
         actual_field = ret.get_element()
         actual_variables = get_variable_names(actual_field.data_variables)
         self.assertEqual(actual_variables[0],
-                         ('dissimilarity_seuclidean'))
-        dist = actual_field['dissimilarity_seuclidean']
+                         ('dissimilarity'))
+        dist = actual_field['dissimilarity']
         self.assertEqual(dist.shape, (1, 1, 2, 2))
 
     def test_full(self):
@@ -132,7 +132,7 @@ class TestDissimilarity(TestBase):
             axes.flat[i].imshow(out);
             axes.flat[i].set_title(dist)
 
-        plt.savefig('flyingpigeon/tests/__pycache__/test_spatial_analog_metrics.png')
+        plt.savefig('test_spatial_analog_metrics.png')
         plt.close()
 
     def test_simple(self):
@@ -162,8 +162,8 @@ class TestDissimilarity(TestBase):
         actual_field = ret.get_element()
         actual_variables = get_variable_names(actual_field.data_variables)
         self.assertEqual(actual_variables[0],
-                         ('dissimilarity_seuclidean'))
-        dist = actual_field['dissimilarity_seuclidean']
+                         ('dissimilarity'))
+        dist = actual_field['dissimilarity']
         self.assertEqual(dist.shape, (1, 1, 2, 2))
 
 
@@ -220,7 +220,7 @@ def test_dissimilarity_op():
 
     res = ops.execute()
     out = res.get_element()
-    val = out['dissimilarity_seuclidean'].get_value()
+    val = out['dissimilarity'].get_value()
     i = np.argmin(np.abs(out['lon'].get_value()-lon))
     j = np.argmin(np.abs(out['lat'].get_value()-lat))
     np.testing.assert_almost_equal( val[j,i], 0, 6)
@@ -251,13 +251,30 @@ def test_wps_spatial_analog_process_small_sample():
         'kldiv',
         '1970-01-01',
         '1990-01-01')
-    print datainputs
+
     resp = client.get(
         service='wps', request='execute', version='1.0.0',
         identifier='spatial_analog',
         datainputs=datainputs)
 
     assert_response_success(resp)
+
+def test_wps_map_spatial_analog():
+    client = client_for(
+        Service(processes=[MapSpatialAnalogProcess()], cfgfiles=CFG_FILE))
+    datainputs = (
+        "resource=files@xlink:href={0};"
+        "fmt={1};"
+        "title={2}"
+    ).format(TESTDATA['dissimilarity.nc'], 'pdf', "Test Spatial Analog")
+
+    resp = client.get(
+        service='wps', request='execute', version='1.0.0',
+        identifier='map_spatial_analog',
+        datainputs=datainputs)
+
+    assert_response_success(resp)
+
 
 """
 # @pytest.mark.slow

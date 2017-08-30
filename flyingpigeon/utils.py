@@ -685,7 +685,7 @@ def get_values(resource, variable=None):
     if variable is None:
         variable = get_variable(resource)
 
-    if type(resource) is str:
+    if isinstance(resource, basestring):
         ds = Dataset(resource)
     elif len(resource) == 1:
         ds = Dataset(resource)

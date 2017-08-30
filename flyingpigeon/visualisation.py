@@ -521,16 +521,10 @@ def map_PAmask(PAmask):
 
 
 def map_spatial_analog(ncfile, variable='dissimilarity', cmap='viridis', title='Spatial analog'):
-    import ocgis
-    from shapely.geometry import Point
-    from cartopy.feature import ShapelyFeature
-    from salem.gis import proj_to_cartopy
-    import pyproj
     import netCDF4 as nc
     from flyingpigeon import utils
     from mpl_toolkits.axes_grid import make_axes_locatable
     import matplotlib.axes as maxes
-    import mpld3
 
     try:
         var = utils.get_values(ncfile, variable)
@@ -551,7 +545,7 @@ def map_spatial_analog(ncfile, variable='dissimilarity', cmap='viridis', title='
         LOGGER.info('lat lon loaded')
 
     except Exception as e:
-        msg = 'failed to get data for plotting: {}'.format(e)
+        msg = 'failed to get data for plotting: {0}\n{1}'.format(ncfile, e)
         LOGGER.exception(msg)
         raise Exception(msg)
 
@@ -595,6 +589,3 @@ def map_spatial_analog(ncfile, variable='dissimilarity', cmap='viridis', title='
     return fig
 
 
-#o1, graphic = mkstemp(dir='.', suffix='.svg')
-#fig.savefig(graphic)
-#plt.close()
