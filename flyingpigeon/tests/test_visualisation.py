@@ -1,3 +1,5 @@
+from matplotlib import pyplot as plt
+
 def test_plotlibs():
     import matplotlib
     matplotlib.use('Agg')   # use this if no xserver is available
@@ -21,3 +23,10 @@ def test_polygons():
 
     assert exists(png) is True
     remove(png)
+
+def test_map_spatial_analog():
+    from common import TESTDATA
+    from flyingpigeon.visualisation import map_spatial_analog
+
+    fig = map_spatial_analog(TESTDATA['dissimilarity.nc'][7:])
+    plt.close()

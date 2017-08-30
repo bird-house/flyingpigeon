@@ -550,8 +550,8 @@ def map_spatial_analog(ncfile, variable='dissimilarity', cmap='viridis', title='
 
         LOGGER.info('lat lon loaded')
 
-    except:
-        msg = 'failed to get data for plotting'
+    except Exception as e:
+        msg = 'failed to get data for plotting: {}'.format(e)
         LOGGER.exception(msg)
         raise Exception(msg)
 
@@ -595,6 +595,6 @@ def map_spatial_analog(ncfile, variable='dissimilarity', cmap='viridis', title='
     return fig
 
 
-o1, graphic = mkstemp(dir='.', suffix='.svg')
-fig.savefig(graphic)
-plt.close()
+#o1, graphic = mkstemp(dir='.', suffix='.svg')
+#fig.savefig(graphic)
+#plt.close()
