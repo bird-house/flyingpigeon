@@ -1,22 +1,22 @@
+import os
 from datetime import date
 from datetime import datetime as dt
 import time  # performance test
-from tempfile import mkstemp
-from os import path
 import subprocess
 from subprocess import CalledProcessError
-
-from flyingpigeon.datafetch import _PRESSUREDATA_
-from flyingpigeon.datafetch import reanalyses as rl
-from flyingpigeon.ocgis_module import call
-from flyingpigeon import analogs
-from flyingpigeon.utils import rename_complexinputs
 
 from pywps import Process
 from pywps import LiteralInput, LiteralOutput
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format, FORMATS
 from pywps.app.Common import Metadata
+from pywps.inout.storage import FileStorage
+
+from flyingpigeon.datafetch import _PRESSUREDATA_
+from flyingpigeon.datafetch import reanalyses as rl
+from flyingpigeon.ocgis_module import call
+from flyingpigeon import analogs
+from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.log import init_process_logger
 
 import logging
@@ -154,7 +154,7 @@ class AnalogsreanalyseProcess(Process):
                           supported_formats=[Format('application/x-netcdf')]
                           ),
 
-            ComplexOutput("output_html", "Analogues Viewer html page",
+            ComplexOutput("output", "Analogues Viewer html page",
                           abstract="Interactive visualization of calculated analogues",
                           supported_formats=[Format("text/html")],
                           as_reference=True,
@@ -235,7 +235,7 @@ class AnalogsreanalyseProcess(Process):
             response.update_status('Read in and convert the arguments', 5)
         except Exception as e:
             msg = 'failed to read input prameter %s ' % e
-            LOGGER.error(msg)
+            LOGGER.exception(msg)
             raise Exception(msg)
 
         ######################################
@@ -264,11 +264,11 @@ class AnalogsreanalyseProcess(Process):
             elif outformat == 'netCDF':
                 outformat = '.nc'
             else:
-                LOGGER.error('output format not valid')
+                LOGGER.exception('output format not valid')
 
         except Exception as e:
             msg = 'failed to set environment %s ' % e
-            LOGGER.error(msg)
+            LOGGER.exception(msg)
             raise Exception(msg)
 
         ###########################
@@ -293,9 +293,9 @@ class AnalogsreanalyseProcess(Process):
                     level = None
                     conform_units_to = 'hPa'
             else:
-                LOGGER.error('Reanalyses dataset not known')
+                LOGGER.exception('Reanalyses dataset not known')
             LOGGER.info('environment set for model: %s' % model)
-        except:
+        except Exception:
             msg = 'failed to set environment'
             LOGGER.exception(msg)
             raise Exception(msg)
@@ -310,7 +310,7 @@ class AnalogsreanalyseProcess(Process):
                           dataset=model,
                           variable=var)
             LOGGER.info('reanalyses data fetched')
-        except:
+        except Exception:
             msg = 'failed to get reanalyses data'
             LOGGER.exception(msg)
             raise Exception(msg)
@@ -353,12 +353,12 @@ class AnalogsreanalyseProcess(Process):
         #             level = None
         #             # conform_units_to='hPa'
         #     else:
-        #         LOGGER.error('Reanalyses dataset not known')
+        #         LOGGER.exception('Reanalyses dataset not known')
         #     LOGGER.info('environment set')
         # except Exception as e:
         #     msg = 'failed to set environment %s ' % e
-        #     LOGGER.error(msg)
-        #     raise Exception(msg)
+        #     LOGGER.exception(msg)
+        #     # raise Exception(msg)
         #
         # LOGGER.debug("init took %s seconds.", time.time() - start_time)
         # response.update_status('Read in and convert the arguments done', 8)
@@ -376,8 +376,8 @@ class AnalogsreanalyseProcess(Process):
         #                      geom=bbox, spatial_wrapping='wrap')
         # except Exception as e:
         #     msg = 'failed to fetch or subset input files %s' % e
-        #     LOGGER.error(msg)
-        #     raise Exception(msg)
+        #     LOGGER.exception(msg)
+        #     # raise Exception(msg)
 
         LOGGER.debug("get_input_subset_dataset took %s seconds.",
                      time.time() - start_time)
@@ -407,7 +407,7 @@ class AnalogsreanalyseProcess(Process):
                         % (archive, simulation))
         except Exception as e:
             msg = 'failed to prepare archive and simulation files %s ' % e
-            LOGGER.debug(msg)
+            LOGGER.exception(msg)
             raise Exception(msg)
 
         try:
@@ -422,45 +422,34 @@ class AnalogsreanalyseProcess(Process):
                 seasoncyc_base = seasoncyc_sim = None
         except Exception as e:
             msg = 'failed to generate normalization files %s ' % e
-            LOGGER.debug(msg)
+            LOGGER.exception(msg)
             raise Exception(msg)
 
-        ip, output_file = mkstemp(dir='.', suffix='.txt')
-        files = [path.abspath(archive), path.abspath(simulation), output_file]
+        output_file = 'output.txt'
+        files = [os.path.abspath(archive), os.path.abspath(simulation), output_file]
         LOGGER.debug("Data preperation took %s seconds.",
                      time.time() - start_time)
 
         ############################
         # generate the config file
         ############################
-        response.update_status('writing config file', 15)
-        start_time = time.time()  # measure write config ...
-        try:
-            config_file = analogs.get_configfile(
-                files=files,
-                seasoncyc_base=seasoncyc_base,
-                seasoncyc_sim=seasoncyc_sim,
-                timewin=timewin,
-                varname=var,
-                seacyc=seacyc,
-                cycsmooth=91,
-                nanalog=nanalog,
-                seasonwin=seasonwin,
-                distfun=distance,
-                outformat=outformat,
-                calccor=True,
-                silent=False,
-                period=[dt.strftime(refSt, '%Y-%m-%d'),
-                        dt.strftime(refEn, '%Y-%m-%d')],
-                bbox="%s,%s,%s,%s" % (bbox[0],
-                                      bbox[2],
-                                      bbox[1],
-                                      bbox[3]))
-        except Exception as e:
-            msg = 'failed to generate config file %s ' % e
-            LOGGER.debug(msg)
-            raise Exception(msg)
-        LOGGER.debug("write_config took %s seconds.", time.time() - start_time)
+        config_file = analogs.get_configfile(
+            files=files,
+            seasoncyc_base=seasoncyc_base,
+            seasoncyc_sim=seasoncyc_sim,
+            timewin=timewin,
+            varname=var,
+            seacyc=seacyc,
+            cycsmooth=91,
+            nanalog=nanalog,
+            seasonwin=seasonwin,
+            distfun=distance,
+            outformat=outformat,
+            calccor=True,
+            silent=False,
+            period=[dt.strftime(refSt, '%Y-%m-%d'), dt.strftime(refEn, '%Y-%m-%d')],
+            bbox="{0[0]},{0[2]},{0[1]},{0[3]}".format(bbox))
+        response.update_status('generated config file', 15)
         #######################
         # CASTf90 call
         #######################
@@ -469,46 +458,41 @@ class AnalogsreanalyseProcess(Process):
         response.update_status('Start CASTf90 call', 20)
         try:
             # response.update_status('execution of CASTf90', 50)
-            cmd = ['analogue.out', path.relpath(config_file)]
+            cmd = ['analogue.out', config_file]
             LOGGER.debug("castf90 command: %s", cmd)
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
             LOGGER.info('analogue output:\n %s', output)
-            response.update_status('**** CASTf90 suceeded', 90)
+            response.update_status('**** CASTf90 suceeded', 70)
         except CalledProcessError as e:
             msg = 'CASTf90 failed:\n{0}'.format(e.output)
-            LOGGER.error(msg)
+            LOGGER.exception(msg)
             raise Exception(msg)
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
 
-        ########################
-        # generate analog viewer
-        ########################
-        response.update_status('preparting output', 50)
+        response.update_status('preparing output', 70)
+        # response.outputs['config'].storage = FileStorage()
         response.outputs['config'].file = config_file
         response.outputs['analogs'].file = output_file
         response.outputs['output_netcdf'].file = simulation
 
-        try:
-            formated_analogs_file = analogs.reformat_analogs(output_file)
-            response.outputs['formated_analogs'].file = formated_analogs_file
-            LOGGER.info('analogs reformated')
-            response.update_status('Successfully reformatted analog file', 60)
-        except Exception as e:
-            msg = 'Failed to reformat analogs file.' % e
-            LOGGER.error(msg)
-            raise Exception(msg)
+        ########################
+        # generate analog viewer
+        ########################
 
-        try:
-            output_av = analogs.get_viewer(
-                formated_analogs_file,
-                path.basename(config_file))
-            response.outputs['output_html'].file = output_av.name
-            response.update_status('Successfully generated analogs viewer', 90)
-            LOGGER.info('output_av: %s ', output_av)
-        except Exception as e:
-            msg = 'Failed to generate viewer: %s' % e
-            LOGGER.error(msg)
-            raise Exception(msg)
+        formated_analogs_file = analogs.reformat_analogs(output_file)
+        # response.outputs['formated_analogs'].storage = FileStorage()
+        response.outputs['formated_analogs'].file = formated_analogs_file
+        LOGGER.info('analogs reformated')
+        response.update_status('reformatted analog file', 80)
+
+        viewer_html = analogs.render_viewer(
+            # configfile=response.outputs['config'].get_url(),
+            configfile=config_file,
+            # datafile=response.outputs['formated_analogs'].get_url())
+            datafile=formated_analogs_file)
+        response.outputs['output'].file = viewer_html
+        response.update_status('Successfully generated analogs viewer', 90)
+        LOGGER.info('rendered pages: %s ', viewer_html)
 
         response.update_status('execution ended', 100)
         LOGGER.debug("total execution took %s seconds.",

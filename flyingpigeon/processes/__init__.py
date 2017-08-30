@@ -29,7 +29,7 @@ processes = [
     ClipcontinentProcess(),
     ClipregionseuropeProcess(),
     PointinspectionProcess(),
-    #    FactsheetProcess(),
+    FactsheetProcess(),
     FetchProcess(),
     LandseamaskProcess(),
     IndicespercentiledaysProcess(),
@@ -42,43 +42,18 @@ processes = [
     WeatherregimesreanalyseProcess(),
     WeatherregimesprojectionProcess(),
     WeatherregimesmodelProcess(),
-    #    AnalogsreanalyseProcess(),
+    AnalogsreanalyseProcess(),
     #    AnalogsmodelProcess(),
     #    AnalogscompareProcess(),
-    #    AnalogsviewerProcess(),
-    #    RobustnessProcess(),
-    #    PlottimeseriesProcess(),
+    AnalogsviewerProcess(),
+    RobustnessProcess(),
+    PlottimeseriesProcess(),
     SegetalfloraProcess(),
     SpatialAnalogProcess()
 ]
 
 """
 pywps3 processes:
-
-"wps_subset_continents",                # adopted to pywps4
-"wps_subset_countries",                 # adopted to pywps4
-"wps_subset_regionseurope",             # adopted to pywps4
-"wps_subset_points",                    # adopted to pywps4
-"wps_landseamask",                      # adopted to pywps4
-"wps_indices_simple",                   # adopted to pywps4
-"wps_indices_percentile",               # adopted to pywps4
-"wps_weatherregimes_reanalyse",         # adopted to pywps4
-"wps_weatherregimes_model",             # adopted to pywps4
-"wps_weatherregimes_projection",        # adopted to pywps4
-"wps_analogs_detection",                # adopted to pywps4
-"wps_analogs_model",                    # adopted to pywps4
-"wps_analogs_compare",                  # adopted to pywps4
-"wps_analogs_viewer",                   # adopted to pywps4
-"wps_segetalflora",                     # adopted to pywps4
-"wps_sdm_gbiffetch",                    # adopted to pywps4
-"wps_sdm_getindices",                   # adopted to pywps4
-"wps_sdm_csvindices",                   # adopted to pywps4
-"wps_sdm_csv",                          # adopted to pywps4
-"wps_sdm_allinone",                     # adopted to pywps4
-"wps_robustness",                       # adopted to pywps4
-"wps_plot_timeseries",                  # adopted to pywps4
-"wps_climatefactsheet",                 # adopted to pywps4
-"wps_fetch",                            # adopted to pywps4
 
 # climate for impact processes
 "wps_c4i_simple_indice",

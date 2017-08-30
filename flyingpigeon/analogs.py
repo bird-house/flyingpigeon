@@ -1,4 +1,9 @@
-from tempfile import mkstemp
+import os
+
+from flyingpigeon import config
+from flyingpigeon import templating
+from flyingpigeon.utils import prepare_static_folder
+
 import logging
 LOGGER = logging.getLogger("PYWPS")
 
@@ -17,9 +22,11 @@ def get_configfile(files,
                    period=["1973-01-01", "2012-12-31"],
                    bbox="-180.0,-90.0,180,90.0",
                    calccor=True,
-                   silent=False, ):
+                   silent=False):
     """
     Generates the configuration file for the CASTf90 calculation.
+
+    TODO: use jjinja template
 
     :param files: input files (reference period and period for analyses)
     :param timewin: number of days the distance is averaged
@@ -40,7 +47,6 @@ def get_configfile(files,
     :returns: configuration file
     """
     from datetime import datetime as dt
-    from os.path import relpath
 
     date_stamp = dt.strftime(dt.now(), format='%Y%m%d_%H%M%S')
     LOGGER.info('start configuration file preparation at: %s' % (date_stamp))
@@ -54,7 +60,7 @@ def get_configfile(files,
     # NB: if order or format or number changes, need to edit wps_analogs_viewer.py
     # and template_analogviewer.html where these scripts read in the config
     # params
-    ip, config_file = mkstemp(dir='.', suffix='.txt')
+    config_file = "config.txt"
 
     config = open(config_file, "w")
 
@@ -64,15 +70,15 @@ def get_configfile(files,
     config.write('!Version : 0.1.5 \n')
     config.write('&FILES \n')
     config.write(' my_files%archivefile = "{file}" \n'.format(
-        file=relpath(files[0])))
+        file=os.path.relpath(files[0])))
     config.write(' my_files%simulationfile = "{file}" \n'.format(
-        file=relpath(files[1])))
+        file=os.path.relpath(files[1])))
     config.write(' my_files%outputfile = "{file}" \n'.format(
-        file=relpath(files[2])))
+        file=os.path.relpath(files[2])))
     config.write('  my_files%seacycfilebase = "{file}" \n'.format(
-        file=relpath(seasoncyc_base)))
+        file=os.path.relpath(seasoncyc_base)))
     config.write(' my_files%seacycfilesim = "{file}" \n'.format(
-        file=relpath(seasoncyc_sim)))
+        file=os.path.relpath(seasoncyc_sim)))
     config.write('/ \n')
     config.write('&PARAM \n')
     config.write(' my_params%timewin = {timewin} \n'.format(timewin=timewin))
@@ -103,7 +109,7 @@ def get_configfile(files,
     config.write('/\n')
 
     config.close()
-    return relpath(config_file)
+    return config_file
 
 # def subset(resource=[], bbox='-80,50,22.5,70'):
 #   """
@@ -159,7 +165,7 @@ def seacyc(archive, simulation, method='base'):
             # seasoncyc_base = call(resource=archive,
             # variable=variable,
             # prefix='seasoncyc_base',
-            #calc=[{'func': 'mean', 'name': variable}],
+            # calc=[{'func': 'mean', 'name': variable}],
             # calc_grouping=['day','month'] )
 
             LOGGER.debug('seasoncyc_base calculated : %s' % seasoncyc_base)
@@ -168,19 +174,19 @@ def seacyc(archive, simulation, method='base'):
             copy(seasoncyc_base, seasoncyc_sim)
         elif method == 'sim':
             # seasoncyc_sim  = call(resource=archive,
-              # variable=variable,
-              # prefix='seasoncyc_sim',
-              #calc=[{'func': 'mean', 'name': variable}],
-              # calc_grouping=['day','month'] )
+            # variable=variable,
+            # prefix='seasoncyc_sim',
+            # calc=[{'func': 'mean', 'name': variable}],
+            # calc_grouping=['day','month'] )
             cdo.ydaymean(input=simulation, output='seasoncyc_sim.nc')
             seasoncyc_base = 'seasoncyc_base.nc'
             copy(seasoncyc_sim, seasoncyc_base)
         elif method == 'own':
             # seasoncyc_base = call(resource=archive,
-              # variable=variable,
-              # prefix='seasoncyc_base',
-              #calc=[{'func': 'mean', 'name': variable}],
-              # calc_grouping=['day','month'] )
+            # variable=variable,
+            # prefix='seasoncyc_base',
+            # calc=[{'func': 'mean', 'name': variable}],
+            # calc_grouping=['day','month'] )
             seasoncyc_base = cdo.ydaymean(
                 input=archive, output='seasoncyc_base.nc')
             # seasoncyc_sim  = call(resource=archive,
@@ -193,7 +199,7 @@ def seacyc(archive, simulation, method='base'):
         else:
             raise Exception('normalisation method not found')
 
-    except:
+    except Exception:
         msg = 'seacyc function failed:'
         LOGGER.exception(msg)
         raise Exception(msg)
@@ -225,7 +231,7 @@ def config_edits(configfile):
             file.write(filedata)
 
         LOGGER.info('configfile modified')
-    except:
+    except Exception:
         LOGGER.exeption('Failed to modify configfile:')
 
     return configfile
@@ -251,7 +257,7 @@ def reformat_analogs(analogs):
 
         # Find number of analogues
         num_analogues = (dfS.shape[1]) / 3
-        LOGGER.debug('num_analogues: %s', num_analogues)
+        # LOGGER.debug('num_analogues: %s', num_analogues)
 
         # Define temporary df
         df_anlg = dfS.iloc[:, 0:num_analogues]  # store only anlg dates
@@ -282,145 +288,38 @@ def reformat_analogs(analogs):
         df_all.index.name = 'dateRef'
 
         # save to tsv file
-        ip, analogs_mod = mkstemp(
-            suffix='.tsv', prefix='modified-analogfile', text=False)
+        analogs_mod = 'modified-analogfile.tsv'
         df_all.to_csv(analogs_mod, sep='\t')
         LOGGER.info('successfully reformatted analog file')
-    except:
+    except Exception:
         msg = 'failed to reformat analog file'
         LOGGER.exception(msg)
         raise Exception(msg)
     return analogs_mod
 
 
-def get_viewer_configfile(analogs):
+def render_viewer(configfile, datafile):
     """
-    finds or generates configuration file for an analogs file
-    to be used by the analogs viewer. The configuration file
-    will be copied into the output folder.
+    Generate an analogs viewer HTML page based on a template.
 
-    :param analogs: text file containing the analogs values
-    :return str: configuration file path/name.txt
-    """
-    from flyingpigeon import config
-    from flyingpigeon.config import www_url
-
-    import requests
-    from shutil import copyfile
-    from tempfile import mkstemp
-    from os import path
-    from os.path import basename
-
-    try:
-        output_url = config.output_url()
-        output_path = config.output_path()
-
-        # Config file with path (server URL address)
-        configfile = analogs.replace('analogs-', 'config-')
-        LOGGER.info('config filename generated %s' % configfile)
-
-        configfile_with_path = path.join(output_url, configfile)
-        LOGGER.debug('configfile_with_path: %s' % configfile_with_path)
-
-        # Check if config file exists
-        r = requests.get(configfile_with_path)
-        if r.status_code != 404:
-            LOGGER.debug('Config file exists on server URL address.')
-
-        else:
-            LOGGER.debug(
-                'Config file does not exist on server address. Check local disk.')
-
-            # Make config file name and get its path on local disk
-            configfile = 'config_' + analogs
-            LOGGER.debug('local disk configfile: %s' % configfile)
-
-            p, name = path.split(path.realpath(analogs))
-            configfile_localAddress = path.join(p, configfile)
-            LOGGER.debug('local disk configfile_localAddress: %s' %
-                         configfile_localAddress)
-
-            # Check if config file exists
-            if path.isfile(configfile_localAddress):
-                LOGGER.debug('Config file exists on local disk.')
-
-                # Copy config file to output_path
-                # (~/birdhouse/var/lib/pywps/outputs/flyingpigeon)
-                configfile_outputlocation = path.join(output_path, configfile)
-
-                copyfile(configfile_localAddress, configfile_outputlocation)
-                LOGGER.info(' time for coffee ')
-
-                configfile_outputlocation_edited = config_edits(
-                    configfile_outputlocation)
-                LOGGER.info('outputlocation_edited: %s' %
-                            configfile_outputlocation_edited)
-
-                configfile = path.basename(configfile_outputlocation_edited)
-                LOGGER.info('  configfile %s  ' % configfile)
-
-            else:
-                LOGGER.debug(
-                    'There is no config file on local disk. Generating a default one.')
-
-                # Insert analogs filename into config file.
-                # The rest of the params are unknown.
-                configfile_wkdir = get_configfile(
-                    files=['dummyconfig', 'dummyconfig', analogs],
-                    nanalog='DUMMY!!!',
-                    varname='DUMMY!!!',
-                    seacyc='DUMMY!!!',
-                    cycsmooth='DUMMY!!!',
-                    timewin='DUMMY!!!',
-                    seasonwin='DUMMY!!!',
-                    distfun='DUMMY!!!',
-                    calccor='DUMMY!!!',
-                    outformat='DUMMY!!!',
-                    silent='DUMMY!!!',
-                    period=['dummy', 'dummy'],
-                    bbox='DUMMY!!!'
-                )
-
-                configfile = path.basename(configfile_wkdir)  # just file name
-                # Add server path to file name
-                configfile_inplace = path.join(output_path, configfile)
-                # Copy out of local working dir to output_path
-                copyfile(configfile_wkdir, configfile_inplace)
-
-    except Exception as e:
-        msg = 'failed to read number of analogues from config file %s ' % e
-        LOGGER.debug(msg)
-    return configfile
-
-
-def get_viewer(analogs_mod, configfile):
-    """
-    Generate an analogs viewer based on a template.
-
-    :param analogs_mod: modified analogs file (output of reformat_analogs)
+    :param datafile: modified analogs file (output of reformat_analogs)
     :param configfile: configuration file
 
     return html: analog viewer html page
     """
-
-    from os.path import basename
-    from flyingpigeon.config import JSsrc_dir
-    tmpl = JSsrc_dir() + '/template_analogviewer.html'
-
-    ip, output_av = mkstemp(
-        suffix='.html', prefix='analogviewer', dir='.', text=False)
-
-    tmpl_file = open(tmpl).read()
-
-    viewer = open(output_av, 'w')
-
-    # Insert reformatted analogue file and config file into placeholders in
-    # the js script
-    tmpl_file = tmpl_file.replace(
-        'analogues_placeholder.json', basename(analogs_mod))
-    tmpl_file = tmpl_file.replace(
-        'analogues_config_placeholder.txt', configfile)
-    viewer.write(tmpl_file)
-    viewer.close()
-
-    return viewer
+    try:
+        page = 'analogviewer.html'
+        with open(page, 'w') as fp:
+            fp.write(templating.render_template(
+                page,
+                configfile=configfile,
+                datafile=datafile,
+                # static_url=config.output_url() + '/static'))
+                static_url='../static'))
+            prepare_static_folder()
+    except Exception:
+        msg = "Failed to render analogviewer."
+        LOGGER.exception(msg)
+        raise Exception(msg)
+    else:
+        return page
