@@ -192,8 +192,6 @@ def get_PAmask(coordinates=[], nc=None):
     import numpy.ma as ma
 
 #    from netCDF4 import Dataset
-#    from flyingpigeon import config
-#    DIR_MASKS = config.masks_dir()
 
     from flyingpigeon.utils import get_variable
     from flyingpigeon.utils import get_coordinates, get_values  # unrotate_pole,

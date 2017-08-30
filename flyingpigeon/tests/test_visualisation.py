@@ -10,8 +10,6 @@ def test_plotlibs():
     from cartopy.feature import ShapelyFeature
     from PyPDF2 import PdfFileWriter, PdfFileReader
     from reportlab.pdfgen import canvas
-    from flyingpigeon import config
-    DIR_SHP = config.shapefiles_dir()
 
 
 def test_polygons():
