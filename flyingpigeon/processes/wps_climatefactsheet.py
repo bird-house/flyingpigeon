@@ -94,10 +94,10 @@ class FactsheetProcess(Process):
         if 'region' in request.inputs:
             regions = [inp.data for inp in request.inputs['region']]
             try:
-                png_country = vs.plot_polygons(regions)
+                png_region = vs.plot_polygons(regions)
             except:
                 LOGGER.exception('failed to plot the polygon to world map')
-                o1, png_country = mkstemp(dir='.', suffix='.png')
+                o1, png_region = mkstemp(dir='.', suffix='.png')
 
             # clip the demanded polygons
             subsets = clipping(
@@ -109,7 +109,7 @@ class FactsheetProcess(Process):
                 )
         else:
             subsets = ncs
-            o1, png_country = mkstemp(dir='.', suffix='.png')
+            o1, png_region = mkstemp(dir='.', suffix='.png')
             # TODO: generate domain plot
 
         response.update_status('Arguments set for subset process', 0)
@@ -153,7 +153,7 @@ class FactsheetProcess(Process):
         _, png_robustness = mkstemp(dir='.', suffix='.png')
 
         factsheet = vs.factsheetbrewer(
-            png_country=png_country,
+            png_region=png_region,
             png_uncertainty=png_uncertainty,
             png_spaghetti=png_spaghetti,
             # png_robustness=png_robustness

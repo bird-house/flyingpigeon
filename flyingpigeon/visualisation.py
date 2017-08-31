@@ -28,52 +28,48 @@ class MidpointNormalize(Normalize):
         return np.ma.masked_array(np.interp(value, x, y))
 
 
-def plot_extend(resource, format=None):
+def plot_extend(resource, extention='png'):
     """
     plots the extend (domain) of the values stored in a netCDF file:
 
     :parm resource: path to netCDF file
-    :param format: file format of the graphic. if None (default) an matplotlib figure will be returned
+    :param extention: file format of the graphic. if None (default) an matplotlib figure will be returned
 
     :return graphic: graphic in specified format
     """
     import matplotlib.patches as mpatches
+    lats, lons = utils.get_coordinates(resource, unrotate=True)
 
-    box_top = 45
-    x, y = [-20, -20, 45, 45, -44], [-45, box_top, box_top, -45, -45]
+    # box_top = 45
+    # x, y = [-20, -20, 45, 45, -44], [-45, box_top, box_top, -45, -45]
 
-    xy = np.array([[-20, -20], [20, -20], [20, 20], [-20, 20]])
+    xy = np.array([[np.min(lons), np.min(lats)],
+                   [np.max(lons), np.min(lats)],
+                   [np.max(lons), np.max(lats)],
+                   [np.min(lons), np.max(lats)]])
 
     fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
-    projection = ccrs.Orthographic(central_longitude=np.mean(xy[:, 0]),
-                                   central_latitude=np.mean(xy[:, 1]),
-                                   globe=None)  # Robinson()
+    projection = ccrs.Robinson()
+    #  ccrs.Orthographic(central_longitude=np.mean(xy[:, 0]),
+    #  central_latitude=np.mean(xy[:, 1]),
+    #  globe=None)  # Robinson()
 
     ax = plt.axes(projection=projection)
-
-    # ax = plt.subplot(211, projection=rotated_pole)
-    # ax.stock_img()
-    # ax.coastlines()
-    # ax.plot(x, y, marker='o', transform=rotated_pole)
-    # ax.fill(x, y, color='coral', transform=rotated_pole, alpha=0.4)
-    # ax.gridlines()
-    #
-    # ax = plt.subplot(212, projection=ccrs.PlateCarree())
     ax.stock_img()
     ax.coastlines()
-    # ax.plot(x, y, marker='o', transform=ccrs.Geodetic()))  # PlateCarree()) #rotated_pole
-    # ax.fill(x, y, transform=ccrs.Geodetic(), color='coral', alpha= 0.4)   #transform=rotated_pole,
-    ax.add_patch(mpatches.Polygon(xy, closed=True, transform=ccrs.Geodetic()))
-    ax.add_patch(mpatches.Polygon(xy, closed=True, transform=ccrs.PlateCarree(), color='red'))
+    ax.add_patch(mpatches.Polygon(xy, closed=True,  transform=ccrs.PlateCarree(), color='coral', alpha=0.6))
+    # ccrs.Geodetic()
     ax.gridlines()
     plt.show()
-    o1, map_graphic = mkstemp(dir='.', suffix='.png')
 
-    fig.savefig(map_graphic)
-    plt.close()
+    if extention is 'mpl':
+        map_graphic = fig
+    else:
+        o1, map_graphic = mkstemp(dir='.', suffix='.%s' % extention)
+        fig.savefig(map_graphic)
+        plt.close()
 
     return map_graphic
-
 
 
 def plot_polygons(regions):
@@ -135,11 +131,11 @@ def plot_polygons(regions):
     return map_graphic
 
 
-def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, png_robustness=None):
+def factsheetbrewer(png_region=None, png_spaghetti=None, png_uncertainty=None, png_robustness=None):
     """
     Put graphics into the climate fact sheet template to generate the final climate fact sheet
 
-    :param png_country: World map graphic with countries polygons.
+    :param png_region: World map graphic with countries polygons.
     :param png_uncertainty: Graphic showing a timeseries with fieldmean values and corresponding uncertainty
     :param png_spaghetti: Graphic showing each datatset as a single timeseries
     :param png_robustness: Map of the signal change including hashes and dots for robutsness values
@@ -153,7 +149,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
         try:
             _, pdf_country = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_country)
-            c.drawImage(png_country, 355, 490, width=270, height=150)  # , mask=None, preserveAspectRatio=False)
+            c.drawImage(png_region, 355, 490, width=270, height=150)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_country = PdfFileReader(open(pdf_country, 'rb'))
         except:
