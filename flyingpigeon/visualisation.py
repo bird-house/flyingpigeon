@@ -147,18 +147,18 @@ def factsheetbrewer(png_region=None, png_spaghetti=None, png_uncertainty=None, p
     from flyingpigeon.config import data_path
     try:
         try:
-            _, pdf_country = mkstemp(dir='.', suffix='.pdf')
-            c = canvas.Canvas(pdf_country)
-            c.drawImage(png_region, 355, 490, width=270, height=150)  # , mask=None, preserveAspectRatio=False)
+            _, pdf_region = mkstemp(dir='.', suffix='.pdf')
+            c = canvas.Canvas(pdf_region)
+            c.drawImage(png_region, 340, 490, width=290, height=150)  # , mask=None, preserveAspectRatio=False)
             c.save()
-            pfr_country = PdfFileReader(open(pdf_country, 'rb'))
+            pfr_region = PdfFileReader(open(pdf_region, 'rb'))
         except:
             LOGGER.exception('failed to convert png to pdf')
 
         try:
             _, pdf_uncertainty = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_uncertainty)
-            c.drawImage(png_uncertainty, 20, 340, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
+            c.drawImage(png_uncertainty, 20, 350, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_uncertainty = PdfFileReader(open(pdf_uncertainty, 'rb'))
         except:
@@ -167,7 +167,7 @@ def factsheetbrewer(png_region=None, png_spaghetti=None, png_uncertainty=None, p
         try:
             _, pdf_spaghetti = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_spaghetti)
-            c.drawImage(png_spaghetti, 280, 340, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
+            c.drawImage(png_spaghetti, 280, 350, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_spagetthi = PdfFileReader(open(pdf_spaghetti, 'rb'))
         except:
@@ -176,7 +176,7 @@ def factsheetbrewer(png_region=None, png_spaghetti=None, png_uncertainty=None, p
         try:
             _, pdf_robustness = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_robustness)
-            c.drawImage(png_robustness, 20, 70, width=280, height=150)  # , mask=None, preserveAspectRatio=False)
+            c.drawImage(png_robustness, 30, 100, width=250, height=170)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_robustness = PdfFileReader(open(pdf_robustness, 'rb'))
         except:
@@ -191,7 +191,7 @@ def factsheetbrewer(png_region=None, png_spaghetti=None, png_uncertainty=None, p
             LOGGER.debug("Plotting png to {} of {}".format(page_number, page_count))
             input_page = pfr_template.getPage(page_number)
             try:
-                input_page.mergePage(pfr_country.getPage(0))
+                input_page.mergePage(pfr_region.getPage(0))
             except:
                 LOGGER.warn('failed to merge courtry map')
             try:
