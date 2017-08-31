@@ -10,13 +10,7 @@ from pywps import Format
 from pywps.app.Common import Metadata
 
 from datetime import datetime as dt
-import os
 from matplotlib import pyplot as plt
-
-from ocgis import FunctionRegistry, RequestDataset, OcgOperations
-from flyingpigeon.ocgisDissimilarity import Dissimilarity, metrics
-
-FunctionRegistry.append(Dissimilarity)
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
@@ -115,7 +109,8 @@ class MapSpatialAnalogProcess(Process):
         try:
             fig = map_spatial_analog(resource, title=title)
             output = []
-            o1, graphic = mkstemp(dir='.')
+            _, graphic = mkstemp(dir='.')
+            
             for fmt in fmts:
                 fn = graphic + '.' + fmt
                 fig.savefig(fn, bbox_inches='tight', format=fmt)
@@ -129,7 +124,7 @@ class MapSpatialAnalogProcess(Process):
         finally:
             plt.close()
 
-        if len(fmt) == 1:
+        if len(fmts) == 1:
             output = output[0]
         else:
             output = archive(output)

@@ -28,5 +28,5 @@ def test_map_spatial_analog():
     from common import TESTDATA
     from flyingpigeon.visualisation import map_spatial_analog
 
-    fig = map_spatial_analog(TESTDATA['dissimilarity.nc'][7:])
+    map_spatial_analog(TESTDATA['dissimilarity.nc'][7:])
     plt.close()
