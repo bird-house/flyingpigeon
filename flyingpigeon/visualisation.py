@@ -213,7 +213,9 @@ def uncertainty(resouces, variable=None, ylim=None, title=None):
     import pandas as pd
     import numpy as np
     from os.path import basename
-    from flyingpigeon.utils import get_values, get_time
+    from flyingpigeon.utils import get_time
+    from flyingpigeon.calculation import fieldmean
+
     # === prepare invironment
     if type(resouces) == str:
         resouces = list([resouces])
@@ -231,12 +233,13 @@ def uncertainty(resouces, variable=None, ylim=None, title=None):
         LOGGER.info('variable %s found in resources.' % variable)
         for f in resouces:
             try:
-                data = get_values(f)
+                data = fieldmean(f)  # get_values(f)
                 LOGGER.debug("shape of data = %s " % len(data.shape))
                 if len(data.shape) == 3:
                     meanData = np.mean(data, axis=1)
                     ts = np.mean(meanData, axis=1)
                 else:
+                    # data should than be a 2D field
                     ts = data[:]
                 jd = get_time(f)
                 hs = pd.Series(ts, index=jd, name=basename(f))
