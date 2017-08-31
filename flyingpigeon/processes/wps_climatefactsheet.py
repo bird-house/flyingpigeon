@@ -132,31 +132,31 @@ class FactsheetProcess(Process):
             LOGGER.exception('failed to generate the spaghetti plot')
             _, png_spaghetti = mkstemp(dir='.', suffix='.png')
 
-        try:
-            from flyingpigeon import robustness as erob
-            signal, low_agreement_mask, high_agreement_mask, text_src = erob.method_A(resource=subsets,
-                                                                                      # start=None, end=None,
-                                                                                      # timeslice=None,
-                                                                                      variable=var
-                                                                                      )
-            # if title is None:
-            title = 'signal robustness of %s ' % (variable)  # , end1, end2, start1, start2
-            png_robustness = vs.map_robustness(signal,
-                                               high_agreement_mask,
-                                               low_agreement_mask,
-                                               # cmap=cmap,
-                                               Stitle=title)
-            LOGGER.info('graphic generated')
-
-        except:
-            LOGGER.exception('failed to generate the robustness plot')
-            _, png_robustness = mkstemp(dir='.', suffix='.png')
+        # try:
+        #     from flyingpigeon import robustness as erob
+        #     signal, low_agreement_mask, high_agreement_mask, text_src = erob.method_A(resource=subsets,
+        #                                                                               # start=None, end=None,
+        #                                                                               # timeslice=None,
+        #                                                                               variable=var
+        #                                                                               )
+        #     # if title is None:
+        #     title = 'signal robustness of %s ' % (var)  # , end1, end2, start1, start2
+        #     png_robustness = vs.map_robustness(signal,
+        #                                        high_agreement_mask,
+        #                                        low_agreement_mask,
+        #                                        # cmap=cmap,
+        #                                        title=title)
+        #     LOGGER.info('graphic generated')
+        #
+        # except:
+        #     LOGGER.exception('failed to generate the robustness plot')
+        _, png_robustness = mkstemp(dir='.', suffix='.png')
 
         factsheet = vs.factsheetbrewer(
-            png_country=abspath(png_country),
-            png_uncertainty=abspath(png_uncertainty),
-            png_spaghetti=abspath(png_spaghetti),
-            png_robustness=abspath(png_robustness)
+            png_country=png_country,
+            png_uncertainty=png_uncertainty,
+            png_spaghetti=png_spaghetti,
+            # png_robustness=png_robustness
             )
 
         response.outputs['output_nc'].file = tar_subsets

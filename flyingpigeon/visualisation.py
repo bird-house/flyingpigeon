@@ -39,6 +39,7 @@ def plot_polygons(regions):
 
     from cartopy.io.shapereader import Reader
     from cartopy.feature import ShapelyFeature
+    from numpy import mean, append
 
     from flyingpigeon import config
     DIR_SHP = config.shapefiles_path()
@@ -49,10 +50,24 @@ def plot_polygons(regions):
     fname = join(DIR_SHP, "countries.shp")
     geos = Reader(fname).geometries()
     records = Reader(fname).records()
+    central_latitude = []
+    central_longitude = []
 
+    for r in records:
+        geo = geos.next()
+        if r.attributes['ISO_A3'] in regions:
+            x, y = geo.centroid.coords.xy
+            central_longitude.append(x[0])
+            central_latitude.append(y[0])
+    
     fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
-    projection = ccrs.Orthographic(central_longitude=0.0, central_latitude=0.0, globe=None)  # Robinson()
+    projection = ccrs.Orthographic(central_longitude=mean(central_longitude),
+                                   central_latitude=mean(central_latitude),
+                                   globe=None)  # Robinson()
     ax = plt.axes(projection=projection)
+
+    geos = Reader(fname).geometries()
+    records = Reader(fname).records()
 
     for r in records:
         geo = geos.next()
@@ -60,6 +75,7 @@ def plot_polygons(regions):
             shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black')
             ax.add_feature(shape_feature)
         ax.coastlines()
+        ax.grid()
         # ax.set_global()
 
     o1, map_graphic = mkstemp(dir='.', suffix='.png')
@@ -70,18 +86,20 @@ def plot_polygons(regions):
     return map_graphic
 
 
-def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None):
+def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, png_robustness=None):
     """
     Put graphics into the climate fact sheet template to generate the final climate fact sheet
 
     :param png_country: World map graphic with countries polygons.
     :param png_uncertainty: Graphic showing a timeseries with fieldmean values and corresponding uncertainty
+    :param png_spaghetti: Graphic showing each datatset as a single timeseries
+    :param png_robustness: Map of the signal change including hashes and dots for robutsness values
 
     :return pdf foumular: pdf with fillable text boxes for interpretation text
     """
     from PyPDF2 import PdfFileWriter, PdfFileReader
     from reportlab.pdfgen import canvas
-    from flyingpigeon.config import static_dir
+    from flyingpigeon.config import data_path
     try:
         try:
             _, pdf_country = mkstemp(dir='.', suffix='.pdf')
@@ -95,7 +113,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None):
         try:
             _, pdf_uncertainty = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_uncertainty)
-            c.drawImage(png_uncertainty, 20, 320, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
+            c.drawImage(png_uncertainty, 20, 340, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_uncertainty = PdfFileReader(open(pdf_uncertainty, 'rb'))
         except:
@@ -104,14 +122,23 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None):
         try:
             _, pdf_spaghetti = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_spaghetti)
-            c.drawImage(png_spaghetti, 280, 320, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
+            c.drawImage(png_spaghetti, 280, 340, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_spagetthi = PdfFileReader(open(pdf_spaghetti, 'rb'))
         except:
             LOGGER.exception('failed to convert png to pdf')
 
+        try:
+            _, pdf_robustness = mkstemp(dir='.', suffix='.pdf')
+            c = canvas.Canvas(pdf_robustness)
+            c.drawImage(png_robustness, 20, 70, width=280, height=150)  # , mask=None, preserveAspectRatio=False)
+            c.save()
+            pfr_robustness = PdfFileReader(open(pdf_robustness, 'rb'))
+        except:
+            LOGGER.exception('failed to convert png to pdf')
+
         output_file = PdfFileWriter()
-        pfr_template = PdfFileReader(file(static_dir() + '/pdf/climatefactsheettemplate.pdf', 'rb'))
+        pfr_template = PdfFileReader(file(data_path() + '/pdf/climatefactsheettemplate.pdf', 'rb'))
         LOGGER.debug('template: %s' % pfr_template)
 
         page_count = pfr_template.getNumPages()
@@ -131,6 +158,10 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None):
             except:
                 LOGGER.warn('failed to merge spaghetti plot')
             try:
+                input_page.mergePage(pfr_robustness.getPage(0))
+            except:
+                LOGGER.warn('failed to merge robustness plot')
+            try:
                 output_file.addPage(input_page)
             except:
                 LOGGER.warn('failed to add page to output pdf')
@@ -141,7 +172,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None):
             LOGGER.info('sucessfully brewed the demanded factsheet')
         except:
             LOGGER.exception('failed write filled template to pdf. empty template will be set as output')
-            climatefactsheet = static_dir() + '/pdf/climatefactsheettemplate.pdf'
+            climatefactsheet = data_path() + '/pdf/climatefactsheettemplate.pdf'
     except:
         LOGGER.exception("failed to brew the factsheet, empty template will be set as output")
     return climatefactsheet
