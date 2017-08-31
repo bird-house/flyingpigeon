@@ -5,8 +5,8 @@ from netCDF4 import Dataset
 from datetime import datetime, date
 import numpy as np
 import logging
-import matplotlib
-matplotlib.use('Agg')   # use this if no xserver is available
+from matplotlib import use
+use('Agg')   # use this if no xserver is available
 
 from matplotlib import pyplot as plt
 from matplotlib.colors import Normalize
@@ -26,6 +26,54 @@ class MidpointNormalize(Normalize):
     def __call__(self, value, clip=None):
         x, y = [self.vmin, self.midpoint, self.vmax], [0, 0.5, 1]
         return np.ma.masked_array(np.interp(value, x, y))
+
+
+def plot_extend(resource, format=None):
+    """
+    plots the extend (domain) of the values stored in a netCDF file:
+
+    :parm resource: path to netCDF file
+    :param format: file format of the graphic. if None (default) an matplotlib figure will be returned
+
+    :return graphic: graphic in specified format
+    """
+    import matplotlib.patches as mpatches
+
+    box_top = 45
+    x, y = [-20, -20, 45, 45, -44], [-45, box_top, box_top, -45, -45]
+
+    xy = np.array([[-20, -20], [20, -20], [20, 20], [-20, 20]])
+
+    fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
+    projection = ccrs.Orthographic(central_longitude=np.mean(xy[:, 0]),
+                                   central_latitude=np.mean(xy[:, 1]),
+                                   globe=None)  # Robinson()
+
+    ax = plt.axes(projection=projection)
+
+    # ax = plt.subplot(211, projection=rotated_pole)
+    # ax.stock_img()
+    # ax.coastlines()
+    # ax.plot(x, y, marker='o', transform=rotated_pole)
+    # ax.fill(x, y, color='coral', transform=rotated_pole, alpha=0.4)
+    # ax.gridlines()
+    #
+    # ax = plt.subplot(212, projection=ccrs.PlateCarree())
+    ax.stock_img()
+    ax.coastlines()
+    # ax.plot(x, y, marker='o', transform=ccrs.Geodetic()))  # PlateCarree()) #rotated_pole
+    # ax.fill(x, y, transform=ccrs.Geodetic(), color='coral', alpha= 0.4)   #transform=rotated_pole,
+    ax.add_patch(mpatches.Polygon(xy, closed=True, transform=ccrs.Geodetic()))
+    ax.add_patch(mpatches.Polygon(xy, closed=True, transform=ccrs.PlateCarree(), color='red'))
+    ax.gridlines()
+    plt.show()
+    o1, map_graphic = mkstemp(dir='.', suffix='.png')
+
+    fig.savefig(map_graphic)
+    plt.close()
+
+    return map_graphic
+
 
 
 def plot_polygons(regions):
@@ -59,7 +107,7 @@ def plot_polygons(regions):
             x, y = geo.centroid.coords.xy
             central_longitude.append(x[0])
             central_latitude.append(y[0])
-    
+
     fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
     projection = ccrs.Orthographic(central_longitude=mean(central_longitude),
                                    central_latitude=mean(central_latitude),
@@ -72,11 +120,12 @@ def plot_polygons(regions):
     for r in records:
         geo = geos.next()
         if r.attributes['ISO_A3'] in regions:
-            shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black')
+            shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black', color='coral')
             ax.add_feature(shape_feature)
-        ax.coastlines()
-        ax.grid()
-        # ax.set_global()
+    ax.coastlines()
+    ax.gridlines()
+    ax.stock_img()
+    # ax.set_global()
 
     o1, map_graphic = mkstemp(dir='.', suffix='.png')
 
