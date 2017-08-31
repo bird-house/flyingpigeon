@@ -264,9 +264,9 @@ def test_wps_map_spatial_analog():
         Service(processes=[MapSpatialAnalogProcess()], cfgfiles=CFG_FILE))
     datainputs = (
         "resource=files@xlink:href={0};"
-        "fmt={1};"
-        "title={2}"
-    ).format(TESTDATA['dissimilarity.nc'], 'pdf', "Test Spatial Analog")
+        "fmt={1};fmt={2};fmt={3};fmt={4};"
+        "title={5}"
+    ).format(TESTDATA['dissimilarity.nc'], 'png', 'pdf', 'svg', 'eps', "Spatial Analog Example")
 
     resp = client.get(
         service='wps', request='execute', version='1.0.0',

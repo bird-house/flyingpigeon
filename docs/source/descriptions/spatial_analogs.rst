@@ -41,7 +41,7 @@ target distribution over the future period. Usually the raw model outputs are
 bias-corrected with the observation dataset. This is done to avoid discrepancies
 that would be introduced by systematic model errors. One way to validate the results
 is to compute the spatial analog using the simulation over the historical period. The
-best analog region should thus be approximately centered over the target site.
+best analog region should thus cover the target site.
 
 The WPS process automatically extracts the target series from a netCDF file using
 geographical coordinates and the names of the climate indices (the name of the
@@ -49,10 +49,24 @@ climate indices should be the same for both netCDF files). It also allows users
 to specify the period over which the distributions should be compared, for both
 the target and candidate datasets.
 
+An accompanying process :class:`flyingpigeon.processes.MapSpatialAnalogProcess`
+can then be called to create a graphic displaying the dissimilarity value.
+An example of such graphic is shown below, with the target location indicated
+by a white marker.
+
+.. figure:: spatial_analog_example.*
+   :alt: Example of spatial analog graphic.
+
+   A map of the dissimilarity metric computed from mean annual precipitation and
+   temperature values in Montreal over the period 1970-1990. 
+
 .. autoclass:: flyingpigeon.processes.SpatialAnalogProcess
 
+.. autoclass:: flyingpigeon.processes.MapSpatialAnalogProcess
+
+
 References
-----------
+~~~~~~~~~~
 
 .. [Roy2017] Roy, P., Grenier, P., Barriault, E. et al. Climatic Change (2017) 143: 43. `<doi:10.1007/s10584-017-1960-x>`_
 .. [Grenier2013]  Grenier, P., A.-C. Parent, D. Huard, F. Anctil, and D. Chaumont, 2013: An assessment of six dissimilarity metrics for climate analogs. J. Appl. Meteor. Climatol., 52, 733–752, `<doi:10.1175/JAMC-D-12-0170.1>`_

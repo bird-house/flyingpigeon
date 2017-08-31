@@ -1,5 +1,5 @@
 from flyingpigeon.log import init_process_logger
-from flyingpigeon.utils import archiveextract
+from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.visualisation import map_spatial_analog
 
@@ -40,9 +40,9 @@ class MapSpatialAnalogProcess(Process):
                          abstract="Figure format",
                          data_type='string',
                          min_occurs=0,
-                         max_occurs=1,
+                         max_occurs=5,
                          default='png',
-                         allowed_values=['png', 'pdf', 'svg']),
+                         allowed_values=['png', 'pdf', 'svg', 'ps', 'eps']),
 
             LiteralInput('title', 'Title',
                          abstract="Figure title.",
@@ -57,10 +57,10 @@ class MapSpatialAnalogProcess(Process):
             ComplexOutput('output_figure', 'Dissimilarity map',
                           abstract="Map of dissimilarity values.",
                           as_reference=True,
-                          supported_formats=[Format('application/pdf'),
-                                             Format('image/svg'),
-                                             Format('image/png'),
-                                             ],
+                          supported_formats=[Format('image/png'),
+                                             Format('application/pdf'),
+                                             Format('image/svg+xml'),
+                                             Format('application/postscript'),],
                           ),
 
             ComplexOutput('output_log', 'Logging information',
@@ -74,7 +74,7 @@ class MapSpatialAnalogProcess(Process):
             self._handler,
             identifier="map_spatial_analog",
             title="Map of dissimilarity values calculated by the spatial_analog process.",
-            abstract="Map showing the dissimilarity values computed by the spatial_analog process as well as indicating by a marker the location of the target site.",
+            abstract="Produce map showing the dissimilarity values computed by the spatial_analog process as well as indicating by a marker the location of the target site.",
             version="0.1",
             metadata=[
                 Metadata('Doc',
@@ -102,7 +102,7 @@ class MapSpatialAnalogProcess(Process):
         try:
             resource = archiveextract(resource=rename_complexinputs(
                 request.inputs['resource']))[0]
-            fmt = request.inputs['fmt'][0].data
+            fmts = [e.data for e in request.inputs['fmt']]
             title = request.inputs['title'][0].data
 
         except Exception as e:
@@ -114,8 +114,12 @@ class MapSpatialAnalogProcess(Process):
 
         try:
             fig = map_spatial_analog(resource, title=title)
-            o1, graphic = mkstemp(dir='.', suffix='.'+fmt)
-            fig.savefig(graphic)
+            output = []
+            o1, graphic = mkstemp(dir='.')
+            for fmt in fmts:
+                fn = graphic + '.' + fmt
+                fig.savefig(fn, bbox_inches='tight', format=fmt)
+                output.append(fn)
 
         except Exception as e:
             msg = "Failed to create figure: {}".format(e)
@@ -125,6 +129,11 @@ class MapSpatialAnalogProcess(Process):
         finally:
             plt.close()
 
-        response.outputs['output_figure'].file = graphic
+        if len(fmt) == 1:
+            output = output[0]
+        else:
+            output = archive(output)
+
+        response.outputs['output_figure'].file = output
         response.update_status("done", 100)
         return response

@@ -521,6 +521,8 @@ def map_PAmask(PAmask):
 
 
 def map_spatial_analog(ncfile, variable='dissimilarity', cmap='viridis', title='Spatial analog'):
+    """Return a matplotlib Figure instance showing a map of the dissimilarity measure.
+    """
     import netCDF4 as nc
     from flyingpigeon import utils
     from mpl_toolkits.axes_grid import make_axes_locatable
@@ -528,7 +530,7 @@ def map_spatial_analog(ncfile, variable='dissimilarity', cmap='viridis', title='
 
     try:
         var = utils.get_values(ncfile, variable)
-        LOGGER.info('data loaded')
+        LOGGER.info('Data loaded')
 
         lats, lons = utils.get_coordinates(ncfile, variable=variable, unrotate=False)
 
@@ -542,10 +544,10 @@ def map_spatial_analog(ncfile, variable='dissimilarity', cmap='viridis', title='
             V = D.variables[variable]
             lon, lat = map(float, V.target_location.split(','))
 
-        LOGGER.info('lat lon loaded')
+        LOGGER.info('Lat and lon loaded')
 
     except Exception as e:
-        msg = 'failed to get data for plotting: {0}\n{1}'.format(ncfile, e)
+        msg = 'Failed to get data for plotting: {0}\n{1}'.format(ncfile, e)
         LOGGER.exception(msg)
         raise Exception(msg)
 
@@ -571,9 +573,6 @@ def map_spatial_analog(ncfile, variable='dissimilarity', cmap='viridis', title='
                           cmap=cmap, interpolation='nearest')
 
         ax.coastlines(color='k', linewidth=.8)
-        #ax.countries(color='k', linewidth=.8)
-        #ax.states(color='gray', linewidth=.5)
-
         ax.set_title(title)
 
         cb = plt.colorbar(cs, cax=cax, orientation='vertical')
