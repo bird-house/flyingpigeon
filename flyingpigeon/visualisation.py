@@ -33,7 +33,7 @@ def plot_extend(resource, extention='png'):
     plots the extend (domain) of the values stored in a netCDF file:
 
     :parm resource: path to netCDF file
-    :param extention: file format of the graphic. if None (default) an matplotlib figure will be returned
+    :param extention: file format of the graphic. if extention=None a matplotlib figure will be returned
 
     :return graphic: graphic in specified format
     """
@@ -62,14 +62,28 @@ def plot_extend(resource, extention='png'):
     ax.gridlines()
     plt.show()
 
-    if extention is 'mpl':
+    if extention is None:
         map_graphic = fig
     else:
-        o1, map_graphic = mkstemp(dir='.', suffix='.%s' % extention)
-        fig.savefig(map_graphic)
-        plt.close()
+        map_graphic = fig2plot(fig=fig, extention=extention)
+    plt.close()
 
     return map_graphic
+
+
+def fig2plot(fig, extention='png'):
+    '''saving a matplotlib figure to a graphic
+
+    :param fig: matplotlib figure object
+    :param extention: file extention (default='png')
+
+    :return str: path to graphic
+    '''
+
+    o1, graphic = mkstemp(dir='.', suffix='.%s' % extention)
+    fig.savefig(graphic)
+
+    return graphic
 
 
 def plot_polygons(regions):
