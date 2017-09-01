@@ -71,7 +71,7 @@ def plot_extend(resource, file_extension='png'):
     return map_graphic
 
 
-def fig2plot(fig, file_extension='png'):
+def fig2plot(fig, file_extension='png', bbox_inches='tight'):
     '''saving a matplotlib figure to a graphic
 
     :param fig: matplotlib figure object
@@ -81,7 +81,7 @@ def fig2plot(fig, file_extension='png'):
     '''
 
     o1, graphic = mkstemp(dir='.', suffix='.%s' % file_extension)
-    fig.savefig(graphic)
+    fig.savefig(graphic, bbox_inches=bbox_inches)
 
     return graphic
 
