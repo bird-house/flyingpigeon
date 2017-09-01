@@ -6,8 +6,8 @@ from netCDF4 import Dataset
 from datetime import datetime, date
 import numpy as np
 import logging
-import matplotlib
-matplotlib.use('Agg')   # use this if no xserver is available
+from matplotlib import use
+use('Agg')   # use this if no xserver is available
 
 from matplotlib import pyplot as plt
 from matplotlib.colors import Normalize
@@ -29,6 +29,64 @@ class MidpointNormalize(Normalize):
         return np.ma.masked_array(np.interp(value, x, y))
 
 
+def plot_extend(resource, file_extension='png'):
+    """
+    plots the extend (domain) of the values stored in a netCDF file:
+
+    :parm resource: path to netCDF file
+    :param file_extension: file format of the graphic. if file_extension=None a matplotlib figure will be returned
+
+    :return graphic: graphic in specified format
+    """
+    import matplotlib.patches as mpatches
+    lats, lons = utils.get_coordinates(resource, unrotate=True)
+
+    # box_top = 45
+    # x, y = [-20, -20, 45, 45, -44], [-45, box_top, box_top, -45, -45]
+
+    xy = np.array([[np.min(lons), np.min(lats)],
+                   [np.max(lons), np.min(lats)],
+                   [np.max(lons), np.max(lats)],
+                   [np.min(lons), np.max(lats)]])
+
+    fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
+    projection = ccrs.Robinson()
+    #  ccrs.Orthographic(central_longitude=np.mean(xy[:, 0]),
+    #  central_latitude=np.mean(xy[:, 1]),
+    #  globe=None)  # Robinson()
+
+    ax = plt.axes(projection=projection)
+    ax.stock_img()
+    ax.coastlines()
+    ax.add_patch(mpatches.Polygon(xy, closed=True,  transform=ccrs.PlateCarree(), color='coral', alpha=0.6))
+    # ccrs.Geodetic()
+    ax.gridlines()
+    plt.show()
+
+    if file_extension is None:
+        map_graphic = fig
+    else:
+        map_graphic = fig2plot(fig=fig, file_extension=file_extension)
+    plt.close()
+
+    return map_graphic
+
+
+def fig2plot(fig, file_extension='png', bbox_inches='tight'):
+    '''saving a matplotlib figure to a graphic
+
+    :param fig: matplotlib figure object
+    :param file_extension: file file_extension (default='png')
+
+    :return str: path to graphic
+    '''
+
+    o1, graphic = mkstemp(dir='.', suffix='.%s' % file_extension)
+    fig.savefig(graphic, bbox_inches=bbox_inches)
+
+    return graphic
+
+
 def plot_polygons(regions):
     """
     extract the polygon coordinate and plot it on a worldmap
@@ -40,6 +98,7 @@ def plot_polygons(regions):
 
     from cartopy.io.shapereader import Reader
     from cartopy.feature import ShapelyFeature
+    from numpy import mean, append
 
     from flyingpigeon import config
     DIR_SHP = config.shapefiles_path()
@@ -50,18 +109,34 @@ def plot_polygons(regions):
     fname = join(DIR_SHP, "countries.shp")
     geos = Reader(fname).geometries()
     records = Reader(fname).records()
-
-    fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
-    projection = ccrs.Orthographic(central_longitude=0.0, central_latitude=0.0, globe=None)  # Robinson()
-    ax = plt.axes(projection=projection)
+    central_latitude = []
+    central_longitude = []
 
     for r in records:
         geo = geos.next()
         if r.attributes['ISO_A3'] in regions:
-            shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black')
+            x, y = geo.centroid.coords.xy
+            central_longitude.append(x[0])
+            central_latitude.append(y[0])
+
+    fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
+    projection = ccrs.Orthographic(central_longitude=mean(central_longitude),
+                                   central_latitude=mean(central_latitude),
+                                   globe=None)  # Robinson()
+    ax = plt.axes(projection=projection)
+
+    geos = Reader(fname).geometries()
+    records = Reader(fname).records()
+
+    for r in records:
+        geo = geos.next()
+        if r.attributes['ISO_A3'] in regions:
+            shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black', color='coral')
             ax.add_feature(shape_feature)
-        ax.coastlines()
-        # ax.set_global()
+    ax.coastlines()
+    ax.gridlines()
+    ax.stock_img()
+    # ax.set_global()
 
     o1, map_graphic = mkstemp(dir='.', suffix='.png')
 
@@ -71,32 +146,34 @@ def plot_polygons(regions):
     return map_graphic
 
 
-def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None):
+def factsheetbrewer(png_region=None, png_spaghetti=None, png_uncertainty=None, png_robustness=None):
     """
     Put graphics into the climate fact sheet template to generate the final climate fact sheet
 
-    :param png_country: World map graphic with countries polygons.
+    :param png_region: World map graphic with countries polygons.
     :param png_uncertainty: Graphic showing a timeseries with fieldmean values and corresponding uncertainty
+    :param png_spaghetti: Graphic showing each datatset as a single timeseries
+    :param png_robustness: Map of the signal change including hashes and dots for robutsness values
 
     :return pdf foumular: pdf with fillable text boxes for interpretation text
     """
     from PyPDF2 import PdfFileWriter, PdfFileReader
     from reportlab.pdfgen import canvas
-    from flyingpigeon.config import static_dir
+    from flyingpigeon.config import data_path
     try:
         try:
-            _, pdf_country = mkstemp(dir='.', suffix='.pdf')
-            c = canvas.Canvas(pdf_country)
-            c.drawImage(png_country, 355, 490, width=270, height=150)  # , mask=None, preserveAspectRatio=False)
+            _, pdf_region = mkstemp(dir='.', suffix='.pdf')
+            c = canvas.Canvas(pdf_region)
+            c.drawImage(png_region, 340, 490, width=290, height=150)  # , mask=None, preserveAspectRatio=False)
             c.save()
-            pfr_country = PdfFileReader(open(pdf_country, 'rb'))
+            pfr_region = PdfFileReader(open(pdf_region, 'rb'))
         except:
             LOGGER.exception('failed to convert png to pdf')
 
         try:
             _, pdf_uncertainty = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_uncertainty)
-            c.drawImage(png_uncertainty, 20, 320, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
+            c.drawImage(png_uncertainty, 20, 350, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_uncertainty = PdfFileReader(open(pdf_uncertainty, 'rb'))
         except:
@@ -105,14 +182,23 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None):
         try:
             _, pdf_spaghetti = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_spaghetti)
-            c.drawImage(png_spaghetti, 280, 320, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
+            c.drawImage(png_spaghetti, 280, 350, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_spagetthi = PdfFileReader(open(pdf_spaghetti, 'rb'))
         except:
             LOGGER.exception('failed to convert png to pdf')
 
+        try:
+            _, pdf_robustness = mkstemp(dir='.', suffix='.pdf')
+            c = canvas.Canvas(pdf_robustness)
+            c.drawImage(png_robustness, 30, 100, width=250, height=170)  # , mask=None, preserveAspectRatio=False)
+            c.save()
+            pfr_robustness = PdfFileReader(open(pdf_robustness, 'rb'))
+        except:
+            LOGGER.exception('failed to convert png to pdf')
+
         output_file = PdfFileWriter()
-        pfr_template = PdfFileReader(file(static_dir() + '/pdf/climatefactsheettemplate.pdf', 'rb'))
+        pfr_template = PdfFileReader(file(data_path() + '/pdf/climatefactsheettemplate.pdf', 'rb'))
         LOGGER.debug('template: %s' % pfr_template)
 
         page_count = pfr_template.getNumPages()
@@ -120,7 +206,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None):
             LOGGER.debug("Plotting png to {} of {}".format(page_number, page_count))
             input_page = pfr_template.getPage(page_number)
             try:
-                input_page.mergePage(pfr_country.getPage(0))
+                input_page.mergePage(pfr_region.getPage(0))
             except:
                 LOGGER.warn('failed to merge courtry map')
             try:
@@ -132,6 +218,10 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None):
             except:
                 LOGGER.warn('failed to merge spaghetti plot')
             try:
+                input_page.mergePage(pfr_robustness.getPage(0))
+            except:
+                LOGGER.warn('failed to merge robustness plot')
+            try:
                 output_file.addPage(input_page)
             except:
                 LOGGER.warn('failed to add page to output pdf')
@@ -142,7 +232,7 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None):
             LOGGER.info('sucessfully brewed the demanded factsheet')
         except:
             LOGGER.exception('failed write filled template to pdf. empty template will be set as output')
-            climatefactsheet = static_dir() + '/pdf/climatefactsheettemplate.pdf'
+            climatefactsheet = data_path() + '/pdf/climatefactsheettemplate.pdf'
     except:
         LOGGER.exception("failed to brew the factsheet, empty template will be set as output")
     return climatefactsheet
@@ -214,7 +304,9 @@ def uncertainty(resouces, variable=None, ylim=None, title=None):
     import pandas as pd
     import numpy as np
     from os.path import basename
-    from flyingpigeon.utils import get_values, get_time
+    from flyingpigeon.utils import get_time
+    from flyingpigeon.calculation import fieldmean
+
     # === prepare invironment
     if type(resouces) == str:
         resouces = list([resouces])
@@ -232,12 +324,13 @@ def uncertainty(resouces, variable=None, ylim=None, title=None):
         LOGGER.info('variable %s found in resources.' % variable)
         for f in resouces:
             try:
-                data = get_values(f)
+                data = fieldmean(f)  # get_values(f)
                 LOGGER.debug("shape of data = %s " % len(data.shape))
                 if len(data.shape) == 3:
                     meanData = np.mean(data, axis=1)
                     ts = np.mean(meanData, axis=1)
                 else:
+                    # data should than be a 2D field
                     ts = data[:]
                 jd = get_time(f)
                 hs = pd.Series(ts, index=jd, name=basename(f))

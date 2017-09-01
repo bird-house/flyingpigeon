@@ -94,10 +94,10 @@ class FactsheetProcess(Process):
         if 'region' in request.inputs:
             regions = [inp.data for inp in request.inputs['region']]
             try:
-                png_country = vs.plot_polygons(regions)
+                png_region = vs.plot_polygons(regions)
             except:
                 LOGGER.exception('failed to plot the polygon to world map')
-                o1, png_country = mkstemp(dir='.', suffix='.png')
+                o1, png_region = mkstemp(dir='.', suffix='.png')
 
             # clip the demanded polygons
             subsets = clipping(
@@ -109,8 +109,7 @@ class FactsheetProcess(Process):
                 )
         else:
             subsets = ncs
-            o1, png_country = mkstemp(dir='.', suffix='.png')
-            # TODO: generate domain plot
+            png_region = vs.plot_extend(ncs[0])
 
         response.update_status('Arguments set for subset process', 0)
 
@@ -140,12 +139,12 @@ class FactsheetProcess(Process):
                                                                                       variable=var
                                                                                       )
             # if title is None:
-            title = 'signal robustness of %s ' % (variable)  # , end1, end2, start1, start2
+            title = 'signal robustness of %s ' % (var)  # , end1, end2, start1, start2
             png_robustness = vs.map_robustness(signal,
                                                high_agreement_mask,
                                                low_agreement_mask,
                                                # cmap=cmap,
-                                               Stitle=title)
+                                               title=title)
             LOGGER.info('graphic generated')
 
         except:
@@ -153,10 +152,10 @@ class FactsheetProcess(Process):
             _, png_robustness = mkstemp(dir='.', suffix='.png')
 
         factsheet = vs.factsheetbrewer(
-            png_country=abspath(png_country),
-            png_uncertainty=abspath(png_uncertainty),
-            png_spaghetti=abspath(png_spaghetti),
-            png_robustness=abspath(png_robustness)
+            png_region=png_region,
+            png_uncertainty=png_uncertainty,
+            png_spaghetti=png_spaghetti,
+            # png_robustness=png_robustness
             )
 
         response.outputs['output_nc'].file = tar_subsets
