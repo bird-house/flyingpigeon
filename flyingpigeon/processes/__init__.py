@@ -51,7 +51,7 @@ processes = [
     PlottimeseriesProcess(),
     SegetalfloraProcess(),
     SpatialAnalogProcess(),
-    MapSpatialAnalogProcess
+    MapSpatialAnalogProcess(),
 ]
 
 """
