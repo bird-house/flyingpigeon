@@ -79,7 +79,11 @@ class PointinspectionProcess(Process):
         ncs = archiveextract(
             resource=rename_complexinputs(request.inputs['resource']))
         LOGGER.info("ncs: %s " % ncs)
-        coords = request.inputs['coords']  # self.getInputValues(identifier='coords')
+
+        coords = []
+        for coord in request.inputs['coords']:
+            coords.append(coord.data)
+
         LOGGER.info("coords %s", coords)
         filenames = []
         nc_exp = sort_by_filename(ncs, historical_concatination=True)
