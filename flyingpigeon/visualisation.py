@@ -28,12 +28,12 @@ class MidpointNormalize(Normalize):
         return np.ma.masked_array(np.interp(value, x, y))
 
 
-def plot_extend(resource, extention='png'):
+def plot_extend(resource, file_extension='png'):
     """
     plots the extend (domain) of the values stored in a netCDF file:
 
     :parm resource: path to netCDF file
-    :param extention: file format of the graphic. if extention=None a matplotlib figure will be returned
+    :param file_extension: file format of the graphic. if file_extension=None a matplotlib figure will be returned
 
     :return graphic: graphic in specified format
     """
@@ -62,25 +62,25 @@ def plot_extend(resource, extention='png'):
     ax.gridlines()
     plt.show()
 
-    if extention is None:
+    if file_extension is None:
         map_graphic = fig
     else:
-        map_graphic = fig2plot(fig=fig, extention=extention)
+        map_graphic = fig2plot(fig=fig, file_extension=file_extension)
     plt.close()
 
     return map_graphic
 
 
-def fig2plot(fig, extention='png'):
+def fig2plot(fig, file_extension='png'):
     '''saving a matplotlib figure to a graphic
 
     :param fig: matplotlib figure object
-    :param extention: file extention (default='png')
+    :param file_extension: file file_extension (default='png')
 
     :return str: path to graphic
     '''
 
-    o1, graphic = mkstemp(dir='.', suffix='.%s' % extention)
+    o1, graphic = mkstemp(dir='.', suffix='.%s' % file_extension)
     fig.savefig(graphic)
 
     return graphic
