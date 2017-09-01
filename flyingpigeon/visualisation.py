@@ -81,7 +81,7 @@ def fig2plot(fig, file_extension='png', bbox_inches='tight'):
     :return str: path to graphic
     '''
 
-    o1, graphic = mkstemp(dir='.', suffix='.%s' % file_extension)
+    _, graphic = mkstemp(dir='.', suffix='.%s' % file_extension)
     fig.savefig(graphic, bbox_inches=bbox_inches)
 
     return graphic

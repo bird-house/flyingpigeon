@@ -1,7 +1,7 @@
 from flyingpigeon.log import init_process_logger
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.visualisation import map_spatial_analog
+from flyingpigeon.visualisation import map_spatial_analog, fig2plot
 
 from pywps import Process
 from pywps import LiteralInput
@@ -109,12 +109,9 @@ class MapSpatialAnalogProcess(Process):
         try:
             fig = map_spatial_analog(resource, title=title)
             output = []
-            _, graphic = mkstemp(dir='.')
-            
+
             for fmt in fmts:
-                fn = graphic + '.' + fmt
-                fig.savefig(fn, bbox_inches='tight', format=fmt)
-                output.append(fn)
+                output.append(fig2plot(fig, fmt))
 
         except Exception as e:
             msg = "Failed to create figure: {}".format(e)
