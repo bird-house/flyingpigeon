@@ -23,6 +23,7 @@ from .wps_analogs_compare import AnalogscompareProcess
 from .wps_analogs_viewer import AnalogsviewerProcess
 from .wps_segetalflora import SegetalfloraProcess
 from .wps_spatial_analog import SpatialAnalogProcess
+from .wps_map_spatial_analog import MapSpatialAnalogProcess
 
 processes = [
     ClippingProcess(),
@@ -49,7 +50,8 @@ processes = [
     RobustnessProcess(),
     PlottimeseriesProcess(),
     SegetalfloraProcess(),
-    SpatialAnalogProcess()
+    SpatialAnalogProcess(),
+    MapSpatialAnalogProcess(),
 ]
 
 """

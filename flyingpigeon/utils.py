@@ -473,7 +473,7 @@ def get_coordinates(resource, variable=None, unrotate=False):
 
             var = ds.variables[variable]
             dims = list(var.dimensions)
-            dims.remove('time')
+            if 'time' in dims: dims.remove('time')
             # TODO: find position of lat and long in list and replace dims[0] dims[1]
             lats = ds.variables[dims[0]][:]
             lons = ds.variables[dims[1]][:]
@@ -685,7 +685,7 @@ def get_values(resource, variable=None):
     if variable is None:
         variable = get_variable(resource)
 
-    if type(resource) is str:
+    if isinstance(resource, basestring):
         ds = Dataset(resource)
     elif len(resource) == 1:
         ds = Dataset(resource)

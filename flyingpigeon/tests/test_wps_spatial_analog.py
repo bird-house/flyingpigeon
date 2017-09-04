@@ -3,7 +3,7 @@ import pytest
 from pywps import Service
 from pywps.tests import assert_response_success
 
-from flyingpigeon.processes import SpatialAnalogProcess
+from flyingpigeon.processes import SpatialAnalogProcess, MapSpatialAnalogProcess
 from flyingpigeon.utils import local_path
 from flyingpigeon.tests.common import TESTDATA, client_for, CFG_FILE
 
@@ -90,8 +90,8 @@ class TestDissimilarity(TestBase):
         actual_field = ret.get_element()
         actual_variables = get_variable_names(actual_field.data_variables)
         self.assertEqual(actual_variables[0],
-                         ('dissimilarity_seuclidean'))
-        dist = actual_field['dissimilarity_seuclidean']
+                         ('dissimilarity'))
+        dist = actual_field['dissimilarity']
         self.assertEqual(dist.shape, (1, 1, 2, 2))
 
     def test_full(self):
@@ -132,7 +132,7 @@ class TestDissimilarity(TestBase):
             axes.flat[i].imshow(out);
             axes.flat[i].set_title(dist)
 
-        plt.savefig('flyingpigeon/tests/__pycache__/test_spatial_analog_metrics.png')
+        plt.savefig('test_spatial_analog_metrics.png')
         plt.close()
 
     def test_simple(self):
@@ -162,8 +162,8 @@ class TestDissimilarity(TestBase):
         actual_field = ret.get_element()
         actual_variables = get_variable_names(actual_field.data_variables)
         self.assertEqual(actual_variables[0],
-                         ('dissimilarity_seuclidean'))
-        dist = actual_field['dissimilarity_seuclidean']
+                         ('dissimilarity'))
+        dist = actual_field['dissimilarity']
         self.assertEqual(dist.shape, (1, 1, 2, 2))
 
 
@@ -220,15 +220,13 @@ def test_dissimilarity_op():
 
     res = ops.execute()
     out = res.get_element()
-    val = out['dissimilarity_seuclidean'].get_value()
+    val = out['dissimilarity'].get_value()
     i = np.argmin(np.abs(out['lon'].get_value()-lon))
     j = np.argmin(np.abs(out['lat'].get_value()-lat))
     np.testing.assert_almost_equal( val[j,i], 0, 6)
     np.testing.assert_array_equal(val > 0, True)
 
 
-# @pytest.mark.online
-# @pytest.mark.skip(reason="no way of currently testing this")
 def test_wps_spatial_analog_process_small_sample():
     client = client_for(
         Service(processes=[SpatialAnalogProcess()], cfgfiles=CFG_FILE))
@@ -253,7 +251,7 @@ def test_wps_spatial_analog_process_small_sample():
         'kldiv',
         '1970-01-01',
         '1990-01-01')
-    print datainputs
+
     resp = client.get(
         service='wps', request='execute', version='1.0.0',
         identifier='spatial_analog',
@@ -261,22 +259,38 @@ def test_wps_spatial_analog_process_small_sample():
 
     assert_response_success(resp)
 
+def test_wps_map_spatial_analog():
+    client = client_for(
+        Service(processes=[MapSpatialAnalogProcess()], cfgfiles=CFG_FILE))
+    datainputs = (
+        "resource=files@xlink:href={0};"
+        "fmt={1};fmt={2};fmt={3};fmt={4};"
+        "title={5}"
+    ).format(TESTDATA['dissimilarity.nc'], 'png', 'pdf', 'svg', 'eps', "Spatial Analog Example")
+
+    resp = client.get(
+        service='wps', request='execute', version='1.0.0',
+        identifier='map_spatial_analog',
+        datainputs=datainputs)
+
+    assert_response_success(resp)
+
+
+"""
 # @pytest.mark.slow
-# @pytest.mark.online
-# def test_wps_spatial_analog_process():
-#     """Switch small and medium to compute over larger array. This is too slow."""
-#     client = client_for(Service(processes=[SpatialAnalogProcess()]))
-#     datainputs = "candidate=files@xlink:href={1};target=files@xlink:href={" \
-#                  "0};location={2},{3};indices={4};indices={5};dist={6};dateStartCandidate={7};dateEndCandidate={8};dateStartTarget={7};dateEndTarget={8}"\
-#         .format(TESTDATA['indicators_small.nc'], TESTDATA['indicators_medium.nc'], -72, 46, 'meantemp',
-#                 'totalpr', 'kldiv', '1970-01-01', '1990-01-01')
-#
-#     resp = client.get(
-#         service='wps', request='execute', version='1.0.0',
-#         identifier='spatial_analog',
-#         datainputs=datainputs)
-#
-#     assert_response_success(resp)
+def test_wps_spatial_analog_process():
+    client = client_for(Service(processes=[SpatialAnalogProcess()]))
+    datainputs = "candidate=files@xlink:href={1};target=files@xlink:href={" \
+                 "0};location={2},{3};indices={4};indices={5};dist={6};dateStartCandidate={7};dateEndCandidate={8};dateStartTarget={7};dateEndTarget={8}"\
+        .format(TESTDATA['indicators_small.nc'], TESTDATA['indicators_medium.nc'], -72, 46, 'meantemp',
+                'totalpr', 'seuclidean', '1970-01-01', '1990-01-01')
+
+    resp = client.get(
+        service='wps', request='execute', version='1.0.0',
+        identifier='spatial_analog',
+        datainputs=datainputs)
+    assert_response_success(resp)
+"""
 
 """
 Testing notes
@@ -285,4 +299,14 @@ If you run a test function in ipython and launch %debug, you can access the erro
 message by going up the stack into the fonction and print resp.response
 
 
+birdy spatial_analog \
+--candidate https://bovec.dkrz.de/download/wpsoutputs/flyingpigeon/8d7aed7a-72d9-11e7-9ab2-109836a7cf3a/FD_NAM-44_CCCma-CanESM2_historical_r1i1p1_SMHI-RCA4_v1_yr_20010101-20051231.nc  \
+--target https://bovec.dkrz.de/download/wpsoutputs/flyingpigeon/ba4bd292-72d9-11e7-a663-109836a7cf3a/FD_NAM-44_CCCma-CanESM2_rcp85_r1i1p1_SMHI-RCA4_v1_yr_20510101-20551231.nc  \
+--location=-100,54  \
+--indices FD  \
+--dist kldiv  \
+--dateStartCandidate 2001-01-01  \
+--dateEndCandidate 2006-12-31 \
+--dateStartTarget 2051-01-01  \
+--dateEndTarget 2056-12-31
 """
