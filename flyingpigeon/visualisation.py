@@ -644,7 +644,6 @@ def map_spatial_analog(ncfile, variable='dissimilarity', cmap='viridis', title='
         LOGGER.exception(msg)
         raise Exception(msg)
 
-
     try:
         fig = plt.figure(facecolor='w', edgecolor='k')
         fig.subplots_adjust(top=.95, bottom=.05, left=.03, right=.95)
@@ -656,20 +655,18 @@ def map_spatial_analog(ncfile, variable='dissimilarity', cmap='viridis', title='
         cax = divider.new_horizontal("4%", pad=0.15, axes_class=maxes.Axes)
         fig.add_axes(cax)
 
-
         ax.plot(lon, lat, marker='o', mfc='#292421', ms=13, transform=ccrs.PlateCarree())
         ax.plot(lon, lat, marker='o', mfc='#ffffff', ms=7, transform=ccrs.PlateCarree())
 
-
         cs = ax.contourf(lons, lats, var, 60,
-                          transform=ccrs.PlateCarree(),
-                          cmap=cmap, interpolation='nearest')
+                         transform=ccrs.PlateCarree(),
+                         cmap=cmap, interpolation='nearest')
 
         ax.coastlines(color='k', linewidth=.8)
         ax.set_title(title)
 
         cb = plt.colorbar(cs, cax=cax, orientation='vertical')
-        cb.set_label(u"–            Dissimilarity             +")# ha='left', va='center')
+        cb.set_label(u"–            Dissimilarity             +")  # ha='left', va='center')
         cb.set_ticks([])
 
     except:
@@ -677,7 +674,4 @@ def map_spatial_analog(ncfile, variable='dissimilarity', cmap='viridis', title='
         LOGGER.exception(msg)
 
     LOGGER.info('Plot created and figure saved')
-
     return fig
-
-
