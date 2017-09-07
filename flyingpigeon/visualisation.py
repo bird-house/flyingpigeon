@@ -322,7 +322,7 @@ def uncertainty(resouces, variable=None, ylim=None, title=None):
         df = pd.DataFrame()
 
         LOGGER.info('variable %s found in resources.' % variable)
-        datasets = sort_by_filename(resouces, historical_concatination=False)
+        datasets = sort_by_filename(resouces, historical_concatination=True)
 
         for key in datasets.keys():
             try:
@@ -355,14 +355,14 @@ def uncertainty(resouces, variable=None, ylim=None, title=None):
             except:
                 LOGGER.exception('failed to calculate timeseries for %s ' % (key))
 
-        if len(df.index.values) >= 30:
+        if len(df.index.values) >= 60:
             # TODO: calculate windowsize according to timestapms (day,mon,yr ... with get_frequency)
             df_smooth = df.rolling(window=29, center=True).mean()
             LOGGER.info('rolling mean calculated for all input data')
         else:
             df_smooth = df
-            LOGGER.debug('timeseries too short, no rolling mean calculated')
-            fig.text(0.95, 0.05, '!!! Plot not valide: timeseries too short !!!',
+            LOGGER.debug('timeseries too short for moving mean')
+            fig.text(0.95, 0.05, '!!! timeseries too short for moving mean over 30years !!!',
                      fontsize=20, color='red',
                      ha='right', va='bottom', alpha=0.5)
         try:
