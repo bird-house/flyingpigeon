@@ -20,6 +20,7 @@ from ocgis.variable.temporal import TemporalVariable
 from ocgis.base import get_variable_names
 from ocgis.test.base import TestBase
 
+
 class TestDissimilarity(TestBase):
     """Simple auto-generated test field."""
     def setUp(self):
@@ -46,7 +47,7 @@ class TestDissimilarity(TestBase):
         col = Variable(value=np.arange(ncol) - ncol/2., name='col', dimensions='col')
 
         grid = Grid(col, row)
-        x,y = grid.get_value_stacked()
+        x, y = grid.get_value_stacked()
 
         start = dt.datetime(2000, 1, 1)
         delta = dt.timedelta(days=1)
@@ -60,13 +61,13 @@ class TestDissimilarity(TestBase):
 
         nrlz = 1
         realization = None
-        value = np.random.rand(nrlz, ntime, nlevel, nrow, ncol) * np.arctan2(x, y).clip(.1) + np.hypot(x,y)
+        value = np.random.rand(nrlz, ntime, nlevel, nrow, ncol) * np.arctan2(x, y).clip(.1) + np.hypot(x, y)
         variable = Variable(name=variable_name,
                             value=value,
                             dimensions=['realization', 'time', 'level', 'row',
                                         'col'])
         field = Field(grid=grid, time=temporal, is_data=variable, level=level,
-                         realization=realization)
+                      realization=realization)
 
         return field
 
@@ -115,21 +116,21 @@ class TestDissimilarity(TestBase):
                                                                         p4]]
         candidate = ocgis.MultiRequestDataset(can)
 
-        fig, axes = plt.subplots(2,3)
+        fig, axes = plt.subplots(2, 3)
         for i, dist in enumerate(dissimilarity.__all__):
 
             calc = [{'func': 'dissimilarity',
                      'name': 'output_mfpf',
                      'kwds': {'target': reference,
                               'candidate': ('v1', 'v2'),
-                              'dist':dist}}]
+                              'dist': dist}}]
 
             ops = OcgOperations(dataset=candidate, calc=calc)
             ret = ops.execute()
             out_field = ret.get_element()
             var_name = get_variable_names(out_field.data_variables)[0]
-            out = out_field[var_name].get_value()[0,0]
-            axes.flat[i].imshow(out);
+            out = out_field[var_name].get_value()[0, 0]
+            axes.flat[i].imshow(out)
             axes.flat[i].set_title(dist)
 
         plt.savefig('test_spatial_analog_metrics.png')
@@ -142,14 +143,12 @@ class TestDissimilarity(TestBase):
         p4 = self.write_field_data('v2', dir='b')
 
         ref_range = [dt.datetime(2000, 3, 1), dt.datetime(2000, 3, 31)]
-        ref = [ocgis.RequestDataset(p, time_range=ref_range) for p in [p1,
-                                                                   p2]]
+        ref = [ocgis.RequestDataset(p, time_range=ref_range) for p in [p1, p2]]
         reference = ocgis.MultiRequestDataset(ref)
         reference = reference.get()
 
         cand_range = [dt.datetime(2000, 8, 1), dt.datetime(2000, 8, 31)]
-        can = [ocgis.RequestDataset(p, time_range=cand_range) for p in [p3,
-                                                                       p4]]
+        can = [ocgis.RequestDataset(p, time_range=cand_range) for p in [p3, p4]]
         candidate = ocgis.MultiRequestDataset(can)
 
         calc = [{'func': 'dissimilarity',
@@ -167,23 +166,22 @@ class TestDissimilarity(TestBase):
         self.assertEqual(dist.shape, (1, 1, 2, 2))
 
 
-
 def test_dissimilarity_op():
     """Test with a real file."""
     import datetime as dt
     lon, lat = -72, 46
     g = Point(lon, lat)
 
-    cfn = local_path(TESTDATA['indicators_small.nc'] )
+    cfn = local_path(TESTDATA['indicators_small.nc'])
     tfn = local_path(TESTDATA['indicators_medium.nc'])
 
     indices = ['meantemp', 'totalpr']
 
     # Candidate fields
     candidate = ocgis.RequestDataset(cfn,
-                               variable=indices,
-                               time_range=[dt.datetime(1970, 1, 1), dt.datetime(2000, 1, 1)],
-                               )
+                                     variable=indices,
+                                     time_range=[dt.datetime(1970, 1, 1), dt.datetime(2000, 1, 1)],
+                                     )
 
     # The indicators_small dataset is just a subset of the indicators_medium
     # dataset. Below is the code to create the small dataset.
@@ -198,15 +196,13 @@ def test_dissimilarity_op():
                              )
     res = op.execute()
     """
-
-
     # Target fields
     # Extract values from one grid cell
     trd = ocgis.RequestDataset(tfn,
-                                     variable=indices,
-                                     time_range=[dt.datetime(1970, 1, 1),
-                                                 dt.datetime(2000, 1, 1)],
-                                     )
+                               variable=indices,
+                               time_range=[dt.datetime(1970, 1, 1),
+                                           dt.datetime(2000, 1, 1)],
+                               )
 
     op = ocgis.OcgOperations(dataset=trd, geom=g,
                              search_radius_mult=1.75, select_nearest=True)
@@ -216,14 +212,15 @@ def test_dissimilarity_op():
         calc=[{'func': 'dissimilarity', 'name': 'spatial_analog',
                'kwds': {'dist': 'seuclidean', 'target': target,
                         'candidate': indices}}],
-                dataset=candidate)
+        dataset=candidate
+        )
 
     res = ops.execute()
     out = res.get_element()
     val = out['dissimilarity'].get_value()
     i = np.argmin(np.abs(out['lon'].get_value()-lon))
     j = np.argmin(np.abs(out['lat'].get_value()-lat))
-    np.testing.assert_almost_equal( val[j,i], 0, 6)
+    np.testing.assert_almost_equal(val[j, i], 0, 6)
     np.testing.assert_array_equal(val > 0, True)
 
 
@@ -258,6 +255,7 @@ def test_wps_spatial_analog_process_small_sample():
         datainputs=datainputs)
 
     assert_response_success(resp)
+
 
 def test_wps_map_spatial_analog():
     client = client_for(
