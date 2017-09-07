@@ -6,6 +6,7 @@ import json
 
 from pywps import Service
 from pywps.tests import client_for
+import numpy.ma as ma
 import netCDF4
 
 try:
@@ -22,44 +23,52 @@ class TestSubsetWFS(unittest.TestCase):
             self.config.read('configtests.cfg')
         else:
             self.config.read('flyingpigeon/tests/configtests.cfg')
-        self.config_dict = {}
-        for config_item in ['subsetwfs', 'pairing_fx_testdata_grid5',
-                            'testpoly01']:
-            self.config_dict.update(dict(self.config.items(config_item)))
         sys.path.append('/'.join(os.getcwd().split('/')[:-1]))
         from flyingpigeon.processes import SubsetWFS
         self.client = client_for(Service(processes=[SubsetWFS()]))
-        if self.config_dict['wps_host']:
-            self.wps_host = self.config_dict['wps_host']
-        else:
-            self.wps_host = None
 
     def test_getcapabilities(self):
+        config_dict = wps_tests_utils.config_is_available(
+            'subsetwfs', [], self.config)
+        wps_host = wps_tests_utils.set_wps_host(config_dict)
+
         html_response = wps_tests_utils.wps_response(
-            self.wps_host,
+            wps_host,
             '?service=WPS&request=GetCapabilities&version=1.0.0',
             self.client)
         self.assertTrue(html_response)
 
     def test_getcapabilities_repeat(self):
+        config_dict = wps_tests_utils.config_is_available(
+            'subsetwfs', [], self.config)
+        wps_host = wps_tests_utils.set_wps_host(config_dict)
+
         for i in range(10):
             html_response = wps_tests_utils.wps_response(
-                self.wps_host,
+                wps_host,
                 '?service=WPS&request=GetCapabilities&version=1.0.0',
                 self.client)
             self.assertTrue(html_response)
 
     def test_process_exists(self):
+        config_dict = wps_tests_utils.config_is_available(
+            'subsetwfs', [], self.config)
+        wps_host = wps_tests_utils.set_wps_host(config_dict)
+
         html_response = wps_tests_utils.wps_response(
-            self.wps_host,
+            wps_host,
             '?service=WPS&request=GetCapabilities&version=1.0.0',
             self.client)
         processes = wps_tests_utils.parse_getcapabilities(html_response)
         self.assertTrue('subset_WFS' in processes)
 
     def test_describeprocess(self):
+        config_dict = wps_tests_utils.config_is_available(
+            'subsetwfs', [], self.config)
+        wps_host = wps_tests_utils.set_wps_host(config_dict)
+
         html_response = wps_tests_utils.wps_response(
-            self.wps_host,
+            wps_host,
             ('?service=WPS&request=DescribeProcess&version=1.0.0&'
              'identifier=subset_WFS'),
             self.client)
@@ -67,68 +76,33 @@ class TestSubsetWFS(unittest.TestCase):
         self.assertTrue('mosaic' in describe_process[0]['inputs'])
         self.assertTrue('output' in describe_process[0]['outputs'])
 
-    def test_subset_wfs_opendap(self):
-        wps_tests_utils.config_is_available(
-            ['pfx5_opendap', 'testpoly01_typename', 'testpoly01_featureids',
-             'testpoly01_geoserver'],
-            self.config_dict)
-        html_response = wps_tests_utils.wps_response(
-            self.wps_host,
-            ('?service=WPS&request=execute&version=1.0.0&'
-             'identifier=subset_WFS&DataInputs=resource={0};'
-             'typename={1};featureids={2};geoserver={3}').format(
-                self.config_dict['pfx5_opendap'],
-                self.config_dict['testpoly01_typename'],
-                self.config_dict['testpoly01_featureids'],
-                self.config_dict['testpoly01_geoserver']),
-            self.client)
-        outputs = wps_tests_utils.parse_execute_response(html_response)
-        output_json = outputs['outputs']['output']
-        if output_json[:7] == 'file://':
-            output_json = output_json[7:]
-            f1 = open(output_json, 'r')
-            json_data = json.loads(f1.read())
-            f1.close()
-        else:
-            json_data = json.loads(wps_tests_utils.get_wps_xlink(output_json))
-        output_netcdf = json_data[0]
-        if output_netcdf[:7] == 'file://':
-            tmp_output_netcdf = output_netcdf[7:]
-        else:
-            tmp_output_netcdf = '/tmp/testtmp.nc'
-            f1 = open(tmp_output_netcdf, 'w')
-            f1.write(wps_tests_utils.get_wps_xlink(output_netcdf))
-            f1.close()
-        nc = netCDF4.Dataset(tmp_output_netcdf, 'r')
-        nclon = nc.variables['lon']
-        nclat = nc.variables['lat']
-        ncvar = nc.variables['dummy']
-        self.assertEqual(nclon.shape, (3, 3))
-        self.assertEqual(nclat.shape, (3, 3))
-        self.assertEqual(nclon[0,0], 13)
-        self.assertEqual(nclon[2,2], 25)
-        self.assertEqual(nclat[0,0], 8.5)
-        self.assertEqual(nclat[2,2], 18.5)
-        self.assertEqual(ncvar.shape, (3, 3))
-        self.assertEqual(ncvar[0,1], 13)
-        self.assertEqual(ncvar[2,0], 32)
+    def test_subset_wfs_opendap_01(self):
+        # pairing0.1.1-montreal_circles0.1.1
+        config_dict = wps_tests_utils.config_is_available(
+            'pairing0.1.1-montreal_circles0.1.1',
+            ['opendap_path', 'fileserver_path', 'geoserver'],
+            self.config)
+        wps_host = wps_tests_utils.set_wps_host(config_dict)
 
-    def test_subset_wfs_fileserver(self):
-        wps_tests_utils.config_is_available(
-            ['pfx5_fileserver', 'testpoly01_typename', 'testpoly01_featureids',
-             'testpoly01_geoserver'],
-            self.config_dict)
+        # let's start with one example...
+        resource = os.path.join(
+            config_dict['opendap_path'],
+            'pairing_day_global-reg-grid_360_720_nobounds_ref180.nc')
+
+        wps_request = (
+            '?service=WPS&request=execute&version=1.0.0&'
+            'identifier=subset_WFS&DataInputs=resource={0};'
+            'typename={1};featureids={2};geoserver={3}').format(
+                resource,
+                'testgeom:montreal_circles',
+                'montreal_circles.43',
+                config_dict['geoserver'])
+
         html_response = wps_tests_utils.wps_response(
-            self.wps_host,
-            ('?service=WPS&request=execute&version=1.0.0&'
-             'identifier=subset_WFS&DataInputs=resource={0};'
-             'typename={1};featureids={2};geoserver={3}').format(
-                self.config_dict['pfx5_fileserver'],
-                self.config_dict['testpoly01_typename'],
-                self.config_dict['testpoly01_featureids'],
-                self.config_dict['testpoly01_geoserver']),
-            self.client)
+            wps_host, wps_request, self.client)
         outputs = wps_tests_utils.parse_execute_response(html_response)
+        if outputs['status'] == 'ProcessFailed':
+            raise RuntimeError(wps_request)
         output_json = outputs['outputs']['output']
         if output_json[:7] == 'file://':
             output_json = output_json[7:]
@@ -145,19 +119,134 @@ class TestSubsetWFS(unittest.TestCase):
             f1 = open(tmp_output_netcdf, 'w')
             f1.write(wps_tests_utils.get_wps_xlink(output_netcdf))
             f1.close()
+
         nc = netCDF4.Dataset(tmp_output_netcdf, 'r')
         nclon = nc.variables['lon']
         nclat = nc.variables['lat']
-        ncvar = nc.variables['dummy']
-        self.assertEqual(nclon.shape, (3, 3))
-        self.assertEqual(nclat.shape, (3, 3))
-        self.assertEqual(nclon[0,0], 13)
-        self.assertEqual(nclon[2,2], 25)
-        self.assertEqual(nclat[0,0], 8.5)
-        self.assertEqual(nclat[2,2], 18.5)
-        self.assertEqual(ncvar.shape, (3, 3))
-        self.assertEqual(ncvar[0,1], 13)
-        self.assertEqual(ncvar[2,0], 32)
+        ncvar = nc.variables['pairing']
+        self.assertEqual(nclon.shape, (21,))
+        self.assertEqual(nclat.shape, (21,))
+        self.assertEqual(ncvar.shape, (365, 21, 21))
+        self.assertTrue(ncvar[0,0,0] is ma.masked)
+        self.assertEqual(ncvar[0,10,10], 271213.0)
+        self.assertEqual(nc.subset_typename, 'testgeom:montreal_circles')
+        self.assertEqual(nc.subset_featureid, 'montreal_circles.43')
+
+    def test_subset_wfs_fileserver_01(self):
+        # pairing0.1.1-montreal_circles0.1.1
+        config_dict = wps_tests_utils.config_is_available(
+            'pairing0.1.1-montreal_circles0.1.1',
+            ['opendap_path', 'fileserver_path', 'geoserver'],
+            self.config)
+        wps_host = wps_tests_utils.set_wps_host(config_dict)
+
+        # let's start with one example...
+        resource = os.path.join(
+            config_dict['fileserver_path'],
+            'pairing_day_global-reg-grid_360_720_nobounds_ref180.nc')
+
+        wps_request = (
+            '?service=WPS&request=execute&version=1.0.0&'
+            'identifier=subset_WFS&DataInputs=resource={0};'
+            'typename={1};featureids={2};geoserver={3}').format(
+                resource,
+                'testgeom:montreal_circles',
+                'montreal_circles.43',
+                config_dict['geoserver'])
+
+        html_response = wps_tests_utils.wps_response(
+            wps_host, wps_request, self.client)
+        outputs = wps_tests_utils.parse_execute_response(html_response)
+        if outputs['status'] == 'ProcessFailed':
+            raise RuntimeError(wps_request)
+        output_json = outputs['outputs']['output']
+        if output_json[:7] == 'file://':
+            output_json = output_json[7:]
+            f1 = open(output_json, 'r')
+            json_data = json.loads(f1.read())
+            f1.close()
+        else:
+            json_data = json.loads(wps_tests_utils.get_wps_xlink(output_json))
+        output_netcdf = json_data[0]
+        if output_netcdf[:7] == 'file://':
+            tmp_output_netcdf = output_netcdf[7:]
+        else:
+            tmp_output_netcdf = '/tmp/testtmp.nc'
+            f1 = open(tmp_output_netcdf, 'w')
+            f1.write(wps_tests_utils.get_wps_xlink(output_netcdf))
+            f1.close()
+
+        nc = netCDF4.Dataset(tmp_output_netcdf, 'r')
+        nclon = nc.variables['lon']
+        nclat = nc.variables['lat']
+        ncvar = nc.variables['pairing']
+        self.assertEqual(nclon.shape, (21,))
+        self.assertEqual(nclat.shape, (21,))
+        self.assertEqual(ncvar.shape, (365, 21, 21))
+        self.assertTrue(ncvar[0,0,0] is ma.masked)
+        self.assertEqual(ncvar[0,10,10], 271213.0)
+        self.assertEqual(nc.subset_typename, 'testgeom:montreal_circles')
+        self.assertEqual(nc.subset_featureid, 'montreal_circles.43')
+
+    def test_subset_wfs_opendap_multi_inputs_01(self):
+        # pairing0.1.1-montreal_circles0.1.1
+        config_dict = wps_tests_utils.config_is_available(
+            'pairing0.1.1-montreal_circles0.1.1',
+            ['opendap_path', 'fileserver_path', 'geoserver'],
+            self.config)
+        wps_host = wps_tests_utils.set_wps_host(config_dict)
+
+        # let's start with one example...
+        resource1 = os.path.join(
+            config_dict['opendap_path'],
+            'pairing_day_global-reg-grid_360_720_nobounds_ref180.nc')
+        resource2 = os.path.join(
+            config_dict['opendap_path'],
+            'pairing_day_global-reg-grid_360_720_bounds_ref180.nc')
+
+        wps_request = (
+            '?service=WPS&request=execute&version=1.0.0&'
+            'identifier=subset_WFS&DataInputs=resource={0};resource={1};'
+            'typename={2};featureids={3};featureids={4};geoserver={5}').format(
+                resource1, resource2,
+                'testgeom:montreal_circles',
+                'montreal_circles.43', 'montreal_circles.45',
+                config_dict['geoserver'])
+
+        html_response = wps_tests_utils.wps_response(
+            wps_host, wps_request, self.client)
+        outputs = wps_tests_utils.parse_execute_response(html_response)
+        if outputs['status'] == 'ProcessFailed':
+            raise RuntimeError(wps_request)
+        output_json = outputs['outputs']['output']
+        if output_json[:7] == 'file://':
+            output_json = output_json[7:]
+            f1 = open(output_json, 'r')
+            json_data = json.loads(f1.read())
+            f1.close()
+        else:
+            json_data = json.loads(wps_tests_utils.get_wps_xlink(output_json))
+        self.assertEqual(len(json_data), 4)
+        output_netcdf = json_data[0]
+        if output_netcdf[:7] == 'file://':
+            tmp_output_netcdf = output_netcdf[7:]
+        else:
+            tmp_output_netcdf = '/tmp/testtmp.nc'
+            f1 = open(tmp_output_netcdf, 'w')
+            f1.write(wps_tests_utils.get_wps_xlink(output_netcdf))
+            f1.close()
+
+        nc = netCDF4.Dataset(tmp_output_netcdf, 'r')
+        nclon = nc.variables['lon']
+        nclat = nc.variables['lat']
+        ncvar = nc.variables['pairing']
+        self.assertEqual(nclon.shape, (21,))
+        self.assertEqual(nclat.shape, (21,))
+        self.assertEqual(ncvar.shape, (365, 21, 21))
+        self.assertTrue(ncvar[0,0,0] is ma.masked)
+        self.assertEqual(ncvar[0,10,10], 271213.0)
+        self.assertEqual(nc.subset_typename, 'testgeom:montreal_circles')
+        self.assertEqual(nc.subset_featureid, 'montreal_circles.43')
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestSubsetWFS)
 

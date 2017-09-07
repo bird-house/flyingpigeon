@@ -304,10 +304,26 @@ def get_wps_xlink(xlink):
     return url_response.read()
 
 
-def config_is_available(config_names, config_dict):
+def config_is_available(config_section, config_names, config_dict):
     if not hasattr(config_names, '__iter__'):
         config_names = [config_names]
+    if config_section not in config_dict.sections():
+        raise unittest.SkipTest(
+            "{0} section not defined in config.".format(config_section))
+    section = config_dict.items(config_section)
+    section_d = {}
+    for item in section:
+        section_d[item[0]] = item[1]
     for config_name in config_names:
-        if (config_name not in config_dict) or (not config_dict[config_name]):
+        if (config_name not in section_d) or (not section_d[config_name]):
             raise unittest.SkipTest(
                 "{0} not defined in config.".format(config_name))
+    return section_d
+
+
+def set_wps_host(config_dict):
+    wps_host = config_dict.get('wps_host', None)
+    # wps_host might be set, but empty...
+    if not wps_host:
+        wps_host = None
+    return wps_host

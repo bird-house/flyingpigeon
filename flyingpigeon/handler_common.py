@@ -71,6 +71,7 @@ def wfs_common(request, response, mode):
     try:
         output_files = []
         output_urls = []
+        mv_dir = tempfile.mkdtemp(dir=outputpath)
         for one_file in list_of_files:
             file_name = os.path.basename(one_file)
             if file_name[-3:] == '.nc':
@@ -92,29 +93,37 @@ def wfs_common(request, response, mode):
                                               spatial_operation='clip',
                                               aggregate=True,
                                               snippet=False,
-                                              output_format='region-nc',
+                                              output_format='nc',
                                               interpolate_spatial_bounds=True,
                                               prefix=file_prefix).execute()
                 elif mode == 'subsetter':
-                    ops = ocgis.OcgOperations(dataset=rd, geom=[one_geom],
+                    # Still having problem with the geometry, previously
+                    # was passing geom=[one_geom]
+                    ops = ocgis.OcgOperations(dataset=rd,
+                                              geom=one_geom['geom'],
                                               snippet=False,
                                               output_format='nc',
                                               interpolate_spatial_bounds=True,
                                               prefix=file_prefix).execute()
-                mv_dir = tempfile.mkdtemp(dir=outputpath)
+                # Here, the global attribute 'subset_typename' and
+                # 'subset_featureid' are added to the NetCDF file to keep
+                # track of the feature used.
+                nc = netCDF4.Dataset(ops, 'a')
+                nc.subset_typename = typename
+                nc.subset_featureid = features[i]
+                nc.close()
                 mv_name = '{0}_{1}.nc'.format(
                     os.path.basename(ops)[:-3], features[i])
                 mv_file = os.path.join(mv_dir, mv_name)
                 shutil.move(ops, mv_file)
                 output_files.append(mv_file)
-            if outputurl == 'file:///tmp':
-                disk_file = 'file:///' + mv_file.lstrip('/')
-                output_urls.append(disk_file)
-            else:
-                url_file = os.path.join(
-                    outputurl, os.path.basename(mv_dir),
-                    os.path.basename(mv_file))
-                output_urls.append(url_file)
+                if outputurl == 'file:///tmp':
+                    disk_file = 'file:///' + mv_file.lstrip('/')
+                    output_urls.append(disk_file)
+                else:
+                    url_file = os.path.join(
+                        outputurl, os.path.basename(mv_dir), mv_name)
+                    output_urls.append(url_file)
     except:
         raise Exception(traceback.format_exc())
 
