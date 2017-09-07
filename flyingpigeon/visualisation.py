@@ -341,12 +341,16 @@ def uncertainty(resouces, variable=None, ylim=None, title=None):
 
                 ds = pd.Series(data=data, index=ts, name=key)
                 ds_yr = ds.resample('12M', loffset='6M').mean()  # yearly mean
-                ds_yr_frame = ds_yr.to_frame()
+                # ds_yr_frame = ds_yr.to_frame()
+                df[key] = ds_yr
 
                 # df = DataFrame(data=vals, index=ts)
                 # df_mean = df.rolling(31, center=True).mean()
 
-                print ds_yr_frame
+                # jd = get_time(f)
+                # hs = pd.Series(ts, index=jd, name=basename(f))
+                # hd = hs.to_frame()
+                # df[basename(f)] = hs
 
             except:
                 LOGGER.exception('failed to calculate timeseries for %s ' % (key))
