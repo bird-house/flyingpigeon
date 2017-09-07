@@ -304,7 +304,7 @@ def uncertainty(resouces, variable=None, ylim=None, title=None):
     import pandas as pd
     import numpy as np
     from os.path import basename
-    from flyingpigeon.utils import get_time
+    from flyingpigeon.utils import get_time, sort_by_filename
     from flyingpigeon.calculation import fieldmean
 
     # === prepare invironment
@@ -322,26 +322,38 @@ def uncertainty(resouces, variable=None, ylim=None, title=None):
         df = pd.DataFrame()
 
         LOGGER.info('variable %s found in resources.' % variable)
-        for f in resouces:
-            try:
-                data = fieldmean(f)  # get_values(f)
-                LOGGER.debug("shape of data = %s " % len(data.shape))
-                if len(data.shape) == 3:
-                    meanData = np.mean(data, axis=1)
-                    ts = np.mean(meanData, axis=1)
-                else:
-                    # data should than be a 2D field
-                    ts = data[:]
-                jd = get_time(f)
-                hs = pd.Series(ts, index=jd, name=basename(f))
-                hd = hs.to_frame()
-                df[basename(f)] = hs
-            except:
-                LOGGER.exception('failed to calculate timeseries for %s ' % (f))
+        datasets = sort_by_filename(resouces, historical_concatination=False)
 
-        if len(df.index.values) >= 90:
+        for key in datasets.keys():
+            try:
+                data = fieldmean(datasets[key])  # get_values(f)
+                ts = get_time(datasets[key])
+
+                # if len(data.shape) == 3:
+                #     meanData = np.mean(data, axis=1)
+                #     ts = np.mean(meanData, axis=1)
+                # else:
+                #     # data should than be a 2D field
+                #     ts = data[:]
+                #
+                # hs = pd.Series(ts, index=jd, name=basename(f))
+                # hd = hs.to_frame()
+
+                ds = pd.Series(data=data, index=ts, name=key)
+                ds_yr = ds.resample('12M', loffset='6M').mean()  # yearly mean
+                ds_yr_frame = ds_yr.to_frame()
+
+                # df = DataFrame(data=vals, index=ts)
+                # df_mean = df.rolling(31, center=True).mean()
+
+                print ds_yr_frame
+
+            except:
+                LOGGER.exception('failed to calculate timeseries for %s ' % (key))
+
+        if len(df.index.values) >= 30:
             # TODO: calculate windowsize according to timestapms (day,mon,yr ... with get_frequency)
-            df_smooth = df.rolling(window=30, center=True).mean()
+            df_smooth = df.rolling(window=29, center=True).mean()
             LOGGER.info('rolling mean calculated for all input data')
         else:
             df_smooth = df

@@ -585,12 +585,11 @@ def get_timerange(resource):
     try:
         if len(resource) > 1:
             ds = MFDataset(resource)
-            time = ds.variables['time']
             LOGGER.debug('MFDataset loaded for %s of files in resource:' % len(resource))
         else:
             ds = Dataset(resource[0])
-            time = ds.variables['time']
             LOGGER.debug('Dataset loaded for %s file in resource:' % len(resource))
+        time = ds.variables['time']
 
         if (hasattr(time, 'units') and hasattr(time, 'calendar')) is True:
             s = num2date(time[0], time.units, time.calendar)
@@ -614,21 +613,22 @@ def get_timerange(resource):
     return start, end
 
 
-def get_time(resource, format=None):
+def get_time(resource):
     """
     returns all timestamps of given netcdf file as datetime list.
 
     :param resource: NetCDF file(s)
-    :param format: if a format is provided (e.g format='%Y%d%m'), values will be converted to string
+
     :return : list of timesteps
     """
+    # :param format: if a format is provided (e.g format='%Y%d%m'), values will be converted to string
+
     if type(resource) != list:
         resource = [resource]
 
     try:
         if len(resource) > 1:
             ds = MFDataset(resource)
-            time = ds.variables['time']
         else:
             ds = Dataset(resource[0])
         time = ds.variables['time']
@@ -646,11 +646,28 @@ def get_time(resource, format=None):
             timestamps = num2date(time[:])
         ds.close()
         try:
-            if format is not None:
-                ts = [t.strftime(format=format) for t in timestamps]
-            else:
-                #TODO change format according to frequency
-                ts = [dt.strptime(str(i), '%Y-%m-%d %H:%M:%S') for i in timestamps]
+            ts = [dt.strptime(str(i), '%Y-%m-%d %H:%M:%S') for i in timestamps]
+
+            # if date_format is not None:
+            #     ts = [t.strftime(format=date_format) for t in timestamps]
+            # else:
+            #    ts = [dt.strptime(str(i), '%Y-%m-%d %H:%M:%S') for i in timestamps]
+
+            # TODO give out dateformat by frequency
+            # ERROR: ValueError: unconverted data remains: 12:00:00
+            # from flyingpigeon.metadata import get_frequency
+
+            # frq = get_frequency(resource)
+            # if frq is 'day':
+            #     ts = [dt.strptime(str(i), '%Y-%m-%d') for i in timestamps]
+            # elif frq is 'mon':
+            #     ts = [dt.strptime(str(i), '%Y-%m') for i in timestamps]
+            # elif frq is 'sem':
+            #     ts = [dt.strptime(str(i), '%Y-%m') for i in timestamps]
+            # elif frq is 'yr':
+            #     ts = [dt.strptime(str(i), '%Y') for i in timestamps]
+            # else:
+            #     ts = [dt.strptime(str(i), '%Y-%m-%d %H:%M:%S') for i in timestamps]
         except:
             msg = 'failed to convert times to string'
             LOGGER.exception(msg)
