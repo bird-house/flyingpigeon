@@ -8,6 +8,8 @@ json_format = get_format('JSON')
 
 
 class SubsetWFS(Process):
+    """Subset a NetCDF file using WFS geometry."""
+
     def __init__(self):
         inputs = [
             LiteralInput('resource',

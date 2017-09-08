@@ -18,12 +18,24 @@ json_format = get_format('JSON')
 
 
 def wfs_common(request, response, mode):
+    """Common part of wps process for wfs operations.
+
+    :param request: request for wps process handler
+    :param response: response for wps process handler
+    :param mode: 'subsetter' or 'averager'
+
+    :return response: wps process response
+
+    """
+
     outputpath = configuration.get_config_value('server', 'outputpath')
     outputurl = configuration.get_config_value('server', 'outputurl')
 
     list_of_files = []
     for one_resource in request.inputs['resource']:
         # Download if not opendap
+        # Adding a maximum file size from a server config file would
+        # be possible here...
         try:
             nc_file = opendap_or_download(one_resource.data, '/tmp')
         except:
@@ -72,6 +84,7 @@ def wfs_common(request, response, mode):
         output_files = []
         output_urls = []
         mv_dir = tempfile.mkdtemp(dir=outputpath)
+
         for one_file in list_of_files:
             file_name = os.path.basename(one_file)
             if file_name[-3:] == '.nc':
@@ -79,15 +92,16 @@ def wfs_common(request, response, mode):
             else:
                 file_prefix = file_name
             ocgis.env.DIR_OUTPUT = os.getcwd()
+            ocgis.env.OVERWRITE = True
             nc = netCDF4.Dataset(one_file, 'r')
             var_name = guess_main_variable(nc)
             nc.close()
             rd = ocgis.RequestDataset(one_file, var_name)
             for i, one_geom in enumerate(geom):
                 if mode == 'averager':
-                    # Here with aggregate=True and output_format=region-nc,
-                    # can't pass the whole one_geom dictionary, is this
-                    # a sign that this does not support multipolygon?
+                    # Here with aggregate=True, can't pass the whole one_geom
+                    # dictionary, is this a sign that this does not support
+                    # multipolygon?
                     ops = ocgis.OcgOperations(dataset=rd,
                                               geom=one_geom['geom'],
                                               spatial_operation='clip',
@@ -112,11 +126,15 @@ def wfs_common(request, response, mode):
                 nc.subset_typename = typename
                 nc.subset_featureid = features[i]
                 nc.close()
+
                 mv_name = '{0}_{1}.nc'.format(
                     os.path.basename(ops)[:-3], features[i])
                 mv_file = os.path.join(mv_dir, mv_name)
                 shutil.move(ops, mv_file)
                 output_files.append(mv_file)
+
+                # Cover the case of an online wps server and the offline
+                # mode for tests.
                 if outputurl == 'file:///tmp':
                     disk_file = 'file:///' + mv_file.lstrip('/')
                     output_urls.append(disk_file)
@@ -127,10 +145,9 @@ def wfs_common(request, response, mode):
     except:
         raise Exception(traceback.format_exc())
 
-    # Here we construct a unique filename
     time_str = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     output_file_name = "result_%s_.json" % (time_str,)
-    output_file = os.path.join(outputpath, output_file_name)
+    output_file = os.path.join('/tmp', output_file_name)
     f1 = open(output_file, 'w')
     f1.write(json.dumps(output_urls))
     f1.close()

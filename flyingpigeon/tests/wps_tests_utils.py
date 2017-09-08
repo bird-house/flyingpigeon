@@ -289,6 +289,7 @@ def wps_response(wps_host, pywps_request, wps_client=None):
     """
 
     if wps_host:
+        wps_host = wps_host.replace('http://', '')
         url_request = Request(
             url='http://{0}{1}'.format(wps_host, pywps_request))
         url_response = urlopen(url_request)
@@ -304,13 +305,34 @@ def get_wps_xlink(xlink):
     return url_response.read()
 
 
-def config_is_available(config_section, config_names, config_dict):
+def config_is_available(config_section, config_names, config_read,
+                        set_wps_host=False):
+    """Check if a config section & parameters are available for tests.
+
+    Parameters
+    ----------
+    config_section : string
+        section of a cfg file.
+    config_names : list of string
+        name of parameters to check.
+    config_read : result from read method of ConfigParser.RawConfigParser
+    set_wps_host : bool
+        whether to set a default wps_host in the output config dictionary,
+        if there is already one, it is not overwritten.
+
+    Returns
+    -------
+    out : dict
+        dictionary of parameter:value for all parameters of the given section
+
+    """
+
     if not hasattr(config_names, '__iter__'):
         config_names = [config_names]
-    if config_section not in config_dict.sections():
+    if config_section not in config_read.sections():
         raise unittest.SkipTest(
             "{0} section not defined in config.".format(config_section))
-    section = config_dict.items(config_section)
+    section = config_read.items(config_section)
     section_d = {}
     for item in section:
         section_d[item[0]] = item[1]
@@ -318,12 +340,13 @@ def config_is_available(config_section, config_names, config_dict):
         if (config_name not in section_d) or (not section_d[config_name]):
             raise unittest.SkipTest(
                 "{0} not defined in config.".format(config_name))
+
+    if set_wps_host:
+        if 'wps_host' in section_d:
+            # wps_host might be set, but empty. If that's the case, set to None
+            if not section_d['wps_host']:
+                section_d['wps_host'] = None
+        else:
+            section_d['wps_host'] = None
+
     return section_d
-
-
-def set_wps_host(config_dict):
-    wps_host = config_dict.get('wps_host', None)
-    # wps_host might be set, but empty...
-    if not wps_host:
-        wps_host = None
-    return wps_host

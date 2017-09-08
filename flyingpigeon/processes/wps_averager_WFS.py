@@ -8,6 +8,8 @@ json_format = get_format('JSON')
 
 
 class AveragerWFS(Process):
+    """Weighted spatial average of a NetCDF file using a WFS geometry."""
+
     def __init__(self):
         inputs = [
             LiteralInput('resource',

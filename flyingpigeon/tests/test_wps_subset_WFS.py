@@ -29,34 +29,31 @@ class TestSubsetWFS(unittest.TestCase):
 
     def test_getcapabilities(self):
         config_dict = wps_tests_utils.config_is_available(
-            'subsetwfs', [], self.config)
-        wps_host = wps_tests_utils.set_wps_host(config_dict)
+            'subsetwfs', [], self.config, set_wps_host=True)
 
         html_response = wps_tests_utils.wps_response(
-            wps_host,
+            config_dict['wps_host'],
             '?service=WPS&request=GetCapabilities&version=1.0.0',
             self.client)
         self.assertTrue(html_response)
 
     def test_getcapabilities_repeat(self):
         config_dict = wps_tests_utils.config_is_available(
-            'subsetwfs', [], self.config)
-        wps_host = wps_tests_utils.set_wps_host(config_dict)
+            'subsetwfs', [], self.config, set_wps_host=True)
 
         for i in range(10):
             html_response = wps_tests_utils.wps_response(
-                wps_host,
+                config_dict['wps_host'],
                 '?service=WPS&request=GetCapabilities&version=1.0.0',
                 self.client)
             self.assertTrue(html_response)
 
     def test_process_exists(self):
         config_dict = wps_tests_utils.config_is_available(
-            'subsetwfs', [], self.config)
-        wps_host = wps_tests_utils.set_wps_host(config_dict)
+            'subsetwfs', [], self.config, set_wps_host=True)
 
         html_response = wps_tests_utils.wps_response(
-            wps_host,
+            config_dict['wps_host'],
             '?service=WPS&request=GetCapabilities&version=1.0.0',
             self.client)
         processes = wps_tests_utils.parse_getcapabilities(html_response)
@@ -64,11 +61,10 @@ class TestSubsetWFS(unittest.TestCase):
 
     def test_describeprocess(self):
         config_dict = wps_tests_utils.config_is_available(
-            'subsetwfs', [], self.config)
-        wps_host = wps_tests_utils.set_wps_host(config_dict)
+            'subsetwfs', [], self.config, set_wps_host=True)
 
         html_response = wps_tests_utils.wps_response(
-            wps_host,
+            config_dict['wps_host'],
             ('?service=WPS&request=DescribeProcess&version=1.0.0&'
              'identifier=subset_WFS'),
             self.client)
@@ -81,8 +77,7 @@ class TestSubsetWFS(unittest.TestCase):
         config_dict = wps_tests_utils.config_is_available(
             'pairing0.1.1-montreal_circles0.1.1',
             ['opendap_path', 'fileserver_path', 'geoserver'],
-            self.config)
-        wps_host = wps_tests_utils.set_wps_host(config_dict)
+            self.config, set_wps_host=True)
 
         # let's start with one example...
         resource = os.path.join(
@@ -99,7 +94,63 @@ class TestSubsetWFS(unittest.TestCase):
                 config_dict['geoserver'])
 
         html_response = wps_tests_utils.wps_response(
-            wps_host, wps_request, self.client)
+            config_dict['wps_host'], wps_request, self.client)
+        outputs = wps_tests_utils.parse_execute_response(html_response)
+        if outputs['status'] == 'ProcessFailed':
+            raise RuntimeError(wps_request)
+        output_json = outputs['outputs']['output']
+        if output_json[:7] == 'file://':
+            output_json = output_json[7:]
+            f1 = open(output_json, 'r')
+            json_data = json.loads(f1.read())
+            f1.close()
+        else:
+            json_data = json.loads(wps_tests_utils.get_wps_xlink(output_json))
+        output_netcdf = json_data[0]
+        if output_netcdf[:7] == 'file://':
+            tmp_output_netcdf = output_netcdf[7:]
+        else:
+            tmp_output_netcdf = '/tmp/testtmp.nc'
+            f1 = open(tmp_output_netcdf, 'w')
+            f1.write(wps_tests_utils.get_wps_xlink(output_netcdf))
+            f1.close()
+
+        nc = netCDF4.Dataset(tmp_output_netcdf, 'r')
+        nclon = nc.variables['lon']
+        nclat = nc.variables['lat']
+        ncvar = nc.variables['pairing']
+        self.assertEqual(nclon.shape, (21,))
+        self.assertEqual(nclat.shape, (21,))
+        self.assertEqual(ncvar.shape, (365, 21, 21))
+        self.assertTrue(ncvar[0,0,0] is ma.masked)
+        self.assertEqual(ncvar[0,10,10], 271213.0)
+        self.assertEqual(nc.subset_typename, 'testgeom:montreal_circles')
+        self.assertEqual(nc.subset_featureid, 'montreal_circles.43')
+
+    def test_subset_wfs_opendap_01_default_geoserver(self):
+        # pairing0.1.1-montreal_circles0.1.1
+        config_dict = wps_tests_utils.config_is_available(
+            'pairing0.1.1-montreal_circles0.1.1',
+            ['opendap_path', 'fileserver_path', 'geoserver',
+             'test_default_geoserver'],
+            self.config, set_wps_host=True)
+
+        # let's start with one example...
+        resource = os.path.join(
+            config_dict['opendap_path'],
+            'pairing_day_global-reg-grid_360_720_nobounds_ref180.nc')
+
+        wps_request = (
+            '?service=WPS&request=execute&version=1.0.0&'
+            'identifier=subset_WFS&DataInputs=resource={0};'
+            'typename={1};featureids={2};geoserver={3}').format(
+                resource,
+                'testgeom:montreal_circles',
+                'montreal_circles.43',
+                config_dict['geoserver'])
+
+        html_response = wps_tests_utils.wps_response(
+            config_dict['wps_host'], wps_request, self.client)
         outputs = wps_tests_utils.parse_execute_response(html_response)
         if outputs['status'] == 'ProcessFailed':
             raise RuntimeError(wps_request)
@@ -137,8 +188,7 @@ class TestSubsetWFS(unittest.TestCase):
         config_dict = wps_tests_utils.config_is_available(
             'pairing0.1.1-montreal_circles0.1.1',
             ['opendap_path', 'fileserver_path', 'geoserver'],
-            self.config)
-        wps_host = wps_tests_utils.set_wps_host(config_dict)
+            self.config, set_wps_host=True)
 
         # let's start with one example...
         resource = os.path.join(
@@ -155,7 +205,7 @@ class TestSubsetWFS(unittest.TestCase):
                 config_dict['geoserver'])
 
         html_response = wps_tests_utils.wps_response(
-            wps_host, wps_request, self.client)
+            config_dict['wps_host'], wps_request, self.client)
         outputs = wps_tests_utils.parse_execute_response(html_response)
         if outputs['status'] == 'ProcessFailed':
             raise RuntimeError(wps_request)
@@ -193,8 +243,7 @@ class TestSubsetWFS(unittest.TestCase):
         config_dict = wps_tests_utils.config_is_available(
             'pairing0.1.1-montreal_circles0.1.1',
             ['opendap_path', 'fileserver_path', 'geoserver'],
-            self.config)
-        wps_host = wps_tests_utils.set_wps_host(config_dict)
+            self.config, set_wps_host=True)
 
         # let's start with one example...
         resource1 = os.path.join(
@@ -214,7 +263,7 @@ class TestSubsetWFS(unittest.TestCase):
                 config_dict['geoserver'])
 
         html_response = wps_tests_utils.wps_response(
-            wps_host, wps_request, self.client)
+            config_dict['wps_host'], wps_request, self.client)
         outputs = wps_tests_utils.parse_execute_response(html_response)
         if outputs['status'] == 'ProcessFailed':
             raise RuntimeError(wps_request)

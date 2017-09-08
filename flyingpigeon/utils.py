@@ -1126,7 +1126,8 @@ def guess_main_variable(ncdataset):
     Notes
     -----
     The main variable is the one with highest dimensionality, if there are
-    more than one, the one with larger size is the main variable. The
+    more than one, the one with larger size is the main variable. If there is
+    still a tie, the first one in ncdataset.variables is chosen. The
     time, lon, lat variables and variables that are defined as bounds are
     automatically ignored.
 
@@ -1158,11 +1159,12 @@ def guess_main_variable(ncdataset):
     return main_var
 
 
-def opendap_or_download(resource, output_path=None):
+def opendap_or_download(resource, output_path=None, max_nbytes=1000000000):
     """Check for OPEnDAP support, if not download the resource.
 
     :param resource: url of a NetCDF resource
     :param output_path: where to save the non-OPEnDAP resource
+    :param max_nbytes: maximum file size for download, default: 1 gb
 
     :return str: the original url if OPEnDAP is supported or path of saved file
 
@@ -1173,6 +1175,8 @@ def opendap_or_download(resource, output_path=None):
         nc.close()
     except:
         response = urlopen(resource)
+        if int(response.info()['Content-Length']) > max_nbytes:
+            raise IOError("File too large to download.")
         chunk_size = 16 * 1024
         if not output_path:
             output_path = os.getcwd()

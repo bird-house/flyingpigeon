@@ -28,34 +28,31 @@ class TestAveragerWFS(unittest.TestCase):
 
     def test_getcapabilities(self):
         config_dict = wps_tests_utils.config_is_available(
-            'averagerwfs', [], self.config)
-        wps_host = wps_tests_utils.set_wps_host(config_dict)
+            'averagerwfs', [], self.config, set_wps_host=True)
 
         html_response = wps_tests_utils.wps_response(
-            wps_host,
+            config_dict['wps_host'],
             '?service=WPS&request=GetCapabilities&version=1.0.0',
             self.client)
         self.assertTrue(html_response)
 
     def test_getcapabilities_repeat(self):
         config_dict = wps_tests_utils.config_is_available(
-            'averagerwfs', [], self.config)
-        wps_host = wps_tests_utils.set_wps_host(config_dict)
+            'averagerwfs', [], self.config, set_wps_host=True)
 
         for i in range(10):
             html_response = wps_tests_utils.wps_response(
-                wps_host,
+                config_dict['wps_host'],
                 '?service=WPS&request=GetCapabilities&version=1.0.0',
                 self.client)
             self.assertTrue(html_response)
 
     def test_process_exists(self):
         config_dict = wps_tests_utils.config_is_available(
-            'averagerwfs', [], self.config)
-        wps_host = wps_tests_utils.set_wps_host(config_dict)
+            'averagerwfs', [], self.config, set_wps_host=True)
 
         html_response = wps_tests_utils.wps_response(
-            wps_host,
+            config_dict['wps_host'],
             '?service=WPS&request=GetCapabilities&version=1.0.0',
             self.client)
         processes = wps_tests_utils.parse_getcapabilities(html_response)
@@ -63,11 +60,10 @@ class TestAveragerWFS(unittest.TestCase):
 
     def test_describeprocess(self):
         config_dict = wps_tests_utils.config_is_available(
-            'averagerwfs', [], self.config)
-        wps_host = wps_tests_utils.set_wps_host(config_dict)
+            'averagerwfs', [], self.config, set_wps_host=True)
 
         html_response = wps_tests_utils.wps_response(
-            wps_host,
+            config_dict['wps_host'],
             ('?service=WPS&request=DescribeProcess&version=1.0.0&'
              'identifier=averager_WFS'),
             self.client)
@@ -75,61 +71,12 @@ class TestAveragerWFS(unittest.TestCase):
         self.assertTrue('mosaic' in describe_process[0]['inputs'])
         self.assertTrue('output' in describe_process[0]['outputs'])
 
-    def test_averager_wfs_opendap(self):
-        config_dict = wps_tests_utils.config_is_available(
-            'averagerwfs',
-            ['pfx5_opendap', 'testpoly01_typename', 'testpoly01_featureids',
-             'testpoly01_geoserver'],
-            self.config)
-        wps_host = wps_tests_utils.set_wps_host(config_dict)
-        html_response = wps_tests_utils.wps_response(
-            wps_host,
-            ('?service=WPS&request=execute&version=1.0.0&'
-             'identifier=averager_WFS&DataInputs=resource={0};'
-             'typename={1};featureids={2};geoserver={3}').format(
-                config_dict['pfx5_opendap'],
-                config_dict['testpoly01_typename'],
-                config_dict['testpoly01_featureids'],
-                config_dict['testpoly01_geoserver']),
-            self.client)
-        outputs = wps_tests_utils.parse_execute_response(html_response)
-        output_json = outputs['outputs']['output']
-        if output_json[:7] == 'file://':
-            output_json = output_json[7:]
-            f1 = open(output_json, 'r')
-            json_data = json.loads(f1.read())
-            f1.close()
-        else:
-            json_data = json.loads(wps_tests_utils.get_wps_xlink(output_json))
-        output_netcdf = json_data[0]
-        if output_netcdf[:7] == 'file://':
-            tmp_output_netcdf = output_netcdf[7:]
-        else:
-            tmp_output_netcdf = '/tmp/testtmp.nc'
-            f1 = open(tmp_output_netcdf, 'w')
-            f1.write(wps_tests_utils.get_wps_xlink(output_netcdf))
-            f1.close()
-        nc = netCDF4.Dataset(tmp_output_netcdf,'r')
-        nclon = nc.variables['lon']
-        nclat = nc.variables['lat']
-        ncvar = nc.variables['dummy']
-        nclon = nc.variables['lon']
-        nclat = nc.variables['lat']
-        ncvar = nc.variables['dummy']
-        self.assertEqual(nclon.size, 1)
-        self.assertEqual(nclat.size, 1)
-        self.assertEqual(nclon[0], 19)
-        self.assertEqual(nclat[0], 13)
-        self.assertEqual(ncvar.shape, (1,))
-        self.assertAlmostEqual(ncvar[0], 21.4, delta=0.2)
-
     def test_averager_wfs_opendap_01(self):
         # pairing0.1.1-montreal_circles0.1.1
         config_dict = wps_tests_utils.config_is_available(
             'pairing0.1.1-montreal_circles0.1.1',
             ['opendap_path', 'fileserver_path', 'geoserver'],
-            self.config)
-        wps_host = wps_tests_utils.set_wps_host(config_dict)
+            self.config, set_wps_host=True)
 
         # let's start with one example...
         resource = os.path.join(
@@ -146,7 +93,7 @@ class TestAveragerWFS(unittest.TestCase):
                 config_dict['geoserver'])
 
         html_response = wps_tests_utils.wps_response(
-            wps_host, wps_request, self.client)
+            config_dict['wps_host'], wps_request, self.client)
         outputs = wps_tests_utils.parse_execute_response(html_response)
         if outputs['status'] == 'ProcessFailed':
             raise RuntimeError(wps_request)
@@ -177,101 +124,6 @@ class TestAveragerWFS(unittest.TestCase):
         self.assertAlmostEqual(ncvar[0,0], 270730.0, delta=1.0)
         self.assertEqual(nc.subset_typename, 'testgeom:montreal_circles')
         self.assertEqual(nc.subset_featureid, 'montreal_circles.43')
-
-    def test_averager_wfs_opendap_default_geoserver(self):
-        config_dict = wps_tests_utils.config_is_available(
-            'averagerwfs',
-            ['pfx5_opendap', 'testpoly01_typename', 'testpoly01_featureids',
-             'test_default_geoserver'],
-            self.config)
-        wps_host = wps_tests_utils.set_wps_host(config_dict)
-        html_response = wps_tests_utils.wps_response(
-            wps_host,
-            ('?service=WPS&request=execute&version=1.0.0&'
-             'identifier=averager_WFS&DataInputs=resource={0};'
-             'typename={1};featureids={2}').format(
-                config_dict['pfx5_opendap'],
-                config_dict['testpoly01_typename'],
-                config_dict['testpoly01_featureids']),
-            self.client)
-        outputs = wps_tests_utils.parse_execute_response(html_response)
-        output_json = outputs['outputs']['output']
-        if output_json[:7] == 'file://':
-            output_json = output_json[7:]
-            f1 = open(output_json, 'r')
-            json_data = json.loads(f1.read())
-            f1.close()
-        else:
-            json_data = json.loads(wps_tests_utils.get_wps_xlink(output_json))
-        output_netcdf = json_data[0]
-        if output_netcdf[:7] == 'file://':
-            tmp_output_netcdf = output_netcdf[7:]
-        else:
-            tmp_output_netcdf = '/tmp/testtmp.nc'
-            f1 = open(tmp_output_netcdf, 'w')
-            f1.write(wps_tests_utils.get_wps_xlink(output_netcdf))
-            f1.close()
-        nc = netCDF4.Dataset(tmp_output_netcdf,'r')
-        nclon = nc.variables['lon']
-        nclat = nc.variables['lat']
-        ncvar = nc.variables['dummy']
-        nclon = nc.variables['lon']
-        nclat = nc.variables['lat']
-        ncvar = nc.variables['dummy']
-        self.assertEqual(nclon.size, 1)
-        self.assertEqual(nclat.size, 1)
-        self.assertEqual(nclon[0], 19)
-        self.assertEqual(nclat[0], 13)
-        self.assertEqual(ncvar.shape, (1,))
-        self.assertAlmostEqual(ncvar[0], 21.4, delta=0.2)
-
-    def test_averager_wfs_fileserver(self):
-        config_dict = wps_tests_utils.config_is_available(
-            'averagerwfs',
-            ['pfx5_fileserver', 'testpoly01_typename', 'testpoly01_featureids',
-             'testpoly01_geoserver'],
-            self.config)
-        wps_host = wps_tests_utils.set_wps_host(config_dict)
-        html_response = wps_tests_utils.wps_response(
-            wps_host,
-            ('?service=WPS&request=execute&version=1.0.0&'
-             'identifier=averager_WFS&DataInputs=resource={0};'
-             'typename={1};featureids={2};geoserver={3}').format(
-                config_dict['pfx5_fileserver'],
-                config_dict['testpoly01_typename'],
-                config_dict['testpoly01_featureids'],
-                config_dict['testpoly01_geoserver']),
-            self.client)
-        outputs = wps_tests_utils.parse_execute_response(html_response)
-        output_json = outputs['outputs']['output']
-        if output_json[:7] == 'file://':
-            output_json = output_json[7:]
-            f1 = open(output_json, 'r')
-            json_data = json.loads(f1.read())
-            f1.close()
-        else:
-            json_data = json.loads(wps_tests_utils.get_wps_xlink(output_json))
-        output_netcdf = json_data[0]
-        if output_netcdf[:7] == 'file://':
-            tmp_output_netcdf = output_netcdf[7:]
-        else:
-            tmp_output_netcdf = '/tmp/testtmp.nc'
-            f1 = open(tmp_output_netcdf, 'w')
-            f1.write(wps_tests_utils.get_wps_xlink(output_netcdf))
-            f1.close()
-        nc = netCDF4.Dataset(tmp_output_netcdf,'r')
-        nclon = nc.variables['lon']
-        nclat = nc.variables['lat']
-        ncvar = nc.variables['dummy']
-        nclon = nc.variables['lon']
-        nclat = nc.variables['lat']
-        ncvar = nc.variables['dummy']
-        self.assertEqual(nclon.size, 1)
-        self.assertEqual(nclat.size, 1)
-        self.assertEqual(nclon[0], 19)
-        self.assertEqual(nclat[0], 13)
-        self.assertEqual(ncvar.shape, (1,))
-        self.assertAlmostEqual(ncvar[0], 21.4, delta=0.2)
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestAveragerWFS)
 
