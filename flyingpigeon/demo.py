@@ -2,11 +2,12 @@ import os
 
 from pywps import configuration
 
-from flyingpigeon import wsgi
-from flyingpigeon._compat import urlparse
+from . import wsgi
+from ._compat import urlparse
 
 import logging
-LOGGER = logging.getLogger('demo')
+logging.basicConfig(format='%(message)s', level=logging.INFO)
+LOGGER = logging.getLogger('DEMO')
 
 
 def get_host():
@@ -31,7 +32,6 @@ def _run(application):
     bind_host, port = get_host()
     # need to serve the wps outputs
     static_files = {
-        # '/static': ('flyingpigeon', 'static'),
         '/outputs': configuration.get_config_value('server', 'outputpath')
     }
     run_simple(
@@ -51,7 +51,7 @@ def main():
                        instance with processes for the climate impact community.
                        This service is by default available at http://localhost:5000/wps""",
         epilog="""Do not use this service in a production environment.
-         It's intended to be running in test environment only!
+         It's intended to be running in a test environment only!
          For more documentation, visit http://flyingpigeon.readthedocs.io/en/latest/
         """
     )
@@ -62,13 +62,13 @@ def main():
     parser.add_argument('-d', '--daemon',
                         action='store_true', help="run in daemon mode")
     args = parser.parse_args()
-    cfg_files = []
+    cfgfiles = []
     if args.config:
-        cfg_files.append(args.config)
+        cfgfiles.append(args.config)
         LOGGER.warn('using pywps configuration: %s', args.config)
     if args.debug:
-        cfg_files.append(os.path.join(os.path.dirname(__file__), 'debug.cfg'))
-    app = wsgi.create_app(cfg_files)
+        cfgfiles.append(os.path.join(os.path.dirname(__file__), 'debug.cfg'))
+    app = wsgi.create_app(cfgfiles)
     # let's start the service ...
     if args.daemon:
         # daemon (fork) mode
