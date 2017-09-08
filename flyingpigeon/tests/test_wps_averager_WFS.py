@@ -76,19 +76,21 @@ class TestAveragerWFS(unittest.TestCase):
         self.assertTrue('output' in describe_process[0]['outputs'])
 
     def test_averager_wfs_opendap(self):
-        wps_tests_utils.config_is_available(
+        config_dict = wps_tests_utils.config_is_available(
+            'averagerwfs',
             ['pfx5_opendap', 'testpoly01_typename', 'testpoly01_featureids',
              'testpoly01_geoserver'],
-            self.config_dict)
+            self.config)
+        wps_host = wps_tests_utils.set_wps_host(config_dict)
         html_response = wps_tests_utils.wps_response(
-            self.wps_host,
+            wps_host,
             ('?service=WPS&request=execute&version=1.0.0&'
              'identifier=averager_WFS&DataInputs=resource={0};'
              'typename={1};featureids={2};geoserver={3}').format(
-                self.config_dict['pfx5_opendap'],
-                self.config_dict['testpoly01_typename'],
-                self.config_dict['testpoly01_featureids'],
-                self.config_dict['testpoly01_geoserver']),
+                config_dict['pfx5_opendap'],
+                config_dict['testpoly01_typename'],
+                config_dict['testpoly01_featureids'],
+                config_dict['testpoly01_geoserver']),
             self.client)
         outputs = wps_tests_utils.parse_execute_response(html_response)
         output_json = outputs['outputs']['output']
@@ -171,24 +173,26 @@ class TestAveragerWFS(unittest.TestCase):
         ncvar = nc.variables['pairing']
         self.assertEqual(nclon.shape, (1,))
         self.assertEqual(nclat.shape, (1,))
-        self.assertEqual(ncvar.shape, (365, 1, 1))
-        self.assertEqual(ncvar[0,0,0], 271213.0)
+        self.assertEqual(ncvar.shape, (365, 1))
+        self.assertAlmostEqual(ncvar[0,0], 270730.0, delta=1.0)
         self.assertEqual(nc.subset_typename, 'testgeom:montreal_circles')
         self.assertEqual(nc.subset_featureid, 'montreal_circles.43')
 
     def test_averager_wfs_opendap_default_geoserver(self):
-        wps_tests_utils.config_is_available(
+        config_dict = wps_tests_utils.config_is_available(
+            'averagerwfs',
             ['pfx5_opendap', 'testpoly01_typename', 'testpoly01_featureids',
              'test_default_geoserver'],
-            self.config_dict)
+            self.config)
+        wps_host = wps_tests_utils.set_wps_host(config_dict)
         html_response = wps_tests_utils.wps_response(
-            self.wps_host,
+            wps_host,
             ('?service=WPS&request=execute&version=1.0.0&'
              'identifier=averager_WFS&DataInputs=resource={0};'
              'typename={1};featureids={2}').format(
-                self.config_dict['pfx5_opendap'],
-                self.config_dict['testpoly01_typename'],
-                self.config_dict['testpoly01_featureids']),
+                config_dict['pfx5_opendap'],
+                config_dict['testpoly01_typename'],
+                config_dict['testpoly01_featureids']),
             self.client)
         outputs = wps_tests_utils.parse_execute_response(html_response)
         output_json = outputs['outputs']['output']
@@ -222,19 +226,21 @@ class TestAveragerWFS(unittest.TestCase):
         self.assertAlmostEqual(ncvar[0], 21.4, delta=0.2)
 
     def test_averager_wfs_fileserver(self):
-        wps_tests_utils.config_is_available(
+        config_dict = wps_tests_utils.config_is_available(
+            'averagerwfs',
             ['pfx5_fileserver', 'testpoly01_typename', 'testpoly01_featureids',
              'testpoly01_geoserver'],
-            self.config_dict)
+            self.config)
+        wps_host = wps_tests_utils.set_wps_host(config_dict)
         html_response = wps_tests_utils.wps_response(
-            self.wps_host,
+            wps_host,
             ('?service=WPS&request=execute&version=1.0.0&'
              'identifier=averager_WFS&DataInputs=resource={0};'
              'typename={1};featureids={2};geoserver={3}').format(
-                self.config_dict['pfx5_fileserver'],
-                self.config_dict['testpoly01_typename'],
-                self.config_dict['testpoly01_featureids'],
-                self.config_dict['testpoly01_geoserver']),
+                config_dict['pfx5_fileserver'],
+                config_dict['testpoly01_typename'],
+                config_dict['testpoly01_featureids'],
+                config_dict['testpoly01_geoserver']),
             self.client)
         outputs = wps_tests_utils.parse_execute_response(html_response)
         output_json = outputs['outputs']['output']

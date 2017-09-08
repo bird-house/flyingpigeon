@@ -92,5 +92,5 @@ dependencies:
 - pip:
   - pygbif==0.2.0 #0.1.4
   - sphinx-autoapi==0.4.0
-  - https://github.com/NCPP/ocgis/archive/master.zip
+  - https://github.com/huard/ocgis/archive/nc_region.zip
 #  - cdo==1.3.0
