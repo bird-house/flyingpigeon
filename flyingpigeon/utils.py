@@ -812,7 +812,7 @@ def sort_by_filename(resource, historical_concatination=False):
                         if historical_concatination is False:
                             for n in resource:
                                 if '%s_' % key in n:
-                                    ndic[key].append(path.join(p, n))
+                                    ndic[key].append(path.abspath(n))  # path.join(p, n))
 
                         elif historical_concatination is True:
                             key_hist = key.replace('rcp26', 'historical').\
@@ -821,7 +821,7 @@ def sort_by_filename(resource, historical_concatination=False):
                                 replace('rcp85', 'historical')
                             for n in resource:
                                 if '%s_' % key in n or '%s_' % key_hist in n:
-                                    ndic[key].append(path.join(p, n))
+                                    ndic[key].append(path.abspath(n))  # path.join(p, n))
                         else:
                             LOGGER.error('append file paths to dictionary for key %s failed' % key)
                         ndic[key].sort()
@@ -838,7 +838,8 @@ def sort_by_filename(resource, historical_concatination=False):
                 except Exception:
                     msg = 'failed to sort the list of resources and add dates to keyname: %s' % key
                     LOGGER.exception(msg)
-                    raise Exception(msg)
+                    tmp_dic[key] = ndic[key]
+                    # raise Exception(msg)
         elif len(resource) == 1:
             p, f = path.split(path.abspath(resource[0]))
             tmp_dic[f.replace('.nc', '')] = path.abspath(resource[0])

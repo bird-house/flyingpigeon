@@ -212,7 +212,7 @@ def factsheetbrewer(png_region=None, png_spaghetti=None, png_uncertainty=None, p
             try:
                 input_page.mergePage(pfr_uncertainty.getPage(0))
             except:
-                LOGGER.warn('failed to merge uncertainy plot')
+                LOGGER.warn('failed to merge uncertainty plot')
             try:
                 input_page.mergePage(pfr_spagetthi.getPage(0))
             except:
@@ -318,7 +318,7 @@ def uncertainty(resouces, variable=None, ylim=None, title=None):
     try:
         fig = plt.figure(figsize=(20, 10), facecolor='w', edgecolor='k')  # dpi=600,
         o1, output_png = mkstemp(dir='.', suffix='.png')
-        variable = utils.get_variable(resouces[0])
+        #  variable = utils.get_variable(resouces[0])
         df = pd.DataFrame()
 
         LOGGER.info('variable %s found in resources.' % variable)
@@ -340,7 +340,7 @@ def uncertainty(resouces, variable=None, ylim=None, title=None):
                 # hd = hs.to_frame()
 
                 ds = pd.Series(data=data, index=ts, name=key)
-                ds_yr = ds.resample('12M', loffset='6M').mean()  # yearly mean
+                ds_yr = ds.resample('12M', ).mean()  # yearly mean loffset='6M'
                 # ds_yr_frame = ds_yr.to_frame()
                 df[key] = ds_yr
 
