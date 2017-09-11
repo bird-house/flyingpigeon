@@ -7,7 +7,7 @@ from flyingpigeon.handler_common import wfs_common
 json_format = get_format('JSON')
 
 
-class AveragerWFS(Process):
+class AveragerWFSProcess(Process):
     """Weighted spatial average of a NetCDF file using a WFS geometry."""
 
     def __init__(self):
@@ -53,7 +53,7 @@ class AveragerWFS(Process):
                           as_reference=True,
                           supported_formats=[json_format])]
 
-        super(AveragerWFS, self).__init__(
+        super(AveragerWFSProcess, self).__init__(
             self._handler,
             identifier='averager_WFS',
             title='Averager WFS',

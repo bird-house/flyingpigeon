@@ -23,8 +23,8 @@ class TestAveragerWFS(unittest.TestCase):
         else:
             self.config.read('flyingpigeon/tests/configtests.cfg')
         sys.path.append('/'.join(os.getcwd().split('/')[:-1]))
-        from flyingpigeon.processes import AveragerWFS
-        self.client = client_for(Service(processes=[AveragerWFS()]))
+        from flyingpigeon.processes import AveragerWFSProcess
+        self.client = client_for(Service(processes=[AveragerWFSProcess()]))
 
     def test_getcapabilities(self):
         config_dict = wps_tests_utils.config_is_available(
@@ -124,6 +124,7 @@ class TestAveragerWFS(unittest.TestCase):
         self.assertAlmostEqual(ncvar[0,0], 270730.0, delta=1.0)
         self.assertEqual(nc.subset_typename, 'testgeom:montreal_circles')
         self.assertEqual(nc.subset_featureid, 'montreal_circles.43')
+        nc.close()
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestAveragerWFS)
 

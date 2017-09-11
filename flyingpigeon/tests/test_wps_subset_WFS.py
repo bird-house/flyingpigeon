@@ -24,8 +24,8 @@ class TestSubsetWFS(unittest.TestCase):
         else:
             self.config.read('flyingpigeon/tests/configtests.cfg')
         sys.path.append('/'.join(os.getcwd().split('/')[:-1]))
-        from flyingpigeon.processes import SubsetWFS
-        self.client = client_for(Service(processes=[SubsetWFS()]))
+        from flyingpigeon.processes import SubsetWFSProcess
+        self.client = client_for(Service(processes=[SubsetWFSProcess()]))
 
     def test_getcapabilities(self):
         config_dict = wps_tests_utils.config_is_available(
@@ -126,6 +126,7 @@ class TestSubsetWFS(unittest.TestCase):
         self.assertEqual(ncvar[0,10,10], 271213.0)
         self.assertEqual(nc.subset_typename, 'testgeom:montreal_circles')
         self.assertEqual(nc.subset_featureid, 'montreal_circles.43')
+        nc.close()
 
     def test_subset_wfs_opendap_01_default_geoserver(self):
         # pairing0.1.1-montreal_circles0.1.1
@@ -182,6 +183,7 @@ class TestSubsetWFS(unittest.TestCase):
         self.assertEqual(ncvar[0,10,10], 271213.0)
         self.assertEqual(nc.subset_typename, 'testgeom:montreal_circles')
         self.assertEqual(nc.subset_featureid, 'montreal_circles.43')
+        nc.close()
 
     def test_subset_wfs_fileserver_01(self):
         # pairing0.1.1-montreal_circles0.1.1
@@ -237,6 +239,7 @@ class TestSubsetWFS(unittest.TestCase):
         self.assertEqual(ncvar[0,10,10], 271213.0)
         self.assertEqual(nc.subset_typename, 'testgeom:montreal_circles')
         self.assertEqual(nc.subset_featureid, 'montreal_circles.43')
+        nc.close()
 
     def test_subset_wfs_opendap_multi_inputs_01(self):
         # pairing0.1.1-montreal_circles0.1.1
@@ -296,6 +299,7 @@ class TestSubsetWFS(unittest.TestCase):
         self.assertEqual(ncvar[0,10,10], 271213.0)
         self.assertEqual(nc.subset_typename, 'testgeom:montreal_circles')
         self.assertEqual(nc.subset_featureid, 'montreal_circles.43')
+        nc.close()
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestSubsetWFS)
 

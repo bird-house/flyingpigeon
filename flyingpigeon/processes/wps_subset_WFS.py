@@ -7,7 +7,7 @@ from flyingpigeon.handler_common import wfs_common
 json_format = get_format('JSON')
 
 
-class SubsetWFS(Process):
+class SubsetWFSProcess(Process):
     """Subset a NetCDF file using WFS geometry."""
 
     def __init__(self):
@@ -53,7 +53,7 @@ class SubsetWFS(Process):
                           as_reference=True,
                           supported_formats=[json_format])]
 
-        super(SubsetWFS, self).__init__(
+        super(SubsetWFSProcess, self).__init__(
             self._handler,
             identifier='subset_WFS',
             title='Subset WFS',

@@ -122,10 +122,9 @@ def wfs_common(request, response, mode):
                 # Here, the global attribute 'subset_typename' and
                 # 'subset_featureid' are added to the NetCDF file to keep
                 # track of the feature used.
-                nc = netCDF4.Dataset(ops, 'a')
-                nc.subset_typename = typename
-                nc.subset_featureid = features[i]
-                nc.close()
+                with netCDF4.Dataset(ops, 'a') as nc:
+                    nc.subset_typename = typename
+                    nc.subset_featureid = features[i]
 
                 mv_name = '{0}_{1}.nc'.format(
                     os.path.basename(ops)[:-3], features[i])
