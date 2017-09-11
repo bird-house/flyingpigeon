@@ -1,12 +1,12 @@
 # from flyingpigeon.visualisation import map_robustness
-from flyingpigeon.utils import get_variable, sort_by_filename, get_timerange
+from flyingpigeon.utils import get_variable, sort_by_filename, get_timerange, get_calendar
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
-def method_A(resource=[], start=None, end=None, timeslice=20,
-             variable=None, title=None, cmap='seismic'):
+def noise_signal_ratio(resource=[], start=None, end=None, timeslice=20,
+                       variable=None, title=None, cmap='seismic'):
     """returns the result
 
     :param resource: list of paths to netCDF files
@@ -71,6 +71,19 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
     except:
         msg = 'seltime and mergetime failed'
         LOGGER.exception(msg)
+
+    # verify the calendar
+
+    for c, nc in enumerate(mergefiles):
+        cal = get_calendar(nc)
+        if cal is not 'standard':
+            _, nc_cal = mkstemp(dir='.', suffix='.nc')
+            nc_out = cdo.mergetime(input=nc, output=nc_cal)
+            mergefiles[c] = nc_out
+            LOGGER.debug('calendar changed for %s' % nc)
+            print 'calendar changed for %s' % nc
+        else:
+            LOGGER.debug('calendar was %s' % cal)
 
     # dataset documentation
     try:

@@ -168,7 +168,7 @@ class RobustnessProcess(Process):
         #  LOGGER.debug('variable set to %s' % variable)
         # if method == 'Method_A':
 
-        signal, low_agreement_mask, high_agreement_mask, text_src = erob.method_A(
+        signal, low_agreement_mask, high_agreement_mask, text_src = erob.noise_signal_ratio(
                 resource=ncfiles,
                 start=start, end=end,
                 timeslice=timeslice,
