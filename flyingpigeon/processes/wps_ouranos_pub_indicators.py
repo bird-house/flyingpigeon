@@ -9,14 +9,56 @@ from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import GROUPING
 from flyingpigeon.log import init_process_logger
 
-import ocgis
+from ocgis.calc import base
+from ocgis.calc.library import register
 from os.path import join, abspath, dirname, getsize, curdir
-from ocgis import OcgOperations, RequestDataset, env
+from ocgis import FunctionRegistry, OcgOperations, RequestDataset, env
 from ocgis.conv.nc import NcConverter
 import uuid
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
+
+class Average(base.AbstractMultivariateFunction):
+    """
+    OCGIS class to compute the average of two variables.
+    """
+    key = 'average'
+    long_name = 'Average of two variables'
+    standard_name = 'average'
+    description = 'Average of two variables'
+    required_variables = ['v1', 'v2']
+
+    def calculate(self, v1=None, v2=None):
+        return (v1+v2)/2.
+
+    def validate_units(self):
+        from ocgis.util.units import get_are_units_equal_by_string_or_cfunits
+        for i, required_variable in enumerate(self.required_variables):
+            alias_variable = self.parms[required_variable]
+            variable = self.field[alias_variable]
+            if i == 0:
+                source = variable.units
+            else:
+                target = variable.units
+                match = get_are_units_equal_by_string_or_cfunits(source, target,
+                                                             try_cfunits=env.USE_CFUNITS)
+                if not match:
+                    raise UnitsValidationError(variable, target, self.key)
+
+            self.units = source
+
+    def get_output_units(self, *args, **kwargs):
+        """
+        Get the output units.
+
+        :type variable: :class:`ocgis.interface.base.variable.Variable`
+        :rtype: str
+        """
+        return self.units
+
+FunctionRegistry.append(Average)
+
 
 class OuranosPublicIndicatorProcess(Process, object):
     identifier = "ouranos_public_indicators"
@@ -49,16 +91,16 @@ class OuranosPublicIndicatorProcess(Process, object):
                          Format('application/zip'),
                      ]),
 
-        ComplexInput('tas', 'Mean daily temperature',
-                     abstract='NetCDF Files or archive (tar/zip) containing netCDF files storing mean daily temperature.',
-                     metadata=[Metadata('Info')],
-                     min_occurs=0,
-                     max_occurs=1000,
-                     supported_formats=[
-                         Format('application/x-netcdf'),
-                         Format('application/x-tar'),
-                         Format('application/zip'),
-                     ]),
+#        ComplexInput('tas', 'Mean daily temperature',
+#                     abstract='NetCDF Files or archive (tar/zip) containing netCDF files storing mean daily temperature.',
+#                     metadata=[Metadata('Info')],
+#                     min_occurs=0,
+#                     max_occurs=1000,
+#                     supported_formats=[
+#                         Format('application/x-netcdf'),
+#                         Format('application/x-tar'),
+#                         Format('application/zip'),
+#                     ]),
 
         ComplexInput('pr', 'Total daily precipitation',
                      abstract='NetCDF Files or archive (tar/zip) containing netCDF files storing total daily precipitation.',
@@ -135,8 +177,8 @@ class OuranosPublicIndicatorProcess(Process, object):
                 request.inputs['tasmin']))
             res['tasmax'] = archiveextract(resource=rename_complexinputs(
                 request.inputs['tasmax']))
-            res['tas'] = archiveextract(resource=rename_complexinputs(
-                request.inputs['tas']))
+            #res['tas'] = archiveextract(resource=rename_complexinputs(
+            #    request.inputs['tas']))
             res['pr'] = archiveextract(resource=rename_complexinputs(
                 request.inputs['pr']))
 
@@ -155,6 +197,13 @@ class OuranosPublicIndicatorProcess(Process, object):
         ######################################
         # Run all calculations
         ######################################
+        # Compute tas from tasmin and tasmax average
+        rdn = RequestDataset(res['tasmin'])
+        rdx = RequestDataset(res['tasmax'])
+        ops = OcgOperations(dataset=[rdn, rdx], calc=[{'func':'average', 'name':'tas', 'kwds':{'v1':'tasmin', 'v2':'tasmax'}}], output_format='nc')
+        res['tas'] = ops.execute()
+
+        # Indices computation
         calc = {}
         calc['tas'] = [{'func': 'icclim_TG', 'name':'TG'},
                        {'func': 'icclim_GD4', 'name': 'GD4'},
@@ -168,8 +217,6 @@ class OuranosPublicIndicatorProcess(Process, object):
 
         calc['pr'] = [{'func':'icclim_PRCPTOT', 'name':'PRCPTOT'},
                    {'func': 'icclim_RX5day', 'name': 'RX5day'},]
-
-
 
 
         scs = []
