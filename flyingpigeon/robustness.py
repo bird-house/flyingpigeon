@@ -83,12 +83,14 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
         LOGGER.exception(msg)
         _, text_src = mkstemp(dir='.', suffix='.txt')
 
+    # evaluation
     # configure reference and compare period
-    # TODO: filter files by time
     st = set()
     en = set()
 
     for key in file_dic.keys():
+        #  TODO: convert 360day calendar
+
         s, e = get_timerange(file_dic[key])
         st.update([s])
         en.update([e])
@@ -182,9 +184,10 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
         msg = 'calculation of internal model std failed'
         LOGGER.exception(msg)
     try:
-        absolut = cdo.abs(input=signal, output='absolut_signal.nc')
-        high_agreement_mask = cdo.gt(input=[absolut, std2],  output='large_signal_with_high_models_agreement.nc')
-        low_agreement_mask = cdo.lt(input=[absolut, std], output='small_signal_or_low_models_agreement.nc')
+        # absolut = cdo.abs(input=signal, output='absolut_signal.nc')  # don't get the sence of this step :-)
+
+        high_agreement_mask = cdo.gt(input=[signal, std2],  output='signal_larger_than_noise.nc')
+        low_agreement_mask = cdo.lt(input=[signal, std], output='signal_smaller_than_noise.nc')
         LOGGER.info('high and low mask done')
     except:
         msg = 'calculation of robustness mask failed'

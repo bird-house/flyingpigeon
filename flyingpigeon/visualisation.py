@@ -413,7 +413,7 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, variable=Non
     :returns str: path/to/file.png
     """
     from flyingpigeon import utils
-    from numpy import mean
+    from numpy import mean, ma
 
     if variable is None:
         variable = utils.get_variable(signal)
@@ -423,8 +423,10 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, variable=Non
         mask_l = utils.get_values(low_agreement_mask)
         mask_h = utils.get_values(high_agreement_mask)
 
-        mask_l[mask_l is 0] = np.nan
-        mask_h[mask_h is 0] = np.nan
+        # mask_l = ma.masked_where(low < 0.5, low)
+        # mask_h = ma.masked_where(high < 0.5, high)
+        # mask_l[mask_l == 0] = np.nan
+        # mask_h[mask_h == 0] = np.nan
 
         LOGGER.info('data loaded')
 
@@ -457,9 +459,11 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, variable=Non
 
         cs = plt.contourf(lons, lats, var_signal, 60, norm=norm, transform=ccrs.PlateCarree(),
                           cmap=cmap, interpolation='nearest')
-        cl = plt.contourf(lons, lats, mask_l, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['//'])
-        ch = plt.contourf(lons, lats, mask_h, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['.'])
 
+        cl = plt.contourf(lons, lats, mask_l, 1, transform=ccrs.PlateCarree(), colors='none', hatches=[None, '/'])
+        ch = plt.contourf(lons, lats, mask_h, 1, transform=ccrs.PlateCarree(), colors='none', hatches=[None, '.'])
+        artists, labels = ch.legend_elements()
+        plt.legend(artists, labels, handleheight=2)
         # plt.clim(minval,maxval)
         ax.coastlines()
         # ax.set_global()
