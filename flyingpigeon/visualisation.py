@@ -51,6 +51,7 @@ def plot_extend(resource, file_extension='png'):
 
     fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
     projection = ccrs.Robinson()
+
     #  ccrs.Orthographic(central_longitude=np.mean(xy[:, 0]),
     #  central_latitude=np.mean(xy[:, 1]),
     #  globe=None)  # Robinson()
@@ -161,7 +162,7 @@ def factsheetbrewer(png_region=None, png_spaghetti=None, png_uncertainty=None, p
         try:
             _, pdf_region = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_region)
-            c.drawImage(png_region, 340, 490, width=290, height=150)  # , mask=None, preserveAspectRatio=False)
+            c.drawImage(png_region, 340, 490, width=230, height=130)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_region = PdfFileReader(open(pdf_region, 'rb'))
         except:
@@ -170,7 +171,7 @@ def factsheetbrewer(png_region=None, png_spaghetti=None, png_uncertainty=None, p
         try:
             _, pdf_uncertainty = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_uncertainty)
-            c.drawImage(png_uncertainty, 20, 350, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
+            c.drawImage(png_uncertainty, 20, 350, width=250, height=130)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_uncertainty = PdfFileReader(open(pdf_uncertainty, 'rb'))
         except:
@@ -179,7 +180,7 @@ def factsheetbrewer(png_region=None, png_spaghetti=None, png_uncertainty=None, p
         try:
             _, pdf_spaghetti = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_spaghetti)
-            c.drawImage(png_spaghetti, 280, 350, width=300, height=150)  # , mask=None, preserveAspectRatio=False)
+            c.drawImage(png_spaghetti, 280, 350, width=250, height=130)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_spagetthi = PdfFileReader(open(pdf_spaghetti, 'rb'))
         except:
@@ -188,7 +189,7 @@ def factsheetbrewer(png_region=None, png_spaghetti=None, png_uncertainty=None, p
         try:
             _, pdf_robustness = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_robustness)
-            c.drawImage(png_robustness, 30, 100, width=250, height=170)  # , mask=None, preserveAspectRatio=False)
+            c.drawImage(png_robustness, 30, 100, width=200, height=170)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_robustness = PdfFileReader(open(pdf_robustness, 'rb'))
         except:
