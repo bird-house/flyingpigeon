@@ -8,9 +8,6 @@ from flyingpigeon import config
 import logging
 LOGGER = logging.getLogger("PYWPS")
 
-DIR_MASKS = config.masks_dir()
-DIR_SHP = config.shapefiles_dir()
-
 
 def countries():
     """
@@ -236,7 +233,7 @@ def get_shp_column_values(geom, columnname):
     from ocgis import env, ShpCabinetIterator
     # import ocgis
 
-    env.DIR_SHPCABINET = DIR_SHP
+    env.DIR_SHPCABINET = config.shapefiles_path()
     sci = ShpCabinetIterator(geom)
 
     vals = []
@@ -263,7 +260,7 @@ def get_ugid(polygons=None, geom=None):
         if type(polygons) != list:
             polygons = list([polygons])
 
-        env.DIR_SHPCABINET = DIR_SHP
+        env.DIR_SHPCABINET = config.shapefiles_path()
         sc_iter = ShpCabinetIterator(geom)
         result = []
 
@@ -286,7 +283,7 @@ def get_ugid(polygons=None, geom=None):
                         result.append(row['properties']['UGID'])
         else:
             from ocgis import ShpCabinet
-            sc = ShpCabinet(DIR_SHP)
+            sc = ShpCabinet(config.shapefiles_path())
             LOGGER.debug('geom: %s not found in shape cabinet. Available geoms are: %s ', geom, sc)
     return result
 

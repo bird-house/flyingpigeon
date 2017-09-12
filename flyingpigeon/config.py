@@ -1,16 +1,23 @@
 import os
 from pywps import configuration
 
+_PATH = os.path.abspath(os.path.dirname(__file__))
+
+
 import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
-def esgfsearch_url():
-    url = configuration.get_config_value("extra", "esgfsearch_url")
-    if not url:
-        LOGGER.warn("No ESGF Search URL configured. Using default value.")
-        url = 'https://esgf-data.dkrz.de/esg-search'
-    return url
+def cache_path():
+    cache_path = configuration.get_config_value("cache", "cache_path")
+    if not cache_path:
+        LOGGER.warn("No cache path configured. Using default value.")
+        cache_path = os.path.join(configuration.get_config_value("server", "outputpath"), "cache")
+    return cache_path
+
+
+def data_path():
+    return os.path.join(_PATH, 'data')
 
 
 def esgfsearch_distrib():
@@ -21,53 +28,41 @@ def esgfsearch_distrib():
     return distrib
 
 
-def shapefiles_dir():
-    return os.path.join(os.path.abspath(os.path.dirname(__file__)), 'shapefiles')
+def esgfsearch_url():
+    url = configuration.get_config_value("extra", "esgfsearch_url")
+    if not url:
+        LOGGER.warn("No ESGF Search URL configured. Using default value.")
+        url = 'https://esgf-data.dkrz.de/esg-search'
+    return url
 
 
-def Rsrc_dir():
-    return os.path.join(os.path.abspath(os.path.dirname(__file__)), 'Rsrc')
-
-
-def JSsrc_dir():
-    return os.path.join(os.path.abspath(os.path.dirname(__file__)), 'JSsrc')
-
-
-def masks_dir():
-    return os.path.join(os.path.abspath(os.path.dirname(__file__)), 'masks')
-
-
-def static_dir():
-    return os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static')
-
-
-def cache_path():
-    cache_path = configuration.get_config_value("cache", "cache_path")
-    if not cache_path:
-        LOGGER.warn("No cache path configured. Using default value.")
-        cache_path = os.path.join(os.sep, "tmp", "cache")
-    return cache_path
+def masks_path():
+    # TODO: currently this folder is not used
+    return os.path.join(data_path(), 'masks')
 
 
 def output_path():
-    output_path = configuration.get_config_value("server", "outputpath")
-    if not output_path:
-        output_path = None
-        LOGGER.warn('no output path configured')
-    return output_path
+    return configuration.get_config_value("server", "outputpath")
 
 
 def output_url():
     url = configuration.get_config_value("server", "outputurl")
-    if not url:
-        url = None
-        LOGGER.warn('no outputurl configured')
+    if url:
+        url = url.rstrip('/')
     return url
 
 
-def www_url():
-    url = configuration.get_config_value("extra", "www_url")
-    if not url:
-        url = None
-        LOGGER.warn('no www-url configured')
-    return url
+def Rsrc_dir():
+    return os.path.join(_PATH, 'Rsrc')
+
+
+def shapefiles_path():
+    return os.path.join(data_path(), 'shapefiles')
+
+
+def static_path():
+    return os.path.join(_PATH, 'static')
+
+
+def testdata_path():
+    return os.path.join(_PATH, 'tests/testdata')

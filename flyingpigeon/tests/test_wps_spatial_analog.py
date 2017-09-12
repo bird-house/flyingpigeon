@@ -3,7 +3,7 @@ import pytest
 from pywps import Service
 from pywps.tests import assert_response_success
 
-from flyingpigeon.processes import SpatialAnalogProcess
+from flyingpigeon.processes import SpatialAnalogProcess, MapSpatialAnalogProcess
 from flyingpigeon.utils import local_path
 from flyingpigeon.tests.common import TESTDATA, client_for, CFG_FILE
 
@@ -19,6 +19,7 @@ from ocgis.spatial.grid import Grid
 from ocgis.variable.temporal import TemporalVariable
 from ocgis.base import get_variable_names
 from ocgis.test.base import TestBase
+
 
 class TestDissimilarity(TestBase):
     """Simple auto-generated test field."""
@@ -46,7 +47,7 @@ class TestDissimilarity(TestBase):
         col = Variable(value=np.arange(ncol) - ncol/2., name='col', dimensions='col')
 
         grid = Grid(col, row)
-        x,y = grid.get_value_stacked()
+        x, y = grid.get_value_stacked()
 
         start = dt.datetime(2000, 1, 1)
         delta = dt.timedelta(days=1)
@@ -60,13 +61,13 @@ class TestDissimilarity(TestBase):
 
         nrlz = 1
         realization = None
-        value = np.random.rand(nrlz, ntime, nlevel, nrow, ncol) * np.arctan2(x, y).clip(.1) + np.hypot(x,y)
+        value = np.random.rand(nrlz, ntime, nlevel, nrow, ncol) * np.arctan2(x, y).clip(.1) + np.hypot(x, y)
         variable = Variable(name=variable_name,
                             value=value,
                             dimensions=['realization', 'time', 'level', 'row',
                                         'col'])
         field = Field(grid=grid, time=temporal, is_data=variable, level=level,
-                         realization=realization)
+                      realization=realization)
 
         return field
 
@@ -90,8 +91,8 @@ class TestDissimilarity(TestBase):
         actual_field = ret.get_element()
         actual_variables = get_variable_names(actual_field.data_variables)
         self.assertEqual(actual_variables[0],
-                         ('dissimilarity_seuclidean'))
-        dist = actual_field['dissimilarity_seuclidean']
+                         ('dissimilarity'))
+        dist = actual_field['dissimilarity']
         self.assertEqual(dist.shape, (1, 1, 2, 2))
 
     def test_full(self):
@@ -115,24 +116,24 @@ class TestDissimilarity(TestBase):
                                                                         p4]]
         candidate = ocgis.MultiRequestDataset(can)
 
-        fig, axes = plt.subplots(2,3)
+        fig, axes = plt.subplots(2, 3)
         for i, dist in enumerate(dissimilarity.__all__):
 
             calc = [{'func': 'dissimilarity',
                      'name': 'output_mfpf',
                      'kwds': {'target': reference,
                               'candidate': ('v1', 'v2'),
-                              'dist':dist}}]
+                              'dist': dist}}]
 
             ops = OcgOperations(dataset=candidate, calc=calc)
             ret = ops.execute()
             out_field = ret.get_element()
             var_name = get_variable_names(out_field.data_variables)[0]
-            out = out_field[var_name].get_value()[0,0]
-            axes.flat[i].imshow(out);
+            out = out_field[var_name].get_value()[0, 0]
+            axes.flat[i].imshow(out)
             axes.flat[i].set_title(dist)
 
-        plt.savefig('flyingpigeon/tests/__pycache__/test_spatial_analog_metrics.png')
+        plt.savefig('test_spatial_analog_metrics.png')
         plt.close()
 
     def test_simple(self):
@@ -142,14 +143,12 @@ class TestDissimilarity(TestBase):
         p4 = self.write_field_data('v2', dir='b')
 
         ref_range = [dt.datetime(2000, 3, 1), dt.datetime(2000, 3, 31)]
-        ref = [ocgis.RequestDataset(p, time_range=ref_range) for p in [p1,
-                                                                   p2]]
+        ref = [ocgis.RequestDataset(p, time_range=ref_range) for p in [p1, p2]]
         reference = ocgis.MultiRequestDataset(ref)
         reference = reference.get()
 
         cand_range = [dt.datetime(2000, 8, 1), dt.datetime(2000, 8, 31)]
-        can = [ocgis.RequestDataset(p, time_range=cand_range) for p in [p3,
-                                                                       p4]]
+        can = [ocgis.RequestDataset(p, time_range=cand_range) for p in [p3, p4]]
         candidate = ocgis.MultiRequestDataset(can)
 
         calc = [{'func': 'dissimilarity',
@@ -162,10 +161,9 @@ class TestDissimilarity(TestBase):
         actual_field = ret.get_element()
         actual_variables = get_variable_names(actual_field.data_variables)
         self.assertEqual(actual_variables[0],
-                         ('dissimilarity_seuclidean'))
-        dist = actual_field['dissimilarity_seuclidean']
+                         ('dissimilarity'))
+        dist = actual_field['dissimilarity']
         self.assertEqual(dist.shape, (1, 1, 2, 2))
-
 
 
 def test_dissimilarity_op():
@@ -174,16 +172,16 @@ def test_dissimilarity_op():
     lon, lat = -72, 46
     g = Point(lon, lat)
 
-    cfn = local_path(TESTDATA['indicators_small.nc'] )
+    cfn = local_path(TESTDATA['indicators_small.nc'])
     tfn = local_path(TESTDATA['indicators_medium.nc'])
 
     indices = ['meantemp', 'totalpr']
 
     # Candidate fields
     candidate = ocgis.RequestDataset(cfn,
-                               variable=indices,
-                               time_range=[dt.datetime(1970, 1, 1), dt.datetime(2000, 1, 1)],
-                               )
+                                     variable=indices,
+                                     time_range=[dt.datetime(1970, 1, 1), dt.datetime(2000, 1, 1)],
+                                     )
 
     # The indicators_small dataset is just a subset of the indicators_medium
     # dataset. Below is the code to create the small dataset.
@@ -198,15 +196,13 @@ def test_dissimilarity_op():
                              )
     res = op.execute()
     """
-
-
     # Target fields
     # Extract values from one grid cell
     trd = ocgis.RequestDataset(tfn,
-                                     variable=indices,
-                                     time_range=[dt.datetime(1970, 1, 1),
-                                                 dt.datetime(2000, 1, 1)],
-                                     )
+                               variable=indices,
+                               time_range=[dt.datetime(1970, 1, 1),
+                                           dt.datetime(2000, 1, 1)],
+                               )
 
     op = ocgis.OcgOperations(dataset=trd, geom=g,
                              search_radius_mult=1.75, select_nearest=True)
@@ -216,19 +212,18 @@ def test_dissimilarity_op():
         calc=[{'func': 'dissimilarity', 'name': 'spatial_analog',
                'kwds': {'dist': 'seuclidean', 'target': target,
                         'candidate': indices}}],
-                dataset=candidate)
+        dataset=candidate
+        )
 
     res = ops.execute()
     out = res.get_element()
-    val = out['dissimilarity_seuclidean'].get_value()
+    val = out['dissimilarity'].get_value()
     i = np.argmin(np.abs(out['lon'].get_value()-lon))
     j = np.argmin(np.abs(out['lat'].get_value()-lat))
-    np.testing.assert_almost_equal( val[j,i], 0, 6)
+    np.testing.assert_almost_equal(val[j, i], 0, 6)
     np.testing.assert_array_equal(val > 0, True)
 
 
-# @pytest.mark.online
-# @pytest.mark.skip(reason="no way of currently testing this")
 def test_wps_spatial_analog_process_small_sample():
     client = client_for(
         Service(processes=[SpatialAnalogProcess()], cfgfiles=CFG_FILE))
@@ -253,7 +248,7 @@ def test_wps_spatial_analog_process_small_sample():
         'kldiv',
         '1970-01-01',
         '1990-01-01')
-    print datainputs
+
     resp = client.get(
         service='wps', request='execute', version='1.0.0',
         identifier='spatial_analog',
@@ -261,22 +256,39 @@ def test_wps_spatial_analog_process_small_sample():
 
     assert_response_success(resp)
 
+
+def test_wps_map_spatial_analog():
+    client = client_for(
+        Service(processes=[MapSpatialAnalogProcess()], cfgfiles=CFG_FILE))
+    datainputs = (
+        "resource=files@xlink:href={0};"
+        "fmt={1};fmt={2};fmt={3};fmt={4};"
+        "title={5}"
+    ).format(TESTDATA['dissimilarity.nc'], 'png', 'pdf', 'svg', 'eps', "Spatial Analog Example")
+
+    resp = client.get(
+        service='wps', request='execute', version='1.0.0',
+        identifier='map_spatial_analog',
+        datainputs=datainputs)
+
+    assert_response_success(resp)
+
+
+"""
 # @pytest.mark.slow
-# @pytest.mark.online
-# def test_wps_spatial_analog_process():
-#     """Switch small and medium to compute over larger array. This is too slow."""
-#     client = client_for(Service(processes=[SpatialAnalogProcess()]))
-#     datainputs = "candidate=files@xlink:href={1};target=files@xlink:href={" \
-#                  "0};location={2},{3};indices={4};indices={5};dist={6};dateStartCandidate={7};dateEndCandidate={8};dateStartTarget={7};dateEndTarget={8}"\
-#         .format(TESTDATA['indicators_small.nc'], TESTDATA['indicators_medium.nc'], -72, 46, 'meantemp',
-#                 'totalpr', 'kldiv', '1970-01-01', '1990-01-01')
-#
-#     resp = client.get(
-#         service='wps', request='execute', version='1.0.0',
-#         identifier='spatial_analog',
-#         datainputs=datainputs)
-#
-#     assert_response_success(resp)
+def test_wps_spatial_analog_process():
+    client = client_for(Service(processes=[SpatialAnalogProcess()]))
+    datainputs = "candidate=files@xlink:href={1};target=files@xlink:href={" \
+                 "0};location={2},{3};indices={4};indices={5};dist={6};dateStartCandidate={7};dateEndCandidate={8};dateStartTarget={7};dateEndTarget={8}"\
+        .format(TESTDATA['indicators_small.nc'], TESTDATA['indicators_medium.nc'], -72, 46, 'meantemp',
+                'totalpr', 'seuclidean', '1970-01-01', '1990-01-01')
+
+    resp = client.get(
+        service='wps', request='execute', version='1.0.0',
+        identifier='spatial_analog',
+        datainputs=datainputs)
+    assert_response_success(resp)
+"""
 
 """
 Testing notes
@@ -285,4 +297,14 @@ If you run a test function in ipython and launch %debug, you can access the erro
 message by going up the stack into the fonction and print resp.response
 
 
+birdy spatial_analog \
+--candidate https://bovec.dkrz.de/download/wpsoutputs/flyingpigeon/8d7aed7a-72d9-11e7-9ab2-109836a7cf3a/FD_NAM-44_CCCma-CanESM2_historical_r1i1p1_SMHI-RCA4_v1_yr_20010101-20051231.nc  \
+--target https://bovec.dkrz.de/download/wpsoutputs/flyingpigeon/ba4bd292-72d9-11e7-a663-109836a7cf3a/FD_NAM-44_CCCma-CanESM2_rcp85_r1i1p1_SMHI-RCA4_v1_yr_20510101-20551231.nc  \
+--location=-100,54  \
+--indices FD  \
+--dist kldiv  \
+--dateStartCandidate 2001-01-01  \
+--dateEndCandidate 2006-12-31 \
+--dateStartTarget 2051-01-01  \
+--dateEndTarget 2056-12-31
 """

@@ -1,5 +1,7 @@
 from flyingpigeon import visualisation as vs
 from flyingpigeon.utils import archiveextract
+from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.utils import get_variable
 
 from pywps import Process
 from pywps import LiteralInput
@@ -78,33 +80,30 @@ class PlottimeseriesProcess(Process):
 
         ncfiles = archiveextract(
             resource=rename_complexinputs(request.inputs['resource']))
-        var = request.inputs['variableIn']
 
-        if var is None:
-            from flyingpigeon.utils import get_variable
+        if 'variable' in request.inputs:
+            var = request.inputs['variable'][0].data
+        else:
             var = get_variable(ncfiles[0])
+            #  var = ncfiles[0].split("_")[0]
 
         response.update_status('plotting variable %s' % var, 10)
 
         try:
-            plotout_spagetti_file = vs.spaghetti(
-                                             ncfiles,
-                                             variable=var,
-                                             title='Fieldmean of %s ' % (var),
-                                             dir_out=None
-                                             )
+            plotout_spagetti_file = vs.spaghetti(ncfiles,
+                                                 variable=var,
+                                                 title='Fieldmean of %s ' % (var),
+                                                 )
             LOGGER.info("spagetti plot done")
             response.update_status('Spagetti plot for %s %s files done' % (len(ncfiles), var), 50)
         except:
             LOGGER.exception("spagetti plot failed")
 
         try:
-            plotout_uncertainty_file = vs.uncertainty(
-                                                  ncfiles,
-                                                  variable=var,
-                                                  title='Ensemble uncertainty for %s ' % (var),
-                                                  dir_out=None
-                                                  )
+            plotout_uncertainty_file = vs.uncertainty(ncfiles,
+                                                      variable=var,
+                                                      title='Ensemble uncertainty for %s ' % (var),
+                                                      )
 
             response.update_status('Uncertainty plot for %s %s files done' % (len(ncfiles), var), 90)
             LOGGER.info("uncertainty plot done")

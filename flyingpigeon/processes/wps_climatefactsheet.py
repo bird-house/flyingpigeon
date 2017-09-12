@@ -1,9 +1,13 @@
-import os
-import tarfile
+from os.path import abspath
+from tempfile import mkstemp
 
 from flyingpigeon.subset import countries, countries_longname
+from flyingpigeon.subset import clipping
 from flyingpigeon.log import init_process_logger
 from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import get_variable
+from flyingpigeon import visualisation as vs
 
 from pywps import Process
 from pywps import LiteralInput
@@ -19,10 +23,10 @@ class FactsheetProcess(Process):
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
-                         abstract="NetCDF Files or archive (tar/zip) containing netCDF files",
+                         abstract='NetCDF Files or archive (tar/zip) containing NetCDF files.',
+                         metadata=[Metadata('Info')],
                          min_occurs=1,
                          max_occurs=1000,
-                         #  maxmegabites=5000,
                          supported_formats=[
                              Format('application/x-netcdf'),
                              Format('application/x-tar'),
@@ -31,9 +35,8 @@ class FactsheetProcess(Process):
 
             LiteralInput("region", "Region",
                          # abstract= countries_longname(), # need to handle special non-ascii char in countries.
-                         default='DEU',
                          data_type='string',
-                         min_occurs=1,
+                         min_occurs=0,
                          max_occurs=len(countries()),
                          allowed_values=countries()),  # REGION_EUROPE #COUNTRIES
         ]
@@ -63,8 +66,8 @@ class FactsheetProcess(Process):
         super(FactsheetProcess, self).__init__(
             self._handler,
             identifier="climatefactsheet",
-            title="Climate Fact Sheet Generator (init)",
-            version="0.2",
+            title="Climate Fact Sheet Generator",
+            version="0.3",
             abstract="Returns a pdf with a short overview of the climatological situation for the selected countries",
             metadata=[
                 # {"title": "LSCE", "href": "http://www.lsce.ipsl.fr/en/index.php"},
@@ -77,8 +80,6 @@ class FactsheetProcess(Process):
         )
 
     def _handler(self, request, response):
-        from flyingpigeon.utils import archive, archiveextract
-        from tempfile import mkstemp
 
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
@@ -86,34 +87,31 @@ class FactsheetProcess(Process):
         ncs = archiveextract(
             resource=rename_complexinputs(request.inputs['resource']))
 
+        var = get_variable(ncs[0])
+        LOGGER.info('variable to be plotted: %s' % var)
+
         # mosaic = self.mosaic.getValue()
-        regions = [inp.data for inp in request.inputs['region']]
+        if 'region' in request.inputs:
+            regions = [inp.data for inp in request.inputs['region']]
+            try:
+                png_region = vs.plot_polygons(regions)
+            except:
+                LOGGER.exception('failed to plot the polygon to world map')
+                o1, png_region = mkstemp(dir='.', suffix='.png')
+
+            # clip the demanded polygons
+            subsets = clipping(
+                resource=ncs,
+                variable=var,
+                polygons=regions,
+                mosaic=True,
+                spatial_wrapping='wrap',
+                )
+        else:
+            subsets = ncs
+            png_region = vs.plot_extend(ncs[0])
 
         response.update_status('Arguments set for subset process', 0)
-        LOGGER.debug('starting: regions=%s, num_files=%s' % (len(regions), len(ncs)))
-
-        try:
-            from flyingpigeon.visualisation import plot_polygons
-            png_country = plot_polygons(regions)
-        except:
-            LOGGER.exception('failed to plot the polygon to world map')
-            o1, png_country = mkstemp(dir='.', suffix='.png')
-
-        # clip the demanded polygons
-        from flyingpigeon.subset import clipping
-        subsets = clipping(resource=ncs, variable=None,
-                           dimension_map=None,
-                           calc=None,
-                           output_format='nc',
-                           calc_grouping=None,
-                           time_range=None,
-                           time_region=None,
-                           historical_concatination=True,
-                           prefix=None,
-                           spatial_wrapping='wrap',
-                           polygons=regions,
-                           mosaic=True
-                           )
 
         try:
             tar_subsets = archive(subsets)
@@ -122,49 +120,43 @@ class FactsheetProcess(Process):
             _, tar_subsets = mkstemp(dir='.', suffix='.tar')
 
         try:
-            from flyingpigeon.visualisation import uncertainty
-            png_uncertainty = uncertainty(subsets)
+            png_uncertainty = vs.uncertainty(subsets, variable=var)
         except:
             LOGGER.exception('failed to generate the uncertainty plot')
             _, png_uncertainty = mkstemp(dir='.', suffix='.png')
 
         try:
-            from flyingpigeon.visualisation import spaghetti
-            png_spaghetti = spaghetti(subsets)
+            png_spaghetti = vs.spaghetti(subsets, variable=var,)
         except:
             LOGGER.exception('failed to generate the spaghetti plot')
             _, png_spaghetti = mkstemp(dir='.', suffix='.png')
 
         try:
             from flyingpigeon import robustness as erob
-            from flyingpigeon.utils import get_variable
-            variable = get_variable(ncs[0])
-
             signal, low_agreement_mask, high_agreement_mask, text_src = erob.method_A(resource=subsets,
                                                                                       # start=None, end=None,
                                                                                       # timeslice=None,
-                                                                                      variable=variable
+                                                                                      variable=var
                                                                                       )
-            LOGGER.info('variable to be plotted: %s' % variable)
-            from flyingpigeon.visualisation import map_robustness
             # if title is None:
-            title = 'signal robustness of %s ' % (variable)  # , end1, end2, start1, start2
-            png_robustness = map_robustness(signal,
-                                            high_agreement_mask,
-                                            low_agreement_mask,
-                                            # cmap=cmap,
-                                            title=title)
+            title = 'signal robustness of %s ' % (var)  # , end1, end2, start1, start2
+            png_robustness = vs.map_robustness(signal,
+                                               high_agreement_mask,
+                                               low_agreement_mask,
+                                               # cmap=cmap,
+                                               title=title)
             LOGGER.info('graphic generated')
 
         except:
             LOGGER.exception('failed to generate the robustness plot')
             _, png_robustness = mkstemp(dir='.', suffix='.png')
 
-        from flyingpigeon.visualisation import factsheetbrewer
-        factsheet = factsheetbrewer(png_country=png_country,
-                                    png_uncertainty=png_uncertainty,
-                                    png_spaghetti=png_spaghetti,
-                                    png_robustness=png_robustness)
+        factsheet = vs.factsheetbrewer(
+            png_region=png_region,
+            png_uncertainty=png_uncertainty,
+            png_spaghetti=png_spaghetti,
+            # png_robustness=png_robustness
+            )
 
         response.outputs['output_nc'].file = tar_subsets
         response.outputs['output_factsheet'].file = factsheet

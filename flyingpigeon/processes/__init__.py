@@ -23,15 +23,21 @@ from .wps_analogs_compare import AnalogscompareProcess
 from .wps_analogs_viewer import AnalogsviewerProcess
 from .wps_segetalflora import SegetalfloraProcess
 from .wps_spatial_analog import SpatialAnalogProcess
+<<<<<<< HEAD
 from .wps_ocgis_func import ocgis_processes # This stores all the processes defined in the module.
 #locals().update({c.__class__.__name__: c for c in ocgis_processes })
+=======
+from .wps_map_spatial_analog import MapSpatialAnalogProcess
+from .wps_subset_WFS import SubsetWFSProcess
+from .wps_averager_WFS import AveragerWFSProcess
+>>>>>>> ouranos/pavics
 
 processes = [
     ClippingProcess(),
     ClipcontinentProcess(),
     ClipregionseuropeProcess(),
     PointinspectionProcess(),
-    #    FactsheetProcess(),
+    FactsheetProcess(),
     FetchProcess(),
     LandseamaskProcess(),
     IndicespercentiledaysProcess(),
@@ -44,48 +50,25 @@ processes = [
     WeatherregimesreanalyseProcess(),
     WeatherregimesprojectionProcess(),
     WeatherregimesmodelProcess(),
-    #    AnalogsreanalyseProcess(),
+    AnalogsreanalyseProcess(),
     #    AnalogsmodelProcess(),
     #    AnalogscompareProcess(),
-    #    AnalogsviewerProcess(),
-    #    RobustnessProcess(),
-    #    PlottimeseriesProcess(),
+    AnalogsviewerProcess(),
+    RobustnessProcess(),
+    PlottimeseriesProcess(),
     SegetalfloraProcess(),
-    SpatialAnalogProcess()
-] + ocgis_processes
+    SpatialAnalogProcess(),
+    MapSpatialAnalogProcess(),
+    SubsetWFSProcess(),
+    AveragerWFSProcess()
+]
 
 """
 pywps3 processes:
 
-"wps_subset_continents",                # adopted to pywps4
-"wps_subset_countries",                 # adopted to pywps4
-"wps_subset_regionseurope",             # adopted to pywps4
-"wps_subset_points",                    # adopted to pywps4
-"wps_landseamask",                      # adopted to pywps4
-"wps_indices_simple",                   # adopted to pywps4
-"wps_indices_percentile",               # adopted to pywps4
-"wps_weatherregimes_reanalyse",         # adopted to pywps4
-"wps_weatherregimes_model",             # adopted to pywps4
-"wps_weatherregimes_projection",        # adopted to pywps4
-"wps_analogs_detection",                # adopted to pywps4
-"wps_analogs_model",                    # adopted to pywps4
-"wps_analogs_compare",                  # adopted to pywps4
-"wps_analogs_viewer",                   # adopted to pywps4
-"wps_segetalflora",                     # adopted to pywps4
-"wps_sdm_gbiffetch",                    # adopted to pywps4
-"wps_sdm_getindices",                   # adopted to pywps4
-"wps_sdm_csvindices",                   # adopted to pywps4
-"wps_sdm_csv",                          # adopted to pywps4
-"wps_sdm_allinone",                     # adopted to pywps4
-"wps_robustness",                       # adopted to pywps4
-"wps_plot_timeseries",                  # adopted to pywps4
-"wps_climatefactsheet",                 # adopted to pywps4
-"wps_fetch",                            # adopted to pywps4
-
 # climate for impact processes
 "wps_c4i_simple_indice",
 # processes under development
-# "wps_spatial_analog",
 # "wps_eobs2cordex",
 
 # TODO: c4i processes with multiple input sources

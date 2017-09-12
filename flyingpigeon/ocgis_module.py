@@ -4,8 +4,6 @@ from flyingpigeon import config
 import logging
 LOGGER = logging.getLogger("PYWPS")
 
-DIR_SHP = config.shapefiles_dir()
-
 
 def has_Lambert_Conformal(resource):
     """
@@ -72,7 +70,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     import uuid
 
     # prepare the environment
-    env.DIR_SHPCABINET = DIR_SHP
+    env.DIR_SHPCABINET = config.shapefiles_path()
     env.OVERWRITE = True
     # env.DIR_OUTPUT = dir_output
     # LOGGER.debug(' **** env.DIR_OUTPUT  = %s ' % env.DIR_OUTPUT)

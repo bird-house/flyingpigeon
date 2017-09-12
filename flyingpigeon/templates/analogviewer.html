@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!--
+  ##########################################################################
+  Cathy.Nangini@lsce.ipsl.fr (https://github.com/katirg)
+  LSCE Data Visualization Group (https://github.com/LSCE-DataVisGroup)
+  ##########################################################################
+  -->
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Analogs Viewer by LSCE Data Visualization Group"/>
+    <meta name="author" content="Birdhouse">
+
+    <title>Analogues Viewer</title>
+
+    <!-- jquery
+         ======================================================================= -->
+    <!-- script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script -->
+    <script src="{{ static_url }}/jquery/js/jquery.min.js"></script>
+
+    <!-- jquery-ui
+         ======================================================================= -->
+    <!-- script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script -->
+    <script src="{{ static_url }}/jquery/js/jquery-ui.js"></script>
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+
+    <!-- d3
+         ======================================================================= -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.15/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.min.js"></script>
+
+    <!-- dc
+         ======================================================================= -->
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/dc/2.0.0-beta.26/dc.min.js"></script>-->
+    <script src="{{ static_url }}/analogviewer/js/my_dc.beta26.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dc/2.0.0-beta.26/dc.min.css" />
+
+    <!-- bootstrap
+         ======================================================================= -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- analogviewer
+         ======================================================================= -->
+    <script src="{{ static_url }}/analogviewer/js/analogviewer.js"></script>
+    <link href="{{ static_url }}/analogviewer/css/style.css" rel="stylesheet" type="text/css" media="all">
+
+  </head>
+
+  <body onload="init( { configfile: '{{ configfile }}', datafile: '{{ datafile }}' })">
+    <div id="wrap">
+
+      <!-- Fixed navbar -->
+      <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+            <a class="navbar-brand" href="analogviewer.html">Analogues Viewer</a>
+          </div>
+          <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+              <li><a href="{{ static_url }}/analogviewer/html/help.html" target="_blank">Help</a></li>
+              <li><a href="{{ static_url }}/analogviewer/html/contact.html" target="_blank">Contact</a></li>
+            </ul>
+          </div>
+          <!--/.nav-collapse -->
+        </div>
+      </div>
+
+      <!-- Begin page content -->
+      <div class="container">
+
+        <div class="row">
+          <div class="dc-chart col-md-12">
+            <div class="content">Calculated analogues file: <span class='value-outputfile'></span></div>
+            <div class="content">Number of analogues: <span class='value-nanalog'></span></div>
+            <div class="content">Var name: <span class='value-varname'></span></div>
+            <div class="content">Simulation source: <span class='value-simsource'></span></div>
+            <div class="content">Archive source: <span class='value-archivesource'></span></div>
+            <div class="content">bbox: <span class='value-bbox'></span></div>
+            <div class="content">Reference period: <span class='value-ref'></span></div>
+            <div>Full config file: <a href="{{ configfile }}" target="_blank">click here</a></div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="dc-chart col-md-8">
+            <div class="dc-data-count" id="chart-count">
+              <span class="filter-count"></span>analogues found out of <span class="total-count"></span> records
+            </div>
+          </div>
+        </div>
+
+        <p></p>
+
+        <div class="row">
+          <div class="dc-chart col-md-10">
+            <div class="dc-chart-title">Analysis period (manual selection, format dd/mm/yyyy)</div>
+            <a id="dateReset" class="reset" href="javascript:poiChart.filterAll();dc.redrawAll();resetChart(poiChart);" style="display: none;">reset</a>
+            <span class="reset" style="display: none;"></span>
+            <br>
+            <p>
+              Start Date (min: <span class='value-sdate'></span>) <input type="text" id="datepicker0">
+              End Date (max: <span class='value-edate'></span>) <input type="text" id="datepicker1">
+            </p>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="dc-chart col-md-8" id="chart-poi">
+            <div class="dc-chart-title">Analysis period (chart selection)</div>
+            <a id="dateReset" class="reset" href="javascript:poiChart.filterAll();dc.redrawAll();resetChart(poiChart);" style="display: none;">reset</a>
+            <span class="reset" style="display: none;"><span class="filter"></span></span>
+            <br>
+          </div>
+
+          <!--new Date(dateString[2], dateString[1] - 1, dateString[0]);-->
+
+          <div class="dc-chart col-md-3" id="chart-seasons">
+            <div class="dc-chart-title">Season</div>
+            <a class="reset" href="javascript:seasonsChart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+            <span class="reset" style="display: none;"><span class="filter"></span></span>
+            <br>
+          </div>
+
+        </div>
+
+        <div class="row">
+          <div class="dc-chart col-md-4" id="chart-decade">
+            <div class="dc-chart-title">Archive decade</div>
+            <a class="reset" href="javascript:decadeChart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+            <br>
+          </div>
+
+          <div class="dc-chart col-md-4" id="chart-corr">
+            <div class="dc-chart-title">Correlation</div>
+            <a class="reset" href="javascript:corrChart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+            <br>
+          </div>
+
+          <div class="dc-chart col-md-4" id="chart-dis">
+            <div class="dc-chart-title">Distance</div>
+            <a class="reset" href="javascript:disChart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+            <br>
+          </div>
+
+        </div>
+
+
+
+      </div>
+      <!-- /.container -->
+
+    </div>
+
+    <div id="footer">
+      <div class="container">
+        <p class="text-muted credit">Created by <a target="_blank" href="http://www.lsce.ipsl.fr/en"><span title="Climate and Environment Sciences Laboratory" style="font-weight:bold;">LSCE</span></a>&nbsp;
+          <a target="_blank" href="http://www.lsce.ipsl.fr/en"><img src="{{ static_url }}/analogviewer/img/LSCE_Icon.png" title="Climate and Environment Sciences Laboratory" /></a> and hosted by <a target="_blank" href="http://www.ipsl.fr/en"><span title="Institut Pierre Simon Laplace" style="font-weight:bold;">IPSL</span></a>&nbsp;
+          <a target="_blank" href="http://www.ipsl.fr/en"><img src="{{ static_url }}/analogviewer/img/IPSL_logo.png" title="Institut Pierre Simon Laplace" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Version 0.9 - Sept 2016</p>
+      </div>
+      <!-- /.container -->
+    </div>
+
+  </body>
+
+</html>

@@ -46,6 +46,7 @@ dependencies:
 # misc
 #- pywget
 - pyyaml=3.12
+- jinja2=2
 ################
 # numeric
 - numpy
@@ -55,7 +56,7 @@ dependencies:
 - scikit-learn #=0.17.1
 ################
 # visualisation
-- matplotlib=2.0.0=np112py27_2
+- matplotlib=2.0.2=py27_2 #2.0.0=np112py27_2
 - functools32=3.2.3.2=py27_0 # badly pinned matplotlib dependency
 - cartopy
 - iris
@@ -65,7 +66,7 @@ dependencies:
 - cdo #=1.7.1=2
 - python-cdo
 # - ocgis=2.0.0
-- ocgis-next=2.0.1.dev1=py27_1   # =1.4.0.dev1=py27_7  #  nesii/channel/ocgis-next
+# - ocgis-next=2.0.1.dev1=py27_1   # =1.4.0.dev1=py27_7  #  nesii/channel/ocgis-next
 - icclim
 - proj4=4.9.3
 - geos=3.5.1
@@ -73,7 +74,7 @@ dependencies:
 - gdal=2.1.3
 # ################
 # # analogue
-# - castf90=0.1.6
+- castf90=0.1.5
 # ################
 # # r
 - cairo # for X11 independend plot support
@@ -91,4 +92,5 @@ dependencies:
 - pip:
   - pygbif==0.2.0 #0.1.4
   - sphinx-autoapi==0.4.0
+  - https://github.com/NCPP/ocgis/archive/master.zip
 #  - cdo==1.3.0

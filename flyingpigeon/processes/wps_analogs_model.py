@@ -366,7 +366,7 @@ class AnalogsmodelProcess(Process):
             raise Exception(msg)
 
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
-        response.update_status('preparting output', 99)
+        response.update_status('preparing output', 99)
 
         response.outputs['config'] = config_output_url  # config_file )
         response.outputs['analogs'] = output_file

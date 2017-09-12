@@ -8,7 +8,7 @@
 Introduction
 ============
 
-Flyingpigeon is a Web Processing Service with a collection of processes for the climate community as a compartment of the `Birdhouse`_ 
+Flyingpigeon is a Web Processing Service with a collection of processes for the climate community as a compartment of the `Birdhouse`_
 
 
 .. toctree::
@@ -16,17 +16,18 @@ Flyingpigeon is a Web Processing Service with a collection of processes for the 
 
    installation
    configuration
+   dev_guide
    descriptions/index
    tutorials/index
    notebooks
    releasenotes
-   
+
 
 
 Further reading:
 ----------------
 
-   
+
 Flying Pigeon (the bird)
   *The pigeon finds its way home over extremely long distances. [..].* ( `Wikipedia <https://en.wikipedia.org/wiki/Pigeon_flying>`_ ).
 
