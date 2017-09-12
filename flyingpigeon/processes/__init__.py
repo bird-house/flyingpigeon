@@ -23,14 +23,11 @@ from .wps_analogs_compare import AnalogscompareProcess
 from .wps_analogs_viewer import AnalogsviewerProcess
 from .wps_segetalflora import SegetalfloraProcess
 from .wps_spatial_analog import SpatialAnalogProcess
-<<<<<<< HEAD
-from .wps_ocgis_func import ocgis_processes # This stores all the processes defined in the module.
-#locals().update({c.__class__.__name__: c for c in ocgis_processes })
-=======
 from .wps_map_spatial_analog import MapSpatialAnalogProcess
 from .wps_subset_WFS import SubsetWFSProcess
 from .wps_averager_WFS import AveragerWFSProcess
->>>>>>> ouranos/pavics
+from .wps_ouranos_pub_indicators import OuranosPublicIndicatorProcess
+
 
 processes = [
     ClippingProcess(),
@@ -60,7 +57,8 @@ processes = [
     SpatialAnalogProcess(),
     MapSpatialAnalogProcess(),
     SubsetWFSProcess(),
-    AveragerWFSProcess()
+    AveragerWFSProcess(),
+    OuranosPublicIndicatorProcess(),
 ]
 
 """
