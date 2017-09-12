@@ -133,7 +133,7 @@ class FactsheetProcess(Process):
 
         try:
             from flyingpigeon import robustness as erob
-            signal, low_agreement_mask, high_agreement_mask, text_src = erob.method_A(resource=subsets,
+            signal, low_agreement_mask, high_agreement_mask, text_src = erob.signal_noise_ratio(resource=subsets,
                                                                                       # start=None, end=None,
                                                                                       # timeslice=None,
                                                                                       variable=var

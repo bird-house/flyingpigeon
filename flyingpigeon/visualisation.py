@@ -72,7 +72,7 @@ def plot_extend(resource, file_extension='png'):
     return map_graphic
 
 
-def fig2plot(fig, file_extension='png', bbox_inches='tight'):
+def fig2plot(fig, file_extension='png', bbox_inches='tight', dpi=300, facecolor='w', edgecolor='k'):
     '''saving a matplotlib figure to a graphic
 
     :param fig: matplotlib figure object
@@ -119,7 +119,7 @@ def plot_polygons(regions):
             central_longitude.append(x[0])
             central_latitude.append(y[0])
 
-    fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
+    fig = plt.figure(figsize=(20, 10))
     projection = ccrs.Orthographic(central_longitude=mean(central_longitude),
                                    central_latitude=mean(central_latitude),
                                    globe=None)  # Robinson()
@@ -137,10 +137,7 @@ def plot_polygons(regions):
     ax.gridlines()
     ax.stock_img()
     # ax.set_global()
-
-    o1, map_graphic = mkstemp(dir='.', suffix='.png')
-
-    fig.savefig(map_graphic)
+    map_graphic = fig2plot(fig)
     plt.close()
 
     return map_graphic
@@ -268,7 +265,6 @@ def spaghetti(resouces, variable=None, title=None):
         LOGGER.exception(msg)
         raise Exception(msg)
     try:
-        o1, output_png = mkstemp(dir='.', suffix='.png')
         for c, nc in enumerate(resouces):
             # get timestapms
             try:
@@ -282,7 +278,9 @@ def spaghetti(resouces, variable=None, title=None):
 
         plt.title(title, fontsize=20)
         plt.grid()
-        fig.savefig(output_png)
+
+        output_png = fig2plot(fig)
+
         plt.close()
         LOGGER.info('timeseries spaghetti plot done for %s with %s lines.' % (variable, c))
     except:
@@ -317,7 +315,6 @@ def uncertainty(resouces, variable=None, ylim=None, title=None):
 
     try:
         fig = plt.figure(figsize=(20, 10), facecolor='w', edgecolor='k')  # dpi=600,
-        o1, output_png = mkstemp(dir='.', suffix='.png')
         #  variable = utils.get_variable(resouces[0])
         df = pd.DataFrame()
 
@@ -329,28 +326,9 @@ def uncertainty(resouces, variable=None, ylim=None, title=None):
                 data = fieldmean(datasets[key])  # get_values(f)
                 ts = get_time(datasets[key])
 
-                # if len(data.shape) == 3:
-                #     meanData = np.mean(data, axis=1)
-                #     ts = np.mean(meanData, axis=1)
-                # else:
-                #     # data should than be a 2D field
-                #     ts = data[:]
-                #
-                # hs = pd.Series(ts, index=jd, name=basename(f))
-                # hd = hs.to_frame()
-
                 ds = pd.Series(data=data, index=ts, name=key)
                 ds_yr = ds.resample('12M', ).mean()  # yearly mean loffset='6M'
-                # ds_yr_frame = ds_yr.to_frame()
                 df[key] = ds_yr
-
-                # df = DataFrame(data=vals, index=ts)
-                # df_mean = df.rolling(31, center=True).mean()
-
-                # jd = get_time(f)
-                # hs = pd.Series(ts, index=jd, name=basename(f))
-                # hd = hs.to_frame()
-                # df[basename(f)] = hs
 
             except:
                 LOGGER.exception('failed to calculate timeseries for %s ' % (key))
@@ -389,7 +367,7 @@ def uncertainty(resouces, variable=None, ylim=None, title=None):
             plt.title(title, fontsize=20)
             plt.grid()  # .grid_line_alpha=0.3
 
-            fig.savefig(output_png)
+            output_png = fig2plot(fig)
             plt.close()
             LOGGER.debug('timeseries uncertainty plot done for %s' % variable)
         except:
@@ -462,10 +440,11 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, variable=Non
 
         cl = plt.contourf(lons, lats, mask_l, 1, transform=ccrs.PlateCarree(), colors='none', hatches=[None, '/'])
         ch = plt.contourf(lons, lats, mask_h, 1, transform=ccrs.PlateCarree(), colors='none', hatches=[None, '.'])
-        artists, labels = ch.legend_elements()
-        plt.legend(artists, labels, handleheight=2)
+        # artists, labels = ch.legend_elements()
+        # plt.legend(artists, labels, handleheight=2)
         # plt.clim(minval,maxval)
         ax.coastlines()
+        ax.gridlines()
         # ax.set_global()
 
         if title is None:
@@ -479,8 +458,7 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, variable=Non
         plt.annotate('..  = high model ensemble agreement', (0, 0), (0, -20),
                      xycoords='axes fraction', textcoords='offset points', va='top')
 
-        o1, graphic = mkstemp(dir='.', suffix='.png')
-        fig.savefig(graphic)
+        graphic = fig2plot(fig)
         plt.close()
 
         LOGGER.info('Plot created and figure saved')

@@ -33,10 +33,10 @@ class RobustnessProcess(Process):
             LiteralInput("method", "Method of robustness calculation",
                          abstract="Detailed information about the methods can be found in the documentation",
                          data_type='string',
-                         default='Method_A',
+                         default='signal_noise_ratio',
                          min_occurs=0,
                          max_occurs=1,
-                         allowed_values=['Method_A', 'Method_B', 'Method_C']
+                         allowed_values=['signal_noise_ratio', 'Method_B', 'Method_C']
                          ),
 
             LiteralInput("start", "Start Year",
@@ -166,9 +166,9 @@ class RobustnessProcess(Process):
         response.outputs['output_text'].file = write_fileinfo(ncfiles)
 
         #  LOGGER.debug('variable set to %s' % variable)
-        # if method == 'Method_A':
+        # if method == 'signal_noise_ratio':
 
-        signal, low_agreement_mask, high_agreement_mask, text_src = erob.noise_signal_ratio(
+        signal, low_agreement_mask, high_agreement_mask, text_src = erob.signal_noise_ratio(
                 resource=ncfiles,
                 start=start, end=end,
                 timeslice=timeslice,

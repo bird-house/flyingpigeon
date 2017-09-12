@@ -5,7 +5,7 @@ import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
-def noise_signal_ratio(resource=[], start=None, end=None, timeslice=20,
+def signal_noise_ratio(resource=[], start=None, end=None, timeslice=20,
                        variable=None, title=None, cmap='seismic'):
     """returns the result
 
@@ -73,15 +73,26 @@ def noise_signal_ratio(resource=[], start=None, end=None, timeslice=20,
         LOGGER.exception(msg)
 
     # verify the calendar
+    # find the most common calendar
+    cals = []
+    n = 0
+    for nc in mergefiles:
+        cal, util = get_calendar(nc)
+        cals.append(cal)
+    for cal in cals:
+        m = cals.count(cal)
+        if m > n:
+            calendar = cal
 
     for c, nc in enumerate(mergefiles):
-        cal = get_calendar(nc)
-        if cal is not 'standard':
+        cal, unit = get_calendar(nc)
+        print 'calendar detected: %s most common: %s' % (cal, calendar)
+        if cal != calendar:
+            print 'calendar changed for %s to %s' % (cal, calendar)
             _, nc_cal = mkstemp(dir='.', suffix='.nc')
-            nc_out = cdo.mergetime(input=nc, output=nc_cal)
-            mergefiles[c] = nc_out
+            nc_out = cdo.setcalendar('{0}'.format(calendar), input=nc, output=nc_cal)
+            mergefiles[c] = nc_cal
             LOGGER.debug('calendar changed for %s' % nc)
-            print 'calendar changed for %s' % nc
         else:
             LOGGER.debug('calendar was %s' % cal)
 
