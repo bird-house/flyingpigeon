@@ -29,6 +29,21 @@ class MidpointNormalize(Normalize):
         return np.ma.masked_array(np.interp(value, x, y))
 
 
+def fig2plot(fig, file_extension='png', bbox_inches='tight', dpi=300, facecolor='w', edgecolor='k'):
+    '''saving a matplotlib figure to a graphic
+
+    :param fig: matplotlib figure object
+    :param file_extension: file file_extension (default='png')
+
+    :return str: path to graphic
+    '''
+
+    _, graphic = mkstemp(dir='.', suffix='.%s' % file_extension)
+    fig.savefig(graphic, bbox_inches=bbox_inches)
+
+    return graphic
+
+
 def plot_extend(resource, file_extension='png'):
     """
     plots the extend (domain) of the values stored in a netCDF file:
@@ -71,21 +86,6 @@ def plot_extend(resource, file_extension='png'):
     plt.close()
 
     return map_graphic
-
-
-def fig2plot(fig, file_extension='png', bbox_inches='tight', dpi=300, facecolor='w', edgecolor='k'):
-    '''saving a matplotlib figure to a graphic
-
-    :param fig: matplotlib figure object
-    :param file_extension: file file_extension (default='png')
-
-    :return str: path to graphic
-    '''
-
-    _, graphic = mkstemp(dir='.', suffix='.%s' % file_extension)
-    fig.savefig(graphic, bbox_inches=bbox_inches)
-
-    return graphic
 
 
 def plot_polygons(regions, file_extension='png'):
@@ -290,12 +290,15 @@ def spaghetti(resouces, variable=None, title=None, file_extension='png'):
     return output_png
 
 
-def uncertainty(resouces, variable=None, ylim=None, title=None, file_extension='png'):
+def uncertainty(resouces, variable=None, ylim=None, title=None, file_extension='png', window=None):
     """
     creates a png file containing the appropriate uncertainty plot.
+
     :param resouces: list of files containing the same variable
     :param variable: variable to be visualised. If None (default), variable will be detected
     :param title: string to be used as title
+    :param window: windowsize of the rolling mean
+
     :returns str: path/to/file.png
     """
     LOGGER.debug('Start visualisation uncertainty plot')
@@ -305,6 +308,7 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, file_extension='
     from os.path import basename
     from flyingpigeon.utils import get_time, sort_by_filename
     from flyingpigeon.calculation import fieldmean
+    from flyingpigeon.metadata import get_frequency
 
     # === prepare invironment
     if type(resouces) == str:
@@ -326,17 +330,32 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, file_extension='
             try:
                 data = fieldmean(datasets[key])  # get_values(f)
                 ts = get_time(datasets[key])
-
                 ds = pd.Series(data=data, index=ts, name=key)
-                ds_yr = ds.resample('12M', ).mean()  # yearly mean loffset='6M'
-                df[key] = ds_yr
+                # ds_yr = ds.resample('12M', ).mean()   # yearly mean loffset='6M'
+                df[key] = ds
 
             except:
                 LOGGER.exception('failed to calculate timeseries for %s ' % (key))
 
-        if len(df.index.values) >= 60:
+        frq = get_frequency(resouces[0])
+        print frq
+
+        if window is None:
+            if frq == 'day':
+                window = 10951
+            elif frq == 'man':
+                window = 359
+            elif frq == 'sem':
+                window = 119
+            elif frq == 'yr':
+                window = 30
+            else:
+                LOGGER.debug('frequency %s is not included' % frq)
+                window = 30
+
+        if len(df.index.values) >= window * 2:
             # TODO: calculate windowsize according to timestapms (day,mon,yr ... with get_frequency)
-            df_smooth = df.rolling(window=29, center=True).mean()
+            df_smooth = df.rolling(window=window, center=True).mean()
             LOGGER.info('rolling mean calculated for all input data')
         else:
             df_smooth = df
@@ -344,6 +363,7 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, file_extension='
             fig.text(0.95, 0.05, '!!! timeseries too short for moving mean over 30years !!!',
                      fontsize=20, color='red',
                      ha='right', va='bottom', alpha=0.5)
+
         try:
             rmean = df_smooth.quantile([0.5], axis=1,)  # df_smooth.median(axis=1)
             # skipna=False  quantile([0.5], axis=1, numeric_only=False )
