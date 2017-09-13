@@ -88,7 +88,7 @@ def fig2plot(fig, file_extension='png', bbox_inches='tight', dpi=300, facecolor=
     return graphic
 
 
-def plot_polygons(regions):
+def plot_polygons(regions, file_extension='png'):
     """
     extract the polygon coordinate and plot it on a worldmap
 
@@ -138,7 +138,7 @@ def plot_polygons(regions):
     ax.gridlines()
     ax.stock_img()
     # ax.set_global()
-    map_graphic = fig2plot(fig)
+    map_graphic = fig2plot(fig=fig, file_extension=file_extension)
     plt.close()
 
     return map_graphic
@@ -162,7 +162,7 @@ def factsheetbrewer(png_region=None, png_spaghetti=None, png_uncertainty=None, p
         try:
             _, pdf_region = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_region)
-            c.drawImage(png_region, 340, 490, width=230, height=130)  # , mask=None, preserveAspectRatio=False)
+            c.drawImage(png_region, 340, 490, width=130, height=130)  # , mask=None, preserveAspectRatio=False)
             c.save()
             pfr_region = PdfFileReader(open(pdf_region, 'rb'))
         except:
@@ -236,7 +236,7 @@ def factsheetbrewer(png_region=None, png_spaghetti=None, png_uncertainty=None, p
     return climatefactsheet
 
 
-def spaghetti(resouces, variable=None, title=None):
+def spaghetti(resouces, variable=None, title=None, file_extension='png'):
     """
     creates a png file containing the appropriate spaghetti plot as a field mean of the values.
 
@@ -280,7 +280,7 @@ def spaghetti(resouces, variable=None, title=None):
         plt.title(title, fontsize=20)
         plt.grid()
 
-        output_png = fig2plot(fig)
+        output_png = fig2plot(fig=fig, file_extension=file_extension)
 
         plt.close()
         LOGGER.info('timeseries spaghetti plot done for %s with %s lines.' % (variable, c))
@@ -290,7 +290,7 @@ def spaghetti(resouces, variable=None, title=None):
     return output_png
 
 
-def uncertainty(resouces, variable=None, ylim=None, title=None):
+def uncertainty(resouces, variable=None, ylim=None, title=None, file_extension='png'):
     """
     creates a png file containing the appropriate uncertainty plot.
     :param resouces: list of files containing the same variable
@@ -368,7 +368,7 @@ def uncertainty(resouces, variable=None, ylim=None, title=None):
             plt.title(title, fontsize=20)
             plt.grid()  # .grid_line_alpha=0.3
 
-            output_png = fig2plot(fig)
+            output_png = fig2plot(fig=fig, file_extension=file_extension)
             plt.close()
             LOGGER.debug('timeseries uncertainty plot done for %s' % variable)
         except:
@@ -379,7 +379,9 @@ def uncertainty(resouces, variable=None, ylim=None, title=None):
     return output_png
 
 
-def map_robustness(signal, high_agreement_mask, low_agreement_mask, variable=None, cmap='seismic', title=None):
+def map_robustness(signal, high_agreement_mask, low_agreement_mask,
+                   variable=None, cmap='seismic', title=None,
+                   file_extension='png'):
     """
     generates a graphic for the output of the ensembleRobustness process for a lat/long file.
 
@@ -459,7 +461,7 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, variable=Non
         plt.annotate('..  = high model ensemble agreement', (0, 0), (0, -20),
                      xycoords='axes fraction', textcoords='offset points', va='top')
 
-        graphic = fig2plot(fig)
+        graphic = fig2plot(fig=fig, file_extension=file_extension)
         plt.close()
 
         LOGGER.info('Plot created and figure saved')
@@ -555,7 +557,7 @@ def pdfmerge(pdfs):
     return mergedpdf
 
 
-def map_gbifoccurrences(latlon, dir='.'):
+def map_gbifoccurrences(latlon, dir='.', file_extension='png'):
     """
     creates a plot of coordinate points for tree occourences fetch in GBIF data base
 
@@ -567,7 +569,7 @@ def map_gbifoccurrences(latlon, dir='.'):
     try:
         cartopy_config['data_dir'] = os.path.join(dir, 'cartopy')
         # plotting ...
-        ip, tree_presents = mkstemp(dir=dir, suffix='.png')
+        # ip, tree_presents = mkstemp(dir=dir, suffix='.png')
         fig = plt.figure(figsize=(20, 10), facecolor='w', edgecolor='k')
         ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
         ax.coastlines()
@@ -581,7 +583,9 @@ def map_gbifoccurrences(latlon, dir='.'):
         # ax.set_xticks(np.arange(-180, 240, 60), crs=ccrs.PlateCarree())
         # ax.gridlines()  # plt.gca()
         cs = plt.scatter(latlon[:, 1], latlon[:, 0], transform=ccrs.Geodetic())  # ccrs.PlateCarree()
-        fig.savefig(tree_presents)
+
+        tree_presents = fig2plot(fig=fig, file_extension=file_extension)
+
         plt.close()
     except Exception as e:
         msg = 'failed to plot occurency plot: %s' % e
@@ -589,7 +593,7 @@ def map_gbifoccurrences(latlon, dir='.'):
     return tree_presents
 
 
-def map_PAmask(PAmask):
+def map_PAmask(PAmask, file_extension='png'):
     """
     plots the presents absence mask used in Species distribution Model processes
 
@@ -601,7 +605,7 @@ def map_PAmask(PAmask):
         ip, png_PA_mask = mkstemp(dir='.', suffix='.png')
         fig = plt.figure(figsize=(20, 10), dpi=300, facecolor='w', edgecolor='k')
         cs = plt.contourf(PAmask)
-        fig.savefig(png_PA_mask)
+        png_PA_mask = fig2plot(fig=fig, file_extension=file_extension)
         plt.close()
     except Exception as e:
         msg = 'failed to plot the PA mask'
