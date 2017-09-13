@@ -3,12 +3,12 @@ import pytest
 from pywps import Service
 from pywps.tests import assert_response_success
 
-from .common import TESTDATA, client_for
+from .common import TESTDATA, client_for, CFG_FILE
 from flyingpigeon.processes import IndicespercentiledaysProcess
 
 
 def test_wps_indices_percentiledays():
-    client = client_for(Service(processes=[IndicespercentiledaysProcess()]))
+    client = client_for(Service(processes=[IndicespercentiledaysProcess()], cfgfiles=CFG_FILE))
     datainputs = "resource=files@xlink:href={0};percentile=90"\
         .format(TESTDATA['cordex_tasmax_2006_nc'])
     resp = client.get(

@@ -3,12 +3,12 @@ import pytest
 from pywps import Service
 from pywps.tests import assert_response_success
 
-from .common import TESTDATA, client_for
+from .common import TESTDATA, client_for, CFG_FILE
 from flyingpigeon.processes import IndicessingleProcess
 
 
 def test_wps_indices_simple():
-    client = client_for(Service(processes=[IndicessingleProcess()]))
+    client = client_for(Service(processes=[IndicessingleProcess()], cfgfiles=CFG_FILE))
     datainputs = "resource=files@xlink:href={0};indices=SU;grouping=yr".\
         format(TESTDATA['cordex_tasmax_2006_nc'])
     resp = client.get(
