@@ -23,7 +23,7 @@ def has_Lambert_Conformal(resource):
 
 
 def call(resource=[], variable=None, dimension_map=None, calc=None,
-         calc_grouping=None, conform_units_to=None, memory_limit=None,  prefix=None,
+         calc_grouping=None, conform_units_to=None, crs=None, memory_limit=None,  prefix=None,
          regrid_destination=None, regrid_options='bil', level_range=None,
          geom=None, output_format_options=None, search_radius_mult=2.,
          select_nearest=False, select_ugid=None, spatial_wrapping=None,
@@ -38,6 +38,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     :param calc: ocgis calc syntax for calculation partion
     :param calc_grouping: time aggregate grouping
     :param conform_units_to:
+    :param crs: coordinate reference system
     :param memory_limit: limit the amount of data to be loaded into the memory at once \
         if None (default) free memory is detected by birdhouse
     :param level_range: subset of given levels
@@ -64,7 +65,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     :return: output file path
     '''
     LOGGER.info('Start ocgis module call function')
-    from ocgis import OcgOperations, RequestDataset, env
+    from ocgis import OcgOperations, RequestDataset, env, DimensionMap, crs
     from ocgis.util.large_array import compute
     from datetime import datetime as dt
     import uuid
@@ -90,15 +91,6 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         except:
             LOGGER.exception('failed to confert data to datetime')
 
-    #
-    # if geom is not None:
-    #     spatial_reorder = True
-    #     spatial_wrapping = 'wrap'
-    # else:
-    #     spatial_reorder = False
-    #     spatial_wrapping = None
-    #
-
     if spatial_wrapping == 'wrap':
         spatial_reorder = True
     else:
@@ -123,16 +115,18 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     # execute ocgis
     LOGGER.info('Execute ocgis module call function')
 
-    # if has_Lambert_Conformal(resource) is True and geom is not None:
-    #     LOGGER.debug('input has Lambert_Conformal projection and can not prcessed with ocgis:\
-    #      https://github.com/NCPP/ocgis/issues/424')
-    #     return None
-    # else:
+    # # needed for some AFR-44 data
+    # dimension_map = DimensionMap()
+    # dimension_map.set_variable('x', 'lon', dimension='rlon')
+    # dimension_map.set_variable('y', 'lat', dimension='rlat')
+    # dimension_map.set_variable('time', 'time', dimension='time')
+    # crs=crs.Spherical()
+
     try:
         LOGGER.debug('call module curdir = %s ' % abspath(curdir))
         rd = RequestDataset(resource, variable=variable, level_range=level_range,
                             dimension_map=dimension_map, conform_units_to=conform_units_to,
-                            time_region=time_region, t_calendar=t_calendar, time_range=time_range)
+                            time_region=time_region, t_calendar=t_calendar, time_range=time_range, crs=crs)
 
         # from ocgis.constants import DimensionMapKey
         # rd.dimension_map.set_bounds(DimensionMapKey.TIME, None)
