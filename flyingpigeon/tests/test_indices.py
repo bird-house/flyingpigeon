@@ -33,7 +33,7 @@ def test_indice_simple():
         # 1 year
         assert len(ds.variables['time']) == 1
 
-
+@pytest.mark.skip
 def test_indice_percentile():
     # TX90p expects tasmax
     resources = [local_path(TESTDATA['cordex_tasmax_2006_nc'])]
@@ -42,8 +42,8 @@ def test_indice_percentile():
         indices=['TX'], percentile=90, grouping='yr',
         dir_output=tempfile.mkdtemp())
 
-    #assert os.path.basename(output[
-    #                            0]) == 'SU_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon_200602-200612.nc'  # noqa
+    assert os.path.basename(output[
+                                0]) == 'SU_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon_200602-200612.nc'  # noqa
     with Dataset(output) as ds:
         # SU variable must be in result
         assert 'TX' in ds.variables
