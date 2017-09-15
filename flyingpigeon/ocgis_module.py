@@ -158,6 +158,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     except:
         LOGGER.exception('failed to execute ocgis operation')
         return None
+
     #
     # try:
     #     from numpy import sqrt
