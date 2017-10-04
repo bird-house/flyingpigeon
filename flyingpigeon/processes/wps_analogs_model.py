@@ -1,6 +1,7 @@
 from os import path
 from tempfile import mkstemp
 from datetime import datetime as dt
+from datetime import timedelta as td
 from datetime import date
 import time  # performance test
 
@@ -9,6 +10,7 @@ from flyingpigeon import analogs
 from flyingpigeon.ocgis_module import call
 from flyingpigeon.datafetch import reanalyses
 from flyingpigeon.utils import get_variable
+from flyingpigeon.utils import get_calendar
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import archive, archiveextract
 
@@ -131,10 +133,10 @@ class AnalogsmodelProcess(Process):
         ]
 
         outputs = [
-
-            LiteralOutput("config", "Config File",
+            ComplexOutput("config", "Config File",
                           abstract="Config file used for the Fortran process",
-                          data_type='string',
+                          supported_formats=[Format("text/plain")],
+                          as_reference=True,
                           ),
 
             ComplexOutput("analogs", "Analogues File",
@@ -143,17 +145,23 @@ class AnalogsmodelProcess(Process):
                           supported_formats=[Format("text/plain")],
                           ),
 
+            ComplexOutput("formated_analogs", "Formated Analogues File",
+                          abstract="Formated analogues file for viewer",
+                          supported_formats=[Format("text/plain")],
+                          as_reference=True,
+                          ),
+
             ComplexOutput('output_netcdf', 'Subsets for one dataset',
                           abstract="Prepared netCDF file as input for weatherregime calculation",
                           as_reference=True,
                           supported_formats=[Format('application/x-netcdf')]
                           ),
 
-            # ComplexOutput("output_html", "Analogues Viewer html page",
-            #               abstract="Interactive visualization of calculated analogues",
-            #               data_formats=[Format("text/html")],
-            #               as_reference=True,
-            #               )
+            ComplexOutput("output", "Analogues Viewer html page",
+                          abstract="Interactive visualization of calculated analogues",
+                          supported_formats=[Format("text/html")],
+                          as_reference=True,
+                          ),
 
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",
@@ -166,7 +174,7 @@ class AnalogsmodelProcess(Process):
             self._handler,
             identifier="analogs_model",
             title="Analogues of circulation (based on climate model data)",
-            abstract='Search for days with analogue pressure pattern for reanalyses data sets',
+            abstract='Search for days with analogue pressure pattern for models data sets',
             version="0.10",
             metadata=[
                 Metadata('LSCE', 'http://www.lsce.ipsl.fr/en/index.php'),
@@ -192,6 +200,7 @@ class AnalogsmodelProcess(Process):
         # reading in the input arguments
         ################################
 
+        # TODO: ADD correct selection of bbox
 
         response.update_status('execution started at : %s ' % dt.now(), 5)
         start_time = time.time()  # measure init ...
@@ -206,8 +215,8 @@ class AnalogsmodelProcess(Process):
             resource = archiveextract(resource=rename_complexinputs(request.inputs['resource']))
             refSt = request.inputs['refSt'][0].data
             refEn = request.inputs['refEn'][0].data
-            dateSt = request.inputs['dataSt'][0].data
-            dateEn = request.inputs['dataEn'][0].data
+            dateSt = request.inputs['dateSt'][0].data
+            dateEn = request.inputs['dateEn'][0].data
             seasonwin = request.inputs['seasonwin'][0].data
             nanalog = request.inputs['nanalog'][0].data
             bbox = [-80, 20, 50, 70]
@@ -229,8 +238,8 @@ class AnalogsmodelProcess(Process):
             outformat = request.inputs['outformat'][0].data
             timewin = request.inputs['timewin'][0].data
 
-            model_var = request.inputs['reanalyses'][0].data
-            model, var = model_var.split('_')
+            # model_var = request.inputs['reanalyses'][0].data
+            # model, var = model_var.split('_')
 
             # experiment = self.getInputValues(identifier='experiment')[0]
             # dataset, var = experiment.split('_')
@@ -246,10 +255,10 @@ class AnalogsmodelProcess(Process):
         # convert types and set environment
         ######################################
         try:
-            refSt = dt.strptime(refSt[0], '%Y-%m-%d')
-            refEn = dt.strptime(refEn[0], '%Y-%m-%d')
-            dateSt = dt.strptime(dateSt[0], '%Y-%m-%d')
-            dateEn = dt.strptime(dateEn[0], '%Y-%m-%d')
+            # refSt = dt.strptime(refSt[0], '%Y-%m-%d')
+            # refEn = dt.strptime(refEn[0], '%Y-%m-%d')
+            # dateSt = dt.strptime(dateSt[0], '%Y-%m-%d')
+            # dateEn = dt.strptime(dateEn[0], '%Y-%m-%d')
 
             if normalize == 'None':
                 seacyc = False
@@ -266,15 +275,15 @@ class AnalogsmodelProcess(Process):
             start = min(refSt, dateSt)
             end = max(refEn, dateEn)
 
-            if bbox_obj is not None:
-                LOGGER.info("bbox_obj={0}".format(bbox_obj.coords))
-                bbox = [bbox_obj.coords[0][0],
-                        bbox_obj.coords[0][1],
-                        bbox_obj.coords[1][0],
-                        bbox_obj.coords[1][1]]
-                LOGGER.info("bbox={0}".format(bbox))
-            else:
-                bbox = None
+#            if bbox_obj is not None:
+#                LOGGER.info("bbox_obj={0}".format(bbox_obj.coords))
+#                bbox = [bbox_obj.coords[0][0],
+#                        bbox_obj.coords[0][1],
+#                        bbox_obj.coords[1][0],
+#                        bbox_obj.coords[1][1]]
+#                LOGGER.info("bbox={0}".format(bbox))
+#            else:
+#                bbox = None
 
             LOGGER.info('environment set')
         except Exception as e:
@@ -295,9 +304,18 @@ class AnalogsmodelProcess(Process):
         start_time = time.time()  # mesure data preperation ...
         try:
             variable = get_variable(resource)
+            cal,units = get_calendar(resource)
 
-            archive = call(resource=resource, time_range=[refSt, refEn], geom=bbox, spatial_wrapping='wrap')
-            simulation = call(resource=resource, time_range=[dateSt, dateEn], geom=bbox, spatial_wrapping='wrap')
+            # tmp workaround to fix calendar issue with ocgis subsetting
+            if cal == 'proleptic_gregorian':
+                refEnSub = refEn + td(days=1)        
+                dateEnSub = dateEn + td(days=1)
+            else:
+                refEnSub = RefEn
+                dateEnSub = dateEn
+
+            archive = call(resource=resource, time_range=[refSt, refEnSub], geom=bbox, spatial_wrapping='wrap')
+            simulation = call(resource=resource, time_range=[dateSt, dateEnSub], geom=bbox, spatial_wrapping='wrap')
             if seacyc is True:
                 seasoncyc_base, seasoncyc_sim = analogs.seacyc(archive, simulation, method=normalize)
             else:
@@ -316,6 +334,9 @@ class AnalogsmodelProcess(Process):
         ############################
         # generating the config file
         ############################
+
+        # TODO: add MODEL name as argument
+
         response.update_status('writing config file', 15)
         start_time = time.time()  # measure write config ...
 
@@ -359,19 +380,37 @@ class AnalogsmodelProcess(Process):
             output, error = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
             LOGGER.info('analogue.out info:\n %s ' % output)
             LOGGER.debug('analogue.out errors:\n %s ' % error)
-            response.update_status('**** CASTf90 suceeded', 90)
+            response.update_status('**** CASTf90 suceeded', 70)
         except Exception as e:
             msg = 'CASTf90 failed %s ' % e
             LOGGER.error(msg)
             raise Exception(msg)
-
+        
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
-        response.update_status('preparing output', 99)
+        response.update_status('preparing output', 70)
 
-        response.outputs['config'] = config_output_url  # config_file )
-        response.outputs['analogs'] = output_file
-        response.outputs['output_netcdf'] = simulation
-        # response.outputs['output_html'] = output_av
+        response.outputs['config'].file = config_file #config_output_url  # config_file )
+        response.outputs['analogs'].file = output_file
+        response.outputs['output_netcdf'].file = simulation
+
+        ########################
+        # generate analog viewer
+        ########################
+
+        formated_analogs_file = analogs.reformat_analogs(output_file)
+        # response.outputs['formated_analogs'].storage = FileStorage()
+        response.outputs['formated_analogs'].file = formated_analogs_file
+        LOGGER.info('analogs reformated')
+        response.update_status('reformatted analog file', 80)
+
+        viewer_html = analogs.render_viewer(
+            # configfile=response.outputs['config'].get_url(),
+            configfile=config_file,
+            # datafile=response.outputs['formated_analogs'].get_url())
+            datafile=formated_analogs_file)
+        response.outputs['output'].file = viewer_html
+        response.update_status('Successfully generated analogs viewer', 90)
+        LOGGER.info('rendered pages: %s ', viewer_html)
 
         response.update_status('execution ended', 100)
         LOGGER.debug("total execution took %s seconds.",
