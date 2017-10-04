@@ -75,10 +75,13 @@ def get_configfile(files,
         file=os.path.relpath(files[1])))
     config.write(' my_files%outputfile = "{file}" \n'.format(
         file=os.path.relpath(files[2])))
-    config.write('  my_files%seacycfilebase = "{file}" \n'.format(
-        file=os.path.relpath(seasoncyc_base)))
-    config.write(' my_files%seacycfilesim = "{file}" \n'.format(
-        file=os.path.relpath(seasoncyc_sim)))
+
+    if seacyc is not 'False':
+        config.write('  my_files%seacycfilebase = "{file}" \n'.format(
+            file=os.path.relpath(seasoncyc_base)))
+        config.write(' my_files%seacycfilesim = "{file}" \n'.format(
+            file=os.path.relpath(seasoncyc_sim)))
+
     config.write('/ \n')
     config.write('&PARAM \n')
     config.write(' my_params%timewin = {timewin} \n'.format(timewin=timewin))
