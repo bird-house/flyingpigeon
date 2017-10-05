@@ -1,7 +1,8 @@
 from os import path
 from tempfile import mkstemp
 from datetime import datetime as dt
-from datetime import timedelta as td
+#from datetime import timedelta as td
+from datetime import time as dt_time
 from datetime import date
 import time  # performance test
 
@@ -10,7 +11,7 @@ from flyingpigeon import analogs
 from flyingpigeon.ocgis_module import call
 from flyingpigeon.datafetch import reanalyses
 from flyingpigeon.utils import get_variable
-from flyingpigeon.utils import get_calendar
+#from flyingpigeon.utils import get_calendar
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import archive, archiveextract
 
@@ -260,6 +261,17 @@ class AnalogsmodelProcess(Process):
             # dateSt = dt.strptime(dateSt[0], '%Y-%m-%d')
             # dateEn = dt.strptime(dateEn[0], '%Y-%m-%d')
 
+            #not nesessary if fix ocgis_module.py
+            refSt = dt.combine(refSt,dt_time(12,0))
+            refEn = dt.combine(refEn,dt_time(12,0))
+            dateSt = dt.combine(dateSt,dt_time(12,0))
+            dateEn = dt.combine(dateEn,dt_time(12,0))
+
+            # refSt = refSt.replace(hour=12)
+            # refEn = refEn.replace(hour=12)
+            # dateSt = dateSt.replace(hour=12)
+            # dateEn = dateEn.replace(hour=12)
+
             if normalize == 'None':
                 seacyc = False
             else:
@@ -304,18 +316,22 @@ class AnalogsmodelProcess(Process):
         start_time = time.time()  # mesure data preperation ...
         try:
             variable = get_variable(resource)
-            cal,units = get_calendar(resource)
 
+            # cal,units = get_calendar(resource)
             # tmp workaround to fix calendar issue with ocgis subsetting
-            if cal == 'proleptic_gregorian':
-                refEnSub = refEn + td(days=1)        
-                dateEnSub = dateEn + td(days=1)
-            else:
-                refEnSub = RefEn
-                dateEnSub = dateEn
+            # if cal == 'proleptic_gregorian':
+            #     refEnSub = refEn + td(days=1)        
+            #     dateEnSub = dateEn + td(days=1)
+            # else:
+            #     refEnSub = RefEn
+            #     dateEnSub = dateEn
 
-            archive = call(resource=resource, time_range=[refSt, refEnSub], geom=bbox, spatial_wrapping='wrap')
-            simulation = call(resource=resource, time_range=[dateSt, dateEnSub], geom=bbox, spatial_wrapping='wrap')
+            # archive = call(resource=resource, time_range=[refSt, refEnSub], geom=bbox, spatial_wrapping='wrap')
+            # simulation = call(resource=resource, time_range=[dateSt, dateEnSub], geom=bbox, spatial_wrapping='wrap')
+
+            archive = call(resource=resource, time_range=[refSt, refEn], geom=bbox, spatial_wrapping='wrap')
+            simulation = call(resource=resource, time_range=[dateSt, dateEn], geom=bbox, spatial_wrapping='wrap')
+
             if seacyc is True:
                 seasoncyc_base, seasoncyc_sim = analogs.seacyc(archive, simulation, method=normalize)
             else:
