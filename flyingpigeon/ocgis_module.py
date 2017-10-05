@@ -68,6 +68,8 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     from ocgis import OcgOperations, RequestDataset, env, DimensionMap, crs
     from ocgis.util.large_array import compute
     from datetime import datetime as dt
+    from datetime import date as dd
+    from datetime import time as dt_time
     import uuid
 
     # prepare the environment
@@ -79,15 +81,20 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     if dir_output is None:
         dir_output = abspath(curdir)
 
-    # check time_range fromat:
+    # check time_range format:
 
     if time_range is not None:
         try:
             LOGGER.debug('time_range type= %s , %s ' % (type(time_range[0]), type(time_range[1])))
-            if type(time_range[0] is 'datetime.date'):
-                time_range = [dt.combine(time_range[0], dt.min.time()),
-                              dt.combine(time_range[1], dt.min.time())]
+            LOGGER.debug('time_range= %s , %s ' % (time_range[0], time_range[1]))
+            #if type(time_range[0] is 'datetime.date'):
+            if (isinstance(time_range[0],dd) and not isinstance(time_range[0],dt)):
+                # time_range = [dt.combine(time_range[0], dt.min.time()),
+                #               dt.combine(time_range[1], dt.min.time())]
+                time_range = [dt.combine(time_range[0], dt_time(12,0)),
+                              dt.combine(time_range[1], dt_time(12,0))]
             LOGGER.debug('time_range changed to type= %s , %s ' % (type(time_range[0]), type(time_range[1])))
+            LOGGER.debug('time_range changed to= %s , %s ' % (time_range[0], time_range[1]))
         except:
             LOGGER.exception('failed to confert data to datetime')
 
@@ -126,10 +133,10 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         LOGGER.debug('call module curdir = %s ' % abspath(curdir))
         rd = RequestDataset(resource, variable=variable, level_range=level_range,
                             dimension_map=dimension_map, conform_units_to=conform_units_to,
-                            time_region=time_region, t_calendar=t_calendar, time_range=time_range, crs=crs)
+                            time_region=time_region, t_calendar=t_calendar, time_range=time_range) # , crs=crs)
 
-        # from ocgis.constants import DimensionMapKey
-        # rd.dimension_map.set_bounds(DimensionMapKey.TIME, None)
+        from ocgis.constants import DimensionMapKey
+        rd.dimension_map.set_bounds(DimensionMapKey.TIME, None)
 
         ops = OcgOperations(dataset=rd,
                             output_format_options=output_format_options,
