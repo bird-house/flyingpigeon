@@ -303,7 +303,8 @@ class AnalogsreanalyseProcess(Process):
         ##########################################
         # fetch Data from original data archive
         ##########################################
-
+                
+        # NOTE: If ref is say 1950 - 1990, and sim is just 1 week in 2017 - ALL the data will be downloaded, 1950 - 2017 
         try:
             model_nc = rl(start=start.year,
                           end=end.year,
@@ -320,10 +321,15 @@ class AnalogsreanalyseProcess(Process):
         LOGGER.debug("start and end time: %s - %s" % (start, end))
         time_range = [start, end]
 
+        # calc = [{'func': 'mean', 'name': var}]
+
         model_subset = call(resource=model_nc, variable=var,
-                            geom=bbox, spatial_wrapping='wrap', time_range=time_range,
+                            geom=bbox, spatial_wrapping='wrap', time_range=time_range, # calc=calc, calc_grouping=['day'],
                             # conform_units_to=conform_units_to
                             )
+
+        # If dataset is 20CRV2 the 6 hourly file should be converted to daily.  
+
         LOGGER.info('Dataset subset done: %s ', model_subset)
 
         response.update_status('dataset subsetted', 19)
