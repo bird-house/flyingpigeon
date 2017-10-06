@@ -89,10 +89,10 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
             LOGGER.debug('time_range= %s , %s ' % (time_range[0], time_range[1]))
             #if type(time_range[0] is 'datetime.date'):
             if (isinstance(time_range[0],dd) and not isinstance(time_range[0],dt)):
-                # time_range = [dt.combine(time_range[0], dt.min.time()),
-                #               dt.combine(time_range[1], dt.min.time())]
-                time_range = [dt.combine(time_range[0], dt_time(12,0)),
-                              dt.combine(time_range[1], dt_time(12,0))]
+                time_range = [dt.combine(time_range[0], dt.min.time()),
+                              dt.combine(time_range[1], dt.min.time())]
+                # time_range = [dt.combine(time_range[0], dt_time(12,0)),
+                #               dt.combine(time_range[1], dt_time(12,0))]
             LOGGER.debug('time_range changed to type= %s , %s ' % (type(time_range[0]), type(time_range[1])))
             LOGGER.debug('time_range changed to= %s , %s ' % (time_range[0], time_range[1]))
         except:
