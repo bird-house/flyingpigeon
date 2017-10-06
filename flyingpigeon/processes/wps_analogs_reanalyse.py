@@ -323,12 +323,27 @@ class AnalogsreanalyseProcess(Process):
 
         # calc = [{'func': 'mean', 'name': var}]
 
-        model_subset = call(resource=model_nc, variable=var,
-                            geom=bbox, spatial_wrapping='wrap', time_range=time_range, # calc=calc, calc_grouping=['day'],
-                            # conform_units_to=conform_units_to
-                            )
+        model_subset_tmp = call(resource=model_nc, variable=var,
+                                geom=bbox, spatial_wrapping='wrap', time_range=time_range, # calc=calc, calc_grouping=['day'],
+                                # conform_units_to=conform_units_to
+                                )
 
         # If dataset is 20CRV2 the 6 hourly file should be converted to daily.  
+        
+        if '20CRV2' in model:
+            from cdo import Cdo
+            import uuid
+            cdo = Cdo()
+            model_subset = '%s.nc' % uuid.uuid1()
+            tmp_f = '%s.nc' % uuid.uuid1()
+
+            cdo_op = getattr(cdo,'daymean')
+            cdo_op(input=model_subset_tmp, output=tmp_f)
+            sti = '00:00:00' 
+            cdo_op = getattr(cdo,'settime')
+            cdo_op(sti, input=tmp_f, output=model_subset)
+        else:
+            model_subset = model_subset_tmp
 
         LOGGER.info('Dataset subset done: %s ', model_subset)
 
@@ -474,7 +489,7 @@ class AnalogsreanalyseProcess(Process):
             LOGGER.exception(msg)
             raise Exception(msg)
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
-
+        
         response.update_status('preparing output', 70)
         # response.outputs['config'].storage = FileStorage()
         response.outputs['config'].file = config_file
