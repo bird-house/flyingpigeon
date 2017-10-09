@@ -45,6 +45,19 @@ class AnalogsreanalyseProcess(Process):
             #   crss=['EPSG:4326']
             #   )
 
+            LiteralInput('BBox', 'Bounding Box',
+                         data_type='string',
+                         abstract="Enter a bbox: min_lon, max_lon, min_lat, max_lat."
+                            " min_lon=Western longitude,"
+                            " max_lon=Eastern longitude,"
+                            " min_lat=Southern or northern latitude,"
+                            " max_lat=Northern or southern latitude."
+                            " For example: -80,20,50,70",
+                         min_occurs=1,
+                         max_occurs=1,
+                         default='-80,20,50,70',
+                         ),
+
             LiteralInput('dateSt', 'Start date of analysis period',
                          data_type='date',
                          abstract='First day of the period to be analysed',
@@ -87,7 +100,7 @@ class AnalogsreanalyseProcess(Process):
                          ),
 
             LiteralInput("seasonwin", "Seasonal window",
-                         abstract="Number of days befor and after the date to be analysed",
+                         abstract="Number of days before and after the date to be analysed",
                          default='30',
                          data_type='integer',
                          min_occurs=0,
@@ -206,7 +219,15 @@ class AnalogsreanalyseProcess(Process):
             dateEn = request.inputs['dateEn'][0].data
             seasonwin = request.inputs['seasonwin'][0].data
             nanalog = request.inputs['nanalog'][0].data
-            bbox = [-80, 20, 50, 70]
+
+            #bbox = [-80, 20, 50, 70]
+            # TODO: Add checking for wrong cordinates and apply default if nesessary
+            bbox=[]
+            bboxStr = request.inputs['BBox'][0].data
+            bboxStr = bboxStr.split(',')
+            for i in bboxStr: bbox.append(int(i))
+            LOGGER.debug('BBOX selected: %s ' % (bbox))
+
             # if bbox_obj is not None:
             #     LOGGER.info("bbox_obj={0}".format(bbox_obj.coords))
             #     bbox = [bbox_obj.coords[0][0],
@@ -413,6 +434,8 @@ class AnalogsreanalyseProcess(Process):
         try:
             # Construct descriptive filenames for the three files
             # listed in config file
+            # TODO check strftime for years <1900 (!)
+
             refDatesString = dt.strftime(refSt, '%Y-%m-%d') + "_" + dt.strftime(refEn, '%Y-%m-%d')
             simDatesString = dt.strftime(dateSt, '%Y-%m-%d') + "_" + dt.strftime(dateEn, '%Y-%m-%d')
             archiveNameString = "base_" + var + "_" + refDatesString + '_%.1f_%.1f_%.1f_%.1f' \
