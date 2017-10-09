@@ -47,10 +47,10 @@ class AnalogsmodelProcess(Process):
                             " max_lon=Eastern longitude,"
                             " min_lat=Southern or northern latitude,"
                             " max_lat=Northern or southern latitude."
-                            " For example: -80,20,50,70",
+                            " For example: -80,50,20,70",
                          min_occurs=1,
                          max_occurs=1,
-                         default='-80,20,50,70',
+                         default='-80,50,20,70',
                          ),
 
                 # self.BBox = self.addBBoxInput(
@@ -237,8 +237,13 @@ class AnalogsmodelProcess(Process):
             bbox=[]
             bboxStr = request.inputs['BBox'][0].data
             bboxStr = bboxStr.split(',')
-            for i in bboxStr: bbox.append(int(i))
-            LOGGER.debug('BBOX selected: %s ' % (bbox))
+            #for i in bboxStr: bbox.append(int(i))
+            bbox.append(float(bboxStr[0]))
+            bbox.append(float(bboxStr[2]))
+            bbox.append(float(bboxStr[1]))
+            bbox.append(float(bboxStr[3]))
+            LOGGER.debug('BBOX for ocgis: %s ' % (bbox))
+            LOGGER.debug('BBOX original: %s ' % (bboxStr))
 
             # if bbox_obj is not None:
             #     LOGGER.info("bbox_obj={0}".format(bbox_obj.coords))
