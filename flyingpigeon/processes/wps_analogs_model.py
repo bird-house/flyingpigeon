@@ -40,6 +40,19 @@ class AnalogsmodelProcess(Process):
                              Format('application/zip'),
                          ]),
 
+            LiteralInput('BBox', 'Bounding Box',
+                         data_type='string',
+                         abstract="Enter a bbox: min_lon, max_lon, min_lat, max_lat."
+                            " min_lon=Western longitude,"
+                            " max_lon=Eastern longitude,"
+                            " min_lat=Southern or northern latitude,"
+                            " max_lat=Northern or southern latitude."
+                            " For example: -80,20,50,70",
+                         min_occurs=1,
+                         max_occurs=1,
+                         default='-80,20,50,70',
+                         ),
+
                 # self.BBox = self.addBBoxInput(
                 #     identifier="BBox",
                 #     title="Bounding Box",
@@ -201,8 +214,6 @@ class AnalogsmodelProcess(Process):
         # reading in the input arguments
         ################################
 
-        # TODO: ADD correct selection of bbox
-
         response.update_status('execution started at : %s ' % dt.now(), 5)
         start_time = time.time()  # measure init ...
 
@@ -220,7 +231,15 @@ class AnalogsmodelProcess(Process):
             dateEn = request.inputs['dateEn'][0].data
             seasonwin = request.inputs['seasonwin'][0].data
             nanalog = request.inputs['nanalog'][0].data
-            bbox = [-80, 20, 50, 70]
+
+            # bbox = [-80, 20, 50, 70]
+            # TODO: Add checking for wrong cordinates and apply default if nesessary
+            bbox=[]
+            bboxStr = request.inputs['BBox'][0].data
+            bboxStr = bboxStr.split(',')
+            for i in bboxStr: bbox.append(int(i))
+            LOGGER.debug('BBOX selected: %s ' % (bbox))
+
             # if bbox_obj is not None:
             #     LOGGER.info("bbox_obj={0}".format(bbox_obj.coords))
             #     bbox = [bbox_obj.coords[0][0],
@@ -316,6 +335,7 @@ class AnalogsmodelProcess(Process):
         start_time = time.time()  # mesure data preperation ...
         try:
             variable = get_variable(resource)
+            # TODO: Add selection of the level. maybe bellow in call(..., level_range=[...,...])
 
             # cal,units = get_calendar(resource)
             # tmp workaround to fix calendar issue with ocgis subsetting
