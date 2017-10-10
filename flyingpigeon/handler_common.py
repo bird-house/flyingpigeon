@@ -149,6 +149,7 @@ def wfs_common(request, response, mode):
                 else:
                     mv_name = '{0}_{1}.nc'.format(
                         os.path.basename(ops)[:-3], features[i])
+
                 mv_file = os.path.join(mv_dir, mv_name)
                 shutil.move(ops, mv_file)
                 output_files.append(mv_file)

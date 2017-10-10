@@ -89,7 +89,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
                               dt.combine(time_range[1], dt.min.time())]
             LOGGER.debug('time_range changed to type= %s , %s ' % (type(time_range[0]), type(time_range[1])))
         except:
-            LOGGER.exception('failed to confert data to datetime')
+            LOGGER.exception('failed to convert data to datetime')
 
     if spatial_wrapping == 'wrap':
         spatial_reorder = True
