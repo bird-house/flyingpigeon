@@ -29,6 +29,7 @@ def test_caps():
         'indices_single',
         'landseamask',
         'map_spatial_analog',
+        'ouranos_public_indicators',
         'plot_timeseries',
         'pointinspection',
         'robustness',

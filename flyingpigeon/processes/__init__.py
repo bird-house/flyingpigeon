@@ -26,6 +26,8 @@ from .wps_spatial_analog import SpatialAnalogProcess
 from .wps_map_spatial_analog import MapSpatialAnalogProcess
 from .wps_subset_WFS import SubsetWFSProcess
 from .wps_averager_WFS import AveragerWFSProcess
+from .wps_ouranos_pub_indicators import OuranosPublicIndicatorProcess
+
 
 processes = [
     ClippingProcess(),
@@ -55,7 +57,8 @@ processes = [
     SpatialAnalogProcess(),
     MapSpatialAnalogProcess(),
     SubsetWFSProcess(),
-    AveragerWFSProcess()
+    AveragerWFSProcess(),
+    OuranosPublicIndicatorProcess(),
 ]
 
 """
@@ -64,7 +67,6 @@ pywps3 processes:
 # climate for impact processes
 "wps_c4i_simple_indice",
 # processes under development
-# "wps_spatial_analog",
 # "wps_eobs2cordex",
 
 # TODO: c4i processes with multiple input sources
