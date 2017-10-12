@@ -58,7 +58,7 @@ processes = [
     SpatialAnalogProcess(),
     MapSpatialAnalogProcess(),
     SubsetProcess(),
-    AveragerProcess()
+    AveragerProcess(),
     SubsetWFSProcess(),
     AveragerWFSProcess(),
     OuranosPublicIndicatorProcess(),
