@@ -9,7 +9,7 @@ import time  # performance test
 from flyingpigeon.datafetch import _PRESSUREDATA_
 from flyingpigeon import analogs
 from flyingpigeon.ocgis_module import call
-from flyingpigeon.datafetch import reanalyses
+from flyingpigeon.datafetch import get_level
 from flyingpigeon.utils import get_variable
 #from flyingpigeon.utils import get_calendar
 from flyingpigeon.utils import rename_complexinputs
@@ -234,6 +234,7 @@ class AnalogsmodelProcess(Process):
 
             # bbox = [-80, 20, 50, 70]
             # TODO: Add checking for wrong cordinates and apply default if nesessary
+            level = 500
             bbox=[]
             bboxStr = request.inputs['BBox'][0].data
             bboxStr = bboxStr.split(',')
@@ -339,7 +340,7 @@ class AnalogsmodelProcess(Process):
         response.update_status('Start preparing input data', 12)
         start_time = time.time()  # mesure data preperation ...
         try:
-            variable = get_variable(resource)
+            # variable = get_variable(resource)
             # TODO: Add selection of the level. maybe bellow in call(..., level_range=[...,...])
 
             # cal,units = get_calendar(resource)
@@ -354,8 +355,40 @@ class AnalogsmodelProcess(Process):
             # archive = call(resource=resource, time_range=[refSt, refEnSub], geom=bbox, spatial_wrapping='wrap')
             # simulation = call(resource=resource, time_range=[dateSt, dateEnSub], geom=bbox, spatial_wrapping='wrap')
 
-            archive = call(resource=resource, time_range=[refSt, refEn], geom=bbox, spatial_wrapping='wrap')
-            simulation = call(resource=resource, time_range=[dateSt, dateEn], geom=bbox, spatial_wrapping='wrap')
+            if type(resource) == list:
+                resource.sort()
+
+            archive_tmp = call(resource=resource, time_range=[refSt, refEn], geom=bbox, spatial_wrapping='wrap')
+            simulation_tmp = call(resource=resource, time_range=[dateSt, dateEn], geom=bbox, spatial_wrapping='wrap')
+
+            #######################################################################################
+            # TEMORAL dirty workaround to get the level and it's units - will be func in utils.py
+            from netCDF4 import Dataset
+            
+            ds = Dataset(archive_tmp)
+            variable = get_variable(archive_tmp)
+
+            var = ds.variables[variable]
+            dims = list(var.dimensions)
+
+            if (len(dims)>3) :
+                lev = ds.variables[dims[1]]
+                lev_units = lev.units
+
+                if (lev_units=='Pa'):
+                    level = level*100
+
+                archive = get_level(archive_tmp, level = level)
+                simulation = get_level(simulation_tmp,level = level)
+                variable = 'z%s' % level
+                # TODO: here should be modulated
+                # TODO: OR check the NAME and units of vertical level and find 200 , 300, or 500 mbar in it
+                # Not just level = level * 100.
+            else:
+                archive = archive_tmp
+                simulation = simulation_tmp
+                # 3D, move forwars
+            #######################################################################################
 
             if seacyc is True:
                 seasoncyc_base, seasoncyc_sim = analogs.seacyc(archive, simulation, method=normalize)
