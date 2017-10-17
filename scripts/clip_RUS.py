@@ -30,8 +30,8 @@ shapely_geom = subset_field.geom.get_value()[0]
 wrapper = ocgis.spatial.wrap.GeometryWrapper()
 unwrapped = wrapper.unwrap(shapely_geom)
 subset_field.geom.get_value()[0] = cascaded_union([g for g in unwrapped])
-# subset_field.set_crs(rd.crs)
-subset_field.set_crs(ocgis.crs.Spherical())
+subset_field.set_crs(rd.crs)
+# subset_field.set_crs(ocgis.crs.Spherical())
 
 # Subset the netCDF file and write to disk.
 ops = ocgis.OcgOperations(dataset=rd, geom=subset_field, snippet=True, output_format='nc', prefix='ocgis-russia-subset')
