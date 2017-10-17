@@ -15,29 +15,30 @@ def test_caps():
                             '/wps:Process'
                             '/ows:Identifier')
     sorted_names = sorted(names.split())
+    print sorted_names
 
     expected_names = [
-        # 'analogs_compare',
-        # 'analogs_model',
+        'analogs_compare',
+        'analogs_model',
         'analogs_reanalyse',
         'analogs_viewer',
-        'climatefactsheet',
+        # 'climatefactsheet',
         'fetch_resources',
         # 'indices_percentile,
         'indices_percentiledays',
         'indices_single',
-        'landseamask',
-        'map_spatial_analog',
+        # 'landseamask',
+        # 'map_spatial_analog',
         'plot_timeseries',
         'pointinspection',
-        'robustness',
+        # 'robustness',
         # 'sdm_allinone',
         # 'sdm_csv',
         # 'sdm_csvindices',
         'sdm_gbiffetch',
         'sdm_getindices',
         'segetalflora',
-        'spatial_analog',
+        # 'spatial_analog',
         'subset_continents',
         'subset_countries',
         'subset_regionseurope',
