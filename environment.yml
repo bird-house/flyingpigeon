@@ -63,8 +63,8 @@ dependencies:
 - reportlab
 ################
 ## cdo ocgis
-- cdo #=1.7.1=2
-- python-cdo
+- cdo
+- python-cdo=1.3.3
 # - ocgis=2.0.0
 - ocgis-next=2.0.1.dev1=py27_1   # =1.4.0.dev1=py27_7  #  nesii/channel/ocgis-next
 - icclim
