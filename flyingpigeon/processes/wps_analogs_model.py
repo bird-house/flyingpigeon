@@ -6,6 +6,9 @@ from datetime import time as dt_time
 from datetime import date
 import time  # performance test
 
+#later goes to utils
+from netCDF4 import Dataset
+
 from flyingpigeon.datafetch import _PRESSUREDATA_
 from flyingpigeon import analogs
 from flyingpigeon.ocgis_module import call
@@ -14,6 +17,7 @@ from flyingpigeon.utils import get_variable
 #from flyingpigeon.utils import get_calendar
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import get_timerange
 
 from pywps import Process
 from pywps import LiteralInput, LiteralOutput
@@ -235,6 +239,7 @@ class AnalogsmodelProcess(Process):
             # bbox = [-80, 20, 50, 70]
             # TODO: Add checking for wrong cordinates and apply default if nesessary
             level = 500
+            dummylevel = 1000 # dummy workaround for cdo sellevel
             bbox=[]
             bboxStr = request.inputs['BBox'][0].data
             bboxStr = bboxStr.split(',')
@@ -340,54 +345,95 @@ class AnalogsmodelProcess(Process):
         response.update_status('Start preparing input data', 12)
         start_time = time.time()  # mesure data preperation ...
         try:
-            # variable = get_variable(resource)
             # TODO: Add selection of the level. maybe bellow in call(..., level_range=[...,...])
-
-            # cal,units = get_calendar(resource)
-            # tmp workaround to fix calendar issue with ocgis subsetting
-            # if cal == 'proleptic_gregorian':
-            #     refEnSub = refEn + td(days=1)        
-            #     dateEnSub = dateEn + td(days=1)
-            # else:
-            #     refEnSub = RefEn
-            #     dateEnSub = dateEn
-
-            # archive = call(resource=resource, time_range=[refSt, refEnSub], geom=bbox, spatial_wrapping='wrap')
-            # simulation = call(resource=resource, time_range=[dateSt, dateEnSub], geom=bbox, spatial_wrapping='wrap')
 
             if type(resource) == list:
                 resource.sort()
+            else:
+                resource=[resource]
 
-            archive_tmp = call(resource=resource, time_range=[refSt, refEn], geom=bbox, spatial_wrapping='wrap')
-            simulation_tmp = call(resource=resource, time_range=[dateSt, dateEn], geom=bbox, spatial_wrapping='wrap')
+            #===============================================================
+            # TODO: REMOVE resources which are out of interest from the list 
+            # (years > and < than requested for calculation)
 
-            #######################################################################################
-            # TEMORAL dirty workaround to get the level and it's units - will be func in utils.py
-            from netCDF4 import Dataset
-            
-            ds = Dataset(archive_tmp)
-            variable = get_variable(archive_tmp)
+            tmp_resource = []
 
+            for re in resource:
+                s,e = get_timerange(re)
+                tmpSt = dt.strptime(s,'%Y%m%d') 
+                tmpEn = dt.strptime(e,'%Y%m%d') 
+                if ((tmpSt <= end ) and (tmpEn >= start)):
+                    tmp_resource.append(re)
+                    LOGGER.debug('Selected file: %s ' % (re))
+            resource = tmp_resource
+            # ===============================================================
+
+            #================================================================
+            # Try to fix memory issue... (ocgis call for files like 20-30 gb... )
+            # IF 4D - select pressure level before domain cut
+            #
+            # resource properties
+            ds = Dataset(resource[0])
+            variable = get_variable(resource[0])
             var = ds.variables[variable]
             dims = list(var.dimensions)
+            dimlen = len(dims)
+ 
+            lev_units = 'hPa'
 
-            if (len(dims)>3) :
+            if (dimlen>3) :
                 lev = ds.variables[dims[1]]
+                # actually index [1] need to be detected... assuming zg(time, plev, lat, lon)
                 lev_units = lev.units
 
                 if (lev_units=='Pa'):
                     level = level*100
+                    dummylevel=dummylevel*100
+                    # TODO: OR check the NAME and units of vertical level and find 200 , 300, or 500 mbar in it
+                    # Not just level = level * 100.
 
+            # Get Levels
+
+            from cdo import Cdo
+            cdo = Cdo()
+
+            lev_res=[]
+            if(dimlen>3):
+                for res_fn in resource:
+                    tmp_f = 'lev_' + path.basename(res_fn)
+                    comcdo = '%s,%s' % (level,dummylevel)
+                    cdo.sellevel(comcdo, input=res_fn, output=tmp_f)
+                    lev_res.append(tmp_f)
+            else:
+                lev_res = resource
+
+            # Get domain
+            regr_res=[]
+            for res_fn in lev_res:
+                tmp_f = 'dom_' + path.basename(res_fn)
+                comcdo = '%s,%s,%s,%s' % (bbox[0],bbox[2],bbox[1],bbox[3])
+                cdo.sellonlatbox(comcdo, input=res_fn, output=tmp_f)
+                regr_res.append(tmp_f)
+
+            #archive_tmp = call(resource=resource, time_range=[refSt, refEn], geom=bbox, spatial_wrapping='wrap')
+            #simulation_tmp = call(resource=resource, time_range=[dateSt, dateEn], geom=bbox, spatial_wrapping='wrap')
+            #============================  
+
+            archive_tmp = call(resource=regr_res, time_range=[refSt, refEn], spatial_wrapping='wrap')
+            simulation_tmp = call(resource=regr_res, time_range=[dateSt, dateEn], spatial_wrapping='wrap')
+
+            #######################################################################################
+            # TEMORAL dirty workaround to get the level and it's units - will be func in utils.py
+            
+            if (dimlen>3) :
                 archive = get_level(archive_tmp, level = level)
                 simulation = get_level(simulation_tmp,level = level)
                 variable = 'z%s' % level
                 # TODO: here should be modulated
-                # TODO: OR check the NAME and units of vertical level and find 200 , 300, or 500 mbar in it
-                # Not just level = level * 100.
             else:
                 archive = archive_tmp
                 simulation = simulation_tmp
-                # 3D, move forwars
+                # 3D, move forward
             #######################################################################################
 
             if seacyc is True:
