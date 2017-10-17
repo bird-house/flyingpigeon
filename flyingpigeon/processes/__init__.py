@@ -45,7 +45,7 @@ processes = [
     WeatherregimesmodelProcess(),
     AnalogsreanalyseProcess(),
     AnalogsmodelProcess(),
-    #    AnalogscompareProcess(),
+    AnalogscompareProcess(),
     AnalogsviewerProcess(),
     #   RobustnessProcess(),
     PlottimeseriesProcess(),
