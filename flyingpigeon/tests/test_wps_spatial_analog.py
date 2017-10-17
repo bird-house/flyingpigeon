@@ -1,9 +1,10 @@
 import pytest
+pytestmark = pytest.mark.skip(reason="spatial analog process is disabled")
 
 from pywps import Service
 from pywps.tests import assert_response_success
 
-from flyingpigeon.processes import SpatialAnalogProcess, MapSpatialAnalogProcess
+# from flyingpigeon.processes import SpatialAnalogProcess, MapSpatialAnalogProcess
 from flyingpigeon.utils import local_path
 from flyingpigeon.tests.common import TESTDATA, client_for, CFG_FILE
 

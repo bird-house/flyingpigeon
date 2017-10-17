@@ -2,13 +2,11 @@ from .wps_subset_countries import ClippingProcess
 from .wps_subset_continents import ClipcontinentProcess
 from .wps_subset_regionseurope import ClipregionseuropeProcess
 from .wps_pointinspection import PointinspectionProcess
-from .wps_landseamask import LandseamaskProcess
-from .wps_climatefactsheet import FactsheetProcess
+# from .wps_landseamask import LandseamaskProcess
+# from .wps_climatefactsheet import FactsheetProcess
 from .wps_fetch import FetchProcess
 from .wps_indices_percentiledays import IndicespercentiledaysProcess
 from .wps_indices_single import IndicessingleProcess
-from .wps_robustness import RobustnessProcess
-from .wps_plot_timeseries import PlottimeseriesProcess
 from .wps_sdm_gbiffetch import GBIFfetchProcess
 from .wps_sdm_getindices import SDMgetindicesProcess
 from .wps_sdm_csv import SDMcsvProcess
@@ -21,37 +19,39 @@ from .wps_analogs_reanalyse import AnalogsreanalyseProcess
 from .wps_analogs_model import AnalogsmodelProcess
 from .wps_analogs_compare import AnalogscompareProcess
 from .wps_analogs_viewer import AnalogsviewerProcess
+# from .wps_robustness import RobustnessProcess
+from .wps_plot_timeseries import PlottimeseriesProcess
 from .wps_segetalflora import SegetalfloraProcess
-from .wps_spatial_analog import SpatialAnalogProcess
-from .wps_map_spatial_analog import MapSpatialAnalogProcess
+# from .wps_spatial_analog import SpatialAnalogProcess
+# from .wps_map_spatial_analog import MapSpatialAnalogProcess#  LandseamaskProcess(),
 
 processes = [
     ClippingProcess(),
     ClipcontinentProcess(),
     ClipregionseuropeProcess(),
     PointinspectionProcess(),
-    FactsheetProcess(),
+    #    LandseamaskProcess(),
+    #    FactsheetProcess(),
     FetchProcess(),
-    LandseamaskProcess(),
     IndicespercentiledaysProcess(),
     IndicessingleProcess(),
     GBIFfetchProcess(),
     SDMgetindicesProcess(),
-    #    SDMcsvProcess(),
-    #    SDMcsvindicesProcess(),
-    #    SDMallinoneProcess(),
+    #   SDMcsvProcess(),
+    #   SDMcsvindicesProcess(),
+    #   SSDMallinoneProcess(),
     WeatherregimesreanalyseProcess(),
     WeatherregimesprojectionProcess(),
     WeatherregimesmodelProcess(),
     AnalogsreanalyseProcess(),
-    #    AnalogsmodelProcess(),
-    #    AnalogscompareProcess(),
+    AnalogsmodelProcess(),
+    AnalogscompareProcess(),
     AnalogsviewerProcess(),
-    RobustnessProcess(),
+    #   RobustnessProcess(),
     PlottimeseriesProcess(),
     SegetalfloraProcess(),
-    SpatialAnalogProcess(),
-    MapSpatialAnalogProcess(),
+    #   SpatialAnalogProcess(),
+    #   MapSpatialAnalogProcess(),
 ]
 
 """
