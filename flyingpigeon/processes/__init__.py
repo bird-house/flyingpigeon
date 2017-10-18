@@ -30,7 +30,7 @@ processes = [
     ClipcontinentProcess(),
     ClipregionseuropeProcess(),
     PointinspectionProcess(),
-    #    LandseamaskProcess(),
+    LandseamaskProcess(),
     #    FactsheetProcess(),
     FetchProcess(),
     IndicespercentiledaysProcess(),
@@ -45,13 +45,13 @@ processes = [
     WeatherregimesmodelProcess(),
     AnalogsreanalyseProcess(),
     AnalogsmodelProcess(),
-    AnalogscompareProcess(),
+    #    AnalogscompareProcess(),
     AnalogsviewerProcess(),
     #   RobustnessProcess(),
     PlottimeseriesProcess(),
     SegetalfloraProcess(),
-    #   SpatialAnalogProcess(),
-    #   MapSpatialAnalogProcess(),
+    SpatialAnalogProcess(),
+    MapSpatialAnalogProcess(),
 ]
 
 """

@@ -45,6 +45,19 @@ class AnalogsreanalyseProcess(Process):
             #   crss=['EPSG:4326']
             #   )
 
+            LiteralInput('BBox', 'Bounding Box',
+                         data_type='string',
+                         abstract="Enter a bbox: min_lon, max_lon, min_lat, max_lat."
+                            " min_lon=Western longitude,"
+                            " max_lon=Eastern longitude,"
+                            " min_lat=Southern or northern latitude,"
+                            " max_lat=Northern or southern latitude."
+                            " For example: -80,50,20,70",
+                         min_occurs=1,
+                         max_occurs=1,
+                         default='-80,50,20,70',
+                         ),
+
             LiteralInput('dateSt', 'Start date of analysis period',
                          data_type='date',
                          abstract='First day of the period to be analysed',
@@ -87,7 +100,7 @@ class AnalogsreanalyseProcess(Process):
                          ),
 
             LiteralInput("seasonwin", "Seasonal window",
-                         abstract="Number of days befor and after the date to be analysed",
+                         abstract="Number of days before and after the date to be analysed",
                          default='30',
                          data_type='integer',
                          min_occurs=0,
@@ -206,7 +219,20 @@ class AnalogsreanalyseProcess(Process):
             dateEn = request.inputs['dateEn'][0].data
             seasonwin = request.inputs['seasonwin'][0].data
             nanalog = request.inputs['nanalog'][0].data
-            bbox = [-80, 20, 50, 70]
+
+            #bbox = [-80, 20, 50, 70]
+            # TODO: Add checking for wrong cordinates and apply default if nesessary
+            bbox=[]
+            bboxStr = request.inputs['BBox'][0].data
+            bboxStr = bboxStr.split(',')
+            #for i in bboxStr: bbox.append(int(i))
+            bbox.append(float(bboxStr[0]))
+            bbox.append(float(bboxStr[2]))
+            bbox.append(float(bboxStr[1]))
+            bbox.append(float(bboxStr[3]))
+            LOGGER.debug('BBOX for ocgis: %s ' % (bbox))
+            LOGGER.debug('BBOX original: %s ' % (bboxStr))
+
             # if bbox_obj is not None:
             #     LOGGER.info("bbox_obj={0}".format(bbox_obj.coords))
             #     bbox = [bbox_obj.coords[0][0],
@@ -303,7 +329,8 @@ class AnalogsreanalyseProcess(Process):
         ##########################################
         # fetch Data from original data archive
         ##########################################
-
+                
+        # NOTE: If ref is say 1950 - 1990, and sim is just 1 week in 2017 - ALL the data will be downloaded, 1950 - 2017 
         try:
             model_nc = rl(start=start.year,
                           end=end.year,
@@ -320,10 +347,30 @@ class AnalogsreanalyseProcess(Process):
         LOGGER.debug("start and end time: %s - %s" % (start, end))
         time_range = [start, end]
 
-        model_subset = call(resource=model_nc, variable=var,
-                            geom=bbox, spatial_wrapping='wrap', time_range=time_range,
-                            # conform_units_to=conform_units_to
-                            )
+        # calc = [{'func': 'mean', 'name': var}]
+
+        model_subset_tmp = call(resource=model_nc, variable=var,
+                                geom=bbox, spatial_wrapping='wrap', time_range=time_range, # calc=calc, calc_grouping=['day'],
+                                # conform_units_to=conform_units_to
+                                )
+
+        # If dataset is 20CRV2 the 6 hourly file should be converted to daily.  
+        
+        if '20CRV2' in model:
+            from cdo import Cdo
+            import uuid
+            cdo = Cdo()
+            model_subset = '%s.nc' % uuid.uuid1()
+            tmp_f = '%s.nc' % uuid.uuid1()
+
+            cdo_op = getattr(cdo,'daymean')
+            cdo_op(input=model_subset_tmp, output=tmp_f)
+            sti = '00:00:00' 
+            cdo_op = getattr(cdo,'settime')
+            cdo_op(sti, input=tmp_f, output=model_subset)
+        else:
+            model_subset = model_subset_tmp
+
         LOGGER.info('Dataset subset done: %s ', model_subset)
 
         response.update_status('dataset subsetted', 19)
@@ -392,6 +439,8 @@ class AnalogsreanalyseProcess(Process):
         try:
             # Construct descriptive filenames for the three files
             # listed in config file
+            # TODO check strftime for years <1900 (!)
+
             refDatesString = dt.strftime(refSt, '%Y-%m-%d') + "_" + dt.strftime(refEn, '%Y-%m-%d')
             simDatesString = dt.strftime(dateSt, '%Y-%m-%d') + "_" + dt.strftime(dateEn, '%Y-%m-%d')
             archiveNameString = "base_" + var + "_" + refDatesString + '_%.1f_%.1f_%.1f_%.1f' \
@@ -468,7 +517,7 @@ class AnalogsreanalyseProcess(Process):
             LOGGER.exception(msg)
             raise Exception(msg)
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
-
+        
         response.update_status('preparing output', 70)
         # response.outputs['config'].storage = FileStorage()
         response.outputs['config'].file = config_file

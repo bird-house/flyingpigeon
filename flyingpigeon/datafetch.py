@@ -129,9 +129,9 @@ def get_level(resource, level):
     from numpy import squeeze
 
     try:
-        level_data = call(resource, level_range=[int(level), int(level)])
         if type(resource) == list:
             resource.sort()
+        level_data = call(resource, level_range=[int(level), int(level)])
         variable = get_variable(level_data)
         LOGGER.info('found %s in file' % variable)
         ds = Dataset(level_data, mode='a')
