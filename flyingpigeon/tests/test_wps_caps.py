@@ -18,7 +18,7 @@ def test_caps():
     print sorted_names
 
     expected_names = [
-        'analogs_compare',
+        #'analogs_compare',
         'analogs_model',
         'analogs_reanalyse',
         'analogs_viewer',
