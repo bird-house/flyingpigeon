@@ -50,8 +50,8 @@ processes = [
     #   RobustnessProcess(),
     PlottimeseriesProcess(),
     SegetalfloraProcess(),
-    SpatialAnalogProcess(),
-    MapSpatialAnalogProcess(),
+    #   SpatialAnalogProcess(),
+    #   MapSpatialAnalogProcess(),
 ]
 
 """
