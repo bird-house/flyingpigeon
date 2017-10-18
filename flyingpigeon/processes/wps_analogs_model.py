@@ -57,6 +57,15 @@ class AnalogsmodelProcess(Process):
                          default='-80,50,20,70',
                          ),
 
+            LiteralInput("level", "Vertical level",
+                         abstract="Vertical level for geopotential (hPa)",
+                         default='500',
+                         data_type='integer',
+                         min_occurs=0,
+                         max_occurs=1,
+                         allowed_values=[1000, 850, 700, 500, 250, 100, 50, 10]
+                         ),
+
                 # self.BBox = self.addBBoxInput(
                 #     identifier="BBox",
                 #     title="Bounding Box",
@@ -238,8 +247,15 @@ class AnalogsmodelProcess(Process):
 
             # bbox = [-80, 20, 50, 70]
             # TODO: Add checking for wrong cordinates and apply default if nesessary
-            level = 500
-            dummylevel = 1000 # dummy workaround for cdo sellevel
+            #level = 500
+
+            level = request.inputs['level'][0].data
+            if (level == 500): 
+                dummylevel = 1000 # dummy workaround for cdo sellevel
+            else:
+                dummylevel = 500
+            LOGGER.debug('LEVEL selected: %s hPa' % (level))
+
             bbox=[]
             bboxStr = request.inputs['BBox'][0].data
             bboxStr = bboxStr.split(',')
@@ -378,7 +394,14 @@ class AnalogsmodelProcess(Process):
             var = ds.variables[variable]
             dims = list(var.dimensions)
             dimlen = len(dims)
- 
+
+            try:
+                model_id = ds.getncattr('model_id') 
+            except AttributeError:
+                model_id = 'Unknown model'
+
+            LOGGER.debug('MODEL: %s ' % (model_id)) 
+
             lev_units = 'hPa'
 
             if (dimlen>3) :
@@ -465,6 +488,8 @@ class AnalogsmodelProcess(Process):
                 files=files,
                 seasoncyc_base=seasoncyc_base,
                 seasoncyc_sim=seasoncyc_sim,
+                base_id=model_id,
+                sim_id=model_id, 
                 timewin=timewin,
                 varname=variable,
                 seacyc=seacyc,
