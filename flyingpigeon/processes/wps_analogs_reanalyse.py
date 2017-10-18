@@ -486,6 +486,8 @@ class AnalogsreanalyseProcess(Process):
             files=files,
             seasoncyc_base=seasoncyc_base,
             seasoncyc_sim=seasoncyc_sim,
+            base_id=model,
+            sim_id=model,
             timewin=timewin,
             varname=var,
             seacyc=seacyc,
