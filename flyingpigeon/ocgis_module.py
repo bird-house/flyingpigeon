@@ -22,7 +22,7 @@ def has_Lambert_Conformal(resource):
     return True
 
 
-def call(resource=[], variable=None, dimension_map=None, calc=None,
+def call(resource=[], variable=None, dimension_map=None, agg_selection=True, calc=None,
          calc_grouping=None, conform_units_to=None, crs=None, memory_limit=None,  prefix=None,
          regrid_destination=None, regrid_options='bil', level_range=None,
          geom=None, output_format_options=None, search_radius_mult=2.,
@@ -35,6 +35,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     :param resource:
     :param variable: variable in the input file to be picked
     :param dimension_map: dimension map in case of unconventional storage of data
+    :param agg_selection: For aggregation of in case of mulitple polygons geoms
     :param calc: ocgis calc syntax for calculation partion
     :param calc_grouping: time aggregate grouping
     :param conform_units_to:
@@ -148,6 +149,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
                             calc=calc,
                             calc_grouping=calc_grouping,
                             geom=geom,
+                            agg_selection=agg_selection,
                             output_format=output_format,
                             prefix=prefix,
                             search_radius_mult=search_radius_mult,

@@ -277,11 +277,11 @@ def get_indices(resource, indices):
                         nc = calc_indice_simple(resource=ncs[key],
                                                 variable=variable,
                                                 prefix=prefix,
-                                                # polygons=['Africa', 'Europe', 'Asia'],
-                                                #           # 'Australia',
-                                                #           # 'North America', 'Oceania', 'South America',
-                                                #           # 'Antarctica',
-                                                # mosaic=True,
+                                                polygons=['Africa', 'Europe', 'Asia'],
+                                                          # 'Australia',
+                                                          # 'North America', 'Oceania', 'South America',
+                                                          # 'Antarctica',
+                                                mosaic=True,
                                                 indice=icclim_name,
                                                 grouping=grouping)
                         if nc is not None:
