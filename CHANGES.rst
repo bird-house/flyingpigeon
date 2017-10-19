@@ -7,7 +7,7 @@ Releasenotes
 * complet code adapted to pywps4
 * ocgis v2 depoyed
 * Tests for components
-* `Version published in Computer & Geosciences <http://www.sciencedirect.com/science/article/pii/S0098300416302801>`_
+* `Version published in Computers & Geosciences <http://www.sciencedirect.com/science/article/pii/S0098300416302801>`_
 * Set of processes:
 |  * Base processes:
 |    Fetch resources
