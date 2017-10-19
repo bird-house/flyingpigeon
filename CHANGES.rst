@@ -9,19 +9,20 @@ Releasenotes
 * Tests for components
 * `Version published in Computer & Geosciences <http://www.sciencedirect.com/science/article/pii/S0098300416302801>`_
 * Set of processes:
-  * Base processes:
+|  * Base processes:
 |    Fetch resources
 |    Fetch GBIF Species Coordination
 |    Subset Polygons
 |    Point Inspection
 |    Timeseries visualisation
-|    Climate Indices Calculation (base process??)
+|    Climate Indices Calculation
 |  * Climate Impact
-|    Species Distribution Model (à can be in more detail depending on the fixes the next days)
+|    Species Distribution Model
 |    Segetal Flora Calculation
 |  * Extreme Weather Events Assessment
 |    Analogs of Circulation for reanalyzes Datasets
-|    Analogs of Circulation Comparison between reanalyzes and climate model data (à If fixed until 30.Okt )
+|    Analogs of Circulation for model data
+|    Analogs of Circulation Comparison between reanalyzes and climate model data
 |    Analogs output data visualisation
 |    Weather regime Determination for reanalyzes Datasets
 |    Weather regime Determination for model datasets
