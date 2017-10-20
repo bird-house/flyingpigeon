@@ -1,12 +1,7 @@
 """
 Processes for Species distribution
-Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
+Author: Nils Hempelmann ( info@nilshempelmann.de )
 """
-
-from flyingpigeon.sdm import _SDMINDICES_
-
-from flyingpigeon.log import init_process_logger
-
 from pywps import Process
 from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
@@ -14,6 +9,10 @@ from pywps import Format
 from pywps.inout.literaltypes import AllowedValue
 from pywps.app.Common import Metadata
 
+from flyingpigeon.sdm import _SDMINDICES_
+from flyingpigeon.utils import rename_complexinputs
+
+from flyingpigeon.log import init_process_logger
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
@@ -45,7 +44,7 @@ class SDMcsvProcess(Process):
             LiteralInput("input_indices", "Indices",
                          abstract="Climate indices related to growth conditions \
                                     of tree species",
-                         default=['TG_JJA', 'TNn_Jan'],
+                         default='TG_JJA',
                          data_type='string',
                          min_occurs=1,
                          max_occurs=10,
