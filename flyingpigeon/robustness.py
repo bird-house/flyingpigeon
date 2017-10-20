@@ -1,15 +1,12 @@
 # from flyingpigeon.visualisation import map_robustness
-from flyingpigeon.utils import get_variable
-from flyingpigeon.utils import sort_by_filename
-from flyingpigeon.utils import get_time
-
+from flyingpigeon.utils import get_variable, sort_by_filename, get_timerange, get_calendar
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
-def method_A(resource=[], start=None, end=None, timeslice=20,
-             variable=None, title=None, cmap='seismic'):
+def signal_noise_ratio(resource=[], start=None, end=None, timeslice=20,
+                       variable=None, title=None, cmap='seismic'):
     """returns the result
 
     :param resource: list of paths to netCDF files
@@ -75,6 +72,30 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
         msg = 'seltime and mergetime failed'
         LOGGER.exception(msg)
 
+    # verify the calendar
+    # find the most common calendar
+    cals = []
+    n = 0
+    for nc in mergefiles:
+        cal, util = get_calendar(nc)
+        cals.append(cal)
+    for cal in cals:
+        m = cals.count(cal)
+        if m > n:
+            calendar = cal
+
+    for c, nc in enumerate(mergefiles):
+        cal, unit = get_calendar(nc)
+        print 'calendar detected: %s most common: %s' % (cal, calendar)
+        if cal != calendar:
+            print 'calendar changed for %s to %s' % (cal, calendar)
+            _, nc_cal = mkstemp(dir='.', suffix='.nc')
+            nc_out = cdo.setcalendar('{0}'.format(calendar), input=nc, output=nc_cal)
+            mergefiles[c] = nc_cal
+            LOGGER.debug('calendar changed for %s' % nc)
+        else:
+            LOGGER.debug('calendar was %s' % cal)
+
     # dataset documentation
     try:
         text_src = open('infiles.txt', 'a')
@@ -86,43 +107,51 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
         LOGGER.exception(msg)
         _, text_src = mkstemp(dir='.', suffix='.txt')
 
+    # evaluation
     # configure reference and compare period
-    # TODO: filter files by time
+    st = set()
+    en = set()
 
-    try:
-        if start is None:
-            st_set = set()
-            en_set = set()
-            for f in mergefiles:
-                times = get_time(f)
-                st_set.update([times[0].year])
-        if end is None:
-            en_set.update([times[-1].year])
-            start = max(st_set)
-        if end is None:
-            end = min(en_set)
-        LOGGER.info('Start and End: %s - %s ' % (start, end))
-        if start >= end:
-            LOGGER.error('ensemble is inconsistent!!! start year is later than end year')
-    except:
-        msg = 'failed to detect start and end times of the ensemble'
-        LOGGER.exception(msg)
+    for key in file_dic.keys():
+        #  TODO: convert 360day calendar
+
+        s, e = get_timerange(file_dic[key])
+        st.update([s])
+        en.update([e])
+
+    if start is None:
+        start = list(st)[-1]
+    else:
+        if start < list(st)[-1]:
+            start = list(st)[-1]
+            LOGGER.debug('start was befor the first common timestep, set start to the first common timestep')
+
+    if end is None:
+        end = list(en)[0]
+    else:
+        if end > list(en)[0]:
+            end = list(en)[0]
+            LOGGER.debug('end was after the last common timestepp, set end to last common timestep ')
+
+    from datetime import datetime as dt
+    from datetime import timedelta
+
+    start = dt.strptime(start, '%Y%M%d')
+    end = dt.strptime(end, '%Y%M%d')
+    length = end - start
 
     # set the periodes:
     try:
-        LOGGER.debug(type(start))
-        # start = int(start)
-        # end = int(end)
         if timeslice is None:
-            timeslice = int((end - start) / 3)
-            if timeslice == 0:
-                timeslice = 1
+            td = lenth / 3
         else:
-            timeslice = int(timeslice)
-        start1 = start
-        start2 = start1 + timeslice - 1
-        end1 = end - timeslice + 1
-        end2 = end
+            td = timedelta(days=timeslice)
+            if td > length:
+                td = lenth / 3
+                LOGGER.debug('timeslice is larger as whole timeseries! set timeslice to third of timeseries')
+
+        start_td = start + td
+        end_td = end - td
         LOGGER.info('timeslice and periodes set')
     except:
         msg = 'failed to set the periodes'
@@ -131,7 +160,7 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
     try:
         files = []
         for i, mf in enumerate(mergefiles):
-            files.append(cdo.selyear('{0}/{1}'.format(start1, end2), input=[mf.replace(' ', '\ ')],
+            files.append(cdo.selyear('{0}/{1}'.format(start.year, end.year), input=[mf.replace(' ', '\ ')],
                          output='file_{0}_.nc'.format(i)))  # python version
         LOGGER.info('timeseries selected from defined start to end year')
     except:
@@ -156,8 +185,8 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
 
     # get the get the signal as difference from the beginning (first years) and end period (last years), :
     try:
-        selyearstart = cdo.selyear('%s/%s' % (start1, start2), input=nc_ensmean, output='selyearstart.nc')
-        selyearend = cdo.selyear('%s/%s' % (end1, end2), input=nc_ensmean, output='selyearend.nc')
+        selyearstart = cdo.selyear('%s/%s' % (start.year, start_td.year), input=nc_ensmean, output='selyearstart.nc')
+        selyearend = cdo.selyear('%s/%s' % (end_td.year, end.year), input=nc_ensmean, output='selyearend.nc')
         meanyearst = cdo.timmean(input=selyearstart, output='meanyearst.nc')
         meanyearend = cdo.timmean(input=selyearend, output='meanyearend.nc')
         signal = cdo.sub(input=[meanyearend, meanyearst], output='signal.nc')
@@ -179,9 +208,10 @@ def method_A(resource=[], start=None, end=None, timeslice=20,
         msg = 'calculation of internal model std failed'
         LOGGER.exception(msg)
     try:
-        absolut = cdo.abs(input=signal, output='absolut_signal.nc')
-        high_agreement_mask = cdo.gt(input=[absolut, std2],  output='large_change_with_high_model_agreement.nc')
-        low_agreement_mask = cdo.lt(input=[absolut, std], output='small_signal_or_low_agreement_of_models.nc')
+        # absolut = cdo.abs(input=signal, output='absolut_signal.nc')  # don't get the sence of this step :-)
+
+        high_agreement_mask = cdo.gt(input=[signal, std2],  output='signal_larger_than_noise.nc')
+        low_agreement_mask = cdo.lt(input=[signal, std], output='signal_smaller_than_noise.nc')
         LOGGER.info('high and low mask done')
     except:
         msg = 'calculation of robustness mask failed'

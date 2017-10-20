@@ -452,6 +452,41 @@ def prepare_static_folder():
         os.symlink(config.static_path(), destination)
 
 
+def get_calendar(resource, variable=None):
+    """
+    returns the calendar and units in wich the timestamps are stored
+
+    :param resource: netCDF file or files of one Dataset
+
+    :return str: calendar, unit
+    """
+
+    if type(resource) != list:
+        resource = [resource]
+
+    try:
+        if len(resource) > 1:
+            ds = MFDataset(resource)
+        else:
+            ds = Dataset(resource[0])
+        time = ds.variables['time']
+    except:
+        msg = 'failed to get time'
+        LOGGER.exception(msg)
+        raise Exception(msg)
+
+    if hasattr(time, 'units') is True:
+        unit = time.units
+    else:
+        unit = None
+
+    if hasattr(time, 'calendar') is True:
+        calendar = time.calendar
+    else:
+        calendar = None
+    return str(calendar), str(unit)
+
+
 def get_coordinates(resource, variable=None, unrotate=False):
     """
     reads out the coordinates of a variable
@@ -816,7 +851,7 @@ def sort_by_filename(resource, historical_concatination=False):
                         if historical_concatination is False:
                             for n in resource:
                                 if '%s_' % key in n:
-                                    ndic[key].append(path.join(p, n))
+                                    ndic[key].append(path.abspath(n))  # path.join(p, n))
 
                         elif historical_concatination is True:
                             key_hist = key.replace('rcp26', 'historical').\
@@ -825,7 +860,7 @@ def sort_by_filename(resource, historical_concatination=False):
                                 replace('rcp85', 'historical')
                             for n in resource:
                                 if '%s_' % key in n or '%s_' % key_hist in n:
-                                    ndic[key].append(path.join(p, n))
+                                    ndic[key].append(path.abspath(n))  # path.join(p, n))
                         else:
                             LOGGER.error('append file paths to dictionary for key %s failed' % key)
                         ndic[key].sort()
@@ -842,7 +877,8 @@ def sort_by_filename(resource, historical_concatination=False):
                 except Exception:
                     msg = 'failed to sort the list of resources and add dates to keyname: %s' % key
                     LOGGER.exception(msg)
-                    raise Exception(msg)
+                    tmp_dic[key] = ndic[key]
+                    # raise Exception(msg)
         elif len(resource) == 1:
             p, f = path.split(path.abspath(resource[0]))
             tmp_dic[f.replace('.nc', '')] = path.abspath(resource[0])

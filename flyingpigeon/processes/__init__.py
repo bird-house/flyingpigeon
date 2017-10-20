@@ -24,10 +24,11 @@ from .wps_analogs_viewer import AnalogsviewerProcess
 from .wps_segetalflora import SegetalfloraProcess
 from .wps_spatial_analog import SpatialAnalogProcess
 from .wps_map_spatial_analog import MapSpatialAnalogProcess
+from .wps_subset import SubsetProcess
+from .wps_averager import AveragerProcess
 from .wps_subset_WFS import SubsetWFSProcess
 from .wps_averager_WFS import AveragerWFSProcess
 from .wps_ouranos_pub_indicators import OuranosPublicIndicatorProcess
-
 
 processes = [
     ClippingProcess(),
@@ -56,6 +57,8 @@ processes = [
     SegetalfloraProcess(),
     SpatialAnalogProcess(),
     MapSpatialAnalogProcess(),
+    SubsetProcess(),
+    AveragerProcess(),
     SubsetWFSProcess(),
     AveragerWFSProcess(),
     OuranosPublicIndicatorProcess(),

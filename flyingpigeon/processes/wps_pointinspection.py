@@ -92,7 +92,7 @@ class PointinspectionProcess(Process):
             try:
                 LOGGER.info('start calculation for %s ' % key)
                 ncs = nc_exp[key]
-                times = get_time(ncs, format='%Y-%m-%d_%H:%M:%S')
+                times = get_time(ncs)  # , format='%Y-%m-%d_%H:%M:%S')
                 concat_vals = times  # ['%s-%02d-%02d_%02d:%02d:%02d' %
                 # (t.year, t.month, t.day, t.hour, t.minute, t.second) for t in times]
                 header = 'date_time'

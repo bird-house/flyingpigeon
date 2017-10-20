@@ -118,8 +118,8 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None, output_f
             else:
                 geom = geoms.pop()
             ugids = get_ugid(polygons=polygons, geom=geom)
-        except Exception as e:
-            LOGGER.debug('geom identification failed %s ' % e)
+        except:
+            LOGGER.exception('geom identification failed')
         for i, key in enumerate(ncs.keys()):
             try:
                 # if variable is None:

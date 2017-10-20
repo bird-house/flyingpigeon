@@ -23,6 +23,58 @@ try:
 except ImportError:
     from urllib2 import urlopen, Request
 
+from owslib.wps import WebProcessingService, WPSReader, WPSExecution
+
+
+def get_capabilities(wps_host=None, wps_client=None, version='1.0.0'):
+    if wps_host:
+        return WebProcessingService(wps_host, version)
+    else:
+        response = wps_client.get(
+            '?service=WPS&request=GetCapabilities&version={0}'.format(version))
+        wps_reader = WPSReader()
+        element = wps_reader.readFromString(response.get_data())
+        wps = WebProcessingService(None, version, skip_caps=True)
+        wps._parseCapabilitiesMetadata(element)
+        return wps
+
+
+def describe_process(identifier, wps_host=None, wps_client=None,
+                     version='1.0.0'):
+    if wps_host:
+        wps = WebProcessingService(wps_host, version)
+        return wps.describeprocess(identifier)
+    else:
+        response = wps_client.get(
+            ('?service=WPS&request=DescribeProcess&version={0}&'
+             'identifier={1}').format(version, identifier))
+        wps_reader = WPSReader()
+        element = wps_reader.readFromString(response.get_data())
+        wps = WebProcessingService(None, version, skip_caps=True)
+        return wps._parseProcessMetadata(element)
+
+
+def execute(identifier, inputs=[], wps_host=None, wps_client=None,
+            version='1.0.0'):
+    if wps_host:
+        wps = WebProcessingService(wps_host, version)
+        return wps.execute(identifier, inputs=inputs)
+    else:
+        y = ''
+        for data_input in inputs:
+            y += '{0}={1};'.format(data_input[0], data_input[1])
+        y = y[:-1]
+        response = wps_client.get(
+            ('?service=WPS&request=execute&version={0}&'
+             'identifier={1}&DataInputs={2}').format(version, identifier, y))
+        wps_reader = WPSReader()
+        element = wps_reader.readFromString(response.get_data())
+        execution = WPSExecution()
+        execution._parseExecuteResponse(element)
+        return execution
+
+# Most of these xml parsing functions should be obsolete with the use of
+# owslib above...
 
 def xml_children_as_dict(element):
     """Create dictionary from xml element children.
