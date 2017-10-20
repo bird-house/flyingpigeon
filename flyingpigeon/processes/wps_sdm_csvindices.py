@@ -8,6 +8,14 @@ import tempfile
 from flyingpigeon.sdm import _SDMINDICES_
 from flyingpigeon.log import init_process_logger
 
+from os.path import basename
+from flyingpigeon import sdm
+from flyingpigeon.utils import download
+from flyingpigeon.utils import archive, archiveextract  # , get_domain
+from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.visualisation import map_PAmask
+from flyingpigeon.visualisation import map_gbifoccurrences
+
 from pywps import Process
 from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
@@ -130,10 +138,6 @@ class SDMcsvindicesProcess(Process):
         )
 
     def _handler(self, request, response):
-        from os.path import basename
-        from flyingpigeon import sdm
-        from flyingpigeon.utils import archive, archiveextract  # , get_domain
-        from flyingpigeon.visualisation import map_PAmask
 
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
@@ -143,25 +147,32 @@ class SDMcsvindicesProcess(Process):
         try:
             response.update_status('reading the arguments', 5)
             resources = archiveextract(
-                resource=rename_complexinputs(request.inputs['resources']))
-            csv_file = request.inputs['gbif'][0].data
+                resource=rename_complexinputs(request.inputs['input_indices']))
             period = request.inputs['period']
             period = period[0].data
             archive_format = request.inputs['archive_format']
+            LOGGER.info("all arguments read in nr of files in resources: %s" % len(resources))
         except:
-            LOGGER.error('failed to read in the arguments')
+            LOGGER.exception('failed to read in the arguments')
+
+        try:
+            gbif_url = request.inputs['gbif'][0].data
+            csv_file = download(gbif_url)
+            LOGGER.info('CSV file fetched sucessfully: %s' % csv_file)
+        except:
+            LOGGER.exception('failed to fetch GBIF file')
 
         try:
             response.update_status('read in latlon coordinates', 10)
             latlon = sdm.latlon_gbifcsv(csv_file)
+            LOGGER.info('read in the latlon coordinates')
         except:
             LOGGER.exception('failed to extract the latlon points')
 
         try:
             response.update_status('plot map', 20)
-            from flyingpigeon.visualisation import map_gbifoccurrences
-            # latlon = sdm.latlon_gbifdic(gbifdic)
             occurence_map = map_gbifoccurrences(latlon)
+            LOGGER.info('GBIF occourence ploted')
         except:
             LOGGER.exception('failed to plot occurence map')
 
@@ -182,12 +193,11 @@ class SDMcsvindicesProcess(Process):
         try:
             # sort indices
             indices_dic = sdm.sort_indices(resources)
-            LOGGER.info('indice files sorted for %s Datasets' %
-                        len(indices_dic.keys()))
+            LOGGER.info('indice files sorted in dictionary')
         except:
             msg = 'failed to sort indices'
             LOGGER.exception(msg)
-            raise Exception(msg)
+            indices_dic = {'dummy': []}
 
         ncs_references = []
         species_files = []
@@ -264,22 +274,20 @@ class SDMcsvindicesProcess(Process):
                 # raise Exception(msg)
 
         try:
-            archive_references = None
             archive_references = archive(ncs_references, format=archive_format)
             LOGGER.info('indices 2D added to archive')
         except:
             msg = 'failed adding 2D indices to archive'
             LOGGER.exception(msg)
-            raise Exception(msg)
+            archive_references = tempfile.mkstemp(suffix='.tar', prefix='foobar-', dir='.')
 
-        archive_predicion = None
         try:
             archive_predicion = archive(species_files, format=archive_format)
             LOGGER.info('species_files added to archive')
         except:
             msg = 'failed adding species_files indices to archive'
             LOGGER.exception(msg)
-            raise Exception(msg)
+            archive_predicion = tempfile.mkstemp(suffix='.tar', prefix='foobar-', dir='.')
 
         try:
             from flyingpigeon.visualisation import pdfmerge, concat_images
