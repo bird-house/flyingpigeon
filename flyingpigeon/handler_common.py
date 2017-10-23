@@ -13,7 +13,7 @@ from ocgis.exc import ExtentError
 import netCDF4
 from shapely.geometry import shape
 
-from flyingpigeon.utils import guess_main_variable, opendap_or_download
+from flyingpigeon.utils import guess_main_variables, opendap_or_download
 
 json_format = get_format('JSON')
 
@@ -101,9 +101,9 @@ def wfs_common(request, response, mode):
             ocgis.env.DIR_OUTPUT = os.getcwd()
             ocgis.env.OVERWRITE = True
             nc = netCDF4.Dataset(one_file, 'r')
-            var_name = guess_main_variable(nc)
+            var_names = guess_main_variables(nc)
             nc.close()
-            rd = ocgis.RequestDataset(one_file, var_name)
+            rd = ocgis.RequestDataset(one_file, var_names)
             for i, one_geom in enumerate(geom):
                 if one_geom is None:
                     ocgis_geom = None
