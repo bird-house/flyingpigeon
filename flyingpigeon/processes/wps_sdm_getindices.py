@@ -126,10 +126,10 @@ class SDMgetindicesProcess(Process):
         #################################
 
         # indices calculation
-
         try:
             response.update_status('calculation of indices', 30)
             ncs_indices = sdm.get_indices(resource=resources, indices=indices)
+            LOGGER.info('indice calculation done')
         except:
             msg = 'indice calculation failed for {}'.format(ds_name)
             LOGGER.exception(msg)

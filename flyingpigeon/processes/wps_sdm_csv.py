@@ -38,10 +38,10 @@ class SDMcsvProcess(Process):
                          data_type='string',
                          min_occurs=1,
                          max_occurs=1,
-                         default='http://localhost:8090/wpsoutputs/flyingpigeon/output_csv-abe15f64-c30d-11e6-bf63-142d277ef1f3.csv'
+                        #  default='http://localhost:8090/wpsoutputs/flyingpigeon/output_csv-abe15f64-c30d-11e6-bf63-142d277ef1f3.csv'
                          ),
 
-            LiteralInput("input_indices", "Indices",
+            LiteralInput("indices", "Indices",
                          abstract="Climate indices related to growth conditions \
                                     of tree species",
                          default='TG_JJA',
@@ -112,14 +112,14 @@ class SDMcsvProcess(Process):
                           as_reference=True,
                           ),
 
-            ComplexOutput("output_prediction", "predicted growth conditions",
-                          abstract="Archive containing files of the predicted\
-                                     growth conditions",
-                          supported_formats=[Format('application/x-tar'),
-                                             Format('application/zip')
-                                             ],
-                          as_reference=True,
-                          ),
+            # ComplexOutput("output_prediction", "predicted growth conditions",
+            #               abstract="Archive containing files of the predicted\
+            #                          growth conditions",
+            #               supported_formats=[Format('application/x-tar'),
+            #                                  Format('application/zip')
+            #                                  ],
+            #               as_reference=True,
+            #               ),
 
             ComplexOutput("output_info", "GAM statistics information",
                           abstract="Graphics and information of the learning statistics",
@@ -162,30 +162,29 @@ class SDMcsvProcess(Process):
         from os.path import basename
         from flyingpigeon import sdm
         from flyingpigeon.utils import archive, archiveextract, download
-        response.update_status('Start process', 0)
+        from flyingpigeon.visualisation import map_gbifoccurrences
+        from flyingpigeon.visualisation import map_PAmask
 
+        response.update_status('Start process', 0)
         try:
             LOGGER.info('reading the arguments')
-            resources_raw = archiveextract(
-                resource=rename_complexinputs(request.inputs['resources']))
-            csv_url = request.inputs['gbif'][0].data
+            resources = archiveextract(
+                resource=rename_complexinputs(request.inputs['resource']))
             period = request.inputs['period']
             period = period[0].data
-            indices = request.inputs['input_indices']
-            archive_format = request.inputs['archive_format']
-            LOGGER.info('indices %s ' % indices)
-            LOGGER.debug('csv_url %s' % csv_url)
+            indices = [inpt.data for inpt in request.inputs['indices']]
+            archive_format = request.inputs['archive_format'][0].data
+            LOGGER.info("all arguments read in nr of files in resources: %s" % len(resources))
         except Exception:
             LOGGER.exception('failed to read in the arguments')
             raise
 
         try:
-            LOGGER.info('set up the environment')
-            csv_file = download(csv_url)
-            resources = archiveextract(resources_raw)
+            gbif_url = request.inputs['gbif'][0].data
+            csv_file = download(gbif_url)
+            LOGGER.info('CSV file fetched sucessfully: %s' % csv_file)
         except:
-            LOGGER.exception('failed to set up the environment')
-            raise
+            LOGGER.exception('failed to fetch GBIF file')
 
         try:
             response.update_status('read in latlon coordinates', 10)
@@ -196,9 +195,8 @@ class SDMcsvProcess(Process):
 
         try:
             response.update_status('plot map', 20)
-            from flyingpigeon.visualisation import map_gbifoccurrences
-            # latlon = sdm.latlon_gbifdic(gbifdic)
             occurence_map = map_gbifoccurrences(latlon)
+            LOGGER.info('GBIF occourence ploted')
         except:
             LOGGER.exception('failed to plot occurence map')
 
@@ -207,66 +205,64 @@ class SDMcsvProcess(Process):
         #################################
 
         # get the indices
-        ncs_indices = None
         try:
-            response.update_status('start calculation of climate indices for %s'
-                                   % indices, 30)
-            ncs_indices = sdm.get_indices(resources=resources, indices=indices)
+            response.update_status('start calculation of indices', 30)
+            ncs_indices = sdm.get_indices(resource=resources, indices=indices)
             LOGGER.info('indice calculation done')
         except:
             msg = 'failed to calculate indices'
             LOGGER.exception(msg)
             raise Exception(msg)
 
-        try:
-            response.update_status('get domain', 30)
-            domains = set()
-            for resource in ncs_indices:
-                # get_domain works only if metadata are set in a correct way
-                domains = domains.union([basename(resource).split('_')[1]])
-            if len(domains) == 1:
-                domain = list(domains)[0]
-                LOGGER.debug('Domain %s found in indices files' % domain)
-            else:
-                LOGGER.error('Not a single domain in indices files %s' % domains)
-        except:
-            LOGGER.exception('failed to get domains')
-
-        try:
-            response.update_status('generating the PA mask', 20)
-            PAmask = sdm.get_PAmask(coordinates=latlon, domain=domain)
-            LOGGER.info('PA mask sucessfully generated')
-        except:
-            LOGGER.exception('failed to generate the PA mask')
-
-        try:
-            response.update_status('Ploting PA mask', 25)
-            from flyingpigeon.visualisation import map_PAmask
-            PAmask_png = map_PAmask(PAmask)
-        except:
-            LOGGER.exception('failed to plot the PA mask')
+        # try:
+        #     response.update_status('get domain', 30)
+        #     domains = set()
+        #     for resource in ncs_indices:
+        #         # get_domain works only if metadata are set in a correct way
+        #         domains = domains.union([basename(resource).split('_')[1]])
+        #     if len(domains) == 1:
+        #         domain = list(domains)[0]
+        #         LOGGER.debug('Domain %s found in indices files' % domain)
+        #     else:
+        #         LOGGER.error('Not a single domain in indices files %s' % domains)
+        # except:
+        #     LOGGER.exception('failed to get domains')
 
         try:
             # sort indices
-            indices_dic = None
             indices_dic = sdm.sort_indices(ncs_indices)
-            LOGGER.info('indice files sorted for %s Datasets' %
-                        len(indices_dic.keys()))
+            LOGGER.info('indice files sorted in dictionary')
         except:
             msg = 'failed to sort indices'
             LOGGER.exception(msg)
-            raise Exception(msg)
+            indices_dic = {'dummy': []}
 
         ncs_references = []
         species_files = []
         stat_infos = []
+        PAmask_pngs = []
 
+        response.update_status('Start processing for %s Datasets' % len(indices_dic.keys()))
         for count, key in enumerate(indices_dic.keys()):
             try:
                 staus_nr = 40 + count*10
                 response.update_status('Start processing of %s' % key, staus_nr)
                 ncs = indices_dic[key]
                 LOGGER.info('with %s files' % len(ncs))
+
+                try:
+                    response.update_status('generating the PA mask', 20)
+                    PAmask = sdm.get_PAmask(coordinates=latlon, nc=ncs[0])
+                    LOGGER.info('PA mask sucessfully generated')
+                except:
+                    LOGGER.exception('failed to generate the PA mask')
+
+                try:
+                    response.update_status('Ploting PA mask', 25)
+                    PAmask_pngs.extend([map_PAmask(PAmask)])
+                except:
+                    LOGGER.exception('failed to plot the PA mask')
+
                 try:
                     ncs_reference = sdm.get_reference(ncs_indices=ncs, period=period)
                     ncs_references.extend(ncs_reference)
@@ -275,7 +271,7 @@ class SDMcsvProcess(Process):
                 except:
                     msg = 'failed to calculate the reference'
                     LOGGER.exception(msg)
-                    raise Exception(msg)
+                    # raise Exception(msg)
 
                 try:
                     gam_model, predict_gam, gam_info = sdm.get_gam(ncs_reference, PAmask)
@@ -285,77 +281,77 @@ class SDMcsvProcess(Process):
                     msg = 'failed to train GAM for %s' % (key)
                     LOGGER.debug(msg)
 
-                try:
-                    prediction = sdm.get_prediction(gam_model, ncs)
-                    response.update_status('prediction done', staus_nr + 7)
-                except:
-                    msg = 'failed to predict tree occurence'
-                    LOGGER.exception(msg)
-                    # raise Exception(msg)
-
-                try:
-                    response.update_status('land sea mask for predicted data',  staus_nr + 8)
-                    from numpy import invert, isnan, nan, broadcast_arrays  # , array, zeros, linspace, meshgrid
-                    mask = invert(isnan(PAmask))
-                    mask = broadcast_arrays(prediction, mask)[1]
-                    prediction[mask is False] = nan
-                except:
-                    LOGGER.debug('failed to mask predicted data')
-
-                try:
-                    species_files.append(sdm.write_to_file(ncs[0], prediction))
-                    LOGGER.info('Favourabillity written to file')
-                except:
-                    msg = 'failed to write species file'
-                    LOGGER.debug(msg)
+                # try:
+                #     prediction = sdm.get_prediction(gam_model, ncs)
+                #     response.update_status('prediction done', staus_nr + 7)
+                # except:
+                #     msg = 'failed to predict tree occurence'
+                #     LOGGER.exception(msg)
+                #     # raise Exception(msg)
+                #
+                # try:
+                #     response.update_status('land sea mask for predicted data',  staus_nr + 8)
+                #     from numpy import invert, isnan, nan, broadcast_arrays  # , array, zeros, linspace, meshgrid
+                #     mask = invert(isnan(PAmask))
+                #     mask = broadcast_arrays(prediction, mask)[1]
+                #     prediction[mask is False] = nan
+                # except:
+                #     LOGGER.debug('failed to mask predicted data')
+                #
+                # try:
+                #     species_files.append(sdm.write_to_file(ncs[0], prediction))
+                #     LOGGER.info('Favourabillity written to file')
+                # except:
+                #     msg = 'failed to write species file'
+                #     LOGGER.debug(msg)
                     # raise Exception(msg)
 
             except:
-                msg = 'failed to calculate reference indices.'
+                msg = 'failed to process SDM chain for %s ' % key
                 LOGGER.exception(msg)
-                raise Exception(msg)
 
         try:
-            archive_indices = None
             archive_indices = archive(ncs_indices, format=archive_format)
             LOGGER.info('indices added to archive')
         except:
             msg = 'failed adding indices to archive'
             LOGGER.exception(msg)
-            raise Exception(msg)
+            archive_indices = tempfile.mkstemp(suffix='.tar', prefix='foobar-', dir='.')
 
-        archive_references = None
         try:
             archive_references = archive(ncs_references, format=archive_format)
             LOGGER.info('indices reference added to archive')
         except:
             msg = 'failed adding reference indices to archive'
             LOGGER.exception(msg)
-            raise Exception(msg)
+            archive_references = tempfile.mkstemp(suffix='.tar', prefix='foobar-', dir='.')
 
-        archive_predicion = None
-        try:
-            archive_predicion = archive(species_files, format=archive_format)
-            LOGGER.info('species_files added to archive')
-        except:
-            msg = 'failed adding species_files indices to archive'
-            LOGGER.exception(msg)
-            raise Exception(msg)
+        # try:
+        #     archive_predicion = archive(species_files, format=archive_format)
+        #     LOGGER.info('species_files added to archive')
+        # except:
+        #     msg = 'failed adding species_files indices to archive'
+        #     LOGGER.exception(msg)
+        #     raise Exception(msg)
 
         try:
-            from flyingpigeon.visualisation import pdfmerge
+            from flyingpigeon.visualisation import pdfmerge, concat_images
             stat_infosconcat = pdfmerge(stat_infos)
-            LOGGER.info('stat infos pdfs merged')
+            LOGGER.debug('pngs %s' % PAmask_pngs)
+            PAmask_png = concat_images(PAmask_pngs, orientation='h')
+            LOGGER.info('stat infos pdfs and mask pngs merged')
         except:
             LOGGER.exception('failed to concat images')
             _, stat_infosconcat = tempfile.mkstemp(suffix='.pdf', prefix='foobar-', dir='.')
+            _, PAmask_png = tempfile.mkstemp(suffix='.png', prefix='foobar-', dir='.')
+
 
         # self.output_csv.setValue(csv_file)
         response.outputs['output_gbif'].file = occurence_map
         response.outputs['output_PA'].file = PAmask_png
         response.outputs['output_indices'].file = archive_indices
         response.outputs['output_reference'].file = archive_references
-        response.outputs['archive_predicion'].file = archive_predicion
+        # response.outputs['archive_predicion'].file = archive_predicion
         response.outputs['output_info'].file = stat_infosconcat
 
         response.update_status('done', 100)

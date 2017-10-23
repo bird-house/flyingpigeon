@@ -30,7 +30,7 @@ class SDMcsvindicesProcess(Process):
     def __init__(self):
         inputs = [
 
-            ComplexInput("input_indices", "Precalculated Indices",
+            ComplexInput("resources", "Precalculated Indices",
                          abstract="Precalculated Indices as basis for the SDM calculation"
                                   " (list of netCDF files or tar/zip archive)",
                          min_occurs=1,
@@ -47,7 +47,7 @@ class SDMcsvindicesProcess(Process):
                          data_type='string',
                          min_occurs=1,
                          max_occurs=1,
-                         default='https://bovec.dkrz.de/download/wpsoutputs/flyingpigeon/392f1c34-b4d1-11e7-a589-109836a7cf3a/tmp95yvix.csv'
+                        #  default='https://bovec.dkrz.de/download/wpsoutputs/flyingpigeon/392f1c34-b4d1-11e7-a589-109836a7cf3a/tmp95yvix.csv'
                          ),
 
             LiteralInput("period", "Reference period",
@@ -147,7 +147,7 @@ class SDMcsvindicesProcess(Process):
         try:
             response.update_status('reading the arguments', 5)
             resources = archiveextract(
-                resource=rename_complexinputs(request.inputs['input_indices']))
+                resource=rename_complexinputs(request.inputs['resources']))
             period = request.inputs['period']
             period = period[0].data
             archive_format = request.inputs['archive_format'][0].data
