@@ -39,7 +39,7 @@ processes = [
     SDMgetindicesProcess(),
     SDMcsvindicesProcess(),
     SDMcsvProcess(),
-    #   SSDMallinoneProcess(),
+    SDMallinoneProcess(),
     WeatherregimesreanalyseProcess(),
     WeatherregimesprojectionProcess(),
     WeatherregimesmodelProcess(),

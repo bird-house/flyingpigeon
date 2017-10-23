@@ -19,6 +19,7 @@ from flyingpigeon.visualisation import pdfmerge, concat_images
 
 from flyingpigeon.log import init_process_logger
 
+import tempfile
 import logging
 LOGGER = logging.getLogger("PYWPS")
 

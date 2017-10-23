@@ -16,8 +16,10 @@ from flyingpigeon import sdm
 from flyingpigeon.sdm import _SDMINDICES_
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.visualisation import map_gbifoccurrences
+from flyingpigeon.visualisation import map_PAmask
 from flyingpigeon.visualisation import pdfmerge, concat_images
 
+import tempfile
 import logging
 LOGGER = logging.getLogger("PYWPS")
 
@@ -54,7 +56,7 @@ class SDMallinoneProcess(Process):
             #     crss=['EPSG:4326']
             #     )
 
-            LiteralInput("input_indices", "Indices",
+            LiteralInput("indices", "Indices",
                          abstract="Climate indices related to growth conditions \
                                     of tree species",
                          default='TG_JJA',
@@ -175,7 +177,7 @@ class SDMallinoneProcess(Process):
         try:
             LOGGER.info('reading the arguments')
             resources = archiveextract(
-                resource=rename_complexinputs(request.inputs['resources']))
+                resource=rename_complexinputs(request.inputs['resource']))
             taxon_name = request.inputs['taxon_name'][0].data
             bbox = [-180, -90, 180, 90]
             # bbox_obj = self.BBox.getValue()
@@ -186,7 +188,7 @@ class SDMallinoneProcess(Process):
             period = request.inputs['period']
             period = period[0].data
             indices = [inpt.data for inpt in request.inputs['indices']]
-            archive_format = request.inputs['archive_format']
+            archive_format = request.inputs['archive_format'][0].data
             LOGGER.exception("indices = %s for %s ", indices, taxon_name)
             LOGGER.info("bbox={0}".format(bbox))
         except:
@@ -229,7 +231,7 @@ class SDMallinoneProcess(Process):
         try:
             response.update_status('start calculation of climate indices for %s'
                             % indices, 30)
-            ncs_indices = sdm.get_indices(resources=resources, indices=indices)
+            ncs_indices = sdm.get_indices(resource=resources, indices=indices)
             LOGGER.info('indice calculation done')
         except:
             msg = 'failed to calculate indices'
@@ -244,46 +246,6 @@ class SDMallinoneProcess(Process):
             msg = 'failed to sort indices'
             LOGGER.exception(msg)
             indices_dic = {'dummy': []}
-
-
-        # try:
-        #     response.update_status('get domain', 30)
-        #     domains = set()
-        #     for resource in ncs_indices:
-        #         # get_domain works only if metadata are set in a correct way
-        #         domains = domains.union([basename(resource).split('_')[1]])
-        #     if len(domains) == 1:
-        #         domain = list(domains)[0]
-        #         LOGGER.exception('Domain %s found in indices files' % domain)
-        #     else:
-        #         LOGGER.exception('Not a single domain in indices files %s' % domains)
-        # except:
-        #     LOGGER.exception('failed to get domains')
-        #
-        # try:
-        #     response.update_status('generating the PA mask', 20)
-        #     PAmask = sdm.get_PAmask(coordinates=latlon, domain=domain)
-        #     LOGGER.info('PA mask sucessfully generated')
-        # except:
-        #     LOGGER.exception('failed to generate the PA mask')
-        #
-        # try:
-        #     response.update_status('Ploting PA mask', 25)
-        #     from flyingpigeon.visualisation import map_PAmask
-        #     PAmask_png = map_PAmask(PAmask)
-        # except:
-        #     LOGGER.exception('failed to plot the PA mask')
-        #
-        # try:
-        #     # sort indices
-        #     indices_dic = None
-        #     indices_dic = sdm.sort_indices(ncs_indices)
-        #     LOGGER.info('indice files sorted for %s Datasets' %
-        #                 len(indices_dic.keys()))
-        # except:
-        #     msg = 'failed to sort indices'
-        #     LOGGER.exception(msg)
-        #     raise Exception(msg)
 
         ncs_references = []
         species_files = []
