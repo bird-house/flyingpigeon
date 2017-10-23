@@ -176,20 +176,6 @@ class SDMcsvindicesProcess(Process):
         except:
             LOGGER.exception('failed to plot occurence map')
 
-        # try:
-        #     response.update_status('get domain', 30)
-        #     domains = set()
-        #     for indice in resources:
-        #         # get_domain works only if metadata are set in a correct way
-        #         domains = domains.union([basename(indice).split('_')[1]])
-        #     if len(domains) == 1:
-        #         domain = list(domains)[0]
-        #         LOGGER.info('Domain %s found in indices files' % domain)
-        #     else:
-        #         LOGGER.warn('NOT a single domain in indices files %s' % domains)
-        # except:
-        #     LOGGER.exception('failed to get domains')
-
         try:
             # sort indices
             indices_dic = sdm.sort_indices(resources)

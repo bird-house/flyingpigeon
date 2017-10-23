@@ -9,8 +9,13 @@ from pywps import Format
 from pywps.inout.literaltypes import AllowedValue
 from pywps.app.Common import Metadata
 
+from flyingpigeon import sdm
 from flyingpigeon.sdm import _SDMINDICES_
 from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.utils import archive, archiveextract, download
+from flyingpigeon.visualisation import map_gbifoccurrences
+from flyingpigeon.visualisation import map_PAmask
+from flyingpigeon.visualisation import pdfmerge, concat_images
 
 from flyingpigeon.log import init_process_logger
 
@@ -74,13 +79,6 @@ class SDMcsvProcess(Process):
         ]
         outputs = [
 
-            # self.output_csv = self.addComplexOutput(
-            #     identifier="output_csv",
-            #     title="Tree species table",
-            #     abstract="Extracted CSV file containing the tree species table",
-            #     formats=[{"mimeType": "text/csv"}],
-            #     asReference=True,
-            #     )
 
             ComplexOutput("output_gbif", "Graphic of GBIF coordinates",
                           abstract="PNG graphic file showing the presence of tree species\
@@ -158,14 +156,8 @@ class SDMcsvProcess(Process):
     def _handler(self, request, response):
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
-
-        from os.path import basename
-        from flyingpigeon import sdm
-        from flyingpigeon.utils import archive, archiveextract, download
-        from flyingpigeon.visualisation import map_gbifoccurrences
-        from flyingpigeon.visualisation import map_PAmask
-
         response.update_status('Start process', 0)
+
         try:
             LOGGER.info('reading the arguments')
             resources = archiveextract(
@@ -213,20 +205,6 @@ class SDMcsvProcess(Process):
             msg = 'failed to calculate indices'
             LOGGER.exception(msg)
             raise Exception(msg)
-
-        # try:
-        #     response.update_status('get domain', 30)
-        #     domains = set()
-        #     for resource in ncs_indices:
-        #         # get_domain works only if metadata are set in a correct way
-        #         domains = domains.union([basename(resource).split('_')[1]])
-        #     if len(domains) == 1:
-        #         domain = list(domains)[0]
-        #         LOGGER.debug('Domain %s found in indices files' % domain)
-        #     else:
-        #         LOGGER.error('Not a single domain in indices files %s' % domains)
-        # except:
-        #     LOGGER.exception('failed to get domains')
 
         try:
             # sort indices
@@ -335,7 +313,6 @@ class SDMcsvProcess(Process):
         #     raise Exception(msg)
 
         try:
-            from flyingpigeon.visualisation import pdfmerge, concat_images
             stat_infosconcat = pdfmerge(stat_infos)
             LOGGER.debug('pngs %s' % PAmask_pngs)
             PAmask_png = concat_images(PAmask_pngs, orientation='h')
