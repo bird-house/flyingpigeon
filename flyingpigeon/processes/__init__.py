@@ -29,6 +29,7 @@ from .wps_averager import AveragerProcess
 from .wps_subset_WFS import SubsetWFSProcess
 from .wps_averager_WFS import AveragerWFSProcess
 from .wps_ouranos_pub_indicators import OuranosPublicIndicatorProcess
+from .wps_ncmerge import NCMergeProcess
 
 processes = [
     ClippingProcess(),
@@ -62,6 +63,7 @@ processes = [
     SubsetWFSProcess(),
     AveragerWFSProcess(),
     OuranosPublicIndicatorProcess(),
+    NCMergeProcess(),
 ]
 
 """
