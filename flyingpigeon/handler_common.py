@@ -150,7 +150,8 @@ def wfs_common(request, response, mode, spatial_mode='wfs'):
                         nc.subset_typename = typename
                         nc.subset_featureid = features[i]
 
-                if spatial_mode == 'wfs':
+                if (spatial_mode == 'wfs') and \
+                   ('featureids' in request.inputs):
                     mv_name = '{0}_{1}.nc'.format(
                         os.path.basename(ops)[:-3], features[i])
                 else:
