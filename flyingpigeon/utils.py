@@ -1152,18 +1152,16 @@ class FreeMemory(object):
         return self._convert * self._swapu
 
 
-def guess_main_variable(ncdataset):
-    """Guess main variable in a NetCDF file.
+def guess_main_variables(ncdataset):
+    """Guess main variables in a NetCDF file.
 
     :param ncdataset: netCDF4.Dataset
 
-    :return str: name of main variable
+    :return list: names of main variables
 
     Notes
     -----
-    The main variable is the one with highest dimensionality, if there are
-    more than one, the one with larger size is the main variable. If there is
-    still a tie, the first one in ncdataset.variables is chosen. The
+    The main variables are the one with highest dimensionality and size. The
     time, lon, lat variables and variables that are defined as bounds are
     automatically ignored.
 
@@ -1180,19 +1178,22 @@ def guess_main_variable(ncdataset):
         var_candidates.append(var_name)
     var_candidates = list(set(var_candidates) - set(bnds_variables))
 
-    # Find main variable among the candidates
+    # Find main variables among the candidates
     nd = -1
     size = -1
+    main_variables = []
     for var_name in var_candidates:
         ncvar = ncdataset.variables[var_name]
         if len(ncvar.shape) > nd:
-            main_var = var_name
+            main_variables = [var_name]
             nd = len(ncvar.shape)
             size = ncvar.size
         elif (len(ncvar.shape) == nd) and (ncvar.size > size):
-            main_var = var_name
+            main_variables = [var_name]
             size = ncvar.size
-    return main_var
+        elif (len(ncvar.shape) == nd) and (ncvar.size == size):
+            main_variables.append(var_name)
+    return main_variables
 
 
 def opendap_or_download(resource, output_path=None, max_nbytes=1000000000):
