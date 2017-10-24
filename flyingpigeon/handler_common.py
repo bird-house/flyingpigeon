@@ -18,7 +18,7 @@ from flyingpigeon.utils import guess_main_variables, opendap_or_download
 json_format = get_format('JSON')
 
 
-def wfs_common(request, response, mode):
+def wfs_common(request, response, mode, spatial_mode='wfs'):
     """Common part of wps process for wfs operations.
 
     :param request: request for wps process handler
@@ -77,6 +77,11 @@ def wfs_common(request, response, mode):
                 new_geom['geom'] = new_geom['geom'].union(merge_geom['geom'])
             new_geom['properties'] = {'bbox': feature['bbox']}
             geom = new_geom
+    elif spatial_mode == 'bbox':
+        geom = [[request.inputs['lon0'][0].data,
+                 request.inputs['lat0'][0].data,
+                 request.inputs['lon1'][0].data,
+                 request.inputs['lat1'][0].data]]
     else:
         geom = [None]
 
@@ -107,6 +112,8 @@ def wfs_common(request, response, mode):
             for i, one_geom in enumerate(geom):
                 if one_geom is None:
                     ocgis_geom = None
+                elif spatial_mode == 'bbox':
+                    ocgis_geom = one_geom
                 else:
                     ocgis_geom = one_geom['geom']
                 if mode == 'averager':
@@ -138,17 +145,17 @@ def wfs_common(request, response, mode):
                 # Here, the global attribute 'subset_typename' and
                 # 'subset_featureid' are added to the NetCDF file to keep
                 # track of the feature used.
-                if geom != [None]:
+                if (geom != [None]) and (spatial_mode == 'wfs'):
                     with netCDF4.Dataset(ops, 'a') as nc:
                         nc.subset_typename = typename
                         nc.subset_featureid = features[i]
 
-                if geom == [None]:
-                    mv_name = '{0}_{1}.nc'.format(
-                        os.path.basename(ops)[:-3], 'subset')
-                else:
+                if spatial_mode == 'wfs':
                     mv_name = '{0}_{1}.nc'.format(
                         os.path.basename(ops)[:-3], features[i])
+                else:
+                    mv_name = '{0}_{1}.nc'.format(
+                        os.path.basename(ops)[:-3], 'subset')
 
                 mv_file = os.path.join(mv_dir, mv_name)
                 shutil.move(ops, mv_file)

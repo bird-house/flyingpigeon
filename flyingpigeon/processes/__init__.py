@@ -28,6 +28,8 @@ from .wps_subset import SubsetProcess
 from .wps_averager import AveragerProcess
 from .wps_subset_WFS import SubsetWFSProcess
 from .wps_averager_WFS import AveragerWFSProcess
+from .wps_subset_bbox import SubsetBboxProcess
+from .wps_averager_bbox import AveragerBboxProcess
 from .wps_ouranos_pub_indicators import OuranosPublicIndicatorProcess
 
 processes = [
@@ -61,6 +63,8 @@ processes = [
     AveragerProcess(),
     SubsetWFSProcess(),
     AveragerWFSProcess(),
+    SubsetBboxProcess(),
+    AveragerBboxProcess(),
     OuranosPublicIndicatorProcess(),
 ]
 
