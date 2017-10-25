@@ -165,6 +165,8 @@ class OuranosPublicIndicatorProcess(Process, object):
     def _handler(self, request, response):
         from flyingpigeon.utils import calc_grouping
 
+        env.OVERWRITE = True
+
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
@@ -238,7 +240,6 @@ class OuranosPublicIndicatorProcess(Process, object):
                     outfield.add_variable(dv.extract(), is_data=True)
 
         # Prepare the environment
-        env.OVERWRITE = True
         dir_output = abspath(curdir)
         prefix = str(uuid.uuid1())
         env.PREFIX = prefix
