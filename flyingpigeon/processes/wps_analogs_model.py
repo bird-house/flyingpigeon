@@ -364,7 +364,8 @@ class AnalogsmodelProcess(Process):
             # TODO: Add selection of the level. maybe bellow in call(..., level_range=[...,...])
 
             if type(resource) == list:
-                resource.sort()
+                #resource.sort()
+                resource = sorted(resource, key=lambda i: path.splitext(path.basename(i))[0])
             else:
                 resource=[resource]
 
