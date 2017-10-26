@@ -140,6 +140,7 @@ def get_level(resource, level):
         new_var = ds.createVariable('z%s' % level, var.dtype, dimensions=(dims[0], dims[2], dims[3]))
         # i = where(var[:]==level)
         new_var[:, :, :] = squeeze(var[:, 0, :, :])
+        new_var.setncatts({k: var.getncattr(k) for k in var.ncattrs()})
         ds.close()
         LOGGER.info('level %s extracted' % level)
         data = call(level_data, variable='z%s' % level)
