@@ -24,7 +24,7 @@ _PRESSUREDATA_ = [
 _EOBSVARIABLES_ = ['tg', 'tx', 'tn', 'rr']
 
 
-def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP'):
+def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP', timres='day'):
     """
     Fetches the reanalysis data (NCEP, 20CR or ERA_20C) to local file system
     :param start: int for start year to fetch source data
@@ -80,9 +80,15 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP'):
                         url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2/pressure/hgt.%s.nc' % (year)  # noqa
                 elif dataset == '20CRV2c':
                     if variable == 'prmsl':
-                        url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/monolevel/prmsl.%s.nc' % year  # noqa
+                        if timres == '6h':
+                            url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/monolevel/prmsl.%s.nc' % year  # noqa
+                        else:
+                            url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/Dailies/monolevel/prmsl.%s.nc' % year  # noqa
                     if 'z' in variable:
-                        url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/pressure/hgt.%s.nc' % (year)  # noqa
+                        if timres == '6h':
+                            url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/pressure/hgt.%s.nc' % (year)  # noqa
+                        else:
+                            url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/Dailies/pressure/hgt.%s.nc' % (year)  # noqa
                 else:
                     LOGGER.debug('Dataset %s not known' % dataset)
                 LOGGER.debug('url: %s' % url)
