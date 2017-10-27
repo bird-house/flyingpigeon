@@ -36,14 +36,14 @@ class AnalogsreanalyseProcess(Process):
                          allowed_values=_PRESSUREDATA_
                          ),
 
-            # self.BBox = self.addBBoxInput(
-            #   identifier="BBox",
-            #   title="Bounding Box",
-            #   abstract="coordinates to define the region to be analysed",
-            #   minOccurs=1,
-            #   maxOccurs=1,
-            #   crss=['EPSG:4326']
-            #   )
+            LiteralInput("timeres", "Reanalyses temporal resolution",
+                         abstract="Temporal resolution of the reanalyses (only for 20CRV2)",
+                         default="day",
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=1,
+                         allowed_values=['day', '6h']
+                         ),
 
             LiteralInput('BBox', 'Bounding Box',
                          data_type='string',
@@ -219,13 +219,13 @@ class AnalogsreanalyseProcess(Process):
             dateEn = request.inputs['dateEn'][0].data
             seasonwin = request.inputs['seasonwin'][0].data
             nanalog = request.inputs['nanalog'][0].data
+            timres = request.inputs['timeres'][0].data
 
             #bbox = [-80, 20, 50, 70]
             # TODO: Add checking for wrong cordinates and apply default if nesessary
             bbox=[]
             bboxStr = request.inputs['BBox'][0].data
             bboxStr = bboxStr.split(',')
-            #for i in bboxStr: bbox.append(int(i))
             bbox.append(float(bboxStr[0]))
             bbox.append(float(bboxStr[2]))
             bbox.append(float(bboxStr[1]))
@@ -335,7 +335,7 @@ class AnalogsreanalyseProcess(Process):
             model_nc = rl(start=start.year,
                           end=end.year,
                           dataset=model,
-                          variable=var)
+                          variable=var,timres=timres)
             LOGGER.info('reanalyses data fetched')
         except Exception:
             msg = 'failed to get reanalyses data'
@@ -347,27 +347,30 @@ class AnalogsreanalyseProcess(Process):
         LOGGER.debug("start and end time: %s - %s" % (start, end))
         time_range = [start, end]
 
-        # calc = [{'func': 'mean', 'name': var}]
-
         model_subset_tmp = call(resource=model_nc, variable=var,
-                                geom=bbox, spatial_wrapping='wrap', time_range=time_range, # calc=calc, calc_grouping=['day'],
+                                geom=bbox, spatial_wrapping='wrap', time_range=time_range,
                                 # conform_units_to=conform_units_to
                                 )
 
         # If dataset is 20CRV2 the 6 hourly file should be converted to daily.  
-        
-        if '20CRV2' in model:
-            from cdo import Cdo
-            import uuid
-            cdo = Cdo()
-            model_subset = '%s.nc' % uuid.uuid1()
-            tmp_f = '%s.nc' % uuid.uuid1()
+        # Option to use previously 6h data from cache (if any) and not download daily files.
 
-            cdo_op = getattr(cdo,'daymean')
-            cdo_op(input=model_subset_tmp, output=tmp_f)
-            sti = '00:00:00' 
-            cdo_op = getattr(cdo,'settime')
-            cdo_op(sti, input=tmp_f, output=model_subset)
+        if '20CRV2' in model:
+            if timres == '6h':
+                from cdo import Cdo
+                import uuid
+                cdo = Cdo()
+                model_subset = '%s.nc' % uuid.uuid1()
+                tmp_f = '%s.nc' % uuid.uuid1()
+
+                cdo_op = getattr(cdo,'daymean')
+                cdo_op(input=model_subset_tmp, output=tmp_f)
+                sti = '00:00:00' 
+                cdo_op = getattr(cdo,'settime')
+                cdo_op(sti, input=tmp_f, output=model_subset)
+                LOGGER.debug('File Converted from: %s to daily' % (timres))
+            else:
+                model_subset = model_subset_tmp
         else:
             model_subset = model_subset_tmp
 
@@ -519,7 +522,7 @@ class AnalogsreanalyseProcess(Process):
             LOGGER.exception(msg)
             raise Exception(msg)
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
-        
+
         response.update_status('preparing output', 70)
         # response.outputs['config'].storage = FileStorage()
         response.outputs['config'].file = config_file
