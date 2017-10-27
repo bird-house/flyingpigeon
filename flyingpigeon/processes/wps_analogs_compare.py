@@ -1,5 +1,6 @@
 from datetime import date
 from datetime import datetime as dt
+from datetime import time as dt_time
 import time  # performance test
 from os import path
 from tempfile import mkstemp
@@ -46,15 +47,18 @@ class AnalogscompareProcess(Process):
                          allowed_values=_PRESSUREDATA_
                          ),
 
-        # self.BBox = self.addBBoxInput(
-        #   identifier="BBox",
-        #   title="Bounding Box",
-        #   abstract="coordinates to define the region to be analysed",
-        #   minOccurs=1,
-        #   maxOccurs=1,
-        #   crss=['EPSG:4326']
-        #   )
-
+            LiteralInput('BBox', 'Bounding Box',
+                         data_type='string',
+                         abstract="Enter a bbox: min_lon, max_lon, min_lat, max_lat."
+                            " min_lon=Western longitude,"
+                            " max_lon=Eastern longitude,"
+                            " min_lat=Southern or northern latitude,"
+                            " max_lat=Northern or southern latitude."
+                            " For example: -80,50,20,70",
+                         min_occurs=1,
+                         max_occurs=1,
+                         default='-80,50,20,70',
+                         ),
 
             LiteralInput('dateSt', 'Start date of analysis period',
                          data_type='date',
@@ -90,7 +94,7 @@ class AnalogscompareProcess(Process):
 
             LiteralInput("normalize", "normalization",
                          abstract="Normalize by subtraction of annual cycle",
-                         default='base',
+                         default='None',
                          data_type='string',
                          min_occurs=1,
                          max_occurs=1,
@@ -161,6 +165,12 @@ class AnalogscompareProcess(Process):
                           as_reference=True,
                           ),
 
+            ComplexOutput("formated_analogs", "Formated Analogues File",
+                          abstract="Formated analogues file for viewer",
+                          supported_formats=[Format("text/plain")],
+                          as_reference=True,
+                          ),
+
             ComplexOutput('output_netcdf', 'Subsets for model',
                           abstract="Prepared netCDF file as input for weatherregime calculation",
                           as_reference=True,
@@ -173,12 +183,11 @@ class AnalogscompareProcess(Process):
                           supported_formats=[Format('application/x-netcdf')]
                           ),
 
-
-            # ComplexOutput("output_html", "Analogues Viewer html page",
-            #               abstract="Interactive visualization of calculated analogues",
-            #               data_formats=[Format("text/html")],
-            #               as_reference=True,
-            #               )
+            ComplexOutput("output", "Analogues Viewer html page",
+                          abstract="Interactive visualization of calculated analogues",
+                          supported_formats=[Format("text/html")],
+                          as_reference=True,
+                          ),
 
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",
@@ -217,13 +226,28 @@ class AnalogscompareProcess(Process):
 
         refSt = request.inputs['refSt'][0].data
         refEn = request.inputs['refEn'][0].data
-        dateSt = request.inputs['dataSt'][0].data
-        dateEn = request.inputs['dataEn'][0].data
+        dateSt = request.inputs['dateSt'][0].data
+        dateEn = request.inputs['dateEn'][0].data
+
+        # fix 31 December issue
+        refSt = dt.combine(refSt,dt_time(12,0))
+        refEn = dt.combine(refEn,dt_time(12,0))
+        dateSt = dt.combine(dateSt,dt_time(12,0))
+        dateEn = dt.combine(dateEn,dt_time(12,0))
+
         seasonwin = request.inputs['seasonwin'][0].data
         nanalog = request.inputs['nanalog'][0].data
-        bbox = [-80, 20, 50, 70]
+        # bbox = [-80, 20, 50, 70]
+        # TODO: Add checking for wrong cordinates and apply default if nesessary
+        bbox=[]
+        bboxStr = request.inputs['BBox'][0].data
+        bboxStr = bboxStr.split(',')
+        bbox.append(float(bboxStr[0]))
+        bbox.append(float(bboxStr[2]))
+        bbox.append(float(bboxStr[1]))
+        bbox.append(float(bboxStr[3]))
 
-        direction = self.getInputValues(identifier='direction')[0]
+        direction = request.inputs['direction'][0].data
         normalize = request.inputs['normalize'][0].data
         distance = request.inputs['dist'][0].data
         outformat = request.inputs['outformat'][0].data
@@ -234,15 +258,15 @@ class AnalogscompareProcess(Process):
 
         try:
             if direction == 're2mo':
-                anaSt = dt.strptime(dateSt[0], '%Y-%m-%d')
-                anaEn = dt.strptime(dateEn[0], '%Y-%m-%d')
-                refSt = dt.strptime(refSt[0], '%Y-%m-%d')
-                refEn = dt.strptime(refEn[0], '%Y-%m-%d')
+                anaSt = dateSt #dt.strptime(dateSt[0], '%Y-%m-%d')
+                anaEn = dateEn #dt.strptime(dateEn[0], '%Y-%m-%d')
+                refSt = refSt #dt.strptime(refSt[0], '%Y-%m-%d')
+                refEn = refEn #dt.strptime(refEn[0], '%Y-%m-%d')
             elif direction == 'mo2re':
-                anaSt = dt.strptime(refSt[0], '%Y-%m-%d')
-                anaEn = dt.strptime(refEn[0], '%Y-%m-%d')
-                refSt = dt.strptime(dateSt[0], '%Y-%m-%d')
-                refEn = dt.strptime(dateEn[0], '%Y-%m-%d')
+                anaSt = refSt #dt.strptime(refSt[0], '%Y-%m-%d')
+                anaEn = refEn #dt.strptime(refEn[0], '%Y-%m-%d')
+                refSt = dateSt #dt.strptime(dateSt[0], '%Y-%m-%d')
+                refEn = dateEn #dt.strptime(dateEn[0], '%Y-%m-%d')
             else:
                 LOGGER.exception('failed to find time periods for comparison direction')
         except:
@@ -261,16 +285,6 @@ class AnalogscompareProcess(Process):
             outformat = '.nc'
         else:
             LOGGER.exception('output format not valid')
-
-        # if bbox_obj is not None:
-        #     LOGGER.info("bbox_obj={0}".format(bbox_obj.coords))
-        #     bbox = [bbox_obj.coords[0][0],
-        #             bbox_obj.coords[0][1],
-        #             bbox_obj.coords[1][0],
-        #             bbox_obj.coords[1][1]]
-        #     LOGGER.info("bbox={0}".format(bbox))
-        # else:
-        #     bbox = None
 
         try:
             if model == 'NCEP':
@@ -299,7 +313,7 @@ class AnalogscompareProcess(Process):
             LOGGER.exception(msg)
             raise Exception(msg)
 
-        LOGGER.exception("init took %s seconds.", time.time() - start_time)
+        # LOGGER.exception("init took %s seconds.", time.time() - start_time)
         response.update_status('Read in the arguments', 5)
 
         #################
@@ -310,20 +324,21 @@ class AnalogscompareProcess(Process):
         try:
             nc_reanalyses = reanalyses(start=anaSt.year, end=anaEn.year,
                                        variable=var, dataset=model)
-            nc_subset = call(resource=nc_reanalyses, variable=var, geom=bbox)
-            LOGGER.exception("get_input_subset_model took %s seconds.", time.time() - start_time)
+            nc_subset = call(resource=nc_reanalyses, variable=var, geom=bbox, spatial_wrapping='wrap') # XXXXXX wrap
+            # LOGGER.exception("get_input_subset_model took %s seconds.", time.time() - start_time)
             response.update_status('**** Input data fetched', 10)
         except:
             msg = 'failed to fetch or subset input files'
             LOGGER.exception(msg)
             raise Exception(msg)
-
+        
         ########################
         # input data preperation
         ########################
         response.update_status('Start preparing input data', 12)
         start_time = time.time()  # mesure data preperation ...
-
+        # TODO: Check the callendars ! for model vs reanalyses.
+        # TODO: Check the units! model vs reanalyses.
         try:
             if direction == 're2mo':
                 try:
@@ -341,16 +356,18 @@ class AnalogscompareProcess(Process):
                                         geom=bbox,
                                         t_calendar='standard',
                                         # conform_units_to=conform_units_to,
-                                        # spatial_wrapping='wrap',
+                                        spatial_wrapping='wrap',
                                         regrid_destination=reanalyses_subset,
-                                        regrid_options='bil')
+                                        regrid_options='bil') # XXXXXXXXXXXX ADD WRAP rem calendar 
+                   # ISSUE: the regrided model has white border with null! Check it.
+                   # check t_calendar!
                 except:
                     msg = 'failed subset archive model'
                     LOGGER.exception(msg)
                     raise Exception(msg)
             else:
                 try:
-                    response.update_status('Preparing target data', 17)
+                    response.update_status('Preparing target data', 15)
                     var_target = get_variable(resource)
                     # var_simulation = get_variable(simulation)
                     model_subset = call(resource=resource, variable=var_target,
@@ -365,7 +382,7 @@ class AnalogscompareProcess(Process):
                     LOGGER.exception(msg)
                     raise Exception(msg)
                 try:
-                    response.update_status('Preparing simulation data', 15)
+                    response.update_status('Preparing simulation data', 17)
                     reanalyses_subset = call(resource=nc_subset,
                                              time_range=[anaSt, anaEn],
                                              regrid_destination=model_subset,
@@ -409,7 +426,8 @@ class AnalogscompareProcess(Process):
                                         archive, simulation,
                                         method=normalize)
             else:
-                seasoncyc_base, seasoncyc_sim = None
+                seasoncyc_base = None
+                seasoncyc_sim = None
         except:
             msg = 'failed to prepare seasonal cycle reference files'
             LOGGER.exception(msg)
@@ -419,13 +437,13 @@ class AnalogscompareProcess(Process):
         output_file = path.abspath(output)
         files = [path.abspath(archive), path.abspath(simulation), output_file]
 
-        LOGGER.exception("data preperation took %s seconds.", time.time() - start_time)
+        # LOGGER.exception("data preperation took %s seconds.", time.time() - start_time)
 
         ############################
         # generating the config file
         ############################
 
-        response.update_status('writing config file', 15)
+        response.update_status('writing config file', 18)
         start_time = time.time()  # measure write config ...
 
         try:
@@ -433,6 +451,8 @@ class AnalogscompareProcess(Process):
                 files=files,
                 seasoncyc_base=seasoncyc_base,
                 seasoncyc_sim=seasoncyc_sim,
+                base_id=model,
+                sim_id=model,
                 timewin=timewin,
                 varname=var,
                 seacyc=seacyc,
@@ -451,7 +471,7 @@ class AnalogscompareProcess(Process):
             LOGGER.exception(msg)
             raise Exception(msg)
 
-        LOGGER.exception("write_config took %s seconds.", time.time() - start_time)
+        # LOGGER.exception("write_config took %s seconds.", time.time() - start_time)
 
         #######################
         # CASTf90 call
@@ -482,16 +502,35 @@ class AnalogscompareProcess(Process):
 
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
 
-        response.update_status('preparting output', 99)
+        response.update_status('preparting output', 91)
 
-        response.outputs['config'] = config_output_url  # config_file )
+        #Stopper to keep twitcher results, for debug
+        # dummy=dummy
+
+        response.outputs['config'] = config_file #config_output_url  # config_file )
         response.outputs['analogs'] = output_file
         response.outputs['output_netcdf'] = simulation
         response.outputs['target_netcdf'] = archive
 
-        # response.outputs['output_html'] = output_av
+        ########################
+        # generate analog viewer
+        ########################
+
+        formated_analogs_file = analogs.reformat_analogs(output_file)
+        # response.outputs['formated_analogs'].storage = FileStorage()
+        response.outputs['formated_analogs'].file = formated_analogs_file
+        LOGGER.info('analogs reformated')
+        response.update_status('reformatted analog file', 95)
+
+        viewer_html = analogs.render_viewer(
+            # configfile=response.outputs['config'].get_url(),
+            configfile=config_file,
+            # datafile=response.outputs['formated_analogs'].get_url())
+            datafile=formated_analogs_file)
+        response.outputs['output'].file = viewer_html
+        response.update_status('Successfully generated analogs viewer', 99)
+        LOGGER.info('rendered pages: %s ', viewer_html)
 
         response.update_status('execution ended', 100)
         LOGGER.debug("total execution took %s seconds.", time.time() - process_start_time)
-        response.update_status('preparting output', 99)
         return response
