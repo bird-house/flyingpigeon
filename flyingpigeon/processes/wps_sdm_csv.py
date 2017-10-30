@@ -111,14 +111,14 @@ class SDMcsvProcess(Process):
                           as_reference=True,
                           ),
 
-            # ComplexOutput("output_prediction", "predicted growth conditions",
-            #               abstract="Archive containing files of the predicted\
-            #                          growth conditions",
-            #               supported_formats=[Format('application/x-tar'),
-            #                                  Format('application/zip')
-            #                                  ],
-            #               as_reference=True,
-            #               ),
+            ComplexOutput("output_prediction", "predicted growth conditions",
+                          abstract="Archive containing files of the predicted\
+                                     growth conditions",
+                          supported_formats=[Format('application/x-tar'),
+                                             Format('application/zip')
+                                             ],
+                          as_reference=True,
+                          ),
 
             ComplexOutput("output_info", "GAM statistics information",
                           abstract="Graphics and information of the learning statistics",
@@ -260,13 +260,13 @@ class SDMcsvProcess(Process):
                     msg = 'failed to train GAM for %s' % (key)
                     LOGGER.debug(msg)
 
-                # try:
-                #     prediction = sdm.get_prediction(gam_model, ncs)
-                #     response.update_status('prediction done', staus_nr + 7)
-                # except:
-                #     msg = 'failed to predict tree occurence'
-                #     LOGGER.exception(msg)
-                #     # raise Exception(msg)
+                try:
+                    prediction = sdm.get_prediction(gam_model, ncs)
+                    response.update_status('prediction done', staus_nr + 7)
+                except:
+                    msg = 'failed to predict tree occurence'
+                    LOGGER.exception(msg)
+                    # raise Exception(msg)
                 #
                 # try:
                 #     response.update_status('land sea mask for predicted data',  staus_nr + 8)
@@ -276,14 +276,14 @@ class SDMcsvProcess(Process):
                 #     prediction[mask is False] = nan
                 # except:
                 #     LOGGER.debug('failed to mask predicted data')
-                #
-                # try:
-                #     species_files.append(sdm.write_to_file(ncs[0], prediction))
-                #     LOGGER.info('Favourabillity written to file')
-                # except:
-                #     msg = 'failed to write species file'
-                #     LOGGER.debug(msg)
-                    # raise Exception(msg)
+
+                try:
+                    species_files.append(sdm.write_to_file(ncs[0], prediction))
+                    LOGGER.info('Favourabillity written to file')
+                except:
+                    msg = 'failed to write species file'
+                    LOGGER.debug(msg)
+                    raise Exception(msg)
 
             except:
                 msg = 'failed to process SDM chain for %s ' % key
@@ -305,13 +305,13 @@ class SDMcsvProcess(Process):
             LOGGER.exception(msg)
             archive_references = tempfile.mkstemp(suffix='.tar', prefix='foobar-', dir='.')
 
-        # try:
-        #     archive_predicion = archive(species_files, format=archive_format)
-        #     LOGGER.info('species_files added to archive')
-        # except:
-        #     msg = 'failed adding species_files indices to archive'
-        #     LOGGER.exception(msg)
-        #     raise Exception(msg)
+        try:
+            archive_prediction = archive(species_files, format=archive_format)
+            LOGGER.info('species_files added to archive')
+        except:
+            msg = 'failed adding species_files indices to archive'
+            LOGGER.exception(msg)
+            raise Exception(msg)
 
         try:
             stat_infosconcat = pdfmerge(stat_infos)
@@ -329,7 +329,7 @@ class SDMcsvProcess(Process):
         response.outputs['output_PA'].file = PAmask_png
         response.outputs['output_indices'].file = archive_indices
         response.outputs['output_reference'].file = archive_references
-        # response.outputs['archive_predicion'].file = archive_predicion
+        response.outputs['output_prediction'].file = archive_prediction
         response.outputs['output_info'].file = stat_infosconcat
 
         response.update_status('done', 100)
