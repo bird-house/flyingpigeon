@@ -384,7 +384,7 @@ class AnalogsreanalyseProcess(Process):
             z_var = ds.variables.pop(origvar)
             dims = z_var.dimensions
             new_var = ds.createVariable('z%s' % level, z_var.dtype, dimensions=(dims[0], dims[2], dims[3]))
-            new_var[:, :, :] = squeeze(var[:, 0, :, :])
+            new_var[:, :, :] = squeeze(z_var[:, 0, :, :])
             # new_var.setncatts({k: z_var.getncattr(k) for k in z_var.ncattrs()})
             ds.close()
             model_subset_tmp = call(inter_subset_tmp, variable='z%s' % level)
