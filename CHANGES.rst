@@ -1,10 +1,10 @@
 Releasenotes
 ************
 
-1.0.0 (2017-10-30)
+1.0.0 (2017-11-01)
 ==================
 
-* complet code adapted to pywps4
+* code adapted to pywps4
 * ocgis v2 depoyed
 * Tests for components
 * `Version published in Computers & Geosciences <http://www.sciencedirect.com/science/article/pii/S0098300416302801>`_
