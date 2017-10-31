@@ -24,7 +24,7 @@ _PRESSUREDATA_ = [
 _EOBSVARIABLES_ = ['tg', 'tx', 'tn', 'rr']
 
 
-def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP', timres='day'):
+def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP', timres='day', getlevel = True):
     """
     Fetches the reanalysis data (NCEP, 20CR or ERA_20C) to local file system
     :param start: int for start year to fetch source data
@@ -120,7 +120,7 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP', timres='day
         LOGGER.exception(msg)
         raise Exception(msg)
 
-    if level is None:
+    if (level is None) or (getlevel==False):
         data = obs_data
     else:
         LOGGER.info('get level: %s' % level)
@@ -146,7 +146,13 @@ def get_level(resource, level):
         new_var = ds.createVariable('z%s' % level, var.dtype, dimensions=(dims[0], dims[2], dims[3]))
         # i = where(var[:]==level)
         new_var[:, :, :] = squeeze(var[:, 0, :, :])
-        new_var.setncatts({k: var.getncattr(k) for k in var.ncattrs()})
+
+        # TODO: Here may be an error! in case of exception, dataset will not close!
+        # Exception arise for example for 20CRV2 data...
+        try:
+            new_var.setncatts({k: var.getncattr(k) for k in var.ncattrs()})
+        except:
+            LOGGER.info('Could not set attributes for z%s' % level)
         ds.close()
         LOGGER.info('level %s extracted' % level)
         data = call(level_data, variable='z%s' % level)
