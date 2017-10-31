@@ -4,6 +4,11 @@ from datetime import datetime as dt
 import time  # performance test
 import subprocess
 from subprocess import CalledProcessError
+import uuid
+
+from netCDF4 import Dataset
+
+from numpy import squeeze
 
 from pywps import Process
 from pywps import LiteralInput, LiteralOutput
@@ -17,6 +22,7 @@ from flyingpigeon.datafetch import reanalyses as rl
 from flyingpigeon.ocgis_module import call
 from flyingpigeon import analogs
 from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.utils import get_variable
 from flyingpigeon.log import init_process_logger
 
 import logging
@@ -223,7 +229,7 @@ class AnalogsreanalyseProcess(Process):
 
             #bbox = [-80, 20, 50, 70]
             # TODO: Add checking for wrong cordinates and apply default if nesessary
-            bbox=[]
+            bbox = []
             bboxStr = request.inputs['BBox'][0].data
             bboxStr = bboxStr.split(',')
             bbox.append(float(bboxStr[0]))
@@ -305,6 +311,7 @@ class AnalogsreanalyseProcess(Process):
 
         try:
             if model == 'NCEP':
+                getlevel = True
                 if 'z' in var:
                     level = var.strip('z')
                     conform_units_to = None
@@ -312,6 +319,7 @@ class AnalogsreanalyseProcess(Process):
                     level = None
                     conform_units_to = 'hPa'
             elif '20CRV2' in model:
+                getlevel = False
                 if 'z' in var:
                     level = var.strip('z')
                     conform_units_to = None
@@ -335,7 +343,7 @@ class AnalogsreanalyseProcess(Process):
             model_nc = rl(start=start.year,
                           end=end.year,
                           dataset=model,
-                          variable=var,timres=timres)
+                          variable=var,timres=timres,getlevel=getlevel)
             LOGGER.info('reanalyses data fetched')
         except Exception:
             msg = 'failed to get reanalyses data'
@@ -347,10 +355,44 @@ class AnalogsreanalyseProcess(Process):
         LOGGER.debug("start and end time: %s - %s" % (start, end))
         time_range = [start, end]
 
-        model_subset_tmp = call(resource=model_nc, variable=var,
-                                geom=bbox, spatial_wrapping='wrap', time_range=time_range,
-                                # conform_units_to=conform_units_to
-                                )
+
+        # For 20CRV2 geopotential height, daily dataset for 100 years is about 50 Gb
+        # So it makes sense, to operate it step-by-step
+        # TODO: need to create dictionary for such datasets (for models as well)
+        # TODO: benchmark the method bellow for NCEP z500 for 60 years
+
+        if ('20CRV2' in model) and ('z' in var): 
+            tmp_total = []
+            origvar = get_variable(model_nc)
+
+            for z in model_nc:
+                tmp_n = 'tmp_%s' % (uuid.uuid1()) 
+                b0=call(resource=z, variable=origvar, level_range=[int(level), int(level)],geom=bbox,
+                spatial_wrapping='wrap',prefix='levdom_'+os.path.basename(z)[0:-3]) 
+                tmp_total.append(b0)
+
+            tmp_total = sorted(tmp_total, key=lambda i: os.path.splitext(os.path.basename(i))[0])
+            inter_subset_tmp = call(resource=tmp_total, variable=origvar, time_range=time_range)
+
+            # Clean
+            for i in tmp_total:
+                tbr='rm -f %s' % (i) 
+                os.system(tbr)  
+
+            # Create new variable
+            ds = Dataset(inter_subset_tmp, mode='a')
+            z_var = ds.variables.pop(origvar)
+            dims = z_var.dimensions
+            new_var = ds.createVariable('z%s' % level, z_var.dtype, dimensions=(dims[0], dims[2], dims[3]))
+            new_var[:, :, :] = squeeze(var[:, 0, :, :])
+            # new_var.setncatts({k: z_var.getncattr(k) for k in z_var.ncattrs()})
+            ds.close()
+            model_subset_tmp = call(inter_subset_tmp, variable='z%s' % level)
+        else:
+            model_subset_tmp = call(resource=model_nc, variable=var,
+                                    geom=bbox, spatial_wrapping='wrap', time_range=time_range,
+                                    # conform_units_to=conform_units_to
+                                    )
 
         # If dataset is 20CRV2 the 6 hourly file should be converted to daily.  
         # Option to use previously 6h data from cache (if any) and not download daily files.
@@ -358,7 +400,7 @@ class AnalogsreanalyseProcess(Process):
         if '20CRV2' in model:
             if timres == '6h':
                 from cdo import Cdo
-                import uuid
+                
                 cdo = Cdo()
                 model_subset = '%s.nc' % uuid.uuid1()
                 tmp_f = '%s.nc' % uuid.uuid1()
@@ -522,7 +564,7 @@ class AnalogsreanalyseProcess(Process):
             LOGGER.exception(msg)
             raise Exception(msg)
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
-
+   
         response.update_status('preparing output', 70)
         # response.outputs['config'].storage = FileStorage()
         response.outputs['config'].file = config_file
