@@ -24,7 +24,7 @@ def has_Lambert_Conformal(resource):
 
 def call(resource=[], variable=None, dimension_map=None, agg_selection=True, calc=None,
          calc_grouping=None, conform_units_to=None, crs=None, memory_limit=None,  prefix=None,
-         regrid_destination=None, regrid_options='bil', level_range=None,
+         regrid_destination=None, regrid_options='bil', level_range=None, cdover='python',
          geom=None, output_format_options=None, search_radius_mult=2.,
          select_nearest=False, select_ugid=None, spatial_wrapping=None,
          t_calendar=None, time_region=None,
@@ -248,15 +248,23 @@ def call(resource=[], variable=None, dimension_map=None, agg_selection=True, cal
     ############################################
     if regrid_destination is not None:
         try:
-            from tempfile import mkstemp
-            from cdo import Cdo
-            cdo = Cdo()
-            output = '%s.nc' % uuid.uuid1()
-            remap = 'remap%s' % regrid_options
-            call = [op for op in dir(cdo) if remap in op]
-            cmd = "output = cdo.%s('%s',input='%s', output='%s')" \
-                  % (str(call[0]), regrid_destination, geom_file, output)
-            exec cmd
+            if (cdover=='system'):
+                from os import system
+                remap = 'remap%s' % regrid_options
+                output = '%s.nc' % uuid.uuid1()
+                comcdo = 'cdo -O %s,%s %s %s' % (remap,regrid_destination,geom_file,output)
+                system(comcdo)
+                # need to substitute by subprocess call
+            else:
+                from tempfile import mkstemp
+                from cdo import Cdo
+                cdo = Cdo()
+                output = '%s.nc' % uuid.uuid1()
+                remap = 'remap%s' % regrid_options
+                call = [op for op in dir(cdo) if remap in op]
+                cmd = "output = cdo.%s('%s',input='%s', output='%s')" \
+                      % (str(call[0]), regrid_destination, geom_file, output)
+                exec cmd
         except Exception as e:
             LOGGER.debug('failed to remap')
             raise
