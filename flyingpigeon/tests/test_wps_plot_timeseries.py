@@ -6,6 +6,7 @@ from pywps.tests import assert_response_success
 from .common import TESTDATA, client_for, CFG_FILE
 from flyingpigeon.processes import PlottimeseriesProcess
 
+
 @pytest.mark.slow
 def test_wps_plot_timeseries():
     client = client_for(Service(processes=[PlottimeseriesProcess()], cfgfiles=CFG_FILE))

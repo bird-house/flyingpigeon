@@ -334,7 +334,7 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, file_extension='
                 # ds_yr = ds.resample('12M', ).mean()   # yearly mean loffset='6M'
                 df[key] = ds
 
-            except:
+            except Exception:
                 LOGGER.exception('failed to calculate timeseries for %s ' % (key))
 
         frq = get_frequency(resouces[0])
@@ -372,7 +372,7 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, file_extension='
             q66 = df_smooth.quantile([0.66], axis=1, )  # numeric_only=False)
             q95 = df_smooth.quantile([0.90], axis=1, )  # numeric_only=False)
             LOGGER.info('quantile calculated for all input data')
-        except:
+        except Exception:
             LOGGER.exception('failed to calculate quantiles')
 
         try:
@@ -391,10 +391,10 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, file_extension='
             output_png = fig2plot(fig=fig, file_extension=file_extension)
             plt.close()
             LOGGER.debug('timeseries uncertainty plot done for %s' % variable)
-        except:
-            LOGGER.exception('failed to calculate quantiles')
-    except:
-        LOGGER.exception('uncertainty plot failed for %s' % variable)
+        except Exception as err:
+            raise Exception('failed to calculate quantiles. %s' % err.message)
+    except Exception:
+        LOGGER.exception('uncertainty plot failed for %s.' % variable)
         _, output_png = mkstemp(dir='.', suffix='.png')
     return output_png
 
