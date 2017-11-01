@@ -367,7 +367,7 @@ class AnalogsreanalyseProcess(Process):
 
             for z in model_nc:
                 tmp_n = 'tmp_%s' % (uuid.uuid1()) 
-                b0=call(resource=z, variable=origvar, level_range=[int(level), int(level)],geom=bbox,
+                b0=call(resource=z, variable=origvar, level_range=[int(level), int(level)], geom=bbox,
                 spatial_wrapping='wrap',prefix='levdom_'+os.path.basename(z)[0:-3]) 
                 tmp_total.append(b0)
 
