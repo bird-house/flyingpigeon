@@ -23,14 +23,14 @@ from .wps_analogs_viewer import AnalogsviewerProcess
 from .wps_plot_timeseries import PlottimeseriesProcess
 from .wps_segetalflora import SegetalfloraProcess
 from .wps_spatial_analog import SpatialAnalogProcess
-from .wps_map_spatial_analog import MapSpatialAnalogProcess#  LandseamaskProcess(),
+from .wps_map_spatial_analog import MapSpatialAnalogProcess#
 
 processes = [
     ClippingProcess(),
     ClipcontinentProcess(),
     ClipregionseuropeProcess(),
     PointinspectionProcess(),
-    # LandseamaskProcess(),
+    #    LandseamaskProcess(),
     #    FactsheetProcess(),
     FetchProcess(),
     IndicespercentiledaysProcess(),
@@ -47,11 +47,11 @@ processes = [
     AnalogsmodelProcess(),
     #    AnalogscompareProcess(),
     AnalogsviewerProcess(),
-    #   RobustnessProcess(),
+    #    RobustnessProcess(),
     PlottimeseriesProcess(),
     SegetalfloraProcess(),
-    #   SpatialAnalogProcess(),
-    #   MapSpatialAnalogProcess(),
+    #    SpatialAnalogProcess(),
+    #    MapSpatialAnalogProcess(),
 ]
 
 """
