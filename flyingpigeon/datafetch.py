@@ -34,7 +34,7 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP', timres='day
     :return list: list of path/files.nc
     """
     # used for NETCDF convertion
-    from os import path
+    from os import path, system
     from flyingpigeon.ocgis_module import call
     from shutil import move
     # used for NETCDF convertion
@@ -102,6 +102,7 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP', timres='day
                 try:
                     p, f = path.split(path.abspath(df))
                     LOGGER.debug("path = %s , file %s " % (p, f))
+                    # May be an issue if several users are working at the same time
                     move(df, f)
                     conv = call(resource=f,
                                 output_format_options={'data_model': 'NETCDF4_CLASSIC'},
@@ -109,6 +110,10 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP', timres='day
                                 prefix=f.replace('.nc', ''))
                     obs_data.append(conv)
                     LOGGER.debug('file %s to NETCDF4_CLASSIC converted' % conv)
+                    # Cleaning, could be 50gb... for each (!) user
+                    # TODO Check how links work
+                    cmdrm = 'rm -f %s' % (f)
+                    system(cmdrm)
                 except:
                     LOGGER.exception('failed to convert into NETCDF4_CLASSIC')
             except:
