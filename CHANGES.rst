@@ -13,7 +13,6 @@ Set of processes
 ################
 
 Base processes:
-
 * Fetch resources
 * Fetch GBIF Species Coordination
 * Subset Polygons
@@ -22,12 +21,10 @@ Base processes:
 * Climate Indices Calculation
 
 Climate Impact:
-
 * Species Distribution Model
 * Segetal Flora Calculation
 
 Extreme Weather Events Assessment:
-
 * Analogs of Circulation for reanalyzes Datasets
 * Analogs of Circulation for model data
 * Analogs of Circulation Comparison between reanalyzes and climate model data
