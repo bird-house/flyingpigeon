@@ -1,5 +1,8 @@
 import os
 
+from flyingpigeon.utils import get_variable, get_time
+from flyingpigeon.utils import archive, archiveextract
+
 from flyingpigeon import config
 from flyingpigeon import templating
 from flyingpigeon.utils import prepare_static_folder
@@ -329,27 +332,178 @@ def render_viewer(configfile, datafile):
     else:
         return page
 
-def plot_analogs(configfile, **kwargs):
+def plot_analogs(configfile='config.txt', simday = 'all', **kwargs):
     """
     """
-    import uuid
+    from matplotlib import use
+    use('Agg')
+    from matplotlib import pyplot as plt
+    from matplotlib.colors import Normalize
+    from datetime import datetime as dt
+    from netCDF4 import Dataset, MFDataset
 
-    if (configfile is not None):
+    import uuid
+    import numpy as np
+    from flyingpigeon.visualisation import pdfmerge
+
+    simoutpdf='Analogs.pdf'
+
+    if (os.path.isfile(configfile)==True):
+        curdir, confile = os.path.split(os.path.abspath(configfile))
+        #print 'Curdir: ', curdir
+        #print 'confile: ', confile
+        
         lines=[line.rstrip('\n') for line in open(configfile)]
         for i in lines:
             if 'archivefile' in i: arcfile = i.split('"')[1]
             if 'simulationfile' in i: simfile = i.split('"')[1]
             if 'outputfile' in i: analogfile = i.split('"')[1]
             if 'nanalog' in i : nanalog = int(i.split(' =')[1])
-        prefix = '%s.txt' % (uuid.uuid1())
-        form_an_file = reformat_analogs(configfile, prefix = prefix)
+            if 'varname' in i: varname = i.split('"')[1] 
+            if 'predictordom' in i: domain = i.split('"')[1]
 
+        analogfile = curdir +'/' + analogfile
+        arcfile = curdir + '/' + arcfile
+        simfile = curdir + '/' + simfile
+
+        arc_times = get_time(arcfile)
+        sim_times = get_time(simfile)
+
+        sim_dataset = Dataset(simfile)
+        simvar = sim_dataset.variables[varname][:]
+        # TODO: check other names for lat/lon
+        lon = sim_dataset.variables['lon'][:]
+        lat = sim_dataset.variables['lat'][:]
+        sim_dataset.close()
+
+
+        outlist=[]
+        simmin=np.min(simvar)
+        simmax=np.max(simvar)
+
+        cont=[line.rstrip('\n') for line in open(analogfile)]
+
+        for idx, item in enumerate(cont[1:]):
+            ana = item.split()
+            sim_date = dt.strptime(ana[0],'%Y%m%d')
+            an_dates=[]
+            for dat in ana[1:1+nanalog]: an_dates.append(dt.strptime(dat,'%Y%m%d'))
+        
+            c_dists = ana[1+nanalog:1+2*nanalog]
+            c_cors = ana[1+2*nanalog:]
+            dists = np.zeros((nanalog),dtype=float)
+            cors = np.zeros((nanalog),dtype=float)
+      
+            for i in range(0,nanalog):
+                dists[i] = float(c_dists[i])
+                cors[i] = float(c_cors[i])
+            min_dist = np.min(dists)
+            max_corr = np.max(cors)
+            w_dist=min_dist/dists
+            w_corr=cors/max_corr
+
+            sim_index = idx # day by day
+    
+            tmp_i=[]
+            for i in arc_times:
+                tmp_z = '%s-%s-%s' % (i.year, i.month, i.day)
+                tmp_i.append(tmp_z)
+      
+            arc_index=[]
+    
+            for arc in an_dates:
+                arc_date_temp = '%s-%s-%s' % (arc.year, arc.month, arc.day)
+                arc_index.append(tmp_i.index(arc_date_temp))
+            print arc_index
+    
+            # PLOT SIM ====================================
+            # TODO put to flyingpigeon.visualisation
+
+            plt.clf()
+            fig = plt.gcf()
+            fig.set_size_inches(20.5, 10.5, forward=True)
+ 
+            norm = Normalize(vmin=simmin, vmax=simmax)
+
+            cs = plt.contourf(lon, lat, simvar[sim_index,:,:], 30, extend='both',cmap=plt.cm.RdBu_r,vmin=simmin, vmax=simmax, norm=norm)
+            cb = plt.colorbar(cs, norm=norm, boundaries=(simmin,simmax) )
+            cs2 = plt.contour(lon, lat, simvar[sim_index,:,:],10, linewidths=1, cmap=plt.cm.bwr, vmin=simmin, vmax=simmax)
+
+            plt.title('Simulation Day: '+ana[0])
+            output_file='sim_'+ana[0]+'.pdf'
+            plt.savefig(output_file)
+            outlist.append(str(output_file))
+
+            # PLOT analogs ====================================    
+            arc_dataset = Dataset(arcfile)
+            arcvar = arc_dataset.variables[varname][:]
+            arc_dataset.close()
+    
+            mean_ana = np.zeros((len(arcvar[0,:,0]),len(arcvar[0,0,:])),dtype=float)
+            for ida, art in enumerate(arc_index): mean_ana=mean_ana+arcvar[art,:,:]
+    
+            mean_ana = mean_ana/nanalog
+    
+            plt.clf()
+            fig = plt.gcf()
+            fig.set_size_inches(20.5, 10.5, forward=True)
+            cs = plt.contourf(lon, lat, mean_ana, 30, extend='both',cmap=plt.cm.RdBu_r,vmin=simmin, vmax=simmax, norm=norm)
+            cb = plt.colorbar(cs, norm=norm, boundaries=(simmin,simmax) )
+            cs2 = plt.contour(lon, lat, mean_ana ,10, linewidths=1, cmap=plt.cm.bwr, vmin=simmin, vmax=simmax)
+
+            plt.title('Mean analogs for Day: '+ana[0])
+            output_file='ana_'+ana[0]+'.pdf'
+            plt.savefig(output_file)
+            outlist.append(str(output_file))
+    
+            # PLOT analogs dist weighted ====================================
+            mean_ana = np.zeros((len(arcvar[0,:,0]),len(arcvar[0,0,:])),dtype=float)
+            for ida, art in enumerate(arc_index):
+                mean_ana=mean_ana+arcvar[art,:,:]*w_dist[ida]
+    
+            mean_ana = mean_ana/sum(w_dist)
+    
+            plt.clf()
+            fig = plt.gcf()
+            fig.set_size_inches(20.5, 10.5, forward=True)
+            cs = plt.contourf(lon, lat, mean_ana, 30, extend='both',cmap=plt.cm.RdBu_r,vmin=simmin, vmax=simmax, norm=norm)
+            cb = plt.colorbar(cs, norm=norm, boundaries=(simmin,simmax) )
+            cs2 = plt.contour(lon, lat, mean_ana ,10, linewidths=1, cmap=plt.cm.bwr, vmin=simmin, vmax=simmax)
+
+            plt.title('Mean dist-weighted analogs for Day: '+ana[0])
+            output_file='ana_wd_'+ana[0]+'.pdf'
+            plt.savefig(output_file)
+            outlist.append(str(output_file))
+       
+            # PLOT analogs corr weighted ====================================
+            mean_ana = np.zeros((len(arcvar[0,:,0]),len(arcvar[0,0,:])),dtype=float)
+            for ida, art in enumerate(arc_index):
+                mean_ana=mean_ana+arcvar[art,:,:]*w_corr[ida]
+    
+            mean_ana = mean_ana/sum(w_corr)
+    
+            plt.clf()
+            fig = plt.gcf()
+            fig.set_size_inches(20.5, 10.5, forward=True)
+            cs = plt.contourf(lon, lat, mean_ana, 30, extend='both',cmap=plt.cm.RdBu_r,vmin=simmin, vmax=simmax, norm=norm)
+            cb = plt.colorbar(cs, norm=norm, boundaries=(simmin,simmax) )
+            cs2 = plt.contour(lon, lat, mean_ana ,10, linewidths=1, cmap=plt.cm.bwr, vmin=simmin, vmax=simmax)
+
+            plt.title('Mean corr-weighted analogs for Day: '+ana[0])
+            output_file='ana_cr_'+ana[0]+'.pdf'
+            plt.savefig(output_file)
+            outlist.append(str(output_file))
+
+        simoutpdf=pdfmerge(outlist)
+    # get the information from config file:
+    # netcdf files, period, Nanalogs, ouput analogs 
 
     # get the information from config file:
     # netcdf files, period, Nanalogs, ouput analogs 
     else:
-        bla=bla
+        simoutpdf='Analogs.pdf'
+        # TODO: call this func with analogfile = '..', 
+        # arguments came from kwargs
         # need to prescribe all input info - to use with external analogs results.
         # check kwargs: ncfiles, N analogs (?), periods, etc 
-
-    return analogs_maps
+    return simoutpdf
