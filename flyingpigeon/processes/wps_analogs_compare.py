@@ -369,19 +369,14 @@ class AnalogscompareProcess(Process):
                 origvar = get_variable(nc_reanalyses)
 
                 for z in nc_reanalyses:
-                    tmp_n = 'tmp_%s' % (uuid.uuid1()) 
+                    #tmp_n = 'tmp_%s' % (uuid.uuid1()) 
                     b0=call(resource=z, variable=origvar, level_range=[int(level), int(level)], geom=bbox,
                     spatial_wrapping='wrap',prefix='levdom_'+path.basename(z)[0:-3]) 
                     tmp_total.append(b0)
 
                 tmp_total = sorted(tmp_total, key=lambda i: path.splitext(path.basename(i))[0])
                 inter_subset_tmp = call(resource=tmp_total, variable=origvar, time_range=r_time_range)
-
-                # Clean
-                for i in tmp_total:
-                    tbr='rm -f %s' % (i) 
-                    #system(tbr)  
-
+          
                 # Create new variable
                 ds = Dataset(inter_subset_tmp, mode='a')
                 z_var = ds.variables.pop(origvar)
@@ -391,6 +386,13 @@ class AnalogscompareProcess(Process):
                 # new_var.setncatts({k: z_var.getncattr(k) for k in z_var.ncattrs()})
                 ds.close()
                 nc_subset = call(inter_subset_tmp, variable='z%s' % level)
+                # Clean
+                for i in tmp_total:
+                    tbr='rm -f %s' % (i)
+                    system(tbr) 
+                #for i in inter_subset_tmp
+                tbr='rm -f %s' % (inter_subset_tmp)
+                system(tbr)
             else:
                 nc_subset = call(resource=nc_reanalyses, variable=var,
                                  geom=bbox, spatial_wrapping='wrap', time_range=r_time_range,
@@ -468,25 +470,29 @@ class AnalogscompareProcess(Process):
             else:
                 level_range = [int(m_level), int(m_level)]
 
+            ds.close()
+
             for z in resource:
                 tmp_n='tmp_%s' % (uuid.uuid1()) 
                 # select level and regrid
                 b0=call(resource=z, variable=modvar, level_range=level_range,
-                        spatial_wrapping='wrap', #cdover='system',
-                        regrid_destination=nc_reanalyses[0], regrid_options='bil', prefix=tmp_n) 
+                        spatial_wrapping='wrap', cdover='system',
+                        regrid_destination=nc_reanalyses[0], regrid_options='bil', prefix=tmp_n)
+
                 # select domain
                 b01=call(resource=b0, geom=bbox, spatial_wrapping='wrap', prefix='levregr_'+path.basename(z)[0:-3])
                 tbr='rm -f %s' % (b0)
-                #system(tbr)
-                tbr='rm -f %s' % (tmp_n) 
-                #system(tbr)
+                system(tbr)
+                tbr='rm -f %s.nc' % (tmp_n) 
+                system(tbr)
                 # get full resource
                 m_total.append(b01)
-            ds.close()
+
             model_subset = call(m_total, time_range=m_time_range)
+
             for i in m_total:
                 tbr='rm -f %s' % (i)
-                #system(tbr)  
+                system(tbr)  
 
             if m_level is not None:
                 # Create new variable in model set
