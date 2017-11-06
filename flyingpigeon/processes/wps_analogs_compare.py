@@ -168,6 +168,12 @@ class AnalogscompareProcess(Process):
                          ),
         ]
         outputs = [
+            ComplexOutput("analog_pdf", "Maps with mean analogs and simulation",
+                          abstract="Analogs Maps",
+                          supported_formats=[Format('image/pdf')],
+                          as_reference=True,
+                          ),
+
             ComplexOutput("config", "Config File",
                           abstract="Config file used for the Fortran process",
                           supported_formats=[Format("text/plain")],
@@ -690,10 +696,11 @@ class AnalogscompareProcess(Process):
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
 
         response.update_status('preparting output', 91)
+        analogs_pdf = analogs.plot_analogs(configfile=config_file)
 
         # Stopper to keep twitcher results, for debug
         # dummy=dummy
-
+        response.outputs['analog_pdf'].file = analogs_pdf 
         response.outputs['config'].file = config_file #config_output_url  # config_file )
         response.outputs['analogs'].file = output_file
         response.outputs['output_netcdf'].file = simulation
