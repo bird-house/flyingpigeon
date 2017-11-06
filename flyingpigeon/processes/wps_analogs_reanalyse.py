@@ -149,6 +149,12 @@ class AnalogsreanalyseProcess(Process):
         ]
 
         outputs = [
+            ComplexOutput("analog_pdf", "Maps with mean analogs and simulation",
+                          abstract="Analogs Maps",
+                          supported_formats=[Format('image/pdf')],
+                          as_reference=True,
+                          ),
+
             ComplexOutput("config", "Config File",
                           abstract="Config file used for the Fortran process",
                           supported_formats=[Format("text/plain")],
@@ -564,9 +570,11 @@ class AnalogsreanalyseProcess(Process):
             LOGGER.exception(msg)
             raise Exception(msg)
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
-   
+
+        analogs_pdf = analogs.plot_analogs(configfile=config_file)   
         response.update_status('preparing output', 70)
         # response.outputs['config'].storage = FileStorage()
+        response.outputs['analog_pdf'].file = analogs_pdf 
         response.outputs['config'].file = config_file
         response.outputs['analogs'].file = output_file
         response.outputs['output_netcdf'].file = simulation
