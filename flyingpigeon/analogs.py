@@ -242,7 +242,7 @@ def config_edits(configfile):
     return configfile
 
 
-def reformat_analogs(analogs):
+def reformat_analogs(analogs, prefix = 'modified-analogfile.tsv'):
     """
     Reformats analogs results file for analogues viewer code.
 
@@ -293,7 +293,7 @@ def reformat_analogs(analogs):
         df_all.index.name = 'dateRef'
 
         # save to tsv file
-        analogs_mod = 'modified-analogfile.tsv'
+        analogs_mod = prefix
         df_all.to_csv(analogs_mod, sep='\t')
         LOGGER.info('successfully reformatted analog file')
     except Exception:
@@ -328,3 +328,28 @@ def render_viewer(configfile, datafile):
         raise Exception(msg)
     else:
         return page
+
+def plot_analogs(configfile, **kwargs):
+    """
+    """
+    import uuid
+
+    if (configfile is not None):
+        lines=[line.rstrip('\n') for line in open(configfile)]
+        for i in lines:
+            if 'archivefile' in i: arcfile = i.split('"')[1]
+            if 'simulationfile' in i: simfile = i.split('"')[1]
+            if 'outputfile' in i: analogfile = i.split('"')[1]
+            if 'nanalog' in i : nanalog = int(i.split(' =')[1])
+        prefix = '%s.txt' % (uuid.uuid1())
+        form_an_file = reformat_analogs(configfile, prefix = prefix)
+
+
+    # get the information from config file:
+    # netcdf files, period, Nanalogs, ouput analogs 
+    else:
+        bla=bla
+        # need to prescribe all input info - to use with external analogs results.
+        # check kwargs: ncfiles, N analogs (?), periods, etc 
+
+    return analogs_maps
