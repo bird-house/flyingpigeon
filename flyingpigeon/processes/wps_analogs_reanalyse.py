@@ -174,7 +174,13 @@ class AnalogsreanalyseProcess(Process):
                           ),
 
             ComplexOutput('output_netcdf', 'Subsets for one dataset',
-                          abstract="Prepared netCDF file as input for weatherregime calculation",
+                          abstract="Prepared netCDF file as input for simulation (as input for weatherregime calculation)",
+                          as_reference=True,
+                          supported_formats=[Format('application/x-netcdf')]
+                          ),
+
+            ComplexOutput('target_netcdf', 'Subsets for one dataset',
+                          abstract="Prepared netCDF file as input for archive",
                           as_reference=True,
                           supported_formats=[Format('application/x-netcdf')]
                           ),
@@ -578,7 +584,7 @@ class AnalogsreanalyseProcess(Process):
         response.outputs['config'].file = config_file
         response.outputs['analogs'].file = output_file
         response.outputs['output_netcdf'].file = simulation
-
+        response.outputs['target_netcdf'].file = archive
         ########################
         # generate analog viewer
         ########################
