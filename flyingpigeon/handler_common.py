@@ -38,7 +38,10 @@ def wfs_common(request, response, mode, spatial_mode='wfs'):
         # Adding a maximum file size from a server config file would
         # be possible here...
         try:
-            nc_file = opendap_or_download(one_resource.data, '/tmp')
+            nc_file = opendap_or_download(
+                one_resource.data,
+                auth_tkt_cookie=request.http_request.cookies,
+                output_path='/tmp')
         except:
             raise Exception(traceback.format_exc())
         list_of_files.append(nc_file)
