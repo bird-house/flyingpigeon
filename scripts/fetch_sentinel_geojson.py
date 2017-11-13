@@ -18,6 +18,7 @@ from ocgis import GeomCabinetIterator
 import json
 from flyingpigeon import config
 
+/home/nils/data/transfrontalier/transfrontalier.shp
 gci = GeomCabinetIterator(path=join(sh_path, 'countries.shp'))
 
 for row in gci:
