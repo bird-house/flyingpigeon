@@ -462,7 +462,7 @@ def plot_analogs(configfile='config.txt', simday = 'all', **kwargs):
             output_file_name = 'sim_'+ana[0]+'.pdf'
             output_file = pdf_from_analog(lon=lon, lat=lat, data=simvar[sim_index,:,:],
                                   vmin=simmin, vmax=simmax, Nlin=Nlin, domain=domain,
-                                  output = output_file_name, title = sim_title)
+                                  output=output_file_name, title=sim_title)
             outlist.append(str(output_file))
 
 
@@ -480,10 +480,30 @@ def plot_analogs(configfile='config.txt', simday = 'all', **kwargs):
             an_title = 'Mean analogs for Day: '+ana[0]
             an_output_file = pdf_from_analog(lon=lon, lat=lat, data=mean_ana,
                                           vmin=simmin, vmax=simmax, Nlin=Nlin, domain=domain,
-                                          output = output_an_file_name, title = an_title)
+                                          output=output_an_file_name, title=an_title)
             outlist.append(str(an_output_file))
 
             # TODO: Plot Best and worst analogs by dist and corr
+
+
+            # PLOT BEST (first) analog
+    
+            output_ban_file_name = 'bana_'+ana[0]+'.pdf' #PDF!!
+            ban_title = 'BEST analog for Day: '+ana[0]
+            ban_output_file = pdf_from_analog(lon=lon, lat=lat, data=arcvar[arc_index[0]],
+                                          vmin=simmin, vmax=simmax, Nlin=Nlin, domain=domain,
+                                          output=output_ban_file_name, title=ban_title)
+            outlist.append(str(ban_output_file))
+
+    
+            # PLOT WORST (last) analog
+    
+            output_wan_file_name = 'wana_'+ana[0]+'.pdf' #PDF!!
+            wan_title = 'LAST analog for Day: '+ana[0]
+            wan_output_file = pdf_from_analog(lon=lon, lat=lat, data=arcvar[arc_index[-1]],
+                                          vmin=simmin, vmax=simmax, Nlin=Nlin, domain=domain,
+                                          output=output_wan_file_name, title=wan_title)
+            outlist.append(str(wan_output_file))
 
             """    
             # PLOT analogs dist weighted ====================================
