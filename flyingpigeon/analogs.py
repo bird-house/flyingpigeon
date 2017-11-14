@@ -20,12 +20,12 @@ import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
-def pdf_from_analog(lon, lat, data, vmin, vmax, Nlin=30, domain=[-80,50,20,70], output = 'ana_map.pdf', title='Analogs'):
+def pdf_from_analog(lon, lat, data, vmin, vmax, Nlin=30, domain=[-80,50,20,70], output='ana_map.pdf', title='Analogs'):
     fig = plt.figure()
     fig.set_size_inches(18.5, 10.5, forward=True)
 
-    ax = plt.axes(projection = ccrs.PlateCarree())
-    ax.set_extent(domain, crs = ccrs.PlateCarree())
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    ax.set_extent(domain, crs=ccrs.PlateCarree())
     ax.coastlines(linewidth=0.8)
     ax.gridlines()
         
@@ -41,7 +41,7 @@ def pdf_from_analog(lon, lat, data, vmin, vmax, Nlin=30, domain=[-80,50,20,70], 
     plt.title(title)
     plt.tight_layout()
 
-    pdffilename=output
+    pdffilename = output
     plt.savefig(pdffilename)
     fig.clf()
     plt.close(fig)
@@ -368,7 +368,7 @@ def render_viewer(configfile, datafile):
     else:
         return page
 
-def plot_analogs(configfile='config.txt', simday = 'all', **kwargs):
+def plot_analogs(configfile='config.txt', simday='all', **kwargs):
     """
     """
 
@@ -376,12 +376,12 @@ def plot_analogs(configfile='config.txt', simday = 'all', **kwargs):
     from netCDF4 import Dataset, MFDataset
 
     import uuid
-    # import numpy as np
+
     from flyingpigeon.visualisation import pdfmerge
 
     simoutpdf='Analogs.pdf'
 
-    if (os.path.isfile(configfile)==True):
+    if (os.path.isfile(configfile) == True):
         curdir, confile = os.path.split(os.path.abspath(configfile))
         
         lines=[line.rstrip('\n') for line in open(configfile)]
@@ -414,7 +414,7 @@ def plot_analogs(configfile='config.txt', simday = 'all', **kwargs):
         except:
             domain = [lon[0],lon[-1],lat[-1],lat[0]]
 
-        outlist=[]
+        outlist = []
         total_simmin = np.min(simvar)
         total_simmax = np.max(simvar)
 
@@ -443,23 +443,23 @@ def plot_analogs(configfile='config.txt', simday = 'all', **kwargs):
 
             sim_index = idx # day by day
     
-            tmp_i=[]
+            tmp_i = []
             for i in arc_times:
                 tmp_z = '%s-%s-%s' % (i.year, i.month, i.day)
                 tmp_i.append(tmp_z)
       
-            arc_index=[]
+            arc_index = []
     
             for arc in an_dates:
                 arc_date_temp = '%s-%s-%s' % (arc.year, arc.month, arc.day)
                 arc_index.append(tmp_i.index(arc_date_temp))
 
-            simmin=np.min(simvar[sim_index,:,:])
-            simmax=np.max(simvar[sim_index,:,:])
+            simmin = np.min(simvar[sim_index,:,:])
+            simmax = np.max(simvar[sim_index,:,:])
 
             # PLOT SIM ====================================
             sim_title = 'Simulation Day: ' + ana[0]
-            output_file_name = 'sim_'+ana[0]+'.pdf'
+            output_file_name = 'sim_' + ana[0] + '.pdf'
             output_file = pdf_from_analog(lon=lon, lat=lat, data=simvar[sim_index,:,:],
                                   vmin=simmin, vmax=simmax, Nlin=Nlin, domain=domain,
                                   output=output_file_name, title=sim_title)
@@ -473,23 +473,20 @@ def plot_analogs(configfile='config.txt', simday = 'all', **kwargs):
             arc_dataset.close()
     
             mean_ana = np.zeros((len(arcvar[0,:,0]),len(arcvar[0,0,:])),dtype=float)
-            for ida, art in enumerate(arc_index): mean_ana=mean_ana+arcvar[art,:,:]
-            mean_ana = mean_ana/nanalog
+            for ida, art in enumerate(arc_index): mean_ana = mean_ana + arcvar[art,:,:]
+            mean_ana = mean_ana / nanalog
     
-            output_an_file_name = 'ana_'+ana[0]+'.pdf'
-            an_title = 'Mean analogs for Day: '+ana[0]
+            output_an_file_name = 'ana_' + ana[0] + '.pdf'
+            an_title = 'Mean analogs for sim Day: ' + ana[0]
             an_output_file = pdf_from_analog(lon=lon, lat=lat, data=mean_ana,
                                           vmin=simmin, vmax=simmax, Nlin=Nlin, domain=domain,
                                           output=output_an_file_name, title=an_title)
             outlist.append(str(an_output_file))
 
-            # TODO: Plot Best and worst analogs by dist and corr
-
-
             # PLOT BEST (first) analog
     
-            output_ban_file_name = 'bana_'+ana[0]+'.pdf' #PDF!!
-            ban_title = 'BEST analog for Day: '+ana[0]
+            output_ban_file_name = 'bana_' + ana[0] + '.pdf' #PDF!!
+            ban_title = 'BEST analog for sim Day ' + ana[0] + ' is: ' + ana[1]
             ban_output_file = pdf_from_analog(lon=lon, lat=lat, data=arcvar[arc_index[0]],
                                           vmin=simmin, vmax=simmax, Nlin=Nlin, domain=domain,
                                           output=output_ban_file_name, title=ban_title)
@@ -498,12 +495,31 @@ def plot_analogs(configfile='config.txt', simday = 'all', **kwargs):
     
             # PLOT WORST (last) analog
     
-            output_wan_file_name = 'wana_'+ana[0]+'.pdf' #PDF!!
-            wan_title = 'LAST analog for Day: '+ana[0]
+            output_wan_file_name = 'wana_' + ana[0] + '.pdf' #PDF!!
+            wan_title = 'LAST analog for sim Day ' + ana[0] + ' is: ' + ana[nanalog]
             wan_output_file = pdf_from_analog(lon=lon, lat=lat, data=arcvar[arc_index[-1]],
                                           vmin=simmin, vmax=simmax, Nlin=Nlin, domain=domain,
                                           output=output_wan_file_name, title=wan_title)
             outlist.append(str(wan_output_file))
+
+            # PLOT Max and Min correl analog
+
+            min_c_index = np.argmin(cors)
+            max_c_index = np.argmax(cors)
+
+            output_bcan_file_name = 'bcana_' + ana[0] + '.pdf' #PDF!!
+            bcan_title = 'Analog with max corr for sim Day ' + ana[0] + ' is: ' + ana[1+max_c_index]
+            bcan_output_file = pdf_from_analog(lon=lon, lat=lat, data=arcvar[arc_index[max_c_index]],
+                                          vmin=simmin, vmax=simmax, Nlin=Nlin, domain=domain,
+                                          output=output_bcan_file_name, title=bcan_title)
+            outlist.append(str(bcan_output_file))
+
+            output_wcan_file_name = 'wcana_' + ana[0] + '.pdf' #PDF!!
+            wcan_title = 'Analog with min corr for sim Day ' + ana[0] + ' is: ' + ana[1+min_c_index]
+            wcan_output_file = pdf_from_analog(lon=lon, lat=lat, data=arcvar[arc_index[min_c_index]],
+                                          vmin=simmin, vmax=simmax, Nlin=Nlin, domain=domain,
+                                          output=output_wcan_file_name, title=wcan_title)
+            outlist.append(str(wcan_output_file))
 
             """    
             # PLOT analogs dist weighted ====================================
@@ -521,14 +537,14 @@ def plot_analogs(configfile='config.txt', simday = 'all', **kwargs):
             mean_ana = mean_ana/sum(w_corr)
    
             """
-        simoutpdf=pdfmerge(outlist)
+        simoutpdf = pdfmerge(outlist)
     # get the information from config file:
     # netcdf files, period, Nanalogs, ouput analogs 
 
     # get the information from config file:
     # netcdf files, period, Nanalogs, ouput analogs 
     else:
-        simoutpdf='Analogs.pdf'
+        simoutpdf = 'Analogs.pdf'
         # TODO: call this func with analogfile = '..', 
         # arguments came from kwargs
         # need to prescribe all input info - to use with external analogs results.
