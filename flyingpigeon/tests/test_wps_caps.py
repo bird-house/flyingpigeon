@@ -27,7 +27,7 @@ def test_caps():
         # 'indices_percentile,
         'indices_percentiledays',
         'indices_single',
-        'landseamask',
+        # 'landseamask',
         'map_spatial_analog',
         'plot_timeseries',
         'pointinspection',
