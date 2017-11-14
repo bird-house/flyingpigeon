@@ -6,6 +6,7 @@ Releasenotes
 
 * fixed version number
 * fixed changes formatting
+* display version number in service title
 
 1.0.0 (2017-11-01)
 ==================
