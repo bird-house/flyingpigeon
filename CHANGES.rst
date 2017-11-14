@@ -1,6 +1,13 @@
 Releasenotes
 ************
 
+1.0.1 (2017-11-14)
+==================
+
+* fixed version number
+* fixed changes formatting
+* display version number in service title
+
 1.0.0 (2017-11-01)
 ==================
 
@@ -13,6 +20,7 @@ Set of processes
 ################
 
 Base processes:
+
 * Fetch resources
 * Fetch GBIF Species Coordination
 * Subset Polygons
@@ -21,10 +29,12 @@ Base processes:
 * Climate Indices Calculation
 
 Climate Impact:
+
 * Species Distribution Model
 * Segetal Flora Calculation
 
 Extreme Weather Events Assessment:
+
 * Analogs of Circulation for reanalyzes Datasets
 * Analogs of Circulation for model data
 * Analogs of Circulation Comparison between reanalyzes and climate model data
