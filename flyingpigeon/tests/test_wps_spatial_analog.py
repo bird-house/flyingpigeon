@@ -4,7 +4,7 @@ pytestmark = pytest.mark.skip(reason="spatial analog process is disabled")
 from pywps import Service
 from pywps.tests import assert_response_success
 
-# from flyingpigeon.processes import SpatialAnalogProcess, MapSpatialAnalogProcess
+from flyingpigeon.processes import SpatialAnalogProcess, MapSpatialAnalogProcess
 from flyingpigeon.utils import local_path
 from flyingpigeon.tests.common import TESTDATA, client_for, CFG_FILE
 
@@ -275,7 +275,6 @@ def test_wps_map_spatial_analog():
     assert_response_success(resp)
 
 
-"""
 # @pytest.mark.slow
 def test_wps_spatial_analog_process():
     client = client_for(Service(processes=[SpatialAnalogProcess()]))
@@ -289,13 +288,13 @@ def test_wps_spatial_analog_process():
         identifier='spatial_analog',
         datainputs=datainputs)
     assert_response_success(resp)
-"""
+
 
 """
 Testing notes
 -------------
 If you run a test function in ipython and launch %debug, you can access the error
-message by going up the stack into the fonction and print resp.response
+message by going up the stack into the function and print resp.response
 
 
 birdy spatial_analog \
