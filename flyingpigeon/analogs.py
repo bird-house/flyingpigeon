@@ -11,6 +11,8 @@ LOGGER = logging.getLogger("PYWPS")
 def get_configfile(files,
                    seasoncyc_base=None,
                    seasoncyc_sim=None,
+                   base_id='NCEP',
+                   sim_id='NCEP',
                    timewin=1,
                    varname='slp',
                    seacyc=False,
@@ -75,10 +77,13 @@ def get_configfile(files,
         file=os.path.relpath(files[1])))
     config.write(' my_files%outputfile = "{file}" \n'.format(
         file=os.path.relpath(files[2])))
-    config.write('  my_files%seacycfilebase = "{file}" \n'.format(
-        file=os.path.relpath(seasoncyc_base)))
-    config.write(' my_files%seacycfilesim = "{file}" \n'.format(
-        file=os.path.relpath(seasoncyc_sim)))
+
+    if seacyc is not 'False':
+        config.write(' my_files%seacycfilebase = "{file}" \n'.format(
+            file=os.path.relpath(seasoncyc_base)))
+        config.write(' my_files%seacycfilesim = "{file}" \n'.format(
+            file=os.path.relpath(seasoncyc_sim)))
+
     config.write('/ \n')
     config.write('&PARAM \n')
     config.write(' my_params%timewin = {timewin} \n'.format(timewin=timewin))
@@ -99,10 +104,10 @@ def get_configfile(files,
         silent=silent.upper()))
     config.write('/\n')
     config.write('&ATTS\n')
-    config.write(' my_atts%simsource = "NCEP" \n')  # model name
+    config.write(' my_atts%simsource = "{sim_id}" \n'.format(sim_id=sim_id))  # model name
     config.write(
         ' my_atts%predictorvar = "{varname}" \n'.format(varname=varname))
-    config.write(' my_atts%archisource = "NCEP" \n')
+    config.write(' my_atts%archisource = "{base_id}" \n'.format(base_id=base_id))
     config.write(' my_atts%archiperiod = "{start},{end}" \n'.format(
         start=period[0], end=period[1]))
     config.write(' my_atts%predictordom = "{bbox}" \n'.format(bbox=bbox))

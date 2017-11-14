@@ -1,9 +1,11 @@
-from os import path, listdir
-import ocgis
+from flyingpigeon import sdm
+from datetime import datetime as dt
+from os.path import join
+from os import getenv
 
-from flyingpigeon import subset
-from flyingpigeon import utils
-from flyingpigeon.ocgis_module import call
+from flyingpigeon.visualisation import map_gbifoccurrences
+from flyingpigeon.utils import archiveextract
+from flyingpigeon.visualisation import map_PAmask
 
 
 def get_prediction(gam_model, ncs_indices):  # mask=None
@@ -19,9 +21,7 @@ def get_prediction(gam_model, ncs_indices):  # mask=None
     from netCDF4 import Dataset
     from os.path import basename
     from numpy import squeeze, ravel, array, reshape  # , zeros, broadcast_arrays, nan
-
     from flyingpigeon.utils import get_variable
-
     from rpy2.robjects.packages import importr
     import rpy2.robjects as ro
 
@@ -56,50 +56,29 @@ def get_prediction(gam_model, ncs_indices):  # mask=None
 
 
 
+tic = dt.now()
 
+indices = '/home/nils/data/sdm/tmpTzDdv7.tar'
 
+gbif = '/home/nils/data/sdm/acacia_albida.csv'
 
-p = "/home/nils/data/AFR-44/tas/"
-ncs = [path.join(p, nc) for nc in listdir(p)]
-ncd = utils.sort_by_filename(ncs)
-geom = subset.get_geom('CMR')
-ugid = subset.get_ugid('CMR', geom=geom)
+gbif_url = 'https://bovec.dkrz.de/download/wpsoutputs/flyingpigeon/392f1c34-b4d1-11e7-a589-109836a7cf3a/tmp95yvix.csv'
+latlon = sdm.latlon_gbifcsv(gbif)
+latlon
 
-# from ocgis import RequestDataset, OcgOperations
+occurence_map = map_gbifoccurrences(latlon)
+occurence_map
+ncs = archiveextract(indices)
+ncs
+indices_dic = sdm.sort_indices(ncs)
+indices_dic
+PAmask = sdm.get_PAmask(coordinates=latlon, nc=ncs[0])
+PAmask
 
-keys = ncd.keys()
-print len(keys)
+# PAmask_pngs.extend([map_PAmask(PAmask)])
 
-ocgis.env.OVERWRITE = True
-
-dmap = ocgis.DimensionMap()
-dmap.set_variable('x', 'lon', dimension='rlon')
-dmap.set_variable('y', 'lat', dimension='rlat')
-dmap.set_variable('time', 'time', dimension='time')
-
-#
-# print dmap
-# rd = ocgis.RequestDataset(ncd[keys[0]][0], crs=ocgis.crs.Spherical(), )
-# geos = ocgis.OcgOperations(rd, geom=geom, select_ugid=ugid, output_format='nc', prefix='one_file').execute()
-# geos
-
-for key in ncd.keys():
-    # rd = ocgis.RequestDataset(ncd[key], crs=ocgis.crs.Spherical(), dimension_map=dmap)
-    # geos = ocgis.OcgOperations(rd,
-    #                            geom=geom, select_ugid=ugid,
-    #                            output_format='nc',
-    #                            prefix=key,
-    #                            add_auxiliary_files=False).execute()
-    geos = call(ncd[key], geom=geom, select_ugid=ugid, output_format='nc', prefix=key,
-                variable='tas', crs=ocgis.crs.Spherical(), dimension_map=dmap)
-    print geos
-
-#
-# rd = RequestDataset(ncd[keys[0]][0])
-# geos = OcgOperations(rd, geom=geom, select_ugid=ugid, output_format='nc').execute()
-#
-# ncd[keys[0]]
-#
-# rd = RequestDataset(ncd[keys[0]])
-#
-# geos = OcgOperations(rd, geom=geom, select_ugid=ugid, output_format='nc').execute()
+map_PAmask(PAmask)
+ncs_reference = sdm.get_reference(ncs_indices=ncs)
+ncs_reference
+gam_model, predict_gam, gam_info = sdm.get_gam(ncs_reference, PAmask, modelname='TG_AFR-44_CNRM-CERFACS-CNRM-CM5_historical_r1i1p1_CLMcom-CCLM4-8-17_v1')
+prediction = get_prediction(gam_model, ncs)
