@@ -44,15 +44,15 @@ class TestDissimilarity(TestBase):
         """
         np.random.seed(1)
 
-        row = Variable(value=np.arange(nrow)-nrow/2., name='row', dimensions='row')
-        col = Variable(value=np.arange(ncol) - ncol/2., name='col', dimensions='col')
+        row = Variable(value=np.arange(nrow) - nrow / 2., name='row', dimensions='row')
+        col = Variable(value=np.arange(ncol) - ncol / 2., name='col', dimensions='col')
 
         grid = Grid(col, row)
         x, y = grid.get_value_stacked()
 
         start = dt.datetime(2000, 1, 1)
         delta = dt.timedelta(days=1)
-        value_temporal = [start + i*delta for i in range(ntime)]
+        value_temporal = [start + i * delta for i in range(ntime)]
 
         temporal = TemporalVariable(value=value_temporal, dimensions='time',
                                     name='time')
@@ -214,13 +214,13 @@ def test_dissimilarity_op():
                'kwds': {'dist': 'seuclidean', 'target': target,
                         'candidate': indices}}],
         dataset=candidate
-        )
+    )
 
     res = ops.execute()
     out = res.get_element()
     val = out['dissimilarity'].get_value()
-    i = np.argmin(np.abs(out['lon'].get_value()-lon))
-    j = np.argmin(np.abs(out['lat'].get_value()-lat))
+    i = np.argmin(np.abs(out['lon'].get_value() - lon))
+    j = np.argmin(np.abs(out['lat'].get_value() - lat))
     np.testing.assert_almost_equal(val[j, i], 0, 6)
     np.testing.assert_array_equal(val > 0, True)
 
