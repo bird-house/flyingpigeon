@@ -1,6 +1,12 @@
 Releasenotes
 ************
 
+1.0.1 (2017-11-14)
+==================
+
+* fixed version number
+* fixed changes formatting
+
 1.0.0 (2017-11-01)
 ==================
 
