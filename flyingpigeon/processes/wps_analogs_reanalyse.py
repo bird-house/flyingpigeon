@@ -23,6 +23,7 @@ from flyingpigeon.ocgis_module import call
 from flyingpigeon import analogs
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import get_variable
+from flyingpigeon.calculation import remove_mean_trend
 from flyingpigeon.log import init_process_logger
 
 import logging
@@ -94,6 +95,15 @@ class AnalogsreanalyseProcess(Process):
                          default='2014-12-31',
                          min_occurs=1,
                          max_occurs=1,
+                         ),
+
+            LiteralInput("detrend", "Detrend",
+                         abstract="Remove long-term trend beforehand",
+                         default='None',
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=1,
+                         allowed_values=['None', 'UVSpline']
                          ),
 
             LiteralInput("normalize", "normalization",
@@ -265,6 +275,7 @@ class AnalogsreanalyseProcess(Process):
             # bbox_obj = self.BBox.getValue()
 
             normalize = request.inputs['normalize'][0].data
+            detrend = request.inputs['detrend'][0].data
             distance = request.inputs['dist'][0].data
             outformat = request.inputs['outformat'][0].data
             timewin = request.inputs['timewin'][0].data
@@ -432,6 +443,22 @@ class AnalogsreanalyseProcess(Process):
 
         response.update_status('dataset subsetted', 19)
 
+        # BLOCK OF DETRENDING of model_subset !
+        # Original model subset kept to further visualisaion if needed
+        # Now is issue with SLP:
+        # TODO: need to clear attributes for detrended file:
+        # Actual range and valid_range!
+        # For Z500 is OK, because detrended values are in valid range...
+        # TODO: keep the trend itself.
+        # With faster smoother add removing trend of each grid
+
+        if detrend == 'None':
+            orig_model_subset = model_subset            
+        else:
+            orig_model_subset = remove_mean_trend(model_subset, varname=var)
+
+        # ======================================
+
         ############################################################
         #  get the required bbox and time region from resource data
         ############################################################
@@ -577,6 +604,7 @@ class AnalogsreanalyseProcess(Process):
             raise Exception(msg)
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
 
+        # TODO: Add try - except for pdfs
         analogs_pdf = analogs.plot_analogs(configfile=config_file)   
         response.update_status('preparing output', 70)
         # response.outputs['config'].storage = FileStorage()
