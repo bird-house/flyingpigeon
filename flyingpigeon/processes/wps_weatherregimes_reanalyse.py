@@ -241,7 +241,7 @@ class WeatherregimesreanalyseProcess(Process):
                             )
         LOGGER.info('Dataset subset done: %s ', model_subset)
 
-        response.update_status('dataset subsetted', 19)
+        response.update_status('dataset subsetted', 18)
         ##############################################
         # computing anomalies
         ##############################################
@@ -306,7 +306,7 @@ class WeatherregimesreanalyseProcess(Process):
             LOGGER.exception(msg)
             raise Exception(msg)
 
-        response.update_status('Weather regime clustering done ', 80)
+        response.update_status('Weather regime clustering done ', 93)
         ############################################
         # set the outputs
         ############################################
