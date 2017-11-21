@@ -4,6 +4,8 @@ import requests
 from requests.auth import HTTPBasicAuth
 from tempfile import mkstemp
 import shutil
+import time
+from os.path import join
 
 # Stockton, CA bounding box (created via geojson.io)
 # geojson_geometry = {
@@ -130,9 +132,10 @@ search_request = {
   "filter": combined_filter
 }
 
+DIR = "/home/nils/data/planet/"
+
 # fire off the POST request
-search_result = \
-  requests.post(
+search_result = requests.post(
     'https://api.planet.com/data/v1/quick-search',
     auth=HTTPBasicAuth(PLANET_API_KEY, ''),
     json=search_request)
@@ -144,7 +147,12 @@ image_ids = [feature['id'] for feature in search_result.json()['features']]
 print(image_ids)
 # For demo purposes, just grab the first image ID
 for image_id in image_ids:
+
     id0 = image_id
+
+    filename = "%s.tif" % id0
+    local_file = join(DIR, filename)  # mkstemp(dir="/home/nils/data/planet/", prefix=id0, suffix='.tif')
+
     id0_url = 'https://api.planet.com/data/v1/item-types/{}/items/{}/assets'.format(item_type, id0)
 
     # Returns JSON metadata for assets in this ID. Learn more: planet.com/docs/reference/data-api/items-assets/#asset
@@ -152,7 +160,7 @@ for image_id in image_ids:
     # List of asset types available for this particular satellite image
     print(result.json().keys())
     # This is "inactive" if the "visual" asset has not yet been activated; otherwise 'active'
-    if 'visual' in  result.json().keys():
+    if 'visual' in result.json().keys():
         print "****** down loading file ********"
         print(result.json()['visual']['status'])
         # Parse out useful links
@@ -171,14 +179,19 @@ for image_id in image_ids:
         activate_result = requests.get(activation_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
         activation_status_result = requests.get(self_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
 
-        print(activation_status_result.json()["status"])
+        while activation_status_result.json()["status"] != 'active':
+            print('*** File is sleeping. gently waking up ****')
+            print(activation_status_result.json()["status"])
+            time.sleep(30)
+            activation_status_result = requests.get(self_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
 
+        print('File ready to download: %s' % (activation_status_result.json()["status"]))
         # Image can be downloaded by making a GET with your Planet API key, from here:
         download_link = activation_status_result.json()["location"]
 
-        _, local_filename = mkstemp(dir=".", suffix='.tif')
+
         r = requests.get(download_link, stream=True, verify=False)
-        with open(local_filename, 'wb') as fp:
+        with open(local_file, 'wb') as fp:
             shutil.copyfileobj(r.raw, fp)
 
-        print(download_link)
+        print(local_file)
