@@ -1,6 +1,8 @@
 import traceback
 
+from urlparse import urlparse
 from pywps import Process, LiteralInput, ComplexOutput, get_format
+from flyingpigeon.utils import CookieNetCDFTransfer
 
 from flyingpigeon.handler_common import wfs_common
 
@@ -68,6 +70,10 @@ class SubsetWFSProcess(Process):
 
     def _handler(self, request, response):
         try:
-            return wfs_common(request, response, mode='subsetter')
+            opendap_hostnames = [
+                urlparse(r.data).hostname for r in request.inputs['resource']]
+            with CookieNetCDFTransfer(request, opendap_hostnames):
+                result = wfs_common(request, response, mode='subsetter')
+            return result
         except:
             raise Exception(traceback.format_exc())

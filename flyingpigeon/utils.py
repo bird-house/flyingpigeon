@@ -8,10 +8,6 @@ import time
 from ocgis import RequestDataset  # does not support NETCDF4
 from netCDF4 import Dataset, num2date
 from netCDF4 import MFDataset  # does not support NETCDF4
-try:
-    from urllib.request import urlopen
-except ImportError:
-    from urllib2 import urlopen
 
 from pyesgf.search.connection import SearchConnection
 from pyesgf.search import TYPE_FILE
@@ -1196,7 +1192,8 @@ def guess_main_variables(ncdataset):
     return main_variables
 
 
-def opendap_or_download(resource, output_path=None, max_nbytes=1000000000):
+def opendap_or_download(resource, auth_tkt_cookie={}, output_path=None,
+                        max_nbytes=1000000000):
     """Check for OPEnDAP support, if not download the resource.
 
     :param resource: url of a NetCDF resource
@@ -1210,20 +1207,22 @@ def opendap_or_download(resource, output_path=None, max_nbytes=1000000000):
     try:
         nc = Dataset(resource, 'r')
         nc.close()
-    except:
-        response = urlopen(resource)
-        if int(response.info()['Content-Length']) > max_nbytes:
-            raise IOError("File too large to download.")
+    except Exception:
+        response = requests.get(resource, cookies=auth_tkt_cookie, stream=True)
+        if response.status_code == 401:
+            raise Exception("Not Authorized")
+
+        if 'Content-Length' in response.headers.keys():
+            if int(response.headers['Content-Length']) > max_nbytes:
+                raise IOError("File too large to download.")
         chunk_size = 16 * 1024
         if not output_path:
             output_path = os.getcwd()
         output_file = os.path.join(output_path, os.path.basename(resource))
         with open(output_file, 'wb') as f:
-            while True:
-                chunk = response.read(chunk_size)
-                if not chunk:
-                    break
-                f.write(chunk)
+            for chunk in response.iter_content(chunk_size):
+                if chunk:
+                    f.write(chunk)
         try:
             nc = Dataset(output_file, 'r')
             nc.close()
@@ -1231,3 +1230,48 @@ def opendap_or_download(resource, output_path=None, max_nbytes=1000000000):
             raise IOError("This does not appear to be a valid NetCDF file.")
         return output_file
     return resource
+
+
+class CookieNetCDFTransfer:
+    def __init__(self, request, opendap_hostnames=[]):
+        self.request = request
+        self.cookie = None
+        self.daprc_fn = '.daprc'
+        self.auth_cookie_fn = 'auth_cookie'
+        self.opendap_hostnames = opendap_hostnames
+
+    def __enter__(self):
+        self.cookie = get_auth_cookie(self.request)
+
+        if self.cookie:
+            with open(self.daprc_fn, 'w') as f:
+                f.write('HTTP.COOKIEJAR = auth_cookie')
+
+            with open(self.auth_cookie_fn, 'w') as f:
+                for opendap_hostname in self.opendap_hostnames:
+                    for key, value in self.cookie.items():
+                        f.write('{domain}\t{access_flag}\t{path}\t{secure}\t{expiration}\t{name}\t{value}\n'.format(
+                            domain=opendap_hostname,
+                            access_flag='FALSE',
+                            path='/',
+                            secure='FALSE',
+                            expiration=0,
+                            name=key,
+                            value=value))
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.cookie:
+            os.remove(self.daprc_fn)
+            os.remove(self.auth_cookie_fn)
+
+
+def get_auth_cookie(pywps_request):
+    try:
+        return dict(auth_tkt=pywps_request.http_request.cookies['auth_tkt'])
+    except KeyError:
+        # No token... will be anonymous
+        return None
+
+
+def flatten_auth_cookie(cookie):
+    return '; '.join(['{0}={1}'.format(key, value) for key, value in cookie.items()])
