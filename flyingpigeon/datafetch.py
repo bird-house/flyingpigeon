@@ -146,10 +146,13 @@ def get_level(resource, level):
     from netCDF4 import Dataset
     from flyingpigeon.utils import get_variable
     from numpy import squeeze
+    from os import path
 
     try:
         if type(resource) == list:
-            resource.sort()
+            resource = sorted(resource, key=lambda i: path.splitext(path.basename(i))[0])
+            # resource.sort()
+
         level_data = call(resource, level_range=[int(level), int(level)])
         variable = get_variable(level_data)
         LOGGER.info('found %s in file' % variable)
