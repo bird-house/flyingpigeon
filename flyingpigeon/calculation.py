@@ -103,7 +103,8 @@ def remove_mean_trend(fana, varname):
     trend = np.zeros(len(y),dtype=np.float)
     trend[:] = spl(x)
 
-    orig_arc_dataset = Dataset(fana,'r+')
+#    orig_arc_dataset = Dataset(fana,'r+')
+    orig_arc_dataset = Dataset(fana,'a')
     orig_arcvar = orig_arc_dataset.variables.pop(varname)
     orig_data = orig_arcvar[:]
 
@@ -111,6 +112,24 @@ def remove_mean_trend(fana, varname):
     det = (orig_data.T - trend).T
 
     orig_arcvar[:] = det
+
+    at = {k: orig_arcvar.getncattr(k) for k in orig_arcvar.ncattrs()}
+    maxat = np.max(det)
+    minat = np.min(det)
+    act = np.zeros((2),dtype=np.float32)
+    valid = np.zeros((2),dtype=np.float32)
+    act[0] = minat
+    act[1] = maxat
+    valid[0] = minat - abs(0.2*minat)
+    valid[1] = maxat + abs(0.2*maxat)
+    act_attr = {}
+    val_attr = {}
+
+    act_attr['actual_range'] = act
+    val_attr['valid_range'] = valid
+    orig_arcvar.setncatts(act_attr)
+    orig_arcvar.setncatts(val_attr)
+
     orig_arc_dataset.close()
 
     return backup_ana
