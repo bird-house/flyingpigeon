@@ -99,6 +99,7 @@ def wfs_common(request, response, mode, spatial_mode='wfs'):
         output_files = []
         output_urls = []
         mv_dir = tempfile.mkdtemp(dir=outputpath)
+        os.chmod(mv_dir, 0755)
 
         for one_file in list_of_files:
             file_name = os.path.basename(one_file)
