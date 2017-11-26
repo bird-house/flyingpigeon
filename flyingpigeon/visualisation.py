@@ -276,9 +276,13 @@ def spaghetti(resouces, variable=None, title=None, file_extension='png'):
             except:
                 msg = "spaghetti plot failed for %s " % nc
                 LOGGER.exception(msg)
-
+        #
         plt.title(title, fontsize=20)
+        bbox_inches = 'tight'
         plt.grid()
+
+        # _, output_png = mkstemp(dir='.', suffix='.%s' % file_extension)
+        # fig.savefig(output_png)
 
         output_png = fig2plot(fig=fig, file_extension=file_extension)
 
