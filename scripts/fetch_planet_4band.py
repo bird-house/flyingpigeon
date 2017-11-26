@@ -157,7 +157,7 @@ for image_id in image_ids:
     id0 = image_id
 
     filename = "%s.tif" % id0
-    local_file = join(DIR, item_type, filename)  # mkstemp(dir="/home/nils/data/planet/", prefix=id0, suffix='.tif')
+    local_file = join(DIR, filename)  # mkstemp(dir="/home/nils/data/planet/", prefix=id0, suffix='.tif')
 
     id0_url = 'https://api.planet.com/data/v1/item-types/{}/items/{}/assets'.format(item_type, id0)
 
@@ -166,18 +166,18 @@ for image_id in image_ids:
     # List of asset types available for this particular satellite image
     print(result.json().keys())
     # This is "inactive" if the "visual" asset has not yet been activated; otherwise 'active'
-    if 'visual' in result.json().keys():
+    if 'analytic' in result.json().keys():
         print "****** down loading file ********"
-        print(result.json()['visual']['status'])
+        print(result.json()['analytic']['status'])
         # Parse out useful links
-        links = result.json()[u"visual"]["_links"]
+        links = result.json()[u"analytic"]["_links"]
         self_link = links["_self"]
         activation_link = links["activate"]
 
         # Request activation of the 'visual' asset:
         activate_result = requests.get(activation_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
         # Parse out useful links
-        links = result.json()[u"visual"]["_links"]
+        links = result.json()[u"analytic"]["_links"]
         self_link = links["_self"]
         activation_link = links["activate"]
 
