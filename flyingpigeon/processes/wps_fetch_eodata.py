@@ -8,6 +8,7 @@ from flyingpigeon.log import init_process_logger
 from flyingpigeon.utils import rename_complexinputs
 
 # from flyingpigeon.datafetch import write_fileinfo
+from flyingpigeon.datafetch import fetch_eodata
 
 import os
 from datetime import datetime as dt
@@ -49,7 +50,7 @@ class FetcheodataProcess(Process):
                          data_type='date',
                          abstract='First day of the period to be searched for EO data.'
                                   '(if not set, 30 days befor end of period will be selected',
-                         default='2017-09-30',  # dt.now() - timedelta(days=30),
+                         default=(dt.now() - timedelta(days=30)).strftime('%Y-%m-%d'),
                          min_occurs=0,
                          max_occurs=1,
                          ),
@@ -57,8 +58,8 @@ class FetcheodataProcess(Process):
             LiteralInput('end', 'End Date',
                          data_type='date',
                          abstract='Last day of the period to be searched for EO data.'
-                                  '(if not set, todays day is set.)',
-                         default='2017-10-31',  # dt.now(),
+                                  '(if not set, current day is set.)',
+                         default=dt.now().strftime('%Y-%m-%d'),
                          min_occurs=0,
                          max_occurs=1,
                          ),
@@ -142,7 +143,18 @@ class FetcheodataProcess(Process):
         else:
             start = end - timedelta(days=30)
 
+        if (start > end):
+            start = dt.now() - timedelta(days=30)
+            end = dt.now()
+            LOGGER.exception("periode end befor periode start, period is set to the last 30 days from now")
+
         token = request.inputs['token'][0].data
+
+        recources = fetch_eodata(products,
+                                 token,
+                                 bbox,
+                                 period=[start, end],
+                                 cloud_cover=0.5)
 
         filepathes = 'out.txt'
         # with open(filepathes, 'w') as fp:
