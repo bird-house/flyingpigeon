@@ -212,7 +212,7 @@ def write_fileinfo(resource, filepath=False):
     return text_src
 
 
-def fetch_eodata(products, token, bbox, period=[dt.today()-timedelta(days=30), dt.today()],  cloud_cover=0.5):
+def fetch_eodata(products, token, bbox, period=[dt.today()-timedelta(days=30), dt.today()],  cloud_cover=0.5, cache=True):
     """
     search for EO data producs provided by planet.
     The search and appropriate download is limited by bbox and search period
@@ -222,6 +222,7 @@ def fetch_eodata(products, token, bbox, period=[dt.today()-timedelta(days=30), d
     :param bbox: latitude longitude coordinates defining a bounding box
     :param period: [start , end] datetime objects (default last 30 days)
     :param cloud_cover: threshold for cloud_cover tolerance. 0 = 0% cloud_cover 1=100% cloud_cover
+    :param cache: if True file (default) is stored in local cache
 
     return list: list of pathes for fetched products
     """
@@ -234,7 +235,8 @@ def fetch_eodata(products, token, bbox, period=[dt.today()-timedelta(days=30), d
     import shutil
     import time
     from os.path import join
-    from os import path, mkdir
+    from os import path, makedirs
+    from flyingpigeon.config import cache_path
 
     geojson_geometry = {"type": "Polygon",
                         "coordinates": [[
@@ -290,10 +292,15 @@ def fetch_eodata(products, token, bbox, period=[dt.today()-timedelta(days=30), d
       "filter": combined_filter
     }
 
-    DIR_archiv = "/home/nils/data/planet/"
-    DIR = join(DIR_archiv, item_type)
+
+    if cache:
+        DIR_archiv = cache_path()
+    else:
+        DIR_archiv = '.'
+    DIR = join(DIR_archiv,"EO_data", item_type)
+
     if not os.path.exists(DIR):
-        mkdir(DIR)
+        makedirs(DIR)
 
     # fire off the POST request
     search_result = requests.post(
