@@ -33,9 +33,8 @@ processes = [
     ClipregionseuropeProcess(),
     PointinspectionProcess(),
     LandseamaskProcess(),
-    #    FactsheetProcess(),
+    # FactsheetProcess(),
     FetchProcess(),
-    FetcheodataProcess(),
     IndicespercentiledaysProcess(),
     IndicessingleProcess(),
     GBIFfetchProcess(),
@@ -50,11 +49,12 @@ processes = [
     AnalogsmodelProcess(),
     AnalogscompareProcess(),
     AnalogsviewerProcess(),
-    #    RobustnessProcess(),
+    # RobustnessProcess(),
     PlottimeseriesProcess(),
     SegetalfloraProcess(),
     SpatialAnalogProcess(),
     MapSpatialAnalogProcess(),
+    FetcheodataProcess(),
 ]
 
 """
