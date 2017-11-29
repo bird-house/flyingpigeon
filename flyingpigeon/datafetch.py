@@ -1,4 +1,6 @@
 from flyingpigeon import utils
+from datetime import datetime as dt
+from datetime import timedelta
 
 # import logging
 # logger = logging.getLogger(__name__)
@@ -24,7 +26,7 @@ _PRESSUREDATA_ = [
 _EOBSVARIABLES_ = ['tg', 'tx', 'tn', 'rr']
 
 
-def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP', timres='day', getlevel = True):
+def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP', timres='day', getlevel=True):
     """
     Fetches the reanalysis data (NCEP, 20CR or ERA_20C) to local file system
     :param start: int for start year to fetch source data
@@ -104,7 +106,7 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP', timres='day
                     ds = Dataset(df)
                     df_time = ds.variables['time']
                     # Here, need to check not just calendar, but that file is ncdf_classic already...
-                    if (hasattr(df_time, 'calendar')) is False: 
+                    if (hasattr(df_time, 'calendar')) is False:
                         p, f = path.split(path.abspath(df))
                         LOGGER.debug("path = %s , file %s " % (p, f))
                         # May be an issue if several users are working at the same time
@@ -120,7 +122,7 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP', timres='day
                         cmdrm = 'rm -f %s' % (f)
                         system(cmdrm)
                     else:
-                        obs_data.append(df) 
+                        obs_data.append(df)
                     ds.close()
                 except:
                     LOGGER.exception('failed to convert into NETCDF4_CLASSIC')
@@ -208,3 +210,139 @@ def write_fileinfo(resource, filepath=False):
         LOGGER.exception('failed to write file names to file')
 
     return text_src
+
+
+def fetch_eodata(product, token, bbox, period=[dt.today()-timedelta(days=30), dt.today()],  cloud_cover=0.5):
+    import os
+    import json
+    import requests
+    from requests.auth import HTTPBasicAuth
+    from tempfile import mkstemp
+    import shutil
+    import time
+    from os.path import join
+    from os import path, mkdir
+
+    geojson_geometry = {"type": "Polygon",
+                        "coordinates": [[
+                                    [14.600830078125, 8.677421123289992],
+                                    [14.797210693359375, 8.677421123289992],
+                                    [14.797210693359375, 8.90678000752024],
+                                    [14.600830078125, 8.90678000752024],
+                                    [14.600830078125, 8.677421123289992]
+                                    ]]}
+
+    # get images that overlap with our AOI
+    geometry_filter = {
+      "type": "GeometryFilter",
+      "field_name": "geometry",
+      "config": geojson_geometry
+    }
+
+    start = period[0]
+    end = period[1]
+
+    # get images acquired within a date range
+    date_range_filter = {
+      "type": "DateRangeFilter",
+      "field_name": "acquired",
+      "config": {
+        "gte": "%s000Z" % (end.strftime('%Y-%m-%dT%H:%M:%S.')),
+        "lte": "%s000Z" % (start.strftime('%Y-%m-%dT%H:%M:%S.')),
+      }
+    }
+
+    # only get images which have <50% cloud coverage
+    cloud_cover_filter = {
+      "type": "RangeFilter",
+      "field_name": "cloud_cover",
+      "config": {
+        "lte": cloud_cover
+      }
+    }
+
+    # combine our geo, date, cloud filters
+    combined_filter = {"type": "AndFilter",
+                       "config": [geometry_filter, date_range_filter, cloud_cover_filter]}
+
+   # API Key
+    PLANET_API_KEY = token  # os.getenv('PL_API_KEY')
+
+    item_type = products[0]  # "PSScene4Band"
+    # API request object
+
+    search_request = {
+      "interval": "day",
+      "item_types": products,
+      "filter": combined_filter
+    }
+
+    DIR_archiv = "/home/nils/data/planet/"
+    DIR = join(DIR_archiv, item_type)
+    if not os.path.exists(DIR):
+        mkdir(DIR)
+
+    # fire off the POST request
+    search_result = requests.post(
+        'https://api.planet.com/data/v1/quick-search',
+        auth=HTTPBasicAuth(PLANET_API_KEY, ''),
+        json=search_request)
+
+    LOGGER.debug(json.dumps(search_result.json(), indent=1))
+
+    # extract image IDs only
+    image_ids = [feature['id'] for feature in search_result.json()['features']]
+    LOGGER.debug(image_ids)
+    # For demo purposes, just grab the first image ID
+
+    resources = []
+
+    for image_id in image_ids:
+
+        id0 = image_id
+
+        filename = "%s.tif" % id0
+        local_file = join(DIR, filename)  # mkstemp(dir="/home/nils/data/planet/", prefix=id0, suffix='.tif')
+
+        id0_url = 'https://api.planet.com/data/v1/item-types/{}/items/{}/assets'.format(item_type, id0)
+
+        # Returns JSON metadata for assets in this ID. Learn more: planet.com/docs/reference/data-api/items-assets/#asset
+        result = requests.get(id0_url, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
+        # List of asset types available for this particular satellite image
+        LOGGER.debug(result.json().keys())
+        # This is "inactive" if the "visual" asset has not yet been activated; otherwise 'active'
+        if 'analytic' in result.json().keys():
+            LOGGER.debug("****** down loading file ********")
+            LOGGER.debug(result.json()['analytic']['status'])
+            # Parse out useful links
+            links = result.json()[u"analytic"]["_links"]
+            self_link = links["_self"]
+            activation_link = links["activate"]
+
+            # Request activation of the 'visual' asset:
+            activate_result = requests.get(activation_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
+            # Parse out useful links
+            links = result.json()[u"analytic"]["_links"]
+            self_link = links["_self"]
+            activation_link = links["activate"]
+
+            # Request activation of the 'visual' asset:
+            activate_result = requests.get(activation_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
+            activation_status_result = requests.get(self_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
+
+            while activation_status_result.json()["status"] != 'active':
+                LOGGER.debug('*** File is sleeping. gently waking up ****')
+                LOGGER.debug(activation_status_result.json()["status"])
+                time.sleep(30)
+                activation_status_result = requests.get(self_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
+
+            LOGGER.debug('File ready to download: %s' % (activation_status_result.json()["status"]))
+            # Image can be downloaded by making a GET with your Planet API key, from here:
+            download_link = activation_status_result.json()["location"]
+
+            r = requests.get(download_link, stream=True, verify=False)
+            with open(local_file, 'wb') as fp:
+                shutil.copyfileobj(r.raw, fp)
+                resources.extend([local_file])
+
+    return resources
