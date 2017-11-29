@@ -201,7 +201,7 @@ class FreezeThawProcess(IndicatorProcess):
 # Untested
 class Duration(IndicatorProcess):
     key = 'duration'
-    extra_inputs = [LiteralInput("treshold", "Threshold",
+    extra_inputs = [LiteralInput("threshold", "Threshold",
                                 abstract="The threshold value to use for the logical operation.",
                                 data_type='float',
                                 min_occurs=1,

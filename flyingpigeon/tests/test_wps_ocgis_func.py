@@ -29,8 +29,8 @@ def test_wps_Duration():
     client = client_for(Service(processes=[Duration(),]))
     datainputs = "resource=files@xlink:href={0};grouping={1};threshold={2};operation={3};summary={4}".format(
         TESTDATA['cmip3_tas_sresb1_da_nc'],
-        300,
         'yr',
+        300.,
         'gt',
         'mean')
     resp = client.get(
@@ -41,3 +41,4 @@ def test_wps_Duration():
 
 
 #test_wps_FreezeThaw()
+#test_wps_Duration()
