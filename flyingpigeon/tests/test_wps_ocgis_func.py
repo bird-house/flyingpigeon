@@ -25,5 +25,19 @@ def test_wps_ICCLIM_TX():
         datainputs=datainputs)
     assert_response_success(resp)
 
+def test_wps_Duration():
+    client = client_for(Service(processes=[Duration(),]))
+    datainputs = "resource=files@xlink:href={0};grouping={1};threshold={2};operation={3};summary={4}".format(
+        TESTDATA['cmip3_tas_sresb1_da_nc'],
+        300,
+        'yr',
+        'gt',
+        'mean')
+    resp = client.get(
+        service='WPS', request='Execute', version='1.0.0',
+        identifier='duration',
+        datainputs=datainputs)
+    assert_response_success(resp)
+
 
 #test_wps_FreezeThaw()

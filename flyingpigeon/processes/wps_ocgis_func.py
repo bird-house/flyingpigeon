@@ -11,7 +11,7 @@ have been spatially and temporally cropped beforehand.
 TODO: Add keywords to each function description once pyWPS implements support
 for it.
 
-Author: David Huard (Ouranos)
+Author: David Huard, Ouranos, 2017
 """
 
 from pywps import Process
@@ -36,6 +36,7 @@ register.register_icclim(fr)
 icclim_classes = {k:v for (k,v) in fr.items() if type(k) == str and k.startswith('icclim')}
 
 class IndicatorProcess(Process, object):
+    """A Process class wrapping OCGIS functions."""
     key = 'to_be_subclassed'
     version = '1.0'
 
@@ -183,44 +184,10 @@ class IndicatorProcess(Process, object):
 
         return response
 
-# TODO: Implement check to make sure that the data is daily ?
-class ICCLIMProcess(IndicatorProcess):
-    def __init__(self):
-        # Scrape the meta data from the docstring
-        self.ocgis_cls = fr[self.key]
-        self.icclim_func = self.ocgis_cls._get_icclim_func_(self.ocgis_cls())
-        doc = self.icclim_func.func_doc
 
-        super(IndicatorProcess, self).__init__(
-            self._handler,
-            identifier=self.ocgis_cls.key,
-            title=self.ocgis_cls.key.split('_')[1],
-            abstract=doc.split('\n')[1].strip(),
-            inputs=self.inputs + self.extra_inputs,
-            outputs=self.outputs,
-            status_supported=True,
-            store_supported=True,
-        )
-
-def _generate_icclim_classes():
-    import operator
-    import ocgis
-    pat = """
-class {0}Process(ICCLIMProcess):
-    key = '{1}'
-    """
-    txt = ""
-    names = []
-    for key, cls in sorted(icclim_classes.items(), key=operator.itemgetter(0)):
-        if issubclass(cls, ocgis.contrib.library_icclim.AbstractIcclimMultivariateFunction):
-            continue
-        else:
-            txt = txt + (pat.format(key.upper(), key))
-            names.append( "{}Process".format(key.upper()) )
-
-    return txt, names
-
-cls_definition, cls_names = _generate_icclim_classes()
+#############################################
+#          Custom class definitions         #
+#############################################
 
 class FreezeThawProcess(IndicatorProcess):
     key = 'freezethaw'
@@ -250,6 +217,58 @@ class Duration(IndicatorProcess):
                                  default='mean',
                                  min_occurs=0,
                                  max_occurs=1), ]
+
+
+#############################################
+#    Automated ICCLIM class definitions     #
+#############################################
+
+# TODO: Implement check to make sure that the data is daily ?
+class ICCLIMProcess(IndicatorProcess):
+    """Process class instantiated using definitions from the ICCLIM library.
+    """
+    def __init__(self):
+        # Scrape the meta data from the docstring
+        self.ocgis_cls = fr[self.key]
+        self.icclim_func = self.ocgis_cls._get_icclim_func_(self.ocgis_cls())
+        doc = self.icclim_func.func_doc
+
+        super(IndicatorProcess, self).__init__(
+            self._handler,
+            identifier=self.ocgis_cls.key,
+            title=self.ocgis_cls.key.split('_')[1],
+            abstract=doc.split('\n')[1].strip(),
+            inputs=self.inputs + self.extra_inputs,
+            outputs=self.outputs,
+            status_supported=True,
+            store_supported=True,
+        )
+
+def _generate_icclim_classes():
+    """Automatically generate code definining Process classes for ICCLIM
+    indicators.
+    """
+    import operator
+    import ocgis
+    pat = """
+class {0}Process(ICCLIMProcess):
+    key = '{1}'
+    """
+    txt = ""
+    names = []
+    for key, cls in sorted(icclim_classes.items(), key=operator.itemgetter(0)):
+        if issubclass(cls, ocgis.contrib.library_icclim.AbstractIcclimMultivariateFunction):
+            # TODO: Add support for multivariate functions.
+            continue
+        else:
+            txt = txt + (pat.format(key.upper(), key))
+            names.append( "{}Process".format(key.upper()) )
+
+    return txt, names
+
+# Run the class generator. The output has been copied below.
+cls_definition, cls_names = _generate_icclim_classes()
+
 
 
 #############################################

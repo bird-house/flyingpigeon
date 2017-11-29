@@ -56,14 +56,10 @@ processes = [
     #    RobustnessProcess(),
     PlottimeseriesProcess(),
     SegetalfloraProcess(),
-<<<<<<< HEAD
-    SpatialAnalogProcess()
-] + ocgis_processes
-=======
     SpatialAnalogProcess(),
     MapSpatialAnalogProcess(),
-]
->>>>>>> 0565e9460e15a790333f8b61db92180dacdb6f34
+    ] + ocgis_processes
+
 
 """
 pywps3 processes:
