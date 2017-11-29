@@ -448,6 +448,41 @@ def prepare_static_folder():
         os.symlink(config.static_path(), destination)
 
 
+def get_calendar(resource, variable=None):
+    """
+    returns the calendar and units in wich the timestamps are stored
+
+    :param resource: netCDF file or files of one Dataset
+
+    :return str: calendar, unit
+    """
+
+    if type(resource) != list:
+        resource = [resource]
+
+    try:
+        if len(resource) > 1:
+            ds = MFDataset(resource)
+        else:
+            ds = Dataset(resource[0])
+        time = ds.variables['time']
+    except:
+        msg = 'failed to get time'
+        LOGGER.exception(msg)
+        raise Exception(msg)
+
+    if hasattr(time, 'units') is True:
+        unit = time.units
+    else:
+        unit = None
+
+    if hasattr(time, 'calendar') is True:
+        calendar = time.calendar
+    else:
+        calendar = None
+    return str(calendar), str(unit)
+
+
 def get_coordinates(resource, variable=None, unrotate=False):
     """
     reads out the coordinates of a variable
@@ -473,7 +508,7 @@ def get_coordinates(resource, variable=None, unrotate=False):
 
             var = ds.variables[variable]
             dims = list(var.dimensions)
-            dims.remove('time')
+            if 'time' in dims: dims.remove('time')
             # TODO: find position of lat and long in list and replace dims[0] dims[1]
             lats = ds.variables[dims[0]][:]
             lons = ds.variables[dims[1]][:]
@@ -585,12 +620,11 @@ def get_timerange(resource):
     try:
         if len(resource) > 1:
             ds = MFDataset(resource)
-            time = ds.variables['time']
-            print('MFDataset loaded for %s of files in resource:' % len(resource))
+            LOGGER.debug('MFDataset loaded for %s of files in resource:' % len(resource))
         else:
             ds = Dataset(resource[0])
-            time = ds.variables['time']
-            print('Dataset loaded for %s file in resource:' % len(resource))
+            LOGGER.debug('Dataset loaded for %s file in resource:' % len(resource))
+        time = ds.variables['time']
 
         if (hasattr(time, 'units') and hasattr(time, 'calendar')) is True:
             s = num2date(time[0], time.units, time.calendar)
@@ -614,21 +648,22 @@ def get_timerange(resource):
     return start, end
 
 
-def get_time(resource, format=None):
+def get_time(resource):
     """
     returns all timestamps of given netcdf file as datetime list.
 
     :param resource: NetCDF file(s)
-    :param format: if a format is provided (e.g format='%Y%d%m'), values will be converted to string
+
     :return : list of timesteps
     """
+    # :param format: if a format is provided (e.g format='%Y%d%m'), values will be converted to string
+
     if type(resource) != list:
         resource = [resource]
 
     try:
         if len(resource) > 1:
             ds = MFDataset(resource)
-            time = ds.variables['time']
         else:
             ds = Dataset(resource[0])
         time = ds.variables['time']
@@ -646,11 +681,28 @@ def get_time(resource, format=None):
             timestamps = num2date(time[:])
         ds.close()
         try:
-            if format is not None:
-                ts = [t.strftime(format=format) for t in timestamps]
-            else:
-                #TODO change format according to frequency
-                ts = [dt.strptime(str(i), '%Y-%m-%d %H:%M:%S') for i in timestamps]
+            ts = [dt.strptime(str(i), '%Y-%m-%d %H:%M:%S') for i in timestamps]
+
+            # if date_format is not None:
+            #     ts = [t.strftime(format=date_format) for t in timestamps]
+            # else:
+            #    ts = [dt.strptime(str(i), '%Y-%m-%d %H:%M:%S') for i in timestamps]
+
+            # TODO give out dateformat by frequency
+            # ERROR: ValueError: unconverted data remains: 12:00:00
+            # from flyingpigeon.metadata import get_frequency
+
+            # frq = get_frequency(resource)
+            # if frq is 'day':
+            #     ts = [dt.strptime(str(i), '%Y-%m-%d') for i in timestamps]
+            # elif frq is 'mon':
+            #     ts = [dt.strptime(str(i), '%Y-%m') for i in timestamps]
+            # elif frq is 'sem':
+            #     ts = [dt.strptime(str(i), '%Y-%m') for i in timestamps]
+            # elif frq is 'yr':
+            #     ts = [dt.strptime(str(i), '%Y') for i in timestamps]
+            # else:
+            #     ts = [dt.strptime(str(i), '%Y-%m-%d %H:%M:%S') for i in timestamps]
         except:
             msg = 'failed to convert times to string'
             LOGGER.exception(msg)
@@ -685,7 +737,7 @@ def get_values(resource, variable=None):
     if variable is None:
         variable = get_variable(resource)
 
-    if type(resource) is str:
+    if isinstance(resource, basestring):
         ds = Dataset(resource)
     elif len(resource) == 1:
         ds = Dataset(resource)
@@ -795,7 +847,7 @@ def sort_by_filename(resource, historical_concatination=False):
                         if historical_concatination is False:
                             for n in resource:
                                 if '%s_' % key in n:
-                                    ndic[key].append(path.join(p, n))
+                                    ndic[key].append(path.abspath(n))  # path.join(p, n))
 
                         elif historical_concatination is True:
                             key_hist = key.replace('rcp26', 'historical').\
@@ -804,7 +856,7 @@ def sort_by_filename(resource, historical_concatination=False):
                                 replace('rcp85', 'historical')
                             for n in resource:
                                 if '%s_' % key in n or '%s_' % key_hist in n:
-                                    ndic[key].append(path.join(p, n))
+                                    ndic[key].append(path.abspath(n))  # path.join(p, n))
                         else:
                             LOGGER.error('append file paths to dictionary for key %s failed' % key)
                         ndic[key].sort()
@@ -821,7 +873,8 @@ def sort_by_filename(resource, historical_concatination=False):
                 except Exception:
                     msg = 'failed to sort the list of resources and add dates to keyname: %s' % key
                     LOGGER.exception(msg)
-                    raise Exception(msg)
+                    tmp_dic[key] = ndic[key]
+                    # raise Exception(msg)
         elif len(resource) == 1:
             p, f = path.split(path.abspath(resource[0]))
             tmp_dic[f.replace('.nc', '')] = path.abspath(resource[0])

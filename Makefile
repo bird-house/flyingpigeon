@@ -1,4 +1,4 @@
-VERSION := 0.3.11
+VERSION := 0.3.13
 RELEASE := master
 
 # Include custom config if it is available
@@ -13,9 +13,9 @@ OS_NAME := $(shell uname -s 2>/dev/null || echo "unknown")
 CPU_ARCH := $(shell uname -m 2>/dev/null || uname -p 2>/dev/null || echo "unknown")
 
 # Python
-SETUPTOOLS_VERSION := 27.2.0
+SETUPTOOLS_VERSION := 36.5.0
 CONDA_VERSION := 4.3
-BUILDOUT_VERSION := 2.9.4
+BUILDOUT_VERSION := 2.9.5
 
 # Anaconda
 ANACONDA_HOME ?= $(HOME)/anaconda
@@ -123,11 +123,6 @@ bootstrap.sh:
 	@curl "https://raw.githubusercontent.com/bird-house/birdhousebuilder.bootstrap/$(RELEASE)/bootstrap.sh" --silent --insecure --output bootstrap.sh "https://raw.githubusercontent.com/bird-house/birdhousebuilder.bootstrap/$(RELEASE)/bootstrap.sh"
 	@chmod 755 bootstrap.sh
 
-requirements.sh:
-	@echo "Setup default requirements.sh ..."
-	@curl "https://raw.githubusercontent.com/bird-house/birdhousebuilder.bootstrap/$(RELEASE)/requirements.sh" --silent --insecure --output requirements.sh
-	@chmod 755 requirements.sh
-
 custom.cfg:
 	@echo "Using custom.cfg for buildout ..."
 	@test -f custom.cfg || cp -v custom.cfg.example custom.cfg
@@ -175,7 +170,7 @@ conda_env: anaconda conda_config
 .PHONY: conda_pinned
 conda_pinned: conda_env
 	@echo "Update pinned conda packages ..."
-	@test -d $(CONDA_ENV_PATH) && test -f $(CONDA_PINNED) && cp -f "$(CONDA_PINNED)" "$(CONDA_ENV_PATH)/conda-meta/pinned"
+	@-test -d $(CONDA_ENV_PATH) && test -f $(CONDA_PINNED) && cp -f "$(CONDA_PINNED)" "$(CONDA_ENV_PATH)/conda-meta/pinned"
 
 .PHONY: export
 export:
@@ -194,7 +189,7 @@ sysinstall:
 	@echo "\nInstalling system packages for bootstrap ..."
 	@bash bootstrap.sh -i
 	@echo "\nInstalling system packages for your application ..."
-	@test -f requirements.sh || bash requirements.sh
+	@-test -f requirements.sh && bash requirements.sh
 
 .PHONY: install
 install: bootstrap
@@ -275,7 +270,7 @@ doc8:
 	$(CONDA_ENV_PATH)/bin/doc8 docs/
 
 .PHONY: selfupdate
-selfupdate: bootstrap.sh requirements.sh .gitignore
+selfupdate: bootstrap.sh .gitignore
 	@curl "https://raw.githubusercontent.com/bird-house/birdhousebuilder.bootstrap/$(RELEASE)/Makefile" --silent --insecure --output Makefile
 
 ## Supervisor targets

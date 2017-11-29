@@ -4,6 +4,11 @@ from datetime import datetime as dt
 import time  # performance test
 import subprocess
 from subprocess import CalledProcessError
+import uuid
+
+from netCDF4 import Dataset
+
+from numpy import squeeze
 
 from pywps import Process
 from pywps import LiteralInput, LiteralOutput
@@ -17,6 +22,7 @@ from flyingpigeon.datafetch import reanalyses as rl
 from flyingpigeon.ocgis_module import call
 from flyingpigeon import analogs
 from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.utils import get_variable
 from flyingpigeon.log import init_process_logger
 
 import logging
@@ -36,14 +42,27 @@ class AnalogsreanalyseProcess(Process):
                          allowed_values=_PRESSUREDATA_
                          ),
 
-            # self.BBox = self.addBBoxInput(
-            #   identifier="BBox",
-            #   title="Bounding Box",
-            #   abstract="coordinates to define the region to be analysed",
-            #   minOccurs=1,
-            #   maxOccurs=1,
-            #   crss=['EPSG:4326']
-            #   )
+            LiteralInput("timeres", "Reanalyses temporal resolution",
+                         abstract="Temporal resolution of the reanalyses (only for 20CRV2)",
+                         default="day",
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=1,
+                         allowed_values=['day', '6h']
+                         ),
+
+            LiteralInput('BBox', 'Bounding Box',
+                         data_type='string',
+                         abstract="Enter a bbox: min_lon, max_lon, min_lat, max_lat."
+                            " min_lon=Western longitude,"
+                            " max_lon=Eastern longitude,"
+                            " min_lat=Southern or northern latitude,"
+                            " max_lat=Northern or southern latitude."
+                            " For example: -80,50,20,70",
+                         min_occurs=1,
+                         max_occurs=1,
+                         default='-80,50,20,70',
+                         ),
 
             LiteralInput('dateSt', 'Start date of analysis period',
                          data_type='date',
@@ -87,7 +106,7 @@ class AnalogsreanalyseProcess(Process):
                          ),
 
             LiteralInput("seasonwin", "Seasonal window",
-                         abstract="Number of days befor and after the date to be analysed",
+                         abstract="Number of days before and after the date to be analysed",
                          default='30',
                          data_type='integer',
                          min_occurs=0,
@@ -206,7 +225,20 @@ class AnalogsreanalyseProcess(Process):
             dateEn = request.inputs['dateEn'][0].data
             seasonwin = request.inputs['seasonwin'][0].data
             nanalog = request.inputs['nanalog'][0].data
-            bbox = [-80, 20, 50, 70]
+            timres = request.inputs['timeres'][0].data
+
+            #bbox = [-80, 20, 50, 70]
+            # TODO: Add checking for wrong cordinates and apply default if nesessary
+            bbox = []
+            bboxStr = request.inputs['BBox'][0].data
+            bboxStr = bboxStr.split(',')
+            bbox.append(float(bboxStr[0]))
+            bbox.append(float(bboxStr[2]))
+            bbox.append(float(bboxStr[1]))
+            bbox.append(float(bboxStr[3]))
+            LOGGER.debug('BBOX for ocgis: %s ' % (bbox))
+            LOGGER.debug('BBOX original: %s ' % (bboxStr))
+
             # if bbox_obj is not None:
             #     LOGGER.info("bbox_obj={0}".format(bbox_obj.coords))
             #     bbox = [bbox_obj.coords[0][0],
@@ -279,6 +311,7 @@ class AnalogsreanalyseProcess(Process):
 
         try:
             if model == 'NCEP':
+                getlevel = True
                 if 'z' in var:
                     level = var.strip('z')
                     conform_units_to = None
@@ -286,6 +319,7 @@ class AnalogsreanalyseProcess(Process):
                     level = None
                     conform_units_to = 'hPa'
             elif '20CRV2' in model:
+                getlevel = False
                 if 'z' in var:
                     level = var.strip('z')
                     conform_units_to = None
@@ -303,12 +337,13 @@ class AnalogsreanalyseProcess(Process):
         ##########################################
         # fetch Data from original data archive
         ##########################################
-
+                
+        # NOTE: If ref is say 1950 - 1990, and sim is just 1 week in 2017 - ALL the data will be downloaded, 1950 - 2017 
         try:
             model_nc = rl(start=start.year,
                           end=end.year,
                           dataset=model,
-                          variable=var)
+                          variable=var,timres=timres,getlevel=getlevel)
             LOGGER.info('reanalyses data fetched')
         except Exception:
             msg = 'failed to get reanalyses data'
@@ -320,10 +355,67 @@ class AnalogsreanalyseProcess(Process):
         LOGGER.debug("start and end time: %s - %s" % (start, end))
         time_range = [start, end]
 
-        model_subset = call(resource=model_nc, variable=var,
-                            geom=bbox, spatial_wrapping='wrap', time_range=time_range,
-                            # conform_units_to=conform_units_to
-                            )
+
+        # For 20CRV2 geopotential height, daily dataset for 100 years is about 50 Gb
+        # So it makes sense, to operate it step-by-step
+        # TODO: need to create dictionary for such datasets (for models as well)
+        # TODO: benchmark the method bellow for NCEP z500 for 60 years
+
+        if ('20CRV2' in model) and ('z' in var): 
+            tmp_total = []
+            origvar = get_variable(model_nc)
+
+            for z in model_nc:
+                tmp_n = 'tmp_%s' % (uuid.uuid1()) 
+                b0=call(resource=z, variable=origvar, level_range=[int(level), int(level)], geom=bbox,
+                spatial_wrapping='wrap',prefix='levdom_'+os.path.basename(z)[0:-3]) 
+                tmp_total.append(b0)
+
+            tmp_total = sorted(tmp_total, key=lambda i: os.path.splitext(os.path.basename(i))[0])
+            inter_subset_tmp = call(resource=tmp_total, variable=origvar, time_range=time_range)
+
+            # Clean
+            for i in tmp_total:
+                tbr='rm -f %s' % (i) 
+                os.system(tbr)  
+
+            # Create new variable
+            ds = Dataset(inter_subset_tmp, mode='a')
+            z_var = ds.variables.pop(origvar)
+            dims = z_var.dimensions
+            new_var = ds.createVariable('z%s' % level, z_var.dtype, dimensions=(dims[0], dims[2], dims[3]))
+            new_var[:, :, :] = squeeze(z_var[:, 0, :, :])
+            # new_var.setncatts({k: z_var.getncattr(k) for k in z_var.ncattrs()})
+            ds.close()
+            model_subset_tmp = call(inter_subset_tmp, variable='z%s' % level)
+        else:
+            model_subset_tmp = call(resource=model_nc, variable=var,
+                                    geom=bbox, spatial_wrapping='wrap', time_range=time_range,
+                                    # conform_units_to=conform_units_to
+                                    )
+
+        # If dataset is 20CRV2 the 6 hourly file should be converted to daily.  
+        # Option to use previously 6h data from cache (if any) and not download daily files.
+
+        if '20CRV2' in model:
+            if timres == '6h':
+                from cdo import Cdo
+                
+                cdo = Cdo()
+                model_subset = '%s.nc' % uuid.uuid1()
+                tmp_f = '%s.nc' % uuid.uuid1()
+
+                cdo_op = getattr(cdo,'daymean')
+                cdo_op(input=model_subset_tmp, output=tmp_f)
+                sti = '00:00:00' 
+                cdo_op = getattr(cdo,'settime')
+                cdo_op(sti, input=tmp_f, output=model_subset)
+                LOGGER.debug('File Converted from: %s to daily' % (timres))
+            else:
+                model_subset = model_subset_tmp
+        else:
+            model_subset = model_subset_tmp
+
         LOGGER.info('Dataset subset done: %s ', model_subset)
 
         response.update_status('dataset subsetted', 19)
@@ -392,6 +484,8 @@ class AnalogsreanalyseProcess(Process):
         try:
             # Construct descriptive filenames for the three files
             # listed in config file
+            # TODO check strftime for years <1900 (!)
+
             refDatesString = dt.strftime(refSt, '%Y-%m-%d') + "_" + dt.strftime(refEn, '%Y-%m-%d')
             simDatesString = dt.strftime(dateSt, '%Y-%m-%d') + "_" + dt.strftime(dateEn, '%Y-%m-%d')
             archiveNameString = "base_" + var + "_" + refDatesString + '_%.1f_%.1f_%.1f_%.1f' \
@@ -437,6 +531,8 @@ class AnalogsreanalyseProcess(Process):
             files=files,
             seasoncyc_base=seasoncyc_base,
             seasoncyc_sim=seasoncyc_sim,
+            base_id=model,
+            sim_id=model,
             timewin=timewin,
             varname=var,
             seacyc=seacyc,
@@ -468,7 +564,7 @@ class AnalogsreanalyseProcess(Process):
             LOGGER.exception(msg)
             raise Exception(msg)
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
-
+   
         response.update_status('preparing output', 70)
         # response.outputs['config'].storage = FileStorage()
         response.outputs['config'].file = config_file

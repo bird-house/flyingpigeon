@@ -24,7 +24,7 @@ _PRESSUREDATA_ = [
 _EOBSVARIABLES_ = ['tg', 'tx', 'tn', 'rr']
 
 
-def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP'):
+def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP', timres='day', getlevel = True):
     """
     Fetches the reanalysis data (NCEP, 20CR or ERA_20C) to local file system
     :param start: int for start year to fetch source data
@@ -34,7 +34,7 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP'):
     :return list: list of path/files.nc
     """
     # used for NETCDF convertion
-    from os import path
+    from os import path, system
     from flyingpigeon.ocgis_module import call
     from shutil import move
     # used for NETCDF convertion
@@ -80,9 +80,15 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP'):
                         url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2/pressure/hgt.%s.nc' % (year)  # noqa
                 elif dataset == '20CRV2c':
                     if variable == 'prmsl':
-                        url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/monolevel/prmsl.%s.nc' % year  # noqa
+                        if timres == '6h':
+                            url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/monolevel/prmsl.%s.nc' % year  # noqa
+                        else:
+                            url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/Dailies/monolevel/prmsl.%s.nc' % year  # noqa
                     if 'z' in variable:
-                        url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/pressure/hgt.%s.nc' % (year)  # noqa
+                        if timres == '6h':
+                            url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/pressure/hgt.%s.nc' % (year)  # noqa
+                        else:
+                            url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/Dailies/pressure/hgt.%s.nc' % (year)  # noqa
                 else:
                     LOGGER.debug('Dataset %s not known' % dataset)
                 LOGGER.debug('url: %s' % url)
@@ -96,6 +102,7 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP'):
                 try:
                     p, f = path.split(path.abspath(df))
                     LOGGER.debug("path = %s , file %s " % (p, f))
+                    # May be an issue if several users are working at the same time
                     move(df, f)
                     conv = call(resource=f,
                                 output_format_options={'data_model': 'NETCDF4_CLASSIC'},
@@ -103,6 +110,10 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP'):
                                 prefix=f.replace('.nc', ''))
                     obs_data.append(conv)
                     LOGGER.debug('file %s to NETCDF4_CLASSIC converted' % conv)
+                    # Cleaning, could be 50gb... for each (!) user
+                    # TODO Check how links work
+                    cmdrm = 'rm -f %s' % (f)
+                    system(cmdrm)
                 except:
                     LOGGER.exception('failed to convert into NETCDF4_CLASSIC')
             except:
@@ -114,7 +125,7 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP'):
         LOGGER.exception(msg)
         raise Exception(msg)
 
-    if level is None:
+    if (level is None) or (getlevel==False):
         data = obs_data
     else:
         LOGGER.info('get level: %s' % level)
@@ -129,9 +140,9 @@ def get_level(resource, level):
     from numpy import squeeze
 
     try:
-        level_data = call(resource, level_range=[int(level), int(level)])
         if type(resource) == list:
             resource.sort()
+        level_data = call(resource, level_range=[int(level), int(level)])
         variable = get_variable(level_data)
         LOGGER.info('found %s in file' % variable)
         ds = Dataset(level_data, mode='a')
@@ -140,6 +151,13 @@ def get_level(resource, level):
         new_var = ds.createVariable('z%s' % level, var.dtype, dimensions=(dims[0], dims[2], dims[3]))
         # i = where(var[:]==level)
         new_var[:, :, :] = squeeze(var[:, 0, :, :])
+
+        # TODO: Here may be an error! in case of exception, dataset will not close!
+        # Exception arise for example for 20CRV2 data...
+        try:
+            new_var.setncatts({k: var.getncattr(k) for k in var.ncattrs()})
+        except:
+            LOGGER.info('Could not set attributes for z%s' % level)
         ds.close()
         LOGGER.info('level %s extracted' % level)
         data = call(level_data, variable='z%s' % level)

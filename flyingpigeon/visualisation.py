@@ -1,11 +1,14 @@
+# encoding: utf8
 import os
 from os.path import join
 from tempfile import mkstemp
 from netCDF4 import Dataset
 from datetime import datetime, date
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')   # use this if no xserver is available
+import logging
+from matplotlib import use
+use('Agg')   # use this if no xserver is available
+
 
 from matplotlib import pyplot as plt
 from matplotlib.colors import Normalize
@@ -29,7 +32,66 @@ class MidpointNormalize(Normalize):
         return np.ma.masked_array(np.interp(value, x, y))
 
 
-def plot_polygons(regions):
+def fig2plot(fig, file_extension='png', bbox_inches='tight', dpi=300, facecolor='w', edgecolor='k'):
+    '''saving a matplotlib figure to a graphic
+
+    :param fig: matplotlib figure object
+    :param file_extension: file file_extension (default='png')
+
+    :return str: path to graphic
+    '''
+
+    _, graphic = mkstemp(dir='.', suffix='.%s' % file_extension)
+    fig.savefig(graphic, bbox_inches=bbox_inches)
+
+    return graphic
+
+
+def plot_extend(resource, file_extension='png'):
+    """
+    plots the extend (domain) of the values stored in a netCDF file:
+
+    :parm resource: path to netCDF file
+    :param file_extension: file format of the graphic. if file_extension=None a matplotlib figure will be returned
+
+    :return graphic: graphic in specified format
+    """
+    import matplotlib.patches as mpatches
+    lats, lons = utils.get_coordinates(resource, unrotate=True)
+
+    # box_top = 45
+    # x, y = [-20, -20, 45, 45, -44], [-45, box_top, box_top, -45, -45]
+
+    xy = np.array([[np.min(lons), np.min(lats)],
+                   [np.max(lons), np.min(lats)],
+                   [np.max(lons), np.max(lats)],
+                   [np.min(lons), np.max(lats)]])
+
+    fig = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k')
+    projection = ccrs.Robinson()
+
+    #  ccrs.Orthographic(central_longitude=np.mean(xy[:, 0]),
+    #  central_latitude=np.mean(xy[:, 1]),
+    #  globe=None)  # Robinson()
+
+    ax = plt.axes(projection=projection)
+    ax.stock_img()
+    ax.coastlines()
+    ax.add_patch(mpatches.Polygon(xy, closed=True,  transform=ccrs.PlateCarree(), color='coral', alpha=0.6))
+    # ccrs.Geodetic()
+    ax.gridlines()
+    plt.show()
+
+    if file_extension is None:
+        map_graphic = fig
+    else:
+        map_graphic = fig2plot(fig=fig, file_extension=file_extension)
+    plt.close()
+
+    return map_graphic
+
+
+def plot_polygons(regions, file_extension='png'):
     """
     extract the polygon coordinate and plot it on a worldmap
 
@@ -40,7 +102,11 @@ def plot_polygons(regions):
 
     from cartopy.io.shapereader import Reader
     from cartopy.feature import ShapelyFeature
+<<<<<<< HEAD
     from os.path import curdir, abspath
+=======
+    from numpy import mean, append
+>>>>>>> 0565e9460e15a790333f8b61db92180dacdb6f34
 
     from flyingpigeon import config
     DIR_SHP = config.shapefiles_dir()
@@ -51,54 +117,97 @@ def plot_polygons(regions):
     fname = join(DIR_SHP, "countries.shp")
     geos = Reader(fname).geometries()
     records = Reader(fname).records()
+    central_latitude = []
+    central_longitude = []
 
+<<<<<<< HEAD
     LOGGER.debug('')
 
     fig = plt.figure(figsize=(10, 10), facecolor='w', edgecolor='k')  # dpi=600,
     projection = ccrs.Orthographic(central_longitude=0.0, central_latitude=0.0, globe=None)  # Robinson()
+=======
+    for r in records:
+        geo = geos.next()
+        if r.attributes['ISO_A3'] in regions:
+            x, y = geo.centroid.coords.xy
+            central_longitude.append(x[0])
+            central_latitude.append(y[0])
+
+    fig = plt.figure(figsize=(20, 10))
+    projection = ccrs.Orthographic(central_longitude=mean(central_longitude),
+                                   central_latitude=mean(central_latitude),
+                                   globe=None)  # Robinson()
+>>>>>>> 0565e9460e15a790333f8b61db92180dacdb6f34
     ax = plt.axes(projection=projection)
+
+    geos = Reader(fname).geometries()
+    records = Reader(fname).records()
 
     for r in records:
         geo = geos.next()
         if r.attributes['ISO_A3'] in regions:
-            shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black')
+            shape_feature = ShapelyFeature(geo, ccrs.PlateCarree(), edgecolor='black', color='coral')
             ax.add_feature(shape_feature)
+<<<<<<< HEAD
         ax.coastlines()
         # ax.set_global()
 
     o1, map_graphic = mkstemp(dir=abspath(curdir), suffix='.png')
     fig.savefig(map_graphic)
+=======
+    ax.coastlines()
+    ax.gridlines()
+    ax.stock_img()
+    # ax.set_global()
+    map_graphic = fig2plot(fig=fig, file_extension=file_extension)
+>>>>>>> 0565e9460e15a790333f8b61db92180dacdb6f34
     plt.close()
 
     return map_graphic
 
 
+<<<<<<< HEAD
 def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, png_robustness=None):
+=======
+def factsheetbrewer(png_region=None, png_spaghetti=None, png_uncertainty=None, png_robustness=None):
+>>>>>>> 0565e9460e15a790333f8b61db92180dacdb6f34
     """
     Put graphics into the climate fact sheet template to generate the final climate fact sheet
 
-    :param png_country: World map graphic with countries polygons.
+    :param png_region: World map graphic with countries polygons.
     :param png_uncertainty: Graphic showing a timeseries with fieldmean values and corresponding uncertainty
+    :param png_spaghetti: Graphic showing each datatset as a single timeseries
+    :param png_robustness: Map of the signal change including hashes and dots for robutsness values
 
     :return pdf foumular: pdf with fillable text boxes for interpretation text
     """
     from PyPDF2 import PdfFileWriter, PdfFileReader
     from reportlab.pdfgen import canvas
-    from flyingpigeon.config import static_dir
+    from flyingpigeon.config import data_path
     try:
         try:
+<<<<<<< HEAD
             _, pdf_country = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_country)
             c.drawImage(png_country, 355, 500, width=120, height=120)  # , mask=None, preserveAspectRatio=False)
+=======
+            _, pdf_region = mkstemp(dir='.', suffix='.pdf')
+            c = canvas.Canvas(pdf_region)
+            c.drawImage(png_region, 340, 490, width=130, height=130)  # , mask=None, preserveAspectRatio=False)
+>>>>>>> 0565e9460e15a790333f8b61db92180dacdb6f34
             c.save()
-            pfr_country = PdfFileReader(open(pdf_country, 'rb'))
+            pfr_region = PdfFileReader(open(pdf_region, 'rb'))
         except:
             LOGGER.exception('failed to convert png to pdf')
 
         try:
             _, pdf_uncertainty = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_uncertainty)
+<<<<<<< HEAD
             c.drawImage(png_uncertainty, 20, 370, width=300, height=120)  # , mask=None, preserveAspectRatio=False)
+=======
+            c.drawImage(png_uncertainty, 20, 350, width=250, height=130)  # , mask=None, preserveAspectRatio=False)
+>>>>>>> 0565e9460e15a790333f8b61db92180dacdb6f34
             c.save()
             pfr_uncertainty = PdfFileReader(open(pdf_uncertainty, 'rb'))
         except:
@@ -107,7 +216,11 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
         try:
             _, pdf_spaghetti = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_spaghetti)
+<<<<<<< HEAD
             c.drawImage(png_spaghetti, 280, 370, width=300, height=120)  # , mask=None, preserveAspectRatio=False)
+=======
+            c.drawImage(png_spaghetti, 280, 350, width=250, height=130)  # , mask=None, preserveAspectRatio=False)
+>>>>>>> 0565e9460e15a790333f8b61db92180dacdb6f34
             c.save()
             pfr_spagetthi = PdfFileReader(open(pdf_spaghetti, 'rb'))
         except:
@@ -116,14 +229,18 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
         try:
             _, pdf_robustness = mkstemp(dir='.', suffix='.pdf')
             c = canvas.Canvas(pdf_robustness)
+<<<<<<< HEAD
             c.drawImage(png_robustness, 55, 90, width=250, height=180)  # , mask=None, preserveAspectRatio=False)
+=======
+            c.drawImage(png_robustness, 30, 100, width=200, height=170)  # , mask=None, preserveAspectRatio=False)
+>>>>>>> 0565e9460e15a790333f8b61db92180dacdb6f34
             c.save()
             pfr_robustness = PdfFileReader(open(pdf_robustness, 'rb'))
         except:
             LOGGER.exception('failed to convert png to pdf')
 
         output_file = PdfFileWriter()
-        pfr_template = PdfFileReader(file(static_dir() + '/pdf/climatefactsheettemplate.pdf', 'rb'))
+        pfr_template = PdfFileReader(file(data_path() + '/pdf/climatefactsheettemplate.pdf', 'rb'))
         LOGGER.debug('template: %s' % pfr_template)
 
         page_count = pfr_template.getNumPages()
@@ -131,13 +248,13 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
             LOGGER.debug("Plotting png to {} of {}".format(page_number, page_count))
             input_page = pfr_template.getPage(page_number)
             try:
-                input_page.mergePage(pfr_country.getPage(0))
+                input_page.mergePage(pfr_region.getPage(0))
             except:
                 LOGGER.warn('failed to merge courtry map')
             try:
                 input_page.mergePage(pfr_uncertainty.getPage(0))
             except:
-                LOGGER.warn('failed to merge uncertainy plot')
+                LOGGER.warn('failed to merge uncertainty plot')
             try:
                 input_page.mergePage(pfr_spagetthi.getPage(0))
             except:
@@ -157,13 +274,17 @@ def factsheetbrewer(png_country=None, png_spaghetti=None, png_uncertainty=None, 
             LOGGER.info('sucessfully brewed the demanded factsheet')
         except:
             LOGGER.exception('failed write filled template to pdf. empty template will be set as output')
-            climatefactsheet = static_dir() + '/pdf/climatefactsheettemplate.pdf'
+            climatefactsheet = data_path() + '/pdf/climatefactsheettemplate.pdf'
     except:
         LOGGER.exception("failed to brew the factsheet, empty template will be set as output")
     return climatefactsheet
 
 
+<<<<<<< HEAD
 def spaghetti(resouces, variable=None, title=None, dir_out=None):
+=======
+def spaghetti(resouces, variable=None, title=None, file_extension='png'):
+>>>>>>> 0565e9460e15a790333f8b61db92180dacdb6f34
     """
     creates a png file containing the appropriate spaghetti plot as a field mean of the values.
 
@@ -194,7 +315,10 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
         LOGGER.exception(msg)
         raise Exception(msg)
     try:
+<<<<<<< HEAD
         o1, output_png = mkstemp(dir=dir_out, suffix='.png')
+=======
+>>>>>>> 0565e9460e15a790333f8b61db92180dacdb6f34
         for c, nc in enumerate(resouces):
             # get timestapms
             try:
@@ -216,7 +340,9 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
 
         plt.title(title, fontsize=20)
         plt.grid()
-        fig.savefig(output_png)
+
+        output_png = fig2plot(fig=fig, file_extension=file_extension)
+
         plt.close()
         LOGGER.info('timeseries spaghetti plot done for %s with %s lines.' % (variable, c))
     except:
@@ -226,13 +352,21 @@ def spaghetti(resouces, variable=None, title=None, dir_out=None):
     return output_png
 
 
+<<<<<<< HEAD
 def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
+=======
+def uncertainty(resouces, variable=None, ylim=None, title=None, file_extension='png', window=None):
+>>>>>>> 0565e9460e15a790333f8b61db92180dacdb6f34
     """
     creates a png file containing the appropriate uncertainty plot.
 
     :param resouces: list of files containing the same variable
     :param variable: variable to be visualised. If None (default), variable will be detected
     :param title: string to be used as title
+<<<<<<< HEAD
+=======
+    :param window: windowsize of the rolling mean
+>>>>>>> 0565e9460e15a790333f8b61db92180dacdb6f34
 
     :returns str: path/to/file.png
     """
@@ -242,6 +376,12 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
     import numpy as np
     import netCDF4
     from os.path import basename
+<<<<<<< HEAD
+=======
+    from flyingpigeon.utils import get_time, sort_by_filename
+    from flyingpigeon.calculation import fieldmean
+    from flyingpigeon.metadata import get_frequency
+>>>>>>> 0565e9460e15a790333f8b61db92180dacdb6f34
 
     # === prepare invironment
     if type(resouces) == str:
@@ -255,6 +395,7 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
 
     try:
         fig = plt.figure(figsize=(20, 10), facecolor='w', edgecolor='k')  # dpi=600,
+<<<<<<< HEAD
         o1, output_png = mkstemp(dir=dir_out, suffix='.png')
         variable = utils.get_variable(resouces[0])
         df = pd.DataFrame()
@@ -279,6 +420,52 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
             except:
                 LOGGER.exception('failed to calculate timeseries for %s ' % (f))
 
+=======
+        #  variable = utils.get_variable(resouces[0])
+        df = pd.DataFrame()
+
+        LOGGER.info('variable %s found in resources.' % variable)
+        datasets = sort_by_filename(resouces, historical_concatination=True)
+
+        for key in datasets.keys():
+            try:
+                data = fieldmean(datasets[key])  # get_values(f)
+                ts = get_time(datasets[key])
+                ds = pd.Series(data=data, index=ts, name=key)
+                # ds_yr = ds.resample('12M', ).mean()   # yearly mean loffset='6M'
+                df[key] = ds
+
+            except Exception:
+                LOGGER.exception('failed to calculate timeseries for %s ' % (key))
+
+        frq = get_frequency(resouces[0])
+        print frq
+
+        if window is None:
+            if frq == 'day':
+                window = 10951
+            elif frq == 'man':
+                window = 359
+            elif frq == 'sem':
+                window = 119
+            elif frq == 'yr':
+                window = 30
+            else:
+                LOGGER.debug('frequency %s is not included' % frq)
+                window = 30
+
+        if len(df.index.values) >= window * 2:
+            # TODO: calculate windowsize according to timestapms (day,mon,yr ... with get_frequency)
+            df_smooth = df.rolling(window=window, center=True).mean()
+            LOGGER.info('rolling mean calculated for all input data')
+        else:
+            df_smooth = df
+            LOGGER.debug('timeseries too short for moving mean')
+            fig.text(0.95, 0.05, '!!! timeseries too short for moving mean over 30years !!!',
+                     fontsize=20, color='red',
+                     ha='right', va='bottom', alpha=0.5)
+
+>>>>>>> 0565e9460e15a790333f8b61db92180dacdb6f34
         try:
             rollmean = df.rolling(window=30, center=True).mean()
             LOGGER.info('rolling mean calculated for all input data')
@@ -289,7 +476,7 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
             q95 = rollmean.quantile([0.95], axis=1, )  # numeric_only=False)
 
             LOGGER.info('quantile calculated for all input data')
-        except:
+        except Exception:
             LOGGER.exception('failed to calculate quantiles')
 
         try:
@@ -304,18 +491,24 @@ def uncertainty(resouces, variable=None, ylim=None, title=None, dir_out=None):
             plt.title(title, fontsize=20)
             plt.grid()  # .grid_line_alpha=0.3
 
-            fig.savefig(output_png)
+            output_png = fig2plot(fig=fig, file_extension=file_extension)
             plt.close()
             LOGGER.debug('timeseries uncertainty plot done for %s' % variable)
-        except:
-            LOGGER.exception('failed to calculate quantiles')
-    except:
-        LOGGER.exception('uncertainty plot failed for %s' % variable)
+        except Exception as err:
+            raise Exception('failed to calculate quantiles. %s' % err.message)
+    except Exception:
+        LOGGER.exception('uncertainty plot failed for %s.' % variable)
         _, output_png = mkstemp(dir='.', suffix='.png')
     return output_png
 
 
+<<<<<<< HEAD
 def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismic', title=None):
+=======
+def map_robustness(signal, high_agreement_mask, low_agreement_mask,
+                   variable=None, cmap='seismic', title=None,
+                   file_extension='png'):
+>>>>>>> 0565e9460e15a790333f8b61db92180dacdb6f34
     """
     generates a graphic for the output of the ensembleRobustness process for a lat/long file.
 
@@ -327,6 +520,14 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismi
     :param title: default='Model agreement of signal'
     :returns str: path/to/file.png
     """
+<<<<<<< HEAD
+=======
+    from flyingpigeon import utils
+    from numpy import mean, ma
+
+    if variable is None:
+        variable = utils.get_variable(signal)
+>>>>>>> 0565e9460e15a790333f8b61db92180dacdb6f34
 
     try:
         # from flyingpigeon.utils import get_values
@@ -337,8 +538,19 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismi
         mask_l = utils.get_values(low_agreement_mask)
         mask_h = utils.get_values(high_agreement_mask)
 
+<<<<<<< HEAD
         mask_l.mask = var_signal.mask
         mask_h.mask = var_signal.mask
+=======
+        # mask_l = ma.masked_where(low < 0.5, low)
+        # mask_h = ma.masked_where(high < 0.5, high)
+        # mask_l[mask_l == 0] = np.nan
+        # mask_h[mask_h == 0] = np.nan
+
+        LOGGER.info('data loaded')
+
+        lats, lons = utils.get_coordinates(signal, unrotate=True)
+>>>>>>> 0565e9460e15a790333f8b61db92180dacdb6f34
 
         mask_l.mask[mask_l.data is 0] = False
         mask_h.mask[mask_h.data is 0] = False
@@ -370,6 +582,7 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismi
         ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
         norm = MidpointNormalize(midpoint=0)
 
+<<<<<<< HEAD
         cs = plt.contourf(lons, lats, var_signal,
                           60, transform=ccrs.PlateCarree(),
                           norm=norm, cmap=cmap, interpolation='nearest')
@@ -377,7 +590,18 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismi
         ch = plt.contourf(lons, lats, mask_h, 60, transform=ccrs.PlateCarree(), colors='none', hatches=['.'])
 
         # plt.clim(minval, maxval)
+=======
+        cs = plt.contourf(lons, lats, var_signal, 60, norm=norm, transform=ccrs.PlateCarree(),
+                          cmap=cmap, interpolation='nearest')
+
+        cl = plt.contourf(lons, lats, mask_l, 1, transform=ccrs.PlateCarree(), colors='none', hatches=[None, '/'])
+        ch = plt.contourf(lons, lats, mask_h, 1, transform=ccrs.PlateCarree(), colors='none', hatches=[None, '.'])
+        # artists, labels = ch.legend_elements()
+        # plt.legend(artists, labels, handleheight=2)
+        # plt.clim(minval,maxval)
+>>>>>>> 0565e9460e15a790333f8b61db92180dacdb6f34
         ax.coastlines()
+        ax.gridlines()
         # ax.set_global()
 
         if title is None:
@@ -392,8 +616,12 @@ def map_robustness(signal, high_agreement_mask, low_agreement_mask, cmap='seismi
         plt.annotate('..  = high model ensemble agreement', (0, 0), (0, -20),
                      xycoords='axes fraction', textcoords='offset points', va='top')
 
+<<<<<<< HEAD
         _, graphic = mkstemp(dir='.', suffix='.png')
         fig.savefig(graphic)
+=======
+        graphic = fig2plot(fig=fig, file_extension=file_extension)
+>>>>>>> 0565e9460e15a790333f8b61db92180dacdb6f34
         plt.close()
 
         LOGGER.info('Plot created and figure saved')
@@ -489,7 +717,7 @@ def pdfmerge(pdfs):
     return mergedpdf
 
 
-def map_gbifoccurrences(latlon, dir='.'):
+def map_gbifoccurrences(latlon, dir='.', file_extension='png'):
     """
     creates a plot of coordinate points for tree occourences fetch in GBIF data base
 
@@ -501,7 +729,7 @@ def map_gbifoccurrences(latlon, dir='.'):
     try:
         cartopy_config['data_dir'] = os.path.join(dir, 'cartopy')
         # plotting ...
-        ip, tree_presents = mkstemp(dir=dir, suffix='.png')
+        # ip, tree_presents = mkstemp(dir=dir, suffix='.png')
         fig = plt.figure(figsize=(20, 10), facecolor='w', edgecolor='k')
         ax = plt.axes(projection=ccrs.Robinson(central_longitude=0))
         ax.coastlines()
@@ -515,7 +743,9 @@ def map_gbifoccurrences(latlon, dir='.'):
         # ax.set_xticks(np.arange(-180, 240, 60), crs=ccrs.PlateCarree())
         # ax.gridlines()  # plt.gca()
         cs = plt.scatter(latlon[:, 1], latlon[:, 0], transform=ccrs.Geodetic())  # ccrs.PlateCarree()
-        fig.savefig(tree_presents)
+
+        tree_presents = fig2plot(fig=fig, file_extension=file_extension)
+
         plt.close()
     except Exception as e:
         msg = 'failed to plot occurency plot: %s' % e
@@ -523,7 +753,7 @@ def map_gbifoccurrences(latlon, dir='.'):
     return tree_presents
 
 
-def map_PAmask(PAmask):
+def map_PAmask(PAmask, file_extension='png'):
     """
     plots the presents absence mask used in Species distribution Model processes
 
@@ -535,7 +765,7 @@ def map_PAmask(PAmask):
         ip, png_PA_mask = mkstemp(dir='.', suffix='.png')
         fig = plt.figure(figsize=(20, 10), facecolor='w', edgecolor='k')  # dpi=300,
         cs = plt.contourf(PAmask)
-        fig.savefig(png_PA_mask)
+        png_PA_mask = fig2plot(fig=fig, file_extension=file_extension)
         plt.close()
     except Exception as e:
         msg = 'failed to plot the PA mask'
@@ -546,6 +776,7 @@ def map_PAmask(PAmask):
     return png_PA_mask
 
 
+<<<<<<< HEAD
 def plot_kMEAN(kmeans, pca, title='kmean', sub_title='file='):
     """
     !!!Obsolete!!!
@@ -646,3 +877,67 @@ def plot_pressuremap(data, lats=None, lons=None,
     # plt.savefig(image)
     # plt.close()
     # return image
+=======
+def map_spatial_analog(ncfile, variable='dissimilarity', cmap='viridis', title='Spatial analog'):
+    """Return a matplotlib Figure instance showing a map of the dissimilarity measure.
+    """
+    import netCDF4 as nc
+    from flyingpigeon import utils
+    from mpl_toolkits.axes_grid import make_axes_locatable
+    import matplotlib.axes as maxes
+
+    try:
+        var = utils.get_values(ncfile, variable)
+        LOGGER.info('Data loaded')
+
+        lats, lons = utils.get_coordinates(ncfile, variable=variable, unrotate=False)
+
+        if len(lats.shape) == 1:
+            cyclic_var, cyclic_lons = add_cyclic_point(var, coord=lons)
+
+            lons = cyclic_lons.data
+            var = cyclic_var
+
+        with nc.Dataset(ncfile) as D:
+            V = D.variables[variable]
+            lon, lat = map(float, V.target_location.split(','))
+
+        LOGGER.info('Lat and lon loaded')
+
+    except Exception as e:
+        msg = 'Failed to get data for plotting: {0}\n{1}'.format(ncfile, e)
+        LOGGER.exception(msg)
+        raise Exception(msg)
+
+    try:
+        fig = plt.figure(facecolor='w', edgecolor='k')
+        fig.subplots_adjust(top=.95, bottom=.05, left=.03, right=.95)
+
+        ax = plt.axes(
+            projection=ccrs.Robinson(central_longitude=int(np.mean(lons))))
+
+        divider = make_axes_locatable(ax)
+        cax = divider.new_horizontal("4%", pad=0.15, axes_class=maxes.Axes)
+        fig.add_axes(cax)
+
+        ax.plot(lon, lat, marker='o', mfc='#292421', ms=13, transform=ccrs.PlateCarree())
+        ax.plot(lon, lat, marker='o', mfc='#ffffff', ms=7, transform=ccrs.PlateCarree())
+
+        cs = ax.contourf(lons, lats, var, 60,
+                         transform=ccrs.PlateCarree(),
+                         cmap=cmap, interpolation='nearest')
+
+        ax.coastlines(color='k', linewidth=.8)
+        ax.set_title(title)
+
+        cb = plt.colorbar(cs, cax=cax, orientation='vertical')
+        cb.set_label(u"–            Dissimilarity             +")  # ha='left', va='center')
+        cb.set_ticks([])
+
+    except:
+        msg = 'failed to plot graphic'
+        LOGGER.exception(msg)
+
+    LOGGER.info('Plot created and figure saved')
+    return fig
+>>>>>>> 0565e9460e15a790333f8b61db92180dacdb6f34

@@ -33,37 +33,37 @@ class RobustnessProcess(Process):
             LiteralInput("method", "Method of robustness calculation",
                          abstract="Detailed information about the methods can be found in the documentation",
                          data_type='string',
-                         default='Method_A',
+                         default='signal_noise_ratio',
                          min_occurs=0,
                          max_occurs=1,
-                         allowed_values=['Method_A', 'Method_B', 'Method_C']
+                         allowed_values=['signal_noise_ratio', 'Method_B', 'Method_C']
                          ),
 
             LiteralInput("start", "Start Year",
-                         abstract="Beginn of the analysed period (e.g 1971; if not set, the first consistend \
+                         abstract="Beginn of the analysed period (e.g 19710101; if not set, the first consistend \
                                   year of the ensemble will be taken)",
                          data_type='integer',
                          min_occurs=0,
                          max_occurs=1,
-                         default='1971'
+                         # default='1971'
                          # allowedValues=range(1900,2200)
                          ),
 
             LiteralInput('end', "End Year",
-                         abstract="End of the analysed period (e.g. 2050 if not set, \
+                         abstract="End of the analysed period (e.g. 20501231 if not set, \
                                    the last consistend year of the ensemble will be taken)",
                          data_type='integer',
                          min_occurs=0,
                          max_occurs=1,
-                         default='2000',
+                         # default='2000',
                          ),
 
             LiteralInput("timeslice", "Time slice",
-                         abstract="Time slice (in years) for robustness reference (default=10))",
+                         abstract="Time slice (in days) for robustness reference e.g. 3650",
                          data_type='integer',
                          min_occurs=0,
                          max_occurs=1,
-                         default='10'
+                         # default='3560'
                          # allowedValues=range(1,50)
                          ),
 
@@ -140,12 +140,22 @@ class RobustnessProcess(Process):
 
         try:
             ncfiles = archiveextract(resource=rename_complexinputs(request.inputs['resource']))
-
-            start = request.inputs['start'][0].data
-            end = request.inputs['end'][0].data
-            timeslice = request.inputs['timeslice'][0].data
-            # # variable = self.variableIn.getValue()
             method = request.inputs['method'][0].data
+
+            if 'start' in request.inputs:
+                start = request.inputs['start'][0].data
+            else:
+                start = None
+
+            if 'end' in request.inputs:
+                end = request.inputs['end'][0].data
+            else:
+                end = None
+
+            if 'timeslice' in request.inputs:
+                timeslice = request.inputs['timeslice'][0].data
+            else:
+                timeslice = None
 
             response.update_status('arguments read', 5)
             LOGGER.info('Successfully read in the arguments')
@@ -156,8 +166,9 @@ class RobustnessProcess(Process):
         response.outputs['output_text'].file = write_fileinfo(ncfiles)
 
         #  LOGGER.debug('variable set to %s' % variable)
-        # if method == 'Method_A':
-        signal, low_agreement_mask, high_agreement_mask, text_src = erob.method_A(
+        # if method == 'signal_noise_ratio':
+
+        signal, low_agreement_mask, high_agreement_mask, text_src = erob.signal_noise_ratio(
                 resource=ncfiles,
                 start=start, end=end,
                 timeslice=timeslice,

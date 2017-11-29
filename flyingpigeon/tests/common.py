@@ -60,7 +60,12 @@ TESTDATA = {
         TESTS_HOME,
         'testdata',
         'spatial_analog',
-        'indicators_small.nc'))
+        'indicators_small.nc')),
+    'dissimilarity.nc': "file://{0}".format(os.path.join(
+        TESTS_HOME,
+        'testdata',
+        'spatial_analog',
+        'dissimilarity.nc')),
 }
 
 

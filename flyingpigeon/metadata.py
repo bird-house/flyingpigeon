@@ -1,36 +1,36 @@
+from netCDF4 import Dataset, MFDataset
 import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
-from netCDF4 import Dataset
-
 def set_basic_md(resource):
-  """
-  basis meta data
-  :param resource: netCDF file where basic meta data should be set
-  """
-  import sys
-  from datetime import datetime as dt
+    """
+    basis meta data
+    :param resource: netCDF file where basic meta data should be set
+    """
+    import sys
+    from datetime import datetime as dt
 
-  py_version = sys.version
-  creation_date = dt.strftime( dt.now(), format='%Y-%m-%dT%H:%M:%S')
+    py_version = sys.version
+    creation_date = dt.strftime(dt.now(), format='%Y-%m-%dT%H:%M:%S')
 
-  md_basic = {
+    md_basic = {
      'activity': 'birdhouse project',
-     'software':'flyingpigeon v 0.1',
+     'software': 'flyingpigeon v 0.1',
      'software_project': 'birdhouse',
-     'software_reference':'https://github.com/bird-house/',
+     'software_reference': 'https://github.com/bird-house/',
      'software_platform': 'PYTHON %s' % py_version,
-     'contact_mail_1':'ehbrecht@dkrz.de',
-     'contact_mail_2':'nils.hempelmann@lsce.ipsl.fr',
-     'creation_date': creation_date ,
+     'contact_mail_1': 'ehbrecht@dkrz.de',
+     # 'contact_mail_2': 'nils.hempelmann@lsce.ipsl.fr',
+     'creation_date': creation_date,
      }
 
-  ds = Dataset(resource, mode='a')
-  ds.setncatts(md_basic)
-  ds.close()
+    ds = Dataset(resource, mode='a')
+    ds.setncatts(md_basic)
+    ds.close()
 
-  return(resource)
+    return(resource)
+
 
 def set_dynamic_md(resource):
   """
@@ -209,48 +209,58 @@ def set_dynamic_md(resource):
 
   return(resource)
 
+
 def get_frequency(resource):
-  """
-  returns the frequency of the time stamps
-  :param resource: NetCDF file
-  :return: frequency
-  """
-  from netCDF4 import num2date
-  from numpy import mean
+    """
+    returns the frequency of the time stamps
+    :param resource: NetCDF file
+    :return: frequency
+    """
+    from netCDF4 import num2date
+    from numpy import mean
 
-  ds = Dataset(resource)
-  time = ds.variables['time']
+    if type(resource) != list:
+        resource = [resource]
+    LOGGER.debug('length of recources: %s files' % len(resource))
 
-  dates = num2date(time[:], time.units, time.calendar)
+    if len(resource) > 1:
+        ds = MFDataset(resource)
+        LOGGER.debug('MFDataset loaded for %s of files in resource:' % len(resource))
+    else:
+        ds = Dataset(resource[0])
+        LOGGER.debug('Dataset loaded for %s file in resource:' % len(resource))
+    time = ds.variables['time']
+    dates = num2date(time[:], time.units, time.calendar)
 
-  diffs = []
-  m = len(time)
-  if m > 100:
-    m = 100
+    diffs = []
+    m = len(time)
+    if m > 100:
+        m = 100
 
-  for i, date in enumerate(dates):
-    if i > 0 and i < m:
-      diff = date - dates[i-1]
-      diffs.append(diff.days)
+    for i, date in enumerate(dates):
+        if i > 0 and i < m:
+            diff = date - dates[i-1]
+            diffs.append(diff.days)
 
-  fqz = mean(diffs)
+    fqz = mean(diffs)
 
-  if (350 < fqz < 370):
-    frequency = 'yr'
-  if (80 < fqz < 100):
-    frequency = 'sem'
-  if (25 < fqz < 35):
-    frequency = 'mon'
-  if (0.8 < fqz < 1.2):
-    frequency = 'day'
-  if (0.4 < fqz < 0.6):
-    frequency = '12h'
-  if (0.22 < fqz < 0.27):
-    frequency = '6h'
-  if (0.013 < fqz < 0.014):
-    frequency = '3h'
+    if (350 < fqz < 370):
+        frequency = 'yr'
+    if (80 < fqz < 100):
+        frequency = 'sem'
+    if (25 < fqz < 35):
+        frequency = 'mon'
+    if (0.8 < fqz < 1.2):
+        frequency = 'day'
+    if (0.4 < fqz < 0.6):
+        frequency = '12h'
+    if (0.22 < fqz < 0.27):
+        frequency = '6h'
+    if (0.013 < fqz < 0.014):
+        frequency = '3h'
 
-  return frequency
+    return frequency
+
 
 def get_extent(resource):
   """

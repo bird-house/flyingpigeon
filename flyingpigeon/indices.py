@@ -305,6 +305,9 @@ def calc_indice_percentile(resource=[], variable=None,
     from flyingpigeon.subset import clipping
     from flyingpigeon.utils import get_values, get_time
 
+    # TODO: see ticket https://github.com/bird-house/flyingpigeon/issues/200
+    raise NotImplementedError('Sorry! Function is under construction.')
+
     if type(resource) != list:
         resource = list([resource])
 
@@ -396,4 +399,4 @@ def calc_indice_percentile(resource=[], variable=None,
     # if len(nc_indices) is 0:
     #     LOGGER.debug('No indices are calculated')
     #     return None
-    return nc_reference  # , nc_indices
+    return nc_indices
