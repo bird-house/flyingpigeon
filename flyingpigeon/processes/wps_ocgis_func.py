@@ -26,6 +26,8 @@ from flyingpigeon.utils import GROUPING
 from flyingpigeon.log import init_process_logger
 
 from ocgis.calc.library import register
+from ocgis.contrib import library_icclim as libclim
+from collections import OrderedDict
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
@@ -43,7 +45,7 @@ class IndicatorProcess(Process, object):
     #################
     # Common inputs #
     #################
-    inputs = [
+    resource_inputs = [
         ComplexInput('resource', 'Resource',
                      abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
                      metadata=[Metadata('Info')],
@@ -53,8 +55,9 @@ class IndicatorProcess(Process, object):
                          Format('application/x-netcdf'),
                          Format('application/x-tar'),
                          Format('application/zip'),
-                     ]),
+                     ]),]
 
+    option_inputs = [
         LiteralInput("grouping", "Grouping",
                      abstract="Temporal group over which the index is computed.",
                      default='yr',
@@ -62,7 +65,7 @@ class IndicatorProcess(Process, object):
                      min_occurs=0,
                      max_occurs=1,  # len(GROUPING),
                      allowed_values=GROUPING
-                     )]
+                     ),]
 
     ############################
     # Function-specific inputs #
@@ -93,20 +96,88 @@ class IndicatorProcess(Process, object):
             identifier=self.ocgis_cls.key,
             title=self.ocgis_cls.long_name,
             abstract=self.ocgis_cls.description,
-            inputs=self.inputs + self.extra_inputs,
+            inputs=self.resource_inputs + self.option_inputs + self.extra_inputs,
             outputs=self.outputs,
             status_supported=True,
             store_supported=True,
         )
 
+
+    def _resource_input_handler(self, request):
+        out = OrderedDict()
+
+        for obj in self.resource_inputs:
+            key = obj.identifier
+            out[key] = archiveextract(resource=rename_complexinputs(
+                        request.inputs[key]))
+        return out
+
+    def _option_input_handler(self, request):
+        from flyingpigeon.utils import calc_grouping
+        out = {'calc_grouping':None}
+
+        for obj in self.option_inputs:
+            key = obj.identifier
+            val = request.inputs[key][0].data
+
+            if key == 'grouping':
+                out['calc_grouping'] = calc_grouping(val)
+            else:
+                out[key] = val
+
+        return out
+
     def _extra_input_handler(self, request):
         out = {}
+
         for obj in self.extra_inputs:
-            out[obj.identifier] = request.inputs[obj.identifier][0].data
+            key = obj.identifier
+            out[key] = request.inputs[key][0].data
         return out
 
 
-    def _run(self, resource, calc, calc_grouping):
+    def _handler(self, request, response):
+
+        init_process_logger('log.txt')
+        response.outputs['output_log'].file = 'log.txt'
+
+        ######################################
+        # Process inputs
+        ######################################
+
+        try:
+            resources = self._resource_input_handler(request)
+            options = self._option_input_handler(request)
+            extras = self._extra_input_handler(request)
+
+        except Exception as e:
+            msg = 'Failed to read input parameter {}'.format(e)
+            LOGGER.error(msg)
+            raise Exception(msg)
+
+        response.update_status('Input parameters ingested', 2)
+
+        ######################################
+        # Call ocgis function
+        ######################################
+        # Mapping for multivariate functions
+        if self.has_required_variables:
+            extras.update( {k:k for k in resources.keys()} )
+
+        output = self._run(resource=resources,
+                           calc=[{'func': self.identifier,
+                             'name': self.identifier,
+                             'kwds': extras}],
+                           options=options
+                      )
+
+        response.outputs['output_netcdf'].file = output
+
+        response.update_status('Execution completed', 100)
+
+        return response
+
+    def _run(self, resource, calc, options):
         from os.path import join, abspath, dirname, getsize, curdir
         from ocgis import OcgOperations, RequestDataset, env
         import uuid
@@ -120,11 +191,11 @@ class IndicatorProcess(Process, object):
         prefix = str(uuid.uuid1())
         env.PREFIX = prefix
 
-        rd = RequestDataset(resource)
+        rd = [RequestDataset(val, variable=key if key != 'resource' else None   ) for key, val in resource.items()]
 
         ops = OcgOperations(dataset=rd,
                             calc=calc,
-                            calc_grouping=calc_grouping,
+                            calc_grouping=options['calc_grouping'],
                             dir_output=dir_output,
                             prefix=prefix,
                             add_auxiliary_files=False,
@@ -132,57 +203,7 @@ class IndicatorProcess(Process, object):
 
         return ops.execute()
 
-    def _handler(self, request, response):
-        from flyingpigeon.utils import calc_grouping
 
-        init_process_logger('log.txt')
-        response.outputs['output_log'].file = 'log.txt'
-
-        ######################################
-        # Process standard inputs
-        ######################################
-        try:
-            resource = archiveextract(resource=rename_complexinputs(
-                request.inputs['resource']))
-            grouping = request.inputs['grouping'][0].data
-            calc_group = calc_grouping(grouping)
-
-        except Exception as e:
-            msg = 'Failed to read input parameter {}'.format(e)
-            LOGGER.error(msg)
-            raise Exception(msg)
-
-        response.update_status('Input parameters ingested', 2)
-
-        ######################################
-        # Process extra inputs
-        ######################################
-        try:
-            extras = self._extra_input_handler(request)
-
-        except Exception as e:
-            msg = 'Failed to read inputs {} '.format(e)
-            LOGGER.error(msg)
-            raise Exception(msg)
-
-        response.update_status('Processed input parameters', 3)
-
-        ######################################
-        # Call ocgis function
-        ######################################
-
-        output = self._run(resource=resource,
-                           calc=[{'func': self.identifier,
-                             'name': self.identifier,
-                             'kwds': extras}],
-                           calc_grouping=calc_group,
-                      )
-
-        response.outputs['output_netcdf'].file = output
-
-        response.update_status('Execution completed', 100)
-
-        return response
 
 
 #############################################
@@ -230,15 +251,35 @@ class ICCLIMProcess(IndicatorProcess):
     def __init__(self):
         # Scrape the meta data from the docstring
         self.ocgis_cls = fr[self.key]
-        self.icclim_func = self.ocgis_cls._get_icclim_func_(self.ocgis_cls())
+
+        #self.icclim_func = self.ocgis_cls._get_icclim_func_(self.ocgis_cls())
+        self.icclim_func = libclim._icclim_function_map[self.key]['func']
         doc = self.icclim_func.func_doc
+
+        self.has_required_variables = hasattr(self.ocgis_cls, 'required_variables')
+
+        if self.has_required_variables:
+            self.resource_inputs = [] # No more resource input.
+            for key in self.ocgis_cls.required_variables:
+                self.resource_inputs.append(
+                    ComplexInput(key, key,
+                             abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
+                             metadata=[Metadata('Info')],
+                             min_occurs=1,
+                             max_occurs=1000,
+                             supported_formats=[
+                                 Format('application/x-netcdf'),
+                                 Format('application/x-tar'),
+                                 Format('application/zip'),
+                             ])
+                    )
 
         super(IndicatorProcess, self).__init__(
             self._handler,
             identifier=self.ocgis_cls.key,
             title=self.ocgis_cls.key.split('_')[1],
             abstract=doc.split('\n')[1].strip(),
-            inputs=self.inputs + self.extra_inputs,
+            inputs=self.resource_inputs + self.option_inputs + self.extra_inputs,
             outputs=self.outputs,
             status_supported=True,
             store_supported=True,
@@ -257,12 +298,8 @@ class {0}Process(ICCLIMProcess):
     txt = ""
     names = []
     for key, cls in sorted(icclim_classes.items(), key=operator.itemgetter(0)):
-        if issubclass(cls, ocgis.contrib.library_icclim.AbstractIcclimMultivariateFunction):
-            # TODO: Add support for multivariate functions.
-            continue
-        else:
-            txt = txt + (pat.format(key.upper(), key))
-            names.append( "{}Process".format(key.upper()) )
+        txt = txt + (pat.format(key.upper(), key))
+        names.append( "{}Process".format(key.upper()) )
 
     return txt, names
 
@@ -295,6 +332,14 @@ class ICCLIM_CSUProcess(ICCLIMProcess):
 
 class ICCLIM_CWDProcess(ICCLIMProcess):
     key = 'icclim_CWD'
+
+
+class ICCLIM_DTRProcess(ICCLIMProcess):
+    key = 'icclim_DTR'
+
+
+class ICCLIM_ETRProcess(ICCLIMProcess):
+    key = 'icclim_ETR'
 
 
 class ICCLIM_FDProcess(ICCLIMProcess):
@@ -443,6 +488,11 @@ class ICCLIM_TXXProcess(ICCLIMProcess):
 
 class ICCLIM_WSDIProcess(ICCLIMProcess):
     key = 'icclim_WSDI'
+
+
+class ICCLIM_VDTRProcess(ICCLIMProcess):
+    key = 'icclim_vDTR'
+
 
 ########################################
 
