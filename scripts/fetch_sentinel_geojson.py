@@ -3,6 +3,14 @@
 
 from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
 
+from shapely.geometry import mapping
+from ocgis import GeomCabinetIterator
+import json
+from flyingpigeon import config
+
+from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
+
+
 api = SentinelAPI('info@nilshempelmann.de', '*****')   0Zd0If0ed2G
 
 geom = {"type": "Polygon", "coordinates": [[[-69.87682044199994, 12.427394924000097], [-70.05809485599988, 12.537176825000088], [-70.04873613199993, 12.632147528000104], [-69.93639075399994, 12.53172435100005], [-69.87682044199994, 12.427394924000097]]]}
@@ -12,11 +20,6 @@ products = api.query(footprint,
                      producttype='SLC',
                      orbitdirection='ASCENDING')
 api.download_all(products)
-
-from shapely.geometry import mapping
-from ocgis import GeomCabinetIterator
-import json
-from flyingpigeon import config
 
 /home/nils/data/transfrontalier/transfrontalier.shp
 gci = GeomCabinetIterator(path=join(sh_path, 'countries.shp'))
@@ -38,8 +41,6 @@ for row in gci:
                     if row['properties']['ADM0_A3'] == polygon:
                         result.append(row['properties']['UGID'])
 
-
-from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
 
 api = SentinelAPI('user', 'password')
 geom = {"type": "Polygon", "coordinates": [[[-69.87682044199994, 12.427394924000097], [-70.05809485599988, 12.537176825000088], [-70.04873613199993, 12.632147528000104], [-69.93639075399994, 12.53172435100005], [-69.87682044199994, 12.427394924000097]]]}

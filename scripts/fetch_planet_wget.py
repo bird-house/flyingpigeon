@@ -131,7 +131,7 @@ print(download_link)
 r = requests.get(download_link, stream=True, verify=False)
 _, local_filename = tempfile.mkstemp(dir=".", suffix='.tif')
 
-url , token = download_link.split("?token=")
+url, token = download_link.split("?token=")
 
 with open(local_filename, 'wb') as fp:
     shutil.copyfileobj(r.raw, fp)

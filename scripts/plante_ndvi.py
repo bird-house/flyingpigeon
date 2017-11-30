@@ -6,10 +6,10 @@ import numpy as np
 image_file = '/home/nils/data/planet/PSScene4Band/20171118_100713_0f3b.tif'
 
 with rasterio.open(image_file) as src:
-  band_red = src.read(3)
+    band_red = src.read(3)
 
 with rasterio.open(image_file) as src:
-  band_nir = src.read(4)
+    band_nir = src.read(4)
 
 np.seterr(divide='ignore', invalid='ignore')
 
