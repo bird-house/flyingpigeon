@@ -590,6 +590,24 @@ class AnalogsreanalyseProcess(Process):
         #######################
         start_time = time.time()  # measure call castf90
 
+        #-----------------------
+        try:
+            import ctypes
+            # TODO: This lib is for linux
+            mkl_rt = ctypes.CDLL('libmkl_rt.so')
+            nth=mkl_rt.mkl_get_max_threads()
+            LOGGER.debug('Current number of threads: %s' % (nth))
+            mkl_rt.mkl_set_num_threads(ctypes.byref(ctypes.c_int(64)))
+            nth=mkl_rt.mkl_get_max_threads()
+            LOGGER.debug('NEW number of threads: %s' % (nth))
+            # TODO: Does it \/\/\/ work with default shell=False in subprocess... (?)
+            os.environ['MKL_NUM_THREADS']=str(nth)
+            os.environ['OMP_NUM_THREADS']=str(nth)
+        except Exception as e:
+            msg = 'Failed to set THREADS %s ' % e
+            LOGGER.debug(msg)
+        #-----------------------
+
         response.update_status('Start CASTf90 call', 20)
         try:
             # response.update_status('execution of CASTf90', 50)
