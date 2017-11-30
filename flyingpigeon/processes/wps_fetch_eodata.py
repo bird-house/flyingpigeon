@@ -12,7 +12,8 @@ from flyingpigeon.datafetch import fetch_eodata
 
 import os
 from datetime import datetime as dt
-from datetime import timedelta
+from datetime import timedelta, time
+from tempfile import mkstemp
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
@@ -150,20 +151,22 @@ class FetcheodataProcess(Process):
 
         token = request.inputs['token'][0].data
 
-        recources = fetch_eodata(products,
+        resources = fetch_eodata(products,
                                  token,
                                  bbox,
                                  period=[start, end],
-                                 cloud_cover=0.5)
+                                 cloud_cover=0.5,
+                                 cache=True)
 
-        filepathes = 'out.txt'
-        # with open(filepathes, 'w') as fp:
-        #     fp.write('###############################################\n')
-        #     fp.write('###############################################\n')
-        #     fp.write('Following files are stored to your local discs: \n')
-        #     fp.write('\n')
-        #     for f in resources:
-        #         fp.write('%s \n' % os.path.realpath(f))
+        _, filepathes = mkstemp(dir='.', suffix='.txt')
+
+        with open(filepathes, 'w') as fp:
+            fp.write('###############################################\n')
+            fp.write('###############################################\n')
+            fp.write('Following files are stored to your local discs: \n')
+            fp.write('\n')
+            for f in resources:
+                fp.write('%s \n' % os.path.realpath(f))
 
         response.outputs['output'].file = filepathes
         # response.outputs['output'].file = write_fileinfo(resource, filepath=True)
