@@ -31,8 +31,18 @@ class FetcheodataProcess(Process):
                          data_type='string',
                          min_occurs=1,
                          max_occurs=2,
-                         allowed_values=["PSScene3Band", "PSScene4Band"]
+                         allowed_values=["PSScene3Band", "PSScene4Band", "Sentinel2L1C", ]
                          ),
+
+                         # PSScene3Band	PlanetScope Scenes
+
+                        # PSScene4Band	PlanetScope Scenes
+                        # PSOrthoTile	PlanetScope OrthoTiles
+                        # REOrthoTile	RapidEye OrthoTiles
+                        # REScene	RapidEye Scenes (unorthorectified strips)
+                        # SkySatScene	SkySat Scenes
+                        # Landsat8L1G	Landsat8 Scenes
+                        # Sentinel2L1C	Copernicus Sentinel-2 Scenes
 
             LiteralInput('BBox', 'Bounding Box',
                          data_type='string',

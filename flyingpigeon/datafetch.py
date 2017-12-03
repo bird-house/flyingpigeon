@@ -321,6 +321,26 @@ def fetch_eodata(products, token, bbox, period=[dt.today()-timedelta(days=30), d
 
     # For demo purposes, just grab the first image ID
 
+      # }, 
+      #  "_permissions": [
+      #   "assets.analytic_b1:download",
+      #   "assets.analytic_b3:download",
+      #   "assets.analytic_b2:download",
+      #   "assets.analytic_b5:download",
+      #   "assets.analytic_b4:download",
+      #   "assets.analytic_b7:download",
+      #   "assets.analytic_b6:download",
+      #   "assets.analytic_b9:download",
+      #   "assets.analytic_b8:download",
+      #   "assets.analytic_b8a:download",
+      #   "assets.visual:download",
+      #   "assets.metadata_aux:download",
+      #   "assets.analytic_b10:download",
+      #   "assets.analytic_b11:download",
+      #   "assets.analytic_b12:download"
+      #  ],
+      #
+
     resources = []
 
     for image_id in image_ids:
