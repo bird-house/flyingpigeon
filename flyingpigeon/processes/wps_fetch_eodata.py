@@ -9,6 +9,7 @@ from flyingpigeon.utils import rename_complexinputs
 
 # from flyingpigeon.datafetch import write_fileinfo
 from flyingpigeon.datafetch import fetch_eodata
+from flyingpigeon.datafetch import _EODATA_
 
 import os
 from datetime import datetime as dt
@@ -27,14 +28,14 @@ class FetcheodataProcess(Process):
         inputs = [
             LiteralInput("products", "Earth Observation Product",
                          abstract="Choose a Earth Observation Product",
-                         default="PSScene3Band",
+                         default="PSScene3Band__visual",
                          data_type='string',
                          min_occurs=1,
                          max_occurs=2,
-                         allowed_values=["PSScene3Band", "PSScene4Band", "Sentinel2L1C", ]
+                         allowed_values=_EODATA_
                          ),
 
-                         # PSScene3Band	PlanetScope Scenes
+                        # PSScene3Band	PlanetScope Scenes
 
                         # PSScene4Band	PlanetScope Scenes
                         # PSOrthoTile	PlanetScope OrthoTiles
@@ -161,7 +162,10 @@ class FetcheodataProcess(Process):
 
         token = request.inputs['token'][0].data
 
-        resources = fetch_eodata(products,
+        for product in products:
+            item_type, asset = product.split('__')
+        resources = fetch_eodata(item_type,
+                                 asset,
                                  token,
                                  bbox,
                                  period=[start, end],
