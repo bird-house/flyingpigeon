@@ -1,3 +1,4 @@
+import os
 from os import path
 from tempfile import mkstemp
 from datetime import datetime as dt
@@ -14,10 +15,10 @@ from flyingpigeon import analogs
 from flyingpigeon.ocgis_module import call
 from flyingpigeon.datafetch import get_level
 from flyingpigeon.utils import get_variable
-#from flyingpigeon.utils import get_calendar
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import archive, archiveextract
-from flyingpigeon.utils import get_timerange
+from flyingpigeon.utils import get_timerange, get_calendar
+from flyingpigeon.calculation import remove_mean_trend
 
 from pywps import Process
 from pywps import LiteralInput, LiteralOutput
@@ -107,6 +108,15 @@ class AnalogsmodelProcess(Process):
                          max_occurs=1,
                          ),
 
+            LiteralInput("detrend", "Detrend",
+                         abstract="Remove long-term trend beforehand",
+                         default='None',
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=1,
+                         allowed_values=['None', 'UVSpline']
+                         ),
+
             LiteralInput("normalize", "normalization",
                          abstract="Normalize by subtraction of annual cycle",
                          default='base',
@@ -186,6 +196,24 @@ class AnalogsmodelProcess(Process):
 
             ComplexOutput('output_netcdf', 'Subsets for one dataset',
                           abstract="Prepared netCDF file as input for weatherregime calculation",
+                          as_reference=True,
+                          supported_formats=[Format('application/x-netcdf')]
+                          ),
+
+            ComplexOutput('target_netcdf', 'Subsets for one dataset',
+                          abstract="Prepared netCDF file as input for archive",
+                          as_reference=True,
+                          supported_formats=[Format('application/x-netcdf')]
+                          ),
+
+            ComplexOutput('base_netcdf', 'Base Seasonal cycle',
+                          abstract="Base seasonal cycle netCDF",
+                          as_reference=True,
+                          supported_formats=[Format('application/x-netcdf')]
+                          ),
+
+            ComplexOutput('sim_netcdf', 'Sim Seasonal cycle',
+                          abstract="Sim seasonal cycle netCDF",
                           as_reference=True,
                           supported_formats=[Format('application/x-netcdf')]
                           ),
@@ -290,7 +318,7 @@ class AnalogsmodelProcess(Process):
             distance = request.inputs['dist'][0].data
             outformat = request.inputs['outformat'][0].data
             timewin = request.inputs['timewin'][0].data
-
+            detrend = request.inputs['detrend'][0].data
             # model_var = request.inputs['reanalyses'][0].data
             # model, var = model_var.split('_')
 
@@ -319,10 +347,25 @@ class AnalogsmodelProcess(Process):
             dateSt = dt.combine(dateSt,dt_time(12,0))
             dateEn = dt.combine(dateEn,dt_time(12,0))
 
-            # refSt = refSt.replace(hour=12)
-            # refEn = refEn.replace(hour=12)
-            # dateSt = dateSt.replace(hour=12)
-            # dateEn = dateEn.replace(hour=12)
+            # Check if 360_day calendar:
+            try:
+                if type(resource) is not list: resource=[resource]
+                modcal, calunits = get_calendar(resource[0])
+                if '360_day' in modcal:
+                    if refSt.day == 31:
+                        refSt = refSt.replace(day=30)
+                        LOGGER.debug('Date has been changed for: %s' % (refSt))
+                    if refEn.day == 31:
+                        refEn = refEn.replace(day=30)
+                        LOGGER.debug('Date has been changed for: %s' % (refEn))
+                    if dateSt.day == 31:
+                        dateSt = dateSt.replace(day=30)
+                        LOGGER.debug('Date has been changed for: %s' % (dateSt))
+                    if dateEn.day == 31:
+                        dateEn = dateEn.replace(day=30)
+                        LOGGER.debug('Date has been changed for: %s' % (dateEn))
+            except:
+                LOGGER.debug('Could not detect calendar')
 
             if normalize == 'None':
                 seacyc = False
@@ -375,8 +418,8 @@ class AnalogsmodelProcess(Process):
             else:
                 resource=[resource]
 
-            #===============================================================
-            # TODO: REMOVE resources which are out of interest from the list 
+            # ===============================================================
+            # REMOVE resources which are out of interest from the list 
             # (years > and < than requested for calculation)
 
             tmp_resource = []
@@ -390,8 +433,8 @@ class AnalogsmodelProcess(Process):
                     LOGGER.debug('Selected file: %s ' % (re))
             resource = tmp_resource
             # ===============================================================
-
-            #================================================================
+            # TODO: Regrid to selected grid!
+            # ================================================================
             # Try to fix memory issue... (ocgis call for files like 20-30 gb... )
             # IF 4D - select pressure level before domain cut
             #
@@ -418,7 +461,7 @@ class AnalogsmodelProcess(Process):
 
                 if (lev_units=='Pa'):
                     level = level*100
-                    dummylevel=dummylevel*100
+                    dummylevel = dummylevel*100
                     # TODO: OR check the NAME and units of vertical level and find 200 , 300, or 500 mbar in it
                     # Not just level = level * 100.
 
@@ -438,33 +481,50 @@ class AnalogsmodelProcess(Process):
                 lev_res = resource
 
             # Get domain
-            regr_res=[]
+            regr_res = []
             for res_fn in lev_res:
                 tmp_f = 'dom_' + path.basename(res_fn)
                 comcdo = '%s,%s,%s,%s' % (bbox[0],bbox[2],bbox[1],bbox[3])
                 cdo.sellonlatbox(comcdo, input=res_fn, output=tmp_f)
                 regr_res.append(tmp_f)
 
-            #archive_tmp = call(resource=resource, time_range=[refSt, refEn], geom=bbox, spatial_wrapping='wrap')
-            #simulation_tmp = call(resource=resource, time_range=[dateSt, dateEn], geom=bbox, spatial_wrapping='wrap')
-            #============================  
+            # ============================  
+            # Block to Detrend data
+            # TODO 1 Keep trend as separate file
+            # TODO 2 Think how to add options to plot abomalies AND original data... 
+            #        May be do archive and simulation = call.. over NOT detrended data and keep it as well
+            if (dimlen>3) :
+                res_tmp = get_level(regr_res, level = level)
+                variable = 'z%s' % level
+            else:
+                res_tmp = call(resource=regr_res, spatial_wrapping='wrap')
 
-            archive_tmp = call(resource=regr_res, time_range=[refSt, refEn], spatial_wrapping='wrap')
-            simulation_tmp = call(resource=regr_res, time_range=[dateSt, dateEn], spatial_wrapping='wrap')
+            if detrend == 'None':
+                orig_model_subset = res_tmp
+            else:
+                orig_model_subset = remove_mean_trend(res_tmp, varname=variable)
+
+            # ============================
+
+#            archive_tmp = call(resource=regr_res, time_range=[refSt, refEn], spatial_wrapping='wrap')
+#            simulation_tmp = call(resource=regr_res, time_range=[dateSt, dateEn], spatial_wrapping='wrap')
+
+            archive = call(resource=res_tmp, time_range=[refSt, refEn], spatial_wrapping='wrap')
+            simulation = call(resource=res_tmp, time_range=[dateSt, dateEn], spatial_wrapping='wrap')
 
             #######################################################################################
             # TEMORAL dirty workaround to get the level and it's units - will be func in utils.py
             
-            if (dimlen>3) :
-                archive = get_level(archive_tmp, level = level)
-                simulation = get_level(simulation_tmp,level = level)
-                variable = 'z%s' % level
-                # TODO: here should be modulated
-            else:
-                archive = archive_tmp
-                simulation = simulation_tmp
-                # 3D, move forward
-            #######################################################################################
+            #if (dimlen>3) :
+            #    archive = get_level(archive_tmp, level = level)
+            #    simulation = get_level(simulation_tmp,level = level)
+            #    variable = 'z%s' % level
+            #    # TODO: here should be modulated
+            #else:
+            #    archive = archive_tmp
+            #    simulation = simulation_tmp
+            #    # 3D, move forward
+            ########################################################################################
 
             if seacyc is True:
                 seasoncyc_base, seasoncyc_sim = analogs.seacyc(archive, simulation, method=normalize)
@@ -524,6 +584,25 @@ class AnalogsmodelProcess(Process):
 
         start_time = time.time()  # measure call castf90
         response.update_status('Start CASTf90 call', 20)
+
+        #-----------------------
+        try:
+            import ctypes
+            # TODO: This lib is for linux
+            mkl_rt = ctypes.CDLL('libmkl_rt.so')
+            nth=mkl_rt.mkl_get_max_threads()
+            LOGGER.debug('Current number of threads: %s' % (nth))
+            mkl_rt.mkl_set_num_threads(ctypes.byref(ctypes.c_int(64)))
+            nth=mkl_rt.mkl_get_max_threads()
+            LOGGER.debug('NEW number of threads: %s' % (nth))
+            # TODO: Does it \/\/\/ work with default shell=False in subprocess... (?)
+            os.environ['MKL_NUM_THREADS']=str(nth)
+            os.environ['OMP_NUM_THREADS']=str(nth)
+        except Exception as e:
+            msg = 'Failed to set THREADS %s ' % e
+            LOGGER.debug(msg)
+        #-----------------------
+
         try:
             # response.update_status('execution of CASTf90', 50)
             cmd = 'analogue.out %s' % path.relpath(config_file)
@@ -546,6 +625,19 @@ class AnalogsmodelProcess(Process):
         response.outputs['config'].file = config_file #config_output_url  # config_file )
         response.outputs['analogs'].file = output_file
         response.outputs['output_netcdf'].file = simulation
+        response.outputs['target_netcdf'].file = archive
+
+        if seacyc is True:
+            response.outputs['base_netcdf'].file = seasoncyc_base
+            response.outputs['sim_netcdf'].file = seasoncyc_sim
+        else:
+            # TODO: Still unclear how to overpass unknown number of outputs
+            dummy_base='dummy_base.nc'
+            dummy_sim='dummy_sim.nc'
+            with open(dummy_base, 'a'): os.utime(dummy_base, None)
+            with open(dummy_sim, 'a'): os.utime(dummy_sim, None)
+            response.outputs['base_netcdf'].file = dummy_base
+            response.outputs['sim_netcdf'].file = dummy_sim
 
         ########################
         # generate analog viewer
