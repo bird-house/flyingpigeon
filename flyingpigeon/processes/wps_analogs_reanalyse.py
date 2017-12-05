@@ -195,6 +195,18 @@ class AnalogsreanalyseProcess(Process):
                           supported_formats=[Format('application/x-netcdf')]
                           ),
 
+            ComplexOutput('base_netcdf', 'Base Seasonal cycle',
+                          abstract="Base seasonal cycle netCDF",
+                          as_reference=True,
+                          supported_formats=[Format('application/x-netcdf')]
+                          ),
+
+            ComplexOutput('sim_netcdf', 'Sim Seasonal cycle',
+                          abstract="Sim seasonal cycle netCDF",
+                          as_reference=True,
+                          supported_formats=[Format('application/x-netcdf')]
+                          ),
+
             ComplexOutput("output", "Analogues Viewer html page",
                           abstract="Interactive visualization of calculated analogues",
                           supported_formats=[Format("text/html")],
@@ -334,7 +346,7 @@ class AnalogsreanalyseProcess(Process):
 
         try:
             if model == 'NCEP':
-                getlevel = True
+                getlevel = False
                 if 'z' in var:
                     level = var.strip('z')
                     conform_units_to = None
@@ -384,7 +396,8 @@ class AnalogsreanalyseProcess(Process):
         # TODO: need to create dictionary for such datasets (for models as well)
         # TODO: benchmark the method bellow for NCEP z500 for 60 years
 
-        if ('20CRV2' in model) and ('z' in var): 
+#        if ('20CRV2' in model) and ('z' in var):
+        if ('z' in var):  
             tmp_total = []
             origvar = get_variable(model_nc)
 
@@ -446,11 +459,10 @@ class AnalogsreanalyseProcess(Process):
         # BLOCK OF DETRENDING of model_subset !
         # Original model subset kept to further visualisaion if needed
         # Now is issue with SLP:
-        # TODO: need to clear attributes for detrended file:
-        # Actual range and valid_range!
-        # For Z500 is OK, because detrended values are in valid range...
-        # TODO: keep the trend itself.
-        # With faster smoother add removing trend of each grid
+        # TODO 1 Keep trend as separate file
+        # TODO 2 Think how to add options to plot abomalies AND original data... 
+        #        May be do archive and simulation = call.. over NOT detrended data and keep it as well
+        # TODO 3 Check with faster smoother add removing trend of each grid
 
         if detrend == 'None':
             orig_model_subset = model_subset            
@@ -631,6 +643,19 @@ class AnalogsreanalyseProcess(Process):
         response.outputs['analogs'].file = output_file
         response.outputs['output_netcdf'].file = simulation
         response.outputs['target_netcdf'].file = archive
+
+        if seacyc is True:
+            response.outputs['base_netcdf'].file = seasoncyc_base
+            response.outputs['sim_netcdf'].file = seasoncyc_sim
+        else:
+            # TODO: Still unclear how to overpass unknown number of outputs
+            dummy_base='dummy_base.nc'
+            dummy_sim='dummy_sim.nc'
+            with open(dummy_base, 'a'): os.utime(dummy_base, None)
+            with open(dummy_sim, 'a'): os.utime(dummy_sim, None)
+            response.outputs['base_netcdf'].file = dummy_base
+            response.outputs['sim_netcdf'].file = dummy_sim
+
         ########################
         # generate analog viewer
         ########################
