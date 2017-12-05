@@ -19,6 +19,36 @@ from flyingpigeon.utils import prepare_static_folder
 import logging
 LOGGER = logging.getLogger("PYWPS")
 
+def get_time_nc(nc_file, tv='time'):
+    """
+    returns all timestamps of given netcdf file as datetime list.
+    
+    :param nc_file: NetCDF file(s)
+    :param tv: name of temporal dimension
+    :return format: netcdftime._datetime.datetime
+    """
+    from netCDF4 import MFDataset,num2date
+
+    ds = MFDataset(nc_file)
+    try:
+        time = ds.variables[tv]
+    except:
+        tv='time_counter'
+    ds.close()
+    
+    try:  
+        ds = MFDataset(nc_file)
+        time = ds.variables[tv]
+        if (hasattr(time , 'units') and hasattr(time , 'calendar')) == True:
+            timestamps = num2date(time[:], time.units , time.calendar)
+        elif hasattr(time , 'units'):
+            timestamps = num2date(time[:], time.units) 
+        else: 
+            timestamps = num2date(time[:])
+        ds.close()
+    except Exception as e:
+        raise Exception
+    return timestamps
 
 def pdf_from_analog(lon, lat, data, vmin, vmax, Nlin=30, domain=[-80,50,20,70], output='ana_map.pdf', title='Analogs'):
     fig = plt.figure()
@@ -397,8 +427,12 @@ def plot_analogs(configfile='config.txt', simday='all', **kwargs):
         arcfile = curdir + '/' + arcfile
         simfile = curdir + '/' + simfile
 
-        arc_times = get_time(arcfile)
-        sim_times = get_time(simfile)
+        try:
+            arc_times = get_time(arcfile)
+            sim_times = get_time(simfile)
+        except:
+            arc_times = get_time_nc(arcfile)
+            sim_times = get_time_nc(simfile)
 
         sim_dataset = Dataset(simfile)
         simvar = sim_dataset.variables[varname][:]
