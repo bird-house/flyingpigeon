@@ -13,6 +13,7 @@ from pywps.app.Common import Metadata
 from flyingpigeon.log import init_process_logger
 
 from datetime import datetime as dt
+from datetime import time as dt_time
 from flyingpigeon import weatherregimes as wr
 from flyingpigeon.utils import archive, archiveextract
 from tempfile import mkstemp
@@ -160,6 +161,12 @@ class WeatherregimesmodelProcess(Process):
 
             start = dt.strptime(period.split('-')[0], '%Y%m%d')
             end = dt.strptime(period.split('-')[1], '%Y%m%d')
+
+            # XXXXXXXXXXXXXXXXXXXXXX
+            start = dt.combine(start,dt_time(12,0))
+            end = dt.combine(end,dt_time(12,0))
+            # XXXXXXXXXXXXXXXXXXXXXX
+
             LOGGER.debug('start: %s , end: %s ', start, end)
             LOGGER.info('bbox %s', bbox)
             LOGGER.info('period %s', period)
@@ -185,7 +192,7 @@ class WeatherregimesmodelProcess(Process):
             geom=bbox, spatial_wrapping='wrap', time_range=time_range,  # conform_units_to=conform_units_to
         )
         LOGGER.info('Dataset subset done: %s ' % model_subset)
-        response.update_status('dataset subsetted', 19)
+        response.update_status('dataset subsetted', 18)
 
         #####################
         # computing anomalies
@@ -196,6 +203,12 @@ class WeatherregimesmodelProcess(Process):
         cycst = anualcycle.split('-')[0]
         cycen = anualcycle.split('-')[0]
         reference = [dt.strptime(cycst, '%Y%m%d'), dt.strptime(cycen, '%Y%m%d')]
+
+        # XXXXXXXXXXXXXXXXXXXXXX
+        reference[0] = dt.combine(reference[0],dt_time(12,0))
+        reference[1] = dt.combine(reference[1],dt_time(12,0))
+        # XXXXXXXXXXXXXXXXXXXXXX
+
         model_anomal = wr.get_anomalies(model_subset, reference=reference)
 
         ###################
