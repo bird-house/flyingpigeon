@@ -37,11 +37,10 @@ _EODATA_ = ["PSScene3Band__visual",
             ]
 
 # PSScene3Band	PlanetScope Scenes
-
 # PSScene4Band	PlanetScope Scenes
 # PSOrthoTile	PlanetScope OrthoTiles
 # REOrthoTile	RapidEye OrthoTiles
-# REScene	RapidEye Scenes (unorthorectified strips)
+# REScene	    RapidEye Scenes (unorthorectified strips)
 # SkySatScene	SkySat Scenes
 # Landsat8L1G	Landsat8 Scenes
 # Sentinel2L1C	Copernicus Sentinel-2 Scenes
@@ -281,16 +280,18 @@ def fetch_eodata(item_type, asset, token, bbox, period=[dt.today()-timedelta(day
     from os.path import join
     from os import path, makedirs
     from flyingpigeon.config import cache_path
-
+    #  Enter a bbox: min_lon, max_lon, min_lat, max_lat.
+    #                xmin ymin xmax ymax
     geojson_geometry = {"type": "Polygon",
                         "coordinates": [[
-                                    [14.600830078125, 8.677421123289992],
-                                    [14.797210693359375, 8.677421123289992],
-                                    [14.797210693359375, 8.90678000752024],
-                                    [14.600830078125, 8.90678000752024],
-                                    [14.600830078125, 8.677421123289992]
+                                [bbox[0], bbox[1]],  # [14.600830078125, 8.677421123289992],
+                                [bbox[2], bbox[1]],  # [14.797210693359375, 8.677421123289992],
+                                [bbox[2], bbox[3]],  # [14.797210693359375, 8.90678000752024],
+                                [bbox[0], bbox[3]],  # [14.600830078125, 8.90678000752024],
+                                [bbox[0], bbox[1]],  # [14.600830078125, 8.677421123289992]
                                     ]]}
 
+    LOGGER.debug("geojson_geometry: %s" % geojson_geometry)
     # get images that overlap with our AOI
     geometry_filter = {
       "type": "GeometryFilter",
@@ -354,7 +355,7 @@ def fetch_eodata(item_type, asset, token, bbox, period=[dt.today()-timedelta(day
         auth=HTTPBasicAuth(PLANET_API_KEY, ''),
         json=search_request)
 
-    LOGGER.info('Search result: %s ' % json.dumps(search_result.json(), indent=1))
+    # LOGGER.info('Search result: %s ' % json.dumps(search_result.json(), indent=1))
 
     # extract image IDs only
     image_ids = [feature['id'] for feature in search_result.json()['features']]
@@ -365,8 +366,11 @@ def fetch_eodata(item_type, asset, token, bbox, period=[dt.today()-timedelta(day
     for image_id in image_ids:
 
         id0 = image_id
+        if "xml" in asset:
+                filename = "%s.xml" % id0
+        else:
+            filename = "%s.tif" % id0
 
-        filename = "%s.tif" % id0
         local_file = join(DIR, filename)  # mkstemp(dir="/home/nils/data/planet/", prefix=id0, suffix='.tif')
 
         if os.path.exists(local_file):
@@ -378,40 +382,44 @@ def fetch_eodata(item_type, asset, token, bbox, period=[dt.today()-timedelta(day
             # Returns JSON metadata for assets in this ID. Learn more: planet.com/docs/reference/data-api/items-assets/#asset
             result = requests.get(id0_url, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
             # List of asset types available for this particular satellite image
-            LOGGER.debug(result.json().keys())
+            keys = result.json().keys()
+            LOGGER.debug("assets in file %s : %s " % (filename, keys))
             # This is "inactive" if the "visual" asset has not yet been activated; otherwise 'active'
             #  if 'analytic' in result.json().keys():
-            LOGGER.debug("****** down loading file ********")
-            LOGGER.debug(result.json()[asset]['status'])
-            # Parse out useful links
-            links = result.json()[asset]["_links"]  # u"analytic"
-            self_link = links["_self"]
-            activation_link = links["activate"]
+            if asset in keys:
+                LOGGER.debug("****** down loading file ********")
+                # LOGGER.debug(result.json()[asset]['status'])
+                # Parse out useful links
+                links = result.json()[asset]["_links"]  # u"analytic"
+                self_link = links["_self"]
+                activation_link = links["activate"]
 
-            # Request activation of the 'visual' asset:
-            activate_result = requests.get(activation_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
-            # Parse out useful links
-            links = result.json()[asset]["_links"]  # u"analytic"
-            self_link = links["_self"]
-            activation_link = links["activate"]
+                # Request activation of the 'visual' asset:
+                activate_result = requests.get(activation_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
+                # Parse out useful links
+                links = result.json()[asset]["_links"]  # u"analytic"
+                self_link = links["_self"]
+                activation_link = links["activate"]
 
-            # Request activation of the 'visual' asset:
-            activate_result = requests.get(activation_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
-            activation_status_result = requests.get(self_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
-
-            while activation_status_result.json()["status"] != 'active':
-                LOGGER.debug('*** File is sleeping. gently waking up ****')
-                LOGGER.debug(activation_status_result.json()["status"])
-                time.sleep(30)
+                # Request activation of the 'visual' asset:
+                activate_result = requests.get(activation_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
                 activation_status_result = requests.get(self_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
 
-            LOGGER.debug('File ready to download: %s' % (activation_status_result.json()["status"]))
-            # Image can be downloaded by making a GET with your Planet API key, from here:
-            download_link = activation_status_result.json()["location"]
+                while activation_status_result.json()["status"] != 'active':
+                    LOGGER.debug('*** File is sleeping. gently waking up ****')
+                    LOGGER.debug(activation_status_result.json()["status"])
+                    time.sleep(30)
+                    activation_status_result = requests.get(self_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
 
-            r = requests.get(download_link, stream=True, verify=False)
-            with open(local_file, 'wb') as fp:
-                shutil.copyfileobj(r.raw, fp)
-                resources.extend([local_file])
+                LOGGER.debug('File ready to download: %s' % (activation_status_result.json()["status"]))
+                # Image can be downloaded by making a GET with your Planet API key, from here:
+                download_link = activation_status_result.json()["location"]
+
+                r = requests.get(download_link, stream=True, verify=False)
+                with open(local_file, 'wb') as fp:
+                    shutil.copyfileobj(r.raw, fp)
+                    resources.extend([local_file])
+            else:
+                LOGGER.debug('Asset not found in keys, most likly no permissions for this data set %s ' % filename)
 
     return resources

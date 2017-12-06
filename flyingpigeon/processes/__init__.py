@@ -5,7 +5,6 @@ from .wps_pointinspection import PointinspectionProcess
 from .wps_landseamask import LandseamaskProcess
 # from .wps_climatefactsheet import FactsheetProcess
 from .wps_fetch import FetchProcess
-from .wps_fetch_eodata import FetcheodataProcess
 from .wps_indices_percentiledays import IndicespercentiledaysProcess
 from .wps_indices_single import IndicessingleProcess
 from .wps_sdm_gbiffetch import GBIFfetchProcess
@@ -25,7 +24,8 @@ from .wps_plot_timeseries import PlottimeseriesProcess
 from .wps_segetalflora import SegetalfloraProcess
 from .wps_spatial_analog import SpatialAnalogProcess
 from .wps_map_spatial_analog import MapSpatialAnalogProcess
-
+from .wps_EO_fetch import FetcheodataProcess
+from .wps_EO_ndvi import NdviProcess
 
 processes = [
     ClippingProcess(),
@@ -55,6 +55,7 @@ processes = [
     SpatialAnalogProcess(),
     MapSpatialAnalogProcess(),
     FetcheodataProcess(),
+    # NdviProcess(),
 ]
 
 """

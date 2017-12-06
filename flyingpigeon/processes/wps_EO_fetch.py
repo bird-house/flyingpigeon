@@ -27,23 +27,13 @@ class FetcheodataProcess(Process):
     def __init__(self):
         inputs = [
             LiteralInput("products", "Earth Observation Product",
-                         abstract="Choose a Earth Observation Product",
+                         abstract="Choose Earth Observation Products (up to five)",
                          default="PSScene3Band__visual",
                          data_type='string',
                          min_occurs=1,
-                         max_occurs=2,
+                         max_occurs=5,
                          allowed_values=_EODATA_
                          ),
-
-                        # PSScene3Band	PlanetScope Scenes
-
-                        # PSScene4Band	PlanetScope Scenes
-                        # PSOrthoTile	PlanetScope OrthoTiles
-                        # REOrthoTile	RapidEye OrthoTiles
-                        # REScene	RapidEye Scenes (unorthorectified strips)
-                        # SkySatScene	SkySat Scenes
-                        # Landsat8L1G	Landsat8 Scenes
-                        # Sentinel2L1C	Copernicus Sentinel-2 Scenes
 
             LiteralInput('BBox', 'Bounding Box',
                          data_type='string',
@@ -55,7 +45,7 @@ class FetcheodataProcess(Process):
                                   " For example: -80,50,20,70",
                          min_occurs=1,
                          max_occurs=1,
-                         default='-80,50,20,70',
+                         default='14,15,8,9',
                          ),
 
             LiteralInput('start', 'Start Date',
@@ -113,7 +103,7 @@ class FetcheodataProcess(Process):
 
         super(FetcheodataProcess, self).__init__(
             self._handler,
-            identifier="fetch_eodata",
+            identifier="EO_fetch",
             title="Earth Observation Fetch Resources",
             version="0.1",
             abstract="Fetch EO Data to the local file"
@@ -135,7 +125,7 @@ class FetcheodataProcess(Process):
 
         products = [inpt.data for inpt in request.inputs['products']]
 
-        bbox = []
+        bbox = []  # order xmin ymin xmax ymax
         bboxStr = request.inputs['BBox'][0].data
         bboxStr = bboxStr.split(',')
         bbox.append(float(bboxStr[0]))
@@ -164,13 +154,15 @@ class FetcheodataProcess(Process):
 
         for product in products:
             item_type, asset = product.split('__')
-        resources = fetch_eodata(item_type,
+            LOGGER.debug('itym type: %s , asset: %s' % (item_type, asset))
+            fetch = fetch_eodata(item_type,
                                  asset,
                                  token,
                                  bbox,
                                  period=[start, end],
                                  cloud_cover=0.5,
                                  cache=True)
+            resources.extend(fetch)
 
         _, filepathes = mkstemp(dir='.', suffix='.txt')
 
