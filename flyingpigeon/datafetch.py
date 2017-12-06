@@ -387,7 +387,7 @@ def fetch_eodata(item_type, asset, token, bbox, period=[dt.today()-timedelta(day
             # This is "inactive" if the "visual" asset has not yet been activated; otherwise 'active'
             #  if 'analytic' in result.json().keys():
             if asset in keys:
-                LOGGER.debug("****** down loading file ********")
+                LOGGER.debug("****** downloading file %s ********" % filename)
                 # LOGGER.debug(result.json()[asset]['status'])
                 # Parse out useful links
                 links = result.json()[asset]["_links"]  # u"analytic"
