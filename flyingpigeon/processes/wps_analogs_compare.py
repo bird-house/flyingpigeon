@@ -280,19 +280,19 @@ class AnalogscompareProcess(Process):
 
         try:
             if direction == 're2mo':
-                anaSt = dt.combine(dateSt,dt_time(0,0)) #dt.strptime(dateSt[0], '%Y-%m-%d')
-                anaEn = dt.combine(dateEn,dt_time(0,0)) #dt.strptime(dateEn[0], '%Y-%m-%d')
-                refSt = dt.combine(refSt,dt_time(12,0)) #dt.strptime(refSt[0], '%Y-%m-%d')
-                refEn = dt.combine(refEn,dt_time(12,0)) #dt.strptime(refEn[0], '%Y-%m-%d')
-                r_time_range=[anaSt, anaEn]
-                m_time_range=[refSt, refEn]
+                anaSt = dt.combine(dateSt, dt_time(0, 0))  # dt.strptime(dateSt[0], '%Y-%m-%d')
+                anaEn = dt.combine(dateEn, dt_time(0, 0))  # dt.strptime(dateEn[0], '%Y-%m-%d')
+                refSt = dt.combine(refSt, dt_time(12, 0))  # dt.strptime(refSt[0], '%Y-%m-%d')
+                refEn = dt.combine(refEn, dt_time(12, 0))  # dt.strptime(refEn[0], '%Y-%m-%d')
+                r_time_range = [anaSt, anaEn]
+                m_time_range = [refSt, refEn]
             elif direction == 'mo2re':
-                anaSt = dt.combine(dateSt,dt_time(12,0)) #dt.strptime(refSt[0], '%Y-%m-%d')
-                anaEn = dt.combine(dateEn,dt_time(12,0)) #dt.strptime(refEn[0], '%Y-%m-%d')
-                refSt = dt.combine(refSt,dt_time(0,0))   #dt.strptime(dateSt[0], '%Y-%m-%d')
-                refEn = dt.combine(refEn,dt_time(0,0))   #dt.strptime(dateEn[0], '%Y-%m-%d')
-                r_time_range=[refSt, refEn]
-                m_time_range=[anaSt, anaEn]
+                anaSt = dt.combine(dateSt, dt_time(12, 0)) #dt.strptime(refSt[0], '%Y-%m-%d')
+                anaEn = dt.combine(dateEn, dt_time(12, 0)) #dt.strptime(refEn[0], '%Y-%m-%d')
+                refSt = dt.combine(refSt, dt_time(0, 0))   #dt.strptime(dateSt[0], '%Y-%m-%d')
+                refEn = dt.combine(refEn, dt_time(0, 0))   #dt.strptime(dateEn[0], '%Y-%m-%d')
+                r_time_range = [refSt, refEn]
+                m_time_range = [anaSt, anaEn]
             else:
                 LOGGER.exception('failed to find time periods for comparison direction')
         except:
@@ -370,19 +370,19 @@ class AnalogscompareProcess(Process):
             # TODO: benchmark the method bellow for NCEP z500 for 60 years, may be use the same (!)
             # TODO Now everything regrid to the reanalysis
 
-            if ('20CRV2' in model) and ('z' in var): 
+            if ('20CRV2' in model) and ('z' in var):
                 tmp_total = []
                 origvar = get_variable(nc_reanalyses)
 
                 for z in nc_reanalyses:
-                    #tmp_n = 'tmp_%s' % (uuid.uuid1()) 
+                    #tmp_n = 'tmp_%s' % (uuid.uuid1())
                     b0=call(resource=z, variable=origvar, level_range=[int(level), int(level)], geom=bbox,
-                    spatial_wrapping='wrap',prefix='levdom_'+path.basename(z)[0:-3]) 
+                    spatial_wrapping='wrap',prefix='levdom_'+path.basename(z)[0:-3])
                     tmp_total.append(b0)
 
                 tmp_total = sorted(tmp_total, key=lambda i: path.splitext(path.basename(i))[0])
                 inter_subset_tmp = call(resource=tmp_total, variable=origvar, time_range=r_time_range)
-          
+
                 # Create new variable
                 ds = Dataset(inter_subset_tmp, mode='a')
                 z_var = ds.variables.pop(origvar)
@@ -395,7 +395,7 @@ class AnalogscompareProcess(Process):
                 # Clean
                 for i in tmp_total:
                     tbr='rm -f %s' % (i)
-                    system(tbr) 
+                    system(tbr)
                 #for i in inter_subset_tmp
                 tbr='rm -f %s' % (inter_subset_tmp)
                 system(tbr)
@@ -412,7 +412,7 @@ class AnalogscompareProcess(Process):
             msg = 'failed to fetch or subset input files'
             LOGGER.exception(msg)
             raise Exception(msg)
-        
+
         ########################
         # input data preperation
         ########################
@@ -431,8 +431,8 @@ class AnalogscompareProcess(Process):
 
         for re in resource:
             s,e = get_timerange(re)
-            tmpSt = dt.strptime(s,'%Y%m%d') 
-            tmpEn = dt.strptime(e,'%Y%m%d') 
+            tmpSt = dt.strptime(s,'%Y%m%d')
+            tmpEn = dt.strptime(e,'%Y%m%d')
             if ((tmpSt <= m_end ) and (tmpEn >= m_start)):
                 tmp_resource.append(re)
                 LOGGER.debug('Selected file: %s ' % (re))
@@ -451,11 +451,11 @@ class AnalogscompareProcess(Process):
             dimlen = len(dims)
 
             try:
-                model_id = ds.getncattr('model_id') 
+                model_id = ds.getncattr('model_id')
             except AttributeError:
                 model_id = 'Unknown model'
 
-            LOGGER.debug('MODEL: %s ' % (model_id)) 
+            LOGGER.debug('MODEL: %s ' % (model_id))
 
             lev_units = 'hPa'
 
@@ -479,7 +479,7 @@ class AnalogscompareProcess(Process):
             ds.close()
 
             for z in resource:
-                tmp_n='tmp_%s' % (uuid.uuid1()) 
+                tmp_n='tmp_%s' % (uuid.uuid1())
                 # select level and regrid
                 b0=call(resource=z, variable=modvar, level_range=level_range,
                         spatial_wrapping='wrap', cdover='system',
@@ -489,7 +489,7 @@ class AnalogscompareProcess(Process):
                 b01=call(resource=b0, geom=bbox, spatial_wrapping='wrap', prefix='levregr_'+path.basename(z)[0:-3])
                 tbr='rm -f %s' % (b0)
                 system(tbr)
-                tbr='rm -f %s.nc' % (tmp_n) 
+                tbr='rm -f %s.nc' % (tmp_n)
                 system(tbr)
                 # get full resource
                 m_total.append(b01)
@@ -498,7 +498,7 @@ class AnalogscompareProcess(Process):
 
             for i in m_total:
                 tbr='rm -f %s' % (i)
-                system(tbr)  
+                system(tbr)
 
             if m_level is not None:
                 # Create new variable in model set
@@ -539,7 +539,7 @@ class AnalogscompareProcess(Process):
 #                    #                     # conform_units_to=conform_units_to,
 #                    #                     spatial_wrapping='wrap',
 #                    #                     regrid_destination=reanalyses_subset,
-#                    #                     regrid_options='bil') # XXXXXXXXXXXX ADD WRAP rem calendar 
+#                    #                     regrid_options='bil') # XXXXXXXXXXXX ADD WRAP rem calendar
 
 #                    model_subset = call(resource=model_subset_tmp,variable=var_target, geom=bbox, spatial_wrapping='wrap', t_calendar='standard')
 
@@ -700,7 +700,7 @@ class AnalogscompareProcess(Process):
 
         # Stopper to keep twitcher results, for debug
         # dummy=dummy
-        response.outputs['analog_pdf'].file = analogs_pdf 
+        response.outputs['analog_pdf'].file = analogs_pdf
         response.outputs['config'].file = config_file #config_output_url  # config_file )
         response.outputs['analogs'].file = output_file
         response.outputs['output_netcdf'].file = simulation

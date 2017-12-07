@@ -117,6 +117,7 @@ class SDMallinoneProcess(Process):
                                              ],
                           as_reference=True,
                           ),
+
             ComplexOutput("output_reference", "Climate indices for growth conditions of reference period",
                           abstract="Archive (tar/zip) containing calculated climate indices",
                           supported_formats=[Format('application/x-tar'),
