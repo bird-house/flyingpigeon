@@ -152,7 +152,7 @@ class NdviProcess(Process):
 
         token = request.inputs['token'][0].data
 
-        
+
         resources = fetch_eodata(item_type,
                                  asset,
                                  token,
