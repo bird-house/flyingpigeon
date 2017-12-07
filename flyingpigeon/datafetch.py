@@ -401,7 +401,6 @@ def fetch_eodata(item_type, asset, token, bbox, period=[dt.today()-timedelta(day
                 links = result.json()[asset]["_links"]  # u"analytic"
                 self_link = links["_self"]
                 activation_link = links["activate"]
-
                 # Request activation of the 'visual' asset:
                 activate_result = requests.get(activation_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
                 activation_status_result = requests.get(self_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
@@ -425,7 +424,8 @@ def fetch_eodata(item_type, asset, token, bbox, period=[dt.today()-timedelta(day
                             LOGGER.debug(activation_status_result.json()["status"])
                             time.sleep(30)
                             activation_status_result = requests.get(self_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
-                    if time.time() < timeout:
+
+                    if time.time() < timeout or activation_status_result.json()["status"] == 'active':
                         LOGGER.debug('File ready to download: %s' % (activation_status_result.json()["status"]))
                         # Image can be downloaded by making a GET with your Planet API key, from here:
                         download_link = activation_status_result.json()["location"]

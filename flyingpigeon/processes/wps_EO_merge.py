@@ -108,6 +108,12 @@ class MergeProcess(Process):
                           as_reference=True,
                           ),
 
+            ComplexOutput('geotiffout', 'Example geotif file',
+                          abstract="Example geotif file for quickcheck purpose.",
+                          as_reference=True,
+                          supported_formats=[Format('image/tiff')]
+                          ),
+
             ComplexOutput("output_log", "Logging information",
                           abstract="Collected logs during process run.",
                           supported_formats=[Format("text/plain")],
@@ -192,6 +198,12 @@ class MergeProcess(Process):
 
         # response.outputs['output'].file = write_fileinfo(resource, filepath=True)
         response.outputs['output_archive'].file = output_archive
+
+        i = next((i for i, x in enumerate(merged_tiles) if x), None)
+        if i is None:
+            i = "dummy.tif"
+        response.outputs['geotiffout'].file = merged_tiles[i]
+
         response.update_status("done", 100)
 
         return response
