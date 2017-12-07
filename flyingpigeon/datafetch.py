@@ -362,6 +362,7 @@ def fetch_eodata(item_type, asset, token, bbox, period=[dt.today()-timedelta(day
     LOGGER.info("image IDs:  %s " % image_ids)
 
     resources = []
+    resources_sleeping = []
 
     for image_id in image_ids:
 
@@ -405,21 +406,36 @@ def fetch_eodata(item_type, asset, token, bbox, period=[dt.today()-timedelta(day
                 activate_result = requests.get(activation_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
                 activation_status_result = requests.get(self_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
 
-                while activation_status_result.json()["status"] != 'active':
-                    LOGGER.debug('*** File is sleeping. gently waking up ****')
-                    LOGGER.debug(activation_status_result.json()["status"])
-                    time.sleep(30)
-                    activation_status_result = requests.get(self_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
-
-                LOGGER.debug('File ready to download: %s' % (activation_status_result.json()["status"]))
-                # Image can be downloaded by making a GET with your Planet API key, from here:
-                download_link = activation_status_result.json()["location"]
-
-                r = requests.get(download_link, stream=True, verify=False)
-                with open(local_file, 'wb') as fp:
-                    shutil.copyfileobj(r.raw, fp)
-                    resources.extend([local_file])
+# import time
+#    ...:
+#    ...: while True:
+#    ...:     test = 0
+#    ...:
+#    ...:     test = test - 1
+#    ...:     print 'time %s' % time.time()
+                try:
+                    timeout = time.time() + 60*15   # 15 minutes from now
+                    while activation_status_result.json()["status"] != 'active':
+                        if time.time() > timeout:
+                            LOGGER.debug("File %s is sleeping too deep. Giving up" % filename)
+                            resources_sleeping.extend([filename])
+                            break
+                        else:
+                            LOGGER.debug('*** File %s is sleeping. gently waking up ****' % filename)
+                            LOGGER.debug(activation_status_result.json()["status"])
+                            time.sleep(30)
+                            activation_status_result = requests.get(self_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
+                    if time.time() < timeout:
+                        LOGGER.debug('File ready to download: %s' % (activation_status_result.json()["status"]))
+                        # Image can be downloaded by making a GET with your Planet API key, from here:
+                        download_link = activation_status_result.json()["location"]
+                        r = requests.get(download_link, stream=True, verify=False)
+                        with open(local_file, 'wb') as fp:
+                            shutil.copyfileobj(r.raw, fp)
+                            resources.extend([local_file])
+                except:
+                    LOGGER.exception("failed to download file %s " % filename)
             else:
-                LOGGER.debug('Asset not found in keys, most likly no permissions for this data set %s ' % filename)
+                LOGGER.debug('Asset not found in keys, most likely no permissions for this data set %s ' % filename)
 
-    return resources
+    return resources_sleeping, resources

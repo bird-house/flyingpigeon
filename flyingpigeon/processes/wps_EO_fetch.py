@@ -152,31 +152,41 @@ class FetcheodataProcess(Process):
 
         token = request.inputs['token'][0].data
 
+        resources = []
+        resources_sleeping = []
         for product in products:
             item_type, asset = product.split('__')
             LOGGER.debug('itym type: %s , asset: %s' % (item_type, asset))
-            fetch = fetch_eodata(item_type,
-                                 asset,
-                                 token,
-                                 bbox,
-                                 period=[start, end],
-                                 cloud_cover=0.5,
-                                 cache=True)
+            fetch_sleep, fetch = fetch_eodata(item_type,
+                                              asset,
+                                              token,
+                                              bbox,
+                                              period=[start, end],
+                                              cloud_cover=0.5,
+                                              cache=True)
             resources.extend(fetch)
+            resources_sleeping.extend(fetch_sleep)
 
         _, filepathes = mkstemp(dir='.', suffix='.txt')
-
-        with open(filepathes, 'w') as fp:
-            fp.write('###############################################\n')
-            fp.write('###############################################\n')
-            fp.write('Following files are stored to your local discs: \n')
-            fp.write('\n')
-            for f in resources:
-                fp.write('%s \n' % os.path.realpath(f))
-
-        response.outputs['output'].file = filepathes
+        try:
+            with open(filepathes, 'w') as fp:
+                fp.write('######################################################\n')
+                fp.write('### Following files are stored to compute provider ###:\n')
+                fp.write('######################################################\n')
+                fp.write('\n')
+                for f in resources:
+                    fp.write('%s \n' % os.path.realpath(f))
+                fp.write('/n')
+                fp.write('/n')
+                fp.write('######################################################\n')
+                fp.write('### Following files didn\'t want to wake up       ###:\n')
+                fp.write('######################################################\n')
+                for f in resources_sleeping:
+                    fp.write('%s \n' % f)
+            response.outputs['output'].file = filepathes
+        except:
+            LOGGER.exception('failed to write resources to textfile')
         # response.outputs['output'].file = write_fileinfo(resource, filepath=True)
-
         response.update_status("done", 100)
 
         return response
