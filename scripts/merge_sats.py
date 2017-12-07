@@ -57,6 +57,6 @@ for date in dates:
     f = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k') # , bbox='tight'
     plt.imshow(img)
 
-    _, picname = mkstemp(dir='/home/nils/data/planet/', suffix='.png')
+    _, picname = mkstemp(dir='/home/nils/data/planet/', suffix='.tif')
     plt.savefig(picname)
     plt.show()

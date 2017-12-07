@@ -388,7 +388,7 @@ def fetch_eodata(item_type, asset, token, bbox, period=[dt.today()-timedelta(day
             # This is "inactive" if the "visual" asset has not yet been activated; otherwise 'active'
             #  if 'analytic' in result.json().keys():
             if asset in keys:
-                LOGGER.debug("****** downloading file %s ********" % filename)
+                LOGGER.debug("downloading file %s" % filename)
                 # LOGGER.debug(result.json()[asset]['status'])
                 # Parse out useful links
                 links = result.json()[asset]["_links"]  # u"analytic"
@@ -414,14 +414,14 @@ def fetch_eodata(item_type, asset, token, bbox, period=[dt.today()-timedelta(day
 #    ...:     test = test - 1
 #    ...:     print 'time %s' % time.time()
                 try:
-                    timeout = time.time() + 60*15   # 15 minutes from now
+                    timeout = time.time() + 60*2   # 2 minutes from now
                     while activation_status_result.json()["status"] != 'active':
-                        if time.time() > timeout:
-                            LOGGER.debug("File %s is sleeping too deep. Giving up" % filename)
+                        if time.time() > timeout and activation_status_result.json()["status"] == 'inactive':
+                            LOGGER.debug("File %s is still inactive after 2min. Giving up" % filename)
                             resources_sleeping.extend([filename])
                             break
                         else:
-                            LOGGER.debug('*** File %s is sleeping. gently waking up ****' % filename)
+                            LOGGER.debug('File %s is sleeping. gently waking up' % filename)
                             LOGGER.debug(activation_status_result.json()["status"])
                             time.sleep(30)
                             activation_status_result = requests.get(self_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
