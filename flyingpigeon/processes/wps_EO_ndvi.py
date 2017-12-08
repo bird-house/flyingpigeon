@@ -202,10 +202,11 @@ class NdviProcess(Process):
                                                       cache=True)
                     resources.extend(tiles)
                     # resources_sleeping.extend(fetch_sleep)
+                LOGGER.debug("%s tiles fetched" % len(resources))    
                 response.update_status("calculating the NDVI ", 30)
                 try:
                     LOGGER.debug('Start calculating NDVI')
-                    ndvi_tiles, ndvi_plots = eodata.ndvi(tiles, product)
+                    ndvi_tiles, ndvi_plots = eodata.ndvi(resources, product)
                     # ndvi_merged = eodata.merge(ndvi_tiles)
                 except:
                     LOGGER.exception('failed to calculate NDVI')

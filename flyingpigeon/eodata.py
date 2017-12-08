@@ -33,19 +33,19 @@ def merge(tiles):
     return merged_tiles
 
 
-def ndvi_sorttiles(tiles, product="PSScene"):
+def ndvi_sorttiles(tiles, product="PlanetScope"):
     """
     sort un list fo files to calculate the NDVI.
     red nivr and metadata are sorted in an dictionary
 
     :param tiles: list of scene files and metadata
-    :param product: EO data product e.g. "PSScene" (default)
+    :param product: EO data product e.g. "PlanetScope" (default)
 
     :return dictionary: sorted files ordered in a dictionary
     """
 
     from os.path import splitext, basename
-    if product == "PSScene":
+    if product == "PlanetScope":
         ids = []
         for tile in tiles:
             bn, _ = splitext(basename(tile))
@@ -56,7 +56,7 @@ def ndvi_sorttiles(tiles, product="PSScene"):
         for key in tiles_dic.keys():
             tm = [t for t in tiles if key in t]
             tiles_dic[key] = tm
-
+        LOGGER.debug("files sorted in dictionary %s" % tiles_dic)
     return tiles_dic
 
 
@@ -70,6 +70,8 @@ def ndvi(tiles, product='PlanetScope'):
 
     import rasterio
     import numpy
+    from xml.dom import minidom
+    import matplotlib.pyplot as plt
 
     ndvifiles = []
     ndviplots = []
@@ -77,57 +79,64 @@ def ndvi(tiles, product='PlanetScope'):
     if product == 'PlanetScope':
         tiles_dic = ndvi_sorttiles(tiles, product=product)
         for key in tiles_dic.keys():
+            try:
+                LOGGER.debug("NDVI for %s" % key)
+                if len(tiles_dic[key]) == 2:
+                    tile = next(x for x in tiles_dic[key] if ".tif" in x)
+                    meta = next(x for x in tiles_dic[key] if ".xml" in x)
+                else:
+                    LOGGER.debug('Key %s data are not complete' % key )
+                    continue  # continue with next key
+                # Load red and NIR bands - note all PlanetScope 4-band images have band order BGRN
+                with rasterio.open(tile) as src:
+                    band_red = src.read(3)
 
-            tile = next(x for x in tiles_dic[key] if ".tif" in x)
-            meta = next(x for x in tiles_dic[key] if ".xml" in x)
+                with rasterio.open(tile) as src:
+                    band_nir = src.read(4)
 
-            # Load red and NIR bands - note all PlanetScope 4-band images have band order BGRN
-            with rasterio.open(tile) as src:
-                band_red = src.read(3)
+                LOGGER.debug("data read in memory")
+                xmldoc = minidom.parse(meta)
+                nodes = xmldoc.getElementsByTagName("ps:bandSpecificMetadata")
 
-            with rasterio.open(tile) as src:
-                band_nir = src.read(4)
+                # XML parser refers to bands by numbers 1-4
+                coeffs = {}
+                for node in nodes:
+                    bn = node.getElementsByTagName("ps:bandNumber")[0].firstChild.data
+                    if bn in ['1', '2', '3', '4']:
+                        i = int(bn)
+                        value = node.getElementsByTagName("ps:reflectanceCoefficient")[0].firstChild.data
+                        coeffs[i] = float(value)
 
-            from xml.dom import minidom
+                # Multiply by corresponding coefficients
+                band_red = band_red * coeffs[3]
+                band_nir = band_nir * coeffs[4]
 
-            xmldoc = minidom.parse(meta)
-            nodes = xmldoc.getElementsByTagName("ps:bandSpecificMetadata")
+                LOGGER.debug("data athmospheric corrected")
+                # Allow division by zero
+                numpy.seterr(divide='ignore', invalid='ignore')
 
-            # XML parser refers to bands by numbers 1-4
-            coeffs = {}
-            for node in nodes:
-                bn = node.getElementsByTagName("ps:bandNumber")[0].firstChild.data
-                if bn in ['1', '2', '3', '4']:
-                    i = int(bn)
-                    value = node.getElementsByTagName("ps:reflectanceCoefficient")[0].firstChild.data
-                    coeffs[i] = float(value)
+                # Calculate NDVI
+                ndvi = (band_nir.astype(float) - band_red.astype(float)) / (band_nir + band_red)
 
-            # Multiply by corresponding coefficients
-            band_red = band_red * coeffs[3]
-            band_nir = band_nir * coeffs[4]
+                # Set spatial characteristics of the output object to mirror the input
+                kwargs = src.meta
+                kwargs.update(
+                    dtype=rasterio.float32,
+                    count=1)
 
-            # Allow division by zero
-            numpy.seterr(divide='ignore', invalid='ignore')
-
-            # Calculate NDVI
-            ndvi = (band_nir.astype(float) - band_red.astype(float)) / (band_nir + band_red)
-
-            # Set spatial characteristics of the output object to mirror the input
-            kwargs = src.meta
-            kwargs.update(
-                dtype=rasterio.float32,
-                count=1)
-
-            # Create the file
-            _, ndvifile = mkstemp(dir='.', prefix="ndvi_%s" % key, suffix='.tif')
-            with rasterio.open(ndvifile, 'w', **kwargs) as dst:
+                # Create the file
+                _, ndvifile = mkstemp(dir='.', prefix="ndvi_%s" % key, suffix='.tif')
+                with rasterio.open(ndvifile, 'w', **kwargs) as dst:
                     dst.write_band(1, ndvi.astype(rasterio.float32))
 
-            _, ndviplot = mkstemp(dir='.', prefix="ndvi_%s" % key, suffix='.png')
-            import matplotlib.pyplot as plt
-            plt.imsave(ndviplot, ndvi, cmap=plt.cm.summer)
+                LOGGER.debug("NDVI calculated for %s " % key)
+                _, ndviplot = mkstemp(dir='.', prefix="ndvi_%s" % key, suffix='.png')
 
-            ndvifiles.extend([ndvifile])
-            ndviplots.extend([ndviplot])
+                plt.imsave(ndviplot, ndvi, cmap=plt.cm.summer)
 
+                ndvifiles.extend([ndvifile])
+                ndviplots.extend([ndviplot])
+
+            except:
+                LOGGER.exception("Failed to Calculate NDVI for %s " % key)
     return ndvifiles, ndviplots
