@@ -200,7 +200,8 @@ class MergeProcess(Process):
                     tiles_day = [tile for tile in tiles if eodata.get_timestamp(tile).date() == date]
                     LOGGER.debug('%s files ready for merging' % len(tiles_day))
                     mosaic = eodata.merge(tiles_day)
-                    merged_tiles.extend([eodata.merge(mosaic)])
+                    prefix = date.strftime("%Y%m%d")
+                    merged_tiles.extend([eodata.merge(mosaic, prefix=prefix)])
                 except:
                     LOGGER.exception("merge failed for date %s " % date)
         try:
@@ -216,6 +217,7 @@ class MergeProcess(Process):
         i = next((i for i, x in enumerate(merged_tiles) if x), None)
         if i is None:
             i = "dummy.tif"
+
         response.outputs['geotiffout'].file = merged_tiles[i]
 
         response.update_status("done", 100)

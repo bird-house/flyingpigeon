@@ -394,7 +394,6 @@ def fetch_eodata(item_type, asset, token, bbox, period=[dt.today()-timedelta(day
                 links = result.json()[asset]["_links"]  # u"analytic"
                 self_link = links["_self"]
                 activation_link = links["activate"]
-
                 # Request activation of the 'visual' asset:
                 activate_result = requests.get(activation_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
                 # Parse out useful links
@@ -405,18 +404,11 @@ def fetch_eodata(item_type, asset, token, bbox, period=[dt.today()-timedelta(day
                 activate_result = requests.get(activation_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
                 activation_status_result = requests.get(self_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
 
-# import time
-#    ...:
-#    ...: while True:
-#    ...:     test = 0
-#    ...:
-#    ...:     test = test - 1
-#    ...:     print 'time %s' % time.time()
                 try:
                     timeout = time.time() + 30   # 30 seconds from now
                     while activation_status_result.json()["status"] != 'active':
                         if time.time() > timeout and activation_status_result.json()["status"] == 'inactive':
-                            LOGGER.debug("File %s is still inactive after 2min. Giving up" % filename)
+                            LOGGER.debug("File %s is still inactive after 30sec. Giving up" % filename)
                             resources_sleeping.extend([filename])
                             break
                         else:

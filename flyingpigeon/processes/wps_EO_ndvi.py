@@ -201,8 +201,21 @@ class NdviProcess(Process):
                                                       cloud_cover=0.5,
                                                       cache=True)
                     resources.extend(tiles)
+
+                    # TODO: include merge of NDVI
+                    # for tile in tiles:
+                    #     dates = dates.union([eodata.get_timestamp(tile).date()])
+                    # dl = list(dates)
+                    #
+                    # for date in dl:
+                    #     print "calculating date %s " % date
+                    #     tiles_day = [tile for tile in tiles if eodata.get_timestamp(tile).date() == date]
+                    #     print(tiles_day)
+                    #     archive = eodata.merge(tiles_day)
+                    #     print archive
+
                     # resources_sleeping.extend(fetch_sleep)
-                LOGGER.debug("%s tiles fetched" % len(resources))    
+                LOGGER.debug("%s tiles fetched" % len(resources))
                 response.update_status("calculating the NDVI ", 30)
                 try:
                     LOGGER.debug('Start calculating NDVI')

@@ -2,7 +2,7 @@ from flyingpigeon import eodata
 from datetime import datetime as dt
 from os import listdir
 from os.path import join, basename
-
+from flyingpigeon.utils import archiveextract
 # DIR = '/home/nils/birdhouse/var/lib/pywps/cache/flyingpigeon/EO_data/PSScene4Band/analytic'
 # # DIR = '/home/nils/data/planet/PSScene3Band/'
 # tiles = [join(DIR, pic) for pic in listdir(DIR) if '.tif' in pic]
@@ -12,8 +12,10 @@ DIR = '/home/nils/birdhouse/var/lib/pywps/cache/flyingpigeon/EO_data/PSScene4Ban
 # DIR = '/home/nils/data/planet/PSScene3Band/'
 tiles = [join(DIR, pic) for pic in listdir(DIR) if '.tif' in pic]
 
-dates = set()
 
+tiles = archiveextract('/home/nils/data/planet/tmpQyYDEX.tar')
+
+dates = set()
 
 for tile in tiles:
     dates = dates.union([eodata.get_timestamp(tile).date()])
