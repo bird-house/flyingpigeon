@@ -21,38 +21,49 @@ def get_timestamp(tile):
     LOGGER.debug("timestamp: %s " % ts)
     ds = None
 
-    timestamp = dt.strftime(ts, '%Y:%m:%d %H:%M:%S')
+    timestamp = dt.strptime(ts, '%Y:%m:%d %H:%M:%S')
 
     return timestamp
 
 
-def merge(tiles):
+def merge(tiles, prefix="mosaic_"):
+    """
+    merging a given list of files with gdal_merge.py
+
+    :param tiles: list of geotiffs to be merged_tiles
+
+    :return geotiff: mosaic of merged files
+    """
+
     from flyingpigeon import gdal_merge as gm
     from os.path import join, basename
     import sys
 
-    merged_tiles = []
-    dates = set()
-    dates = dates.union([basename(pic).split('_')[0] for pic in tiles])
+    # merged_tiles = []
+    # dates = set()
+    # # dates = dates.union([basename(pic).split('_')[0] for pic in tiles])
+    # dates = dates.union(get_timestamp(tile).date() for tile in tiles)
+    #
+    # for date in dates:
 
-    for date in dates:
-        try:
-            LOGGER.debug('merge date %s' % date)
-            _, filename = mkstemp(dir='.', prefix=date, suffix='.tif')
-            call = ['-o',  filename]
-            tiles_day = [tile for tile in tiles if date in tile]
+    try:
+        LOGGER.debug('start merging')
+        # prefix = dt.strftime(date, "%Y%m%d")
+        _, filename = mkstemp(dir='.', prefix=prefix, suffix='.tif')
+        call = ['-o',  filename]
+        #
+        # tiles_day = [tile for tile in tiles if date.date() == get_timestamp(tile).date()]
 
-            for tile_d in tiles_day:
-                call.extend([tile_d])
-            sys.argv[1:] = call
-            gm.main()
+        for tile in tiles:
+            call.extend([tile])
+        sys.argv[1:] = call
+        gm.main()
 
-            merged_tiles.extend([filename])
-            LOGGER.debug("files merged for date %s" % date)
-        except:
-            LOGGER.exception("failed to merge tiles of date  %s " % date)
+        LOGGER.debug("files merged for %s tiles " % len(tiles))
+    except:
+        LOGGER.exception("failed to merge tiles")
 
-    return merged_tiles
+    return filename
 
 
 def ndvi_sorttiles(tiles, product="PlanetScope"):
