@@ -5,11 +5,13 @@ from pywps import Format, FORMATS
 from pywps.app.Common import Metadata
 
 from flyingpigeon.log import init_process_logger
-from flyingpigeon.utils import rename_complexinputs
+# from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.utils import archive, archiveextract
 
 # from flyingpigeon.datafetch import write_fileinfo
 from flyingpigeon.datafetch import fetch_eodata
 from flyingpigeon.datafetch import _EODATA_
+from flyingpigeon import eodata
 
 import os
 from datetime import datetime as dt
@@ -20,19 +22,19 @@ import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
-class NdviProcess(Process):
+class MergeProcess(Process):
     """
     TODO: like FetchProcess
     """
     def __init__(self):
         inputs = [
-            LiteralInput("products", "Earth Observation Product for NDVI",
-                         abstract="Choose an Earth Observation Product to calculate the NDVI",
-                         default="PSScene4Band",
+            LiteralInput("products", "Earth Observation Product",
+                         abstract="Choose Earth Observation Products (up to five)",
+                         default="PSScene3Band__visual",
                          data_type='string',
                          min_occurs=1,
                          max_occurs=1,
-                         allowed_values=["PSScene4Band", "Sentinel2L1C"]
+                         allowed_values=_EODATA_
                          ),
 
             LiteralInput('BBox', 'Bounding Box',
@@ -74,6 +76,16 @@ class NdviProcess(Process):
                          max_occurs=1,
                          ),
 
+            LiteralInput("archive_format", "Archive format",
+                         abstract="Result files will be compressed into archives.\
+                                  Choose an appropriate format",
+                         default="tar",
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=1,
+                         allowed_values=['zip', 'tar']
+                         )
+
             #
             # ComplexInput('resource', 'Resource',
             #              abstract="NetCDF Files or archive (tar/zip) containing netCDF files.",
@@ -88,10 +100,18 @@ class NdviProcess(Process):
         ]
 
         outputs = [
-            ComplexOutput("output", "Fetched Files",
-                          abstract="File containing the local pathes to downloades files.",
-                          supported_formats=[Format('text/plain')],
+            ComplexOutput("output_archive", "geotif files",
+                          abstract="Archive (tar/zip) containing merged geotif",
+                          supported_formats=[Format('application/x-tar'),
+                                             Format('application/zip')
+                                             ],
                           as_reference=True,
+                          ),
+
+            ComplexOutput('geotiffout', 'Example geotif file',
+                          abstract="Example geotif file for quickcheck purpose.",
+                          as_reference=True,
+                          supported_formats=[Format('image/tiff')]
                           ),
 
             ComplexOutput("output_log", "Logging information",
@@ -101,13 +121,12 @@ class NdviProcess(Process):
                           )
         ]
 
-        super(NdviProcess, self).__init__(
+        super(MergeProcess, self).__init__(
             self._handler,
-            identifier="fetch_eodata",
-            title="Earth Observation Fetch Resources",
+            identifier="EO_merge",
+            title="Earth Observation merge all file per day",
             version="0.1",
-            abstract="Fetch EO Data to the local file"
-                     "system of the birdhouse compute provider.",
+            abstract="Fetch EO Data and merge the tiles of the same day to a mosaic",
             metadata=[
                 Metadata('Documentation', 'http://flyingpigeon.readthedocs.io/en/latest/'),
             ],
@@ -118,14 +137,14 @@ class NdviProcess(Process):
         )
 
     def _handler(self, request, response):
-        response.update_status("start fetching resource", 10)
+        response.update_status("start fetch data", 10)
 
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
         products = [inpt.data for inpt in request.inputs['products']]
 
-        bbox = []
+        bbox = []  # order xmin ymin xmax ymax
         bboxStr = request.inputs['BBox'][0].data
         bboxStr = bboxStr.split(',')
         bbox.append(float(bboxStr[0]))
@@ -151,28 +170,39 @@ class NdviProcess(Process):
             LOGGER.exception("periode end befor periode start, period is set to the last 30 days from now")
 
         token = request.inputs['token'][0].data
+        archive_format = request.inputs['archive_format'][0].data
 
+        resources = []
+        # resources_sleeping = []
+        for product in products:
+            item_type, asset = product.split('__')
+            LOGGER.debug('itym type: %s , asset: %s' % (item_type, asset))
+            fetch_sleep, tiles = fetch_eodata(item_type,
+                                              asset,
+                                              token,
+                                              bbox,
+                                              period=[start, end],
+                                              cloud_cover=0.5,
+                                              cache=True)
+            resources.extend(tiles)
+            # resources_sleeping.extend(fetch_sleep)
 
-        resources = fetch_eodata(item_type,
-                                 asset,
-                                 token,
-                                 bbox,
-                                 period=[start, end],
-                                 cloud_cover=0.5,
-                                 cache=True)
+        merged_tiles = eodata.merge(resources)
 
-        _, filepathes = mkstemp(dir='.', suffix='.txt')
+        try:
+            output_archive = archive(merged_tiles, format=archive_format)
+            LOGGER.info('geotiff files added to archive')
+        except:
+            msg = 'failed adding species_files indices to archive'
+            LOGGER.exception(msg)
 
-        with open(filepathes, 'w') as fp:
-            fp.write('###############################################\n')
-            fp.write('###############################################\n')
-            fp.write('Following files are stored to your local discs: \n')
-            fp.write('\n')
-            for f in resources:
-                fp.write('%s \n' % os.path.realpath(f))
-
-        response.outputs['output'].file = filepathes
         # response.outputs['output'].file = write_fileinfo(resource, filepath=True)
+        response.outputs['output_archive'].file = output_archive
+
+        i = next((i for i, x in enumerate(merged_tiles) if x), None)
+        if i is None:
+            i = "dummy.tif"
+        response.outputs['geotiffout'].file = merged_tiles[i]
 
         response.update_status("done", 100)
 
