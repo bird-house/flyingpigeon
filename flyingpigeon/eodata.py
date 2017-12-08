@@ -4,6 +4,28 @@ import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
+def get_timestamp(tile):
+    """
+    returns the creation timestamp of a tile image as datetime.
+
+    :param tile: path to geotiff confom to gdal metadata http://www.gdal.org/gdal_datamodel.html
+
+    :return datetime: timestamp
+    """
+    from datetime import datetime as dt
+    from osgeo import gdal
+
+    ds = gdal.Open(tile, 0)
+    ts = ds.GetMetadataItem("TIFFTAG_DATETIME")
+
+    LOGGER.debug("timestamp: %s " % ts)
+    ds = None
+
+    timestamp = dt.strftime(ts, '%Y:%m:%d %H:%M:%S')
+
+    return timestamp
+
+
 def merge(tiles):
     from flyingpigeon import gdal_merge as gm
     from os.path import join, basename
