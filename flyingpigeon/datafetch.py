@@ -413,7 +413,7 @@ def fetch_eodata(item_type, asset, token, bbox, period=[dt.today()-timedelta(day
 #    ...:     test = test - 1
 #    ...:     print 'time %s' % time.time()
                 try:
-                    timeout = time.time() + 60*2   # 2 minutes from now
+                    timeout = time.time() + 30   # 30 seconds from now
                     while activation_status_result.json()["status"] != 'active':
                         if time.time() > timeout and activation_status_result.json()["status"] == 'inactive':
                             LOGGER.debug("File %s is still inactive after 2min. Giving up" % filename)

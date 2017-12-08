@@ -22,19 +22,19 @@ import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
-class MergeProcess(Process):
+class NdviProcess(Process):
     """
-    TODO: like FetchProcess
+    Normalized Difference Vegetation Index (NDVI)
     """
     def __init__(self):
         inputs = [
             LiteralInput("products", "Earth Observation Product",
-                         abstract="Choose Earth Observation Products (up to five)",
-                         default="PSScene3Band__visual",
+                         abstract="Choose Earth Observation Products",
+                         default='PlanetScope',
                          data_type='string',
                          min_occurs=1,
                          max_occurs=1,
-                         allowed_values=_EODATA_
+                         allowed_values=['PlanetScope']
                          ),
 
             LiteralInput('BBox', 'Bounding Box',
@@ -47,7 +47,7 @@ class MergeProcess(Process):
                                   " For example: -80,50,20,70",
                          min_occurs=1,
                          max_occurs=1,
-                         default='14,15,8,9',
+                         default='14.6,14.8,8.7,8.9',
                          ),
 
             LiteralInput('start', 'Start Date',
@@ -100,18 +100,26 @@ class MergeProcess(Process):
         ]
 
         outputs = [
-            ComplexOutput("output_archive", "geotif files",
-                          abstract="Archive (tar/zip) containing merged geotif",
+            ComplexOutput("ndvi_archive", "geotif files",
+                          abstract="Archive (tar/zip) containing NDVI result files",
                           supported_formats=[Format('application/x-tar'),
                                              Format('application/zip')
                                              ],
                           as_reference=True,
                           ),
 
-            ComplexOutput('geotiffout', 'Example geotif file',
-                          abstract="Example geotif file for quickcheck purpose.",
+            ComplexOutput("plot_archive", "png files",
+                          abstract="Archive (tar/zip) containing NDVI result files",
+                          supported_formats=[Format('application/x-tar'),
+                                             Format('application/zip')
+                                             ],
                           as_reference=True,
-                          supported_formats=[Format('image/tiff')]
+                          ),
+
+            ComplexOutput('ndviexample', 'Example graphic',
+                          abstract="Example plot of one of the resultes for quickcheck purpose.",
+                          as_reference=True,
+                          supported_formats=[Format('image/png')]
                           ),
 
             ComplexOutput("output_log", "Logging information",
@@ -121,12 +129,16 @@ class MergeProcess(Process):
                           )
         ]
 
-        super(MergeProcess, self).__init__(
+        super(NdviProcess, self).__init__(
             self._handler,
-            identifier="EO_merge",
-            title="Earth Observation merge all file per day",
+            identifier="EO_ndvi",
+            title="EO NDVI",
             version="0.1",
-            abstract="Fetch EO Data and merge the tiles of the same day to a mosaic",
+            abstract="Normalized Difference Vegetation Index (NDVI),"
+                     "developed by a NASA scientist named Compton Tucker in 1977,"
+                     "is commonly used to assess whether an area contains live green vegetation or not."
+                     "It can show the difference between water and plants, bare soil and grass,"
+                     "whether plants are under stress, and what lifecycle stage a crop is in",
             metadata=[
                 Metadata('Documentation', 'http://flyingpigeon.readthedocs.io/en/latest/'),
             ],
@@ -173,36 +185,54 @@ class MergeProcess(Process):
         archive_format = request.inputs['archive_format'][0].data
 
         resources = []
+
         # resources_sleeping = []
         for product in products:
-            item_type, asset = product.split('__')
-            LOGGER.debug('itym type: %s , asset: %s' % (item_type, asset))
-            fetch_sleep, tiles = fetch_eodata(item_type,
-                                              asset,
-                                              token,
-                                              bbox,
-                                              period=[start, end],
-                                              cloud_cover=0.5,
-                                              cache=True)
-            resources.extend(tiles)
-            # resources_sleeping.extend(fetch_sleep)
-
-        merged_tiles = eodata.merge(resources)
-
+            if product == 'PlanetScope':
+                item_type = 'PSScene4Band'
+                assets = ['analytic', 'analytic_xml']
+                for asset in assets:
+                    LOGGER.debug('itym type: %s , asset: %s' % (item_type, asset))
+                    fetch_sleep, tiles = fetch_eodata(item_type,
+                                                      asset,
+                                                      token,
+                                                      bbox,
+                                                      period=[start, end],
+                                                      cloud_cover=0.5,
+                                                      cache=True)
+                    resources.extend(tiles)
+                    # resources_sleeping.extend(fetch_sleep)
+                response.update_status("calculating the NDVI ", 30)
+                try:
+                    LOGGER.debug('Start calculating NDVI')
+                    ndvi_tiles, ndvi_plots = eodata.ndvi(tiles, product)
+                    # ndvi_merged = eodata.merge(ndvi_tiles)
+                except:
+                    LOGGER.exception('failed to calculate NDVI')
         try:
-            output_archive = archive(merged_tiles, format=archive_format)
+            ndvi_archive = archive(ndvi_tiles, format=archive_format)
             LOGGER.info('geotiff files added to archive')
         except:
             msg = 'failed adding species_files indices to archive'
             LOGGER.exception(msg)
 
-        # response.outputs['output'].file = write_fileinfo(resource, filepath=True)
-        response.outputs['output_archive'].file = output_archive
+        response.outputs['ndvi_archive'].file = ndvi_archive
 
-        i = next((i for i, x in enumerate(merged_tiles) if x), None)
+        try:
+            plot_archive = archive(ndvi_plots, format=archive_format)
+            LOGGER.info('png files added to archive')
+        except:
+            msg = 'failed adding species_files indices to archive'
+            LOGGER.exception(msg)
+
+        response.outputs['plot_archive'].file = plot_archive
+
+
+        i = next((i for i, x in enumerate(ndvi_plots) if x), None)
         if i is None:
-            i = "dummy.tif"
-        response.outputs['geotiffout'].file = merged_tiles[i]
+            response.outputs['ndviexample'].file = "dummy.png"
+        else:
+            response.outputs['ndviexample'].file = ndvi_plots[i]
 
         response.update_status("done", 100)
 

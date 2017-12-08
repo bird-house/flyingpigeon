@@ -57,7 +57,7 @@ processes = [
     MapSpatialAnalogProcess(),
     FetcheodataProcess(),
     MergeProcess(),
-    # NdviProcess(),
+    NdviProcess(),
 ]
 
 """

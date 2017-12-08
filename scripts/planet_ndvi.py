@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-
 import rasterio
 import numpy as np
 
