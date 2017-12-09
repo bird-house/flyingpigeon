@@ -73,13 +73,15 @@ def plot_ndvi(geotif, file_extension='png'):
     ax = plt.axes(projection=ccrs.PlateCarree())
     norm = vs.MidpointNormalize(midpoint=0)
 
-    ndvi = ax.imshow(img, origin='upper', extent=extent, norm=norm, transform=ccrs.PlateCarree(), vmin=-1, vmax=1)
+    img_ndvi = ax.imshow(img,
+                         origin='upper', extent=extent, transform=ccrs.PlateCarree(),
+                         norm=norm, vmin=-1, vmax=1, cmap=plt.cm.summer)
     # ax.coastlines(resolution='50m', color='black', linewidth=1)
     # ax.add_feature(feature.BORDERS, linestyle='-', alpha=.5)
     # ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True)
     ax.gridlines()
     plt.title('NDVI')
-    plt.colorbar(ndvi)
+    plt.colorbar(img_ndvi)
     ndvi_plot = vs.fig2plot(fig, file_extension=file_extension, dpi=300)
 
     return ndvi_plot
@@ -123,33 +125,6 @@ def merge(tiles, prefix="mosaic_"):
         LOGGER.exception("failed to merge tiles")
 
     return filename
-
-
-def ndvi_sorttiles(tiles, product="PlanetScope"):
-    """
-    sort un list fo files to calculate the NDVI.
-    red nivr and metadata are sorted in an dictionary
-
-    :param tiles: list of scene files and metadata
-    :param product: EO data product e.g. "PlanetScope" (default)
-
-    :return dictionary: sorted files ordered in a dictionary
-    """
-
-    from os.path import splitext, basename
-    if product == "PlanetScope":
-        ids = []
-        for tile in tiles:
-            bn, _ = splitext(basename(tile))
-            ids.extend([bn])
-
-        tiles_dic = {key: None for key in ids}
-
-        for key in tiles_dic.keys():
-            tm = [t for t in tiles if key in t]
-            tiles_dic[key] = tm
-        LOGGER.debug("files sorted in dictionary %s" % tiles_dic)
-    return tiles_dic
 
 
 def ndvi(tiles, product='PlanetScope'):
@@ -227,9 +202,36 @@ def ndvi(tiles, product='PlanetScope'):
                 #
                 # plt.imsave(ndviplot, ndvi, cmap=plt.cm.summer)
                 #
-                # ndvifiles.extend([ndvifile])
+                ndvifiles.extend([ndvifile])
                 # ndviplots.extend([ndviplot])
 
             except:
                 LOGGER.exception("Failed to Calculate NDVI for %s " % key)
     return ndvifiles
+
+
+def ndvi_sorttiles(tiles, product="PlanetScope"):
+    """
+    sort un list fo files to calculate the NDVI.
+    red nivr and metadata are sorted in an dictionary
+
+    :param tiles: list of scene files and metadata
+    :param product: EO data product e.g. "PlanetScope" (default)
+
+    :return dictionary: sorted files ordered in a dictionary
+    """
+
+    from os.path import splitext, basename
+    if product == "PlanetScope":
+        ids = []
+        for tile in tiles:
+            bn, _ = splitext(basename(tile))
+            ids.extend([bn])
+
+        tiles_dic = {key: None for key in ids}
+
+        for key in tiles_dic.keys():
+            tm = [t for t in tiles if key in t]
+            tiles_dic[key] = tm
+        LOGGER.debug("files sorted in dictionary %s" % tiles_dic)
+    return tiles_dic
