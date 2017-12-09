@@ -108,13 +108,13 @@ class NdviProcess(Process):
                           as_reference=True,
                           ),
 
-            ComplexOutput("plot_archive", "png files",
-                          abstract="Archive (tar/zip) containing NDVI result files",
-                          supported_formats=[Format('application/x-tar'),
-                                             Format('application/zip')
-                                             ],
-                          as_reference=True,
-                          ),
+            # ComplexOutput("plot_archive", "png files",
+            #               abstract="Archive (tar/zip) containing NDVI result files",
+            #               supported_formats=[Format('application/x-tar'),
+            #                                  Format('application/zip')
+            #                                  ],
+            #               as_reference=True,
+            #               ),
 
             ComplexOutput('ndviexample', 'Example graphic',
                           abstract="Example plot of one of the resultes for quickcheck purpose.",
@@ -219,7 +219,7 @@ class NdviProcess(Process):
                 response.update_status("calculating the NDVI ", 30)
                 try:
                     LOGGER.debug('Start calculating NDVI')
-                    ndvi_tiles, ndvi_plots = eodata.ndvi(resources, product)
+                    ndvi_tiles = eodata.ndvi(resources, product)
                     # ndvi_merged = eodata.merge(ndvi_tiles)
                 except:
                     LOGGER.exception('failed to calculate NDVI')
@@ -232,21 +232,22 @@ class NdviProcess(Process):
 
         response.outputs['ndvi_archive'].file = ndvi_archive
 
-        try:
-            plot_archive = archive(ndvi_plots, format=archive_format)
-            LOGGER.info('png files added to archive')
-        except:
-            msg = 'failed adding species_files indices to archive'
-            LOGGER.exception(msg)
+        # try:
+        #     plot_archive = archive(ndvi_plots, format=archive_format)
+        #     LOGGER.info('png files added to archive')
+        # except:
+        #     msg = 'failed adding species_files indices to archive'
+        #     LOGGER.exception(msg)
 
-        response.outputs['plot_archive'].file = plot_archive
+        # response.outputs['plot_archive'].file = plot_archive
 
 
-        i = next((i for i, x in enumerate(ndvi_plots) if x), None)
+        i = next((i for i, x in enumerate(ndvi_tiles) if x), None)
         if i is None:
             response.outputs['ndviexample'].file = "dummy.png"
         else:
-            response.outputs['ndviexample'].file = ndvi_plots[i]
+            ndvi_plot = eodata.plot_ndvi(ndvi_tiles[i])
+            response.outputs['ndviexample'].file = ndvi_plot
 
         response.update_status("done", 100)
 

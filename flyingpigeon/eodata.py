@@ -1,4 +1,5 @@
 from tempfile import mkstemp
+from osgeo import gdal
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
@@ -13,7 +14,7 @@ def get_timestamp(tile):
     :return datetime: timestamp
     """
     from datetime import datetime as dt
-    from osgeo import gdal
+
 
     ds = gdal.Open(tile, 0)
     ts = ds.GetMetadataItem("TIFFTAG_DATETIME")
@@ -24,6 +25,64 @@ def get_timestamp(tile):
     timestamp = dt.strptime(ts, '%Y:%m:%d %H:%M:%S')
 
     return timestamp
+
+
+def plot_ndvi(geotif, file_extension='png'):
+    """
+    plots a NDVI image
+
+    :param geotif: geotif file containning one band with NDVI values
+    :param file_extension: format of the output graphic. default='png'
+
+    :result str: path to graphic file
+    """
+    import numpy as np
+    import struct
+
+    # from osgeo import ogr
+    from osgeo import osr
+    # from osgeo import gdal_array
+    # from osgeo.gdalconst import *
+
+    from flyingpigeon import visualisation as vs
+
+    import cartopy.crs as ccrs
+    from cartopy import feature
+    import matplotlib.pyplot as plt
+
+    # im = '/home/nils/birdhouse/flyingpigeon/scripts/20171129mWt2Eh.tif'
+
+    cube = gdal.Open(geotif)
+    bnd1 = cube.GetRasterBand(1)
+
+    proj = cube.GetProjection()
+
+    inproj = osr.SpatialReference()
+    inproj.ImportFromWkt(proj)
+    print(inproj)
+
+    projcs = inproj.GetAuthorityCode('PROJCS')
+    projection = ccrs.epsg(projcs)
+
+    # get the extent of the plot
+    gt = cube.GetGeoTransform()
+    extent = (gt[0], gt[0] + cube.RasterXSize * gt[1], gt[3] + cube.RasterYSize * gt[5], gt[3])
+    img = bnd1.ReadAsArray(0, 0, cube.RasterXSize, cube.RasterYSize)
+
+    fig = plt.figure()  # , bbox='tight'
+    ax = plt.axes(projection=ccrs.PlateCarree())
+    norm = vs.MidpointNormalize(midpoint=0)
+
+    ndvi = ax.imshow(img, origin='upper', extent=extent, norm=norm, transform=ccrs.PlateCarree(), vmin=-1, vmax=1)
+    # ax.coastlines(resolution='50m', color='black', linewidth=1)
+    # ax.add_feature(feature.BORDERS, linestyle='-', alpha=.5)
+    # ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True)
+    ax.gridlines()
+    plt.title('NDVI')
+    plt.colorbar(ndvi)
+    ndvi_plot = vs.fig2plot(fig, file_extension=file_extension, dpi=300)
+
+    return ndvi_plot
 
 
 def merge(tiles, prefix="mosaic_"):
@@ -149,7 +208,7 @@ def ndvi(tiles, product='PlanetScope'):
                 numpy.seterr(divide='ignore', invalid='ignore')
 
                 # Calculate NDVI
-                ndvi = (band_nir.astype(float) - band_red.astype(float)) / (band_nir + band_red)
+                bn_ndvi = (band_nir.astype(float) - band_red.astype(float)) / (band_nir + band_red)
 
                 # Set spatial characteristics of the output object to mirror the input
                 kwargs = src.meta
@@ -160,16 +219,17 @@ def ndvi(tiles, product='PlanetScope'):
                 # Create the file
                 _, ndvifile = mkstemp(dir='.', prefix="ndvi_%s" % key, suffix='.tif')
                 with rasterio.open(ndvifile, 'w', **kwargs) as dst:
-                    dst.write_band(1, ndvi.astype(rasterio.float32))
+                    dst.write_band(1, bn_ndvi.astype(rasterio.float32))
 
                 LOGGER.debug("NDVI calculated for %s " % key)
-                _, ndviplot = mkstemp(dir='.', prefix="ndvi_%s" % key, suffix='.png')
 
-                plt.imsave(ndviplot, ndvi, cmap=plt.cm.summer)
-
-                ndvifiles.extend([ndvifile])
-                ndviplots.extend([ndviplot])
+                # _, ndviplot = mkstemp(dir='.', prefix="ndvi_%s" % key, suffix='.png')
+                #
+                # plt.imsave(ndviplot, ndvi, cmap=plt.cm.summer)
+                #
+                # ndvifiles.extend([ndvifile])
+                # ndviplots.extend([ndviplot])
 
             except:
                 LOGGER.exception("Failed to Calculate NDVI for %s " % key)
-    return ndvifiles, ndviplots
+    return ndvifiles
