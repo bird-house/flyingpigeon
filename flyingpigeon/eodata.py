@@ -161,8 +161,6 @@ def plot_truecolorcomposite(geotif, file_extension='png', rgb_bands=[1,2,3]):
     return tcc_plot
 
 
-
-
 def merge(tiles, prefix="mosaic_"):
     """
     merging a given list of files with gdal_merge.py
@@ -187,7 +185,7 @@ def merge(tiles, prefix="mosaic_"):
         LOGGER.debug('start merging')
         # prefix = dt.strftime(date, "%Y%m%d")
         _, filename = mkstemp(dir='.', prefix=prefix, suffix='.tif')
-        call = ['-o',  filename]
+        call = ['-o',  "%s" % filename, '-of', 'GTiff', '-v']
         #
         # tiles_day = [tile for tile in tiles if date.date() == get_timestamp(tile).date()]
 
