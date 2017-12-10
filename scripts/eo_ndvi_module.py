@@ -8,3 +8,5 @@ anx2 = '/home/nils/birdhouse/var/lib/pywps/cache/flyingpigeon/EO_data/PSScene4Ba
 
 
 tiles = [an1, an2, anx1, anx2]
+
+ndvis = eodata.ndvi(tiles)

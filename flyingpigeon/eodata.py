@@ -1,5 +1,5 @@
 from tempfile import mkstemp
-from osgeo import gdal
+from osgeo import gdal, osr
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
@@ -40,7 +40,7 @@ def plot_ndvi(geotif, file_extension='png'):
     import struct
 
     # from osgeo import ogr
-    from osgeo import osr
+    # from osgeo import osr
     # from osgeo import gdal_array
     # from osgeo.gdalconst import *
 
@@ -60,13 +60,15 @@ def plot_ndvi(geotif, file_extension='png'):
     inproj = osr.SpatialReference()
     inproj.ImportFromWkt(proj)
     print(inproj)
+    LOGGER.debug("projection of geotif %s " % inproj)
 
-    projcs = inproj.GetAuthorityCode('PROJCS')
+    projcs = inproj.GetAuthorityCode('PROJCS')  # requires internet connection
     projection = ccrs.epsg(projcs)
 
     # get the extent of the plot
     gt = cube.GetGeoTransform()
     extent = (gt[0], gt[0] + cube.RasterXSize * gt[1], gt[3] + cube.RasterYSize * gt[5], gt[3])
+
     img = bnd1.ReadAsArray(0, 0, cube.RasterXSize, cube.RasterYSize)
 
     fig = plt.figure()  # , bbox='tight'
@@ -84,7 +86,81 @@ def plot_ndvi(geotif, file_extension='png'):
     plt.colorbar(img_ndvi)
     ndvi_plot = vs.fig2plot(fig, file_extension=file_extension, dpi=300)
 
+    plt.close()
     return ndvi_plot
+
+
+def plot_truecolorcomposite(geotif, file_extension='png', rgb_bands=[1,2,3]):
+    """
+    Calculates a RGB image (True color composite) based on red, greed, and blue bands.
+
+    :param geotif: geotif file containning one band with NDVI values
+    :param file_extension: format of the output graphic. default='png'
+    :param rgb_bands: order of bands storing red, green and blue values default=[1,2,3]
+
+    :result str: path to graphic file
+    """
+
+    gdal.UseExceptions()
+
+    ds = gdal.Open(geotif)
+    data = ds.ReadAsArray()
+    gt = ds.GetGeoTransform()
+    proj = ds.GetProjection()
+
+    inproj = osr.SpatialReference()
+    inproj.ImportFromWkt(proj)
+
+    # import cartopy.crs as ccrs
+    #
+    # projcs = inproj.GetAuthorityCode('PROJCS')
+    # projection = ccrs.epsg(projcs)
+    # print(projection)
+
+    import matplotlib.pyplot as plt
+    from flyingpigeon import visualisation as vs
+    from numpy import linspace, dstack
+
+    # subplot_kw = dict(projection=projection)
+    # fig, ax = plt.subplots(figsize=(9, 9), subplot_kw=subplot_kw)
+
+    fig, ax = plt.subplots()
+
+    extent = (gt[0], gt[0] + ds.RasterXSize * gt[1],
+              gt[3] + ds.RasterYSize * gt[5], gt[3])
+
+    red = ds.GetRasterBand(rgb_bands[0])
+    green = ds.GetRasterBand(rgb_bands[1])
+    blue = ds.GetRasterBand(rgb_bands[2])   # band 1 PSSCINE4Band blue
+
+    img_r = red.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize)
+    img_g = green.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize)
+    img_b = blue.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize)
+
+    # rgb = dstack((data[0, :, :], data[1, :, :], data[2, :, :]))
+
+    rgb = dstack([img_r, img_g, img_b])
+    img = ax.imshow(rgb)
+
+    # img = ax.imshow(rgb.transpose((1, 2, 0)), extent=extent,
+    #                 origin='upper')
+
+    # ax.gridlines(color='lightgrey', linestyle='-')
+    # ax.set_xticks()
+
+    tcc_plot = vs.fig2plot(fig , dpi=600)
+
+    plt.close()
+    # _, picname = mkstemp(dir='/home/nils/data/planet/', suffix='.png')
+    #
+    # plt.savefig(picname)
+    #
+    # print picname
+    #
+
+    return tcc_plot
+
+
 
 
 def merge(tiles, prefix="mosaic_"):
@@ -202,7 +278,7 @@ def ndvi(tiles, product='PlanetScope'):
                 #
                 # plt.imsave(ndviplot, ndvi, cmap=plt.cm.summer)
                 #
-                ndvifiles.extend([ndvifile])
+                # ndvifiles.extend([ndvifile])
                 # ndviplots.extend([ndviplot])
 
             except:
