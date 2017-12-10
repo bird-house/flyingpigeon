@@ -90,7 +90,7 @@ def plot_ndvi(geotif, file_extension='png'):
     return ndvi_plot
 
 
-def plot_truecolorcomposite(geotif, file_extension='png', rgb_bands=[1,2,3]):
+def plot_truecolorcomposite(geotif, rgb_bands=[1,2,3], file_extension='png', dpi=300, figsize=(5,5)):
     """
     Calculates a RGB image (True color composite) based on red, greed, and blue bands.
 
@@ -129,6 +129,8 @@ def plot_truecolorcomposite(geotif, file_extension='png', rgb_bands=[1,2,3]):
     extent = (gt[0], gt[0] + ds.RasterXSize * gt[1],
               gt[3] + ds.RasterYSize * gt[5], gt[3])
 
+    print  extent
+
     red = ds.GetRasterBand(rgb_bands[0])
     green = ds.GetRasterBand(rgb_bands[1])
     blue = ds.GetRasterBand(rgb_bands[2])   # band 1 PSSCINE4Band blue
@@ -148,7 +150,7 @@ def plot_truecolorcomposite(geotif, file_extension='png', rgb_bands=[1,2,3]):
     # ax.gridlines(color='lightgrey', linestyle='-')
     # ax.set_xticks()
 
-    tcc_plot = vs.fig2plot(fig , dpi=600)
+    tcc_plot = vs.fig2plot(fig, dpi=dpi, figsize=figsize)
 
     plt.close()
     # _, picname = mkstemp(dir='/home/nils/data/planet/', suffix='.png')
