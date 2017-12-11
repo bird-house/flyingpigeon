@@ -57,7 +57,7 @@ def plot_ndvi(geotif, file_extension='png'):
 
     inproj = osr.SpatialReference()
     inproj.ImportFromWkt(proj)
-    print(inproj)
+    # print(inproj)
     LOGGER.debug("projection of geotif %s " % inproj)
 
     projcs = inproj.GetAuthorityCode('PROJCS')  # requires internet connection
@@ -221,7 +221,7 @@ def ndvi(tiles, product='PlanetScope'):
                     tile = next(x for x in tiles_dic[key] if ".tif" in x)
                     meta = next(x for x in tiles_dic[key] if ".xml" in x)
                 else:
-                    LOGGER.debug('Key %s data are not complete' % key )
+                    LOGGER.debug('Key %s data are not complete' % key)
                     continue  # continue with next key
                 # Load red and NIR bands - note all PlanetScope 4-band images have band order BGRN
                 with rasterio.open(tile) as src:
@@ -267,13 +267,9 @@ def ndvi(tiles, product='PlanetScope'):
 
                 LOGGER.debug("NDVI calculated for %s " % key)
 
-                # _, ndviplot = mkstemp(dir='.', prefix="ndvi_%s" % key, suffix='.png')
-                #
-                # plt.imsave(ndviplot, ndvi, cmap=plt.cm.summer)
-                #
-                # ndvifiles.extend([ndvifile])
-                # ndviplots.extend([ndviplot])
 
+                ndvifiles.extend([ndvifile])
+                LOGGER.debug("NDVI calculated: %s " % ndvifile)
             except:
                 LOGGER.exception("Failed to Calculate NDVI for %s " % key)
     return ndvifiles
@@ -302,5 +298,5 @@ def ndvi_sorttiles(tiles, product="PlanetScope"):
         for key in tiles_dic.keys():
             tm = [t for t in tiles if key in t]
             tiles_dic[key] = tm
-        LOGGER.debug("files sorted in dictionary %s" % tiles_dic)
+        # LOGGER.debug("files sorted in dictionary %s" % tiles_dic)
     return tiles_dic

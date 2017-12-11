@@ -108,14 +108,6 @@ class NdviProcess(Process):
                           as_reference=True,
                           ),
 
-            # ComplexOutput("plot_archive", "png files",
-            #               abstract="Archive (tar/zip) containing NDVI result files",
-            #               supported_formats=[Format('application/x-tar'),
-            #                                  Format('application/zip')
-            #                                  ],
-            #               as_reference=True,
-            #               ),
-
             ComplexOutput('ndviexample', 'Example graphic',
                           abstract="Example plot of one of the resultes for quickcheck purpose.",
                           as_reference=True,
@@ -232,21 +224,14 @@ class NdviProcess(Process):
 
         response.outputs['ndvi_archive'].file = ndvi_archive
 
-        # try:
-        #     plot_archive = archive(ndvi_plots, format=archive_format)
-        #     LOGGER.info('png files added to archive')
-        # except:
-        #     msg = 'failed adding species_files indices to archive'
-        #     LOGGER.exception(msg)
-
-        # response.outputs['plot_archive'].file = plot_archive
-
-
         i = next((i for i, x in enumerate(ndvi_tiles) if x), None)
         if i is None:
             response.outputs['ndviexample'].file = "dummy.png"
         else:
+            LOGGER.debug("start plotting test files for quick check")
             ndvi_plot = eodata.plot_ndvi(ndvi_tiles[i])
+            LOGGER.debug("NDVI test plot %s" % ndvi_plot)
+
             response.outputs['ndviexample'].file = ndvi_plot
 
         response.update_status("done", 100)
