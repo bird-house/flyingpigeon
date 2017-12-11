@@ -108,10 +108,10 @@ class MergeProcess(Process):
                           as_reference=True,
                           ),
 
-            ComplexOutput('geotiffout', 'Example geotif file',
-                          abstract="Example geotif file for quickcheck purpose.",
+            ComplexOutput('output_png', 'Example plot',
+                          abstract="Example plot of a geotif file for quickcheck purpose.",
                           as_reference=True,
-                          supported_formats=[Format('image/tiff')]
+                          supported_formats=[Format('image/png')]
                           ),
 
             ComplexOutput("output_log", "Logging information",
@@ -216,9 +216,11 @@ class MergeProcess(Process):
 
         i = next((i for i, x in enumerate(merged_tiles) if x), None)
         if i is None:
-            i = "dummy.tif"
+            i = "dummy.png"
+            LOGGER.excetion('failed to select example file')
 
-        response.outputs['geotiffout'].file = merged_tiles[i]
+        plot_example = eodata.plot_truecolorcomposite(merged_tiles[i])
+        response.outputs['output_png'].file = plot_example
 
         response.update_status("done", 100)
 

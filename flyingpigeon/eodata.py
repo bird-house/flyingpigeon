@@ -15,15 +15,13 @@ def get_timestamp(tile):
     """
     from datetime import datetime as dt
 
-
     ds = gdal.Open(tile, 0)
     ts = ds.GetMetadataItem("TIFFTAG_DATETIME")
 
     LOGGER.debug("timestamp: %s " % ts)
-    ds = None
+    ds = None  # to close the dataset
 
     timestamp = dt.strptime(ts, '%Y:%m:%d %H:%M:%S')
-
     return timestamp
 
 
@@ -87,6 +85,7 @@ def plot_ndvi(geotif, file_extension='png'):
     ndvi_plot = vs.fig2plot(fig, file_extension=file_extension, dpi=300)
 
     plt.close()
+    ds = None
     return ndvi_plot
 
 
@@ -153,13 +152,7 @@ def plot_truecolorcomposite(geotif, rgb_bands=[1,2,3], file_extension='png', dpi
     tcc_plot = vs.fig2plot(fig, dpi=dpi, figsize=figsize)
 
     plt.close()
-    # _, picname = mkstemp(dir='/home/nils/data/planet/', suffix='.png')
-    #
-    # plt.savefig(picname)
-    #
-    # print picname
-    #
-
+    ds = None
     return tcc_plot
 
 
