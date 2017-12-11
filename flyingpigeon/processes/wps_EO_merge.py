@@ -188,20 +188,21 @@ class MergeProcess(Process):
             # resources_sleeping.extend(fetch_sleep)
 
             dates = set()
-            merged_tiles = []
 
             for tile in resources:
                 dates = dates.union([eodata.get_timestamp(tile).date()])
             dl = list(dates)
+
+            merged_tiles = []
 
             for date in dl:
                 try:
                     LOGGER.debug("calculating date %s " % date)
                     tiles_day = [tile for tile in tiles if eodata.get_timestamp(tile).date() == date]
                     LOGGER.debug('%s files ready for merging' % len(tiles_day))
-                    mosaic = eodata.merge(tiles_day)
                     prefix = date.strftime("%Y%m%d")
-                    merged_tiles.extend([eodata.merge(mosaic, prefix=prefix)])
+                    mosaic = eodata.merge(tiles_day, prefix=prefix)
+                    merged_tiles.extend([mosaic])
                 except:
                     LOGGER.exception("merge failed for date %s " % date)
         try:

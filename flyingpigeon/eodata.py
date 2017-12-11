@@ -13,15 +13,18 @@ def get_timestamp(tile):
 
     :return datetime: timestamp
     """
+
     from datetime import datetime as dt
+    try:
+        ds = gdal.Open(tile, 0)
+        ts = ds.GetMetadataItem("TIFFTAG_DATETIME")
 
-    ds = gdal.Open(tile, 0)
-    ts = ds.GetMetadataItem("TIFFTAG_DATETIME")
+        LOGGER.debug("timestamp: %s " % ts)
+        ds = None  # to close the dataset
 
-    LOGGER.debug("timestamp: %s " % ts)
-    ds = None  # to close the dataset
-
-    timestamp = dt.strptime(ts, '%Y:%m:%d %H:%M:%S')
+        timestamp = dt.strptime(ts, '%Y:%m:%d %H:%M:%S')
+    except:
+        LOGGER.exception('failed to get timestamp for: %s' % tile)
     return timestamp
 
 
@@ -167,31 +170,44 @@ def merge(tiles, prefix="mosaic_"):
 
     from flyingpigeon import gdal_merge as gm
     from os.path import join, basename
-    import sys
-
-    # merged_tiles = []
-    # dates = set()
-    # # dates = dates.union([basename(pic).split('_')[0] for pic in tiles])
-    # dates = dates.union(get_timestamp(tile).date() for tile in tiles)
-    #
-    # for date in dates:
+    import subprocess
+    from subprocess import CalledProcessError
+    from flyingpigeon.config import _PATH
 
     try:
-        LOGGER.debug('start merging')
+        LOGGER.debug('start merging of %s files' % len(tiles))
         # prefix = dt.strftime(date, "%Y%m%d")
         _, filename = mkstemp(dir='.', prefix=prefix, suffix='.tif')
-        call = ['-o',  "%s" % filename, '-of', 'GTiff', '-v']
-        #
-        # tiles_day = [tile for tile in tiles if date.date() == get_timestamp(tile).date()]
-
+        gdal_merge = '%s/gdal_merge.py' % _PATH
+        cmd = ['python', gdal_merge, '-o', filename, '-of', 'GTiff', '-v']
         for tile in tiles:
-            call.extend([tile])
-        sys.argv[1:] = call
-        gm.main()
+            LOGGER.debug('extent tile %s ', tile)
+            cmd.append(tile)
 
-        LOGGER.debug("files merged for %s tiles " % len(tiles))
-    except:
-        LOGGER.exception("failed to merge tiles")
+        LOGGER.debug('cmd: %s' % cmd)
+        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+        LOGGER.debug('gdal_merge log: \n %s', output)
+
+    except CalledProcessError as e:
+        LOGGER.exception('failed to merge tiles:\n{0}'.format(e.output))
+
+    # import sys
+    # try:
+    #     LOGGER.debug('start merging')
+    #     # prefix = dt.strftime(date, "%Y%m%d")
+    #     _, filename = mkstemp(dir='.', prefix=prefix, suffix='.tif')
+    #     call = ['-o',  "%s" % filename, '-of', 'GTiff', '-v']
+    #     #
+    #     # tiles_day = [tile for tile in tiles if date.date() == get_timestamp(tile).date()]
+    #
+    #     for tile in tiles:
+    #         call.extend([tile])
+    #     sys.argv[1:] = call
+    #     gm.main()
+    #
+    #     LOGGER.debug("files merged for %s tiles " % len(tiles))
+    # except:
+    #     LOGGER.exception("failed to merge tiles")
 
     return filename
 
@@ -266,7 +282,6 @@ def ndvi(tiles, product='PlanetScope'):
                     dst.write_band(1, bn_ndvi.astype(rasterio.float32))
 
                 LOGGER.debug("NDVI calculated for %s " % key)
-
 
                 ndvifiles.extend([ndvifile])
                 LOGGER.debug("NDVI calculated: %s " % ndvifile)
