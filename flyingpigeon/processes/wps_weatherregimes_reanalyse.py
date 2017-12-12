@@ -92,7 +92,7 @@ class WeatherregimesreanalyseProcess(Process):
 
             LiteralInput("method", "Method of annual cycle calculation",
                          abstract="Method of annual cycle calculation",
-                         default="cdo",
+                         default="ocgis",
                          data_type='string',
                          min_occurs=1,
                          max_occurs=1,
@@ -326,6 +326,7 @@ class WeatherregimesreanalyseProcess(Process):
                     '%s' % start.year, '%s' % end.year,
                     '%s' % model_var, '%s' % kappa]
             LOGGER.info('Rcall builded')
+            LOGGER.debug('ARGS: %s'%(args))
         except:
             msg = 'failed to build the R command'
             LOGGER.exception(msg)
