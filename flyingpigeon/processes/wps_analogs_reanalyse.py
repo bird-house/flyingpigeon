@@ -273,19 +273,6 @@ class AnalogsreanalyseProcess(Process):
             LOGGER.debug('BBOX for ocgis: %s ' % (bbox))
             LOGGER.debug('BBOX original: %s ' % (bboxStr))
 
-            # if bbox_obj is not None:
-            #     LOGGER.info("bbox_obj={0}".format(bbox_obj.coords))
-            #     bbox = [bbox_obj.coords[0][0],
-            #             bbox_obj.coords[0][1],
-            #             bbox_obj.coords[1][0],
-            #             bbox_obj.coords[1][1]]
-            #     LOGGER.info("bbox={0}".format(bbox))
-            # else:
-            #     bbox = None
-            # region = self.getInputValues(identifier='region')[0]
-            # bbox = [float(b) for b in region.split(',')]
-            # bbox_obj = self.BBox.getValue()
-
             normalize = request.inputs['normalize'][0].data
             detrend = request.inputs['detrend'][0].data
             distance = request.inputs['dist'][0].data
