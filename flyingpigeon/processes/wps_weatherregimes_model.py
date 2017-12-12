@@ -332,6 +332,7 @@ class WeatherregimesmodelProcess(Process):
                     '%s' % start.year, '%s' % end.year,
                     '%s' % 'MODEL', '%s' % kappa]
             LOGGER.info('Rcall builded')
+            LOGGER.debug('ARGS: %s'%(args))
         except Exception as e:
             msg = 'failed to build the R command %s' % e
             LOGGER.error(msg)
