@@ -27,6 +27,7 @@ from .wps_map_spatial_analog import MapSpatialAnalogProcess
 from .wps_EO_fetch import FetcheodataProcess
 from .wps_EO_ndvi import NdviProcess
 from .wps_EO_merge import MergeProcess
+from .wps_EO_COP_fetch import EO_COP_fetchProcess
 
 processes = [
     ClippingProcess(),

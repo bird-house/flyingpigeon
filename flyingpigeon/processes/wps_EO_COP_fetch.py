@@ -62,6 +62,13 @@ class EO_COP_fetchProcess(Process):
                          max_occurs=1,
                          ),
 
+            LiteralInput('cloud_cover', 'Cloud Cover',
+                         data_type='integer',
+                         abstract='Max tollerated percentage of cloud cover',
+                         default="30",
+                         allowed_values=[0, 10, 20, 30, 40, 50, 60, 70, 80, 100]
+                         ),
+
             LiteralInput('unsername', 'User Name',
                          data_type='string',
                          abstract='Authentification user name for the COPERNICUS Sci-hub ',
@@ -95,8 +102,8 @@ class EO_COP_fetchProcess(Process):
 
         super(FetcheodataProcess, self).__init__(
             self._handler,
-            identifier="EO_fetch",
-            title="Earth Observation Fetch Resources",
+            identifier="EO_COP_fetch",
+            title="EO COPERNICUS Fetch Resources",
             version="0.1",
             abstract="Fetch EO Data to the local file"
                      "system of the birdhouse compute provider.",
