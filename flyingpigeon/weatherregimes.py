@@ -49,18 +49,23 @@ def get_anomalies(nc_file, frac=0.2, reference=None, method='ocgis', sseas='seri
             from os import system
             variable = utils.get_variable(nc_file)
 
-            cdo = Cdo()
-            ip, nc_anual_cycle_tmp = mkstemp(dir='.', suffix='.nc')
             ip2, nc_anual_cycle = mkstemp(dir='.', suffix='.nc')
+
+            cdo = Cdo()
+            #ip, nc_anual_cycle_tmp = mkstemp(dir='.', suffix='.nc')
             # TODO: if reference is none, use utils.get_time for nc_file to set the ref range
             #       But will need to fix 360_day issue (use get_time_nc from analogs)
-            com = 'seldate'
-            comcdo = 'cdo %s,%s-%s-%s,%s-%s-%s %s %s' % (com, reference[0].year, reference[0].month, reference[0].day,
-                                                         reference[1].year, reference[1].month, reference[1].day,
-                                                         nc_file, nc_anual_cycle_tmp)
-            LOGGER.debug('CDO: %s' % (comcdo))
-            system(comcdo)
 
+            # com = 'seldate'
+            # comcdo = 'cdo %s,%s-%s-%s,%s-%s-%s %s %s' % (com, reference[0].year, reference[0].month, reference[0].day,
+            #                                              reference[1].year, reference[1].month, reference[1].day,
+            #                                              nc_file, nc_anual_cycle_tmp)
+            # LOGGER.debug('CDO: %s' % (comcdo))
+            # system(comcdo)
+
+            # Sub cdo with this trick... Cdo keeps the precision and anomalies are integers...
+            calc = '%s=%s'%(variable, variable)
+            nc_anual_cycle_tmp = call(nc_file, time_range=reference, variable=variable, calc=calc)
             nc_anual_cycle = cdo.ydaymean(input=nc_anual_cycle_tmp, output=nc_anual_cycle)
         else:
             variable = utils.get_variable(nc_file)
@@ -143,8 +148,18 @@ def get_anomalies(nc_file, frac=0.2, reference=None, method='ocgis', sseas='seri
         raise Exception(msg)
     try:
         ip, nc_anomal = mkstemp(dir='.', suffix='.nc')
-        nc_anomal = cdo.sub(input=[nc_file, nc_anual_cycle], output=nc_anomal)
-        LOGGER.info('cdo.sub; anomalisation done: %s ' % nc_anomal)
+        try:
+            nc_anomal = cdo.sub(input=[nc_file, nc_anual_cycle], output=nc_anomal)
+            LOGGER.info('cdo.sub; anomalisation done: %s ' % nc_anomal)
+        except:
+            # bug cdo: https://code.mpimet.mpg.de/boards/1/topics/3909
+            ip3, nc_in1 = mkstemp(dir='.', suffix='.nc')
+            ip4, nc_in2 = mkstemp(dir='.', suffix='.nc')
+            ip5, nc_out = mkstemp(dir='.', suffix='.nc')
+            nc_in1 = cdo.selvar(variable, input=nc_file, output=nc_in1)
+            nc_in2 = cdo.selvar(variable, input=nc_anual_cycle, output=nc_in2)
+            nc_out = cdo.sub(input=[nc_in1, nc_in2], output=nc_out)
+            nc_anomal = nc_out
     except:
         msg = 'failed substraction of annual cycle'
         LOGGER.exception(msg)
