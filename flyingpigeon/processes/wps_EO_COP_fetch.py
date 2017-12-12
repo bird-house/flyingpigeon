@@ -206,7 +206,10 @@ class EO_COP_fetchProcess(Process):
                 fp.write('\n')
                 for key in products.keys():
                     size = float(products[key]['size'].split(' ')[0])
-                    fp.write('%s size: %s \n' % (key, size))
+                    producttype = products[key]['producttype']
+                    beginposition = str(products[key]['beginposition'])
+                    ID = str(products[key]['identifier'])
+                    fp.write('%s \t %s \t %s \t %s \t %s \n' % (ID, size, producttype, beginposition, key))
             response.outputs['output'].file = filepathes
         except:
             LOGGER.exception('failed to write resources to textfile')
