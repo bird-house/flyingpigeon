@@ -52,6 +52,19 @@ class WeatherregimesreanalyseProcess(Process):
                          allowed_values=_TIMEREGIONS_.keys()
                          ),
 
+            LiteralInput('BBox', 'Bounding Box',
+                         data_type='string',
+                         abstract="Enter a bbox: min_lon, max_lon, min_lat, max_lat."
+                            " min_lon=Western longitude,"
+                            " max_lon=Eastern longitude,"
+                            " min_lat=Southern or northern latitude,"
+                            " max_lat=Northern or southern latitude."
+                            " For example: -80,50,20,70",
+                         min_occurs=1,
+                         max_occurs=1,
+                         default='-80,50,20,70',
+                         ),
+
             LiteralInput("period", "Period for weatherregime calculation",
                          abstract="Period for analysing the dataset",
                          default="19700101-20101231",
@@ -75,6 +88,24 @@ class WeatherregimesreanalyseProcess(Process):
                          min_occurs=1,
                          max_occurs=1,
                          allowed_values=_PRESSUREDATA_
+                         ),
+
+            LiteralInput("method", "Method of annual cycle calculation",
+                         abstract="Method of annual cycle calculation",
+                         default="cdo",
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=1,
+                         allowed_values=['ocgis', 'cdo']
+                         ),
+
+            LiteralInput("sseas", "Serial or multiprocessing for annual cycle",
+                         abstract="Serial or multiprocessing for annual cycle",
+                         default="multi",
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=1,
+                         allowed_values=['serial', 'multi']
                          ),
 
             LiteralInput("kappa", "Nr of Weather regimes",
@@ -153,8 +184,19 @@ class WeatherregimesreanalyseProcess(Process):
         # resources = self.getInputValues(identifier='resources')
         season = request.inputs['season'][0].data
         LOGGER.info('season %s', season)
-        bbox = [-80, 20, 50, 70]
-        # bbox_obj = self.BBox.getValue()
+
+        #bbox = [-80, 20, 50, 70]
+        # TODO: Add checking for wrong cordinates and apply default if nesessary
+        bbox = []
+        bboxStr = request.inputs['BBox'][0].data
+        bboxStr = bboxStr.split(',')
+        bbox.append(float(bboxStr[0]))
+        bbox.append(float(bboxStr[2]))
+        bbox.append(float(bboxStr[1]))
+        bbox.append(float(bboxStr[3]))
+        LOGGER.debug('BBOX for ocgis: %s ' % (bbox))
+        LOGGER.debug('BBOX original: %s ' % (bboxStr))
+
         model_var = request.inputs['reanalyses'][0].data
         model, variable = model_var.split('_')
 
@@ -164,21 +206,15 @@ class WeatherregimesreanalyseProcess(Process):
         kappa = request.inputs['kappa'][0].data
         LOGGER.info('kappa %s', kappa)
 
+        method = request.inputs['method'][0].data
+        LOGGER.info('Calc annual cycle with %s', method)
+
+        sseas = request.inputs['sseas'][0].data
+        LOGGER.info('Annual cycle calc with %s', sseas)
+
         start = dt.strptime(period.split('-')[0], '%Y%m%d')
         end = dt.strptime(period.split('-')[1], '%Y%m%d')
         LOGGER.debug('start: %s , end: %s ' % (start, end))
-
-        # try:
-        #
-        #     # if bbox_obj is not None:
-        #     #     LOGGER.info("bbox_obj={0}".format(bbox_obj.coords))
-        #     #     bbox = [bbox_obj.coords[0][0], bbox_obj.coords[0][1], bbox_obj.coords[1][0], bbox_obj.coords[1][1]]
-        #     #     LOGGER.info("bbox={0}".format(bbox))
-        #     # else:
-        #     #     bbox = None
-        #
-        # except Exception as e:
-        #     LOGGER.exception('failed to transform BBOXObject  %s ' % e)
 
         ###########################
         # set the environment
@@ -250,8 +286,9 @@ class WeatherregimesreanalyseProcess(Process):
         cycst = anualcycle.split('-')[0]
         cycen = anualcycle.split('-')[1]
         reference = [dt.strptime(cycst, '%Y%m%d'), dt.strptime(cycen, '%Y%m%d')]
-        LOGGER.exception('reference time: %s', reference)
-        model_anomal = wr.get_anomalies(model_subset, reference=reference)
+        LOGGER.info('reference time: %s', reference)
+
+        model_anomal = wr.get_anomalies(model_subset, reference=reference, method=method, sseas=sseas)
 
         #####################
         # extracting season
