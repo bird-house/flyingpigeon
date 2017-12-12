@@ -86,6 +86,7 @@ products = api.query(footprint,
                      date = (start, end),
                      platformname = 'Sentinel-2',
                      cloudcoverpercentage = (0, 30))
+
 for key in products.keys()
     products[key]
     api.get_product_odata(key, full=True)

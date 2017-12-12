@@ -57,8 +57,10 @@ processes = [
     SpatialAnalogProcess(),
     MapSpatialAnalogProcess(),
     FetcheodataProcess(),
+    EO_COP_fetchProcess(),
     MergeProcess(),
     NdviProcess(),
+
 ]
 
 """

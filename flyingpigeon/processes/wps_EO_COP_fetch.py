@@ -9,6 +9,7 @@ from flyingpigeon.utils import rename_complexinputs
 
 from datetime import datetime as dt
 from datetime import timedelta, time
+from tempfile import mkstemp
 
 from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
 
@@ -24,11 +25,11 @@ class EO_COP_fetchProcess(Process):
         inputs = [
             LiteralInput("products", "Earth Observation Product Type",
                          abstract="Choose Earth Observation Products",
-                         default='SLC',
+                         default='Sentinel-2',
                          data_type='string',
                          min_occurs=1,
                          max_occurs=1,
-                         allowed_values=['SLC']
+                         allowed_values=['Sentinel-2']
                          ),
 
             LiteralInput('BBox', 'Bounding Box',
@@ -69,7 +70,7 @@ class EO_COP_fetchProcess(Process):
                          allowed_values=[0, 10, 20, 30, 40, 50, 60, 70, 80, 100]
                          ),
 
-            LiteralInput('unsername', 'User Name',
+            LiteralInput('username', 'User Name',
                          data_type='string',
                          abstract='Authentification user name for the COPERNICUS Sci-hub ',
                          # default='2013-12-31',
@@ -80,7 +81,6 @@ class EO_COP_fetchProcess(Process):
             LiteralInput('password', 'Password',
                          data_type='string',
                          abstract='Authentification password for the COPERNICUS Sci-hub ',
-                         # default='2013-12-31',
                          min_occurs=1,
                          max_occurs=1,
                          ),
@@ -100,7 +100,7 @@ class EO_COP_fetchProcess(Process):
                           )
         ]
 
-        super(FetcheodataProcess, self).__init__(
+        super(EO_COP_fetchProcess, self).__init__(
             self._handler,
             identifier="EO_COP_fetch",
             title="EO COPERNICUS Fetch Resources",
@@ -149,37 +149,68 @@ class EO_COP_fetchProcess(Process):
             end = dt.now()
             LOGGER.exception("periode end befor periode start, period is set to the last 30 days from now")
 
-        unsername = request.inputs['unsername'][0].data
+        username = request.inputs['username'][0].data
         password = request.inputs['password'][0].data
+        cloud_cover = request.inputs['cloud_cover'][0].data
 
         api = SentinelAPI(username, password)
 
+        geom = {
+          "type": "Polygon",
+          "coordinates": [
+                  [
+                    [
+                      14.00,
+                      8.00
+                    ],
+                    [
+                      16.00,
+                      8.00
+                    ],
+                    [
+                      16.00,
+                      10.00
+                    ],
+                    [
+                      14.00,
+                      10.00
+                    ],
+                    [
+                      14.00,
+                      8.00
+                    ]
+                  ]
+                ]
+        }
+
+        footprint = geojson_to_wkt(geom)
+
+        response.update_status("start searching tiles acording query", 15)
+
         products = api.query(footprint,
                              date=(start, end),
-                             producttype='SLC',
-                             orbitdirection='ASCENDING')
-        api.download_all(products)
+                             platformname='Sentinel-2',
+                             cloudcoverpercentage=(0, cloud_cover),
+                             # producttype='SLC',
+                             # orbitdirection='ASCENDING',
+                             )
 
-        # _, filepathes = mkstemp(dir='.', suffix='.txt')
-        # try:
-        #     with open(filepathes, 'w') as fp:
-        #         fp.write('######################################################\n')
-        #         fp.write('### Following files are stored to compute provider ###:\n')
-        #         fp.write('######################################################\n')
-        #         fp.write('\n')
-        #         for f in resources:
-        #             fp.write('%s \n' % os.path.realpath(f))
-        #         fp.write('/n')
-        #         fp.write('/n')
-        #         fp.write('######################################################\n')
-        #         fp.write('### Following files didn\'t want to wake up       ###:\n')
-        #         fp.write('######################################################\n')
-        #         for f in resources_sleeping:
-        #             fp.write('%s \n' % f)
-        #     response.outputs['output'].file = filepathes
-        # except:
-        #     LOGGER.exception('failed to write resources to textfile')
-        # response.outputs['output'].file = write_fileinfo(resource, filepath=True)
+        response.update_status("write out information about files", 20)
+        # api.download_all(products)
+        _, filepathes = mkstemp(dir='.', suffix='.txt')
+        try:
+            with open(filepathes, 'w') as fp:
+                fp.write('######################################################\n')
+                fp.write('###     Following files are ready to download      ###\n')
+                fp.write('######################################################\n')
+                fp.write('\n')
+                for key in products.keys():
+                    size = float(products[key]['size'].split(' ')[0])
+                    fp.write('%s size: %s \n' % (key, size))
+            response.outputs['output'].file = filepathes
+        except:
+            LOGGER.exception('failed to write resources to textfile')
+        # response.outputs['output'].file = filepathes
 
         response.update_status("done", 100)
         return response
