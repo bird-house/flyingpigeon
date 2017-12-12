@@ -365,7 +365,7 @@ class AnalogsreanalyseProcess(Process):
             model_nc = rl(start=start.year,
                           end=end.year,
                           dataset=model,
-                          variable=var,timres=timres,getlevel=getlevel)
+                          variable=var, timres=timres, getlevel=getlevel)
             LOGGER.info('reanalyses data fetched')
         except Exception:
             msg = 'failed to get reanalyses data'
@@ -391,7 +391,7 @@ class AnalogsreanalyseProcess(Process):
             for z in model_nc:
                 tmp_n = 'tmp_%s' % (uuid.uuid1()) 
                 b0=call(resource=z, variable=origvar, level_range=[int(level), int(level)], geom=bbox,
-                spatial_wrapping='wrap',prefix='levdom_'+os.path.basename(z)[0:-3]) 
+                spatial_wrapping='wrap', prefix='levdom_'+os.path.basename(z)[0:-3])
                 tmp_total.append(b0)
 
             tmp_total = sorted(tmp_total, key=lambda i: os.path.splitext(os.path.basename(i))[0])
