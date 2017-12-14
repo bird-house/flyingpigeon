@@ -31,7 +31,7 @@ def _smooth(ts_latlon):
     ys = sm.nonparametric.lowess(y, x, frac=0.2)[ts:ts*2, 1]
     return ys
 
-def get_anomalies(nc_file, frac=0.2, reference=None, method='ocgis', sseas='serial'):
+def get_anomalies(nc_file, frac=0.2, reference=None, method='ocgis', sseas='serial', variable=None):
     """
     Anomalisation of data subsets for weather classification by subtracting a smoothed annual cycle
 
@@ -43,11 +43,24 @@ def get_anomalies(nc_file, frac=0.2, reference=None, method='ocgis', sseas='seri
 
     :returns str: path to output netCDF file
     """
+    from netCDF4 import Dataset
+
+    if variable is None:
+        variable = utils.get_variable(nc_file)
+        # if more when 2 variables:
+        if (variable.count(variable)==0):
+            _ds=Dataset(nc_file)
+            # Works only if we have one 3D variables
+            for j in variable:
+                if len(_ds.variables[j].dimensions)==3: _var=j
+            variable=_var
+            _ds.close()
+    LOGGER.debug('3D Variable selected: %s'%(variable))
+
     try:
         if (method == 'cdo'):
             from cdo import Cdo
             from os import system
-            variable = utils.get_variable(nc_file)
 
             ip2, nc_anual_cycle = mkstemp(dir='.', suffix='.nc')
 
@@ -68,14 +81,15 @@ def get_anomalies(nc_file, frac=0.2, reference=None, method='ocgis', sseas='seri
             nc_anual_cycle_tmp = call(nc_file, time_range=reference, variable=variable, calc=calc)
             nc_anual_cycle = cdo.ydaymean(input=nc_anual_cycle_tmp, output=nc_anual_cycle)
         else:
-            variable = utils.get_variable(nc_file)
             calc = [{'func': 'mean', 'name': variable}]
             calc_grouping = calc_grouping = ['day', 'month']
             nc_anual_cycle = call(nc_file,
                                   calc=calc,
                                   calc_grouping=calc_grouping,
+                                  variable=variable,
                                   time_range=reference)
         LOGGER.info('annual cycle calculated: %s' % (nc_anual_cycle))
+
     except Exception as e:
         msg = 'failed to calcualte annual cycle %s' % e
         LOGGER.error(msg)
@@ -85,7 +99,6 @@ def get_anomalies(nc_file, frac=0.2, reference=None, method='ocgis', sseas='seri
         # spline for smoothing
         #import statsmodels.api as sm
         #from numpy import tile, empty, linspace
-        from netCDF4 import Dataset
         from cdo import Cdo
         cdo = Cdo()
         # variable = utils.get_variable(nc_file)
