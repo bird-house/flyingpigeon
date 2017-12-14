@@ -288,7 +288,7 @@ class WeatherregimesreanalyseProcess(Process):
         reference = [dt.strptime(cycst, '%Y%m%d'), dt.strptime(cycen, '%Y%m%d')]
         LOGGER.info('reference time: %s', reference)
 
-        model_anomal = wr.get_anomalies(model_subset, reference=reference, method=method, sseas=sseas)
+        model_anomal = wr.get_anomalies(model_subset, reference=reference, method=method, sseas=sseas) #, variable=variable)
 
         #####################
         # extracting season
