@@ -224,6 +224,7 @@ class WeatherregimesreanalyseProcess(Process):
 
         try:
             if model == 'NCEP':
+                getlevel = False
                 if 'z' in variable:
                     level = variable.strip('z')
                     conform_units_to = None
@@ -231,6 +232,7 @@ class WeatherregimesreanalyseProcess(Process):
                     level = None
                     conform_units_to = 'hPa'
             elif '20CRV2' in model:
+                getlevel = False
                 if 'z' in variable:
                     level = variable.strip('z')
                     conform_units_to = None
@@ -250,11 +252,19 @@ class WeatherregimesreanalyseProcess(Process):
         ##########################################
 
         from flyingpigeon.datafetch import reanalyses as rl
+        from flyingpigeon.utils import get_variable
+        from os.path import basename, splitext
+        from os import system
+        from netCDF4 import Dataset
+        from numpy import squeeze
+        import uuid
+
         try:
             model_nc = rl(start=start.year,
                           end=end.year,
                           dataset=model,
-                          variable=variable)
+                          variable=variable,
+                          getlevel=getlevel)
             LOGGER.info('reanalyses data fetched')
         except:
             msg = 'failed to get reanalyses data'
@@ -271,10 +281,44 @@ class WeatherregimesreanalyseProcess(Process):
         from flyingpigeon.ocgis_module import call
 
         time_range = [start, end]
-        model_subset = call(resource=model_nc, variable=variable,
-                            geom=bbox, spatial_wrapping='wrap', time_range=time_range,
-                            # conform_units_to=conform_units_to
-                            )
+
+        ############################################################
+        # Block of level and domain selection for geop huge dataset
+        ############################################################
+        # ===========================================================================================
+        if ('z' in variable):  
+            tmp_total = []
+            origvar = get_variable(model_nc)
+
+            for z in model_nc:
+                tmp_n = 'tmp_%s' % (uuid.uuid1()) 
+                b0=call(resource=z, variable=origvar, level_range=[int(level), int(level)], geom=bbox,
+                spatial_wrapping='wrap', prefix='levdom_'+basename(z)[0:-3])
+                tmp_total.append(b0)
+
+            tmp_total = sorted(tmp_total, key=lambda i: splitext(basename(i))[0])
+            inter_subset_tmp = call(resource=tmp_total, variable=origvar, time_range=time_range)
+
+            # Clean
+            for i in tmp_total:
+                tbr='rm -f %s' % (i) 
+                system(tbr)  
+
+            # Create new variable
+            ds = Dataset(inter_subset_tmp, mode='a')
+            z_var = ds.variables.pop(origvar)
+            dims = z_var.dimensions
+            new_var = ds.createVariable('z%s' % level, z_var.dtype, dimensions=(dims[0], dims[2], dims[3]))
+            new_var[:, :, :] = squeeze(z_var[:, 0, :, :])
+            # new_var.setncatts({k: z_var.getncattr(k) for k in z_var.ncattrs()})
+            ds.close()
+            model_subset = call(inter_subset_tmp, variable='z%s' % level)
+        else:
+            model_subset = call(resource=model_nc, variable=variable,
+                                geom=bbox, spatial_wrapping='wrap', time_range=time_range,
+                                # conform_units_to=conform_units_to
+                                )
+        # =============================================================================================
         LOGGER.info('Dataset subset done: %s ', model_subset)
 
         response.update_status('dataset subsetted', 18)
