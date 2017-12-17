@@ -61,6 +61,9 @@ dependencies:
 - cartopy
 - iris
 - reportlab
+# visualisation EO-data
+- python-snappy   # =0.5.1=py27_2 # conda-forge
+- snappy        # conda-forge
 ################
 ## cdo ocgis
 - cdo #=1.9.0=0
@@ -100,6 +103,6 @@ dependencies:
   - sphinx-autoapi==0.4.0
 #  - cdo==1.3.0
   - sentinelsat
-  - planet
+#  - planet
 #  - rasterio
 #  - retrying

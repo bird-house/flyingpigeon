@@ -56,15 +56,15 @@ def plot_ndvi(geotif, file_extension='png'):
     cube = gdal.Open(geotif)
     bnd1 = cube.GetRasterBand(1)
 
-    proj = cube.GetProjection()
-
-    inproj = osr.SpatialReference()
-    inproj.ImportFromWkt(proj)
-    # print(inproj)
-    LOGGER.debug("projection of geotif %s " % inproj)
-
-    projcs = inproj.GetAuthorityCode('PROJCS')  # requires internet connection
-    projection = ccrs.epsg(projcs)
+    # proj = cube.GetProjection()
+    #
+    # inproj = osr.SpatialReference()
+    # inproj.ImportFromWkt(proj)
+    # # print(inproj)
+    # LOGGER.debug("projection of geotif %s " % inproj)
+    #
+    # projcs = inproj.GetAuthorityCode('PROJCS')  # requires internet connection
+    # projection = ccrs.epsg(projcs)
 
     # get the extent of the plot
     gt = cube.GetGeoTransform()
@@ -73,19 +73,25 @@ def plot_ndvi(geotif, file_extension='png'):
     img = bnd1.ReadAsArray(0, 0, cube.RasterXSize, cube.RasterYSize)
 
     fig = plt.figure()  # , bbox='tight'
-    ax = plt.axes(projection=ccrs.PlateCarree())
+    # ax = plt.axes(projection=ccrs.PlateCarree())
     norm = vs.MidpointNormalize(midpoint=0)
 
-    img_ndvi = ax.imshow(img,
-                         origin='upper', extent=extent, transform=ccrs.PlateCarree(),
+    img_ndvi = plt.imshow(img[10000:-1,0:-1000],
+                         origin='upper', extent=extent, # transform=ccrs.PlateCarree(),
                          norm=norm, vmin=-1, vmax=1, cmap=plt.cm.summer)
+
+
+    # img_ndvi = ax.imshow(img[0:-5000,0:-10000],
+    #                      origin='upper', extent=extent, # transform=ccrs.PlateCarree(),
+    #                      norm=norm, vmin=-1, vmax=1, cmap=plt.cm.summer)
+
     # ax.coastlines(resolution='50m', color='black', linewidth=1)
     # ax.add_feature(feature.BORDERS, linestyle='-', alpha=.5)
     # ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True)
-    ax.gridlines()
+    # ax.gridlines()
     plt.title('NDVI')
     plt.colorbar(img_ndvi)
-    ndvi_plot = vs.fig2plot(fig, file_extension=file_extension, dpi=300)
+    ndvi_plot = vs.fig2plot(fig, file_extension=file_extension, dpi=90)  # dpi=300
 
     plt.close()
     ds = None

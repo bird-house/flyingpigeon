@@ -27,7 +27,7 @@ img = bnd1.ReadAsArray(0, 0, cube.RasterXSize, cube.RasterYSize)
 f = plt.figure(figsize=(20, 10), dpi=600, facecolor='w', edgecolor='k') # , bbox='tight'
 plt.imshow(img)
 
-_, picname = mkstemp(dir='/home/nils/data/planet/', suffix='.tif')
+_, picname = mkstemp(dir='/home/nils/data/', suffix='.tif')
 plt.savefig(picname)
 plt.show()
 
