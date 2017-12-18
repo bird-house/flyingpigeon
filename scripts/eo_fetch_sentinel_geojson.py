@@ -7,10 +7,12 @@ from shapely.geometry import mapping
 from ocgis import GeomCabinetIterator
 import json
 from flyingpigeon import config
-
+import getpass
 from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
 
-api = SentinelAPI('nilshempelmann', '*****')
+password = getpass.getpass()
+
+api = SentinelAPI('nilshempelmann', password)
 
 geom = {
   "type": "Polygon",
@@ -58,17 +60,26 @@ products = api.query(footprint,
                      platformname = 'Sentinel-2',
                      cloudcoverpercentage = (0, 30))
 
+from flyingpigeon import eodata
 
-size = 1000
-for key in products.keys():
-    if size > float(products[key]['size'].split(' ')[0]) and 50 < float(products[key]['size'].split(' ')[0]):
-        size = float(products[key]['size'].split(' ')[0])
-        test_file = products[key]
+img = eodata.plot_products(products)
 
-api.download('2e673c77-bb1c-4061-a16d-2db4f647d9bc', directory_path='/home/nils/data/')
+print img
+T33PVK = [products[uuid] for uuid in products.keys() if 'T33PVK' in products[uuid]['filename']]
+#
+api.download('ce2faa01-3da5-4622-86d3-65fbfbdcb95d', directory_path='/home/nils/data/')
 
-import zipfile
-zip_ref = zipfile.ZipFile('/home/nils/data/S2A_MSIL1C_20171205T092341_N0206_R093_T33PVL_20171205T130029.zip', 'r')
-zip_ref.extractall('/home/nils/data/')
-zip_ref.close()
-history
+#
+# size = 1000
+# for key in products.keys():
+#     if size > float(products[key]['size'].split(' ')[0]) and 50 < float(products[key]['size'].split(' ')[0]):
+#         size = float(products[key]['size'].split(' ')[0])
+#         test_file = products[key]
+#
+# api.download('2e673c77-bb1c-4061-a16d-2db4f647d9bc', directory_path='/home/nils/data/')
+#
+# import zipfile
+# zip_ref = zipfile.ZipFile('/home/nils/data/S2A_MSIL1C_20171205T092341_N0206_R093_T33PVL_20171205T130029.zip', 'r')
+# zip_ref.extractall('/home/nils/data/')
+# zip_ref.close()
+# history
