@@ -12,9 +12,24 @@ from pywps import Format, FORMATS
 from pywps.app.Common import Metadata
 from flyingpigeon.log import init_process_logger
 
+from flyingpigeon.ocgis_module import call
+from os.path import basename, splitext
+
 import logging
 LOGGER = logging.getLogger("PYWPS")
 
+def ocgis_call_wrap(tmargs):
+    _z=tmargs[0]
+    _origvar=tmargs[1]
+    _level=tmargs[2]
+    _bbox=tmargs[3]
+    _plev=[int(_level), int(_level)]
+    _pref='levdom_'+basename(_z)[0:-3]
+
+    _tmpf=call(resource=_z, variable=_origvar, level_range=_plev, geom=_bbox,
+                spatial_wrapping='wrap', prefix=_pref)
+
+    return _tmpf
 
 class WeatherregimesreanalyseProcess(Process):
     def __init__(self):
@@ -253,11 +268,10 @@ class WeatherregimesreanalyseProcess(Process):
 
         from flyingpigeon.datafetch import reanalyses as rl
         from flyingpigeon.utils import get_variable
-        from os.path import basename, splitext
+        # from os.path import basename, splitext
         from os import system
         from netCDF4 import Dataset
         from numpy import squeeze
-        import uuid
 
         try:
             model_nc = rl(start=start.year,
@@ -278,31 +292,69 @@ class WeatherregimesreanalyseProcess(Process):
 
         response.update_status('subsetting region of interest', 17)
         # from flyingpigeon.weatherregimes import get_level
-        from flyingpigeon.ocgis_module import call
+        # from flyingpigeon.ocgis_module import call
 
         time_range = [start, end]
 
         ############################################################
         # Block of level and domain selection for geop huge dataset
         ############################################################
+
+        LevMulti = False
+
         # ===========================================================================================
         if ('z' in variable):  
             tmp_total = []
             origvar = get_variable(model_nc)
 
-            for z in model_nc:
-                tmp_n = 'tmp_%s' % (uuid.uuid1()) 
-                b0=call(resource=z, variable=origvar, level_range=[int(level), int(level)], geom=bbox,
-                spatial_wrapping='wrap', prefix='levdom_'+basename(z)[0:-3])
-                tmp_total.append(b0)
+            if (LevMulti == False):
+                for z in model_nc:
+                    b0 = call(resource=z, variable=origvar, level_range=[int(level), int(level)], geom=bbox,
+                    spatial_wrapping='wrap', prefix='levdom_'+basename(z)[0:-3])
+                    tmp_total.append(b0)
+            else:
+                # multiproc - no inprovements yet, need to check in hi perf machine...
+                #-----------------------
+                try:
+                    import ctypes
+                    import os
+                    # TODO: This lib is for linux
+                    mkl_rt = ctypes.CDLL('libmkl_rt.so')
+                    nth = mkl_rt.mkl_get_max_threads()
+                    LOGGER.debug('Current number of threads: %s' % (nth))
+                    mkl_rt.mkl_set_num_threads(ctypes.byref(ctypes.c_int(64)))
+                    nth = mkl_rt.mkl_get_max_threads()
+                    LOGGER.debug('NEW number of threads: %s' % (nth))
+                    # TODO: Does it \/\/\/ work with default shell=False in subprocess... (?)
+                    os.environ['MKL_NUM_THREADS']=str(nth)
+                    os.environ['OMP_NUM_THREADS']=str(nth)
+                except Exception as e:
+                    msg = 'Failed to set THREADS %s ' % e
+                    LOGGER.debug(msg)
+                #-----------------------
+
+                from multiprocessing import Pool
+                pool = Pool()
+                # from multiprocessing.dummy import Pool as ThreadPool
+                #pool = ThreadPool()
+                tup_var = [origvar] * len(model_nc)
+                tup_lev = [level] * len(model_nc)
+                tup_bbox = [bbox] * len(model_nc)
+                tup_args = zip(model_nc, tup_var, tup_lev, tup_bbox)
+
+                tmp_total = pool.map(ocgis_call_wrap, tup_args)
+                pool.close()
+                pool.join()
+
+            LOGGER.debug('Temporal subset files: %s'%(tmp_total))
 
             tmp_total = sorted(tmp_total, key=lambda i: splitext(basename(i))[0])
             inter_subset_tmp = call(resource=tmp_total, variable=origvar, time_range=time_range)
 
             # Clean
             for i in tmp_total:
-                tbr='rm -f %s' % (i) 
-                system(tbr)  
+                tbr = 'rm -f %s' % (i)
+                system(tbr)
 
             # Create new variable
             ds = Dataset(inter_subset_tmp, mode='a')
