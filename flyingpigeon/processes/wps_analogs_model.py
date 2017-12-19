@@ -55,7 +55,7 @@ class AnalogsmodelProcess(Process):
                             " For example: -80,50,20,70",
                          min_occurs=1,
                          max_occurs=1,
-                         default='-80,50,20,70',
+                         default='-20,40,30,70',
                          ),
 
             LiteralInput("level", "Vertical level",
