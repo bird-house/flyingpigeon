@@ -62,7 +62,7 @@ class AnalogsreanalyseProcess(Process):
                             " For example: -80,50,20,70",
                          min_occurs=1,
                          max_occurs=1,
-                         default='-80,50,20,70',
+                         default='-20,40,30,70',
                          ),
 
             LiteralInput('dateSt', 'Start date of analysis period',
@@ -76,7 +76,7 @@ class AnalogsreanalyseProcess(Process):
             LiteralInput('dateEn', 'End date of analysis period',
                          data_type='date',
                          abstract='Last day of the period to be analysed',
-                         default='2013-12-31',
+                         default='2013-07-20',
                          min_occurs=1,
                          max_occurs=1,
                          ),
@@ -84,7 +84,7 @@ class AnalogsreanalyseProcess(Process):
             LiteralInput('refSt', 'Start date of reference period',
                          data_type='date',
                          abstract='First day of the period where analogues being picked',
-                         default='2013-01-01',
+                         default='1970-01-01',
                          min_occurs=1,
                          max_occurs=1,
                          ),
@@ -92,7 +92,7 @@ class AnalogsreanalyseProcess(Process):
             LiteralInput('refEn', 'End date of reference period',
                          data_type='date',
                          abstract='Last day of the period where analogues being picked',
-                         default='2014-12-31',
+                         default='2012-12-31',
                          min_occurs=1,
                          max_occurs=1,
                          ),
@@ -273,19 +273,6 @@ class AnalogsreanalyseProcess(Process):
             LOGGER.debug('BBOX for ocgis: %s ' % (bbox))
             LOGGER.debug('BBOX original: %s ' % (bboxStr))
 
-            # if bbox_obj is not None:
-            #     LOGGER.info("bbox_obj={0}".format(bbox_obj.coords))
-            #     bbox = [bbox_obj.coords[0][0],
-            #             bbox_obj.coords[0][1],
-            #             bbox_obj.coords[1][0],
-            #             bbox_obj.coords[1][1]]
-            #     LOGGER.info("bbox={0}".format(bbox))
-            # else:
-            #     bbox = None
-            # region = self.getInputValues(identifier='region')[0]
-            # bbox = [float(b) for b in region.split(',')]
-            # bbox_obj = self.BBox.getValue()
-
             normalize = request.inputs['normalize'][0].data
             detrend = request.inputs['detrend'][0].data
             distance = request.inputs['dist'][0].data
@@ -378,7 +365,7 @@ class AnalogsreanalyseProcess(Process):
             model_nc = rl(start=start.year,
                           end=end.year,
                           dataset=model,
-                          variable=var,timres=timres,getlevel=getlevel)
+                          variable=var, timres=timres, getlevel=getlevel)
             LOGGER.info('reanalyses data fetched')
         except Exception:
             msg = 'failed to get reanalyses data'
@@ -404,7 +391,7 @@ class AnalogsreanalyseProcess(Process):
             for z in model_nc:
                 tmp_n = 'tmp_%s' % (uuid.uuid1()) 
                 b0=call(resource=z, variable=origvar, level_range=[int(level), int(level)], geom=bbox,
-                spatial_wrapping='wrap',prefix='levdom_'+os.path.basename(z)[0:-3]) 
+                spatial_wrapping='wrap', prefix='levdom_'+os.path.basename(z)[0:-3])
                 tmp_total.append(b0)
 
             tmp_total = sorted(tmp_total, key=lambda i: os.path.splitext(os.path.basename(i))[0])

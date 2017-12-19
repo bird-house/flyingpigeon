@@ -55,7 +55,7 @@ class AnalogsmodelProcess(Process):
                             " For example: -80,50,20,70",
                          min_occurs=1,
                          max_occurs=1,
-                         default='-80,50,20,70',
+                         default='-20,40,30,70',
                          ),
 
             LiteralInput("level", "Vertical level",
@@ -301,19 +301,6 @@ class AnalogsmodelProcess(Process):
             LOGGER.debug('BBOX for ocgis: %s ' % (bbox))
             LOGGER.debug('BBOX original: %s ' % (bboxStr))
 
-            # if bbox_obj is not None:
-            #     LOGGER.info("bbox_obj={0}".format(bbox_obj.coords))
-            #     bbox = [bbox_obj.coords[0][0],
-            #             bbox_obj.coords[0][1],
-            #             bbox_obj.coords[1][0],
-            #             bbox_obj.coords[1][1]]
-            #     LOGGER.info("bbox={0}".format(bbox))
-            # else:
-            #     bbox = None
-            # region = self.getInputValues(identifier='region')[0]
-            # bbox = [float(b) for b in region.split(',')]
-            # bbox_obj = self.BBox.getValue()
-
             normalize = request.inputs['normalize'][0].data
             distance = request.inputs['dist'][0].data
             outformat = request.inputs['outformat'][0].data
@@ -342,10 +329,10 @@ class AnalogsmodelProcess(Process):
             # dateEn = dt.strptime(dateEn[0], '%Y-%m-%d')
 
             #not nesessary if fix ocgis_module.py
-            refSt = dt.combine(refSt,dt_time(12,0))
-            refEn = dt.combine(refEn,dt_time(12,0))
-            dateSt = dt.combine(dateSt,dt_time(12,0))
-            dateEn = dt.combine(dateEn,dt_time(12,0))
+            refSt = dt.combine(refSt, dt_time(12,0))
+            refEn = dt.combine(refEn, dt_time(12,0))
+            dateSt = dt.combine(dateSt, dt_time(12,0))
+            dateEn = dt.combine(dateEn, dt_time(12,0))
 
             # Check if 360_day calendar:
             try:
