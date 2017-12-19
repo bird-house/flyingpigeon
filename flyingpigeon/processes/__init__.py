@@ -56,10 +56,10 @@ processes = [
     SegetalfloraProcess(),
     SpatialAnalogProcess(),
     MapSpatialAnalogProcess(),
-    FetcheodataProcess(),
+    # FetcheodataProcess(),
     EO_COP_searchProcess(),
-    MergeProcess(),
-    NdviProcess(),
+    # MergeProcess(),
+    # NdviProcess(),
 
 ]
 
