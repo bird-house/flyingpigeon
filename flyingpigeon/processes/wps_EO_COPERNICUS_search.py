@@ -165,31 +165,11 @@ class EO_COP_searchProcess(Process):
 
         geom = {
           "type": "Polygon",
-          "coordinates": [
-                  [
-                    [
-                      14.00,
-                      8.00
-                    ],
-                    [
-                      16.00,
-                      8.00
-                    ],
-                    [
-                      16.00,
-                      10.00
-                    ],
-                    [
-                      14.00,
-                      10.00
-                    ],
-                    [
-                      14.00,
-                      8.00
-                    ]
-                  ]
-                ]
-        }
+          "coordinates": [[[ bbox[0], bbox[1]],
+                           [ bbox[2], bbox[1]],
+                           [ bbox[2], bbox[3]],
+                           [ bbox[0], bbox[3]],
+                           [ bbox[0], bbox[1]]]]}
 
         footprint = geojson_to_wkt(geom)
 
@@ -223,8 +203,8 @@ class EO_COP_searchProcess(Process):
             LOGGER.exception('failed to write resources to textfile')
         # response.outputs['output'].file = filepathes
         try:
-
-            img = eodata.plot_products(products)
+            extend = [float(bboxStr[0])-5, float(bboxStr[1])+5, float(bboxStr[2])-5, float(bboxStr[3])+5]
+            img = eodata.plot_products(products, extend=extend)
             response.outputs['output_plot'].file = img
         except:
             LOGGER.exception("Failed to plot extents of EO data")

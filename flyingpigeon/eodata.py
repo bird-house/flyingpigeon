@@ -27,7 +27,7 @@ def get_timestamp(tile):
         LOGGER.exception('failed to get timestamp for: %s' % tile)
     return timestamp
 
-def plot_products(products):
+def plot_products(products, extend=[10, 20, 5, 15]):
     """
     plot the products extends of the search result
 
@@ -54,7 +54,7 @@ def plot_products(products):
     fig = plt.figure(dpi=90, facecolor='w', edgecolor='k')
     projection = ccrs.PlateCarree()
     ax = plt.axes(projection=projection)
-    ax.set_extent([10, 20, 5, 15])
+    ax.set_extent(extend)
     ax.stock_img()
     ax.coastlines()
     ax.add_feature(cfeature.BORDERS)
