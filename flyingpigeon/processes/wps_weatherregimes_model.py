@@ -281,6 +281,10 @@ class WeatherregimesmodelProcess(Process):
                 LOGGER.debug('Selected file: %s ' % (re))
         resource = tmp_resource
 
+        # Here start trick with z... levels and regriding...
+        # Otherwise call will give memory error for hires models with geop
+        # TODO: Add level and domain selection as in wps_analogs_model for 4D var.
+
         variable = get_variable(resource)
         model_subset = call(
             resource=resource, variable=variable,
