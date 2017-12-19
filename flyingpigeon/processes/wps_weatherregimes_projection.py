@@ -213,9 +213,9 @@ class WeatherregimesprojectionProcess(Process):
         #######################
         try:
             cycst = anualcycle.split('-')[0]
-            cycen = anualcycle.split('-')[0]
+            cycen = anualcycle.split('-')[1]
             reference = [dt.strptime(cycst, '%Y%m%d'), dt.strptime(cycen, '%Y%m%d')]
-            model_anomal = wr.get_anomalies(model_subset, reference=reference)
+            model_anomal = wr.get_anomalies(model_subset, reference=reference, sseas='multi')
 
             #####################
             # extracting season
@@ -241,7 +241,7 @@ class WeatherregimesprojectionProcess(Process):
 
             yr1 = start.year
             yr2 = end.year
-            time = get_time(model_season, format='%Y%m%d')
+            time = get_time(model_season) # , format='%Y%m%d')
 
             # ip, output_graphics = mkstemp(dir=curdir ,suffix='.pdf')
             ip, file_pca = mkstemp(dir=curdir, suffix='.txt')
