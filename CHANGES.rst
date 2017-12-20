@@ -1,6 +1,13 @@
 Releasenotes
 ************
 
+1.0.2 (2017-12-20)
+==================
+
+* updated conda environment.
+* fixed pytest configuration.
+* updated travis link in Readme.
+
 1.0.1 (2017-11-14)
 ==================
 
