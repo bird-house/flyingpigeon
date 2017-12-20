@@ -24,10 +24,11 @@ from .wps_plot_timeseries import PlottimeseriesProcess
 from .wps_segetalflora import SegetalfloraProcess
 from .wps_spatial_analog import SpatialAnalogProcess
 from .wps_map_spatial_analog import MapSpatialAnalogProcess
-from .wps_EO_fetch import FetcheodataProcess
-from .wps_EO_ndvi import NdviProcess
-from .wps_EO_merge import MergeProcess
+# from .wps_EO_fetch import FetcheodataProcess
+# from .wps_EO_ndvi import NdviProcess
+# from .wps_EO_merge import MergeProcess
 from .wps_EO_COPERNICUS_search import EO_COP_searchProcess
+from .wps_EO_COPERNICUS_fetch import EO_COP_fetchProcess
 
 processes = [
     ClippingProcess(),
@@ -58,6 +59,7 @@ processes = [
     MapSpatialAnalogProcess(),
     # FetcheodataProcess(),
     EO_COP_searchProcess(),
+    EO_COP_fetchProcess(),
     # MergeProcess(),
     # NdviProcess(),
 
