@@ -198,6 +198,7 @@ class EO_COP_fetchProcess(Process):
 
         for key in products.keys():
             try:
+                
                 filename = products[key]['filename']
                 form = products[key]['format']
                 response.update_status("fetch file %s" % filename, 20)
