@@ -18,6 +18,9 @@ def test_caps():
     print sorted_names
 
     expected_names = [
+        'EO_fetch', 
+	'EO_merge', 
+	'EO_ndvi',
         'analogs_compare',
         'analogs_model',
         'analogs_reanalyse',
@@ -27,7 +30,7 @@ def test_caps():
         # 'indices_percentile,
         'indices_percentiledays',
         'indices_single',
-        # 'landseamask',
+        'landseamask',
         'map_spatial_analog',
         'plot_timeseries',
         'pointinspection',

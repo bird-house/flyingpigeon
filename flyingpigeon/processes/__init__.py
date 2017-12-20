@@ -24,14 +24,17 @@ from .wps_plot_timeseries import PlottimeseriesProcess
 from .wps_segetalflora import SegetalfloraProcess
 from .wps_spatial_analog import SpatialAnalogProcess
 from .wps_map_spatial_analog import MapSpatialAnalogProcess
+from .wps_EO_fetch import FetcheodataProcess
+from .wps_EO_ndvi import NdviProcess
+from .wps_EO_merge import MergeProcess
 
 processes = [
     ClippingProcess(),
     ClipcontinentProcess(),
     ClipregionseuropeProcess(),
     PointinspectionProcess(),
-    #    LandseamaskProcess(),
-    #    FactsheetProcess(),
+    LandseamaskProcess(),
+    # FactsheetProcess(),
     FetchProcess(),
     IndicespercentiledaysProcess(),
     IndicessingleProcess(),
@@ -47,11 +50,14 @@ processes = [
     AnalogsmodelProcess(),
     AnalogscompareProcess(),
     AnalogsviewerProcess(),
-    #    RobustnessProcess(),
+    # RobustnessProcess(),
     PlottimeseriesProcess(),
     SegetalfloraProcess(),
     SpatialAnalogProcess(),
     MapSpatialAnalogProcess(),
+    FetcheodataProcess(),
+    MergeProcess(),
+    NdviProcess(),
 ]
 
 """
@@ -59,9 +65,6 @@ pywps3 processes:
 
 # climate for impact processes
 "wps_c4i_simple_indice",
-# processes under development
-# "wps_spatial_analog",
-# "wps_eobs2cordex",
 
 # TODO: c4i processes with multiple input sources
 # "wps_c4i_multivar_indice",
