@@ -1,14 +1,12 @@
 import pytest
 
 
-@pytest.mark.skip(reason="R not available")
 def test_R_rpy2():
     import rpy2.robjects
     import rpy2.robjects.numpy2ri
     rpy2.robjects.numpy2ri.activate()
 
 
-@pytest.mark.skip(reason="R not available")
 def test_R_imports():
     from rpy2.robjects.packages import importr
     fields = importr("fields")

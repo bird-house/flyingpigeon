@@ -1,5 +1,4 @@
 import pytest
-pytestmark = pytest.mark.skip(reason="spatial analog process is disabled")
 
 from pywps import Service
 from pywps.tests import assert_response_success
@@ -72,6 +71,7 @@ class TestDissimilarity(TestBase):
 
         return field
 
+    @pytest.mark.skip(reason="ocgis exception")
     def test1d(self):
         p1 = self.write_field_data('v1', ncol=1, nrow=1)
         p3 = self.write_field_data('v1', dir='b')
@@ -137,6 +137,7 @@ class TestDissimilarity(TestBase):
         plt.savefig('test_spatial_analog_metrics.png')
         plt.close()
 
+    @pytest.mark.skip(reason="ocgis exception")
     def test_simple(self):
         p1 = self.write_field_data('v1', ncol=1, nrow=1)
         p2 = self.write_field_data('v2', ncol=1, nrow=1)
@@ -276,6 +277,7 @@ def test_wps_map_spatial_analog():
 
 
 # @pytest.mark.slow
+@pytest.mark.skip(reason="test is hanging")
 def test_wps_spatial_analog_process():
     client = client_for(Service(processes=[SpatialAnalogProcess()]))
     datainputs = "candidate=files@xlink:href={1};target=files@xlink:href={" \

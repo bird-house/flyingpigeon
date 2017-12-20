@@ -1,7 +1,7 @@
 import pytest
 
 
-@pytest.mark.skip(reason="R not available")
+@pytest.mark.skip(reason="test is broken")
 def test_graphics():
     from rpy2.robjects.packages import importr
     # ds = importr("datasets")
@@ -10,7 +10,7 @@ def test_graphics():
     grDevices.graphics_off()
 
 
-@pytest.mark.skip(reason="R not available")
+@pytest.mark.skip(reason="test is broken")
 def test_pdf_garbage():
     from rpy2.robjects.packages import importr
     grDevices = importr("grDevices")
