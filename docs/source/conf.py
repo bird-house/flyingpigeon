@@ -36,8 +36,8 @@ extensions = [
 ]
 
 autoapi_type = 'python'
-autoapi_dirs = ['../../flyingpigeon']
-autoapi_file_pattern = '*.py'
+autoapi_dirs = ['../../flyingpigeon/processes']
+autoapi_file_pattern = ['*.py']
 autoapi_options = ['members', 'undoc-members', 'private-members']
 
 # Add any paths that contain templates here, relative to this directory.
@@ -331,7 +331,7 @@ rst_epilog = """
 .. _reStructuredText: http://sphinx-doc.org/rest.html
 .. _Read the Docs: https://readthedocs.org
 .. _Anaconda: https://www.continuum.io/
-.. _Buildout: http://www.buildout.org/en/latest/ 
+.. _Buildout: http://www.buildout.org/en/latest/
 .. _Birdhouse: http://birdhouse.readthedocs.io/en/latest/
 .. _Phoenix: http://pyramid-phoenix.readthedocs.io/en/latest/
 .. _Malleefowl: http://malleefowl.readthedocs.io/en/latest/
@@ -346,4 +346,3 @@ rst_epilog = """
 .. _dispel4py: https://github.com/dispel4py/dispel4py
 .. _esgf-pyclient: https://github.com/ESGF/esgf-pyclient
 """
-
