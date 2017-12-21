@@ -27,6 +27,57 @@ def get_timestamp(tile):
         LOGGER.exception('failed to get timestamp for: %s' % tile)
     return timestamp
 
+def plot_products(products, extend=[10, 20, 5, 15]):
+    """
+    plot the products extends of the search result
+
+    :param products: output of sentinel api search
+
+    :return graphic: map of extents
+    """
+
+    import numpy as np
+
+    import matplotlib.pyplot as plt
+    import matplotlib
+    from matplotlib.patches import Polygon
+    import matplotlib.patches as mpatches
+    from matplotlib.collections import PatchCollection
+
+    from cartopy import config as cartopy_config
+    import cartopy.feature as cfeature
+    from cartopy.util import add_cyclic_point
+    import cartopy.crs as ccrs
+    import re
+
+
+    fig = plt.figure(dpi=90, facecolor='w', edgecolor='k')
+    projection = ccrs.PlateCarree()
+    ax = plt.axes(projection=projection)
+    ax.set_extent(extend)
+    ax.stock_img()
+    ax.coastlines()
+    ax.add_feature(cfeature.BORDERS)
+
+    pat = re.compile(r'''(-*\d+\.\d+ -*\d+\.\d+);*''')
+
+    for key in products.keys():
+        polygon = str(products[key]['footprint'])
+
+        # s = 'POLYGON ((15.71888453311329 9.045763865974665,15.7018748825589 8.97110837227606,15.66795226563288 8.822558900399137,15.639498612331632 8.69721920092792,15.63428409805786 8.674303514900869,15.600477269179995 8.525798537094156,15.566734239298787 8.377334323160321,15.53315342410745 8.228822837291709,15.499521168391912 8.080353481086165,15.493321895031096 8.052970059354971,14.999818486685434 8.053569047879877,14.999818016115439 9.046743365203026,15.71888453311329 9.045763865974665))'
+        matches = pat.findall(polygon)
+        if matches:
+            xy = np.array([map(float, m.split()) for m in matches])
+            ax.add_patch(mpatches.Polygon(xy, closed=True,  transform=ccrs.PlateCarree(), color='coral', alpha=0.6))
+    # ccrs.Geodetic()
+
+    ax.gridlines(draw_labels=True,)
+    from flyingpigeon import visualisation as vs
+    img = vs.fig2plot(fig, output_dir='.')
+
+    return img
+
+
 
 def plot_ndvi(geotif, file_extension='png'):
     """
@@ -56,15 +107,15 @@ def plot_ndvi(geotif, file_extension='png'):
     cube = gdal.Open(geotif)
     bnd1 = cube.GetRasterBand(1)
 
-    proj = cube.GetProjection()
-
-    inproj = osr.SpatialReference()
-    inproj.ImportFromWkt(proj)
-    # print(inproj)
-    LOGGER.debug("projection of geotif %s " % inproj)
-
-    projcs = inproj.GetAuthorityCode('PROJCS')  # requires internet connection
-    projection = ccrs.epsg(projcs)
+    # proj = cube.GetProjection()
+    #
+    # inproj = osr.SpatialReference()
+    # inproj.ImportFromWkt(proj)
+    # # print(inproj)
+    # LOGGER.debug("projection of geotif %s " % inproj)
+    #
+    # projcs = inproj.GetAuthorityCode('PROJCS')  # requires internet connection
+    # projection = ccrs.epsg(projcs)
 
     # get the extent of the plot
     gt = cube.GetGeoTransform()
@@ -73,19 +124,25 @@ def plot_ndvi(geotif, file_extension='png'):
     img = bnd1.ReadAsArray(0, 0, cube.RasterXSize, cube.RasterYSize)
 
     fig = plt.figure()  # , bbox='tight'
-    ax = plt.axes(projection=ccrs.PlateCarree())
+    # ax = plt.axes(projection=ccrs.PlateCarree())
     norm = vs.MidpointNormalize(midpoint=0)
 
-    img_ndvi = ax.imshow(img,
-                         origin='upper', extent=extent, transform=ccrs.PlateCarree(),
+    img_ndvi = plt.imshow(img[10000:-1,0:-1000],
+                         origin='upper', extent=extent, # transform=ccrs.PlateCarree(),
                          norm=norm, vmin=-1, vmax=1, cmap=plt.cm.summer)
+
+
+    # img_ndvi = ax.imshow(img[0:-5000,0:-10000],
+    #                      origin='upper', extent=extent, # transform=ccrs.PlateCarree(),
+    #                      norm=norm, vmin=-1, vmax=1, cmap=plt.cm.summer)
+
     # ax.coastlines(resolution='50m', color='black', linewidth=1)
     # ax.add_feature(feature.BORDERS, linestyle='-', alpha=.5)
     # ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True)
-    ax.gridlines()
+    # ax.gridlines()
     plt.title('NDVI')
     plt.colorbar(img_ndvi)
-    ndvi_plot = vs.fig2plot(fig, file_extension=file_extension, dpi=300)
+    ndvi_plot = vs.fig2plot(fig, file_extension=file_extension, dpi=90)  # dpi=300
 
     plt.close()
     ds = None

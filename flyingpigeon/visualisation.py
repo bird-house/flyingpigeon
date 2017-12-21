@@ -29,16 +29,17 @@ class MidpointNormalize(Normalize):
         return np.ma.masked_array(np.interp(value, x, y))
 
 
-def fig2plot(fig, file_extension='png', bbox_inches='tight', dpi=300, facecolor='w', edgecolor='k', figsize=(20, 10)):
+def fig2plot(fig, file_extension='png', output_dir='.', bbox_inches='tight', dpi=300, facecolor='w', edgecolor='k', figsize=(20, 10)):
     '''saving a matplotlib figure to a graphic
 
     :param fig: matplotlib figure object
+    :param output_dir: directory of output plot
     :param file_extension: file file_extension (default='png')
 
     :return str: path to graphic
     '''
 
-    _, graphic = mkstemp(dir='.', suffix='.%s' % file_extension)
+    _, graphic = mkstemp(dir=output_dir, suffix='.%s' % file_extension)
     fig.savefig(graphic, bbox_inches=bbox_inches, dpi=dpi, facecolor=facecolor, edgecolor=edgecolor, figsize=figsize)
 
     return graphic

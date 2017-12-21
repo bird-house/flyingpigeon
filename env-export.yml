@@ -1,7 +1,7 @@
 name: flyingpigeon
 channels:
-- nesii
 - bioconda
+- nesii
 - defaults
 - birdhouse
 - conda-forge
@@ -167,6 +167,7 @@ dependencies:
 - python-dateutil=2.6.1=py27_0
 - python-ecmwf_grib=1.23.1=py27_0
 - python-magic=0.4.13=py27_0
+- python-snappy=0.5.1=py27_2
 - pytz=2017.3=py_2
 - pyyaml=3.12=py27_1
 - qt=5.6.2=6
@@ -186,6 +187,7 @@ dependencies:
 - singledispatch=3.4.0.3=py27_0
 - sip=4.18=py27_1
 - six=1.11.0=py27_1
+- snappy=1.1.7=1
 - snowballstemmer=1.2.1=py27_0
 - snuggs=1.4.1=py27_0
 - sphinx=1.6.5=py27_0
@@ -261,10 +263,8 @@ dependencies:
   - mo-pack==0.2.0
   - nc-time-axis==1.0.2
   - ocgis==2.1.0.dev1
-  - planet==1.1.0
   - prompt-toolkit==1.0.15
   - pygbif==0.2.0
-  - requests-futures==0.9.7
   - restructuredtext-lint==1.0.1
   - sentinelsat==0.12.1
   - sphinx-autoapi==0.4.0
