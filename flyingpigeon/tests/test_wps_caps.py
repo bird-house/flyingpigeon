@@ -18,9 +18,8 @@ def test_caps():
     print sorted_names
 
     expected_names = [
-        'EO_fetch', 
-	'EO_merge', 
-	'EO_ndvi',
+        'EO_COPERNICUS_fetch',
+        'EO_COPERNICUS_search',
         'analogs_compare',
         'analogs_model',
         'analogs_reanalyse',
