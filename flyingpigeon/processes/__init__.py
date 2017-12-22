@@ -24,15 +24,12 @@ from .wps_plot_timeseries import PlottimeseriesProcess
 from .wps_segetalflora import SegetalfloraProcess
 from .wps_spatial_analog import SpatialAnalogProcess
 from .wps_map_spatial_analog import MapSpatialAnalogProcess
-<<<<<<< HEAD
 from .wps_ocgis_func import OCGIS_INDEX_PROCESSES  # This stores all the processes defined in the module.
-=======
 # from .wps_EO_fetch import FetcheodataProcess
 # from .wps_EO_ndvi import NdviProcess
 # from .wps_EO_merge import MergeProcess
 from .wps_EO_COPERNICUS_search import EO_COP_searchProcess
 from .wps_EO_COPERNICUS_fetch import EO_COP_fetchProcess
->>>>>>> 661c6b2b9a6b6d6a5e5c4d0f19d9225cb2757566
 
 processes = [
     ClippingProcess(),
