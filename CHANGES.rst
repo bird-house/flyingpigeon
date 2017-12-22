@@ -10,6 +10,11 @@ Releasenotes
 * updated weatherregimes processes.
 * fixed sphinx build.
 
+1.0.3 (2017-12-21)
+==================
+
+* fixed sphinx build.
+
 1.0.2 (2017-12-20)
 ==================
 
