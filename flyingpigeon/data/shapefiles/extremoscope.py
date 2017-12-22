@@ -1,26 +1,19 @@
-def regionalize(infile, basedir, variable, aggregate, scenario ): 
-	"""generates a file structure for polygons and fieldmeans
+def regionalize(infile, basedir, variable, aggregate, scenario):
+    """generates a file structure for polygons and fieldmeans
 
-	:param infile: netCDF infile with DRS name convention
-	:param basedir: path to base directory
-	:param variable: variable name 
-	:param aggregate: time aggregation
-	:param scenario: scenario name (e.g 'rcp45')"""
+    :param infile: netCDF infile with DRS name convention
+    :param basedir: path to base directory
+    :param variable: variable name
+    :param aggregate: time aggregation
+    :param scenario: scenario name (e.g 'rcp45')"""
 
-	from flyingpigeon import subset
-	from flyingpigeon.subset import _POLYGONS_EXTREMOSCOPE_
+    from flyingpigeon import subset
+    from flyingpigeon.subset import _POLYGONS_EXTREMOSCOPE_
 
-	for polygon in _POLYGONS_EXTREMOSCOPE_: 
-		region = polygon.replace('.','-')
-		prefix = os.basename(infile).replace('EUR',region)
-		dir_output = os.path.join( basedir , 'polygons',  variable, aggregate, scenario, region)
-
-
+    for polygon in _POLYGONS_EXTREMOSCOPE_:
+        region = polygon.replace('.', '-')
+        prefix = os.basename(infile).replace('EUR', region)
+        dir_output = os.path.join(basedir, 'polygons', variable, aggregate, scenario, region)
 
 
-
-
-
-
-
-/home/estimr2/nhempelmann/data/extremoscope_test/chunk_test.nc
+#  /home/estimr2/nhempelmann/data/extremoscope_test/chunk_test.nc

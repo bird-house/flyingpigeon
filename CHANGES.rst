@@ -1,6 +1,19 @@
 Releasenotes
 ************
 
+1.1.0 (2017-12-22)
+==================
+
+* disabled analogs processes (using castf90) ... moved to black-swan.
+* added new spatial analogs process.
+* added initial version of satellite processes using scihub.coperniucs data.
+* updated weatherregimes processes.
+
+1.0.3 (2017-12-21)
+==================
+
+* fixed sphinx build.
+
 1.0.2 (2017-12-20)
 ==================
 

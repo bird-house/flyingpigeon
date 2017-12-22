@@ -73,7 +73,7 @@ def plot_products(products, extend=[10, 20, 5, 15]):
 
     ax.gridlines(draw_labels=True,)
     from flyingpigeon import visualisation as vs
-    img = vs.fig2plot(fig, output_dir='/home/nils/data')
+    img = vs.fig2plot(fig, output_dir='.')
 
     return img
 
