@@ -18,16 +18,18 @@ def test_caps():
     print sorted_names
 
     expected_names = [
-        'analogs_compare',
-        'analogs_model',
-        'analogs_reanalyse',
-        'analogs_viewer',
+        'EO_COPERNICUS_fetch',
+        'EO_COPERNICUS_search',
+        # 'analogs_compare',
+        # 'analogs_model',
+        # 'analogs_reanalyse',
+        # 'analogs_viewer',
         # 'climatefactsheet',
         'fetch_resources',
         # 'indices_percentile,
         'indices_percentiledays',
         'indices_single',
-        # 'landseamask',
+        'landseamask',
         'map_spatial_analog',
         'plot_timeseries',
         'pointinspection',

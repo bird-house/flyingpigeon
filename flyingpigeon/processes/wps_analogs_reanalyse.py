@@ -23,6 +23,7 @@ from flyingpigeon.ocgis_module import call
 from flyingpigeon import analogs
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import get_variable
+from flyingpigeon.calculation import remove_mean_trend
 from flyingpigeon.log import init_process_logger
 
 import logging
@@ -61,7 +62,7 @@ class AnalogsreanalyseProcess(Process):
                             " For example: -80,50,20,70",
                          min_occurs=1,
                          max_occurs=1,
-                         default='-80,50,20,70',
+                         default='-20,40,30,70',
                          ),
 
             LiteralInput('dateSt', 'Start date of analysis period',
@@ -75,7 +76,7 @@ class AnalogsreanalyseProcess(Process):
             LiteralInput('dateEn', 'End date of analysis period',
                          data_type='date',
                          abstract='Last day of the period to be analysed',
-                         default='2013-12-31',
+                         default='2013-07-20',
                          min_occurs=1,
                          max_occurs=1,
                          ),
@@ -83,7 +84,7 @@ class AnalogsreanalyseProcess(Process):
             LiteralInput('refSt', 'Start date of reference period',
                          data_type='date',
                          abstract='First day of the period where analogues being picked',
-                         default='2013-01-01',
+                         default='1970-01-01',
                          min_occurs=1,
                          max_occurs=1,
                          ),
@@ -91,9 +92,18 @@ class AnalogsreanalyseProcess(Process):
             LiteralInput('refEn', 'End date of reference period',
                          data_type='date',
                          abstract='Last day of the period where analogues being picked',
-                         default='2014-12-31',
+                         default='2012-12-31',
                          min_occurs=1,
                          max_occurs=1,
+                         ),
+
+            LiteralInput("detrend", "Detrend",
+                         abstract="Remove long-term trend beforehand",
+                         default='None',
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=1,
+                         allowed_values=['None', 'UVSpline']
                          ),
 
             LiteralInput("normalize", "normalization",
@@ -149,6 +159,12 @@ class AnalogsreanalyseProcess(Process):
         ]
 
         outputs = [
+            ComplexOutput("analog_pdf", "Maps with mean analogs and simulation",
+                          abstract="Analogs Maps",
+                          supported_formats=[Format('image/pdf')],
+                          as_reference=True,
+                          ),
+
             ComplexOutput("config", "Config File",
                           abstract="Config file used for the Fortran process",
                           supported_formats=[Format("text/plain")],
@@ -168,7 +184,25 @@ class AnalogsreanalyseProcess(Process):
                           ),
 
             ComplexOutput('output_netcdf', 'Subsets for one dataset',
-                          abstract="Prepared netCDF file as input for weatherregime calculation",
+                          abstract="Prepared netCDF file as input for simulation (as input for weatherregime calculation)",
+                          as_reference=True,
+                          supported_formats=[Format('application/x-netcdf')]
+                          ),
+
+            ComplexOutput('target_netcdf', 'Subsets for one dataset',
+                          abstract="Prepared netCDF file as input for archive",
+                          as_reference=True,
+                          supported_formats=[Format('application/x-netcdf')]
+                          ),
+
+            ComplexOutput('base_netcdf', 'Base Seasonal cycle',
+                          abstract="Base seasonal cycle netCDF",
+                          as_reference=True,
+                          supported_formats=[Format('application/x-netcdf')]
+                          ),
+
+            ComplexOutput('sim_netcdf', 'Sim Seasonal cycle',
+                          abstract="Sim seasonal cycle netCDF",
                           as_reference=True,
                           supported_formats=[Format('application/x-netcdf')]
                           ),
@@ -239,20 +273,8 @@ class AnalogsreanalyseProcess(Process):
             LOGGER.debug('BBOX for ocgis: %s ' % (bbox))
             LOGGER.debug('BBOX original: %s ' % (bboxStr))
 
-            # if bbox_obj is not None:
-            #     LOGGER.info("bbox_obj={0}".format(bbox_obj.coords))
-            #     bbox = [bbox_obj.coords[0][0],
-            #             bbox_obj.coords[0][1],
-            #             bbox_obj.coords[1][0],
-            #             bbox_obj.coords[1][1]]
-            #     LOGGER.info("bbox={0}".format(bbox))
-            # else:
-            #     bbox = None
-            # region = self.getInputValues(identifier='region')[0]
-            # bbox = [float(b) for b in region.split(',')]
-            # bbox_obj = self.BBox.getValue()
-
             normalize = request.inputs['normalize'][0].data
+            detrend = request.inputs['detrend'][0].data
             distance = request.inputs['dist'][0].data
             outformat = request.inputs['outformat'][0].data
             timewin = request.inputs['timewin'][0].data
@@ -311,7 +333,7 @@ class AnalogsreanalyseProcess(Process):
 
         try:
             if model == 'NCEP':
-                getlevel = True
+                getlevel = False
                 if 'z' in var:
                     level = var.strip('z')
                     conform_units_to = None
@@ -343,7 +365,7 @@ class AnalogsreanalyseProcess(Process):
             model_nc = rl(start=start.year,
                           end=end.year,
                           dataset=model,
-                          variable=var,timres=timres,getlevel=getlevel)
+                          variable=var, timres=timres, getlevel=getlevel)
             LOGGER.info('reanalyses data fetched')
         except Exception:
             msg = 'failed to get reanalyses data'
@@ -361,14 +383,15 @@ class AnalogsreanalyseProcess(Process):
         # TODO: need to create dictionary for such datasets (for models as well)
         # TODO: benchmark the method bellow for NCEP z500 for 60 years
 
-        if ('20CRV2' in model) and ('z' in var): 
+#        if ('20CRV2' in model) and ('z' in var):
+        if ('z' in var):  
             tmp_total = []
             origvar = get_variable(model_nc)
 
             for z in model_nc:
                 tmp_n = 'tmp_%s' % (uuid.uuid1()) 
                 b0=call(resource=z, variable=origvar, level_range=[int(level), int(level)], geom=bbox,
-                spatial_wrapping='wrap',prefix='levdom_'+os.path.basename(z)[0:-3]) 
+                spatial_wrapping='wrap', prefix='levdom_'+os.path.basename(z)[0:-3])
                 tmp_total.append(b0)
 
             tmp_total = sorted(tmp_total, key=lambda i: os.path.splitext(os.path.basename(i))[0])
@@ -419,6 +442,21 @@ class AnalogsreanalyseProcess(Process):
         LOGGER.info('Dataset subset done: %s ', model_subset)
 
         response.update_status('dataset subsetted', 19)
+
+        # BLOCK OF DETRENDING of model_subset !
+        # Original model subset kept to further visualisaion if needed
+        # Now is issue with SLP:
+        # TODO 1 Keep trend as separate file
+        # TODO 2 Think how to add options to plot abomalies AND original data... 
+        #        May be do archive and simulation = call.. over NOT detrended data and keep it as well
+        # TODO 3 Check with faster smoother add removing trend of each grid
+
+        if detrend == 'None':
+            orig_model_subset = model_subset            
+        else:
+            orig_model_subset = remove_mean_trend(model_subset, varname=var)
+
+        # ======================================
 
         ############################################################
         #  get the required bbox and time region from resource data
@@ -551,6 +589,24 @@ class AnalogsreanalyseProcess(Process):
         #######################
         start_time = time.time()  # measure call castf90
 
+        #-----------------------
+        try:
+            import ctypes
+            # TODO: This lib is for linux
+            mkl_rt = ctypes.CDLL('libmkl_rt.so')
+            nth=mkl_rt.mkl_get_max_threads()
+            LOGGER.debug('Current number of threads: %s' % (nth))
+            mkl_rt.mkl_set_num_threads(ctypes.byref(ctypes.c_int(64)))
+            nth=mkl_rt.mkl_get_max_threads()
+            LOGGER.debug('NEW number of threads: %s' % (nth))
+            # TODO: Does it \/\/\/ work with default shell=False in subprocess... (?)
+            os.environ['MKL_NUM_THREADS']=str(nth)
+            os.environ['OMP_NUM_THREADS']=str(nth)
+        except Exception as e:
+            msg = 'Failed to set THREADS %s ' % e
+            LOGGER.debug(msg)
+        #-----------------------
+
         response.update_status('Start CASTf90 call', 20)
         try:
             # response.update_status('execution of CASTf90', 50)
@@ -564,12 +620,28 @@ class AnalogsreanalyseProcess(Process):
             LOGGER.exception(msg)
             raise Exception(msg)
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
-   
+
+        # TODO: Add try - except for pdfs
+        analogs_pdf = analogs.plot_analogs(configfile=config_file)   
         response.update_status('preparing output', 70)
         # response.outputs['config'].storage = FileStorage()
+        response.outputs['analog_pdf'].file = analogs_pdf 
         response.outputs['config'].file = config_file
         response.outputs['analogs'].file = output_file
         response.outputs['output_netcdf'].file = simulation
+        response.outputs['target_netcdf'].file = archive
+
+        if seacyc is True:
+            response.outputs['base_netcdf'].file = seasoncyc_base
+            response.outputs['sim_netcdf'].file = seasoncyc_sim
+        else:
+            # TODO: Still unclear how to overpass unknown number of outputs
+            dummy_base='dummy_base.nc'
+            dummy_sim='dummy_sim.nc'
+            with open(dummy_base, 'a'): os.utime(dummy_base, None)
+            with open(dummy_sim, 'a'): os.utime(dummy_sim, None)
+            response.outputs['base_netcdf'].file = dummy_base
+            response.outputs['sim_netcdf'].file = dummy_sim
 
         ########################
         # generate analog viewer

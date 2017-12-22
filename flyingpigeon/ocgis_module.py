@@ -1,4 +1,4 @@
-from os.path import join, abspath, dirname, getsize, curdir
+from os.path import join, abspath, dirname, getsize, curdir, isfile
 from netCDF4 import Dataset
 from flyingpigeon import config
 import logging
@@ -38,6 +38,7 @@ def call(resource=[], variable=None, dimension_map=None, agg_selection=True, cal
     :param agg_selection: For aggregation of in case of mulitple polygons geoms
     :param calc: ocgis calc syntax for calculation partion
     :param calc_grouping: time aggregate grouping
+    :param cdover: use py-cdo ('python', by default) or cdo from the system ('system')
     :param conform_units_to:
     :param crs: coordinate reference system
     :param memory_limit: limit the amount of data to be loaded into the memory at once \
@@ -252,10 +253,22 @@ def call(resource=[], variable=None, dimension_map=None, agg_selection=True, cal
                 from os import system
                 remap = 'remap%s' % regrid_options
                 output = '%s.nc' % uuid.uuid1()
-                comcdo = 'cdo -O %s,%s %s %s' % (remap,regrid_destination,geom_file,output)
+                output = abspath(curdir)+'/'+output
+                comcdo = 'cdo -O %s,%s %s %s' % (remap, regrid_destination, geom_file, output)
                 system(comcdo)
+                
+                if(isfile(output)==False):
+                    comcdo = '/usr/bin/cdo -O %s,%s %s %s' % (remap, regrid_destination, geom_file, output)
+                    system(comcdo)
+                
+                if(isfile(output)==False): cdover='python'
+
                 # need to substitute by subprocess call
-            else:
+                # TODO: If system failed - py-cdo used insted
+                # what if py-cdo failed, with option 'python'
+                # need to call 'system' in this case - need to write function
+
+            if (cdover=='python'):
                 from tempfile import mkstemp
                 from cdo import Cdo
                 cdo = Cdo()

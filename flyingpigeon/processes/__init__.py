@@ -15,24 +15,32 @@ from .wps_sdm_allinone import SDMallinoneProcess
 from .wps_weatherregimes_reanalyse import WeatherregimesreanalyseProcess
 from .wps_weatherregimes_projection import WeatherregimesprojectionProcess
 from .wps_weatherregimes_model import WeatherregimesmodelProcess
-from .wps_analogs_reanalyse import AnalogsreanalyseProcess
-from .wps_analogs_model import AnalogsmodelProcess
-from .wps_analogs_compare import AnalogscompareProcess
-from .wps_analogs_viewer import AnalogsviewerProcess
+# from .wps_analogs_reanalyse import AnalogsreanalyseProcess
+# from .wps_analogs_model import AnalogsmodelProcess
+# from .wps_analogs_compare import AnalogscompareProcess
+# from .wps_analogs_viewer import AnalogsviewerProcess
 # from .wps_robustness import RobustnessProcess
 from .wps_plot_timeseries import PlottimeseriesProcess
 from .wps_segetalflora import SegetalfloraProcess
 from .wps_spatial_analog import SpatialAnalogProcess
 from .wps_map_spatial_analog import MapSpatialAnalogProcess
+<<<<<<< HEAD
 from .wps_ocgis_func import OCGIS_INDEX_PROCESSES  # This stores all the processes defined in the module.
+=======
+# from .wps_EO_fetch import FetcheodataProcess
+# from .wps_EO_ndvi import NdviProcess
+# from .wps_EO_merge import MergeProcess
+from .wps_EO_COPERNICUS_search import EO_COP_searchProcess
+from .wps_EO_COPERNICUS_fetch import EO_COP_fetchProcess
+>>>>>>> 661c6b2b9a6b6d6a5e5c4d0f19d9225cb2757566
 
 processes = [
     ClippingProcess(),
     ClipcontinentProcess(),
     ClipregionseuropeProcess(),
     PointinspectionProcess(),
-    #    LandseamaskProcess(),
-    #    FactsheetProcess(),
+    LandseamaskProcess(),
+    # FactsheetProcess(),
     FetchProcess(),
     IndicespercentiledaysProcess(),
     IndicessingleProcess(),
@@ -44,15 +52,20 @@ processes = [
     WeatherregimesreanalyseProcess(),
     WeatherregimesprojectionProcess(),
     WeatherregimesmodelProcess(),
-    AnalogsreanalyseProcess(),
-    AnalogsmodelProcess(),
-    AnalogscompareProcess(),
-    AnalogsviewerProcess(),
-    #    RobustnessProcess(),
+    # AnalogsreanalyseProcess(),
+    # AnalogsmodelProcess(),
+    # AnalogscompareProcess(),
+    # AnalogsviewerProcess(),
+    # RobustnessProcess(),
     PlottimeseriesProcess(),
     SegetalfloraProcess(),
     SpatialAnalogProcess(),
     MapSpatialAnalogProcess(),
+    # FetcheodataProcess(),
+    EO_COP_searchProcess(),
+    EO_COP_fetchProcess(),
+    # MergeProcess(),
+    # NdviProcess(),
     ] + OCGIS_INDEX_PROCESSES
 
 
@@ -61,9 +74,6 @@ pywps3 processes:
 
 # climate for impact processes
 "wps_c4i_simple_indice",
-# processes under development
-# "wps_spatial_analog",
-# "wps_eobs2cordex",
 
 # TODO: c4i processes with multiple input sources
 # "wps_c4i_multivar_indice",
