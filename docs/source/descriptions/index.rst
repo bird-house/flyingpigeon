@@ -18,3 +18,4 @@ A combination of processes will be called a 'workflow'.
    fetch
    segetalflora
    visualisation
+   eo_processes
