@@ -5,6 +5,7 @@ Releasenotes
 ==================
 
 * disabled analogs processes (using castf90) ... moved to black-swan.
+* added new spatial analogs process.
 * added initial version of satellite processes using scihub.coperniucs data.
 * updated weatherregimes processes.
 * fixed sphinx build.
