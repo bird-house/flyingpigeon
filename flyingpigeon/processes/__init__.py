@@ -24,9 +24,8 @@ from .wps_plot_timeseries import PlottimeseriesProcess
 from .wps_segetalflora import SegetalfloraProcess
 from .wps_spatial_analog import SpatialAnalogProcess
 from .wps_map_spatial_analog import MapSpatialAnalogProcess
+from .wps_ocgis_func import OCGIS_INDEX_PROCESSES # This stores all the processes defined in the module.
 
-from .wps_ocgis_func import ocgis_processes # This stores all the processes defined in the module.
-#locals().update({c.__class__.__name__: c for c in ocgis_processes })
 
 
 
@@ -58,7 +57,7 @@ processes = [
     SegetalfloraProcess(),
     SpatialAnalogProcess(),
     MapSpatialAnalogProcess(),
-    ] + ocgis_processes
+    ] + OCGIS_INDEX_PROCESSES
 
 
 """

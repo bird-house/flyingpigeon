@@ -35,7 +35,8 @@ LOGGER = logging.getLogger("PYWPS")
 # Register ocgis functions, including icclim
 fr = register.FunctionRegistry()
 register.register_icclim(fr)
-icclim_classes = {k:v for (k,v) in fr.items() if type(k) == str and k.startswith('icclim')}
+icclim_classes = [k for k in fr.keys() if type(k) == str and k.startswith('icclim')]
+
 
 class IndicatorProcess(Process, object):
     """A Process class wrapping OCGIS functions."""
@@ -55,7 +56,7 @@ class IndicatorProcess(Process, object):
                          Format('application/x-netcdf'),
                          Format('application/x-tar'),
                          Format('application/zip'),
-                     ]),]
+                     ]), ]
 
     option_inputs = [
         LiteralInput("grouping", "Grouping",
@@ -65,7 +66,7 @@ class IndicatorProcess(Process, object):
                      min_occurs=0,
                      max_occurs=1,  # len(GROUPING),
                      allowed_values=GROUPING
-                     ),]
+                     ), ]
 
     ############################
     # Function-specific inputs #
@@ -102,7 +103,6 @@ class IndicatorProcess(Process, object):
             store_supported=True,
         )
 
-
     def _resource_input_handler(self, request):
         out = OrderedDict()
 
@@ -114,7 +114,7 @@ class IndicatorProcess(Process, object):
 
     def _option_input_handler(self, request):
         from flyingpigeon.utils import calc_grouping
-        out = {'calc_grouping':None}
+        out = {'calc_grouping': None}
 
         for obj in self.option_inputs:
             key = obj.identifier
@@ -134,7 +134,6 @@ class IndicatorProcess(Process, object):
             key = obj.identifier
             out[key] = request.inputs[key][0].data
         return out
-
 
     def _handler(self, request, response):
 
@@ -161,15 +160,14 @@ class IndicatorProcess(Process, object):
         # Call ocgis function
         ######################################
         # Mapping for multivariate functions
-        if self.has_required_variables:
-            extras.update( {k:k for k in resources.keys()} )
+        if getattr(self, 'has_required_variables', None):
+            extras.update({k: k for k in resources.keys()})
 
-        output = self._run(resource=resources,
-                           calc=[{'func': self.identifier,
-                             'name': self.identifier,
-                             'kwds': extras}],
-                           options=options
-                      )
+        output = self.run(resource=resources,
+                          calc=[{'func': self.identifier,
+                                 'name': self.identifier,
+                                 'kwds': extras}],
+                          options=options)
 
         response.outputs['output_netcdf'].file = output
 
@@ -177,8 +175,8 @@ class IndicatorProcess(Process, object):
 
         return response
 
-    def _run(self, resource, calc, options):
-        from os.path import join, abspath, dirname, getsize, curdir
+    def run(self, resource, calc, options):
+        from os.path import abspath, curdir
         from ocgis import OcgOperations, RequestDataset, env
         import uuid
 
@@ -191,7 +189,7 @@ class IndicatorProcess(Process, object):
         prefix = str(uuid.uuid1())
         env.PREFIX = prefix
 
-        rd = [RequestDataset(val, variable=key if key != 'resource' else None   ) for key, val in resource.items()]
+        rd = [RequestDataset(val, variable=key if key != 'resource' else None) for key, val in resource.items()]
 
         ops = OcgOperations(dataset=rd,
                             calc=calc,
@@ -203,37 +201,37 @@ class IndicatorProcess(Process, object):
 
         return ops.execute()
 
-
-
-
 #############################################
 #          Custom class definitions         #
 #############################################
 
+
 class FreezeThawProcess(IndicatorProcess):
     key = 'freezethaw'
     extra_inputs = [LiteralInput("threshold", "Threshold",
-                                abstract="The number of degree-days above or below the freezing point after which the ground is considered frozen or thawed.",
-                                data_type='float',
-                                default=15.0,
-                                min_occurs=0,
-                                max_occurs=1),]
+                                 abstract="The number of degree-days above or below the freezing point after which the"
+                                          "ground is considered frozen or thawed.",
+                                 data_type='float',
+                                 default=15.0,
+                                 min_occurs=0,
+                                 max_occurs=1), ]
 
-# Untested
+
 class Duration(IndicatorProcess):
     key = 'duration'
     extra_inputs = [LiteralInput("threshold", "Threshold",
-                                abstract="The threshold value to use for the logical operation.",
-                                data_type='float',
-                                min_occurs=1,
-                                max_occurs=1),
+                                 abstract="The threshold value to use for the logical operation.",
+                                 data_type='float',
+                                 min_occurs=1,
+                                 max_occurs=1),
                     LiteralInput("operation", "Operation",
                                  abstract="The logical operation. One of 'gt','gte','lt', or 'lte'.",
                                  data_type='string',
                                  min_occurs=1,
                                  max_occurs=1),
                     LiteralInput("summary", "Summary",
-                                 abstract="The summary operation to apply the durations. One of 'mean','median','std','max', or 'min'.",
+                                 abstract="The summary operation to apply the durations. One of 'mean','median','std',"
+                                          "'max', or 'min'.",
                                  data_type='string',
                                  default='mean',
                                  min_occurs=0,
@@ -249,30 +247,28 @@ class ICCLIMProcess(IndicatorProcess):
     """Process class instantiated using definitions from the ICCLIM library.
     """
     def __init__(self):
-        # Scrape the meta data from the docstring
+        """Scrape meta data from the icclim function docstring."""
         self.ocgis_cls = fr[self.key]
 
-        #self.icclim_func = self.ocgis_cls._get_icclim_func_(self.ocgis_cls())
         self.icclim_func = libclim._icclim_function_map[self.key]['func']
         doc = self.icclim_func.func_doc
 
         self.has_required_variables = hasattr(self.ocgis_cls, 'required_variables')
 
         if self.has_required_variables:
-            self.resource_inputs = [] # No more resource input.
+            self.resource_inputs = []  # No more resource input.
             for key in self.ocgis_cls.required_variables:
                 self.resource_inputs.append(
                     ComplexInput(key, key,
-                             abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
-                             metadata=[Metadata('Info')],
-                             min_occurs=1,
-                             max_occurs=1000,
-                             supported_formats=[
-                                 Format('application/x-netcdf'),
-                                 Format('application/x-tar'),
-                                 Format('application/zip'),
-                             ])
-                    )
+                                 abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
+                                 metadata=[Metadata('Info')],
+                                 min_occurs=1,
+                                 max_occurs=1000,
+                                 supported_formats=[
+                                     Format('application/x-netcdf'),
+                                     Format('application/x-tar'),
+                                     Format('application/zip'), ]
+                                 ))
 
         super(IndicatorProcess, self).__init__(
             self._handler,
@@ -285,217 +281,18 @@ class ICCLIMProcess(IndicatorProcess):
             store_supported=True,
         )
 
-def _generate_icclim_classes():
-    """Automatically generate code definining Process classes for ICCLIM
-    indicators.
-    """
-    import operator
-    import ocgis
-    pat = """
-class {0}Process(ICCLIMProcess):
-    key = '{1}'
-    """
-    txt = ""
-    names = []
-    for key, cls in sorted(icclim_classes.items(), key=operator.itemgetter(0)):
-        txt = txt + (pat.format(key.upper(), key))
-        names.append( "{}Process".format(key.upper()) )
 
-    return txt, names
+def create_icclim_process_class(key):
+    """Create a subclass of an ICCLIMProcess for a given indicator."""
+    clazz = type(key.upper()+'Process', (ICCLIMProcess,), {'key': key})
+    return clazz
 
-# Run the class generator. The output has been copied below.
-cls_definition, cls_names = _generate_icclim_classes()
 
+def icclim_process_generator(keys):
+    """Dynamically create derived classes for ICCLIM processes."""
+    for key in keys:
+        yield create_icclim_process_class(key)()
 
 
-#############################################
-# Automatically generated icclim processes  #
-# Univariate functions only so far          #
-# No automated support for extra parameters #
-#############################################
-
-class ICCLIM_CDDProcess(ICCLIMProcess):
-    key = 'icclim_CDD'
-
-
-class ICCLIM_CFDProcess(ICCLIMProcess):
-    key = 'icclim_CFD'
-
-
-class ICCLIM_CSDIProcess(ICCLIMProcess):
-    key = 'icclim_CSDI'
-
-
-class ICCLIM_CSUProcess(ICCLIMProcess):
-    key = 'icclim_CSU'
-
-
-class ICCLIM_CWDProcess(ICCLIMProcess):
-    key = 'icclim_CWD'
-
-
-class ICCLIM_DTRProcess(ICCLIMProcess):
-    key = 'icclim_DTR'
-
-
-class ICCLIM_ETRProcess(ICCLIMProcess):
-    key = 'icclim_ETR'
-
-
-class ICCLIM_FDProcess(ICCLIMProcess):
-    key = 'icclim_FD'
-
-
-class ICCLIM_GD4Process(ICCLIMProcess):
-    key = 'icclim_GD4'
-
-
-class ICCLIM_HD17Process(ICCLIMProcess):
-    key = 'icclim_HD17'
-
-
-class ICCLIM_IDProcess(ICCLIMProcess):
-    key = 'icclim_ID'
-
-
-class ICCLIM_PRCPTOTProcess(ICCLIMProcess):
-    key = 'icclim_PRCPTOT'
-
-
-class ICCLIM_R10MMProcess(ICCLIMProcess):
-    key = 'icclim_R10mm'
-
-
-class ICCLIM_R20MMProcess(ICCLIMProcess):
-    key = 'icclim_R20mm'
-
-
-class ICCLIM_R75PProcess(ICCLIMProcess):
-    key = 'icclim_R75p'
-
-
-class ICCLIM_R75PTOTProcess(ICCLIMProcess):
-    key = 'icclim_R75pTOT'
-
-
-class ICCLIM_R95PProcess(ICCLIMProcess):
-    key = 'icclim_R95p'
-
-
-class ICCLIM_R95PTOTProcess(ICCLIMProcess):
-    key = 'icclim_R95pTOT'
-
-
-class ICCLIM_R99PProcess(ICCLIMProcess):
-    key = 'icclim_R99p'
-
-
-class ICCLIM_R99PTOTProcess(ICCLIMProcess):
-    key = 'icclim_R99pTOT'
-
-
-class ICCLIM_RR1Process(ICCLIMProcess):
-    key = 'icclim_RR1'
-
-
-class ICCLIM_RX1DAYProcess(ICCLIMProcess):
-    key = 'icclim_RX1day'
-
-
-class ICCLIM_RX5DAYProcess(ICCLIMProcess):
-    key = 'icclim_RX5day'
-
-
-class ICCLIM_SDProcess(ICCLIMProcess):
-    key = 'icclim_SD'
-
-
-class ICCLIM_SD1Process(ICCLIMProcess):
-    key = 'icclim_SD1'
-
-
-class ICCLIM_SD50CMProcess(ICCLIMProcess):
-    key = 'icclim_SD50cm'
-
-
-class ICCLIM_SD5CMProcess(ICCLIMProcess):
-    key = 'icclim_SD5cm'
-
-
-class ICCLIM_SDIIProcess(ICCLIMProcess):
-    key = 'icclim_SDII'
-
-
-class ICCLIM_SUProcess(ICCLIMProcess):
-    key = 'icclim_SU'
-
-
-class ICCLIM_TGProcess(ICCLIMProcess):
-    key = 'icclim_TG'
-
-
-class ICCLIM_TG10PProcess(ICCLIMProcess):
-    key = 'icclim_TG10p'
-
-
-class ICCLIM_TG90PProcess(ICCLIMProcess):
-    key = 'icclim_TG90p'
-
-
-class ICCLIM_TNProcess(ICCLIMProcess):
-    key = 'icclim_TN'
-
-
-class ICCLIM_TN10PProcess(ICCLIMProcess):
-    key = 'icclim_TN10p'
-
-
-class ICCLIM_TN90PProcess(ICCLIMProcess):
-    key = 'icclim_TN90p'
-
-
-class ICCLIM_TNNProcess(ICCLIMProcess):
-    key = 'icclim_TNn'
-
-
-class ICCLIM_TNXProcess(ICCLIMProcess):
-    key = 'icclim_TNx'
-
-
-class ICCLIM_TRProcess(ICCLIMProcess):
-    key = 'icclim_TR'
-
-
-class ICCLIM_TXProcess(ICCLIMProcess):
-    key = 'icclim_TX'
-
-
-class ICCLIM_TX10PProcess(ICCLIMProcess):
-    key = 'icclim_TX10p'
-
-
-class ICCLIM_TX90PProcess(ICCLIMProcess):
-    key = 'icclim_TX90p'
-
-
-class ICCLIM_TXNProcess(ICCLIMProcess):
-    key = 'icclim_TXn'
-
-
-class ICCLIM_TXXProcess(ICCLIMProcess):
-    key = 'icclim_TXx'
-
-
-class ICCLIM_WSDIProcess(ICCLIMProcess):
-    key = 'icclim_WSDI'
-
-
-class ICCLIM_VDTRProcess(ICCLIMProcess):
-    key = 'icclim_vDTR'
-
-
-########################################
-
-# List of all Process classes used in __init__
-D = locals()
-ocgis_processes = [FreezeThawProcess, Duration] + [D[k] for k in cls_names]
+ICCLIM_PROCESSES = [p for p in icclim_process_generator(icclim_classes)]
+OCGIS_INDEX_PROCESSES = [FreezeThawProcess(), Duration()] + ICCLIM_PROCESSES
