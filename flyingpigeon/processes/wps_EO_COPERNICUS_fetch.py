@@ -196,24 +196,7 @@ class EO_COP_fetchProcess(Process):
         if not exists(DIR_EO):
             makedirs(DIR_EO)
 
-        for key in products.keys():
-            try:
-                
-                filename = products[key]['filename']
-                form = products[key]['format']
-                response.update_status("fetch file %s" % filename, 20)
-                api.download(key, directory_path=DIR_EO)
-                response.update_status("*** sucessfully fetched", 20)
-                try:
-                    zip_ref = zipfile.ZipFile(join(DIR_EO, '%s.zip' % (filename)), 'r')
-                    zip_ref.extractall(DIR_EO)
-                    zip_ref.close()
-                except:
-                    LOGGER.exception('failed to extract file %s' % filename)
-            except:
-                LOGGER.exception('failed to fetch %s' % filename)
 
-        response.update_status("write out information about files", 80)
         # api.download_all(products)
         _, filepathes = mkstemp(dir='.', suffix='.txt')
         try:
@@ -223,6 +206,23 @@ class EO_COP_fetchProcess(Process):
                 fp.write('############################################\n')
                 fp.write('\n')
                 for key in products.keys():
+                    try:
+
+                        filename = products[key]['filename']
+                        form = products[key]['format']
+                        response.update_status("fetch file %s" % filename, 20)
+                        api.download(key, directory_path=DIR_EO)
+                        response.update_status("*** sucessfully fetched", 20)
+                        try:
+                            zip_ref = zipfile.ZipFile(join(DIR_EO, '%s.zip' % (filename)), 'r')
+                            zip_ref.extractall(DIR_EO)
+                            zip_ref.close()
+                        except:
+                            LOGGER.exception('failed to extract file %s' % filename)
+                    except:
+                        LOGGER.exception('failed to fetch %s' % filename)
+
+                    response.update_status("write out information about files", 80)
                     size = float(products[key]['size'].split(' ')[0])
                     producttype = products[key]['producttype']
                     beginposition = str(products[key]['beginposition'])
