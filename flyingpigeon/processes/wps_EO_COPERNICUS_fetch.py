@@ -211,14 +211,25 @@ class EO_COP_fetchProcess(Process):
                         filename = products[key]['filename']
                         form = products[key]['format']
                         response.update_status("fetch file %s" % filename, 20)
-                        api.download(key, directory_path=DIR_EO)
-                        response.update_status("*** sucessfully fetched", 20)
-                        try:
-                            zip_ref = zipfile.ZipFile(join(DIR_EO, '%s.zip' % (filename)), 'r')
-                            zip_ref.extractall(DIR_EO)
-                            zip_ref.close()
-                        except:
-                            LOGGER.exception('failed to extract file %s' % filename)
+                        zipfile = join(DIR_EO, '%szip' % (filename)).strip(form)
+                        if exists(zipfile):
+                            LOGGER.debug('file %s allready fetched' % filename)
+                        else:
+                            try:
+                                api.download(key, directory_path=DIR_EO)
+                                response.update_status("*** sucessfully fetched", 20)
+                                DIR_tile =join(DIR_EO, '%s' % (filename))
+                                LOGGER.debug('Tile %s fetched' % filename)
+                                if exists(DIR_tile):
+                                     LOGGER.debug('file %s allready unzipped' % filename)
+                                else:
+                                    # zipfile = join(DIR_EO, '%szip' % (filename)).strip(form)
+                                    zip_ref = zipfile.ZipFile(zipfile, 'r')
+                                    zip_ref.extractall(DIR_EO)
+                                    zip_ref.close()
+                            except:
+                                LOGGER.exception('failed to extract file %s' % filename)
+
                     except:
                         LOGGER.exception('failed to fetch %s' % filename)
 

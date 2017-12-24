@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import rasterio
 import numpy as np
 from os import path, listdir
@@ -52,6 +52,7 @@ with rasterio.open(ndvifile, 'w', **profile) as dst:
 print ndvifile
 
 from osgeo import gdal, osr
+from matplotlib import pyplot as plt
 
 gdal.UseExceptions()
 
@@ -59,7 +60,7 @@ gdal.UseExceptions()
 fname = '/home/nils/data/ndvi_S2B_MSIL1C_20171130T092329_N0206_R093_T33PVK_20171130T1308031Qgjl5.tif'
 
 ds = gdal.Open(fname)
-data = ds.ReadAsArray()
+# data = ds.ReadAsArray()
 gt = ds.GetGeoTransform()
 proj = ds.GetProjection()
 
@@ -68,27 +69,43 @@ inproj.ImportFromWkt(proj)
 
 print(inproj)
 
-ndvifile = fname
-cube = gdal.Open(ndvifile)
-bnd1 = cube.GetRasterBand(1)
+bnd1 = ds.GetRasterBand(1)
+
+# img = bnd1.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize, dtype = uint8)
+# img = bnd1.ReadAsArray(0, 0, buf_xsize=ds.RasterXSize//100, buf_ysize=ds.RasterYSize//100, resample_alg=gdal.GRIORA_Mode)
+
+img = bnd1.ReadAsArray(0, 0, buf_xsize=ds.RasterXSize/10, buf_ysize=ds.RasterYSize/10, )
+fig = plt.figure( dpi=90, facecolor='w', edgecolor='k') # , bbox='tight'
+img_plot = plt.imshow(img, cmap="summer",  origin='upper')
+ndvi_img = vs.fig2plot(fig, output_dir='/home/nils/data/')
+
+print ndvi_img
+
+
+
+
+# ndvifile = fname
+# cube = gdal.Open(ndvifile)
+# bnd1 = ds.GetRasterBand(1)
 # bnd2 = cube.GetRasterBand(2)
 # bnd3 = cube.GetRasterBand(3)
 
-img = bnd1.ReadAsArray(0, 0, cube.RasterXSize, cube.RasterYSize)
+# img = bnd1.ReadAsArray(0, 0, cube.RasterXSize, cube.RasterYSize)
 
 # img2 = bnd2.ReadAsArray(0, 0, cube.RasterXSize, cube.RasterYSize)
 # img3 = bnd3.ReadAsArray(0, 0, cube.RasterXSize, cube.RasterYSize)
 
 # img = np.dstack((img1, img2, img3))
 # figsize=(20, 10)
-
-f = plt.figure( dpi=90, facecolor='w', edgecolor='k') # , bbox='tight'
-plt.imshow(img)
-
-_, picname = mkstemp(dir='/home/nils/data/', suffix='.png')
-plt.savefig(picname)
-
-plt.show()
+#
+# f = plt.figure( dpi=90, facecolor='w', edgecolor='k') # , bbox='tight'
+#
+# plt.imshow(img)
+#
+# _, picname = mkstemp(dir='/home/nils/data/', suffix='.png')
+# plt.savefig(picname)
+#
+# plt.show()
 
 
 
