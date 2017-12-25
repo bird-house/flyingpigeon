@@ -196,7 +196,6 @@ class EO_COP_fetchProcess(Process):
         if not exists(DIR_EO):
             makedirs(DIR_EO)
 
-
         # api.download_all(products)
         _, filepathes = mkstemp(dir='.', suffix='.txt')
         try:
@@ -211,25 +210,30 @@ class EO_COP_fetchProcess(Process):
                         filename = products[key]['filename']
                         form = products[key]['format']
                         response.update_status("fetch file %s" % filename, 20)
-                        zipfile = join(DIR_EO, '%szip' % (filename)).strip(form)
-                        if exists(zipfile):
-                            LOGGER.debug('file %s allready fetched' % filename)
+                        ID = str(products[key]['identifier'])
+                        file_zip = join(DIR_EO, '%s.zip' % (ID))
+                        DIR_tile =join(DIR_EO, '%s' % (filename))
+
+                        if exists(file_zip):
+                            LOGGER.debug('file %s.zip already fetched' % ID)
                         else:
                             try:
                                 api.download(key, directory_path=DIR_EO)
-                                response.update_status("*** sucessfully fetched", 20)
-                                DIR_tile =join(DIR_EO, '%s' % (filename))
-                                LOGGER.debug('Tile %s fetched' % filename)
-                                if exists(DIR_tile):
-                                     LOGGER.debug('file %s allready unzipped' % filename)
-                                else:
-                                    # zipfile = join(DIR_EO, '%szip' % (filename)).strip(form)
-                                    zip_ref = zipfile.ZipFile(zipfile, 'r')
-                                    zip_ref.extractall(DIR_EO)
-                                    zip_ref.close()
+                                response.update_status("***%s sucessfully fetched" % ID, 20)
+                                LOGGER.debug('Tile %s fetched' % ID)
                             except:
                                 LOGGER.exception('failed to extract file %s' % filename)
-
+                        if exists(DIR_tile):
+                             LOGGER.debug('file %s already unzipped' % filename)
+                        else:
+                            try:
+                                # zipfile = join(DIR_EO, '%szip' % (filename)).strip(form)
+                                zip_ref = zipfile.ZipFile(file_zip, 'r')
+                                zip_ref.extractall(DIR_EO)
+                                zip_ref.close()
+                                LOGGER.debug('Tile %s unzipped' % ID)
+                            except:
+                                LOGGER.exception('failed to extract %s ' % file_zip)
                     except:
                         LOGGER.exception('failed to fetch %s' % filename)
 
@@ -237,16 +241,16 @@ class EO_COP_fetchProcess(Process):
                     size = float(products[key]['size'].split(' ')[0])
                     producttype = products[key]['producttype']
                     beginposition = str(products[key]['beginposition'])
-                    ID = str(products[key]['identifier'])
                     fp.write('%s \t %s \t %s \t %s \t %s \n' % (ID, size, producttype, beginposition, key))
             response.outputs['output_txt'].file = filepathes
         except:
-            LOGGER.exception('failed to write resources to textfile')
+            LOGGER.exception('failed to fetch resource')
         # response.outputs['output'].file = filepathes
         try:
             extend = [float(bboxStr[0])-5, float(bboxStr[1])+5, float(bboxStr[2])-5, float(bboxStr[3])+5]
             img = eodata.plot_products(products, extend=extend)
             response.outputs['output_plot'].file = img
+            LOGGER.debug('location of tiles plotted to map')
         except:
             LOGGER.exception("Failed to plot extents of EO data")
 
