@@ -6,8 +6,7 @@ from tempfile import mkstemp
 from osgeo import gdal
 import os, rasterio
 
-DIR = '/home/nils/birdhouse/var/lib/pywps/cache/flyingpigeon/scihub.copernicus/S2B_MSIL1C_20171130T092329_N0206_R093_T33PVK_20171130T130803.SAFE/GRANULE/L1C_T33PVK_A003837_20171130T093044/IMG_DATA/'
-# image_file = '/home/nils/data/planet/PSScene4Band/20171118_100713_0f3b.tif'
+DIR = '/home/nils/birdhouse/var/lib/pywps/cache/flyingpigeon/scihub.copernicus/S2A_MSIL1C_20171225T092411_N0206_R093_T33PVL_20171225T112331.SAFE/GRANULE/L1C_T33PVL_A013103_20171225T093559/IMG_DATA/'
 
 jps = [path.join(DIR,jp) for jp in listdir(DIR) if ".jp2" in jp]
 
@@ -43,44 +42,44 @@ profile = red.meta
 profile.update(driver='GTiff')
 profile.update(dtype=rasterio.float32)
 
-prefix="ndvi_S2B_MSIL1C_20171130T092329_N0206_R093_T33PVK_20171130T130803"
+prefix="ndvi_SENTINE2"
 _, ndvifile = mkstemp(dir='/home/nils/data/', prefix=prefix, suffix='.tif')
 with rasterio.open(ndvifile, 'w', **profile) as dst:
     dst.write(ndvi.astype(rasterio.float32))
 
 
-print ndvifile
-
-from osgeo import gdal, osr
-from matplotlib import pyplot as plt
-
-gdal.UseExceptions()
-
-
-fname = '/home/nils/data/ndvi_S2B_MSIL1C_20171130T092329_N0206_R093_T33PVK_20171130T1308031Qgjl5.tif'
-
-ds = gdal.Open(fname)
-# data = ds.ReadAsArray()
-gt = ds.GetGeoTransform()
-proj = ds.GetProjection()
-
-inproj = osr.SpatialReference()
-inproj.ImportFromWkt(proj)
-
-print(inproj)
-
-bnd1 = ds.GetRasterBand(1)
-
-# img = bnd1.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize, dtype = uint8)
-# img = bnd1.ReadAsArray(0, 0, buf_xsize=ds.RasterXSize//100, buf_ysize=ds.RasterYSize//100, resample_alg=gdal.GRIORA_Mode)
-
-img = bnd1.ReadAsArray(0, 0, buf_xsize=ds.RasterXSize/10, buf_ysize=ds.RasterYSize/10, )
-fig = plt.figure( dpi=90, facecolor='w', edgecolor='k') # , bbox='tight'
-img_plot = plt.imshow(img, cmap="summer",  origin='upper')
-ndvi_img = vs.fig2plot(fig, output_dir='/home/nils/data/')
-
-print ndvi_img
-
+# print ndvifile
+#
+# from osgeo import gdal, osr
+# from matplotlib import pyplot as plt
+#
+# gdal.UseExceptions()
+#
+#
+# fname = '/home/nils/data/.tif'
+#
+# ds = gdal.Open(fname)
+# # data = ds.ReadAsArray()
+# gt = ds.GetGeoTransform()
+# proj = ds.GetProjection()
+#
+# inproj = osr.SpatialReference()
+# inproj.ImportFromWkt(proj)
+#
+# print(inproj)
+#
+# bnd1 = ds.GetRasterBand(1)
+#
+# # img = bnd1.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize, dtype = uint8)
+# # img = bnd1.ReadAsArray(0, 0, buf_xsize=ds.RasterXSize//100, buf_ysize=ds.RasterYSize//100, resample_alg=gdal.GRIORA_Mode)
+#
+# img = bnd1.ReadAsArray(0, 0, buf_xsize=ds.RasterXSize/10, buf_ysize=ds.RasterYSize/10, )
+# fig = plt.figure( dpi=90, facecolor='w', edgecolor='k') # , bbox='tight'
+# img_plot = plt.imshow(img, cmap="summer",  origin='upper')
+# ndvi_img = vs.fig2plot(fig, output_dir='/home/nils/data/')
+#
+# print ndvi_img
+#
 
 
 

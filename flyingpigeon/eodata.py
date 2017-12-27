@@ -87,7 +87,9 @@ def plot_ndvi(geotif, file_extension='png'):
     :param file_extension: format of the output graphic. default='png'
 
     :result str: path to graphic file
+
     """
+    #     https://ocefpaf.github.io/python4oceanographers/blog/2015/03/02/geotiff/
 
     from osgeo import gdal, osr
     import cartopy.crs as ccrs
@@ -96,44 +98,56 @@ def plot_ndvi(geotif, file_extension='png'):
 
     gdal.UseExceptions()
     norm = vs.MidpointNormalize(midpoint=0)
-
     # fname = '/home/nils/data/ndvi_S2B_MSIL1C_20171130T092329_N0206_R093_T33PVK_20171130T1308031Qgjl5.tif'
 
     ds = gdal.Open(geotif)
-    data = ds.ReadAsArray()
+    # data = ds.ReadAsArray( buf_xsize=ds.RasterXSize/2, buf_ysize=ds.RasterYSize/2,)
     gt = ds.GetGeoTransform()
     proj = ds.GetProjection()
-
     inproj = osr.SpatialReference()
     inproj.ImportFromWkt(proj)
-
-    print('File projection %s ' % inproj)
-
+    #
+    # print('File projection %s ' % inproj)
+    #
     projcs = inproj.GetAuthorityCode('PROJCS')
     projection = ccrs.epsg(projcs)
-    print("Projection: %s  " % projection)
-
+    # print("Projection: %s  " % projection)
     subplot_kw = dict(projection=projection)
     fig, ax = plt.subplots( subplot_kw=subplot_kw)
 
     extent = (gt[0], gt[0] + ds.RasterXSize * gt[1],
-              gt[3] + ds.RasterYSize * gt[5], gt[3])
+    gt[3] + ds.RasterYSize * gt[5], gt[3])
 
-    img = ax.imshow(data, extent=extent,origin='upper')
+    # with rasterio.open("your/data/geo.tif") as src:
+    #     for block_index, window in src.block_windows(1):
+    #         block_array = src.read(window=window)
+    #         result_block = some_calculation(block_array)
+
+    bnd1 = ds.GetRasterBand(1)
+    data = bnd1.ReadAsArray(0, 0, buf_xsize=ds.RasterXSize/10, buf_ysize=ds.RasterYSize/10,)
+
+    img_ndvi = ax.imshow(data, extent=extent,origin='upper', norm=norm, vmin=-1, vmax=1, cmap=plt.cm.BrBG)
     # img_ndvi = ax.imshow(data, extent=extent, transform=projection,  # [:3, :, :].transpose((1, 2, 0))
     #                 origin='upper',norm=norm, vmin=-1, vmax=1, cmap=plt.cm.summer)
 
     plt.title('NDVI')
-    # plt.colorbar(img_ndvi)
-    from tempfile import mkstemp
+    plt.colorbar(img_ndvi)
+    ax.gridlines() #draw_labels=True,
 
-    _, ndvi_plot = mkstemp(dir='/home/nils/data/', suffix='.png')
-    plt.savefig(ndvi_plot)
+    from flyingpigeon import visualisation as vs
+    ndvi_plot = vs.fig2plot(fig, output_dir='.', file_extension='jpg')
 
-    # ndvi_plot = vs.fig2plot(fig, file_extension=file_extension, dpi=90, figsize=(5, 5))  # dpi=300
-
-    # ds = None
-    plt.show()
+    #
+    # from tempfile import mkstemp
+    #
+    #
+    # _, ndvi_plot = mkstemp(dir='.', suffix='.png')
+    # plt.savefig(ndvi_plot)
+    #
+    # # ndvi_plot = vs.fig2plot(fig, file_extension=file_extension, dpi=90, figsize=(5, 5))  # dpi=300
+    #
+    # # ds = None
+    # plt.show()
 
     return ndvi_plot  # ndvi_plot
 

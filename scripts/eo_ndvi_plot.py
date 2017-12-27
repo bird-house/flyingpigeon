@@ -3,37 +3,165 @@ https://ocefpaf.github.io/python4oceanographers/blog/2015/03/02/geotiff/
 """
 
 from osgeo import gdal, osr
-from matplotlib import pyplot as plt
+import rasterio
+import cartopy.crs as ccrs
+import matplotlib.pyplot as plt
 from flyingpigeon import visualisation as vs
 
-gdal.UseExceptions()
+dataf = '/home/nils/data/ndvi_SENTINE2ogmvEh.tif'
 
 
-fname = '/home/nils/data/ndvi_S2B_MSIL1C_20171130T092329_N0206_R093_T33PVK_20171130T1308031Qgjl5.tif'
 
-ds = gdal.Open(fname)
-# data = ds.ReadAsArray()
-gt = ds.GetGeoTransform()
+import rasterio
+from matplotlib import pyplot
+src = rasterio.open(dataf)
+pyplot.imshow(src.read(1), cmap='pink')
+pyplot.show = lambda : None  # prevents showing during doctests
+pyplot.show()
+
+
+
+ds = gdal.Open(dataf)
 proj = ds.GetProjection()
-
 inproj = osr.SpatialReference()
 inproj.ImportFromWkt(proj)
+#
+# print('File projection %s ' % inproj)
+#
+projcs = inproj.GetAuthorityCode('PROJCS')
+projection = ccrs.epsg(projcs)
+gt = ds.GetGeoTransform()
+extent = (gt[0], gt[0] + ds.RasterXSize * gt[1],
+gt[3] + ds.RasterYSize * gt[5], gt[3])
 
-print(inproj)
+ds = None
 
-bnd1 = ds.GetRasterBand(1)
+src = rasterio.open(dataf)
 
-# img = bnd1.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize, dtype = uint8)
-# img = bnd1.ReadAsArray(0, 0, buf_xsize=ds.RasterXSize//100, buf_ysize=ds.RasterYSize//100, resample_alg=gdal.GRIORA_Mode)
+subplot_kw = dict(projection=projection)
+fig, ax = plt.subplots( subplot_kw=subplot_kw)
 
-img = bnd1.ReadAsArray(0, 0, buf_xsize=ds.RasterXSize/2, buf_ysize=ds.RasterYSize/2,)
-fig = plt.figure( dpi=90, facecolor='w', edgecolor='k') # , bbox='tight'
-img_plot = plt.imshow(img, cmap="summer",  origin='upper')
-ndvi_img = vs.fig2plot(fig, output_dir='/home/nils/data/')
+plt.imsave(fname='/home/nils/data/test.png', arr=src.read(1), extent=extent,origin='upper', norm=norm, vmin=-1, vmax=1, cmap=plt.cm.BrBG)
 
-print ndvi_img
+# from flyingpigeon import visualisation as vs
+# ndvi_plot = vs.fig2plot(fig, output_dir='.')
+# print ndvi_plot
+
+plt.show()
+history
 
 
+
+gdal.UseExceptions()
+norm = vs.MidpointNormalize(midpoint=0)
+# fname = '/home/nils/data/ndvi_S2B_MSIL1C_20171130T092329_N0206_R093_T33PVK_20171130T1308031Qgjl5.tif'
+
+ds = gdal.Open(fname)
+proj = ds.GetProjection()
+inproj = osr.SpatialReference()
+inproj.ImportFromWkt(proj)
+#
+# print('File projection %s ' % inproj)
+#
+projcs = inproj.GetAuthorityCode('PROJCS')
+projection = ccrs.epsg(projcs)
+# print("Projection: %s  " % projection)
+subplot_kw = dict(projection=projection)
+fig, ax = plt.subplots( subplot_kw=subplot_kw)
+
+
+
+
+ds = None
+
+with rasterio.open(dataf) as src:
+    for block_index, window in src.block_windows(1):
+        block_array = src.read(window=window)
+        plt.imshow(block_array)
+
+#
+#  import rasterio
+# >>> from matplotlib import pyplot
+# >>> src = rasterio.open("tests/data/RGB.byte.tif")
+# >>> pyplot.imshow(src.read(1), cmap='pink')
+# <matplotlib.image.AxesImage object at 0x...>
+# >>> pyplot.show = lambda : None  # prevents showing during doctests
+# >>> pyplot.show()
+        #  src.meta
+        # Out[7]:
+        # {'affine': Affine(10.0, 0.0, 399960.0,
+        #        0.0, -10.0, 1100040.0),
+        #  'count': 1,
+        #  'crs': CRS({'init': u'epsg:32633'}),
+        #  'driver': u'GTiff',
+        #  'dtype': 'float32',
+        #  'height': 10980,
+        #  'nodata': None,
+        #  'transform': (399960.0, 10.0, 0.0, 1100040.0, 0.0, -10.0),
+        #  'width': 10980}
+
+        result_block = some_calculation(block_array)
+
+        ds = gdal.Open(geotif)
+        # data = ds.ReadAsArray( buf_xsize=ds.RasterXSize/2, buf_ysize=ds.RasterYSize/2,)
+        gt = src.get_transform()   # ds.GetGeoTransform()
+
+        extent = (gt[0], gt[0] + ds.RasterXSize * gt[1],
+        gt[3] + ds.RasterYSize * gt[5], gt[3])
+
+
+        bnd1 = ds.GetRasterBand(1)
+        data = bnd1.ReadAsArray(0, 0, buf_xsize=ds.RasterXSize/10, buf_ysize=ds.RasterYSize/10,)
+
+        img_ndvi = ax.imshow(data, extent=extent,origin='upper', norm=norm, vmin=-1, vmax=1, cmap=plt.cm.BrBG)
+        # img_ndvi = ax.imshow(data, extent=extent, transform=projection,  # [:3, :, :].transpose((1, 2, 0))
+        #                 origin='upper',norm=norm, vmin=-1, vmax=1, cmap=plt.cm.summer)
+
+        plt.title('NDVI')
+        plt.colorbar(img_ndvi)
+        ax.gridlines() #draw_labels=True,
+
+from flyingpigeon import visualisation as vs
+ndvi_plot = vs.fig2plot(fig, output_dir='.')
+
+#
+#
+# from osgeo import gdal, osr
+# from matplotlib import pyplot as plt
+# from flyingpigeon import visualisation as vs
+#
+# gdal.UseExceptions()
+#
+# fname = '/home/nils/data/ndvi_SENTINE2ogmvEh.tif'
+#
+# ds = gdal.Open(fname)
+# # data = ds.ReadAsArray()
+# gt = ds.GetGeoTransform()
+# proj = ds.GetProjection()
+#
+# inproj = osr.SpatialReference()
+# inproj.ImportFromWkt(proj)
+#
+# print(inproj)
+#
+# bnd1 = ds.GetRasterBand(1)
+#
+# # img = bnd1.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize, dtype = uint8)
+# # img = bnd1.ReadAsArray(0, 0, buf_xsize=ds.RasterXSize//100, buf_ysize=ds.RasterYSize//100, resample_alg=gdal.GRIORA_Mode)
+#
+# img = bnd1.ReadAsArray(0, 0, buf_xsize=ds.RasterXSize/2, buf_ysize=ds.RasterYSize/2,)
+# fig = plt.figure( dpi=90, facecolor='w', edgecolor='k') # , bbox='tight'
+# img_plot = plt.imshow(img, cmap="summer",  origin='upper')
+# ndvi_img = vs.fig2plot(fig, output_dir='/home/nils/data/')
+#
+# print ndvi_img
+#
+#
+# from flyingpigeon import eodata
+# fname = '/home/nils/data/ndvi_SENTINE2ogmvEh.tif'
+# eodata.plot_ndvi(fname)
+#
+#
 #
 # from osgeo import gdal, osr
 #
