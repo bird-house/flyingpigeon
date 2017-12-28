@@ -1,3 +1,8 @@
+import rasterio
+
+fname = '/home/nils/data/merged_RGB.tif'
+
+
 
 
 import boto3
@@ -211,10 +216,6 @@ import cartopy.crs as ccrs
 projcs = inproj.GetAuthorityCode('PROJCS')
 projection = ccrs.epsg(projcs)
 print(projection)
-
-
-
-
 
 rgb = dstack([red, green, blue])
 img = np.divide(rgb, 256)
