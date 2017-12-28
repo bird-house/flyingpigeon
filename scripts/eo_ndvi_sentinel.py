@@ -6,7 +6,7 @@ from tempfile import mkstemp
 from osgeo import gdal
 import os, rasterio
 
-DIR = '/home/nils/birdhouse/var/lib/pywps/cache/flyingpigeon/scihub.copernicus/S2A_MSIL1C_20171225T092411_N0206_R093_T33PVL_20171225T112331.SAFE/GRANULE/L1C_T33PVL_A013103_20171225T093559/IMG_DATA/'
+DIR = '/home/nils/birdhouse/var/lib/pywps/cache/flyingpigeon/scihub.copernicus/S2B_MSIL1C_20171220T092359_N0206_R093_T33PVL_20171220T130518.SAFE/GRANULE/L1C_T33PVL_A004123_20171220T093259/IMG_DATA/'
 
 jps = [path.join(DIR,jp) for jp in listdir(DIR) if ".jp2" in jp]
 
@@ -46,6 +46,13 @@ prefix="ndvi_SENTINE2"
 _, ndvifile = mkstemp(dir='/home/nils/data/', prefix=prefix, suffix='.tif')
 with rasterio.open(ndvifile, 'w', **profile) as dst:
     dst.write(ndvi.astype(rasterio.float32))
+
+
+from flyingpigeon import eodata
+
+ndvi_img = eodata.plot_ndvi(ndvifile)
+
+print ndvi_img
 
 
 # print ndvifile

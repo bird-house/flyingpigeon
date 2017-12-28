@@ -98,17 +98,12 @@ def plot_ndvi(geotif, file_extension='png'):
 
     gdal.UseExceptions()
     norm = vs.MidpointNormalize(midpoint=0)
-    # fname = '/home/nils/data/ndvi_S2B_MSIL1C_20171130T092329_N0206_R093_T33PVK_20171130T1308031Qgjl5.tif'
 
     ds = gdal.Open(geotif)
-    # data = ds.ReadAsArray( buf_xsize=ds.RasterXSize/2, buf_ysize=ds.RasterYSize/2,)
     gt = ds.GetGeoTransform()
     proj = ds.GetProjection()
     inproj = osr.SpatialReference()
     inproj.ImportFromWkt(proj)
-    #
-    # print('File projection %s ' % inproj)
-    #
     projcs = inproj.GetAuthorityCode('PROJCS')
     projection = ccrs.epsg(projcs)
     # print("Projection: %s  " % projection)
@@ -118,16 +113,12 @@ def plot_ndvi(geotif, file_extension='png'):
     extent = (gt[0], gt[0] + ds.RasterXSize * gt[1],
     gt[3] + ds.RasterYSize * gt[5], gt[3])
 
-    # with rasterio.open("your/data/geo.tif") as src:
-    #     for block_index, window in src.block_windows(1):
-    #         block_array = src.read(window=window)
-    #         result_block = some_calculation(block_array)
 
     bnd1 = ds.GetRasterBand(1)
     data = bnd1.ReadAsArray(0, 0, buf_xsize=ds.RasterXSize/10, buf_ysize=ds.RasterYSize/10,)
 
-    img_ndvi = ax.imshow(data, extent=extent,origin='upper', norm=norm, vmin=-1, vmax=1, cmap=plt.cm.BrBG)
-    # img_ndvi = ax.imshow(data, extent=extent, transform=projection,  # [:3, :, :].transpose((1, 2, 0))
+    img_ndvi = ax.imshow(data, extent=extent,origin='upper', norm=norm, vmin=-1, vmax=1, cmap=plt.cm.BrBG, transform=projection)
+    # img_ndvi = ax.imshow(data, extent=extent,   # [:3, :, :].transpose((1, 2, 0))
     #                 origin='upper',norm=norm, vmin=-1, vmax=1, cmap=plt.cm.summer)
 
     plt.title('NDVI')
@@ -137,6 +128,13 @@ def plot_ndvi(geotif, file_extension='png'):
     from flyingpigeon import visualisation as vs
     ndvi_plot = vs.fig2plot(fig, output_dir='.', file_extension='jpg')
 
+
+    return ndvi_plot  # ndvi_plot
+
+# with rasterio.open("your/data/geo.tif") as src:
+#     for block_index, window in src.block_windows(1):
+#         block_array = src.read(window=window)
+#         result_block = some_calculation(block_array)
     #
     # from tempfile import mkstemp
     #
@@ -148,9 +146,6 @@ def plot_ndvi(geotif, file_extension='png'):
     #
     # # ds = None
     # plt.show()
-
-    return ndvi_plot  # ndvi_plot
-
 
 
     # import numpy as np
@@ -272,7 +267,7 @@ def plot_truecolorcomposite(geotif, rgb_bands=[1,2,3], file_extension='png', dpi
     # ax.gridlines(color='lightgrey', linestyle='-')
     # ax.set_xticks()
 
-    tcc_plot = vs.fig2plot(fig, dpi=dpi, figsize=figsize)
+    tcc_plot = vs.fig2plot(fig, dpi=dpi, figsize=figsize, file_extension='jpg')
 
     plt.close()
     ds = None
