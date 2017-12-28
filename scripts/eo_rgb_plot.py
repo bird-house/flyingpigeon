@@ -183,7 +183,7 @@ band_names = ["B4Red665nm", "B3Green560nm", "B2Blue490nm" ]
 out_image = '/home/nils/data/sentinel_image_stack.tif'
 
 # data_type = rsgislib.TYPE_16UINT
-data_type = rsgislib.TYPE_8UINT 
+data_type = rsgislib.TYPE_8UINT
 
 imageutils.stackImageBands(images, band_names, out_image, None, 0, 'Gtiff', data_type)
 
@@ -211,6 +211,8 @@ import cartopy.crs as ccrs
 projcs = inproj.GetAuthorityCode('PROJCS')
 projection = ccrs.epsg(projcs)
 print(projection)
+
+
 
 
 

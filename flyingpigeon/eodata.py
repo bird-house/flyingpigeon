@@ -1,5 +1,9 @@
 from tempfile import mkstemp
 from osgeo import gdal, osr
+import cartopy.crs as ccrs
+import matplotlib.pyplot as plt
+from flyingpigeon import visualisation as vs
+
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
@@ -38,8 +42,6 @@ def plot_products(products, extend=[10, 20, 5, 15]):
 
     import numpy as np
 
-    import matplotlib.pyplot as plt
-    import matplotlib
     from matplotlib.patches import Polygon
     import matplotlib.patches as mpatches
     from matplotlib.collections import PatchCollection
@@ -47,7 +49,6 @@ def plot_products(products, extend=[10, 20, 5, 15]):
     from cartopy import config as cartopy_config
     import cartopy.feature as cfeature
     from cartopy.util import add_cyclic_point
-    import cartopy.crs as ccrs
     import re
 
 
@@ -72,14 +73,13 @@ def plot_products(products, extend=[10, 20, 5, 15]):
     # ccrs.Geodetic()
 
     ax.gridlines(draw_labels=True,)
-    from flyingpigeon import visualisation as vs
     img = vs.fig2plot(fig, output_dir='.')
 
     return img
 
 
 
-def plot_ndvi(geotif, file_extension='png'):
+def plot_ndvi(geotif, file_extension='jpg', dpi=300, figsize=(7,7)):
     """
     plots a NDVI image
 
@@ -90,11 +90,6 @@ def plot_ndvi(geotif, file_extension='png'):
 
     """
     #     https://ocefpaf.github.io/python4oceanographers/blog/2015/03/02/geotiff/
-
-    from osgeo import gdal, osr
-    import cartopy.crs as ccrs
-    import matplotlib.pyplot as plt
-    from flyingpigeon import visualisation as vs
 
     gdal.UseExceptions()
     norm = vs.MidpointNormalize(midpoint=0)
@@ -115,7 +110,7 @@ def plot_ndvi(geotif, file_extension='png'):
 
 
     bnd1 = ds.GetRasterBand(1)
-    data = bnd1.ReadAsArray(0, 0, buf_xsize=ds.RasterXSize/10, buf_ysize=ds.RasterYSize/10,)
+    data = bnd1.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize) # buf_xsize=ds.RasterXSize/10, buf_ysize=ds.RasterYSize/10,
 
     img_ndvi = ax.imshow(data, extent=extent,origin='upper', norm=norm, vmin=-1, vmax=1, cmap=plt.cm.BrBG, transform=projection)
     # img_ndvi = ax.imshow(data, extent=extent,   # [:3, :, :].transpose((1, 2, 0))
@@ -125,89 +120,12 @@ def plot_ndvi(geotif, file_extension='png'):
     plt.colorbar(img_ndvi)
     ax.gridlines() #draw_labels=True,
 
-    from flyingpigeon import visualisation as vs
-    ndvi_plot = vs.fig2plot(fig, output_dir='.', file_extension='jpg')
-
+    ndvi_plot = vs.fig2plot(fig, output_dir='.', file_extension=file_extension, dpi=dpi, figsize=figsize)
 
     return ndvi_plot  # ndvi_plot
 
-# with rasterio.open("your/data/geo.tif") as src:
-#     for block_index, window in src.block_windows(1):
-#         block_array = src.read(window=window)
-#         result_block = some_calculation(block_array)
-    #
-    # from tempfile import mkstemp
-    #
-    #
-    # _, ndvi_plot = mkstemp(dir='.', suffix='.png')
-    # plt.savefig(ndvi_plot)
-    #
-    # # ndvi_plot = vs.fig2plot(fig, file_extension=file_extension, dpi=90, figsize=(5, 5))  # dpi=300
-    #
-    # # ds = None
-    # plt.show()
 
-
-    # import numpy as np
-    # import struct
-    #
-    # # from osgeo import ogr
-    # # from osgeo import osr
-    # # from osgeo import gdal_array
-    # # from osgeo.gdalconst import *
-    #
-    # from flyingpigeon import visualisation as vs
-    #
-    # import cartopy.crs as ccrs
-    # from cartopy import feature
-    # import matplotlib.pyplot as plt
-    #
-    # # im = '/home/nils/birdhouse/flyingpigeon/scripts/20171129mWt2Eh.tif'
-    #
-    # cube = gdal.Open(geotif)
-    # bnd1 = cube.GetRasterBand(1)
-    #
-    # # proj = cube.GetProjection()
-    # #
-    # # inproj = osr.SpatialReference()
-    # # inproj.ImportFromWkt(proj)
-    # # # print(inproj)
-    # # LOGGER.debug("projection of geotif %s " % inproj)
-    # #
-    # # projcs = inproj.GetAuthorityCode('PROJCS')  # requires internet connection
-    # # projection = ccrs.epsg(projcs)
-    #
-    # # get the extent of the plot
-    # gt = cube.GetGeoTransform()
-    # extent = (gt[0], gt[0] + cube.RasterXSize * gt[1], gt[3] + cube.RasterYSize * gt[5], gt[3])
-    #
-    # img = bnd1.ReadAsArray(0, 0, cube.RasterXSize, cube.RasterYSize)
-    #
-    # fig = plt.figure()  # , bbox='tight'
-    # # ax = plt.axes(projection=ccrs.PlateCarree())
-    # norm = vs.MidpointNormalize(midpoint=0)
-    #
-    # img_ndvi = plt.imshow(img[10000:-1,0:-1000],
-    #                      origin='upper', extent=extent, # transform=ccrs.PlateCarree(),
-    #                      norm=norm, vmin=-1, vmax=1, cmap=plt.cm.summer)
-    #
-    #
-    # # img_ndvi = ax.imshow(img[0:-5000,0:-10000],
-    # #                      origin='upper', extent=extent, # transform=ccrs.PlateCarree(),
-    # #                      norm=norm, vmin=-1, vmax=1, cmap=plt.cm.summer)
-    #
-    # # ax.coastlines(resolution='50m', color='black', linewidth=1)
-    # # ax.add_feature(feature.BORDERS, linestyle='-', alpha=.5)
-    # # ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True)
-    # # ax.gridlines()
-    # plt.title('NDVI')
-    # plt.colorbar(img_ndvi)
-    # ndvi_plot = vs.fig2plot(fig, file_extension=file_extension, dpi=90)  # dpi=300
-    #
-    # plt.close()figsize=(9, 9),
-
-
-def plot_truecolorcomposite(geotif, rgb_bands=[1,2,3], file_extension='png', dpi=300, figsize=(5,5)):
+def plot_RGB(geotif, rgb_bands=[1,2,3], file_extension='jpg', dpi=90, figsize=(5,5)):
     """
     Calculates a RGB image (True color composite) based on red, greed, and blue bands.
 
@@ -228,25 +146,18 @@ def plot_truecolorcomposite(geotif, rgb_bands=[1,2,3], file_extension='png', dpi
     inproj = osr.SpatialReference()
     inproj.ImportFromWkt(proj)
 
-    # import cartopy.crs as ccrs
-    #
-    # projcs = inproj.GetAuthorityCode('PROJCS')
-    # projection = ccrs.epsg(projcs)
+    projcs = inproj.GetAuthorityCode('PROJCS')
+    projection = ccrs.epsg(projcs)
     # print(projection)
 
-    import matplotlib.pyplot as plt
-    from flyingpigeon import visualisation as vs
     from numpy import linspace, dstack
 
-    # subplot_kw = dict(projection=projection)
-    # fig, ax = plt.subplots(figsize=(9, 9), subplot_kw=subplot_kw)
+    subplot_kw = dict(projection=projection)
+    fig, ax = plt.subplots( subplot_kw=subplot_kw)
 
-    fig, ax = plt.subplots()
 
     extent = (gt[0], gt[0] + ds.RasterXSize * gt[1],
               gt[3] + ds.RasterYSize * gt[5], gt[3])
-
-    print  extent
 
     red = ds.GetRasterBand(rgb_bands[0])
     green = ds.GetRasterBand(rgb_bands[1])
@@ -259,12 +170,12 @@ def plot_truecolorcomposite(geotif, rgb_bands=[1,2,3], file_extension='png', dpi
     # rgb = dstack((data[0, :, :], data[1, :, :], data[2, :, :]))
 
     rgb = dstack([img_r, img_g, img_b])
-    img = ax.imshow(rgb)
+    img = ax.imshow(rgb, extent=extent, origin='upper', transform=projection)
 
     # img = ax.imshow(rgb.transpose((1, 2, 0)), extent=extent,
     #                 origin='upper')
 
-    # ax.gridlines(color='lightgrey', linestyle='-')
+    ax.gridlines(color='lightgrey', linestyle='-')
     # ax.set_xticks()
 
     tcc_plot = vs.fig2plot(fig, dpi=dpi, figsize=figsize, file_extension='jpg')

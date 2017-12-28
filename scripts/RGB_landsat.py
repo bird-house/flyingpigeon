@@ -22,11 +22,20 @@ import sys
 
 # image list
 # find all *.jp2 files in the current directory
-directory = os.getcwd()
-dirFileList = os.listdir(directory)
+# directory = os.getcwd()
+# DIR = '/home/nils/birdhouse/var/lib/pywps/cache/flyingpigeon/scihub.copernicus/S2B_MSIL1C_20171220T092359_N0206_R093_T33PVL_20171220T130518.SAFE/GRANULE/L1C_T33PVL_A004123_20171220T093259/IMG_DATA/'
+# dirFileList = os.listdir(DIR)
 # print dirFileList
 
-jp2FileList = [f for f in dirFileList if (f[-4:].lower()=='.jp2')]
+from os import path, listdir
+
+DIR = '/home/nils/birdhouse/var/lib/pywps/cache/flyingpigeon/scihub.copernicus/S2B_MSIL1C_20171220T092359_N0206_R093_T33PVL_20171220T130518.SAFE/GRANULE/L1C_T33PVL_A004123_20171220T093259/IMG_DATA/'
+
+
+jp2FileList = [path.join(DIR,jp) for jp in listdir(DIR) if ".jp2" in jp]
+
+
+# jp2FileList = [f for f in dirFileList if (f[-4:].lower()=='.jp2')]
 
 bands = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '8A']
 # bands that are already at 10m resolution

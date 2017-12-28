@@ -270,3 +270,78 @@ ndvi_plot = vs.fig2plot(fig, output_dir='.')
 # # mark a known place to help us geo-locate ourselves
 # ax.plot(-117.1625, 32.715, 'bo', markersize=7, transform=ccrs.Geodetic())
 # ax.text(-117, 33, 'San Diego', transform=ccrs.Geodetic())
+
+# with rasterio.open("your/data/geo.tif") as src:
+#     for block_index, window in src.block_windows(1):
+#         block_array = src.read(window=window)
+#         result_block = some_calculation(block_array)
+    #
+    # from tempfile import mkstemp
+    #
+    #
+    # _, ndvi_plot = mkstemp(dir='.', suffix='.png')
+    # plt.savefig(ndvi_plot)
+    #
+    # # ndvi_plot = vs.fig2plot(fig, file_extension=file_extension, dpi=90, figsize=(5, 5))  # dpi=300
+    #
+    # # ds = None
+    # plt.show()
+
+
+    # import numpy as np
+    # import struct
+    #
+    # # from osgeo import ogr
+    # # from osgeo import osr
+    # # from osgeo import gdal_array
+    # # from osgeo.gdalconst import *
+    #
+    # from flyingpigeon import visualisation as vs
+    #
+    # import cartopy.crs as ccrs
+    # from cartopy import feature
+    # import matplotlib.pyplot as plt
+    #
+    # # im = '/home/nils/birdhouse/flyingpigeon/scripts/20171129mWt2Eh.tif'
+    #
+    # cube = gdal.Open(geotif)
+    # bnd1 = cube.GetRasterBand(1)
+    #
+    # # proj = cube.GetProjection()
+    # #
+    # # inproj = osr.SpatialReference()
+    # # inproj.ImportFromWkt(proj)
+    # # # print(inproj)
+    # # LOGGER.debug("projection of geotif %s " % inproj)
+    # #
+    # # projcs = inproj.GetAuthorityCode('PROJCS')  # requires internet connection
+    # # projection = ccrs.epsg(projcs)
+    #
+    # # get the extent of the plot
+    # gt = cube.GetGeoTransform()
+    # extent = (gt[0], gt[0] + cube.RasterXSize * gt[1], gt[3] + cube.RasterYSize * gt[5], gt[3])
+    #
+    # img = bnd1.ReadAsArray(0, 0, cube.RasterXSize, cube.RasterYSize)
+    #
+    # fig = plt.figure()  # , bbox='tight'
+    # # ax = plt.axes(projection=ccrs.PlateCarree())
+    # norm = vs.MidpointNormalize(midpoint=0)
+    #
+    # img_ndvi = plt.imshow(img[10000:-1,0:-1000],
+    #                      origin='upper', extent=extent, # transform=ccrs.PlateCarree(),
+    #                      norm=norm, vmin=-1, vmax=1, cmap=plt.cm.summer)
+    #
+    #
+    # # img_ndvi = ax.imshow(img[0:-5000,0:-10000],
+    # #                      origin='upper', extent=extent, # transform=ccrs.PlateCarree(),
+    # #                      norm=norm, vmin=-1, vmax=1, cmap=plt.cm.summer)
+    #
+    # # ax.coastlines(resolution='50m', color='black', linewidth=1)
+    # # ax.add_feature(feature.BORDERS, linestyle='-', alpha=.5)
+    # # ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True)
+    # # ax.gridlines()
+    # plt.title('NDVI')
+    # plt.colorbar(img_ndvi)
+    # ndvi_plot = vs.fig2plot(fig, file_extension=file_extension, dpi=90)  # dpi=300
+    #
+    # plt.close()figsize=(9, 9),
