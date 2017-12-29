@@ -9,6 +9,66 @@ import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
+def get_RGB(DIR, false_color=False):
+    """
+    Extracts the files for RGB bands of Sentinel2 directory tree, scales and merge the values.
+    Output is a merged tif including 3 bands.
+
+    :param DIR: base directory of Sentinel2 directory tree
+    :param false_color: if set to True the near infrared band (B08) will be taken as red band
+
+    :returns geotif: merged geotiff
+    """
+    import glob
+    import subprocess
+    # from subprocess import CalledProcessError
+
+    jps = []
+
+    for filename in glob.glob(DIR + '/GRANULE/*/IMG_DATA/*jp2'):
+        jps.append(filename)
+
+    jp_b = [jp for jp in jps if '_B02.jp2' in jp][0]
+    jp_g = [jp for jp in jps if '_B03.jp2' in jp][0]
+    if false_color:
+        jp_r = [jp for jp in jps if '_B08.jp2' in jp][0]
+    else:
+        jp_r = [jp for jp in jps if '_B04.jp2' in jp][0]
+
+    # scaling the color values and trasform from jp2 to tif
+    try:
+        # response.update_status('execution of CASTf90', 50)
+        cmd = ['gdal_translate', '-scale', jp_r, 'RED.tif' ]
+        # LOGGER.debug("translate command: %s", cmd)
+        output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+        # output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+        LOGGER.info('translate output:\n %s', output)
+
+        cmd = ['gdal_translate', '-scale', jp_g, 'GREEN.tif' ]
+        LOGGER.debug("translate command: %s", cmd)
+        output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+        LOGGER.info('translate output:\n %s', output)
+
+        cmd = ['gdal_translate', '-scale', jp_b, 'BLUE.tif' ]
+        LOGGER.debug("translate command: %s", cmd)
+        output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+        LOGGER.info('translate output:\n %s', output)
+        # response.update_status('**** scaling suceeded', 20)
+    except:
+        msg = 'scaleing failed:\n{0}'.format(error)
+        LOGGER.exception(msg)
+
+    # merge tree files  to one geotiff with tree seperated bands
+    try:
+        merged_RGB = 'merged_RGB.tif'
+        cmd = ['gdal_merge.py', '-seperate', '-co', 'PHOTOMETRIC=RGB', '-o', merged_RGB, 'RED.tif', 'GREEN.tif', 'BLUE.tif' ]
+        output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+    except:
+        msg = 'merging failed:\n{0}'.format(error)
+        # LOGGER.exception(msg)
+    return merged_RGB
+
+
 def get_timestamp(tile):
     """
     returns the creation timestamp of a tile image as datetime.
@@ -79,7 +139,7 @@ def plot_products(products, extend=[10, 20, 5, 15]):
 
 
 
-def plot_ndvi(geotif, file_extension='jpg', dpi=300, figsize=(7,7)):
+def plot_ndvi(geotif, file_extension='jpg', dpi=150, figsize=(10,10)):
     """
     plots a NDVI image
 
@@ -125,7 +185,7 @@ def plot_ndvi(geotif, file_extension='jpg', dpi=300, figsize=(7,7)):
     return ndvi_plot  # ndvi_plot
 
 
-def plot_RGB(geotif, rgb_bands=[1,2,3], file_extension='jpg', dpi=90, figsize=(5,5)):
+def plot_RGB(geotif, rgb_bands=[1,2,3], file_extension='jpg', dpi=150, figsize=(10,10)):
     """
     Calculates a RGB image (True color composite) based on red, greed, and blue bands.
 
@@ -135,9 +195,9 @@ def plot_RGB(geotif, rgb_bands=[1,2,3], file_extension='jpg', dpi=90, figsize=(5
 
     :result str: path to graphic file
     """
+    from numpy import dstack
 
     gdal.UseExceptions()
-
     ds = gdal.Open(geotif)
     data = ds.ReadAsArray()
     gt = ds.GetGeoTransform()
@@ -150,11 +210,8 @@ def plot_RGB(geotif, rgb_bands=[1,2,3], file_extension='jpg', dpi=90, figsize=(5
     projection = ccrs.epsg(projcs)
     # print(projection)
 
-    from numpy import linspace, dstack
-
     subplot_kw = dict(projection=projection)
     fig, ax = plt.subplots( subplot_kw=subplot_kw)
-
 
     extent = (gt[0], gt[0] + ds.RasterXSize * gt[1],
               gt[3] + ds.RasterYSize * gt[5], gt[3])
