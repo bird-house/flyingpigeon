@@ -129,7 +129,7 @@ def plot_products(products, extend=[10, 20, 5, 15]):
         matches = pat.findall(polygon)
         if matches:
             xy = np.array([map(float, m.split()) for m in matches])
-            ax.add_patch(mpatches.Polygon(xy, closed=True,  transform=ccrs.PlateCarree(), color='coral', alpha=0.6))
+            ax.add_patch(mpatches.Polygon(xy, closed=True,  transform=ccrs.PlateCarree(), alpha=0.4)) # color='coral'
     # ccrs.Geodetic()
 
     ax.gridlines(draw_labels=True,)
