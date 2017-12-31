@@ -25,9 +25,6 @@ LOGGER = logging.getLogger("PYWPS")
 
 
 class EO_COP_rgbProcess(Process):
-    """
-    TODO: like FetchProcess
-    """
     def __init__(self):
         inputs = [
             LiteralInput("products", "Earth Observation Product Type",
@@ -94,18 +91,17 @@ class EO_COP_rgbProcess(Process):
         ]
 
         outputs = [
-            ComplexOutput("output_txt", "Files search result",
-                          abstract="Files found according to the search querry",
-                          supported_formats=[Format('text/plain')],
-                          as_reference=True,
-                          ),
+            # ComplexOutput("output_txt", "Files search result",
+            #               abstract="Files found according to the search querry",
+            #               supported_formats=[Format('text/plain')],
+            #               as_reference=True,
+            #               ),
 
-            ComplexOutput("output_plot", "Extend of tiles",
-                          abstract="Map showing the extends of the found EO data ",
+            ComplexOutput("output_plot", "RGB files",
+                          abstract="Plots in RGB colors",
                           supported_formats=[Format('image/png')],
                           as_reference=True,
                           ),
-
 
             ComplexOutput("output_log", "Logging information",
                           abstract="Collected logs during process run.",
@@ -116,12 +112,10 @@ class EO_COP_rgbProcess(Process):
 
         super(EO_COP_rgbProcess, self).__init__(
             self._handler,
-            identifier="EO_COPERNICUS_fetch",
-            title="EO COPERNICUS search products and fetch them into the compute provider",
+            identifier="EO_COPERNICUS_rgb",
+            title="EO COPERNICUS plot RGB graphics",
             version="0.1",
-            abstract="Search for EO Data in the scihub.copernicus archive"
-                     "products will be fechted into the local disc system."
-                     "outuput is a list of produces and a graphical visualisation.",
+            abstract="Based on a search querry the appropriate products are ploted as RGB graphics",
             metadata=[
                 Metadata('Documentation', 'http://flyingpigeon.readthedocs.io/en/latest/'),
             ],
@@ -190,68 +184,90 @@ class EO_COP_rgbProcess(Process):
                              # orbitdirection='ASCENDING',
                              )
 
+        LOGGER.debug('%s products found' % len(products.keys()))
         DIR_cache = cache_path()
         DIR_EO = join(DIR_cache, 'scihub.copernicus')
-
         if not exists(DIR_EO):
             makedirs(DIR_EO)
 
         # api.download_all(products)
-        try:
-            with open(filepathes, 'w') as fp:
-                fp.write('############################################\n')
-                fp.write('###     Following files are fetched      ###\n')
-                fp.write('############################################\n')
-                fp.write('\n')
-                for key in products.keys():
+        # try:
+            # with open(filepathes, 'w') as fp:
+            #     fp.write('############################################\n')
+            #     fp.write('###     Following files are fetched      ###\n')
+            #     fp.write('############################################\n')
+            #     fp.write('\n')
+
+        resources = []
+
+        for key in products.keys():
+            try:
+                filename = products[key]['filename']
+                # form = products[key]['format']
+                ID = str(products[key]['identifier'])
+                file_zip = join(DIR_EO, '%s.zip' % (ID))
+                DIR_tile =join(DIR_EO, '%s' % (filename))
+                response.update_status("fetch file %s" % ID , 20)
+                LOGGER.debug('path: %s' % DIR_tile)
+                if exists(file_zip):
+                    LOGGER.debug('file %s.zip already fetched' % ID)
+                else:
                     try:
-
-                        filename = products[key]['filename']
-                        form = products[key]['format']
-                        response.update_status("fetch file %s" % filename, 20)
-                        ID = str(products[key]['identifier'])
-                        file_zip = join(DIR_EO, '%s.zip' % (ID))
-                        DIR_tile =join(DIR_EO, '%s' % (filename))
-
-                        if exists(file_zip):
-                            LOGGER.debug('file %s.zip already fetched' % ID)
-                        else:
-                            try:
-                                api.download(key, directory_path=DIR_EO)
-                                response.update_status("***%s sucessfully fetched" % ID, 20)
-                                LOGGER.debug('Tile %s fetched' % ID)
-                            except:
-                                LOGGER.exception('failed to extract file %s' % filename)
-                        if exists(DIR_tile):
-                             LOGGER.debug('file %s already unzipped' % filename)
-                        else:
-                            try:
-                                # zipfile = join(DIR_EO, '%szip' % (filename)).strip(form)
-                                zip_ref = zipfile.ZipFile(file_zip, 'r')
-                                zip_ref.extractall(DIR_EO)
-                                zip_ref.close()
-                                LOGGER.debug('Tile %s unzipped' % ID)
-                            except:
-                                LOGGER.exception('failed to extract %s ' % file_zip)
+                        api.download(key, directory_path=DIR_EO)
+                        response.update_status("***%s sucessfully fetched" % ID, 20)
+                        LOGGER.debug('Tile %s fetched' % ID)
+                        LOGGER.debug('Files %s fetched ' % ID)
                     except:
-                        LOGGER.exception('failed to fetch %s' % filename)
+                        LOGGER.exception('failed to extract file %s' % filename)
+                if exists(DIR_tile):
+                     LOGGER.debug('file %s already unzipped' % filename)
+                else:
+                    try:
+                        # zipfile = join(DIR_EO, '%szip' % (filename)).strip(form)
+                        zip_ref = zipfile.ZipFile(file_zip, 'r')
+                        zip_ref.extractall(DIR_EO)
+                        zip_ref.close()
+                        LOGGER.debug('Tile %s unzipped' % ID)
+                    except:
+                        LOGGER.exception('failed to extract %s ' % file_zip)
+                resources.append(DIR_tile)
+            except:
+                LOGGER.exception('failed to fetch %s' % key)
 
-                    response.update_status("write out information about files", 80)
-                    size = float(products[key]['size'].split(' ')[0])
-                    producttype = products[key]['producttype']
-                    beginposition = str(products[key]['beginposition'])
-                    fp.write('%s \t %s \t %s \t %s \t %s \n' % (ID, size, producttype, beginposition, key))
-            response.outputs['output_txt'].file = filepathes
-        except:
-            LOGGER.exception('failed to fetch resource')
+        response.update_status("Plotting RGB graphics", 40)
+        size = float(products[key]['size'].split(' ')[0])
+        producttype = products[key]['producttype']
+        beginposition = str(products[key]['beginposition'])
+
+        # fp.write('%s \t %s \t %s \t %s \t %s \n' % (ID, size, producttype, beginposition, key))
+        # response.outputs['output_txt'].file = filepathes
+        # except:
+        #     LOGGER.exception('failed to fetch resource')
         # response.outputs['output'].file = filepathes
-        try:
-            extend = [float(bboxStr[0])-5, float(bboxStr[1])+5, float(bboxStr[2])-5, float(bboxStr[3])+5]
-            img = eodata.plot_products(products, extend=extend)
-            response.outputs['output_plot'].file = img
-            LOGGER.debug('location of tiles plotted to map')
-        except:
-            LOGGER.exception("Failed to plot extents of EO data")
 
+        # try:
+        #     extend = [float(bboxStr[0])-5, float(bboxStr[1])+5, float(bboxStr[2])-5, float(bboxStr[3])+5]
+        #     img = eodata.plot_products(products, extend=extend)
+        #     response.outputs['output_plot'].file = img
+        #     LOGGER.debug('location of tiles plotted to map')
+        # except:
+        #     LOGGER.exception("Failed to plot extents of EO data")
+
+        imgs = []
+        try:
+            for recource in resources:
+                LOGGER.debug('Scale and merge RGB bands')
+                tile = eodata.get_RGB(recource)
+                LOGGER.debug('plot RGB graphicS')
+                imgs.append(eodata.plot_RGB(tile))
+            LOGGER.debug('resources plotted')
+        except:
+            LOGGER.exception('failed to plot RGB graph')
+
+        from flyingpigeon import visualisation as vs
+
+        images = vs.concat_images(imgs, orientation='v')
+
+        response.outputs['output_plot'].file = images
         response.update_status("done", 100)
         return response
