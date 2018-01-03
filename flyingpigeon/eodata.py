@@ -24,6 +24,8 @@ def get_RGB(DIR, false_color=False):
     # from subprocess import CalledProcessError
 
     jps = []
+    fname = DIR.split('/')[-1]
+    ID = fname.replace('.SAVE','')
 
     for filename in glob.glob(DIR + '/GRANULE/*/IMG_DATA/*jp2'):
         jps.append(filename)
@@ -38,18 +40,21 @@ def get_RGB(DIR, false_color=False):
     # scaling the color values and trasform from jp2 to tif
     try:
         # response.update_status('execution of CASTf90', 50)
-        cmd = ['gdal_translate', '-scale', jp_r, 'RED.tif' ]
+        red = 'RED_{0}.tif'.format(ID)
+        cmd = ['gdal_translate', '-scale', jp_r, red ]
         # LOGGER.debug("translate command: %s", cmd)
         output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
         # output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
         LOGGER.info('translate output:\n %s', output)
 
-        cmd = ['gdal_translate', '-scale', jp_g, 'GREEN.tif' ]
+        green = 'GREEN_{0}.tif'.format(ID)
+        cmd = ['gdal_translate', '-scale', jp_g, green ]
         LOGGER.debug("translate command: %s", cmd)
         output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
         LOGGER.info('translate output:\n %s', output)
 
-        cmd = ['gdal_translate', '-scale', jp_b, 'BLUE.tif' ]
+        blue = 'BLUE_{0}.tif'.format(ID)
+        cmd = ['gdal_translate', '-scale', jp_b, blue ]
         LOGGER.debug("translate command: %s", cmd)
         output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
         LOGGER.info('translate output:\n %s', output)
@@ -60,8 +65,8 @@ def get_RGB(DIR, false_color=False):
 
     # merge tree files  to one geotiff with tree seperated bands
     try:
-        merged_RGB = 'merged_RGB.tif'
-        cmd = ['gdal_merge.py', '-seperate', '-co', 'PHOTOMETRIC=RGB', '-o', merged_RGB, 'RED.tif', 'GREEN.tif', 'BLUE.tif' ]
+        merged_RGB = 'RGB_{0}.tif'.format(ID)
+        cmd = ['gdal_merge.py', '-seperate', '-co', 'PHOTOMETRIC=RGB', '-o', merged_RGB , red , green, blue ]
         output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
     except:
         msg = 'merging failed:\n{0}'.format(error)
