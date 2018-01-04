@@ -30,6 +30,7 @@ from .wps_map_spatial_analog import MapSpatialAnalogProcess
 from .wps_EO_COPERNICUS_search import EO_COP_searchProcess
 from .wps_EO_COPERNICUS_fetch import EO_COP_fetchProcess
 from .wps_EO_COPERNICUS_rgb import EO_COP_rgbProcess
+from .wps_EO_COPERNICUS_indices import EO_COP_indicesProcess
 
 processes = [
     ClippingProcess(),
@@ -62,6 +63,7 @@ processes = [
     EO_COP_searchProcess(),
     EO_COP_fetchProcess(),
     EO_COP_rgbProcess(),
+    EO_COP_indicesProcess(),
     # MergeProcess(),
     # NdviProcess(),
 ]
