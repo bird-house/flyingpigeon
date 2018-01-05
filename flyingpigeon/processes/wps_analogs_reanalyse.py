@@ -251,7 +251,7 @@ class AnalogsreanalyseProcess(Process):
         ################################
 
         try:
-            response.update_status('read input parameter : %s ' % dt.now(), 5)
+            response.update_status('read input parameter : %s ' % dt.now(), 7)
 
             refSt = request.inputs['refSt'][0].data
             refEn = request.inputs['refEn'][0].data
@@ -286,7 +286,7 @@ class AnalogsreanalyseProcess(Process):
             # dataset, var = experiment.split('_')
             # LOGGER.info('environment set')
             LOGGER.info('input parameters set')
-            response.update_status('Read in and convert the arguments', 5)
+            response.update_status('Read in and convert the arguments', 8)
         except Exception as e:
             msg = 'failed to read input prameter %s ' % e
             LOGGER.exception(msg)
@@ -296,7 +296,7 @@ class AnalogsreanalyseProcess(Process):
         # convert types and set environment
         ######################################
         try:
-            response.update_status('Preparing enviroment converting arguments', 7)
+            response.update_status('Preparing enviroment converting arguments', 9)
             LOGGER.debug('date: %s %s %s %s ' % (type(refSt), refEn, dateSt, dateSt))
 
             start = min(refSt, dateSt)
@@ -511,12 +511,12 @@ class AnalogsreanalyseProcess(Process):
 
         LOGGER.debug("get_input_subset_dataset took %s seconds.",
                      time.time() - start_time)
-        response.update_status('**** Input data fetched', 10)
+        response.update_status('**** Input data fetched', 20)
 
         ########################
         # input data preperation
         ########################
-        response.update_status('Start preparing input data', 12)
+        response.update_status('Start preparing input data', 22)
         start_time = time.time()  # measure data preperation ...
 
         try:
@@ -583,7 +583,7 @@ class AnalogsreanalyseProcess(Process):
             silent=False,
             period=[dt.strftime(refSt, '%Y-%m-%d'), dt.strftime(refEn, '%Y-%m-%d')],
             bbox="{0[0]},{0[2]},{0[1]},{0[3]}".format(bbox))
-        response.update_status('generated config file', 15)
+        response.update_status('generated config file', 25)
         #######################
         # CASTf90 call
         #######################
@@ -607,7 +607,7 @@ class AnalogsreanalyseProcess(Process):
             LOGGER.debug(msg)
         #-----------------------
 
-        response.update_status('Start CASTf90 call', 20)
+        response.update_status('Start CASTf90 call', 30)
         try:
             # response.update_status('execution of CASTf90', 50)
             cmd = ['analogue.out', config_file]
@@ -623,7 +623,7 @@ class AnalogsreanalyseProcess(Process):
 
         # TODO: Add try - except for pdfs
         analogs_pdf = analogs.plot_analogs(configfile=config_file)   
-        response.update_status('preparing output', 70)
+        response.update_status('preparing output', 75)
         # response.outputs['config'].storage = FileStorage()
         response.outputs['analog_pdf'].file = analogs_pdf 
         response.outputs['config'].file = config_file
