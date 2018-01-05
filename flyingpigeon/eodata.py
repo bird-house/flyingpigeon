@@ -1,8 +1,77 @@
 from tempfile import mkstemp
 from osgeo import gdal, osr
+import cartopy.crs as ccrs
+import matplotlib.pyplot as plt
+from flyingpigeon import visualisation as vs
+
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
+
+
+def get_RGB(DIR, false_color=False):
+    """
+    Extracts the files for RGB bands of Sentinel2 directory tree, scales and merge the values.
+    Output is a merged tif including 3 bands.
+
+    :param DIR: base directory of Sentinel2 directory tree
+    :param false_color: if set to True the near infrared band (B08) will be taken as red band
+
+    :returns geotif: merged geotiff
+    """
+    import glob
+    import subprocess
+    # from subprocess import CalledProcessError
+
+    jps = []
+    fname = DIR.split('/')[-1]
+    ID = fname.replace('.SAVE','')
+
+    for filename in glob.glob(DIR + '/GRANULE/*/IMG_DATA/*jp2'):
+        jps.append(filename)
+
+    jp_b = [jp for jp in jps if '_B02.jp2' in jp][0]
+    jp_g = [jp for jp in jps if '_B03.jp2' in jp][0]
+    if false_color:
+        jp_r = [jp for jp in jps if '_B08.jp2' in jp][0]
+    else:
+        jp_r = [jp for jp in jps if '_B04.jp2' in jp][0]
+
+    # scaling the color values and trasform from jp2 to tif
+    try:
+        # response.update_status('execution of CASTf90', 50)
+        red = 'RED_{0}.tif'.format(ID)
+        cmd = ['gdal_translate', '-scale', jp_r, red ]
+        # LOGGER.debug("translate command: %s", cmd)
+        output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+        # output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+        LOGGER.info('translate output:\n %s', output)
+
+        green = 'GREEN_{0}.tif'.format(ID)
+        cmd = ['gdal_translate', '-scale', jp_g, green ]
+        LOGGER.debug("translate command: %s", cmd)
+        output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+        LOGGER.info('translate output:\n %s', output)
+
+        blue = 'BLUE_{0}.tif'.format(ID)
+        cmd = ['gdal_translate', '-scale', jp_b, blue ]
+        LOGGER.debug("translate command: %s", cmd)
+        output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+        LOGGER.info('translate output:\n %s', output)
+        # response.update_status('**** scaling suceeded', 20)
+    except:
+        msg = 'scaleing failed:\n{0}'.format(error)
+        LOGGER.exception(msg)
+
+    # merge tree files  to one geotiff with tree seperated bands
+    try:
+        merged_RGB = 'RGB_{0}.tif'.format(ID)
+        cmd = ['gdal_merge.py', '-seperate', '-co', 'PHOTOMETRIC=RGB', '-o', merged_RGB , red , green, blue ]
+        output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+    except:
+        msg = 'merging failed:\n{0}'.format(error)
+        # LOGGER.exception(msg)
+    return merged_RGB
 
 
 def get_timestamp(tile):
@@ -27,8 +96,55 @@ def get_timestamp(tile):
         LOGGER.exception('failed to get timestamp for: %s' % tile)
     return timestamp
 
+def plot_products(products, extend=[10, 20, 5, 15]):
+    """
+    plot the products extends of the search result
 
-def plot_ndvi(geotif, file_extension='png'):
+    :param products: output of sentinel api search
+
+    :return graphic: map of extents
+    """
+
+    import numpy as np
+
+    from matplotlib.patches import Polygon
+    import matplotlib.patches as mpatches
+    from matplotlib.collections import PatchCollection
+
+    from cartopy import config as cartopy_config
+    import cartopy.feature as cfeature
+    from cartopy.util import add_cyclic_point
+    import re
+
+
+    fig = plt.figure(dpi=90, facecolor='w', edgecolor='k')
+    projection = ccrs.PlateCarree()
+    ax = plt.axes(projection=projection)
+    ax.set_extent(extend)
+    ax.stock_img()
+    ax.coastlines()
+    ax.add_feature(cfeature.BORDERS)
+
+    pat = re.compile(r'''(-*\d+\.\d+ -*\d+\.\d+);*''')
+
+    for key in products.keys():
+        polygon = str(products[key]['footprint'])
+
+        # s = 'POLYGON ((15.71888453311329 9.045763865974665,15.7018748825589 8.97110837227606,15.66795226563288 8.822558900399137,15.639498612331632 8.69721920092792,15.63428409805786 8.674303514900869,15.600477269179995 8.525798537094156,15.566734239298787 8.377334323160321,15.53315342410745 8.228822837291709,15.499521168391912 8.080353481086165,15.493321895031096 8.052970059354971,14.999818486685434 8.053569047879877,14.999818016115439 9.046743365203026,15.71888453311329 9.045763865974665))'
+        matches = pat.findall(polygon)
+        if matches:
+            xy = np.array([map(float, m.split()) for m in matches])
+            ax.add_patch(mpatches.Polygon(xy, closed=True,  transform=ccrs.PlateCarree(), alpha=0.4)) # color='coral'
+    # ccrs.Geodetic()
+
+    ax.gridlines(draw_labels=True,)
+    img = vs.fig2plot(fig, output_dir='.')
+
+    return img
+
+
+
+def plot_ndvi(geotif, file_extension='jpg', dpi=150, figsize=(10,10)):
     """
     plots a NDVI image
 
@@ -36,63 +152,45 @@ def plot_ndvi(geotif, file_extension='png'):
     :param file_extension: format of the output graphic. default='png'
 
     :result str: path to graphic file
+
     """
-    import numpy as np
-    import struct
+    #     https://ocefpaf.github.io/python4oceanographers/blog/2015/03/02/geotiff/
 
-    # from osgeo import ogr
-    # from osgeo import osr
-    # from osgeo import gdal_array
-    # from osgeo.gdalconst import *
-
-    from flyingpigeon import visualisation as vs
-
-    import cartopy.crs as ccrs
-    from cartopy import feature
-    import matplotlib.pyplot as plt
-
-    # im = '/home/nils/birdhouse/flyingpigeon/scripts/20171129mWt2Eh.tif'
-
-    cube = gdal.Open(geotif)
-    bnd1 = cube.GetRasterBand(1)
-
-    proj = cube.GetProjection()
-
-    inproj = osr.SpatialReference()
-    inproj.ImportFromWkt(proj)
-    # print(inproj)
-    LOGGER.debug("projection of geotif %s " % inproj)
-
-    projcs = inproj.GetAuthorityCode('PROJCS')  # requires internet connection
-    projection = ccrs.epsg(projcs)
-
-    # get the extent of the plot
-    gt = cube.GetGeoTransform()
-    extent = (gt[0], gt[0] + cube.RasterXSize * gt[1], gt[3] + cube.RasterYSize * gt[5], gt[3])
-
-    img = bnd1.ReadAsArray(0, 0, cube.RasterXSize, cube.RasterYSize)
-
-    fig = plt.figure()  # , bbox='tight'
-    ax = plt.axes(projection=ccrs.PlateCarree())
+    gdal.UseExceptions()
     norm = vs.MidpointNormalize(midpoint=0)
 
-    img_ndvi = ax.imshow(img,
-                         origin='upper', extent=extent, transform=ccrs.PlateCarree(),
-                         norm=norm, vmin=-1, vmax=1, cmap=plt.cm.summer)
-    # ax.coastlines(resolution='50m', color='black', linewidth=1)
-    # ax.add_feature(feature.BORDERS, linestyle='-', alpha=.5)
-    # ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True)
-    ax.gridlines()
+    ds = gdal.Open(geotif)
+    gt = ds.GetGeoTransform()
+    proj = ds.GetProjection()
+    inproj = osr.SpatialReference()
+    inproj.ImportFromWkt(proj)
+    projcs = inproj.GetAuthorityCode('PROJCS')
+    projection = ccrs.epsg(projcs)
+    # print("Projection: %s  " % projection)
+    subplot_kw = dict(projection=projection)
+    fig, ax = plt.subplots( subplot_kw=subplot_kw)
+
+    extent = (gt[0], gt[0] + ds.RasterXSize * gt[1],
+    gt[3] + ds.RasterYSize * gt[5], gt[3])
+
+
+    bnd1 = ds.GetRasterBand(1)
+    data = bnd1.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize) # buf_xsize=ds.RasterXSize/10, buf_ysize=ds.RasterYSize/10,
+
+    img_ndvi = ax.imshow(data, extent=extent,origin='upper', norm=norm, vmin=-1, vmax=1, cmap=plt.cm.BrBG, transform=projection)
+    # img_ndvi = ax.imshow(data, extent=extent,   # [:3, :, :].transpose((1, 2, 0))
+    #                 origin='upper',norm=norm, vmin=-1, vmax=1, cmap=plt.cm.summer)
+
     plt.title('NDVI')
     plt.colorbar(img_ndvi)
-    ndvi_plot = vs.fig2plot(fig, file_extension=file_extension, dpi=300)
+    ax.gridlines() #draw_labels=True,
 
-    plt.close()
-    ds = None
-    return ndvi_plot
+    ndvi_plot = vs.fig2plot(fig, output_dir='.', file_extension=file_extension, dpi=dpi, figsize=figsize)
+
+    return ndvi_plot  # ndvi_plot
 
 
-def plot_truecolorcomposite(geotif, rgb_bands=[1,2,3], file_extension='png', dpi=300, figsize=(5,5)):
+def plot_RGB(geotif, rgb_bands=[1,2,3], file_extension='jpg', dpi=150, figsize=(10,10)):
     """
     Calculates a RGB image (True color composite) based on red, greed, and blue bands.
 
@@ -102,9 +200,9 @@ def plot_truecolorcomposite(geotif, rgb_bands=[1,2,3], file_extension='png', dpi
 
     :result str: path to graphic file
     """
+    from numpy import dstack
 
     gdal.UseExceptions()
-
     ds = gdal.Open(geotif)
     data = ds.ReadAsArray()
     gt = ds.GetGeoTransform()
@@ -113,25 +211,15 @@ def plot_truecolorcomposite(geotif, rgb_bands=[1,2,3], file_extension='png', dpi
     inproj = osr.SpatialReference()
     inproj.ImportFromWkt(proj)
 
-    # import cartopy.crs as ccrs
-    #
-    # projcs = inproj.GetAuthorityCode('PROJCS')
-    # projection = ccrs.epsg(projcs)
+    projcs = inproj.GetAuthorityCode('PROJCS')
+    projection = ccrs.epsg(projcs)
     # print(projection)
 
-    import matplotlib.pyplot as plt
-    from flyingpigeon import visualisation as vs
-    from numpy import linspace, dstack
-
-    # subplot_kw = dict(projection=projection)
-    # fig, ax = plt.subplots(figsize=(9, 9), subplot_kw=subplot_kw)
-
-    fig, ax = plt.subplots()
+    subplot_kw = dict(projection=projection)
+    fig, ax = plt.subplots( subplot_kw=subplot_kw)
 
     extent = (gt[0], gt[0] + ds.RasterXSize * gt[1],
               gt[3] + ds.RasterYSize * gt[5], gt[3])
-
-    print  extent
 
     red = ds.GetRasterBand(rgb_bands[0])
     green = ds.GetRasterBand(rgb_bands[1])
@@ -144,15 +232,15 @@ def plot_truecolorcomposite(geotif, rgb_bands=[1,2,3], file_extension='png', dpi
     # rgb = dstack((data[0, :, :], data[1, :, :], data[2, :, :]))
 
     rgb = dstack([img_r, img_g, img_b])
-    img = ax.imshow(rgb)
+    img = ax.imshow(rgb, extent=extent, origin='upper', transform=projection)
 
     # img = ax.imshow(rgb.transpose((1, 2, 0)), extent=extent,
     #                 origin='upper')
 
-    # ax.gridlines(color='lightgrey', linestyle='-')
+    ax.gridlines(color='lightgrey', linestyle='-')
     # ax.set_xticks()
 
-    tcc_plot = vs.fig2plot(fig, dpi=dpi, figsize=figsize)
+    tcc_plot = vs.fig2plot(fig, dpi=dpi, figsize=figsize, file_extension='jpg')
 
     plt.close()
     ds = None
