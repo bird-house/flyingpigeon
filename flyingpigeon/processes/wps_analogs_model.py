@@ -261,15 +261,15 @@ class AnalogsmodelProcess(Process):
         # reading in the input arguments
         ################################
 
-        response.update_status('execution started at : %s ' % dt.now(), 5)
-        start_time = time.time()  # measure init ...
+        # response.update_status('execution started at : %s ' % dt.now(), 5)
+        # start_time = time.time()  # measure init ...
 
         ################################
         # reading in the input arguments
         ################################
 
         try:
-            response.update_status('read input parameter : %s ' % dt.now(), 5)
+            response.update_status('read input parameter : %s ' % dt.now(), 7)
 
             resource = archiveextract(resource=rename_complexinputs(request.inputs['resource']))
             refSt = request.inputs['refSt'][0].data
@@ -313,7 +313,7 @@ class AnalogsmodelProcess(Process):
             # dataset, var = experiment.split('_')
             # LOGGER.info('environment set')
             LOGGER.info('input parameters set')
-            response.update_status('Read in and convert the arguments', 5)
+            response.update_status('Read in and convert the arguments', 8)
         except Exception as e:
             msg = 'failed to read input prameter %s ' % e
             LOGGER.error(msg)
@@ -386,7 +386,7 @@ class AnalogsmodelProcess(Process):
             raise Exception(msg)
 
         LOGGER.debug("init took %s seconds.", time.time() - start_time)
-        response.update_status('Read in and convert the arguments', 5)
+        response.update_status('Read in and convert the arguments', 9)
 
         ########################
         # input data preperation
@@ -605,7 +605,7 @@ class AnalogsmodelProcess(Process):
             raise Exception(msg)
         
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
-        response.update_status('preparing output', 70)
+        response.update_status('preparing output', 80)
         analogs_pdf = analogs.plot_analogs(configfile=config_file)
 
         response.outputs['analog_pdf'].file = analogs_pdf
@@ -634,7 +634,7 @@ class AnalogsmodelProcess(Process):
         # response.outputs['formated_analogs'].storage = FileStorage()
         response.outputs['formated_analogs'].file = formated_analogs_file
         LOGGER.info('analogs reformated')
-        response.update_status('reformatted analog file', 80)
+        response.update_status('reformatted analog file', 90)
 
         viewer_html = analogs.render_viewer(
             # configfile=response.outputs['config'].get_url(),
@@ -642,7 +642,7 @@ class AnalogsmodelProcess(Process):
             # datafile=response.outputs['formated_analogs'].get_url())
             datafile=formated_analogs_file)
         response.outputs['output'].file = viewer_html
-        response.update_status('Successfully generated analogs viewer', 90)
+        response.update_status('Successfully generated analogs viewer', 95)
         LOGGER.info('rendered pages: %s ', viewer_html)
 
         response.update_status('execution ended', 100)
