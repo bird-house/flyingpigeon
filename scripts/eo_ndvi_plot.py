@@ -19,8 +19,6 @@ pyplot.imshow(src.read(1), cmap='pink')
 pyplot.show = lambda : None  # prevents showing during doctests
 pyplot.show()
 
-
-
 ds = gdal.Open(dataf)
 proj = ds.GetProjection()
 inproj = osr.SpatialReference()
