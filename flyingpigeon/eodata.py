@@ -3,6 +3,8 @@ from osgeo import gdal, osr
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 from flyingpigeon import visualisation as vs
+import io
+from PIL import Image
 
 
 import logging
@@ -96,6 +98,7 @@ def get_timestamp(tile):
         LOGGER.exception('failed to get timestamp for: %s' % tile)
     return timestamp
 
+
 def plot_products(products, extend=[10, 20, 5, 15]):
     """
     plot the products extends of the search result
@@ -142,8 +145,6 @@ def plot_products(products, extend=[10, 20, 5, 15]):
 
     return img
 
-
-
 def plot_ndvi(geotif, file_extension='jpg', dpi=150, figsize=(10,10)):
     """
     plots a NDVI image
@@ -152,14 +153,14 @@ def plot_ndvi(geotif, file_extension='jpg', dpi=150, figsize=(10,10)):
     :param file_extension: format of the output graphic. default='png'
 
     :result str: path to graphic file
-
     """
     #     https://ocefpaf.github.io/python4oceanographers/blog/2015/03/02/geotiff/
+    from os.path import basename
 
     gdal.UseExceptions()
-    norm = vs.MidpointNormalize(midpoint=0)
-
+    # norm = vs.MidpointNormalize(midpoint=0)
     ds = gdal.Open(geotif)
+
     gt = ds.GetGeoTransform()
     proj = ds.GetProjection()
     inproj = osr.SpatialReference()
@@ -168,7 +169,7 @@ def plot_ndvi(geotif, file_extension='jpg', dpi=150, figsize=(10,10)):
     projection = ccrs.epsg(projcs)
     # print("Projection: %s  " % projection)
     subplot_kw = dict(projection=projection)
-    fig, ax = plt.subplots( subplot_kw=subplot_kw)
+    fig, ax = plt.subplots( subplot_kw=subplot_kw, dpi=dpi, figsize=figsize) #,dpi=90, figsize=(10,10)
 
     extent = (gt[0], gt[0] + ds.RasterXSize * gt[1],
     gt[3] + ds.RasterYSize * gt[5], gt[3])
@@ -177,20 +178,30 @@ def plot_ndvi(geotif, file_extension='jpg', dpi=150, figsize=(10,10)):
     bnd1 = ds.GetRasterBand(1)
     data = bnd1.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize) # buf_xsize=ds.RasterXSize/10, buf_ysize=ds.RasterYSize/10,
 
-    img_ndvi = ax.imshow(data, extent=extent,origin='upper', norm=norm, vmin=-1, vmax=1, cmap=plt.cm.BrBG, transform=projection)
-    # img_ndvi = ax.imshow(data, extent=extent,   # [:3, :, :].transpose((1, 2, 0))
-    #                 origin='upper',norm=norm, vmin=-1, vmax=1, cmap=plt.cm.summer)
+    img_ndvi = ax.imshow(data, extent=extent,origin='upper', vmin=-1, vmax=1, cmap=plt.cm.BrBG, transform=projection)
 
+    title = basename(geotif).split('_')[2]
     plt.title('NDVI')
-    plt.colorbar(img_ndvi)
+    plt.colorbar(img_ndvi, fraction=0.046, pad=0.04)
     ax.gridlines() #draw_labels=True,
 
-    ndvi_plot = vs.fig2plot(fig, output_dir='.', file_extension=file_extension, dpi=dpi, figsize=figsize)
 
-    return ndvi_plot  # ndvi_plot
+    ndvi_img = vs.fig2plot(fig, dpi=dpi, figsize=figsize, file_extension=file_extension)
+
+    #
+    # ndvi_img = mkstemp(dir='.', file_extension='jpg')
+    #
+    # buf = io.FileIO(ndvi_img, 'a')
+    #
+    # plt.savefig(buf)
+    # buf.seek(0)
+    #
+    # buf.close()
+
+    return ndvi_img # ndvi_plot
 
 
-def plot_RGB(geotif, rgb_bands=[1,2,3], file_extension='jpg', dpi=150, figsize=(10,10)):
+def plot_RGB(geotif, rgb_bands=[1,2,3], file_extension='jpg', dpi=50, figsize=(5,5)):
     """
     Calculates a RGB image (True color composite) based on red, greed, and blue bands.
 
@@ -300,82 +311,130 @@ def merge(tiles, prefix="mosaic_"):
     return filename
 
 
-def ndvi(tiles, product='PlanetScope'):
+def get_ndvi(basedir, product='Sentinel2'):
     """
-    :param tiles: list of tiles including appropriate metadata files
-    :param product: EO product e.g. "PlanetScope" (default)
+    :param basedir: path of basedir for EO data
+    :param product: EO product e.g. "Sentinel2" (default)
 
     :retrun files, plots : list of calculated files and plots
     """
-
     import rasterio
-    import numpy
-    from xml.dom import minidom
-    import matplotlib.pyplot as plt
+    import numpy as np
+    from os import path, listdir
+    from tempfile import mkstemp
+    from osgeo import gdal
+    # import os, rasterio
+    import glob
+    import subprocess
 
-    ndvifiles = []
-    ndviplots = []
+    prefix = path.basename(path.normpath(basedir)).split('.')[0]
 
-    if product == 'PlanetScope':
-        tiles_dic = ndvi_sorttiles(tiles, product=product)
-        for key in tiles_dic.keys():
-            try:
-                LOGGER.debug("NDVI for %s" % key)
-                if len(tiles_dic[key]) == 2:
-                    tile = next(x for x in tiles_dic[key] if ".tif" in x)
-                    meta = next(x for x in tiles_dic[key] if ".xml" in x)
-                else:
-                    LOGGER.debug('Key %s data are not complete' % key)
-                    continue  # continue with next key
-                # Load red and NIR bands - note all PlanetScope 4-band images have band order BGRN
-                with rasterio.open(tile) as src:
-                    band_red = src.read(3)
+    jps = []
+    fname = basedir.split('/')[-1]
+    ID = fname.replace('.SAVE','')
 
-                with rasterio.open(tile) as src:
-                    band_nir = src.read(4)
+    for filename in glob.glob(basedir + '/GRANULE/*/IMG_DATA/*jp2'):
+        jps.append(filename)
 
-                LOGGER.debug("data read in memory")
-                xmldoc = minidom.parse(meta)
-                nodes = xmldoc.getElementsByTagName("ps:bandSpecificMetadata")
+    jp_B04 = [jp for jp in jps if '_B04.jp2' in jp][0]
+    jp_B08 = [jp for jp in jps if '_B08.jp2' in jp][0]
 
-                # XML parser refers to bands by numbers 1-4
-                coeffs = {}
-                for node in nodes:
-                    bn = node.getElementsByTagName("ps:bandNumber")[0].firstChild.data
-                    if bn in ['1', '2', '3', '4']:
-                        i = int(bn)
-                        value = node.getElementsByTagName("ps:reflectanceCoefficient")[0].firstChild.data
-                        coeffs[i] = float(value)
+    with rasterio.open(jp_B04) as red:
+        RED = red.read()
+    with rasterio.open(jp_B08) as nir:
+        NIR = nir.read()
 
-                # Multiply by corresponding coefficients
-                band_red = band_red * coeffs[3]
-                band_nir = band_nir * coeffs[4]
+    try:
+        #compute the ndvi
+        ndvi = (NIR.astype(float) - RED.astype(float)) / (NIR+RED)
 
-                LOGGER.debug("data athmospheric corrected")
-                # Allow division by zero
-                numpy.seterr(divide='ignore', invalid='ignore')
+        profile = red.meta
+        profile.update(driver='GTiff')
+        profile.update(dtype=rasterio.float32)
 
-                # Calculate NDVI
-                bn_ndvi = (band_nir.astype(float) - band_red.astype(float)) / (band_nir + band_red)
+        _, ndvifile = mkstemp(dir='.', prefix=prefix, suffix='.tif')
+        with rasterio.open(ndvifile, 'w', **profile) as dst:
+            dst.write(ndvi.astype(rasterio.float32))
+    except:
+        LOGGER.exception("Failed to Calculate NDVI for %s " % prefix)
+    return ndvifile
 
-                # Set spatial characteristics of the output object to mirror the input
-                kwargs = src.meta
-                kwargs.update(
-                    dtype=rasterio.float32,
-                    count=1)
-
-                # Create the file
-                _, ndvifile = mkstemp(dir='.', prefix="ndvi_%s" % key, suffix='.tif')
-                with rasterio.open(ndvifile, 'w', **kwargs) as dst:
-                    dst.write_band(1, bn_ndvi.astype(rasterio.float32))
-
-                LOGGER.debug("NDVI calculated for %s " % key)
-
-                ndvifiles.extend([ndvifile])
-                LOGGER.debug("NDVI calculated: %s " % ndvifile)
-            except:
-                LOGGER.exception("Failed to Calculate NDVI for %s " % key)
-    return ndvifiles
+# def get_ndvi(tiles, product='PlanetScope'):
+#     """
+#     :param tiles: list of tiles including appropriate metadata files
+#     :param product: EO product e.g. "PlanetScope" (default)
+#
+#     :retrun files, plots : list of calculated files and plots
+#     """
+#
+#     import rasterio
+#     import numpy
+#     from xml.dom import minidom
+#     import matplotlib.pyplot as plt
+#
+#     ndvifiles = []
+#     ndviplots = []
+#
+#     if product == 'PlanetScope':
+#         tiles_dic = ndvi_sorttiles(tiles, product=product)
+#         for key in tiles_dic.keys():
+#             try:
+#                 LOGGER.debug("NDVI for %s" % key)
+#                 if len(tiles_dic[key]) == 2:
+#                     tile = next(x for x in tiles_dic[key] if ".tif" in x)
+#                     meta = next(x for x in tiles_dic[key] if ".xml" in x)
+#                 else:
+#                     LOGGER.debug('Key %s data are not complete' % key)
+#                     continue  # continue with next key
+#                 # Load red and NIR bands - note all PlanetScope 4-band images have band order BGRN
+#                 with rasterio.open(tile) as src:
+#                     band_red = src.read(3)
+#
+#                 with rasterio.open(tile) as src:
+#                     band_nir = src.read(4)
+#
+#                 LOGGER.debug("data read in memory")
+#                 xmldoc = minidom.parse(meta)
+#                 nodes = xmldoc.getElementsByTagName("ps:bandSpecificMetadata")
+#
+#                 # XML parser refers to bands by numbers 1-4
+#                 coeffs = {}
+#                 for node in nodes:
+#                     bn = node.getElementsByTagName("ps:bandNumber")[0].firstChild.data
+#                     if bn in ['1', '2', '3', '4']:
+#                         i = int(bn)
+#                         value = node.getElementsByTagName("ps:reflectanceCoefficient")[0].firstChild.data
+#                         coeffs[i] = float(value)
+#
+#                 # Multiply by corresponding coefficients
+#                 band_red = band_red * coeffs[3]
+#                 band_nir = band_nir * coeffs[4]
+#
+#                 LOGGER.debug("data athmospheric corrected")
+#                 # Allow division by zero
+#                 numpy.seterr(divide='ignore', invalid='ignore')
+#
+#                 # Calculate NDVI
+#                 bn_ndvi = (band_nir.astype(float) - band_red.astype(float)) / (band_nir + band_red)
+#
+#                 # Set spatial characteristics of the output object to mirror the input
+#                 kwargs = src.meta
+#                 kwargs.update(
+#                     dtype=rasterio.float32,
+#                     count=1)
+#
+#                 # Create the file
+#                 _, ndvifile = mkstemp(dir='.', prefix="ndvi_%s" % key, suffix='.tif')
+#                 with rasterio.open(ndvifile, 'w', **kwargs) as dst:
+#                     dst.write_band(1, bn_ndvi.astype(rasterio.float32))
+#
+#                 LOGGER.debug("NDVI calculated for %s " % key)
+#
+#                 ndvifiles.extend([ndvifile])
+#                 LOGGER.debug("NDVI calculated: %s " % ndvifile)
+#             except:
+#                 LOGGER.exception("Failed to Calculate NDVI for %s " % key)
+#     return ndvifiles
 
 
 def ndvi_sorttiles(tiles, product="PlanetScope"):

@@ -19,8 +19,6 @@ pyplot.imshow(src.read(1), cmap='pink')
 pyplot.show = lambda : None  # prevents showing during doctests
 pyplot.show()
 
-
-
 ds = gdal.Open(dataf)
 proj = ds.GetProjection()
 inproj = osr.SpatialReference()
@@ -68,9 +66,6 @@ projection = ccrs.epsg(projcs)
 # print("Projection: %s  " % projection)
 subplot_kw = dict(projection=projection)
 fig, ax = plt.subplots( subplot_kw=subplot_kw)
-
-
-
 
 ds = None
 
