@@ -323,13 +323,11 @@ def get_ndvi(basedir, product='Sentinel2'):
     from os import path, listdir
     from tempfile import mkstemp
     from osgeo import gdal
-    import os, rasterio
+    # import os, rasterio
     import glob
     import subprocess
 
     prefix = path.basename(path.normpath(basedir)).split('.')[0]
-
-    # from subprocess import CalledProcessError
 
     jps = []
     fname = basedir.split('/')[-1]
@@ -339,23 +337,12 @@ def get_ndvi(basedir, product='Sentinel2'):
         jps.append(filename)
 
     jp_B04 = [jp for jp in jps if '_B04.jp2' in jp][0]
+    jp_B08 = [jp for jp in jps if '_B08.jp2' in jp][0]
+
     with rasterio.open(jp_B04) as red:
         RED = red.read()
-
-    jp_B08 = [jp for jp in jps if '_B08.jp2' in jp][0]
-    with rasterio.open(jp) as nir:
+    with rasterio.open(jp_B08) as nir:
         NIR = nir.read()
-
-
-        # DIR = basedir + '/GRANULE/L1C_T33PVL_A004123_20171220T093259/IMG_DATA/'
-        # jps = [path.join(DIR,jp) for jp in listdir(DIR) if ".jp2" in jp]
-        # LOGGER.debug('DIR: %s' % DIR)
-        #
-        # for jp in jps:
-        #     # get red
-        #     if "_B04" in jp:
-            # get nivr
-            # if "_B08" in jp:
 
     try:
         #compute the ndvi
@@ -371,8 +358,6 @@ def get_ndvi(basedir, product='Sentinel2'):
     except:
         LOGGER.exception("Failed to Calculate NDVI for %s " % prefix)
     return ndvifile
-
-
 
 # def get_ndvi(tiles, product='PlanetScope'):
 #     """

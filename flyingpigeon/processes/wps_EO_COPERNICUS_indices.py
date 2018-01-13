@@ -27,13 +27,13 @@ LOGGER = logging.getLogger("PYWPS")
 class EO_COP_indicesProcess(Process):
     def __init__(self):
         inputs = [
-            LiteralInput("products", "Earth Observation Product Type",
-                         abstract="Choose Earth Observation Products",
-                         default='Sentinel-2',
+            LiteralInput("products", "Earth Observation Product Indice",
+                         abstract="Choose an indice based on Earth Observation Data",
+                         default='NDVI',
                          data_type='string',
                          min_occurs=1,
                          max_occurs=1,
-                         allowed_values=['Sentinel-2']
+                         allowed_values=['NDVI']
                          ),
 
             LiteralInput('BBox', 'Bounding Box',
