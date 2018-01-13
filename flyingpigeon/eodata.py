@@ -156,8 +156,10 @@ def plot_ndvi(geotif, file_extension='jpg', dpi=150, figsize=(10,10)):
     """
     #     https://ocefpaf.github.io/python4oceanographers/blog/2015/03/02/geotiff/
 
+    from os.path import basename
+
     gdal.UseExceptions()
-    norm = vs.MidpointNormalize(midpoint=0)
+    # norm = vs.MidpointNormalize(midpoint=0)
 
     ds = gdal.Open(geotif)
 
@@ -169,33 +171,36 @@ def plot_ndvi(geotif, file_extension='jpg', dpi=150, figsize=(10,10)):
     projection = ccrs.epsg(projcs)
     # print("Projection: %s  " % projection)
     subplot_kw = dict(projection=projection)
-    fig, ax = plt.subplots( subplot_kw=subplot_kw) #,dpi=90, figsize=(10,10)
+    fig, ax = plt.subplots( subplot_kw=subplot_kw, dpi=dpi, figsize=figsize) #,dpi=90, figsize=(10,10)
 
     extent = (gt[0], gt[0] + ds.RasterXSize * gt[1],
     gt[3] + ds.RasterYSize * gt[5], gt[3])
 
 
     bnd1 = ds.GetRasterBand(1)
-    data = bnd1.ReadAsArray(0, 0, ds.RasterXSize/2, ds.RasterYSize/2) # buf_xsize=ds.RasterXSize/10, buf_ysize=ds.RasterYSize/10,
+    data = bnd1.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize) # buf_xsize=ds.RasterXSize/10, buf_ysize=ds.RasterYSize/10,
 
-    img_ndvi = ax.imshow(data, extent=extent,origin='upper', norm=norm, vmin=-1, vmax=1, cmap=plt.cm.BrBG, transform=projection)
+    img_ndvi = ax.imshow(data, extent=extent,origin='upper', vmin=-1, vmax=1, cmap=plt.cm.BrBG, transform=projection)
 
-    from os.path import basename
     title = basename(geotif).split('_')[2]
     plt.title('NDVI')
-    plt.colorbar(img_ndvi)
+    plt.colorbar(img_ndvi, fraction=0.046, pad=0.04)
     ax.gridlines() #draw_labels=True,
 
-    buf = io.BytesIO()
 
-    plt.savefig(buf, format='png')
-    buf.seek(0)
+    ndvi_img = vs.fig2plot(fig, dpi=dpi, figsize=figsize, file_extension=file_extension)
 
-    im = Image.open(buf)
-    im.show()
-    buf.close()
+    #
+    # ndvi_img = mkstemp(dir='.', file_extension='jpg')
+    #
+    # buf = io.FileIO(ndvi_img, 'a')
+    #
+    # plt.savefig(buf)
+    # buf.seek(0)
+    #
+    # buf.close()
 
-    return buf  # ndvi_plot
+    return ndvi_img # ndvi_plot
 
 
 def plot_RGB(geotif, rgb_bands=[1,2,3], file_extension='jpg', dpi=50, figsize=(5,5)):

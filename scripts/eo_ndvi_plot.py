@@ -67,9 +67,6 @@ projection = ccrs.epsg(projcs)
 subplot_kw = dict(projection=projection)
 fig, ax = plt.subplots( subplot_kw=subplot_kw)
 
-
-
-
 ds = None
 
 with rasterio.open(dataf) as src:
