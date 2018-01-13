@@ -19,6 +19,7 @@ def test_caps():
 
     expected_names = [
         'EO_COPERNICUS_fetch',
+        'EO_COPERNICUS_indices',
         'EO_COPERNICUS_rgb',
         'EO_COPERNICUS_search',
         'analogs_compare',
