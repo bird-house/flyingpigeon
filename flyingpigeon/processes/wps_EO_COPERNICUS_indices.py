@@ -234,7 +234,7 @@ class EO_COP_indicesProcess(Process):
             except:
                 LOGGER.exception('failed to fetch %s' % key)
 
-        response.update_status("Plotting RGB graphics", 40)
+        response.update_status("Plotting ndvi graphics", 40)
         size = float(products[key]['size'].split(' ')[0])
         producttype = products[key]['producttype']
         beginposition = str(products[key]['beginposition'])

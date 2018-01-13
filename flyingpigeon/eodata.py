@@ -98,6 +98,7 @@ def get_timestamp(tile):
         LOGGER.exception('failed to get timestamp for: %s' % tile)
     return timestamp
 
+
 def plot_products(products, extend=[10, 20, 5, 15]):
     """
     plot the products extends of the search result
@@ -152,15 +153,12 @@ def plot_ndvi(geotif, file_extension='jpg', dpi=150, figsize=(10,10)):
     :param file_extension: format of the output graphic. default='png'
 
     :result str: path to graphic file
-
     """
     #     https://ocefpaf.github.io/python4oceanographers/blog/2015/03/02/geotiff/
-
     from os.path import basename
 
     gdal.UseExceptions()
     # norm = vs.MidpointNormalize(midpoint=0)
-
     ds = gdal.Open(geotif)
 
     gt = ds.GetGeoTransform()
@@ -326,22 +324,40 @@ def get_ndvi(basedir, product='Sentinel2'):
     from tempfile import mkstemp
     from osgeo import gdal
     import os, rasterio
+    import glob
+    import subprocess
+
+    prefix = path.basename(path.normpath(basedir)).split('.')[0]
+
+    # from subprocess import CalledProcessError
+
+    jps = []
+    fname = basedir.split('/')[-1]
+    ID = fname.replace('.SAVE','')
+
+    for filename in glob.glob(basedir + '/GRANULE/*/IMG_DATA/*jp2'):
+        jps.append(filename)
+
+    jp_B04 = [jp for jp in jps if '_B04.jp2' in jp][0]
+    with rasterio.open(jp_B04) as red:
+        RED = red.read()
+
+    jp_B08 = [jp for jp in jps if '_B08.jp2' in jp][0]
+    with rasterio.open(jp) as nir:
+        NIR = nir.read()
+
+
+        # DIR = basedir + '/GRANULE/L1C_T33PVL_A004123_20171220T093259/IMG_DATA/'
+        # jps = [path.join(DIR,jp) for jp in listdir(DIR) if ".jp2" in jp]
+        # LOGGER.debug('DIR: %s' % DIR)
+        #
+        # for jp in jps:
+        #     # get red
+        #     if "_B04" in jp:
+            # get nivr
+            # if "_B08" in jp:
 
     try:
-        prefix = path.basename(path.normpath(basedir)).split('.')[0]
-        DIR = basedir + '/GRANULE/L1C_T33PVL_A004123_20171220T093259/IMG_DATA/'
-        jps = [path.join(DIR,jp) for jp in listdir(DIR) if ".jp2" in jp]
-
-        for jp in jps:
-            # get red
-            if "_B04" in jp:
-                with rasterio.open(jp) as red:
-                    RED = red.read()
-            # get nivr
-            if "_B08" in jp:
-                with rasterio.open(jp) as nir:
-                    NIR = nir.read()
-
         #compute the ndvi
         ndvi = (NIR.astype(float) - RED.astype(float)) / (NIR+RED)
 
@@ -353,7 +369,7 @@ def get_ndvi(basedir, product='Sentinel2'):
         with rasterio.open(ndvifile, 'w', **profile) as dst:
             dst.write(ndvi.astype(rasterio.float32))
     except:
-        LOGGER.exception("Failed to Calculate NDVI for %s " % key)
+        LOGGER.exception("Failed to Calculate NDVI for %s " % prefix)
     return ndvifile
 
 
