@@ -41,6 +41,7 @@ def get_bai(basedir, product='Sentinel2'):
 
     try:
         #compute the BAI burned area index
+        # 1 / ((0.1 - RED)^2 + (0.06 -NIR)^2)
         bai = 1 / (np.power((0.1 - RED) ,2) + np.power((0.06 -NIR) ,2))
 
         print bai.shape
@@ -67,8 +68,6 @@ def get_RGB(DIR, false_color=False):
 
     :returns geotif: merged geotiff
     """
-    import glob
-    import subprocess
     # from subprocess import CalledProcessError
 
     jps = []
@@ -436,6 +435,22 @@ def get_ndvi(basedir, product='Sentinel2'):
         NIR = nir.read()
 
     try:
+        # ndvifile = '/home/nils/data/test_bai.tif'
+        # outfile = '--outfile={0}'.format(ndvifile)
+        # calc =  '--calc="(B-A) / (B+A)"'
+        #
+        # cmd = ['gdal_calc.py', '-A', jp_B04, '-B', jp_B08, outfile, calc]
+        # print cmd
+
+        # LOGGER.debug("calculation command: %s", cmd)
+        # output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+        # LOGGER.info('calculation output:\n %s', output)
+        # response.update_status('**** scaling suceeded', 20)
+    # except:
+    #     msg = 'NDVI failed:\n{0}'.format(error)
+    #     # LOGGER.exception(msg)
+    #     print(msg)
+
         #compute the ndvi
         ndvi = (NIR.astype(float) - RED.astype(float)) / (NIR.astype(float)+RED.astype(float))
 
