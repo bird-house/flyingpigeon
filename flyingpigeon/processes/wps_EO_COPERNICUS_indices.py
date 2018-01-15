@@ -244,13 +244,13 @@ class EO_COP_indicesProcess(Process):
         imgs = []
         for recource in resources:
             try:
-                if indice = 'NDVI':
+                if indice == 'NDVI':
                     LOGGER.debug('Calculate NDVI for %s', recource )
                     tile = eodata.get_ndvi(recource)
                     LOGGER.debug('Plot NDVI')
                     imgs.append(eodata.plot_ndvi(tile))
                     LOGGER.debug('resources BAI calculated')
-                if indice = 'BAI':
+                if indice == 'BAI':
                     LOGGER.debug('Calculate BAI for %s', recource )
                     tile = eodata.get_bai(recource)
                     LOGGER.debug('Plot BAI')
