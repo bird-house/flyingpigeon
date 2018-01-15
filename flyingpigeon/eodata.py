@@ -99,6 +99,51 @@ def get_timestamp(tile):
     return timestamp
 
 
+def plot_bai(geotif, file_extension='jpg', dpi=150, figsize=(10,10)):
+    """
+    plots a BAI image
+
+    :param geotif: geotif file containning one band with BAI values
+    :param file_extension: format of the output graphic. default='png'
+
+    :result str: path to graphic file
+    """
+    #     https://ocefpaf.github.io/python4oceanographers/blog/2015/03/02/geotiff/
+    from os.path import basename
+
+    gdal.UseExceptions()
+    # norm = vs.MidpointNormalize(midpoint=0)
+    ds = gdal.Open(geotif)
+
+    gt = ds.GetGeoTransform()
+    proj = ds.GetProjection()
+    inproj = osr.SpatialReference()
+    inproj.ImportFromWkt(proj)
+    projcs = inproj.GetAuthorityCode('PROJCS')
+    projection = ccrs.epsg(projcs)
+    # print("Projection: %s  " % projection)
+    subplot_kw = dict(projection=projection)
+    fig, ax = plt.subplots( subplot_kw=subplot_kw, dpi=dpi, figsize=figsize) #,dpi=90, figsize=(10,10)
+
+    extent = (gt[0], gt[0] + ds.RasterXSize * gt[1],
+    gt[3] + ds.RasterYSize * gt[5], gt[3])
+
+
+    bnd1 = ds.GetRasterBand(1)
+    data = bnd1.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize) # buf_xsize=ds.RasterXSize/10, buf_ysize=ds.RasterYSize/10,
+
+    img_bai = ax.imshow(data, extent=extent,origin='upper', cmap=plt.cm.afmhot_r, transform=projection)
+
+    title = basename(geotif).split('_')[2]
+    plt.title('BAI')
+    plt.colorbar(img_bai, fraction=0.046, pad=0.04)
+    ax.gridlines() #draw_labels=True,
+
+    bai_img = vs.fig2plot(fig, dpi=dpi, figsize=figsize, file_extension=file_extension)
+
+    return bai_img # bai_plot
+
+
 def plot_products(products, extend=[10, 20, 5, 15]):
     """
     plot the products extends of the search result
@@ -346,7 +391,7 @@ def get_ndvi(basedir, product='Sentinel2'):
 
     try:
         #compute the ndvi
-        ndvi = (NIR.astype(float) - RED.astype(float)) / (NIR+RED)
+        ndvi = (NIR.astype(float) - RED.astype(float)) / (NIR.astype(float)+RED.astype(float))
 
         profile = red.meta
         profile.update(driver='GTiff')

@@ -27,13 +27,13 @@ LOGGER = logging.getLogger("PYWPS")
 class EO_COP_indicesProcess(Process):
     def __init__(self):
         inputs = [
-            LiteralInput("products", "Earth Observation Product Indice",
+            LiteralInput("indices", "Earth Observation Product Indice",
                          abstract="Choose an indice based on Earth Observation Data",
                          default='NDVI',
                          data_type='string',
                          min_occurs=1,
                          max_occurs=1,
-                         allowed_values=['NDVI']
+                         allowed_values=['NDVI','BAI']
                          ),
 
             LiteralInput('BBox', 'Bounding Box',
@@ -131,7 +131,9 @@ class EO_COP_indicesProcess(Process):
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
-        products = [inpt.data for inpt in request.inputs['products']]
+        # products = [inpt.data for inpt in request.inputs['indices']]
+
+        indice = request.inputs['indices'][0].data
 
         bbox = []  # order xmin ymin xmax ymax
         bboxStr = request.inputs['BBox'][0].data
@@ -240,15 +242,22 @@ class EO_COP_indicesProcess(Process):
         beginposition = str(products[key]['beginposition'])
 
         imgs = []
-        try:
-            for recource in resources:
-                LOGGER.debug('Calculate NDVI for %s', recource )
-                tile = eodata.get_ndvi(recource)
-                LOGGER.debug('Plot ndvi')
-                imgs.append(eodata.plot_ndvi(tile))
-            LOGGER.debug('resources ndvi calculated')
-        except:
-            LOGGER.exception('failed to plot RGB graph')
+        for recource in resources:
+            try:
+                if indice = 'NDVI':
+                    LOGGER.debug('Calculate NDVI for %s', recource )
+                    tile = eodata.get_ndvi(recource)
+                    LOGGER.debug('Plot NDVI')
+                    imgs.append(eodata.plot_ndvi(tile))
+                    LOGGER.debug('resources BAI calculated')
+                if indice = 'BAI':
+                    LOGGER.debug('Calculate BAI for %s', recource )
+                    tile = eodata.get_bai(recource)
+                    LOGGER.debug('Plot BAI')
+                    imgs.append(eodata.plot_bai(tile))
+                    LOGGER.debug('resources BAI calculated')
+            except:
+                LOGGER.exception('failed to calculate indice for %s ' % resource)
 
         from flyingpigeon import visualisation as vs
 
