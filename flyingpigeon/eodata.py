@@ -452,7 +452,7 @@ def get_ndvi(basedir, product='Sentinel2'):
     #     print(msg)
 
         #compute the ndvi
-        ndvi = (NIR.astype(float) - RED.astype(float)) / (NIR.astype(float)+RED.astype(float))
+        ndvi = (NIR.astype(float) - RED.astype(float)) / (NIR + RED )
 
         profile = red.meta
         profile.update(driver='GTiff')
