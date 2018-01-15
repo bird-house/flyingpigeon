@@ -13,31 +13,31 @@ def get_bai(basedir, product='Sentinel2'):
 
     :retrun: bai file
     """
-import rasterio
-import numpy as np
-from os import path, listdir
-from tempfile import mkstemp
-from osgeo import gdal
-# import os, rasterio
-import glob
-import subprocess
+    import rasterio
+    import numpy as np
+    from os import path, listdir
+    from tempfile import mkstemp
+    from osgeo import gdal
+    # import os, rasterio
+    import glob
+    import subprocess
 
-prefix = path.basename(path.normpath(basedir)).split('.')[0]
+    prefix = path.basename(path.normpath(basedir)).split('.')[0]
 
-jps = []
-fname = basedir.split('/')[-1]
-ID = fname.replace('.SAVE','')
+    jps = []
+    fname = basedir.split('/')[-1]
+    ID = fname.replace('.SAVE','')
 
-for filename in glob.glob(basedir + '/GRANULE/*/IMG_DATA/*jp2'):
-    jps.append(filename)
+    for filename in glob.glob(basedir + '/GRANULE/*/IMG_DATA/*jp2'):
+        jps.append(filename)
 
-jp_B04 = [jp for jp in jps if '_B04.jp2' in jp][0]
-jp_B08 = [jp for jp in jps if '_B08.jp2' in jp][0]
+    jp_B04 = [jp for jp in jps if '_B04.jp2' in jp][0]
+    jp_B08 = [jp for jp in jps if '_B08.jp2' in jp][0]
 
-with rasterio.open(jp_B04) as red:
-    RED = red.read()
-with rasterio.open(jp_B08) as nir:
-    NIR = nir.read()
+    with rasterio.open(jp_B04) as red:
+        RED = red.read()
+    with rasterio.open(jp_B08) as nir:
+        NIR = nir.read()
 
     try:
         #compute the BAI burned area index
