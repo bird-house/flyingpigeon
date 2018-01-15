@@ -5,10 +5,56 @@ import matplotlib.pyplot as plt
 from flyingpigeon import visualisation as vs
 import io
 from PIL import Image
-
+import rasterio
+import numpy as np
+from os import path, listdir
+import glob
+import subprocess
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
+
+def get_bai(basedir, product='Sentinel2'):
+    """
+    :param basedir: path of basedir for EO data
+    :param product: EO product e.g. "Sentinel2" (default)
+
+    :retrun: bai file
+    """
+
+    prefix = path.basename(path.normpath(basedir)).split('.')[0]
+
+    jps = []
+    fname = basedir.split('/')[-1]
+    ID = fname.replace('.SAVE','')
+
+    for filename in glob.glob(basedir + '/GRANULE/*/IMG_DATA/*jp2'):
+        jps.append(filename)
+
+    jp_B04 = [jp for jp in jps if '_B04.jp2' in jp][0]
+    jp_B08 = [jp for jp in jps if '_B08.jp2' in jp][0]
+
+    with rasterio.open(jp_B04) as red:
+        RED = red.read()
+    with rasterio.open(jp_B08) as nir:
+        NIR = nir.read()
+
+    try:
+        #compute the BAI burned area index
+        bai = 1 / (np.power((0.1 - RED) ,2) + np.power((0.06 -NIR) ,2))
+
+        print bai.shape
+
+        profile = red.meta
+        profile.update(driver='GTiff')
+        profile.update(dtype=rasterio.float32)
+
+        _, bai_file = mkstemp(dir='.', prefix=prefix, suffix='.tif')
+        with rasterio.open(bai_file, 'w', **profile) as dst:
+            dst.write(bai.astype(rasterio.float32))
+    except:
+        print("Failed to Calculate BAI for %s " % prefix)
+    return bai_file
 
 
 def get_RGB(DIR, false_color=False):

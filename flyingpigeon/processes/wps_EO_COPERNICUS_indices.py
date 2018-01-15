@@ -242,17 +242,17 @@ class EO_COP_indicesProcess(Process):
         beginposition = str(products[key]['beginposition'])
 
         imgs = []
-        for recource in resources:
+        for resource in resources:
             try:
-                if indice = 'NDVI':
-                    LOGGER.debug('Calculate NDVI for %s', recource )
-                    tile = eodata.get_ndvi(recource)
+                if indice == 'NDVI':
+                    LOGGER.debug('Calculate NDVI for %s', resource )
+                    tile = eodata.get_ndvi(resource)
                     LOGGER.debug('Plot NDVI')
                     imgs.append(eodata.plot_ndvi(tile))
                     LOGGER.debug('resources BAI calculated')
-                if indice = 'BAI':
-                    LOGGER.debug('Calculate BAI for %s', recource )
-                    tile = eodata.get_bai(recource)
+                if indice == 'BAI':
+                    LOGGER.debug('Calculate BAI for %s', resource )
+                    tile = eodata.get_bai(resource)
                     LOGGER.debug('Plot BAI')
                     imgs.append(eodata.plot_bai(tile))
                     LOGGER.debug('resources BAI calculated')
