@@ -72,7 +72,7 @@ ii = ImageInfo(cpd)
 band.setImageInfo(ii)
 
 image_format = 'PNG'
-write_image(band, 'snappy_write_image.png', image_format)
+write_image(band, 'snappy_image.png', image_format)
 
 legend = ImageLegend(band.getImageInfo(), band)
 legend.setHeaderText(band.getName())
