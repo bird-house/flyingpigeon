@@ -5,7 +5,7 @@ from pywps.tests import assert_response_success
 
 from .common import client_for
 from flyingpigeon.processes import processes
-
+from flyingpigeon.processes.wps_ocgis_func import OCGIS_INDEX_PROCESSES
 
 def test_caps():
     client = client_for(Service(processes=processes))
@@ -47,5 +47,6 @@ def test_caps():
         'weatherregimes_model',
         'weatherregimes_projection',
         'weatherregimes_reanalyse',
-    ]
-    assert sorted_names == expected_names
+    ] + [p.identifier for p in OCGIS_INDEX_PROCESSES]
+
+    assert sorted_names == sorted(expected_names)
