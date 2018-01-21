@@ -235,6 +235,7 @@ def plot_products(products, extend=[10, 20, 5, 15]):
 
     return img
 
+
 def plot_ndvi(geotif, file_extension='jpg', dpi=150, figsize=(10,10)):
     """
     plots a NDVI image
@@ -291,61 +292,128 @@ def plot_ndvi(geotif, file_extension='jpg', dpi=150, figsize=(10,10)):
     return ndvi_img # ndvi_plot
 
 
-def plot_RGB(geotif, rgb_bands=[1,2,3], file_extension='jpg', dpi=50, figsize=(5,5)):
+def plot_RGB(DIR, false_color=False):
     """
-    Calculates a RGB image (True color composite) based on red, greed, and blue bands.
+    Extracts the files for RGB bands of Sentinel2 directory tree, scales and merge the values.
+    Output is a merged tif including 3 bands.
 
-    :param geotif: geotif file containning one band with NDVI values
-    :param file_extension: format of the output graphic. default='png'
-    :param rgb_bands: order of bands storing red, green and blue values default=[1,2,3]
+    :param DIR: base directory of Sentinel2 directory tree
+    :param false_color: if set to True the near infrared band (B08) will be taken as red band
 
-    :result str: path to graphic file
+    :returns: png image
     """
-    from numpy import dstack
 
-    gdal.UseExceptions()
-    ds = gdal.Open(geotif)
-    data = ds.ReadAsArray()
-    gt = ds.GetGeoTransform()
-    proj = ds.GetProjection()
+    from snappy import ProductIO
+    from snappy import ProductUtils
+    from snappy import ProgressMonitor
+    from snappy import jpy
 
-    inproj = osr.SpatialReference()
-    inproj.ImportFromWkt(proj)
+    from os.path import join
+    from tempfile import mkstemp
 
-    projcs = inproj.GetAuthorityCode('PROJCS')
-    projection = ccrs.epsg(projcs)
-    # print(projection)
+    mtd = 'MTD_MSIL1C.xml'
+    fname = DIR.split('/')[-1]
+    ID = fname.replace('.SAVE','')
+    prefix= 'RGB_%s' % ID
 
-    subplot_kw = dict(projection=projection)
-    fig, ax = plt.subplots( subplot_kw=subplot_kw)
+    _, rgb_image = mkstemp(dir='.', prefix=prefix , suffix='.png')
+    source = join(DIR, mtd)
 
-    extent = (gt[0], gt[0] + ds.RasterXSize * gt[1],
-              gt[3] + ds.RasterYSize * gt[5], gt[3])
+    sourceProduct = ProductIO.readProduct(source)
 
-    red = ds.GetRasterBand(rgb_bands[0])
-    green = ds.GetRasterBand(rgb_bands[1])
-    blue = ds.GetRasterBand(rgb_bands[2])   # band 1 PSSCINE4Band blue
+    if false_color:
+        blue = sourceProduct.getBand('B2')
+        green = sourceProduct.getBand('B3')
+        red = sourceProduct.getBand('B8')
+    else:
+        blue = sourceProduct.getBand('B2')
+        green = sourceProduct.getBand('B3')
+        red = sourceProduct.getBand('B4')
 
-    img_r = red.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize)
-    img_g = green.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize)
-    img_b = blue.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize)
+    Color = jpy.get_type('java.awt.Color')
+    ColorPoint = jpy.get_type('org.esa.snap.core.datamodel.ColorPaletteDef$Point')
+    ColorPaletteDef = jpy.get_type('org.esa.snap.core.datamodel.ColorPaletteDef')
+    ImageInfo = jpy.get_type('org.esa.snap.core.datamodel.ImageInfo')
+    ImageLegend = jpy.get_type('org.esa.snap.core.datamodel.ImageLegend')
+    ImageManager = jpy.get_type('org.esa.snap.core.image.ImageManager')
+    JAI = jpy.get_type('javax.media.jai.JAI')
+    RenderedImage = jpy.get_type('java.awt.image.RenderedImage')
 
-    # rgb = dstack((data[0, :, :], data[1, :, :], data[2, :, :]))
 
-    rgb = dstack([img_r, img_g, img_b])
-    img = ax.imshow(rgb, extent=extent, origin='upper', transform=projection)
+    # Disable JAI native MediaLib extensions
+    System = jpy.get_type('java.lang.System')
+    System.setProperty('com.sun.media.jai.disableMediaLib', 'true')
 
-    # img = ax.imshow(rgb.transpose((1, 2, 0)), extent=extent,
-    #                 origin='upper')
+    #
+    legend = ImageLegend(blue.getImageInfo(), blue)
+    legend.setHeaderText(blue.getName())
 
-    ax.gridlines(color='lightgrey', linestyle='-')
-    # ax.set_xticks()
+    # red = product.getBand('B4')
+    # green = product.getBand('B3')
+    # blue = product.getBand('B2')
 
-    tcc_plot = vs.fig2plot(fig, dpi=dpi, figsize=figsize, file_extension='jpg')
+    image_info = ProductUtils.createImageInfo([red, green, blue], True, ProgressMonitor.NULL)
+    im = ImageManager.getInstance().createColoredBandImage([red, green, blue], image_info, 0)
+    JAI.create("filestore", im, rgb_image, 'PNG')
 
-    plt.close()
-    ds = None
-    return tcc_plot
+    return rgb_image
+
+
+# def plot_RGB(geotif, rgb_bands=[1,2,3], file_extension='jpg', dpi=50, figsize=(5,5)):
+#     """
+#     Calculates a RGB image (True color composite) based on red, greed, and blue bands.
+#
+#     :param geotif: geotif file containning one band with NDVI values
+#     :param file_extension: format of the output graphic. default='png'
+#     :param rgb_bands: order of bands storing red, green and blue values default=[1,2,3]
+#
+#     :result str: path to graphic file
+#     """
+#     from numpy import dstack
+#
+#     gdal.UseExceptions()
+#     ds = gdal.Open(geotif)
+#     data = ds.ReadAsArray()
+#     gt = ds.GetGeoTransform()
+#     proj = ds.GetProjection()
+#
+#     inproj = osr.SpatialReference()
+#     inproj.ImportFromWkt(proj)
+#
+#     projcs = inproj.GetAuthorityCode('PROJCS')
+#     projection = ccrs.epsg(projcs)
+#     # print(projection)
+#
+#     subplot_kw = dict(projection=projection)
+#     fig, ax = plt.subplots( subplot_kw=subplot_kw)
+#
+#     extent = (gt[0], gt[0] + ds.RasterXSize * gt[1],
+#               gt[3] + ds.RasterYSize * gt[5], gt[3])
+#
+#     red = ds.GetRasterBand(rgb_bands[0])
+#     green = ds.GetRasterBand(rgb_bands[1])
+#     blue = ds.GetRasterBand(rgb_bands[2])   # band 1 PSSCINE4Band blue
+#
+#     img_r = red.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize)
+#     img_g = green.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize)
+#     img_b = blue.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize)
+#
+#     # rgb = dstack((data[0, :, :], data[1, :, :], data[2, :, :]))
+#
+#     rgb = dstack([img_r, img_g, img_b])
+#     img = ax.imshow(rgb, extent=extent, origin='upper', transform=projection)
+#
+#     # img = ax.imshow(rgb.transpose((1, 2, 0)), extent=extent,
+#     #                 origin='upper')
+#
+#     ax.gridlines(color='lightgrey', linestyle='-')
+#     # ax.set_xticks()
+#
+#     tcc_plot = vs.fig2plot(fig, dpi=dpi, figsize=figsize, file_extension='jpg')
+#
+#     plt.close()
+#     ds = None
+#     return tcc_plot
 
 
 def merge(tiles, prefix="mosaic_"):

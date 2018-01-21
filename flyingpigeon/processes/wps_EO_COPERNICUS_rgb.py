@@ -256,10 +256,12 @@ class EO_COP_rgbProcess(Process):
         imgs = []
         try:
             for recource in resources:
-                LOGGER.debug('Scale and merge RGB bands')
-                tile = eodata.get_RGB(recource)
-                LOGGER.debug('plot RGB graphicS')
-                imgs.append(eodata.plot_RGB(tile))
+                # LOGGER.debug('Scale and merge RGB bands')
+                # tile = eodata.get_RGB(recource)
+                LOGGER.debug('plot RGB image')
+                img = eodata.plot_RGB(recource, false_color=False)
+                LOGGER.debug('IMG plotted: %s' % img)
+                imgs.append(img)
             LOGGER.debug('resources plotted')
         except:
             LOGGER.exception('failed to plot RGB graph')
