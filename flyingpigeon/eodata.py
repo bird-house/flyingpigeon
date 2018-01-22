@@ -292,13 +292,13 @@ def plot_ndvi(geotif, file_extension='jpg', dpi=150, figsize=(10,10)):
     return ndvi_img # ndvi_plot
 
 
-def plot_RGB(DIR, false_color=False):
+def plot_RGB(DIR, colorscheem='natural_color'):
     """
     Extracts the files for RGB bands of Sentinel2 directory tree, scales and merge the values.
     Output is a merged tif including 3 bands.
 
     :param DIR: base directory of Sentinel2 directory tree
-    :param false_color: if set to True the near infrared band (B08) will be taken as red band
+    :param colorscheem: usage of bands (default=natural_color will use B4,B3,B2 for red,green,blue)
 
     :returns: png image
     """
@@ -309,26 +309,28 @@ def plot_RGB(DIR, false_color=False):
     from snappy import jpy
 
     from os.path import join
-    from tempfile import mkstemp
+    # from tempfile import mkstemp
 
     mtd = 'MTD_MSIL1C.xml'
     fname = DIR.split('/')[-1]
     ID = fname.replace('.SAVE','')
-    prefix= 'RGB_%s' % ID
+    imagefile = '%s_%s.png' % (colorscheem, ID)
 
-    _, rgb_image = mkstemp(dir='.', prefix=prefix , suffix='.png')
+    # _, rgb_image = mkstemp(dir='.', prefix=prefix , suffix='.png')
     source = join(DIR, mtd)
 
     sourceProduct = ProductIO.readProduct(source)
 
-    if false_color:
+    if colorscheem == 'naturalcolor':
+        blue = sourceProduct.getBand('B2')
+        green = sourceProduct.getBand('B3')
+        red = sourceProduct.getBand('B4')
+    elif colorscheem == 'falsecolor':
         blue = sourceProduct.getBand('B2')
         green = sourceProduct.getBand('B3')
         red = sourceProduct.getBand('B8')
     else:
-        blue = sourceProduct.getBand('B2')
-        green = sourceProduct.getBand('B3')
-        red = sourceProduct.getBand('B4')
+        LOGGER.debug('colorscheem %s not found ' % colorscheem)
 
     Color = jpy.get_type('java.awt.Color')
     ColorPoint = jpy.get_type('org.esa.snap.core.datamodel.ColorPaletteDef$Point')
@@ -338,7 +340,6 @@ def plot_RGB(DIR, false_color=False):
     ImageManager = jpy.get_type('org.esa.snap.core.image.ImageManager')
     JAI = jpy.get_type('javax.media.jai.JAI')
     RenderedImage = jpy.get_type('java.awt.image.RenderedImage')
-
 
     # Disable JAI native MediaLib extensions
     System = jpy.get_type('java.lang.System')
@@ -354,9 +355,9 @@ def plot_RGB(DIR, false_color=False):
 
     image_info = ProductUtils.createImageInfo([red, green, blue], True, ProgressMonitor.NULL)
     im = ImageManager.getInstance().createColoredBandImage([red, green, blue], image_info, 0)
-    JAI.create("filestore", im, rgb_image, 'PNG')
+    JAI.create("filestore", im, imagefile, 'PNG')
 
-    return rgb_image
+    return imagefile
 
 
 # def plot_RGB(geotif, rgb_bands=[1,2,3], file_extension='jpg', dpi=50, figsize=(5,5)):

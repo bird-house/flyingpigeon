@@ -27,13 +27,13 @@ LOGGER = logging.getLogger("PYWPS")
 class EO_COP_rgbProcess(Process):
     def __init__(self):
         inputs = [
-            LiteralInput("products", "Earth Observation Product Type",
-                         abstract="Choose Earth Observation Products",
-                         default='Sentinel-2',
+            LiteralInput("colorscheems", "Color Scheem",
+                         abstract="Combination of bands being used to produce a RGB image",
+                         default='naturalcolor',
                          data_type='string',
                          min_occurs=1,
                          max_occurs=1,
-                         allowed_values=['Sentinel-2']
+                         allowed_values=['naturalcolor', 'falsecolor', ]
                          ),
 
             LiteralInput('BBox', 'Bounding Box',
@@ -103,6 +103,12 @@ class EO_COP_rgbProcess(Process):
                           as_reference=True,
                           ),
 
+            ComplexOutput("output_archive", "Tar archive",
+                          abstract="Tar archive of the iamge files",
+                          supported_formats=[Format("application/x-tar")],
+                          as_reference=True,
+                          ),
+
             ComplexOutput("output_log", "Logging information",
                           abstract="Collected logs during process run.",
                           supported_formats=[Format("text/plain")],
@@ -113,8 +119,8 @@ class EO_COP_rgbProcess(Process):
         super(EO_COP_rgbProcess, self).__init__(
             self._handler,
             identifier="EO_COPERNICUS_rgb",
-            title="EO COPERNICUS plot RGB graphics",
-            version="0.1",
+            title="SENTINEL2 plot images",
+            version="0.2",
             abstract="Based on a search querry the appropriate products are ploted as RGB graphics",
             metadata=[
                 Metadata('Documentation', 'http://flyingpigeon.readthedocs.io/en/latest/'),
@@ -131,7 +137,7 @@ class EO_COP_rgbProcess(Process):
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
-        products = [inpt.data for inpt in request.inputs['products']]
+        colorscheems = [inpt.data for inpt in request.inputs['colorscheems']]
 
         bbox = []  # order xmin ymin xmax ymax
         bboxStr = request.inputs['BBox'][0].data
@@ -190,13 +196,6 @@ class EO_COP_rgbProcess(Process):
         if not exists(DIR_EO):
             makedirs(DIR_EO)
 
-        # api.download_all(products)
-        # try:
-            # with open(filepathes, 'w') as fp:
-            #     fp.write('############################################\n')
-            #     fp.write('###     Following files are fetched      ###\n')
-            #     fp.write('############################################\n')
-            #     fp.write('\n')
 
         resources = []
 
@@ -254,22 +253,32 @@ class EO_COP_rgbProcess(Process):
         #     LOGGER.exception("Failed to plot extents of EO data")
 
         imgs = []
+        colorscheem = colorscheems[0]
         try:
             for recource in resources:
                 # LOGGER.debug('Scale and merge RGB bands')
                 # tile = eodata.get_RGB(recource)
                 LOGGER.debug('plot RGB image')
-                img = eodata.plot_RGB(recource, false_color=False)
+                img = eodata.plot_RGB(recource, colorscheem=colorscheem)
                 LOGGER.debug('IMG plotted: %s' % img)
                 imgs.append(img)
             LOGGER.debug('resources plotted')
         except:
             LOGGER.exception('failed to plot RGB graph')
 
-        from flyingpigeon import visualisation as vs
+        from flyingpigeon.utils import archive
+        tarf = archive(imgs)
 
-        images = vs.concat_images(imgs, orientation='v')
+        response.outputs['output_archive'].file = tarf
 
-        response.outputs['output_plot'].file = images
+        i = next((i for i, x in enumerate(imgs) if x), None)
+        if i is None:
+            i = "dummy.png"
+        response.outputs['output_plot'].file = imgs[i]
+
+        # from flyingpigeon import visualisation as vs
+        #
+        # images = vs.concat_images(imgs, orientation='v')
+
         response.update_status("done", 100)
         return response
