@@ -292,6 +292,40 @@ def plot_ndvi(geotif, file_extension='jpg', dpi=150, figsize=(10,10)):
     return ndvi_img # ndvi_plot
 
 
+def resample(DIR, band, resolution):
+    """
+    resamples a band of a SENTINEL product to a given target resolution
+
+    :param DIR: base directory of Sentinel2 directory tree
+    :param band: band name (e.g. B4)
+    :param resolution: target resolution in meter (e.g 10)
+
+    :return: resampled band
+    """
+
+    from snappy import ProductIO
+    from snappy import GPF
+    from snappy import jpy
+
+    GPF.getDefaultInstance().getOperatorSpiRegistry().loadOperatorSpis()
+
+    HashMap = jpy.get_type('java.util.HashMap')
+    BandDescriptor = jpy.get_type('org.esa.snap.core.gpf.common.BandMathsOp$BandDescriptor')
+
+    parameters = HashMap()
+    parameters.put('targetResolution', resolution)
+    parameters.put('upsampling','Bicubic')
+    parameters.put('downsampling','Mean')
+    parameters.put('flagDownsampling','FlagMedianAnd')
+    parameters.put('resampleOnPyramidLevels',True)
+
+    product = ProductIO.readProduct(DIR)
+    product=GPF.createProduct('Resample', parameters, product)
+
+    rsp_band = product.getBand(band)
+
+    return rsp_band
+
 def plot_RGB(DIR, colorscheem='natural_color'):
     """
     Extracts the files for RGB bands of Sentinel2 directory tree, scales and merge the values.
@@ -321,25 +355,55 @@ def plot_RGB(DIR, colorscheem='natural_color'):
 
     sourceProduct = ProductIO.readProduct(source)
 
-    if colorscheem == 'naturalcolor':
+    if colorscheem == 'naturalcolors':
         red = sourceProduct.getBand('B4')
         green = sourceProduct.getBand('B3')
         blue = sourceProduct.getBand('B2')
 
-    elif colorscheem == 'falsecolor-vegetation':
+    elif colorscheem == 'falsecolors-vegetation':
         red = sourceProduct.getBand('B8')
         green = sourceProduct.getBand('B4')
         blue = sourceProduct.getBand('B3')
 
-    elif colorscheem == 'falsecolor-urban':
+    elif colorscheem == 'falsecolors-urban':
         red = sourceProduct.getBand('B12')
         green = sourceProduct.getBand('B11')
-        blue = sourceProduct.getBand('B4')
+        blue = resample(source, 'B4', 20)  # sourceProduct.getBand('B4')
 
     elif colorscheem == 'athmospheric-penetration':
         red = sourceProduct.getBand('B12')
         green = sourceProduct.getBand('B11')
         blue = sourceProduct.getBand('B8a')
+
+    elif colorscheem == 'agriculture':
+        red = sourceProduct.getBand('B11')
+        green = resample(source, 'B8', 20)
+        blue = resample(source, 'B2', 20)
+
+    elif colorscheem == 'healthy-vegetation':
+        red = sourceProduct.getBand('B8')
+        green = resample(source, 'B11', 10)
+        blue = sourceProduct.getBand('B2')
+
+    elif colorscheem == 'land-water':
+        red =  resample(source, 'B8', 20)
+        green = sourceProduct.getBand('B11')
+        blue = resample(source, 'B4', 20 )
+
+    elif colorscheem == 'naturalcolors-athmosphericremoval':
+        red = sourceProduct.getBand('B12')
+        green = resample(source, 'B8', 20)
+        blue = resample(source, 'B3', 20)
+
+    elif colorscheem == 'shortwave-infrared':
+        red = sourceProduct.getBand('B12')
+        green = resample(source, 'B8', 20)
+        blue = resample(source, 'B4',20)
+
+    elif colorscheem == 'vegetation-analyses':
+        red = sourceProduct.getBand('B11')
+        green = resample(source, 'B8', 20)
+        blue = resample(source, 'B4',20)
 
     else:
         LOGGER.debug('colorscheem %s not found ' % colorscheem)

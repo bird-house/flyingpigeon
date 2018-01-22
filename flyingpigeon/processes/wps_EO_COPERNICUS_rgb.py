@@ -29,11 +29,20 @@ class EO_COP_rgbProcess(Process):
         inputs = [
             LiteralInput("colorscheems", "Color Scheem",
                          abstract="Combination of bands being used to produce a RGB image",
-                         default='naturalcolor',
+                         default='naturalcolors',
                          data_type='string',
                          min_occurs=1,
                          max_occurs=1,
-                         allowed_values=['naturalcolor', 'falsecolor-vegetation', 'falsecolor-urban' , 'athmospheric-penetration']
+                         allowed_values=['naturalcolors',
+                                         'falsecolors-vegetation',
+                                         'falsecolors-urban',
+                                         'athmospheric-penetration',
+                                         'agriculture',
+                                         'healthy-vegetation',
+                                         'land-water',
+                                         'naturalcolors-athmosphericremoval',
+                                         'shortwave-infrared',
+                                         'vegetation-analyses'] #  
                          ),
 
             LiteralInput('BBox', 'Bounding Box',
