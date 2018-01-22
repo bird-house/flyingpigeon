@@ -58,67 +58,67 @@ def get_bai(basedir, product='Sentinel2'):
     return bai_file
 
 
-def get_RGB(DIR, false_color=False):
-    """
-    Extracts the files for RGB bands of Sentinel2 directory tree, scales and merge the values.
-    Output is a merged tif including 3 bands.
-
-    :param DIR: base directory of Sentinel2 directory tree
-    :param false_color: if set to True the near infrared band (B08) will be taken as red band
-
-    :returns geotif: merged geotiff
-    """
-    # from subprocess import CalledProcessError
-
-    jps = []
-    fname = DIR.split('/')[-1]
-    ID = fname.replace('.SAVE','')
-
-    for filename in glob.glob(DIR + '/GRANULE/*/IMG_DATA/*jp2'):
-        jps.append(filename)
-
-    jp_b = [jp for jp in jps if '_B02.jp2' in jp][0]
-    jp_g = [jp for jp in jps if '_B03.jp2' in jp][0]
-    if false_color:
-        jp_r = [jp for jp in jps if '_B08.jp2' in jp][0]
-    else:
-        jp_r = [jp for jp in jps if '_B04.jp2' in jp][0]
-
-    # scaling the color values and trasform from jp2 to tif
-    try:
-        # response.update_status('execution of CASTf90', 50)
-        red = 'RED_{0}.tif'.format(ID)
-        cmd = ['gdal_translate', '-scale', jp_r, red ]
-        # LOGGER.debug("translate command: %s", cmd)
-        output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-        # output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-        LOGGER.info('translate output:\n %s', output)
-
-        green = 'GREEN_{0}.tif'.format(ID)
-        cmd = ['gdal_translate', '-scale', jp_g, green ]
-        LOGGER.debug("translate command: %s", cmd)
-        output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-        LOGGER.info('translate output:\n %s', output)
-
-        blue = 'BLUE_{0}.tif'.format(ID)
-        cmd = ['gdal_translate', '-scale', jp_b, blue ]
-        LOGGER.debug("translate command: %s", cmd)
-        output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-        LOGGER.info('translate output:\n %s', output)
-        # response.update_status('**** scaling suceeded', 20)
-    except:
-        msg = 'scaleing failed:\n{0}'.format(error)
-        LOGGER.exception(msg)
-
-    # merge tree files  to one geotiff with tree seperated bands
-    try:
-        merged_RGB = 'RGB_{0}.tif'.format(ID)
-        cmd = ['gdal_merge.py', '-seperate', '-co', 'PHOTOMETRIC=RGB', '-o', merged_RGB , red , green, blue ]
-        output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-    except:
-        msg = 'merging failed:\n{0}'.format(error)
-        # LOGGER.exception(msg)
-    return merged_RGB
+# def get_RGB(DIR, false_color=False):
+#     """
+#     Extracts the files for RGB bands of Sentinel2 directory tree, scales and merge the values.
+#     Output is a merged tif including 3 bands.
+#
+#     :param DIR: base directory of Sentinel2 directory tree
+#     :param false_color: if set to True the near infrared band (B08) will be taken as red band
+#
+#     :returns geotif: merged geotiff
+#     """
+#     # from subprocess import CalledProcessError
+#
+#     jps = []
+#     fname = DIR.split('/')[-1]
+#     ID = fname.replace('.SAVE','')
+#
+#     for filename in glob.glob(DIR + '/GRANULE/*/IMG_DATA/*jp2'):
+#         jps.append(filename)
+#
+#     jp_b = [jp for jp in jps if '_B02.jp2' in jp][0]
+#     jp_g = [jp for jp in jps if '_B03.jp2' in jp][0]
+#     if false_color:
+#         jp_r = [jp for jp in jps if '_B08.jp2' in jp][0]
+#     else:
+#         jp_r = [jp for jp in jps if '_B04.jp2' in jp][0]
+#
+#     # scaling the color values and trasform from jp2 to tif
+#     try:
+#         # response.update_status('execution of CASTf90', 50)
+#         red = 'RED_{0}.tif'.format(ID)
+#         cmd = ['gdal_translate', '-scale', jp_r, red ]
+#         # LOGGER.debug("translate command: %s", cmd)
+#         output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+#         # output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+#         LOGGER.info('translate output:\n %s', output)
+#
+#         green = 'GREEN_{0}.tif'.format(ID)
+#         cmd = ['gdal_translate', '-scale', jp_g, green ]
+#         LOGGER.debug("translate command: %s", cmd)
+#         output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+#         LOGGER.info('translate output:\n %s', output)
+#
+#         blue = 'BLUE_{0}.tif'.format(ID)
+#         cmd = ['gdal_translate', '-scale', jp_b, blue ]
+#         LOGGER.debug("translate command: %s", cmd)
+#         output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+#         LOGGER.info('translate output:\n %s', output)
+#         # response.update_status('**** scaling suceeded', 20)
+#     except:
+#         msg = 'scaleing failed:\n{0}'.format(error)
+#         LOGGER.exception(msg)
+#
+#     # merge tree files  to one geotiff with tree seperated bands
+#     try:
+#         merged_RGB = 'RGB_{0}.tif'.format(ID)
+#         cmd = ['gdal_merge.py', '-seperate', '-co', 'PHOTOMETRIC=RGB', '-o', merged_RGB , red , green, blue ]
+#         output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+#     except:
+#         msg = 'merging failed:\n{0}'.format(error)
+#         # LOGGER.exception(msg)
+#     return merged_RGB
 
 
 def get_timestamp(tile):
@@ -322,13 +322,25 @@ def plot_RGB(DIR, colorscheem='natural_color'):
     sourceProduct = ProductIO.readProduct(source)
 
     if colorscheem == 'naturalcolor':
-        blue = sourceProduct.getBand('B2')
-        green = sourceProduct.getBand('B3')
         red = sourceProduct.getBand('B4')
-    elif colorscheem == 'falsecolor':
-        blue = sourceProduct.getBand('B2')
         green = sourceProduct.getBand('B3')
+        blue = sourceProduct.getBand('B2')
+
+    elif colorscheem == 'falsecolor-vegetation':
         red = sourceProduct.getBand('B8')
+        green = sourceProduct.getBand('B4')
+        blue = sourceProduct.getBand('B3')
+
+    elif colorscheem == 'falsecolor-urban':
+        red = sourceProduct.getBand('B12')
+        green = sourceProduct.getBand('B11')
+        blue = sourceProduct.getBand('B4')
+
+    elif colorscheem == 'athmospheric-penetration':
+        red = sourceProduct.getBand('B12')
+        green = sourceProduct.getBand('B11')
+        blue = sourceProduct.getBand('B8a')
+
     else:
         LOGGER.debug('colorscheem %s not found ' % colorscheem)
 

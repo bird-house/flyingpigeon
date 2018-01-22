@@ -33,7 +33,7 @@ class EO_COP_rgbProcess(Process):
                          data_type='string',
                          min_occurs=1,
                          max_occurs=1,
-                         allowed_values=['naturalcolor', 'falsecolor', ]
+                         allowed_values=['naturalcolor', 'falsecolor-vegetation', 'falsecolor-urban' , 'athmospheric-penetration']
                          ),
 
             LiteralInput('BBox', 'Bounding Box',
