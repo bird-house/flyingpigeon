@@ -343,12 +343,10 @@ def plot_RGB(DIR, colorscheem='natural_color'):
     from snappy import jpy
 
     from os.path import join
-    # from tempfile import mkstemp
 
     mtd = 'MTD_MSIL1C.xml'
     fname = DIR.split('/')[-1]
     ID = fname.replace('.SAVE','')
-    imagefile = '%s_%s.png' % (colorscheem, ID)
 
     # _, rgb_image = mkstemp(dir='.', prefix=prefix , suffix='.png')
     source = join(DIR, mtd)
@@ -428,10 +426,25 @@ def plot_RGB(DIR, colorscheem='natural_color'):
     # red = product.getBand('B4')
     # green = product.getBand('B3')
     # blue = product.getBand('B2')
+    # from tempfile import mkstemp
+    # from PIL import Image
+    #
+    # _ , snapfile = mkstemp(dir='.', prefix='RGB_', suffix='.png')
+
+    imagefile = '%s_%s.png' % (colorscheem, ID)
 
     image_info = ProductUtils.createImageInfo([red, green, blue], True, ProgressMonitor.NULL)
     im = ImageManager.getInstance().createColoredBandImage([red, green, blue], image_info, 0)
     JAI.create("filestore", im, imagefile, 'PNG')
+
+
+    #
+    # basewidth = 600
+    # img = Image.open(snapfile)
+    # wpercent = (basewidth / float(img.size[0]))
+    # hsize = int((float(img.size[1]) * float(wpercent)))
+    # img = img.resize((basewidth, hsize), Image.ANTIALIAS)
+    # img.save(imagefile)
 
     return imagefile
 
