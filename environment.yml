@@ -62,8 +62,8 @@ dependencies:
 - iris
 - reportlab
 # visualisation EO-data
-- python-snappy   # =0.5.1=py27_2 # conda-forge
-- snappy        # conda-forge
+# - python-snappy   # =0.5.1=py27_2 # conda-forge
+# - snappy        # conda-forge
 ################
 ## cdo ocgis
 - cdo #=1.9.0=0
