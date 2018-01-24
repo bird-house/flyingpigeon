@@ -1,3 +1,8 @@
+#!/bin/bash
+
+# call it like this:
+# bash requirements/snappy-install.sh
+
 # configuration
 
 CWD=$(pwd -P)
@@ -24,6 +29,7 @@ echo '***************************************************'
 mkdir -p $INSTALL_DIR
 
 [ -f "$DOWNLOAD_CACHE/$ESA_SNAP" ] && echo "esa snap installation file allready downloaded " || wget -P $DOWNLOAD_CACHE http://step.esa.int/downloads/6.0/installers/$ESA_SNAP
+
 
 cat <<EOT >> $VARFILE
 deleteSnapDir=ALL
