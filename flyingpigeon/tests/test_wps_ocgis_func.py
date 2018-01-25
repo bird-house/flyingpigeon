@@ -4,7 +4,6 @@ from pywps import Service
 from pywps.tests import assert_response_success
 
 from common import TESTDATA, client_for, CFG_FILE
-from common import TESTDATA, client_for, CFG_FILE
 from flyingpigeon.processes.wps_ocgis_func import *
 
 def test_wps_FreezeThaw():

@@ -35,7 +35,7 @@ LOGGER = logging.getLogger("PYWPS")
 # Register ocgis functions, including icclim
 fr = register.FunctionRegistry()
 register.register_icclim(fr)
-icclim_classes = [k for k in fr.keys() if type(k) == str and k.startswith('icclim')]
+icclim_classes = [k for k in fr.keys() if isinstance(k, str) and k.startswith('icclim')]
 
 
 class IndicatorProcess(Process, object):
@@ -90,18 +90,24 @@ class IndicatorProcess(Process, object):
     ]
 
     def __init__(self):
-        self.ocgis_cls = fr[self.key]
-
+        self.load_meta()
         super(IndicatorProcess, self).__init__(
             self._handler,
-            identifier=self.ocgis_cls.key,
-            title=self.ocgis_cls.long_name,
-            abstract=self.ocgis_cls.description,
+            identifier=self.identifier,
+            title=self.title,
+            abstract=self.abstract,
             inputs=self.resource_inputs + self.option_inputs + self.extra_inputs,
             outputs=self.outputs,
             status_supported=True,
             store_supported=True,
         )
+
+    def load_meta(self):
+        """Extract process meta data from underlying object."""
+        self.ocgis_cls = fr[self.key]
+        self.identifier = self.ocgis_cls.key
+        self.title = self.ocgis_cls.long_name
+        self.abstract = self.ocgis_cls.description
 
     def _resource_input_handler(self, request):
         out = OrderedDict()
@@ -163,7 +169,7 @@ class IndicatorProcess(Process, object):
         if getattr(self, 'has_required_variables', None):
             extras.update({k: k for k in resources.keys()})
 
-        output = self.run(resource=resources,
+        output = run_op(resource=resources,
                           calc=[{'func': self.identifier,
                                  'name': self.identifier,
                                  'kwds': extras}],
@@ -175,31 +181,32 @@ class IndicatorProcess(Process, object):
 
         return response
 
-    def run(self, resource, calc, options):
-        from os.path import abspath, curdir
-        from ocgis import OcgOperations, RequestDataset, env
-        import uuid
+def run_op(resource, calc, options):
+    """Create an OCGIS operation, launch it and return the results."""
+    from os.path import abspath, curdir
+    from ocgis import OcgOperations, RequestDataset, env
+    import uuid
 
-        LOGGER.info('Start ocgis module call function')
+    LOGGER.info('Start ocgis module call function')
 
-        # Prepare the environment
-        env.OVERWRITE = True
-        dir_output = abspath(curdir)
+    # Prepare the environment
+    env.OVERWRITE = True
+    dir_output = abspath(curdir)
 
-        prefix = str(uuid.uuid1())
-        env.PREFIX = prefix
+    prefix = str(uuid.uuid1())
+    env.PREFIX = prefix
 
-        rd = [RequestDataset(val, variable=key if key != 'resource' else None) for key, val in resource.items()]
+    rd = [RequestDataset(val, variable=key if key != 'resource' else None) for key, val in resource.items()]
 
-        ops = OcgOperations(dataset=rd,
-                            calc=calc,
-                            calc_grouping=options['calc_grouping'],
-                            dir_output=dir_output,
-                            prefix=prefix,
-                            add_auxiliary_files=False,
-                            output_format='nc')
+    ops = OcgOperations(dataset=rd,
+                        calc=calc,
+                        calc_grouping=options['calc_grouping'],
+                        dir_output=dir_output,
+                        prefix=prefix,
+                        add_auxiliary_files=False,
+                        output_format='nc')
 
-        return ops.execute()
+    return ops.execute()
 
 #############################################
 #          Custom class definitions         #
@@ -246,12 +253,15 @@ class Duration(IndicatorProcess):
 class ICCLIMProcess(IndicatorProcess):
     """Process class instantiated using definitions from the ICCLIM library.
     """
-    def __init__(self):
-        """Scrape meta data from the icclim function docstring."""
-        self.ocgis_cls = fr[self.key]
-
+    def load_meta(self):
+        """Extract process meta data from underlying object."""
         self.icclim_func = libclim._icclim_function_map[self.key]['func']
         doc = self.icclim_func.func_doc
+
+        self.ocgis_cls = fr[self.key]
+        self.identifier = self.ocgis_cls.key
+        self.title = self.ocgis_cls.key.split('_')[1]
+        self.abstract = doc.split('\n')[1].strip()
 
         self.has_required_variables = hasattr(self.ocgis_cls, 'required_variables')
 
@@ -269,17 +279,6 @@ class ICCLIMProcess(IndicatorProcess):
                                      Format('application/x-tar'),
                                      Format('application/zip'), ]
                                  ))
-
-        super(IndicatorProcess, self).__init__(
-            self._handler,
-            identifier=self.ocgis_cls.key,
-            title=self.ocgis_cls.key.split('_')[1],
-            abstract=doc.split('\n')[1].strip(),
-            inputs=self.resource_inputs + self.option_inputs + self.extra_inputs,
-            outputs=self.outputs,
-            status_supported=True,
-            store_supported=True,
-        )
 
 
 def create_icclim_process_class(key):
