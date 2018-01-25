@@ -1,4 +1,5 @@
 import os
+import tempfile
 from pywps import configuration
 
 _PATH = os.path.abspath(os.path.dirname(__file__))
@@ -66,3 +67,6 @@ def static_path():
 
 def testdata_path():
     return os.path.join(_PATH, 'tests/testdata')
+
+def test_output_path():
+    return tempfile.mkdtemp(prefix='fptest_', dir=output_path())
