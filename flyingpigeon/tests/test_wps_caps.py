@@ -15,7 +15,7 @@ def test_caps():
                             '/wps:Process'
                             '/ows:Identifier')
     sorted_names = sorted(names.split())
-    print sorted_names
+    #print sorted_names
 
     expected_names = [
         'EO_COPERNICUS_fetch',
