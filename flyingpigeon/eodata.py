@@ -11,6 +11,9 @@ from os import path, listdir
 import glob
 import subprocess
 
+from snappy import (ProductIO, ProductUtils, ProgressMonitor, jpy)
+
+
 import logging
 LOGGER = logging.getLogger("PYWPS")
 
@@ -155,6 +158,11 @@ def plot_bai(geotif, file_extension='jpg', dpi=150, figsize=(10,10)):
     """
     #     https://ocefpaf.github.io/python4oceanographers/blog/2015/03/02/geotiff/
     from os.path import basename
+    from snappy import ProductIO
+    from snappy import ProductUtils
+    from snappy import ProgressMonitor
+    from snappy import jpy
+
 
     gdal.UseExceptions()
     # norm = vs.MidpointNormalize(midpoint=0)
@@ -236,60 +244,121 @@ def plot_products(products, extend=[10, 20, 5, 15]):
     return img
 
 
-def plot_ndvi(geotif, file_extension='jpg', dpi=150, figsize=(10,10)):
+def plot_ndvi(source, file_extension='PNG'):
     """
     plots a NDVI image
 
-    :param geotif: geotif file containning one band with NDVI values
+    :param source: geotif file containning one band with NDVI values
     :param file_extension: format of the output graphic. default='png'
 
     :result str: path to graphic file
     """
-    #     https://ocefpaf.github.io/python4oceanographers/blog/2015/03/02/geotiff/
-    from os.path import basename
 
-    gdal.UseExceptions()
-    # norm = vs.MidpointNormalize(midpoint=0)
-    ds = gdal.Open(geotif)
+    from snappy import ProductIO
+    from snappy import ProductUtils
+    from snappy import ProgressMonitor
+    from snappy import jpy
 
-    gt = ds.GetGeoTransform()
-    proj = ds.GetProjection()
-    inproj = osr.SpatialReference()
-    inproj.ImportFromWkt(proj)
-    projcs = inproj.GetAuthorityCode('PROJCS')
-    projection = ccrs.epsg(projcs)
-    # print("Projection: %s  " % projection)
-    subplot_kw = dict(projection=projection)
-    fig, ax = plt.subplots( subplot_kw=subplot_kw, dpi=dpi, figsize=figsize) #,dpi=90, figsize=(10,10)
+    try:
+        LOGGER.debug('Start plotting NDVI')
+        sourceProduct = ProductIO.readProduct(source)
+        bandname = list(sourceProduct.getBandNames())[0]
+        LOGGER.debug('bandname found: %s ' % bandname)
+        ndvi = sourceProduct.getBand(bandname)
+    except:
+        LOGGER.exception("failed to read ndvi values")
+    try:
+        LOGGER.debug('read in org.esa information')
+        # More Java type definitions required for image generation
+        Color = jpy.get_type('java.awt.Color')
+        ColorPoint = jpy.get_type('org.esa.snap.core.datamodel.ColorPaletteDef$Point')
+        ColorPaletteDef = jpy.get_type('org.esa.snap.core.datamodel.ColorPaletteDef')
+        ImageInfo = jpy.get_type('org.esa.snap.core.datamodel.ImageInfo')
+        ImageLegend = jpy.get_type('org.esa.snap.core.datamodel.ImageLegend')
+        ImageManager = jpy.get_type('org.esa.snap.core.image.ImageManager')
+        JAI = jpy.get_type('javax.media.jai.JAI')
+        RenderedImage = jpy.get_type('java.awt.image.RenderedImage')
 
-    extent = (gt[0], gt[0] + ds.RasterXSize * gt[1],
-    gt[3] + ds.RasterYSize * gt[5], gt[3])
+        # Disable JAI native MediaLib extensions
+        System = jpy.get_type('java.lang.System')
+        System.setProperty('com.sun.media.jai.disableMediaLib', 'true')
+    except:
+        LOGGER.exception('failed to read in org.esa information')
+
+    # points = [ColorPoint(-1.0, Color.WHITE),
+    #           # ColorPoint(50.0, Color.RED),
+    #           ColorPoint(1.0, Color.GREEN)]
+    # cpd = ColorPaletteDef(points)
+    # ii = ImageInfo(cpd)
+    # ndvi.setImageInfo(ii)
+
+    try:
+        LOGGER.debug('write image')
+        ##TODO: get basename for prefix
+        _, ndvi_img = mkstemp(dir='.', prefix='NDVI_' , suffix='.png')
+        image_format = 'PNG'
+
+        im = ImageManager.getInstance().createColoredBandImage([ndvi], ndvi.getImageInfo(), 0)
+        JAI.create("filestore", im, ndvi_img, image_format)
+    except:
+        LOGGER.exception('failed to write image')
+    return ndvi_img
 
 
-    bnd1 = ds.GetRasterBand(1)
-    data = bnd1.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize) # buf_xsize=ds.RasterXSize/10, buf_ysize=ds.RasterYSize/10,
-
-    img_ndvi = ax.imshow(data, extent=extent,origin='upper', vmin=-1, vmax=1, cmap=plt.cm.BrBG, transform=projection)
-
-    title = basename(geotif).split('_')[2]
-    plt.title('NDVI')
-    plt.colorbar(img_ndvi, fraction=0.046, pad=0.04)
-    ax.gridlines() #draw_labels=True,
-
-
-    ndvi_img = vs.fig2plot(fig, dpi=dpi, figsize=figsize, file_extension=file_extension)
-
-    #
-    # ndvi_img = mkstemp(dir='.', file_extension='jpg')
-    #
-    # buf = io.FileIO(ndvi_img, 'a')
-    #
-    # plt.savefig(buf)
-    # buf.seek(0)
-    #
-    # buf.close()
-
-    return ndvi_img # ndvi_plot
+# def plot_ndvi(geotif, file_extension='jpg', dpi=150, figsize=(10,10)):
+#     """
+#     plots a NDVI image
+#
+#     :param geotif: geotif file containning one band with NDVI values
+#     :param file_extension: format of the output graphic. default='png'
+#
+#     :result str: path to graphic file
+#     """
+#     #     https://ocefpaf.github.io/python4oceanographers/blog/2015/03/02/geotiff/
+#     from os.path import basename
+#
+#     gdal.UseExceptions()
+#     # norm = vs.MidpointNormalize(midpoint=0)
+#     ds = gdal.Open(geotif)
+#
+#     gt = ds.GetGeoTransform()
+#     proj = ds.GetProjection()
+#     inproj = osr.SpatialReference()
+#     inproj.ImportFromWkt(proj)
+#     projcs = inproj.GetAuthorityCode('PROJCS')
+#     projection = ccrs.epsg(projcs)
+#     # print("Projection: %s  " % projection)
+#     subplot_kw = dict(projection=projection)
+#     fig, ax = plt.subplots( subplot_kw=subplot_kw, dpi=dpi, figsize=figsize) #,dpi=90, figsize=(10,10)
+#
+#     extent = (gt[0], gt[0] + ds.RasterXSize * gt[1],
+#     gt[3] + ds.RasterYSize * gt[5], gt[3])
+#
+#
+#     bnd1 = ds.GetRasterBand(1)
+#     data = bnd1.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize) # buf_xsize=ds.RasterXSize/10, buf_ysize=ds.RasterYSize/10,
+#
+#     img_ndvi = ax.imshow(data, extent=extent,origin='upper', vmin=-1, vmax=1, cmap=plt.cm.BrBG, transform=projection)
+#
+#     title = basename(geotif).split('_')[2]
+#     plt.title('NDVI')
+#     plt.colorbar(img_ndvi, fraction=0.046, pad=0.04)
+#     ax.gridlines() #draw_labels=True,
+#
+#
+#     ndvi_img = vs.fig2plot(fig, dpi=dpi, figsize=figsize, file_extension=file_extension)
+#
+#     #
+#     # ndvi_img = mkstemp(dir='.', file_extension='jpg')
+#     #
+#     # buf = io.FileIO(ndvi_img, 'a')
+#     #
+#     # plt.savefig(buf)
+#     # buf.seek(0)
+#     #
+#     # buf.close()
+#
+#     return ndvi_img # ndvi_plot
 
 
 def resample(DIR, band, resolution):
@@ -303,9 +372,7 @@ def resample(DIR, band, resolution):
     :return: resampled band
     """
 
-    from snappy import ProductIO
     from snappy import GPF
-    from snappy import jpy
 
     GPF.getDefaultInstance().getOperatorSpiRegistry().loadOperatorSpis()
 
@@ -336,7 +403,6 @@ def plot_RGB(DIR, colorscheem='natural_color'):
 
     :returns: png image
     """
-
     from snappy import ProductIO
     from snappy import ProductUtils
     from snappy import ProgressMonitor

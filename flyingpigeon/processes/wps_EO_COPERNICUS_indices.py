@@ -97,9 +97,15 @@ class EO_COP_indicesProcess(Process):
             #               as_reference=True,
             #               ),
 
-            ComplexOutput("output_plot", "RGB files",
+            ComplexOutput("output_plot", "NDVI example file",
                           abstract="Plots in RGB colors",
                           supported_formats=[Format('image/png')],
+                          as_reference=True,
+                          ),
+
+            ComplexOutput("output_archive", "Tar archive",
+                          abstract="Tar archive of the iamge files",
+                          supported_formats=[Format("application/x-tar")],
                           as_reference=True,
                           ),
 
@@ -259,10 +265,19 @@ class EO_COP_indicesProcess(Process):
             except:
                 LOGGER.exception('failed to calculate indice for %s ' % resource)
 
-        from flyingpigeon import visualisation as vs
+        from flyingpigeon.utils import archive
+        tarf = archive(imgs)
 
-        images = vs.concat_images(imgs, orientation='v')
+        response.outputs['output_archive'].file = tarf
 
-        response.outputs['output_plot'].file = images
+        i = next((i for i, x in enumerate(imgs) if x), None)
+        if i is None:
+            i = "dummy.png"
+        response.outputs['output_plot'].file = imgs[i]
+
+        # from flyingpigeon import visualisation as vs
+        #
+        # images = vs.concat_images(imgs, orientation='v')
+
         response.update_status("done", 100)
         return response

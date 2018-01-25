@@ -42,7 +42,7 @@ class EO_COP_rgbProcess(Process):
                                          'land-water',
                                          'naturalcolors-athmosphericremoval',
                                          'shortwave-infrared',
-                                         'vegetation-analyses'] #  
+                                         'vegetation-analyses'] #
                          ),
 
             LiteralInput('BBox', 'Bounding Box',
@@ -128,7 +128,7 @@ class EO_COP_rgbProcess(Process):
         super(EO_COP_rgbProcess, self).__init__(
             self._handler,
             identifier="EO_COPERNICUS_rgb",
-            title="SENTINEL2 plot images",
+            title="SENTINEL RGB images",
             version="0.2",
             abstract="Based on a search querry the appropriate products are ploted as RGB graphics",
             metadata=[
