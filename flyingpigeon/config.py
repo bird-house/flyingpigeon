@@ -68,5 +68,5 @@ def static_path():
 def testdata_path():
     return os.path.join(_PATH, 'tests/testdata')
 
-def test_output_path():
-    return tempfile.mkdtemp(prefix='fptest_', dir=output_path())
+# Path to store test files for later inspection. Defined only once to avoid creating multiple test directories.
+test_output_path = tempfile.mkdtemp(prefix='fptest_', dir=output_path())

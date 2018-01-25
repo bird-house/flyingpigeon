@@ -136,7 +136,7 @@ class TestDissimilarity(TestBase):
             axes.flat[i].imshow(out)
             axes.flat[i].set_title(dist)
 
-        path = os.path.join(test_output_path(), 'test_spatial_analog_metrics.png')
+        path = os.path.join(test_output_path, 'test_spatial_analog_metrics.png')
         plt.savefig(path)
         plt.close()
 
