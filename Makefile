@@ -195,7 +195,7 @@ sysinstall:
 install: bootstrap
 	@echo "Installing application with buildout ..."
 	@-bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);bin/buildout buildout:anaconda-home=$(ANACONDA_HOME) -c custom.cfg"
-	#@-bash $(APP_ROOT)"/requirements/snappy-install.sh" $(CONDA_ENV_PATH) $(APP_ROOT)
+	@-bash $(APP_ROOT)"/requirements/snappy-install.sh" $(CONDA_ENV_PATH) $(APP_ROOT)
 	@echo "\nStart service with \`make start'"
 
 .PHONY: post-install
