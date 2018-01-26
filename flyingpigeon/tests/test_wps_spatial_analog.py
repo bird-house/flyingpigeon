@@ -1,4 +1,5 @@
 import pytest
+import os
 
 from pywps import Service
 from pywps.tests import assert_response_success
@@ -6,6 +7,7 @@ from pywps.tests import assert_response_success
 from flyingpigeon.processes import SpatialAnalogProcess, MapSpatialAnalogProcess
 from flyingpigeon.utils import local_path
 from flyingpigeon.tests.common import TESTDATA, client_for, CFG_FILE
+from flyingpigeon.config import test_output_path
 
 import numpy as np
 import datetime as dt
@@ -134,7 +136,8 @@ class TestDissimilarity(TestBase):
             axes.flat[i].imshow(out)
             axes.flat[i].set_title(dist)
 
-        plt.savefig('test_spatial_analog_metrics.png')
+        path = os.path.join(test_output_path, 'test_spatial_analog_metrics.png')
+        plt.savefig(path)
         plt.close()
 
     @pytest.mark.skip(reason="ocgis exception")
