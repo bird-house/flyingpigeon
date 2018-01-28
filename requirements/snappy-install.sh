@@ -1,16 +1,28 @@
 #!/bin/bash
 
 # call it like this:
-# bash requirements/snappy-install.sh
+# bash requirements/snappy-install.sh conda_env app_root
 
 # configuration
 
 CWD=$(pwd -P)
 
 # These paths can be set by Makefile in the post-install target
-DOWNLOAD_CACHE="$CWD/downloads"
-PREFIX="$CWD/parts"
+APP_ROOT="$CWD"
 CONDA_ENV="$HOME/.conda/envs/flyingpigeon"
+
+if [ $# -ge 1 ]; then
+    echo "Setting CONDA_ENV=$1"
+    CONDA_ENV="$1"
+fi
+
+if [ $# -ge 2 ]; then
+    echo "Setting APP_ROOT=$2"
+    APP_ROOT="$2"
+fi
+
+DOWNLOAD_CACHE="$APP_ROOT/downloads"
+PREFIX="$APP_ROOT/parts"
 
 # misc
 ESA_SNAP="esa-snap_sentinel_unix_6_0.sh"
