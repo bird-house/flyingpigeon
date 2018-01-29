@@ -242,7 +242,6 @@ class EO_COP_indicesProcess(Process):
             except:
                 LOGGER.exception('failed to fetch %s' % key)
 
-        response.update_status("Plotting ndvi graphics", 40)
         size = float(products[key]['size'].split(' ')[0])
         producttype = products[key]['producttype']
         beginposition = str(products[key]['beginposition'])
@@ -251,6 +250,7 @@ class EO_COP_indicesProcess(Process):
         tiles = []
         for resource in resources:
             try:
+                response.update_status("Calculating %s indices " % ( indice ), 40)
                 if indice == 'NDVI':
                     LOGGER.debug('Calculate NDVI for %s', resource )
                     tile = eodata.get_ndvi(resource)
@@ -266,7 +266,8 @@ class EO_COP_indicesProcess(Process):
         for tile in tiles:
             try:
                 LOGGER.debug("Plot tile %s" % tile)
-                eodata.plot_band(tile, file_extension='PNG', colorscheem=indice):
+                img = eodata.plot_band(tile, file_extension='PNG', colorscheem=indice)
+                imgs.append
             except:
                 LOGGER.exception("Failed de plot tile %s " % tile)
 
