@@ -11,8 +11,6 @@ from os import path, listdir
 import glob
 import subprocess
 
-from snappy import (ProductIO, ProductUtils, ProgressMonitor, jpy)
-
 import logging
 LOGGER = logging.getLogger("PYWPS")
 
@@ -24,11 +22,15 @@ def get_bai(basedir, product='Sentinel2'):
     :retrun: bai file
     """
 
+    LOGGER.debug("Start calculating BAI")
+
     prefix = path.basename(path.normpath(basedir)).split('.')[0]
 
     jps = []
     fname = basedir.split('/')[-1]
-    ID = fname.replace('.SAVE','')
+    ID = fname.replace('.SAFE','')
+
+    LOGGER.debug("Start calculating BAI for %s " % ID)
 
     for filename in glob.glob(basedir + '/GRANULE/*/IMG_DATA/*jp2'):
         jps.append(filename)
@@ -46,7 +48,7 @@ def get_bai(basedir, product='Sentinel2'):
         # 1 / ((0.1 - RED)^2 + (0.06 -NIR)^2)
         bai = 1 / (np.power((0.1 - RED) ,2) + np.power((0.06 - NIR) ,2))
 
-        print bai.shape
+        LOGGER.debug("BAI shape %s " % bai.shape)
 
         profile = red.meta
         profile.update(driver='GTiff')
@@ -56,7 +58,7 @@ def get_bai(basedir, product='Sentinel2'):
         with rasterio.open(bai_file, 'w', **profile) as dst:
             dst.write(bai.astype(rasterio.float32))
     except:
-        print("Failed to Calculate BAI for %s " % prefix)
+        LOGGER.exception("Failed to Calculate BAI for %s " % prefix)
     return bai_file
 
 
@@ -145,15 +147,17 @@ def plot_band(source, file_extension='PNG', colorscheem=None):
 
     from snappy import ProductIO
     from snappy import ProductUtils
-    from snappy import ProgressMonitor
+    # from snappy import ProgressMonitor
     from snappy import jpy
 
+    from os.path import splitext, basename
+
     try:
-        LOGGER.debug('Start plotting NDVI')
+        LOGGER.debug('Start plotting Band')
         sourceProduct = ProductIO.readProduct(source)
-        bandname = list(sourceProduct.getBandNames())[0]
-        LOGGER.debug('bandname found: %s ' % bandname)
-        ndvi = sourceProduct.getBand(bandname)
+        # bandname = list(sourceProduct.getBandNames())[0]
+        # LOGGER.debug('bandname found: %s ' % bandname)
+        ndvi = sourceProduct.getBand("band_1")
     except:
         LOGGER.exception("failed to read ndvi values")
     try:
@@ -183,17 +187,15 @@ def plot_band(source, file_extension='PNG', colorscheem=None):
 
     try:
         LOGGER.debug('write image')
-        ##TODO: get basename for prefix
-        _, ndvi_img = mkstemp(dir='.', prefix='NDVI_' , suffix='.png')
+        img_name = 'INDICE_%s.png' % (splitext(basename(source))[0])
+
         image_format = 'PNG'
 
         im = ImageManager.getInstance().createColoredBandImage([ndvi], ndvi.getImageInfo(), 0)
-        JAI.create("filestore", im, ndvi_img, image_format)
+        JAI.create("filestore", im, img_name, image_format)
     except:
         LOGGER.exception('failed to write image')
-    return ndvi_img
-
-
+    return img_name
 
 
 def resample(DIR, band, resolution):
@@ -247,7 +249,7 @@ def plot_RGB(DIR, colorscheem='natural_color'):
 
     mtd = 'MTD_MSIL1C.xml'
     fname = DIR.split('/')[-1]
-    ID = fname.replace('.SAVE','')
+    ID = fname.replace('.SAFE','')
 
     # _, rgb_image = mkstemp(dir='.', prefix=prefix , suffix='.png')
     source = join(DIR, mtd)
@@ -423,7 +425,7 @@ def get_ndvi(basedir, product='Sentinel2'):
 
     jps = []
     fname = basedir.split('/')[-1]
-    ID = fname.replace('.SAVE','')
+    ID = fname.replace('.SAFE','')
 
     for filename in glob.glob(basedir + '/GRANULE/*/IMG_DATA/*jp2'):
         jps.append(filename)
@@ -437,23 +439,7 @@ def get_ndvi(basedir, product='Sentinel2'):
         NIR = nir.read()
 
     try:
-        # ndvifile = '/home/nils/data/test_bai.tif'
-        # outfile = '--outfile={0}'.format(ndvifile)
-        # calc =  '--calc="(B-A) / (B+A)"'
-        #
-        # cmd = ['gdal_calc.py', '-A', jp_B04, '-B', jp_B08, outfile, calc]
-        # print cmd
-
-        # LOGGER.debug("calculation command: %s", cmd)
-        # output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-        # LOGGER.info('calculation output:\n %s', output)
-        # response.update_status('**** scaling suceeded', 20)
-    # except:
-    #     msg = 'NDVI failed:\n{0}'.format(error)
-    #     # LOGGER.exception(msg)
-    #     print(msg)
-
-        #compute the ndvi
+        # compute the ndvi
         ndvi = (NIR.astype(float) - RED.astype(float)) / (NIR + RED )
 
         profile = red.meta
@@ -482,7 +468,7 @@ def get_ndvi(basedir, product='Sentinel2'):
 #
 #     jps = []
 #     fname = DIR.split('/')[-1]
-#     ID = fname.replace('.SAVE','')
+#     ID = fname.replace('.SAFE','')
 #
 #     for filename in glob.glob(DIR + '/GRANULE/*/IMG_DATA/*jp2'):
 #         jps.append(filename)
