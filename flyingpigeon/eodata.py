@@ -13,7 +13,6 @@ import subprocess
 
 from snappy import (ProductIO, ProductUtils, ProgressMonitor, jpy)
 
-
 import logging
 LOGGER = logging.getLogger("PYWPS")
 
@@ -45,7 +44,7 @@ def get_bai(basedir, product='Sentinel2'):
     try:
         #compute the BAI burned area index
         # 1 / ((0.1 - RED)^2 + (0.06 -NIR)^2)
-        bai = 1 / (np.power((0.1 - RED) ,2) + np.power((0.06 -NIR) ,2))
+        bai = 1 / (np.power((0.1 - RED) ,2) + np.power((0.06 - NIR) ,2))
 
         print bai.shape
 
@@ -59,69 +58,6 @@ def get_bai(basedir, product='Sentinel2'):
     except:
         print("Failed to Calculate BAI for %s " % prefix)
     return bai_file
-
-
-# def get_RGB(DIR, false_color=False):
-#     """
-#     Extracts the files for RGB bands of Sentinel2 directory tree, scales and merge the values.
-#     Output is a merged tif including 3 bands.
-#
-#     :param DIR: base directory of Sentinel2 directory tree
-#     :param false_color: if set to True the near infrared band (B08) will be taken as red band
-#
-#     :returns geotif: merged geotiff
-#     """
-#     # from subprocess import CalledProcessError
-#
-#     jps = []
-#     fname = DIR.split('/')[-1]
-#     ID = fname.replace('.SAVE','')
-#
-#     for filename in glob.glob(DIR + '/GRANULE/*/IMG_DATA/*jp2'):
-#         jps.append(filename)
-#
-#     jp_b = [jp for jp in jps if '_B02.jp2' in jp][0]
-#     jp_g = [jp for jp in jps if '_B03.jp2' in jp][0]
-#     if false_color:
-#         jp_r = [jp for jp in jps if '_B08.jp2' in jp][0]
-#     else:
-#         jp_r = [jp for jp in jps if '_B04.jp2' in jp][0]
-#
-#     # scaling the color values and trasform from jp2 to tif
-#     try:
-#         # response.update_status('execution of CASTf90', 50)
-#         red = 'RED_{0}.tif'.format(ID)
-#         cmd = ['gdal_translate', '-scale', jp_r, red ]
-#         # LOGGER.debug("translate command: %s", cmd)
-#         output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-#         # output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-#         LOGGER.info('translate output:\n %s', output)
-#
-#         green = 'GREEN_{0}.tif'.format(ID)
-#         cmd = ['gdal_translate', '-scale', jp_g, green ]
-#         LOGGER.debug("translate command: %s", cmd)
-#         output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-#         LOGGER.info('translate output:\n %s', output)
-#
-#         blue = 'BLUE_{0}.tif'.format(ID)
-#         cmd = ['gdal_translate', '-scale', jp_b, blue ]
-#         LOGGER.debug("translate command: %s", cmd)
-#         output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-#         LOGGER.info('translate output:\n %s', output)
-#         # response.update_status('**** scaling suceeded', 20)
-#     except:
-#         msg = 'scaleing failed:\n{0}'.format(error)
-#         LOGGER.exception(msg)
-#
-#     # merge tree files  to one geotiff with tree seperated bands
-#     try:
-#         merged_RGB = 'RGB_{0}.tif'.format(ID)
-#         cmd = ['gdal_merge.py', '-seperate', '-co', 'PHOTOMETRIC=RGB', '-o', merged_RGB , red , green, blue ]
-#         output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-#     except:
-#         msg = 'merging failed:\n{0}'.format(error)
-#         # LOGGER.exception(msg)
-#     return merged_RGB
 
 
 def get_timestamp(tile):
@@ -145,56 +81,6 @@ def get_timestamp(tile):
     except:
         LOGGER.exception('failed to get timestamp for: %s' % tile)
     return timestamp
-
-
-def plot_bai(geotif, file_extension='jpg', dpi=150, figsize=(10,10)):
-    """
-    plots a BAI image
-
-    :param geotif: geotif file containning one band with BAI values
-    :param file_extension: format of the output graphic. default='png'
-
-    :result str: path to graphic file
-    """
-    #     https://ocefpaf.github.io/python4oceanographers/blog/2015/03/02/geotiff/
-    from os.path import basename
-    from snappy import ProductIO
-    from snappy import ProductUtils
-    from snappy import ProgressMonitor
-    from snappy import jpy
-
-
-    gdal.UseExceptions()
-    # norm = vs.MidpointNormalize(midpoint=0)
-    ds = gdal.Open(geotif)
-
-    gt = ds.GetGeoTransform()
-    proj = ds.GetProjection()
-    inproj = osr.SpatialReference()
-    inproj.ImportFromWkt(proj)
-    projcs = inproj.GetAuthorityCode('PROJCS')
-    projection = ccrs.epsg(projcs)
-    # print("Projection: %s  " % projection)
-    subplot_kw = dict(projection=projection)
-    fig, ax = plt.subplots( subplot_kw=subplot_kw, dpi=dpi, figsize=figsize) #,dpi=90, figsize=(10,10)
-
-    extent = (gt[0], gt[0] + ds.RasterXSize * gt[1],
-    gt[3] + ds.RasterYSize * gt[5], gt[3])
-
-
-    bnd1 = ds.GetRasterBand(1)
-    data = bnd1.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize) # buf_xsize=ds.RasterXSize/10, buf_ysize=ds.RasterYSize/10,
-
-    img_bai = ax.imshow(data, extent=extent,origin='upper', cmap=plt.cm.afmhot_r, transform=projection)
-
-    title = basename(geotif).split('_')[2]
-    plt.title('BAI')
-    plt.colorbar(img_bai, fraction=0.046, pad=0.04)
-    ax.gridlines() #draw_labels=True,
-
-    bai_img = vs.fig2plot(fig, dpi=dpi, figsize=figsize, file_extension=file_extension)
-
-    return bai_img # bai_plot
 
 
 def plot_products(products, extend=[10, 20, 5, 15]):
@@ -244,12 +130,15 @@ def plot_products(products, extend=[10, 20, 5, 15]):
     return img
 
 
-def plot_ndvi(source, file_extension='PNG'):
+def plot_band(source, file_extension='PNG', colorscheem=None):
     """
-    plots a NDVI image
+    plots the first band of a geotif file
 
     :param source: geotif file containning one band with NDVI values
     :param file_extension: format of the output graphic. default='png'
+    :param colorscheem: predifined colorscheem
+                        allowed values: "NDVI", "BAI"
+                        if None (default), plot will given as grayscale
 
     :result str: path to graphic file
     """
@@ -305,60 +194,6 @@ def plot_ndvi(source, file_extension='PNG'):
     return ndvi_img
 
 
-# def plot_ndvi(geotif, file_extension='jpg', dpi=150, figsize=(10,10)):
-#     """
-#     plots a NDVI image
-#
-#     :param geotif: geotif file containning one band with NDVI values
-#     :param file_extension: format of the output graphic. default='png'
-#
-#     :result str: path to graphic file
-#     """
-#     #     https://ocefpaf.github.io/python4oceanographers/blog/2015/03/02/geotiff/
-#     from os.path import basename
-#
-#     gdal.UseExceptions()
-#     # norm = vs.MidpointNormalize(midpoint=0)
-#     ds = gdal.Open(geotif)
-#
-#     gt = ds.GetGeoTransform()
-#     proj = ds.GetProjection()
-#     inproj = osr.SpatialReference()
-#     inproj.ImportFromWkt(proj)
-#     projcs = inproj.GetAuthorityCode('PROJCS')
-#     projection = ccrs.epsg(projcs)
-#     # print("Projection: %s  " % projection)
-#     subplot_kw = dict(projection=projection)
-#     fig, ax = plt.subplots( subplot_kw=subplot_kw, dpi=dpi, figsize=figsize) #,dpi=90, figsize=(10,10)
-#
-#     extent = (gt[0], gt[0] + ds.RasterXSize * gt[1],
-#     gt[3] + ds.RasterYSize * gt[5], gt[3])
-#
-#
-#     bnd1 = ds.GetRasterBand(1)
-#     data = bnd1.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize) # buf_xsize=ds.RasterXSize/10, buf_ysize=ds.RasterYSize/10,
-#
-#     img_ndvi = ax.imshow(data, extent=extent,origin='upper', vmin=-1, vmax=1, cmap=plt.cm.BrBG, transform=projection)
-#
-#     title = basename(geotif).split('_')[2]
-#     plt.title('NDVI')
-#     plt.colorbar(img_ndvi, fraction=0.046, pad=0.04)
-#     ax.gridlines() #draw_labels=True,
-#
-#
-#     ndvi_img = vs.fig2plot(fig, dpi=dpi, figsize=figsize, file_extension=file_extension)
-#
-#     #
-#     # ndvi_img = mkstemp(dir='.', file_extension='jpg')
-#     #
-#     # buf = io.FileIO(ndvi_img, 'a')
-#     #
-#     # plt.savefig(buf)
-#     # buf.seek(0)
-#     #
-#     # buf.close()
-#
-#     return ndvi_img # ndvi_plot
 
 
 def resample(DIR, band, resolution):
@@ -515,63 +350,6 @@ def plot_RGB(DIR, colorscheem='natural_color'):
     return imagefile
 
 
-# def plot_RGB(geotif, rgb_bands=[1,2,3], file_extension='jpg', dpi=50, figsize=(5,5)):
-#     """
-#     Calculates a RGB image (True color composite) based on red, greed, and blue bands.
-#
-#     :param geotif: geotif file containning one band with NDVI values
-#     :param file_extension: format of the output graphic. default='png'
-#     :param rgb_bands: order of bands storing red, green and blue values default=[1,2,3]
-#
-#     :result str: path to graphic file
-#     """
-#     from numpy import dstack
-#
-#     gdal.UseExceptions()
-#     ds = gdal.Open(geotif)
-#     data = ds.ReadAsArray()
-#     gt = ds.GetGeoTransform()
-#     proj = ds.GetProjection()
-#
-#     inproj = osr.SpatialReference()
-#     inproj.ImportFromWkt(proj)
-#
-#     projcs = inproj.GetAuthorityCode('PROJCS')
-#     projection = ccrs.epsg(projcs)
-#     # print(projection)
-#
-#     subplot_kw = dict(projection=projection)
-#     fig, ax = plt.subplots( subplot_kw=subplot_kw)
-#
-#     extent = (gt[0], gt[0] + ds.RasterXSize * gt[1],
-#               gt[3] + ds.RasterYSize * gt[5], gt[3])
-#
-#     red = ds.GetRasterBand(rgb_bands[0])
-#     green = ds.GetRasterBand(rgb_bands[1])
-#     blue = ds.GetRasterBand(rgb_bands[2])   # band 1 PSSCINE4Band blue
-#
-#     img_r = red.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize)
-#     img_g = green.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize)
-#     img_b = blue.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize)
-#
-#     # rgb = dstack((data[0, :, :], data[1, :, :], data[2, :, :]))
-#
-#     rgb = dstack([img_r, img_g, img_b])
-#     img = ax.imshow(rgb, extent=extent, origin='upper', transform=projection)
-#
-#     # img = ax.imshow(rgb.transpose((1, 2, 0)), extent=extent,
-#     #                 origin='upper')
-#
-#     ax.gridlines(color='lightgrey', linestyle='-')
-#     # ax.set_xticks()
-#
-#     tcc_plot = vs.fig2plot(fig, dpi=dpi, figsize=figsize, file_extension='jpg')
-#
-#     plt.close()
-#     ds = None
-#     return tcc_plot
-
-
 def merge(tiles, prefix="mosaic_"):
     """
     merging a given list of files with gdal_merge.py
@@ -689,6 +467,235 @@ def get_ndvi(basedir, product='Sentinel2'):
         LOGGER.exception("Failed to Calculate NDVI for %s " % prefix)
     return ndvifile
 
+
+# def get_RGB(DIR, false_color=False):
+#     """
+#     Extracts the files for RGB bands of Sentinel2 directory tree, scales and merge the values.
+#     Output is a merged tif including 3 bands.
+#
+#     :param DIR: base directory of Sentinel2 directory tree
+#     :param false_color: if set to True the near infrared band (B08) will be taken as red band
+#
+#     :returns geotif: merged geotiff
+#     """
+#     # from subprocess import CalledProcessError
+#
+#     jps = []
+#     fname = DIR.split('/')[-1]
+#     ID = fname.replace('.SAVE','')
+#
+#     for filename in glob.glob(DIR + '/GRANULE/*/IMG_DATA/*jp2'):
+#         jps.append(filename)
+#
+#     jp_b = [jp for jp in jps if '_B02.jp2' in jp][0]
+#     jp_g = [jp for jp in jps if '_B03.jp2' in jp][0]
+#     if false_color:
+#         jp_r = [jp for jp in jps if '_B08.jp2' in jp][0]
+#     else:
+#         jp_r = [jp for jp in jps if '_B04.jp2' in jp][0]
+#
+#     # scaling the color values and trasform from jp2 to tif
+#     try:
+#         # response.update_status('execution of CASTf90', 50)
+#         red = 'RED_{0}.tif'.format(ID)
+#         cmd = ['gdal_translate', '-scale', jp_r, red ]
+#         # LOGGER.debug("translate command: %s", cmd)
+#         output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+#         # output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+#         LOGGER.info('translate output:\n %s', output)
+#
+#         green = 'GREEN_{0}.tif'.format(ID)
+#         cmd = ['gdal_translate', '-scale', jp_g, green ]
+#         LOGGER.debug("translate command: %s", cmd)
+#         output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+#         LOGGER.info('translate output:\n %s', output)
+#
+#         blue = 'BLUE_{0}.tif'.format(ID)
+#         cmd = ['gdal_translate', '-scale', jp_b, blue ]
+#         LOGGER.debug("translate command: %s", cmd)
+#         output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+#         LOGGER.info('translate output:\n %s', output)
+#         # response.update_status('**** scaling suceeded', 20)
+#     except:
+#         msg = 'scaleing failed:\n{0}'.format(error)
+#         LOGGER.exception(msg)
+#
+#     # merge tree files  to one geotiff with tree seperated bands
+#     try:
+#         merged_RGB = 'RGB_{0}.tif'.format(ID)
+#         cmd = ['gdal_merge.py', '-seperate', '-co', 'PHOTOMETRIC=RGB', '-o', merged_RGB , red , green, blue ]
+#         output, error = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+#     except:
+#         msg = 'merging failed:\n{0}'.format(error)
+#         # LOGGER.exception(msg)
+#     return merged_RGB
+
+
+
+# def plot_bai(geotif, file_extension='jpg', dpi=150, figsize=(10,10)):
+#     """
+#     plots a BAI image
+#
+#     :param geotif: geotif file containning one band with BAI values
+#     :param file_extension: format of the output graphic. default='png'
+#
+#     :result str: path to graphic file
+#     """
+#     #     https://ocefpaf.github.io/python4oceanographers/blog/2015/03/02/geotiff/
+#     from os.path import basename
+#     from snappy import ProductIO
+#     from snappy import ProductUtils
+#     from snappy import ProgressMonitor
+#     from snappy import jpy
+#
+#
+#     gdal.UseExceptions()
+#     # norm = vs.MidpointNormalize(midpoint=0)
+#     ds = gdal.Open(geotif)
+#
+#     gt = ds.GetGeoTransform()
+#     proj = ds.GetProjection()
+#     inproj = osr.SpatialReference()
+#     inproj.ImportFromWkt(proj)
+#     projcs = inproj.GetAuthorityCode('PROJCS')
+#     projection = ccrs.epsg(projcs)
+#     # print("Projection: %s  " % projection)
+#     subplot_kw = dict(projection=projection)
+#     fig, ax = plt.subplots( subplot_kw=subplot_kw, dpi=dpi, figsize=figsize) #,dpi=90, figsize=(10,10)
+#
+#     extent = (gt[0], gt[0] + ds.RasterXSize * gt[1],
+#     gt[3] + ds.RasterYSize * gt[5], gt[3])
+#
+#
+#     bnd1 = ds.GetRasterBand(1)
+#     data = bnd1.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize) # buf_xsize=ds.RasterXSize/10, buf_ysize=ds.RasterYSize/10,
+#
+#     img_bai = ax.imshow(data, extent=extent,origin='upper', cmap=plt.cm.afmhot_r, transform=projection)
+#
+#     title = basename(geotif).split('_')[2]
+#     plt.title('BAI')
+#     plt.colorbar(img_bai, fraction=0.046, pad=0.04)
+#     ax.gridlines() #draw_labels=True,
+#
+#     bai_img = vs.fig2plot(fig, dpi=dpi, figsize=figsize, file_extension=file_extension)
+#
+#     return bai_img # bai_plot
+
+
+# def plot_ndvi(geotif, file_extension='jpg', dpi=150, figsize=(10,10)):
+#     """
+#     plots a NDVI image
+#
+#     :param geotif: geotif file containning one band with NDVI values
+#     :param file_extension: format of the output graphic. default='png'
+#
+#     :result str: path to graphic file
+#     """
+#     #     https://ocefpaf.github.io/python4oceanographers/blog/2015/03/02/geotiff/
+#     from os.path import basename
+#
+#     gdal.UseExceptions()
+#     # norm = vs.MidpointNormalize(midpoint=0)
+#     ds = gdal.Open(geotif)
+#
+#     gt = ds.GetGeoTransform()
+#     proj = ds.GetProjection()
+#     inproj = osr.SpatialReference()
+#     inproj.ImportFromWkt(proj)
+#     projcs = inproj.GetAuthorityCode('PROJCS')
+#     projection = ccrs.epsg(projcs)
+#     # print("Projection: %s  " % projection)
+#     subplot_kw = dict(projection=projection)
+#     fig, ax = plt.subplots( subplot_kw=subplot_kw, dpi=dpi, figsize=figsize) #,dpi=90, figsize=(10,10)
+#
+#     extent = (gt[0], gt[0] + ds.RasterXSize * gt[1],
+#     gt[3] + ds.RasterYSize * gt[5], gt[3])
+#
+#
+#     bnd1 = ds.GetRasterBand(1)
+#     data = bnd1.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize) # buf_xsize=ds.RasterXSize/10, buf_ysize=ds.RasterYSize/10,
+#
+#     img_ndvi = ax.imshow(data, extent=extent,origin='upper', vmin=-1, vmax=1, cmap=plt.cm.BrBG, transform=projection)
+#
+#     title = basename(geotif).split('_')[2]
+#     plt.title('NDVI')
+#     plt.colorbar(img_ndvi, fraction=0.046, pad=0.04)
+#     ax.gridlines() #draw_labels=True,
+#
+#
+#     ndvi_img = vs.fig2plot(fig, dpi=dpi, figsize=figsize, file_extension=file_extension)
+#
+#     #
+#     # ndvi_img = mkstemp(dir='.', file_extension='jpg')
+#     #
+#     # buf = io.FileIO(ndvi_img, 'a')
+#     #
+#     # plt.savefig(buf)
+#     # buf.seek(0)
+#     #
+#     # buf.close()
+#
+#     return ndvi_img # ndvi_plot
+
+
+# def plot_RGB(geotif, rgb_bands=[1,2,3], file_extension='jpg', dpi=50, figsize=(5,5)):
+#     """
+#     Calculates a RGB image (True color composite) based on red, greed, and blue bands.
+#
+#     :param geotif: geotif file containning one band with NDVI values
+#     :param file_extension: format of the output graphic. default='png'
+#     :param rgb_bands: order of bands storing red, green and blue values default=[1,2,3]
+#
+#     :result str: path to graphic file
+#     """
+#     from numpy import dstack
+#
+#     gdal.UseExceptions()
+#     ds = gdal.Open(geotif)
+#     data = ds.ReadAsArray()
+#     gt = ds.GetGeoTransform()
+#     proj = ds.GetProjection()
+#
+#     inproj = osr.SpatialReference()
+#     inproj.ImportFromWkt(proj)
+#
+#     projcs = inproj.GetAuthorityCode('PROJCS')
+#     projection = ccrs.epsg(projcs)
+#     # print(projection)
+#
+#     subplot_kw = dict(projection=projection)
+#     fig, ax = plt.subplots( subplot_kw=subplot_kw)
+#
+#     extent = (gt[0], gt[0] + ds.RasterXSize * gt[1],
+#               gt[3] + ds.RasterYSize * gt[5], gt[3])
+#
+#     red = ds.GetRasterBand(rgb_bands[0])
+#     green = ds.GetRasterBand(rgb_bands[1])
+#     blue = ds.GetRasterBand(rgb_bands[2])   # band 1 PSSCINE4Band blue
+#
+#     img_r = red.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize)
+#     img_g = green.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize)
+#     img_b = blue.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize)
+#
+#     # rgb = dstack((data[0, :, :], data[1, :, :], data[2, :, :]))
+#
+#     rgb = dstack([img_r, img_g, img_b])
+#     img = ax.imshow(rgb, extent=extent, origin='upper', transform=projection)
+#
+#     # img = ax.imshow(rgb.transpose((1, 2, 0)), extent=extent,
+#     #                 origin='upper')
+#
+#     ax.gridlines(color='lightgrey', linestyle='-')
+#     # ax.set_xticks()
+#
+#     tcc_plot = vs.fig2plot(fig, dpi=dpi, figsize=figsize, file_extension='jpg')
+#
+#     plt.close()
+#     ds = None
+#     return tcc_plot
+
+
+
 # def get_ndvi(tiles, product='PlanetScope'):
 #     """
 #     :param tiles: list of tiles including appropriate metadata files
@@ -766,29 +773,29 @@ def get_ndvi(basedir, product='Sentinel2'):
 #                 LOGGER.exception("Failed to Calculate NDVI for %s " % key)
 #     return ndvifiles
 
-
-def ndvi_sorttiles(tiles, product="PlanetScope"):
-    """
-    sort un list fo files to calculate the NDVI.
-    red nivr and metadata are sorted in an dictionary
-
-    :param tiles: list of scene files and metadata
-    :param product: EO data product e.g. "PlanetScope" (default)
-
-    :return dictionary: sorted files ordered in a dictionary
-    """
-
-    from os.path import splitext, basename
-    if product == "PlanetScope":
-        ids = []
-        for tile in tiles:
-            bn, _ = splitext(basename(tile))
-            ids.extend([bn])
-
-        tiles_dic = {key: None for key in ids}
-
-        for key in tiles_dic.keys():
-            tm = [t for t in tiles if key in t]
-            tiles_dic[key] = tm
-        # LOGGER.debug("files sorted in dictionary %s" % tiles_dic)
-    return tiles_dic
+#
+# def ndvi_sorttiles(tiles, product="PlanetScope"):
+#     """
+#     sort un list fo files to calculate the NDVI.
+#     red nivr and metadata are sorted in an dictionary
+#
+#     :param tiles: list of scene files and metadata
+#     :param product: EO data product e.g. "PlanetScope" (default)
+#
+#     :return dictionary: sorted files ordered in a dictionary
+#     """
+#
+#     from os.path import splitext, basename
+#     if product == "PlanetScope":
+#         ids = []
+#         for tile in tiles:
+#             bn, _ = splitext(basename(tile))
+#             ids.extend([bn])
+#
+#         tiles_dic = {key: None for key in ids}
+#
+#         for key in tiles_dic.keys():
+#             tm = [t for t in tiles if key in t]
+#             tiles_dic[key] = tm
+#         # LOGGER.debug("files sorted in dictionary %s" % tiles_dic)
+#     return tiles_dic
