@@ -267,7 +267,7 @@ class EO_COP_indicesProcess(Process):
             try:
                 LOGGER.debug("Plot tile %s" % tile)
                 img = eodata.plot_band(tile, file_extension='PNG', colorscheem=indice)
-                imgs.append
+                imgs.append(img)
             except:
                 LOGGER.exception("Failed de plot tile %s " % tile)
 

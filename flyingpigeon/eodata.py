@@ -48,7 +48,7 @@ def get_bai(basedir, product='Sentinel2'):
         # 1 / ((0.1 - RED)^2 + (0.06 -NIR)^2)
         bai = 1 / (np.power((0.1 - RED) ,2) + np.power((0.06 - NIR) ,2))
 
-        LOGGER.debug("BAI shape %s " % bai.shape)
+        LOGGER.debug("BAI values are calculated")
 
         profile = red.meta
         profile.update(driver='GTiff')
