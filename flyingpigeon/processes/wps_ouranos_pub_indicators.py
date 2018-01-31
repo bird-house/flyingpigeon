@@ -221,9 +221,14 @@ class OuranosPublicIndicatorProcess(Process, object):
                    {'func': 'icclim_RX5day', 'name': 'RX5day'},]
 
 
+
         scs = []
         for key, val in calc.items():
-            rd = RequestDataset(res[key])
+            if key in ['pr',]:
+                rd = RequestDataset(res[key], conform_units_to='mm/day')
+            else:
+                rd = RequestDataset(res[key])
+
             ops = OcgOperations(dataset=rd,
                                 calc=val,
                                 calc_grouping=calc_group,
