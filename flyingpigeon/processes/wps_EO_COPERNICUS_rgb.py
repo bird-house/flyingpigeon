@@ -283,6 +283,9 @@ class EO_COP_rgbProcess(Process):
         i = next((i for i, x in enumerate(imgs) if x), None)
         if i is None:
             i = "dummy.png"
+
+        
+
         response.outputs['output_plot'].file = imgs[i]
 
         # from flyingpigeon import visualisation as vs
