@@ -340,7 +340,6 @@ def plot_RGB(DIR, colorscheem='natural_color'):
     im = ImageManager.getInstance().createColoredBandImage([red, green, blue], image_info, 0)
     JAI.create("filestore", im, imagefile, 'PNG')
 
-
     #
     # basewidth = 600
     # img = Image.open(snapfile)
