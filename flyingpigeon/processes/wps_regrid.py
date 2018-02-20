@@ -17,7 +17,7 @@ LOGGER = logging.getLogger("PYWPS")
 # TODO: Add ESMF to environment.
 
 # Supported interpolation methods
-methods = map(str.lower, ESMF.RegridMethod.__members__.keys())
+methods = list(map(str.lower, ESMF.RegridMethod.__members__.keys()))
 
 
 def extract_doc():
@@ -68,15 +68,21 @@ class ESMFRegridProcess(Process):
                              Format('application/zip'),
                          ]),
 
-
             LiteralInput("method", "Regridding method",
-                         abstract="Regridding method",
-                         default="auto",
+                         abstract="Regridding method. Note that `conserve` requires grid corners to be defined.",
+                         default="bilinear",
                          allowed_values=methods,
                          data_type='string',
                          min_occurs=0,
                          max_occurs=1,
                          ),
+
+            LiteralInput("snippet", "Snippet",
+                         abstract="Run process only for first time step.",
+                         default="False",
+                         data_type="boolean",
+                         min_occurs=0,
+                         max_occurs=1)
                          ]
         outputs = [
             ComplexOutput('output_log', 'Logging information',
@@ -114,28 +120,31 @@ class ESMFRegridProcess(Process):
         # -------------- #
         # Input handling #
         # -------------- #
-        source = archiveextract(
+        resource = archiveextract(
             resource=rename_complexinputs(request.inputs['resource']))
-        LOGGER.info("source: %s " % source)
+        LOGGER.info("resource: %s " % resource)
 
         dest = archiveextract(
             resource=rename_complexinputs(request.inputs['dest']))
         LOGGER.info("dest: %s " % dest)
 
-        method = request.inputs['method'].data[0]
+        method = request.inputs['method'][0].data
         LOGGER.info("method: %s " % method)
+
+        snippet = request.inputs['snippet'][0].data
+        LOGGER.info("snippet: %s " % snippet)
 
         # -------------------- #
         # Regridding operation #
         # -------------------- #
-        sources = ocgis.RequestDataset(source)
         d = ocgis.RequestDataset(dest)
         m = getattr(ESMF.RegridMethod, method.upper())
 
         outputs = []
-        for s in sources:
+        for source in resource:
+            s = ocgis.RequestDataset(source)
             ops = ocgis.OcgOperations(dataset=s, regrid_destination=d, output_format='nc',
-                                      regrid_options={'regrid_method': m})
+                                      regrid_options={'regrid_method': m}, snippet=snippet)
             outputs.append(ops.execute())
 
         tarout_file = archive(outputs)

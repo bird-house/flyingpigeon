@@ -30,6 +30,7 @@ from .wps_ocgis_func import OCGIS_INDEX_PROCESSES  # This stores all the process
 # from .wps_EO_merge import MergeProcess
 from .wps_EO_COPERNICUS_search import EO_COP_searchProcess
 from .wps_EO_COPERNICUS_fetch import EO_COP_fetchProcess
+from .wps_regrid import ESMFRegridProcess
 
 processes = [
     ClippingProcess(),
@@ -61,6 +62,7 @@ processes = [
     # FetcheodataProcess(),
     EO_COP_searchProcess(),
     EO_COP_fetchProcess(),
+    ESMFRegridProcess(),
     # MergeProcess(),
     # NdviProcess(),
     ] + OCGIS_INDEX_PROCESSES
