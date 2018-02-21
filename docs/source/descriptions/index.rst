@@ -13,6 +13,7 @@ A combination of processes will be called a 'workflow'.
    sdm
    subset
    masks
+   regridding
    weatherregimes
    climatefactsheet
    fetch
