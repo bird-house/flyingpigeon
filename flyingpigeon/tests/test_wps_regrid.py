@@ -31,4 +31,5 @@ def test_wps_esmfregrid_process():
         datainputs=datainputs)
 
     print(resp.response[0])
+    print(datainputs)
     assert_response_success(resp)

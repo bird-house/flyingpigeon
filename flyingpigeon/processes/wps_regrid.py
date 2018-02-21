@@ -6,13 +6,16 @@ import ESMF
 from pywps import Process
 from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
-from pywps import Format, FORMATS
+from pywps import Format, configuration, get_format
 from pywps.app.Common import Metadata
 
 from flyingpigeon.log import init_process_logger
 
+import os
 import logging
 LOGGER = logging.getLogger("PYWPS")
+
+json_format = get_format('JSON')
 
 # TODO: Add ESMF to environment.
 
@@ -91,10 +94,10 @@ class ESMFRegridProcess(Process):
                           supported_formats=[Format('text/plain')]
                           ),
 
-            ComplexOutput('tarout', 'Regridded datasets',
-                          abstract="Tar archive containing the regridded netCDF files.",
+            ComplexOutput('output', 'Links to regridded dataset',
+                          abstract="JSON file listing the regridded netCDF URLs.",
                           as_reference=True,
-                          supported_formats=[Format('application/x-tar')]
+                          supported_formats=[json_format]
                           ),
         ]
 
@@ -114,6 +117,10 @@ class ESMFRegridProcess(Process):
         )
 
     def _handler(self, request, response):
+        import uuid
+        import time
+        import json
+        outputpath = configuration.get_config_value('server', 'outputpath')
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
@@ -139,15 +146,40 @@ class ESMFRegridProcess(Process):
         # -------------------- #
         d = ocgis.RequestDataset(dest)
         m = getattr(ESMF.RegridMethod, method.upper())
+        LOGGER.info('Start ocgis module call function')
+
+        # Prepare the environment
+        ocgis.env.OVERWRITE = True
+        prefix = str(uuid.uuid1())
+        ocgis.env.PREFIX = prefix
+
+        #LOGGER.info('dir_output: %s' % os.path.join(dir_output, prefix))
 
         outputs = []
         for source in resource:
             s = ocgis.RequestDataset(source)
-            ops = ocgis.OcgOperations(dataset=s, regrid_destination=d, output_format='nc',
-                                      regrid_options={'regrid_method': m}, snippet=snippet)
-            outputs.append(ops.execute())
+            ops = ocgis.OcgOperations(dataset=s, regrid_destination=d, regrid_options={'regrid_method': m},
+                                      snippet=snippet,
+                                      dir_output=outputpath, output_format='nc', prefix=prefix
+                                      )
+            outputs.append(self.output_path(ops.execute()))
 
-        tarout_file = archive(outputs)
+        time_str = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        output_file = "esmf_regrid_results_{}.json".format(time_str)
+        with open(output_file, 'w') as f:
+            f.write(json.dumps(outputs))
 
-        response.outputs['tarout'].file = tarout_file
+        response.outputs['output'].file = output_file
+        response.outputs['output'].output_format = json_format
         return response
+
+    def output_path(self, fn):
+        """Return the path to an output file, adjusting for whether or not the server is active or not."""
+        outputurl = configuration.get_config_value('server', 'outputurl')
+        outputpath = configuration.get_config_value('server', 'outputpath')
+
+        if outputurl == 'file:///tmp':
+            return 'file:///' + fn.lstrip('/')
+        else:
+            return os.path.join(outputurl, os.path.relpath(fn, outputpath))
+
