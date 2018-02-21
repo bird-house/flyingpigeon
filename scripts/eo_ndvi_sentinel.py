@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import rasterio
 import numpy as np
 from os import path, listdir
@@ -6,10 +6,7 @@ from tempfile import mkstemp
 from osgeo import gdal
 import os, rasterio
 
-
-
-DIR = '/home/nils/data/S2A_MSIL1C_20171205T092341_N0206_R093_T33PVL_20171205T130029.SAFE/GRANULE/L1C_T33PVL_A012817_20171205T093759/IMG_DATA'
-# image_file = '/home/nils/data/planet/PSScene4Band/20171118_100713_0f3b.tif'
+DIR = '/home/nils/birdhouse/var/lib/pywps/cache/flyingpigeon/scihub.copernicus/S2B_MSIL1C_20171220T092359_N0206_R093_T33PVL_20171220T130518.SAFE/GRANULE/L1C_T33PVL_A004123_20171220T093259/IMG_DATA/'
 
 jps = [path.join(DIR,jp) for jp in listdir(DIR) if ".jp2" in jp]
 
@@ -45,52 +42,95 @@ profile = red.meta
 profile.update(driver='GTiff')
 profile.update(dtype=rasterio.float32)
 
-prefix="ndvi_L1C_T33PVL_A012817_20171205T093759"
+prefix="ndvi_SENTINE2"
 _, ndvifile = mkstemp(dir='/home/nils/data/', prefix=prefix, suffix='.tif')
 with rasterio.open(ndvifile, 'w', **profile) as dst:
     dst.write(ndvi.astype(rasterio.float32))
 
 
-print ndvifile
+from flyingpigeon import eodata
+
+ndvi_img = eodata.plot_ndvi(ndvifile)
+
+print ndvi_img
 
 
-cube = gdal.Open(ndvifile)
-bnd1 = cube.GetRasterBand(1)
+# print ndvifile
+#
+# from osgeo import gdal, osr
+# from matplotlib import pyplot as plt
+#
+# gdal.UseExceptions()
+#
+#
+# fname = '/home/nils/data/.tif'
+#
+# ds = gdal.Open(fname)
+# # data = ds.ReadAsArray()
+# gt = ds.GetGeoTransform()
+# proj = ds.GetProjection()
+#
+# inproj = osr.SpatialReference()
+# inproj.ImportFromWkt(proj)
+#
+# print(inproj)
+#
+# bnd1 = ds.GetRasterBand(1)
+#
+# # img = bnd1.ReadAsArray(0, 0, ds.RasterXSize, ds.RasterYSize, dtype = uint8)
+# # img = bnd1.ReadAsArray(0, 0, buf_xsize=ds.RasterXSize//100, buf_ysize=ds.RasterYSize//100, resample_alg=gdal.GRIORA_Mode)
+#
+# img = bnd1.ReadAsArray(0, 0, buf_xsize=ds.RasterXSize/10, buf_ysize=ds.RasterYSize/10, )
+# fig = plt.figure( dpi=90, facecolor='w', edgecolor='k') # , bbox='tight'
+# img_plot = plt.imshow(img, cmap="summer",  origin='upper')
+# ndvi_img = vs.fig2plot(fig, output_dir='/home/nils/data/')
+#
+# print ndvi_img
+#
+
+
+
+# ndvifile = fname
+# cube = gdal.Open(ndvifile)
+# bnd1 = ds.GetRasterBand(1)
 # bnd2 = cube.GetRasterBand(2)
 # bnd3 = cube.GetRasterBand(3)
 
-img = bnd1.ReadAsArray(0, 0, cube.RasterXSize, cube.RasterYSize)
+# img = bnd1.ReadAsArray(0, 0, cube.RasterXSize, cube.RasterYSize)
+
 # img2 = bnd2.ReadAsArray(0, 0, cube.RasterXSize, cube.RasterYSize)
 # img3 = bnd3.ReadAsArray(0, 0, cube.RasterXSize, cube.RasterYSize)
 
 # img = np.dstack((img1, img2, img3))
 # figsize=(20, 10)
+#
+# f = plt.figure( dpi=90, facecolor='w', edgecolor='k') # , bbox='tight'
+#
+# plt.imshow(img)
+#
+# _, picname = mkstemp(dir='/home/nils/data/', suffix='.png')
+# plt.savefig(picname)
+#
+# plt.show()
 
-f = plt.figure( dpi=90, facecolor='w', edgecolor='k') # , bbox='tight'
-plt.imshow(img)
-
-_, picname = mkstemp(dir='/home/nils/data/', suffix='.tif')
-plt.savefig(picname)
-plt.show()
 
 
-
-
-
-from snappy import ProductIO
-import numpy as np
-import matplotlib.pyplot as plt
-
-p = ProductIO.readProduct('snappy/testdata/MER_FRS_L1B_SUBSET.dim')
-rad13 = p.getBand('radiance_13')
-w = rad13.getRasterWidth()
-h = rad13.getRasterHeight()
-rad13_data = np.zeros(w * h, np.float32)
-rad13.readPixels(0, 0, w, h, rad13_data)
-p.dispose()
-rad13_data.shape = h, w
-imgplot = plt.imshow(rad13_data)
-imgplot.write_png('radiance_13.png')
+#
+#
+# from snappy import ProductIO
+# import numpy as np
+# import matplotlib.pyplot as plt
+#
+# p = ProductIO.readProduct('snappy/testdata/MER_FRS_L1B_SUBSET.dim')
+# rad13 = p.getBand('radiance_13')
+# w = rad13.getRasterWidth()
+# h = rad13.getRasterHeight()
+# rad13_data = np.zeros(w * h, np.float32)
+# rad13.readPixels(0, 0, w, h, rad13_data)
+# p.dispose()
+# rad13_data.shape = h, w
+# imgplot = plt.imshow(rad13_data)
+# imgplot.write_png('radiance_13.png')
 
 #
 # # Create the file

@@ -24,19 +24,16 @@ import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
-class EO_COP_fetchProcess(Process):
-    """
-    TODO: like FetchProcess
-    """
+class EO_COP_indicesProcess(Process):
     def __init__(self):
         inputs = [
-            LiteralInput("products", "Earth Observation Product Type",
-                         abstract="Choose Earth Observation Products",
-                         default='Sentinel-2',
+            LiteralInput("indices", "Earth Observation Product Indice",
+                         abstract="Choose an indice based on Earth Observation Data",
+                         default='NDVI',
                          data_type='string',
                          min_occurs=1,
                          max_occurs=1,
-                         allowed_values=['Sentinel-2']
+                         allowed_values=['NDVI','BAI']
                          ),
 
             LiteralInput('BBox', 'Bounding Box',
@@ -94,18 +91,23 @@ class EO_COP_fetchProcess(Process):
         ]
 
         outputs = [
-            ComplexOutput("output_txt", "Files search result",
-                          abstract="Files found according to the search querry",
-                          supported_formats=[Format('text/plain')],
-                          as_reference=True,
-                          ),
+            # ComplexOutput("output_txt", "Files search result",
+            #               abstract="Files found according to the search querry",
+            #               supported_formats=[Format('text/plain')],
+            #               as_reference=True,
+            #               ),
 
-            ComplexOutput("output_plot", "Extend of tiles",
-                          abstract="Map showing the extends of the found EO data ",
+            ComplexOutput("output_plot", "NDVI example file",
+                          abstract="Plots in RGB colors",
                           supported_formats=[Format('image/png')],
                           as_reference=True,
                           ),
 
+            ComplexOutput("output_archive", "Tar archive",
+                          abstract="Tar archive of the iamge files",
+                          supported_formats=[Format("application/x-tar")],
+                          as_reference=True,
+                          ),
 
             ComplexOutput("output_log", "Logging information",
                           abstract="Collected logs during process run.",
@@ -114,14 +116,12 @@ class EO_COP_fetchProcess(Process):
                           )
         ]
 
-        super(EO_COP_fetchProcess, self).__init__(
+        super(EO_COP_indicesProcess, self).__init__(
             self._handler,
-            identifier="EO_COPERNICUS_fetch",
-            title="EO COPERNICUS search products and fetch them into the compute provider",
+            identifier="EO_COPERNICUS_indices",
+            title="EO indices",
             version="0.1",
-            abstract="Search for EO Data in the scihub.copernicus archive"
-                     "products will be fechted into the local disc system."
-                     "outuput is a list of produces and a graphical visualisation.",
+            abstract="Derivateing indices like NDVI based on",
             metadata=[
                 Metadata('Documentation', 'http://flyingpigeon.readthedocs.io/en/latest/'),
             ],
@@ -137,7 +137,9 @@ class EO_COP_fetchProcess(Process):
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
-        products = [inpt.data for inpt in request.inputs['products']]
+        # products = [inpt.data for inpt in request.inputs['indices']]
+
+        indice = request.inputs['indices'][0].data
 
         bbox = []  # order xmin ymin xmax ymax
         bboxStr = request.inputs['BBox'][0].data
@@ -190,69 +192,98 @@ class EO_COP_fetchProcess(Process):
                              # orbitdirection='ASCENDING',
                              )
 
+        LOGGER.debug('%s products found' % len(products.keys()))
         DIR_cache = cache_path()
         DIR_EO = join(DIR_cache, 'scihub.copernicus')
-
         if not exists(DIR_EO):
             makedirs(DIR_EO)
 
         # api.download_all(products)
-        _, filepathes = mkstemp(dir='.', suffix='.txt')
-        try:
-            with open(filepathes, 'w') as fp:
-                fp.write('############################################\n')
-                fp.write('###     Following files are fetched      ###\n')
-                fp.write('############################################\n')
-                fp.write('\n')
-                for key in products.keys():
+        # try:
+            # with open(filepathes, 'w') as fp:
+            #     fp.write('############################################\n')
+            #     fp.write('###     Following files are fetched      ###\n')
+            #     fp.write('############################################\n')
+            #     fp.write('\n')
+
+        resources = []
+
+        for key in products.keys():
+            try:
+                filename = products[key]['filename']
+                # form = products[key]['format']
+                ID = str(products[key]['identifier'])
+                file_zip = join(DIR_EO, '%s.zip' % (ID))
+                DIR_tile =join(DIR_EO, '%s' % (filename))
+                response.update_status("fetch file %s" % ID , 20)
+                LOGGER.debug('path: %s' % DIR_tile)
+                if exists(file_zip):
+                    LOGGER.debug('file %s.zip already fetched' % ID)
+                else:
                     try:
-
-                        filename = products[key]['filename']
-                        form = products[key]['format']
-                        response.update_status("fetch file %s" % filename, 20)
-                        ID = str(products[key]['identifier'])
-                        file_zip = join(DIR_EO, '%s.zip' % (ID))
-                        DIR_tile =join(DIR_EO, '%s' % (filename))
-
-                        if exists(file_zip):
-                            LOGGER.debug('file %s.zip already fetched' % ID)
-                        else:
-                            try:
-                                api.download(key, directory_path=DIR_EO)
-                                response.update_status("***%s sucessfully fetched" % ID, 20)
-                                LOGGER.debug('Tile %s fetched' % ID)
-                            except:
-                                LOGGER.exception('failed to extract file %s' % filename)
-                        if exists(DIR_tile):
-                             LOGGER.debug('file %s already unzipped' % filename)
-                        else:
-                            try:
-                                # zipfile = join(DIR_EO, '%szip' % (filename)).strip(form)
-                                zip_ref = zipfile.ZipFile(file_zip, 'r')
-                                zip_ref.extractall(DIR_EO)
-                                zip_ref.close()
-                                LOGGER.debug('Tile %s unzipped' % ID)
-                            except:
-                                LOGGER.exception('failed to extract %s ' % file_zip)
+                        api.download(key, directory_path=DIR_EO)
+                        response.update_status("***%s sucessfully fetched" % ID, 20)
+                        LOGGER.debug('Tile %s fetched' % ID)
+                        LOGGER.debug('Files %s fetched ' % ID)
                     except:
-                        LOGGER.exception('failed to fetch %s' % filename)
+                        LOGGER.exception('failed to extract file %s' % filename)
+                if exists(DIR_tile):
+                     LOGGER.debug('file %s already unzipped' % filename)
+                else:
+                    try:
+                        # zipfile = join(DIR_EO, '%szip' % (filename)).strip(form)
+                        zip_ref = zipfile.ZipFile(file_zip, 'r')
+                        zip_ref.extractall(DIR_EO)
+                        zip_ref.close()
+                        LOGGER.debug('Tile %s unzipped' % ID)
+                    except:
+                        LOGGER.exception('failed to extract %s ' % file_zip)
+                resources.append(DIR_tile)
+            except:
+                LOGGER.exception('failed to fetch %s' % key)
 
-                    response.update_status("write out information about files", 80)
-                    size = float(products[key]['size'].split(' ')[0])
-                    producttype = products[key]['producttype']
-                    beginposition = str(products[key]['beginposition'])
-                    fp.write('%s \t %s \t %s \t %s \t %s \n' % (ID, size, producttype, beginposition, key))
-            response.outputs['output_txt'].file = filepathes
-        except:
-            LOGGER.exception('failed to fetch resource')
-        # response.outputs['output'].file = filepathes
-        try:
-            extend = [float(bboxStr[0])-5, float(bboxStr[1])+5, float(bboxStr[2])-5, float(bboxStr[3])+5]
-            img = eodata.plot_products(products, extend=extend)
-            response.outputs['output_plot'].file = img
-            LOGGER.debug('location of tiles plotted to map')
-        except:
-            LOGGER.exception("Failed to plot extents of EO data")
+        size = float(products[key]['size'].split(' ')[0])
+        producttype = products[key]['producttype']
+        beginposition = str(products[key]['beginposition'])
+
+        imgs = []
+        tiles = []
+        for resource in resources:
+            try:
+                response.update_status("Calculating %s indices " % ( indice ), 40)
+                if indice == 'NDVI':
+                    LOGGER.debug('Calculate NDVI for %s', resource )
+                    tile = eodata.get_ndvi(resource)
+                    LOGGER.debug('resources BAI calculated')
+                if indice == 'BAI':
+                    LOGGER.debug('Calculate BAI for %s', resource )
+                    tile = eodata.get_bai(resource)
+                    LOGGER.debug('resources BAI calculated')
+                tiles.append(tile)
+            except:
+                LOGGER.exception('failed to calculate indice for %s ' % resource)
+
+        for tile in tiles:
+            try:
+                LOGGER.debug("Plot tile %s" % tile)
+                img = eodata.plot_band(tile, file_extension='PNG', colorscheem=indice)
+                imgs.append(img)
+            except:
+                LOGGER.exception("Failed de plot tile %s " % tile)
+
+        from flyingpigeon.utils import archive
+        tarf = archive(imgs)
+
+        response.outputs['output_archive'].file = tarf
+
+        i = next((i for i, x in enumerate(imgs) if x), None)
+        if i is None:
+            i = "dummy.png"
+        response.outputs['output_plot'].file = imgs[i]
+
+        # from flyingpigeon import visualisation as vs
+        #
+        # images = vs.concat_images(imgs, orientation='v')
 
         response.update_status("done", 100)
         return response
