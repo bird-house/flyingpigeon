@@ -43,6 +43,25 @@ def extract_doc():
 
     return '\n'.join(lines)
 
+def actual_output_path(fn):
+    """Return the path to an output file, adjusting for whether or not the server is active or not.
+
+    Example
+    -------
+    On a local server it would yield something like::
+
+       http://localhost:8090/wpsoutputs/flyingpigeon/af06fb/af06fb.nc
+
+    While in test mode it would yield::
+
+       file:///tmp/af06fb/af06fb.nc
+
+    """
+    outputurl = configuration.get_config_value('server', 'outputurl')
+    outputpath = configuration.get_config_value('server', 'outputpath')
+
+    return os.path.join(outputurl, os.path.relpath(fn, outputpath))
+
 
 class ESMFRegridProcess(Process):
     __doc__ = extract_doc()
@@ -153,8 +172,6 @@ class ESMFRegridProcess(Process):
         prefix = str(uuid.uuid1())
         ocgis.env.PREFIX = prefix
 
-        #LOGGER.info('dir_output: %s' % os.path.join(dir_output, prefix))
-
         outputs = []
         for source in resource:
             s = ocgis.RequestDataset(source)
@@ -162,7 +179,7 @@ class ESMFRegridProcess(Process):
                                       snippet=snippet,
                                       dir_output=outputpath, output_format='nc', prefix=prefix
                                       )
-            outputs.append(self.output_path(ops.execute()))
+            outputs.append(actual_output_path(ops.execute()))
 
         time_str = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
         output_file = "esmf_regrid_results_{}.json".format(time_str)
@@ -172,14 +189,3 @@ class ESMFRegridProcess(Process):
         response.outputs['output'].file = output_file
         response.outputs['output'].output_format = json_format
         return response
-
-    def output_path(self, fn):
-        """Return the path to an output file, adjusting for whether or not the server is active or not."""
-        outputurl = configuration.get_config_value('server', 'outputurl')
-        outputpath = configuration.get_config_value('server', 'outputpath')
-
-        if outputurl == 'file:///tmp':
-            return 'file:///' + fn.lstrip('/')
-        else:
-            return os.path.join(outputurl, os.path.relpath(fn, outputpath))
-

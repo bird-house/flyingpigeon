@@ -30,6 +30,9 @@ def test_wps_esmfregrid_process():
         identifier='esmf_regrid',
         datainputs=datainputs)
 
-    print(resp.response[0])
-    print(datainputs)
+    #print(resp.response[0])
+    #print(datainputs)
     assert_response_success(resp)
+
+
+#http://localhost:8093/wps?service=WPS&version=1.0.0&request=execute&identifier=esmf_regrid&datainputs=resource=files@xlink:href=file:///home/david/src/flyingpigeon/flyingpigeon/tests/testdata/cmip5/tasmax_Amon_MPI-ESM-MR_rcp45_r1i1p1_200601-200612.nc;dest=files@xlink:href=file:///home/david/src/flyingpigeon/flyingpigeon/tests/testdata/cordex/tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon_200602-200612.nc;method=bilinear;snippet=True;
