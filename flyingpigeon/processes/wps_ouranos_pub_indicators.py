@@ -9,15 +9,18 @@ from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import GROUPING
 from flyingpigeon.log import init_process_logger
 
+import numpy as np
 from ocgis.calc import base
 from ocgis.calc.library import register
 from os.path import join, abspath, dirname, getsize, curdir
 from ocgis import FunctionRegistry, OcgOperations, RequestDataset, env
 from ocgis.conv.nc import NcConverter
+from ocgis.util.units import get_are_units_equal_by_string_or_cfunits
 import uuid
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
+
 
 class Average(base.AbstractMultivariateFunction):
     """
@@ -58,6 +61,43 @@ class Average(base.AbstractMultivariateFunction):
         return self.units
 
 FunctionRegistry.append(Average)
+
+
+class FreezeThawOura(base.AbstractMultivariateFunction):
+    """Freeze-thaw cycles"""
+    key = 'freezethaw_oura'
+    long_name = 'Freeze-thaw cycles'
+    standard_name = 'freeze_thaw_cycles'
+    description = 'Whether the temperature crossed 0 deg. C'
+    required_variables = ['tasmin', 'tasmax']
+
+    def sum_dim(self):
+        return self.field.data_variables[0].dimension_names.index('time')
+
+    def aggregate_temporal(self, values, **kwargs):
+        """
+        Optional method to overload for temporal aggregation.
+
+        :param values: The input five-dimensional array.
+        :type values: :class:`numpy.ma.core.MaskedArray`
+        """
+
+        return np.ma.sum(values, axis=self.sum_dim())
+
+    def calculate(self, tasmin=None, tasmax=None):
+        units_tasmin = self.field.data_variables[0].units
+        units_tasmax = self.field.data_variables[1].units
+        c1 = get_are_units_equal_by_string_or_cfunits(
+            units_tasmin, 'K', try_cfunits=env.USE_CFUNITS)
+        c2 = get_are_units_equal_by_string_or_cfunits(
+            units_tasmax, 'K', try_cfunits=env.USE_CFUNITS)
+        if not (c1 and c2):
+            raise NotImplementedError("Units not in kelvin.")
+        crosses_zero = np.bitwise_and(tasmin < 273.15, tasmax > 273.15)
+        return crosses_zero.sum(self.sum_dim())
+
+
+FunctionRegistry.append(FreezeThawOura)
 
 
 class OuranosPublicIndicatorProcess(Process, object):
@@ -209,7 +249,7 @@ class OuranosPublicIndicatorProcess(Process, object):
         calc = {}
         calc['tas'] = [{'func': 'icclim_TG', 'name':'TG'},
                        {'func': 'icclim_GD4', 'name': 'GD4'},
-                       {'func': 'freezethaw', 'name': 'freezethaw', 'kwds':{'threshold':15}}]
+                      ]
 
         calc['tasmax'] = [{'func': 'icclim_TX', 'name': 'TX'},
                           {'func':'threshold', 'name':'ND>30', 'kwds':{'threshold':30+273.15, 'operation':'gt'}}
@@ -220,12 +260,21 @@ class OuranosPublicIndicatorProcess(Process, object):
         calc['pr'] = [{'func':'icclim_PRCPTOT', 'name':'PRCPTOT'},
                    {'func': 'icclim_RX5day', 'name': 'RX5day'},]
 
-
+        calc['freezethaw'] = [{'func': 'freezethaw_oura', 'name': 'freezethaw',
+                               'kwds': {'tasmin': 'tasmin',
+                                        'tasmax': 'tasmax'}}]
 
         scs = []
         for key, val in calc.items():
             if key in ['pr',]:
                 rd = RequestDataset(res[key], conform_units_to='mm/day')
+            elif key in ['freezethaw']:
+                rdmin = RequestDataset(res['tasmin'])
+                rdmax = RequestDataset(res['tasmax'])
+                ops = OcgOperations(dataset=[rdmin, rdmax], calc=val,
+                                    calc_grouping=calc_group)
+                scs.append(ops.execute())
+                continue
             else:
                 rd = RequestDataset(res[key])
 
