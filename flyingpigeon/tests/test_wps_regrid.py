@@ -1,12 +1,8 @@
-import pytest
-import os
-
 from pywps import Service
 from pywps.tests import assert_response_success
 
 from flyingpigeon.processes import ESMFRegridProcess
 from flyingpigeon.tests.common import TESTDATA, client_for, CFG_FILE
-from flyingpigeon.config import test_output_path
 
 datainputs_fmt = (
         "resource=files@xlink:href={0};"
