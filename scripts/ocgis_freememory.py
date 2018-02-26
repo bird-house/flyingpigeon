@@ -1,4 +1,4 @@
-from flyingpigeon import utils
+import request
 
 from ocgis import RequestDataset, OcgOperations, env
 from ocgis.util.large_array import compute
@@ -11,25 +11,22 @@ years = range(2007, 2017)
 
 ncs = []
 for year in years:
-    url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/pressure/slp.%s.nc' % (year)
-    ncs.extend(utils.download(url, cache=True))
+    url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.%s.nc' % (year)
+    ncs.extend(requests.get(url, stream=True, verify=False))
 
 
-level_range = [700, 700]
+### test 1 -- just subset
 time_range = [dt.strptime('20100315', '%Y%m%d'), dt.strptime('20111210', '%Y%m%d')]
 bbox = [-80, 20, 20, 70]
-
 rd = RequestDataset(ncs)
-
 ops = OcgOperations(rd,
                     time_range=time_range,
-                    level_range=level_range,
                     geom=bbox,
                     output_format='nc',
-                    prefix='ocgis_module_optimisation',
+                    prefix='ocgis_freememory_test1',
                     add_auxiliary_files=False)
 
-# ###################################
+# ############################
 # check free memory available somehow
 
 # free_memory = ...
@@ -50,11 +47,12 @@ shnap = dt.now()
 print 'operation performed with execute in %s sec' % (shnap - shnip).total_seconds()
 print geom
 
-# else
-
 ########################
 # calculate tile dimension:
-tile_dimension = 5  # yea nice calculation
+
+# here comes a nice tile calculation:
+# tile_dimension = ...
+tile_dimension = 5  # tile_dimension
 
 shnip = dt.now()
 geom = compute(ops, tile_dimension=tile_dimension, verbose=True)
