@@ -19,7 +19,6 @@ level_range = [700, 700]
 time_range = [dt.strptime('20100315', '%Y%m%d'), dt.strptime('20111210', '%Y%m%d')]
 bbox = [-80, 20, 20, 70]
 
-
 rd = RequestDataset(ncs)
 
 ops = OcgOperations(rd,
