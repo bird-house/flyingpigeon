@@ -107,7 +107,7 @@ def wfs_common(request, response, mode, spatial_mode='wfs'):
                 file_prefix = file_name[:-3]
             else:
                 file_prefix = file_name
-            ocgis.env.DIR_OUTPUT = os.getcwd()
+            ocgis.env.DIR_OUTPUT = tempfile.mkdtemp(dir=os.getcwd())
             ocgis.env.OVERWRITE = True
             nc = netCDF4.Dataset(one_file, 'r')
             var_names = guess_main_variables(nc)
@@ -165,6 +165,7 @@ def wfs_common(request, response, mode, spatial_mode='wfs'):
                 mv_file = os.path.join(mv_dir, mv_name)
                 shutil.move(ops, mv_file)
                 output_files.append(mv_file)
+                shutil.rmtree(ocgis.env.DIR_OUTPUT)
 
                 # Cover the case of an online wps server and the offline
                 # mode for tests.

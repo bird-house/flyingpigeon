@@ -1,3 +1,6 @@
+import os
+import tempfile
+
 from pywps import Process
 from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
@@ -205,6 +208,7 @@ class OuranosPublicIndicatorProcess(Process, object):
     def _handler(self, request, response):
         from flyingpigeon.utils import calc_grouping
 
+        ocgis.env.DIR_OUTPUT = tempfile.mkdtemp(dir=os.getcwd())
         env.OVERWRITE = True
 
         init_process_logger('log.txt')
@@ -299,6 +303,7 @@ class OuranosPublicIndicatorProcess(Process, object):
         env.PREFIX = prefix
         conv = NcConverter([out], outdir=dir_output, prefix=prefix)
         conv.write()
+        shutil.rmtree(ocgis.env.DIR_OUTPUT)
 
         response.outputs['output_netcdf'].file = conv.path
 
