@@ -84,14 +84,23 @@ dependencies:
 # ################
 # # r
 - cairo # for X11 independend plot support
-- r=3.2  # 3.3 conflicts with icu=56
+- r  # 3.3 conflicts with icu=56
 - rpy2 #=2.7.0
 - r-mclust #=5.1 subsuituted by cluster
-- r-ncdf4=1.15=1
+- r-ncdf4 #=1.15=1
 - r-fields #=8.4 conflicts with r3.3.1 needs 3.2
 - r-gridextra #=2.0.0
 - harfbuzz
 # #- r-cairo#=1.5_9 build in r-base
+################
+# KDDM BC
+- r-memoise>=1.0.0
+- r-ncdf4
+- r-KernSmooth
+- r-quantreg
+- r-scales
+- r-devtools
+- r-roxygen2
 ################
 # esgf
 - esgf-pyclient
