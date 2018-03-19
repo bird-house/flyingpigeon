@@ -23,6 +23,7 @@ __pycache__
 # Unit test / Coverage reports
 .cache
 .coverage
+.pytest_cache
 .tox
 nosetests.xml
 unit_tests/testdata.json
