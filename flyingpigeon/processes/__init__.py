@@ -24,6 +24,14 @@ from .wps_plot_timeseries import PlottimeseriesProcess
 from .wps_segetalflora import SegetalfloraProcess
 from .wps_spatial_analog import SpatialAnalogProcess
 from .wps_map_spatial_analog import MapSpatialAnalogProcess
+from .wps_subset import SubsetProcess
+from .wps_averager import AveragerProcess
+from .wps_subset_WFS import SubsetWFSProcess
+from .wps_averager_WFS import AveragerWFSProcess
+from .wps_subset_bbox import SubsetBboxProcess
+from .wps_averager_bbox import AveragerBboxProcess
+from .wps_ouranos_pub_indicators import OuranosPublicIndicatorProcess
+from .wps_ncmerge import NCMergeProcess
 from .wps_ocgis_func import OCGIS_INDEX_PROCESSES  # This stores all the processes defined in the module.
 # from .wps_EO_fetch import FetcheodataProcess
 # from .wps_EO_ndvi import NdviProcess
@@ -62,6 +70,14 @@ processes = [
     SegetalfloraProcess(),
     SpatialAnalogProcess(),
     MapSpatialAnalogProcess(),
+    SubsetProcess(),
+    AveragerProcess(),
+    SubsetWFSProcess(),
+    AveragerWFSProcess(),
+    SubsetBboxProcess(),
+    AveragerBboxProcess(),
+    OuranosPublicIndicatorProcess(),
+    NCMergeProcess(),
     # FetcheodataProcess(),
     EO_COP_searchProcess(),
     EO_COP_fetchProcess(),
@@ -73,12 +89,16 @@ processes = [
     KDDM_BC_Process(),
     ] + OCGIS_INDEX_PROCESSES
 
-
 """
 pywps3 processes:
 
 # climate for impact processes
 "wps_c4i_simple_indice",
+<<<<<<< HEAD
+# processes under development
+# "wps_eobs2cordex",
+=======
+>>>>>>> master
 
 # TODO: c4i processes with multiple input sources
 # "wps_c4i_multivar_indice",

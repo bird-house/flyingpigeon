@@ -15,7 +15,7 @@ def test_caps():
                             '/wps:Process'
                             '/ows:Identifier')
     sorted_names = sorted(names.split())
-    #print sorted_names
+    print sorted_names
 
     expected_names = [
         'EO_COPERNICUS_fetch',
@@ -26,6 +26,9 @@ def test_caps():
         # 'analogs_model',
         # 'analogs_reanalyse',
         # 'analogs_viewer',
+        'averager',
+        'averager_WFS',
+        'averager_bbox',
         # 'climatefactsheet',
         'esmf_regrid',
         'fetch_resources',
@@ -34,6 +37,8 @@ def test_caps():
         'indices_single',
         'landseamask',
         'map_spatial_analog',
+        'ncmerge',
+        'ouranos_public_indicators',
         'plot_timeseries',
         'pointinspection',
         # 'robustness',
@@ -44,6 +49,9 @@ def test_caps():
         'sdm_getindices',
         'segetalflora',
         'spatial_analog',
+        'subset',
+        'subset_bbox',
+        'subset_WFS',
         'subset_continents',
         'subset_countries',
         'subset_regionseurope',

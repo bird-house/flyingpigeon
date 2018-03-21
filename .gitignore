@@ -7,6 +7,7 @@
 # custom configs
 custom.cfg
 Makefile.config
+flyingpigeon/tests/configtests.cfg
 
 # Python / Extensions etc.
 *~
