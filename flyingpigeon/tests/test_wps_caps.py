@@ -27,6 +27,7 @@ def test_caps():
         # 'analogs_reanalyse',
         # 'analogs_viewer',
         # 'climatefactsheet',
+        'esmf_regrid',
         'fetch_resources',
         # 'indices_percentile,
         'indices_percentiledays',

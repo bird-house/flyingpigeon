@@ -1,4 +1,4 @@
-VERSION := 0.3.14
+VERSION := 0.3.15
 RELEASE := master
 
 # Include custom config if it is available
@@ -43,10 +43,6 @@ endif
 DOWNLOAD_CACHE := $(APP_ROOT)/downloads
 BUILDOUT_FILES := parts eggs develop-eggs bin .installed.cfg .mr.developer.cfg *.egg-info bootstrap-buildout.py *.bak.* $(DOWNLOAD_CACHE)
 
-# Docker
-DOCKER_IMAGE := birdhouse/$(APP_NAME)
-DOCKER_CONTAINER := $(APP_NAME)
-
 # end of configuration
 
 .DEFAULT_GOAL := help
@@ -84,9 +80,6 @@ help:
 	@echo "  stop        to stop supervisor service."
 	@echo "  restart     to restart supervisor service."
 	@echo "  status      to show supervisor status"
-	@echo "\nDocker targets:"
-	@echo "  Dockerfile  to generate a Dockerfile for $(APP_NAME)."
-	@echo "  dockerbuild to build a docker image for $(APP_NAME)."
 
 .PHONY: version
 version:
@@ -103,7 +96,6 @@ info:
 	@echo "  APP_NAME            $(APP_NAME)"
 	@echo "  APP_ROOT            $(APP_ROOT)"
 	@echo "  DOWNLOAD_CACHE      $(DOWNLOAD_CACHE)"
-	@echo "  DOCKER_IMAGE        $(DOCKER_IMAGE)"
 
 ## Helper targets ... ensure that Makefile etc are in place
 
@@ -195,13 +187,12 @@ sysinstall:
 install: bootstrap
 	@echo "Installing application with buildout ..."
 	@-bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);bin/buildout buildout:anaconda-home=$(ANACONDA_HOME) -c custom.cfg"
-	@-bash $(APP_ROOT)"/requirements/snappy-install.sh" $(CONDA_ENV_PATH) $(APP_ROOT)
 	@echo "\nStart service with \`make start'"
 
 .PHONY: post-install
 post-install:
-		@echo "Installing snappy ..."
-		@-bash $(APP_ROOT)"/requirements/snappy-install.sh" $(CONDA_ENV_PATH) $(APP_ROOT)
+	@echo "Installing snappy ..."
+	@-bash $(APP_ROOT)"/requirements/snappy-install.sh" $(CONDA_ENV_PATH) $(APP_ROOT)
 
 .PHONY: update
 update:
@@ -300,26 +291,3 @@ restart:
 status:
 	@echo "Supervisor status ..."
 	bin/supervisorctl status
-
-
-## Docker targets
-
-.PHONY: Dockerfile
-Dockerfile: bootstrap
-	@echo "Update Dockerfile ..."
-	bin/buildout -c custom.cfg install docker
-
-.PHONY: dockerrmi
-dockerrmi:
-	@echo "Removing previous docker image ..."
-	docker rmi $(DOCKER_IMAGE)
-
-.PHONY: dockerbuild
-dockerbuild: Dockerfile
-	@echo "Building docker image ..."
-	docker build --rm -t $(DOCKER_IMAGE) .
-
-.PHONY: dockerrun
-dockerrun: dockerbuild
-	@echo "Run docker image ..."
-	docker run -i -t -p 9001:9001 --name=$(DOCKER_CONTAINER) $(DOCKER_IMAGE) /bin/bash
