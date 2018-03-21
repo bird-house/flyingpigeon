@@ -17,8 +17,6 @@ LOGGER = logging.getLogger("PYWPS")
 
 json_format = get_format('JSON')
 
-# TODO: Add ESMF to environment.
-
 # Supported interpolation methods
 methods = list(map(str.lower, ESMF.RegridMethod.__members__.keys()))
 
