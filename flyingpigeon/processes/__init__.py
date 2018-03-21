@@ -69,7 +69,6 @@ processes = [
     SegetalfloraProcess(),
     SpatialAnalogProcess(),
     MapSpatialAnalogProcess(),
-<<<<<<< HEAD
     SubsetProcess(),
     AveragerProcess(),
     SubsetWFSProcess(),
@@ -78,8 +77,6 @@ processes = [
     AveragerBboxProcess(),
     OuranosPublicIndicatorProcess(),
     NCMergeProcess(),
-]
-=======
     # FetcheodataProcess(),
     EO_COP_searchProcess(),
     EO_COP_fetchProcess(),
@@ -89,8 +86,6 @@ processes = [
     # MergeProcess(),
     # NdviProcess(),
     ] + OCGIS_INDEX_PROCESSES
-
->>>>>>> master
 
 """
 pywps3 processes:
