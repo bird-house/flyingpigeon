@@ -1,10 +1,11 @@
 name: flyingpigeon
 channels:
+# ocgis
+- nesii/label/ocgis-next
+- nesii/label/dev-esmf
 - birdhouse
 - conda-forge
 - defaults
-# ocgis
-- nesii
 # the r hell ...
 - r
 - bioconda  # for r-mclust
@@ -71,8 +72,9 @@ dependencies:
 - libnetcdf=4.4.1.1
 - python-ecmwf_grib=1.23.1
 - python-cdo=1.3.3
-# - ocgis=2.0.0
-- ocgis-next=2.1.0.dev1 # =1.4.0.dev1=py27_7  #  nesii/channel/ocgis-next
+- ocgis-next
+- esmf
+- esmpy
 - icclim
 - proj4 #=4.9.3
 - geos #=3.5.1=1
@@ -103,6 +105,7 @@ dependencies:
   - sphinx-autoapi==0.5.0
 #  - cdo==1.3.0
   - sentinelsat
+  - -e git+https://github.com/huard/sphinx-autodoc-pywps.git#egg=sphinx_autodoc_pywps
 #  - planet
 #  - rasterio
 #  - retrying
