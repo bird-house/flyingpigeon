@@ -3,7 +3,9 @@ branches:
   only:
     - master
     - next
+    - 1.0.x
     - pingudev
+    - satdev
 python:
   - "2.7"
 sudo: false

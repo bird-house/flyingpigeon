@@ -1,4 +1,4 @@
-from os.path import join, abspath, dirname, getsize, curdir
+from os.path import join, abspath, dirname, getsize, curdir, isfile
 from netCDF4 import Dataset
 from flyingpigeon import config
 import logging
@@ -22,9 +22,9 @@ def has_Lambert_Conformal(resource):
     return True
 
 
-def call(resource=[], variable=None, dimension_map=None, calc=None,
+def call(resource=[], variable=None, dimension_map=None, agg_selection=True, calc=None,
          calc_grouping=None, conform_units_to=None, crs=None, memory_limit=None,  prefix=None,
-         regrid_destination=None, regrid_options='bil', level_range=None,
+         regrid_destination=None, regrid_options='bil', level_range=None, cdover='python',
          geom=None, output_format_options=None, search_radius_mult=2.,
          select_nearest=False, select_ugid=None, spatial_wrapping=None,
          t_calendar=None, time_region=None,
@@ -35,8 +35,10 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     :param resource:
     :param variable: variable in the input file to be picked
     :param dimension_map: dimension map in case of unconventional storage of data
+    :param agg_selection: For aggregation of in case of mulitple polygons geoms
     :param calc: ocgis calc syntax for calculation partion
     :param calc_grouping: time aggregate grouping
+    :param cdover: use py-cdo ('python', by default) or cdo from the system ('system')
     :param conform_units_to:
     :param crs: coordinate reference system
     :param memory_limit: limit the amount of data to be loaded into the memory at once \
@@ -68,6 +70,8 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     from ocgis import OcgOperations, RequestDataset, env, DimensionMap, crs
     from ocgis.util.large_array import compute
     from datetime import datetime as dt
+    from datetime import date as dd
+    from datetime import time as dt_time
     import uuid
 
     # prepare the environment
@@ -79,15 +83,20 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     if dir_output is None:
         dir_output = abspath(curdir)
 
-    # check time_range fromat:
+    # check time_range format:
 
     if time_range is not None:
         try:
             LOGGER.debug('time_range type= %s , %s ' % (type(time_range[0]), type(time_range[1])))
-            if type(time_range[0] is 'datetime.date'):
+            LOGGER.debug('time_range= %s , %s ' % (time_range[0], time_range[1]))
+            # if type(time_range[0] is 'datetime.date'):
+            if (isinstance(time_range[0], dd) and not isinstance(time_range[0], dt)):
                 time_range = [dt.combine(time_range[0], dt.min.time()),
                               dt.combine(time_range[1], dt.min.time())]
+                # time_range = [dt.combine(time_range[0], dt_time(12,0)),
+                #               dt.combine(time_range[1], dt_time(12,0))]
             LOGGER.debug('time_range changed to type= %s , %s ' % (type(time_range[0]), type(time_range[1])))
+            LOGGER.debug('time_range changed to= %s , %s ' % (time_range[0], time_range[1]))
         except:
             LOGGER.exception('failed to convert data to datetime')
 
@@ -126,10 +135,10 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
         LOGGER.debug('call module curdir = %s ' % abspath(curdir))
         rd = RequestDataset(resource, variable=variable, level_range=level_range,
                             dimension_map=dimension_map, conform_units_to=conform_units_to,
-                            time_region=time_region, t_calendar=t_calendar, time_range=time_range, crs=crs)
+                            time_region=time_region, t_calendar=t_calendar, time_range=time_range) # , crs=crs)
 
-        # from ocgis.constants import DimensionMapKey
-        # rd.dimension_map.set_bounds(DimensionMapKey.TIME, None)
+        from ocgis.constants import DimensionMapKey
+        rd.dimension_map.set_bounds(DimensionMapKey.TIME, None)
 
         ops = OcgOperations(dataset=rd,
                             output_format_options=output_format_options,
@@ -141,6 +150,7 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
                             calc=calc,
                             calc_grouping=calc_grouping,
                             geom=geom,
+                            agg_selection=agg_selection,
                             output_format=output_format,
                             prefix=prefix,
                             search_radius_mult=search_radius_mult,
@@ -239,15 +249,35 @@ def call(resource=[], variable=None, dimension_map=None, calc=None,
     ############################################
     if regrid_destination is not None:
         try:
-            from tempfile import mkstemp
-            from cdo import Cdo
-            cdo = Cdo()
-            output = '%s.nc' % uuid.uuid1()
-            remap = 'remap%s' % regrid_options
-            call = [op for op in dir(cdo) if remap in op]
-            cmd = "output = cdo.%s('%s',input='%s', output='%s')" \
-                  % (str(call[0]), regrid_destination, geom_file, output)
-            exec cmd
+            if (cdover=='system'):
+                from os import system
+                remap = 'remap%s' % regrid_options
+                output = '%s.nc' % uuid.uuid1()
+                output = abspath(curdir)+'/'+output
+                comcdo = 'cdo -O %s,%s %s %s' % (remap, regrid_destination, geom_file, output)
+                system(comcdo)
+                
+                if(isfile(output)==False):
+                    comcdo = '/usr/bin/cdo -O %s,%s %s %s' % (remap, regrid_destination, geom_file, output)
+                    system(comcdo)
+                
+                if(isfile(output)==False): cdover='python'
+
+                # need to substitute by subprocess call
+                # TODO: If system failed - py-cdo used insted
+                # what if py-cdo failed, with option 'python'
+                # need to call 'system' in this case - need to write function
+
+            if (cdover=='python'):
+                from tempfile import mkstemp
+                from cdo import Cdo
+                cdo = Cdo()
+                output = '%s.nc' % uuid.uuid1()
+                remap = 'remap%s' % regrid_options
+                call = [op for op in dir(cdo) if remap in op]
+                cmd = "output = cdo.%s('%s',input='%s', output='%s')" \
+                      % (str(call[0]), regrid_destination, geom_file, output)
+                exec cmd
         except Exception as e:
             LOGGER.debug('failed to remap')
             raise

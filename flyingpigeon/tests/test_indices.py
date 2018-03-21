@@ -18,6 +18,7 @@ def test_indices_description():
     assert 'TG: ' in indices.indices_description()
 
 
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_indice_simple():
     # SU expects tasmax
     resources = [local_path(TESTDATA['cordex_tasmax_2006_nc'])]
