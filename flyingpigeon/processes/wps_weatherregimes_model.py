@@ -13,10 +13,11 @@ from pywps.app.Common import Metadata
 from flyingpigeon.log import init_process_logger
 
 from datetime import datetime as dt
+from datetime import time as dt_time
 from flyingpigeon import weatherregimes as wr
-from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import archive, archiveextract, get_calendar
 from tempfile import mkstemp
-
+from os import path
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
@@ -51,6 +52,19 @@ class WeatherregimesmodelProcess(Process):
                          allowed_values=_TIMEREGIONS_.keys()
                          ),
 
+            LiteralInput('BBox', 'Bounding Box',
+                         data_type='string',
+                         abstract="Enter a bbox: min_lon, max_lon, min_lat, max_lat."
+                            " min_lon=Western longitude,"
+                            " max_lon=Eastern longitude,"
+                            " min_lat=Southern or northern latitude,"
+                            " max_lat=Northern or southern latitude."
+                            " For example: -80,50,20,70",
+                         min_occurs=1,
+                         max_occurs=1,
+                         default='-80,50,20,70',
+                         ),
+
             LiteralInput("period", "Period for weatherregime calculation",
                          abstract="Period for analysing the dataset",
                          default="19700101-20101231",
@@ -65,6 +79,24 @@ class WeatherregimesmodelProcess(Process):
                          data_type='string',
                          min_occurs=1,
                          max_occurs=1,
+                         ),
+
+            LiteralInput("method", "Method of annual cycle calculation",
+                         abstract="Method of annual cycle calculation",
+                         default="cdo",
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=1,
+                         allowed_values=['ocgis', 'cdo']
+                         ),
+
+            LiteralInput("sseas", "Serial or multiprocessing for annual cycle",
+                         abstract="Serial or multiprocessing for annual cycle",
+                         default="multi",
+                         data_type='string',
+                         min_occurs=1,
+                         max_occurs=1,
+                         allowed_values=['serial', 'multi']
                          ),
 
             LiteralInput("kappa", "Nr of Weather regimes",
@@ -144,22 +176,82 @@ class WeatherregimesmodelProcess(Process):
             LOGGER.info('read in the arguments')
             resource = archiveextract(resource=[res.file for res in request.inputs['resource']])
 
+            # If files are from different datasets.
+            # i.e. files: ...output1/slp.1999.nc and ...output2/slp.1997.nc will not be sorted with just .sort()
+            # So:
+            if type(resource) == list:
+                resource = sorted(resource, key=lambda i: path.splitext(path.basename(i))[0])
+            else:
+                resource=[resource]
+
             # resources = self.getInputValues(identifier='resources')
             season = request.inputs['season'][0].data
             LOGGER.info('season %s', season)
-            if 'bbox' in request.inputs:
-                bbox = request.inputs['bbox'][0].data
-                bbox = [-80, 20, 50, 70]
-            else:
-                bbox = [-80, 20, 50, 70]
+
+            # if 'bbox' in request.inputs:
+            #    bbox = request.inputs['bbox'][0].data
+            #    bbox = [-80, 20, 50, 70]
+            # else:
+            #    bbox = [-80, 20, 50, 70]
+
+            bbox = []
+            bboxStr = request.inputs['BBox'][0].data
+            bboxStr = bboxStr.split(',')
+            bbox.append(float(bboxStr[0]))
+            bbox.append(float(bboxStr[2]))
+            bbox.append(float(bboxStr[1]))
+            bbox.append(float(bboxStr[3]))
+            LOGGER.debug('BBOX for ocgis: %s ' % (bbox))
+            LOGGER.debug('BBOX original: %s ' % (bboxStr))
+
             period = request.inputs['period'][0].data
             LOGGER.info('period %s', period)
             anualcycle = request.inputs['anualcycle'][0].data
             kappa = request.inputs['kappa'][0].data
             LOGGER.info('kappa %s', kappa)
 
+            method = request.inputs['method'][0].data
+            LOGGER.info('Calc annual cycle with %s', method)
+
+            sseas = request.inputs['sseas'][0].data
+            LOGGER.info('Annual cycle calc with %s', sseas)
+
             start = dt.strptime(period.split('-')[0], '%Y%m%d')
             end = dt.strptime(period.split('-')[1], '%Y%m%d')
+
+            # OCGIS for models workaround - to catch 31 of Dec
+            start = dt.combine(start, dt_time(12,0))
+            end = dt.combine(end, dt_time(12,0))
+
+            cycst = anualcycle.split('-')[0]
+            cycen = anualcycle.split('-')[1]
+            reference = [dt.strptime(cycst, '%Y%m%d'), dt.strptime(cycen, '%Y%m%d')]
+            LOGGER.debug('Reference start: %s , end: %s ' % (reference[0], reference[1]))
+
+            reference[0] = dt.combine(reference[0],dt_time(12,0))
+            reference[1] = dt.combine(reference[1],dt_time(12,0))
+            LOGGER.debug('New Reference start: %s , end: %s ' % (reference[0], reference[1]))
+
+            # Check if 360_day calendar (all months are exactly 30 days):
+            try:
+                if type(resource) is not list: resource=[resource]
+                modcal, calunits = get_calendar(resource[0])
+                if '360_day' in modcal:
+                    if start.day == 31:
+                        start = start.replace(day=30)
+                        LOGGER.debug('Date has been changed for: %s' % (start))
+                    if end.day == 31:
+                        end = end.replace(day=30)
+                        LOGGER.debug('Date has been changed for: %s' % (end))
+                    if reference[0].day == 31:
+                        reference[0] = reference[0].replace(day=30)
+                        LOGGER.debug('Date has been changed for: %s' % (reference[0]))
+                    if reference[1].day == 31:
+                        reference[1] = reference[1].replace(day=30)
+                        LOGGER.debug('Date has been changed for: %s' % (reference[1]))
+            except:
+                LOGGER.debug('Could not detect calendar')
+
             LOGGER.debug('start: %s , end: %s ', start, end)
             LOGGER.info('bbox %s', bbox)
             LOGGER.info('period %s', period)
@@ -176,8 +268,22 @@ class WeatherregimesmodelProcess(Process):
         # from flyingpigeon.weatherregimes import get_level
 
         from flyingpigeon.ocgis_module import call
-        from flyingpigeon.utils import get_variable
+        from flyingpigeon.utils import get_variable, get_timerange
         time_range = [start, end]
+
+        tmp_resource = []
+        for re in resource:
+            s,e = get_timerange(re)
+            tmpSt = dt.strptime(s,'%Y%m%d')
+            tmpEn = dt.strptime(e,'%Y%m%d')
+            if ((tmpSt <= end ) and (tmpEn >= start)):
+                tmp_resource.append(re)
+                LOGGER.debug('Selected file: %s ' % (re))
+        resource = tmp_resource
+
+        # Here start trick with z... levels and regriding...
+        # Otherwise call will give memory error for hires models with geop
+        # TODO: Add level and domain selection as in wps_analogs_model for 4D var.
 
         variable = get_variable(resource)
         model_subset = call(
@@ -185,7 +291,7 @@ class WeatherregimesmodelProcess(Process):
             geom=bbox, spatial_wrapping='wrap', time_range=time_range,  # conform_units_to=conform_units_to
         )
         LOGGER.info('Dataset subset done: %s ' % model_subset)
-        response.update_status('dataset subsetted', 19)
+        response.update_status('dataset subsetted', 18)
 
         #####################
         # computing anomalies
@@ -193,10 +299,7 @@ class WeatherregimesmodelProcess(Process):
 
         response.update_status('computing anomalies ', 19)
 
-        cycst = anualcycle.split('-')[0]
-        cycen = anualcycle.split('-')[0]
-        reference = [dt.strptime(cycst, '%Y%m%d'), dt.strptime(cycen, '%Y%m%d')]
-        model_anomal = wr.get_anomalies(model_subset, reference=reference)
+        model_anomal = wr.get_anomalies(model_subset, reference=reference, method=method, sseas=sseas)
 
         ###################
         # extracting season
@@ -207,7 +310,7 @@ class WeatherregimesmodelProcess(Process):
         ####################
         # call the R scripts
         ####################
-        response.update_status('Start weather regime clustering ', 25)
+        response.update_status('Start weather regime clustering ', 50)
         import shlex
         import subprocess
         from flyingpigeon import config
@@ -233,6 +336,7 @@ class WeatherregimesmodelProcess(Process):
                     '%s' % start.year, '%s' % end.year,
                     '%s' % 'MODEL', '%s' % kappa]
             LOGGER.info('Rcall builded')
+            LOGGER.debug('ARGS: %s'%(args))
         except Exception as e:
             msg = 'failed to build the R command %s' % e
             LOGGER.error(msg)
@@ -251,12 +355,12 @@ class WeatherregimesmodelProcess(Process):
             LOGGER.error(msg)
             raise Exception(msg)
 
-        response.update_status('Weather regime clustering done ', 90)
+        response.update_status('Weather regime clustering done ', 92)
         ############################################
         # set the outputs
         ############################################
         response.update_status('Set the process outputs ', 95)
-
+        #bla=bla
         response.outputs['Routput_graphic'].file = output_graphics
         response.outputs['output_pca'].file = file_pca
         response.outputs['output_classification'].file = file_class
