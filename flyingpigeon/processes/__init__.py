@@ -41,6 +41,7 @@ from .wps_EO_COPERNICUS_fetch import EO_COP_fetchProcess
 from .wps_regrid import ESMFRegridProcess
 from .wps_EO_COPERNICUS_rgb import EO_COP_rgbProcess
 from .wps_EO_COPERNICUS_indices import EO_COP_indicesProcess
+from .wps_kddm_bc import KDDM_BC_Process
 
 processes = [
     ClippingProcess(),
@@ -85,6 +86,7 @@ processes = [
     EO_COP_indicesProcess(),
     # MergeProcess(),
     # NdviProcess(),
+    KDDM_BC_Process(),
     ] + OCGIS_INDEX_PROCESSES
 
 """
