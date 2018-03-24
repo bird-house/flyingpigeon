@@ -1,5 +1,6 @@
 import os
 import tempfile
+import shutil
 
 from pywps import Process
 from pywps import LiteralInput
@@ -13,6 +14,7 @@ from flyingpigeon.utils import GROUPING
 from flyingpigeon.log import init_process_logger
 
 import numpy as np
+import ocgis
 from ocgis.calc import base
 from ocgis.calc.library import register
 from os.path import join, abspath, dirname, getsize, curdir
