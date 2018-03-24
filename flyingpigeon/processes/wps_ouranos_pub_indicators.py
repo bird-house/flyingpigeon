@@ -1,3 +1,7 @@
+import os
+import tempfile
+import shutil
+
 from pywps import Process
 from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
@@ -10,6 +14,7 @@ from flyingpigeon.utils import GROUPING
 from flyingpigeon.log import init_process_logger
 
 import numpy as np
+import ocgis
 from ocgis.calc import base
 from ocgis.calc.library import register
 from os.path import join, abspath, dirname, getsize, curdir
@@ -205,6 +210,7 @@ class OuranosPublicIndicatorProcess(Process, object):
     def _handler(self, request, response):
         from flyingpigeon.utils import calc_grouping
 
+        ocgis.env.DIR_OUTPUT = tempfile.mkdtemp(dir=os.getcwd())
         env.OVERWRITE = True
 
         init_process_logger('log.txt')
@@ -299,6 +305,7 @@ class OuranosPublicIndicatorProcess(Process, object):
         env.PREFIX = prefix
         conv = NcConverter([out], outdir=dir_output, prefix=prefix)
         conv.write()
+        shutil.rmtree(ocgis.env.DIR_OUTPUT)
 
         response.outputs['output_netcdf'].file = conv.path
 

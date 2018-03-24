@@ -20,7 +20,10 @@ from pywps.app.Common import Metadata
 
 from datetime import datetime as dt
 import os
+import tempfile
 
+
+import ocgis
 from ocgis import FunctionRegistry, RequestDataset, OcgOperations
 from flyingpigeon.ocgisDissimilarity import Dissimilarity, metrics
 
@@ -155,6 +158,8 @@ class SpatialAnalogProcess(Process):
 
     def _handler(self, request, response):
 
+        ocgis.env.DIR_OUTPUT = tempfile.mkdtemp(dir=os.getcwd())
+        ocgis.env.OVERWRITE = True
         tic = dt.now()
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
