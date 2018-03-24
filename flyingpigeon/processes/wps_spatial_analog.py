@@ -20,6 +20,8 @@ from pywps.app.Common import Metadata
 
 from datetime import datetime as dt
 import os
+import tempfile
+
 
 import ocgis
 from ocgis import FunctionRegistry, RequestDataset, OcgOperations
