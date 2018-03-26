@@ -1,4 +1,6 @@
+import os
 import traceback
+import tempfile
 
 from pywps import Process, ComplexInput, ComplexOutput, Format
 
@@ -42,6 +44,7 @@ class NCMergeProcess(Process):
 
     def _handler(self, request, response):
         try:
+            ocgis.env.DIR_OUTPUT = tempfile.mkdtemp(dir=os.getcwd())
             ocgis.env.OVERWRITE = True
             nc_files = archiveextract(resource=rename_complexinputs(
                 request.inputs['resource']))
