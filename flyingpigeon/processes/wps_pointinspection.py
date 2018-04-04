@@ -50,7 +50,7 @@ class PointinspectionProcess(Process):
                           ),
 
             ComplexOutput('tarout', 'Subsets',
-                          abstract="Tar archive containing the netCDF files",
+                          abstract="Tar archive containing one CSV file per input file, each one storing time series column-wise for all point coordinates.",
                           as_reference=True,
                           supported_formats=[Format('application/x-tar')]
                           ),
