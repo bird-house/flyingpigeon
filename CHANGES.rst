@@ -11,10 +11,7 @@ Issues:
 * Disabled sphinx buildout configuration: #227
 * Fixed test failures: #210 and #224
 * Fixed codacy report: #211
-
-Others:
-
-* Fixed readthedocs build.
+* Fixed readthedocs build: #207
 
 1.1.0 (2017-12-22)
 ==================
