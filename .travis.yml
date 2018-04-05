@@ -1,11 +1,4 @@
 language: python
-branches:
-  only:
-    - master
-    - next
-    - 1.0.x
-    - pingudev
-    - satdev
 python:
   - "2.7"
 sudo: false
@@ -15,7 +8,7 @@ install:
 before_script:
   - sleep 10
 script:
-  - export GDAL_DATA=/home/travis/.conda/envs/flyingpigeon/share/gdal 
+  - export GDAL_DATA=/home/travis/.conda/envs/flyingpigeon/share/gdal
 #  - make docs
   - make testall
 #after_success:
