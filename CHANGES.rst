@@ -12,6 +12,10 @@ Issues:
 * Fixed test failures: #210 and #224
 * Fixed codacy report: #211
 
+Others:
+
+* Fixed readthedocs build.
+
 1.1.0 (2017-12-22)
 ==================
 
