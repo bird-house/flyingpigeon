@@ -31,7 +31,7 @@ needs_sphinx = '1.3'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
-    'sphinx_autodoc_pywps',
+    # 'sphinx_autodoc_pywps', # TODO: fix rtd for sphinx pywps extension
     'autoapi.extension',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
