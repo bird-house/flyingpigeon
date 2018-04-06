@@ -29,6 +29,7 @@ def extract_doc():
     source = inspect.getsource(ESMF.RegridMethod)
     doc = source.replace('"""', '')
 
+    pat = re.compile('(\w+) = \d\n')
     def title(match):
         [name] = match.groups()
         n = len(name)
@@ -62,7 +63,48 @@ def actual_output_path(fn):
 
 
 class ESMFRegridProcess(Process):
-    __doc__ = extract_doc()
+    #__doc__ = extract_doc()
+    """
+    Notes
+    -----
+
+    Bilinear
+        Destination value is a linear combination of the
+        source values in the cell which contains the destination point. The weights
+        for the linear combination are based on the distance of the destination
+        point from each source value.
+
+    Patch
+        Higher-order patch recovery interpolation. Destination value is a weighted
+        average of 2D polynomial patches constructed from cells surrounding the
+        source cell which contains the destination point. This method typically
+        results in better approximations to values and derivatives than bilinear.
+        However, because of its larger stencil, it also results in a much larger
+        interpolation matrix than the bilinear method.
+
+    Conserve
+        First order conservative interpolation. Value of a destination cell is the
+        weighted sum of the values of the source cells that it overlaps. The
+        weights are determined by the amount the source cell overlaps the
+        destination cell. This method will typically give less accurate
+        approximations to values than the other interpolation methods, however, it
+        will do a much better job preserving the integral of the value between the
+        source and destination. This method requires the corner coordinate values
+        to be provided in the Grid, and it currently only works for Fields created
+        on the Grid center stagger (or the Mesh element location).
+
+    Nearest_STOD
+        In this version of nearest neighbor interpolation each destination point is
+        mapped to the closest source point. A given source point may go to multiple
+        destination points, but no destination point will receive input from more
+        than one source point.
+
+    Nearest_DTOS
+        In this version of nearest neighbor interpolation each source point is
+        mapped to the closest destination point. A given destination point may
+        receive input from multiple source points, but no source point will go to
+        more than one destination point.
+    """
 
     def __init__(self):
         inputs = [
