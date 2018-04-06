@@ -20,28 +20,6 @@ json_format = get_format('JSON')
 # Supported interpolation methods
 methods = list(map(str.lower, ESMF.RegridMethod.__members__.keys()))
 
-
-def extract_doc():
-    """Format the documentation about the ESMF regridding methods."""
-    import inspect
-    import re
-
-    source = inspect.getsource(ESMF.RegridMethod)
-    doc = source.replace('"""', '')
-
-    pat = re.compile('(\w+) = \d\n')
-    def title(match):
-        [name] = match.groups()
-        n = len(name)
-        return '\n    ' + name + '\n    ' + n*'~'
-
-    doc = re.sub('(\w+) = \d', title, doc)
-    lines = doc.splitlines()[3:]
-    lines.insert(0, '    Notes')
-    lines.insert(1, '    -----')
-
-    return '\n'.join(lines)
-
 def actual_output_path(fn):
     """Return the path to an output file, adjusting for whether or not the server is active or not.
 
@@ -63,7 +41,6 @@ def actual_output_path(fn):
 
 
 class ESMFRegridProcess(Process):
-    #__doc__ = extract_doc()
     """
     Notes
     -----
