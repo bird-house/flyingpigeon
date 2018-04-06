@@ -31,7 +31,7 @@ class EO_COP_fetchProcess(Process):
     def __init__(self):
         inputs = [
             LiteralInput("products", "Earth Observation Product Type",
-                         abstract="Choose Earth Observation Products",
+                         abstract="The type of Earth Observation product to be fetched.",
                          default='Sentinel-2',
                          data_type='string',
                          min_occurs=1,
@@ -41,7 +41,7 @@ class EO_COP_fetchProcess(Process):
 
             LiteralInput('BBox', 'Bounding Box',
                          data_type='string',
-                         abstract="Enter a bbox: min_lon, max_lon, min_lat, max_lat."
+                         abstract="Bounding box coordinates: min_lon, max_lon, min_lat, max_lat."
                                   " min_lon=Western longitude,"
                                   " max_lon=Eastern longitude,"
                                   " min_lat=Southern or northern latitude,"
@@ -54,8 +54,8 @@ class EO_COP_fetchProcess(Process):
 
             LiteralInput('start', 'Start Date',
                          data_type='date',
-                         abstract='First day of the period to be searched for EO data.'
-                                  '(if not set, 30 days befor end of period will be selected',
+                         abstract='Start of the period to be searched for EO data. '
+                                  'Defaults to 30 days before the current date.',
                          default=(dt.now() - timedelta(days=30)).strftime('%Y-%m-%d'),
                          min_occurs=0,
                          max_occurs=1,
@@ -63,8 +63,8 @@ class EO_COP_fetchProcess(Process):
 
             LiteralInput('end', 'End Date',
                          data_type='date',
-                         abstract='Last day of the period to be searched for EO data.'
-                                  '(if not set, current day is set.)',
+                         abstract='End of the period to be searched for EO data. '
+                                  'Defaults to the current date.',
                          default=dt.now().strftime('%Y-%m-%d'),
                          min_occurs=0,
                          max_occurs=1,
@@ -72,14 +72,15 @@ class EO_COP_fetchProcess(Process):
 
             LiteralInput('cloud_cover', 'Cloud Cover',
                          data_type='integer',
-                         abstract='Max tollerated percentage of cloud cover',
+                         abstract='Maximum threshold on the cloud cover percentage. '
+                                  'Images whose cloud cover exceeds the threshold are ignored.',
                          default="30",
                          allowed_values=[0, 10, 20, 30, 40, 50, 60, 70, 80, 100]
                          ),
 
             LiteralInput('username', 'User Name',
                          data_type='string',
-                         abstract='Authentification user name for the COPERNICUS Sci-hub ',
+                         abstract='User name for the COPERNICUS Sci-hub authentication.',
                          # default='2013-12-31',
                          min_occurs=1,
                          max_occurs=1,
@@ -87,7 +88,7 @@ class EO_COP_fetchProcess(Process):
 
             LiteralInput('password', 'Password',
                          data_type='string',
-                         abstract='Authentification password for the COPERNICUS Sci-hub ',
+                         abstract='Password for the COPERNICUS Sci-hub authentification.',
                          min_occurs=1,
                          max_occurs=1,
                          ),
@@ -95,13 +96,13 @@ class EO_COP_fetchProcess(Process):
 
         outputs = [
             ComplexOutput("output_txt", "Files search result",
-                          abstract="Files found according to the search querry",
+                          abstract="Files found by the search query.",
                           supported_formats=[Format('text/plain')],
                           as_reference=True,
                           ),
 
-            ComplexOutput("output_plot", "Extend of tiles",
-                          abstract="Map showing the extends of the found EO data ",
+            ComplexOutput("output_plot", "Tiles extent",
+                          abstract="Map showing the extent of the EO data found.",
                           supported_formats=[Format('image/png')],
                           as_reference=True,
                           ),
@@ -117,11 +118,11 @@ class EO_COP_fetchProcess(Process):
         super(EO_COP_fetchProcess, self).__init__(
             self._handler,
             identifier="EO_COPERNICUS_fetch",
-            title="EO COPERNICUS search products and fetch them into the compute provider",
+            title="Search COPERNICUS EO products and download them to the compute provider.",
             version="0.1",
             abstract="Search for EO Data in the scihub.copernicus archive"
-                     "products will be fechted into the local disc system."
-                     "outuput is a list of produces and a graphical visualisation.",
+                     "products will be downloaded into the local disc system."
+                     "output is a list of products and a graphical visualisation.",
             metadata=[
                 Metadata('Documentation', 'http://flyingpigeon.readthedocs.io/en/latest/'),
             ],
