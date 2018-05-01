@@ -25,6 +25,10 @@ Check the log files for errors::
 
    $ tail -f ~/birdhouse/var/log/pywps/flyingpigeon.log
    $ tail -f ~/birdhouse/var/log/supervisor/flyingpigeon.log
+   $ tail -f ~/birdhouse/var/log/nginx/error.log
+
+One source of error is having another server listening on the same port as flyingpigeon.
+Use `netstat --listen` to check if port 8093 is already in use.
 
 For other install options, run ``make help`` and read the documention for the `Makefile <Bootstrap_>`_.
 
