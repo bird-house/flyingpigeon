@@ -12,9 +12,6 @@ from .wps_sdm_getindices import SDMgetindicesProcess
 from .wps_sdm_csv import SDMcsvProcess
 from .wps_sdm_csvindices import SDMcsvindicesProcess
 from .wps_sdm_allinone import SDMallinoneProcess
-from .wps_weatherregimes_reanalyse import WeatherregimesreanalyseProcess
-from .wps_weatherregimes_projection import WeatherregimesprojectionProcess
-from .wps_weatherregimes_model import WeatherregimesmodelProcess
 # from .wps_analogs_reanalyse import AnalogsreanalyseProcess
 # from .wps_analogs_model import AnalogsmodelProcess
 # from .wps_analogs_compare import AnalogscompareProcess
@@ -49,9 +46,6 @@ processes = [
     SDMcsvindicesProcess(),
     SDMcsvProcess(),
     SDMallinoneProcess(),
-    WeatherregimesreanalyseProcess(),
-    WeatherregimesprojectionProcess(),
-    WeatherregimesmodelProcess(),
     # AnalogsreanalyseProcess(),
     # AnalogsmodelProcess(),
     # AnalogscompareProcess(),
