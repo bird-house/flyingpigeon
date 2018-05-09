@@ -25,6 +25,7 @@ from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import GROUPING
 from flyingpigeon.log import init_process_logger
 
+import ocgis
 from ocgis.calc.library import register
 from ocgis.contrib import library_icclim as libclim
 from collections import OrderedDict
@@ -41,7 +42,7 @@ icclim_classes = [k for k in fr.keys() if isinstance(k, str) and k.startswith('i
 class IndicatorProcess(Process, object):
     """A Process class wrapping OCGIS functions."""
     key = 'to_be_subclassed'
-    version = '1.0'
+    version = ocgis.__version__
 
     #################
     # Common inputs #
@@ -96,6 +97,7 @@ class IndicatorProcess(Process, object):
             identifier=self.identifier,
             title=self.title,
             abstract=self.abstract,
+            version=self.version,
             inputs=self.resource_inputs + self.option_inputs + self.extra_inputs,
             outputs=self.outputs,
             status_supported=True,
