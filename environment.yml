@@ -38,7 +38,7 @@ dependencies:
 # wps
 - nginx
 - supervisor=3.3.1
-- gunicorn
+- gunicorn=19.7
 - gevent
 - pywps=4.0.0
 - mako
