@@ -48,6 +48,6 @@ def test_caps():
         'subset_continents',
         'subset_countries',
         'subset_regionseurope',
-    ] + [p.identifier for p in OCGIS_INDEX_PROCESSES]
+    ] + [p().identifier for p in OCGIS_INDEX_PROCESSES]
 
     assert sorted_names == sorted(expected_names)
