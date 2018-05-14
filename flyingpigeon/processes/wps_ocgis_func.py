@@ -289,13 +289,7 @@ def create_icclim_process_class(key):
     clazz = type(name, (ICCLIMProcess,), {'key': key, '__name__': name})
     return clazz
 
-
-def icclim_process_generator(keys):
-    """Dynamically create derived classes for ICCLIM processes."""
-    for key in keys:
-        yield create_icclim_process_class(key)
-
-ICCLIM_PROCESSES = [p for p in icclim_process_generator(icclim_classes)]
+ICCLIM_PROCESSES = [create_icclim_process_class(key) for key in icclim_classes]
 OCGIS_INDEX_PROCESSES = [FreezeThawProcess, Duration] + ICCLIM_PROCESSES
 __all__ = [c.__name__ for c in OCGIS_INDEX_PROCESSES] + ['OCGIS_INDEX_PROCESSES']
 
