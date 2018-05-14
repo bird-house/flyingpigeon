@@ -51,7 +51,7 @@ dependencies:
 ################
 # numeric
 - numpy
-- scipy
+- scipy=1.1.0=py27_blas_openblas_200 # pinned due to issue #248
 - pandas #=0.18.1
 - statsmodels #=0.6.1
 - scikit-learn #=0.17.1
