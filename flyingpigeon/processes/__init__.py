@@ -21,7 +21,7 @@ from .wps_plot_timeseries import PlottimeseriesProcess
 from .wps_segetalflora import SegetalfloraProcess
 from .wps_spatial_analog import SpatialAnalogProcess
 from .wps_map_spatial_analog import MapSpatialAnalogProcess
-from .wps_ocgis_func import OCGIS_INDEX_PROCESSES  # This stores all the processes defined in the module.
+from .wps_ocgis_func import *
 # from .wps_EO_fetch import FetcheodataProcess
 # from .wps_EO_ndvi import NdviProcess
 # from .wps_EO_merge import MergeProcess
@@ -63,8 +63,7 @@ processes = [
     EO_COP_indicesProcess(),
     # MergeProcess(),
     # NdviProcess(),
-    ] + OCGIS_INDEX_PROCESSES
-
+    ] + [c() for c in OCGIS_INDEX_PROCESSES]
 
 """
 pywps3 processes:
