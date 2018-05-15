@@ -1193,7 +1193,7 @@ def guess_main_variables(ncdataset):
 
 
 def opendap_or_download(resource, auth_tkt_cookie={}, output_path=None,
-                        max_nbytes=1000000000):
+                        max_nbytes=10000000000):
     """Check for OPEnDAP support, if not download the resource.
 
     :param resource: url of a NetCDF resource
