@@ -285,15 +285,14 @@ class ICCLIMProcess(IndicatorProcess):
 
 def create_icclim_process_class(key):
     """Create a subclass of an ICCLIMProcess for a given indicator."""
-    clazz = type(key.upper()+'Process', (ICCLIMProcess,), {'key': key})
+    name = key.upper()+'Process'
+    clazz = type(name, (ICCLIMProcess,), {'key': key, '__name__': name})
     return clazz
 
+ICCLIM_PROCESSES = [create_icclim_process_class(key) for key in icclim_classes]
+OCGIS_INDEX_PROCESSES = [FreezeThawProcess, Duration] + ICCLIM_PROCESSES
+__all__ = [c.__name__ for c in OCGIS_INDEX_PROCESSES] + ['OCGIS_INDEX_PROCESSES']
 
-def icclim_process_generator(keys):
-    """Dynamically create derived classes for ICCLIM processes."""
-    for key in keys:
-        yield create_icclim_process_class(key)()
-
-
-ICCLIM_PROCESSES = [p for p in icclim_process_generator(icclim_classes)]
-OCGIS_INDEX_PROCESSES = [FreezeThawProcess(), Duration()] + ICCLIM_PROCESSES
+# Add generated classes to namespace
+for c in ICCLIM_PROCESSES:
+    globals()[c.__name__] = c
