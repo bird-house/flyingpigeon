@@ -31,7 +31,7 @@ def test_wps_Duration():
     assert_response_success(resp)
 
 def test_wps_ICCLIM_TX():
-    client = client_for(Service(processes=ICCLIM_PROCESSES, cfgfiles=CFG_FILE))
+    client = client_for(Service(processes=[ICCLIM_TXProcess(),], cfgfiles=CFG_FILE))
     datainputs = "resource=files@xlink:href={0};grouping={1}".format(TESTDATA['cmip3_tas_sresb1_da_nc'], 'yr')
     resp = client.get(
         service='WPS', request='Execute', version='1.0.0',
@@ -40,7 +40,7 @@ def test_wps_ICCLIM_TX():
     assert_response_success(resp)
 
 def test_wps_ICCLIM_DTR():
-    client = client_for(Service(processes=ICCLIM_PROCESSES, cfgfiles=CFG_FILE))
+    client = client_for(Service(processes=[ICCLIM_DTRProcess(),], cfgfiles=CFG_FILE))
     datainputs = "tasmax=files@xlink:href={0};tasmin=files@xlink:href={1};grouping={2}".format(
         TESTDATA['cmip3_tasmax_sresa2_da_nc'],
         TESTDATA['cmip3_tasmin_sresa2_da_nc'],
@@ -53,7 +53,7 @@ def test_wps_ICCLIM_DTR():
 
 @pytest.mark.skip("Slow")
 def test_wps_ICCLIM_TX10P():
-    client = client_for(Service(processes=ICCLIM_PROCESSES, cfgfiles=CFG_FILE))
+    client = client_for(Service(processes=[ICCLIM_TX10PProcess(),], cfgfiles=CFG_FILE))
     datainputs = "resource=files@xlink:href={0};grouping={1}".format(
         TESTDATA['cmip3_tas_sresb1_da_nc'],
         'yr')
