@@ -1,6 +1,18 @@
 Releasenotes
 ************
 
+1.2.0 (2018-04-04)
+==================
+
+Issues:
+
+* Fixed abstract for CSV files output in pointinspection process: #216
+* snappy installation is optional: #229
+* Disabled sphinx buildout configuration: #227
+* Fixed test failures: #210 and #224
+* Fixed codacy report: #211
+* Fixed readthedocs build: #207
+
 1.1.0 (2017-12-22)
 ==================
 
