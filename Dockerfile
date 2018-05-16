@@ -32,6 +32,9 @@ ENV CONDA_ENVS_DIR /opt/conda/envs
 # Run install and fix permissions
 RUN make clean install && chmod 755 /opt/birdhouse/etc && chmod 755 /opt/birdhouse/var/run
 
+# Install PAVICS version of pywps
+RUN /opt/conda/envs/flyingpigeon/bin/pip install --upgrade git+https://github.com/Ouranosinc/pywps.git@pavics
+
 # Volume for data, cache, logfiles, ...
 VOLUME /opt/birdhouse/var/lib
 VOLUME /opt/birdhouse/var/log

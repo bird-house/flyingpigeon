@@ -21,6 +21,7 @@ dependencies:
 - setuptools=27.2.0
 - icu=58.1
 - libxslt
+- json-c=0.12.1
 - pypdf2
 ################
 # tests
@@ -51,7 +52,7 @@ dependencies:
 ################
 # numeric
 - numpy
-- scipy
+- scipy=1.1.0=py27_blas_openblas_200
 - pandas #=0.18.1
 - statsmodels #=0.6.1
 - scikit-learn #=0.17.1
