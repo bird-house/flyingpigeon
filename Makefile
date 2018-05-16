@@ -13,8 +13,8 @@ OS_NAME := $(shell uname -s 2>/dev/null || echo "unknown")
 CPU_ARCH := $(shell uname -m 2>/dev/null || uname -p 2>/dev/null || echo "unknown")
 
 # Python
-SETUPTOOLS_VERSION := 39.1.0
-CONDA_VERSION := 4.4
+SETUPTOOLS_VERSION := 36.5.0
+CONDA_VERSION := 4.5
 BUILDOUT_VERSION := 2.10.0
 
 # Anaconda
