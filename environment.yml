@@ -21,6 +21,7 @@ dependencies:
 - setuptools=27.2.0
 - icu=58.1
 - libxslt
+- json-c=0.12.1 # See issue #251
 - pypdf2
 ################
 # tests
