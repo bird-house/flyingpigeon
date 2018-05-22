@@ -1,6 +1,20 @@
 Releasenotes
 ************
 
+1.0.4 (2018-05-22)
+==================
+
+Bug-fixes:
+
+* Fix #240: wsgi app init
+* Fix #251: pin json-c dependency
+* Fix #248: pin scipy
+
+Changes:
+
+* clean up buildout (#245)
+* update Makefile
+
 1.0.3 (2017-12-21)
 ==================
 
