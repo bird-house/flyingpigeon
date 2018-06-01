@@ -9,10 +9,12 @@ import cartopy.crs as ccrs
 
 import numpy as np
 
-from flyingpigeon.utils import get_variable, get_time
-from flyingpigeon.utils import archive, archiveextract
+from eggshell.ocgis_utils import call
+from eggshell.netcdf_utils import get_variable, get_time
+from eggshell.general_utils import archive, archiveextract
+from eggshell.visualisation import pdfmerge
 
-from flyingpigeon import config
+from eggshell import config
 from flyingpigeon import templating
 from flyingpigeon.utils import prepare_static_folder
 
@@ -22,7 +24,7 @@ LOGGER = logging.getLogger("PYWPS")
 def get_time_nc(nc_file, tv='time'):
     """
     returns all timestamps of given netcdf file as datetime list.
-    
+
     :param nc_file: NetCDF file(s)
     :param tv: name of temporal dimension
     :return format: netcdftime._datetime.datetime
@@ -35,15 +37,15 @@ def get_time_nc(nc_file, tv='time'):
     except:
         tv='time_counter'
     ds.close()
-    
-    try:  
+
+    try:
         ds = MFDataset(nc_file)
         time = ds.variables[tv]
         if (hasattr(time , 'units') and hasattr(time , 'calendar')) == True:
             timestamps = num2date(time[:], time.units , time.calendar)
         elif hasattr(time , 'units'):
-            timestamps = num2date(time[:], time.units) 
-        else: 
+            timestamps = num2date(time[:], time.units)
+        else:
             timestamps = num2date(time[:])
         ds.close()
     except Exception as e:
@@ -58,12 +60,12 @@ def pdf_from_analog(lon, lat, data, vmin, vmax, Nlin=30, domain=[-80,50,20,70], 
     ax.set_extent(domain, crs=ccrs.PlateCarree())
     ax.coastlines(linewidth=0.8)
     ax.gridlines()
-        
+
     levels = np.linspace(vmin, vmax, Nlin)
-        
+
     cmap=get_cmap("RdBu_r")
 
-    data_map = ax.contourf(lon, lat, data, levels=levels, extend='both', cmap=cmap, projection=ccrs.PlateCarree()) 
+    data_map = ax.contourf(lon, lat, data, levels=levels, extend='both', cmap=cmap, projection=ccrs.PlateCarree())
     data_cbar = plt.colorbar(data_map, extend='both', shrink=0.6)
     data_cont = ax.contour(lon, lat, data ,levels=levels, linewidths=0.8, colors="white", linestyles = 'dashed', projection=ccrs.PlateCarree())
 
@@ -227,8 +229,6 @@ def seacyc(archive, simulation, method='base'):
         LOGGER.debug('seacyc started with method: %s' % method)
 
         from shutil import copy
-        from flyingpigeon.ocgis_module import call
-        from flyingpigeon.utils import get_variable
         from cdo import Cdo
         cdo = Cdo()
 
@@ -407,20 +407,18 @@ def plot_analogs(configfile='config.txt', simday='all', **kwargs):
 
     import uuid
 
-    from flyingpigeon.visualisation import pdfmerge
-
     simoutpdf='Analogs.pdf'
 
     if (os.path.isfile(configfile) == True):
         curdir, confile = os.path.split(os.path.abspath(configfile))
-        
+
         lines=[line.rstrip('\n') for line in open(configfile)]
         for i in lines:
             if 'archivefile' in i: arcfile = i.split('"')[1]
             if 'simulationfile' in i: simfile = i.split('"')[1]
             if 'outputfile' in i: analogfile = i.split('"')[1]
             if 'nanalog' in i : nanalog = int(i.split(' =')[1])
-            if 'varname' in i: varname = i.split('"')[1] 
+            if 'varname' in i: varname = i.split('"')[1]
             if 'predictordom' in i: domain = i.split('"')[1]
 
         analogfile = curdir +'/' + analogfile
@@ -461,12 +459,12 @@ def plot_analogs(configfile='config.txt', simday='all', **kwargs):
             sim_date = dt.strptime(ana[0],'%Y%m%d')
             an_dates = []
             for dat in ana[1:1+nanalog]: an_dates.append(dt.strptime(dat,'%Y%m%d'))
-        
+
             c_dists = ana[1+nanalog:1+2*nanalog]
             c_cors = ana[1+2*nanalog:]
             dists = np.zeros((nanalog),dtype=float)
             cors = np.zeros((nanalog),dtype=float)
-      
+
             for i in range(0,nanalog):
                 dists[i] = float(c_dists[i])
                 cors[i] = float(c_cors[i])
@@ -476,14 +474,14 @@ def plot_analogs(configfile='config.txt', simday='all', **kwargs):
             w_corr = cors/max_corr
 
             sim_index = idx # day by day
-    
+
             tmp_i = []
             for i in arc_times:
                 tmp_z = '%s-%s-%s' % (i.year, i.month, i.day)
                 tmp_i.append(tmp_z)
-      
+
             arc_index = []
-    
+
             for arc in an_dates:
                 arc_date_temp = '%s-%s-%s' % (arc.year, arc.month, arc.day)
                 arc_index.append(tmp_i.index(arc_date_temp))
@@ -500,16 +498,16 @@ def plot_analogs(configfile='config.txt', simday='all', **kwargs):
             outlist.append(str(output_file))
 
 
-            # PLOT Mean analogs ====================================    
+            # PLOT Mean analogs ====================================
 
             arc_dataset = Dataset(arcfile)
             arcvar = arc_dataset.variables[varname][:]
             arc_dataset.close()
-    
+
             mean_ana = np.zeros((len(arcvar[0,:,0]),len(arcvar[0,0,:])),dtype=float)
             for ida, art in enumerate(arc_index): mean_ana = mean_ana + arcvar[art,:,:]
             mean_ana = mean_ana / nanalog
-    
+
             output_an_file_name = 'ana_' + ana[0] + '.pdf'
             an_title = 'Mean analogs for sim Day: ' + ana[0]
             an_output_file = pdf_from_analog(lon=lon, lat=lat, data=mean_ana,
@@ -518,7 +516,7 @@ def plot_analogs(configfile='config.txt', simday='all', **kwargs):
             outlist.append(str(an_output_file))
 
             # PLOT BEST (first) analog
-    
+
             output_ban_file_name = 'bana_' + ana[0] + '.pdf' #PDF!!
             ban_title = 'BEST analog for sim Day ' + ana[0] + ' is: ' + ana[1]
             ban_output_file = pdf_from_analog(lon=lon, lat=lat, data=arcvar[arc_index[0]],
@@ -526,9 +524,9 @@ def plot_analogs(configfile='config.txt', simday='all', **kwargs):
                                           output=output_ban_file_name, title=ban_title)
             outlist.append(str(ban_output_file))
 
-    
+
             # PLOT WORST (last) analog
-    
+
             output_wan_file_name = 'wana_' + ana[0] + '.pdf' #PDF!!
             wan_title = 'LAST analog for sim Day ' + ana[0] + ' is: ' + ana[nanalog]
             wan_output_file = pdf_from_analog(lon=lon, lat=lat, data=arcvar[arc_index[-1]],
@@ -573,14 +571,14 @@ def plot_analogs(configfile='config.txt', simday='all', **kwargs):
             """
         simoutpdf = pdfmerge(outlist)
     # get the information from config file:
-    # netcdf files, period, Nanalogs, ouput analogs 
+    # netcdf files, period, Nanalogs, ouput analogs
 
     # get the information from config file:
-    # netcdf files, period, Nanalogs, ouput analogs 
+    # netcdf files, period, Nanalogs, ouput analogs
     else:
         simoutpdf = 'Analogs.pdf'
-        # TODO: call this func with analogfile = '..', 
+        # TODO: call this func with analogfile = '..',
         # arguments came from kwargs
         # need to prescribe all input info - to use with external analogs results.
-        # check kwargs: ncfiles, N analogs (?), periods, etc 
+        # check kwargs: ncfiles, N analogs (?), periods, etc
     return simoutpdf

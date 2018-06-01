@@ -1,4 +1,4 @@
-from flyingpigeon import utils
+from eggshell import general_utils as utils
 from datetime import datetime as dt
 from datetime import timedelta
 

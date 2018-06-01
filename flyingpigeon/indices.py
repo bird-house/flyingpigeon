@@ -1,5 +1,6 @@
 import os
-from flyingpigeon.utils import calc_grouping, sort_by_filename, get_variable  # aggregations,
+from eggshell.ocgis_utils import calc_grouping
+from eggshell.netcdf_utils import sort_by_filename, get_variable
 from flyingpigeon.subset import get_ugid, get_geom
 from flyingpigeon import config
 

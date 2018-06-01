@@ -2,8 +2,11 @@ from cdo import Cdo
 from tempfile import mkstemp
 import os
 
-from flyingpigeon.utils import drs_filename, get_variable, calc_grouping, sort_by_filename
 from flyingpigeon import config
+
+from eggshell.ocgis_utils import call
+from eggshell.netcdf_utils import sort_by_filename, get_variable
+
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
@@ -92,9 +95,6 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None, output_f
 
     :returns list: path to clipped files
     """
-
-    from flyingpigeon.utils import get_variable, drs_filename
-    from flyingpigeon.ocgis_module import call
 
     if type(resource) != list:
         resource = list([resource])

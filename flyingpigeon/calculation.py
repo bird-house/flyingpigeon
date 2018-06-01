@@ -3,6 +3,8 @@ LOGGER = logging.getLogger("PYWPS")
 
 from flyingpigeon.config import testdata_path
 
+from eggshell.netcdf_utils import get_values, get_coordinates, get_index_lat
+
 from os import path
 from os import listdir
 
@@ -12,11 +14,10 @@ def fieldmean(resource):
     """
     calculating of a weighted field mean
 
-    :param resource: str or list of str containing the netCDF files pathes
+    :param resource: str or list of str containing the netCDF files paths
 
-    :return list: timeseries of the averaged values per timepstep
+    :return list: timeseries of the averaged values per timestep
     """
-    from flyingpigeon.utils import get_values, get_coordinates, get_index_lat
     from numpy import radians, average, cos, sqrt, array
 
     data = get_values(resource)  # np.squeeze(ds.variables[variable][:])
@@ -89,12 +90,12 @@ def remove_mean_trend(fana, varname):
     mean_arc_dataset = Dataset(fmana)
     mean_arcvar = mean_arc_dataset.variables[varname][:]
     data=mean_arcvar[:,0,0]
-    mean_arc_dataset.close()    
+    mean_arc_dataset.close()
     x = np.linspace(0,len(data)-1,len(data))
     y = data
 
-    # Very slow method. 
-    # TODO: sub by fast one 
+    # Very slow method.
+    # TODO: sub by fast one
     # (there is one in R, but doesn't want to add R to analogs...)
     spl = UnivariateSpline(x,y)
 
