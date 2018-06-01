@@ -9,7 +9,8 @@ import cartopy.crs as ccrs
 
 import numpy as np
 
-from eggshell.ocgis_utils import call
+#from eggshell.ocgis_utils import call
+from flyingpigeon.ocgis_module import call
 from eggshell.netcdf_utils import get_variable, get_time
 from eggshell.general_utils import archive, archiveextract
 from eggshell.visualisation import pdfmerge

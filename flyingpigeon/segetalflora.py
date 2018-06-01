@@ -2,7 +2,8 @@ from os import path, mkdir, listdir
 import ocgis
 import logging
 LOGGER = logging.getLogger("PYWPS")
-from eggshell.ocgis_utils import calc_grouping, call
+from flyingpigeon.ocgis_module import call
+from eggshell.ocgis_utils import calc_grouping
 from eggshell.netcdf_utils import sort_by_filename
 
 def get_equation(culture_type='fallow', climate_type=2):

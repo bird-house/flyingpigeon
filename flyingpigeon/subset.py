@@ -4,8 +4,8 @@ import os
 
 from flyingpigeon import config
 
-from eggshell.ocgis_utils import call
-from eggshell.netcdf_utils import sort_by_filename, get_variable
+from flyingpigeon.ocgis_module import call
+from flyingpigeon.utils import sort_by_filename, get_variable
 
 
 import logging
