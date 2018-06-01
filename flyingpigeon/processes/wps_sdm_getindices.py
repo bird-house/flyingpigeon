@@ -12,7 +12,7 @@ from pywps.app.Common import Metadata
 from flyingpigeon.sdm import _SDMINDICES_
 from flyingpigeon import sdm
 from flyingpigeon.utils import archive, archiveextract, sort_by_filename
-from flyingpigeon.log import init_process_logger
+from eggshell.log import init_process_logger
 from flyingpigeon.utils import rename_complexinputs
 
 from os.path import basename

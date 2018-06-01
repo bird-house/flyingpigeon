@@ -23,7 +23,7 @@ from pywps.app.Common import Metadata
 from flyingpigeon.utils import archiveextract
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import GROUPING
-from flyingpigeon.log import init_process_logger
+from eggshell.log import init_process_logger
 
 import ocgis
 from ocgis.calc.library import register

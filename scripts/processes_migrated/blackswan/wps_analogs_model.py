@@ -25,7 +25,7 @@ from pywps import LiteralInput, LiteralOutput
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format, FORMATS
 from pywps.app.Common import Metadata
-from flyingpigeon.log import init_process_logger
+from eggshell.log import init_process_logger
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
@@ -284,7 +284,7 @@ class AnalogsmodelProcess(Process):
             #level = 500
 
             level = request.inputs['level'][0].data
-            if (level == 500): 
+            if (level == 500):
                 dummylevel = 1000 # dummy workaround for cdo sellevel
             else:
                 dummylevel = 500
@@ -406,15 +406,15 @@ class AnalogsmodelProcess(Process):
                 resource=[resource]
 
             # ===============================================================
-            # REMOVE resources which are out of interest from the list 
+            # REMOVE resources which are out of interest from the list
             # (years > and < than requested for calculation)
 
             tmp_resource = []
 
             for re in resource:
                 s,e = get_timerange(re)
-                tmpSt = dt.strptime(s,'%Y%m%d') 
-                tmpEn = dt.strptime(e,'%Y%m%d') 
+                tmpSt = dt.strptime(s,'%Y%m%d')
+                tmpEn = dt.strptime(e,'%Y%m%d')
                 if ((tmpSt <= end ) and (tmpEn >= start)):
                     tmp_resource.append(re)
                     LOGGER.debug('Selected file: %s ' % (re))
@@ -433,11 +433,11 @@ class AnalogsmodelProcess(Process):
             dimlen = len(dims)
 
             try:
-                model_id = ds.getncattr('model_id') 
+                model_id = ds.getncattr('model_id')
             except AttributeError:
                 model_id = 'Unknown model'
 
-            LOGGER.debug('MODEL: %s ' % (model_id)) 
+            LOGGER.debug('MODEL: %s ' % (model_id))
 
             lev_units = 'hPa'
 
@@ -475,10 +475,10 @@ class AnalogsmodelProcess(Process):
                 cdo.sellonlatbox(comcdo, input=res_fn, output=tmp_f)
                 regr_res.append(tmp_f)
 
-            # ============================  
+            # ============================
             # Block to Detrend data
             # TODO 1 Keep trend as separate file
-            # TODO 2 Think how to add options to plot abomalies AND original data... 
+            # TODO 2 Think how to add options to plot abomalies AND original data...
             #        May be do archive and simulation = call.. over NOT detrended data and keep it as well
             if (dimlen>3) :
                 res_tmp = get_level(regr_res, level = level)
@@ -501,7 +501,7 @@ class AnalogsmodelProcess(Process):
 
             #######################################################################################
             # TEMORAL dirty workaround to get the level and it's units - will be func in utils.py
-            
+
             #if (dimlen>3) :
             #    archive = get_level(archive_tmp, level = level)
             #    simulation = get_level(simulation_tmp,level = level)
@@ -543,7 +543,7 @@ class AnalogsmodelProcess(Process):
                 seasoncyc_base=seasoncyc_base,
                 seasoncyc_sim=seasoncyc_sim,
                 base_id=model_id,
-                sim_id=model_id, 
+                sim_id=model_id,
                 timewin=timewin,
                 varname=variable,
                 seacyc=seacyc,
@@ -603,7 +603,7 @@ class AnalogsmodelProcess(Process):
             msg = 'CASTf90 failed %s ' % e
             LOGGER.error(msg)
             raise Exception(msg)
-        
+
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
         response.update_status('preparing output', 80)
         analogs_pdf = analogs.plot_analogs(configfile=config_file)

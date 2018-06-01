@@ -10,7 +10,7 @@ from pywps import Format
 from pywps.inout.literaltypes import AllowedValue
 from pywps.app.Common import Metadata
 
-from flyingpigeon.log import init_process_logger
+from eggshell.log import init_process_logger
 
 import logging
 LOGGER = logging.getLogger("PYWPS")

@@ -10,7 +10,7 @@ from pywps import ComplexInput, ComplexOutput
 from pywps import BoundingBoxInput
 from pywps import Format, FORMATS
 from pywps.app.Common import Metadata
-from flyingpigeon.log import init_process_logger
+from eggshell.log import init_process_logger
 
 from datetime import datetime as dt
 from datetime import time as dt_time

@@ -6,7 +6,7 @@ Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 import tempfile
 
 from flyingpigeon.sdm import _SDMINDICES_
-from flyingpigeon.log import init_process_logger
+from eggshell.log import init_process_logger
 
 from os.path import basename
 from flyingpigeon import sdm

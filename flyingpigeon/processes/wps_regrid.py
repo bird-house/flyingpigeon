@@ -9,7 +9,7 @@ from pywps import ComplexInput, ComplexOutput
 from pywps import Format, configuration, get_format
 from pywps.app.Common import Metadata
 
-from flyingpigeon.log import init_process_logger
+from eggshell.log import init_process_logger
 
 import os
 import logging

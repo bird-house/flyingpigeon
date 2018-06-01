@@ -16,7 +16,7 @@ from flyingpigeon.utils import get_variable, rename_variable
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import get_timerange
-from flyingpigeon.log import init_process_logger
+from eggshell.log import init_process_logger
 from flyingpigeon.datafetch import _PRESSUREDATA_
 
 from pywps import Process

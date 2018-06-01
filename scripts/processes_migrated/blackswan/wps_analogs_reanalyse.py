@@ -24,7 +24,7 @@ from flyingpigeon import analogs
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import get_variable
 from flyingpigeon.calculation import remove_mean_trend
-from flyingpigeon.log import init_process_logger
+from eggshell.log import init_process_logger
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
@@ -359,8 +359,8 @@ class AnalogsreanalyseProcess(Process):
         ##########################################
         # fetch Data from original data archive
         ##########################################
-                
-        # NOTE: If ref is say 1950 - 1990, and sim is just 1 week in 2017 - ALL the data will be downloaded, 1950 - 2017 
+
+        # NOTE: If ref is say 1950 - 1990, and sim is just 1 week in 2017 - ALL the data will be downloaded, 1950 - 2017
         try:
             model_nc = rl(start=start.year,
                           end=end.year,
@@ -384,12 +384,12 @@ class AnalogsreanalyseProcess(Process):
         # TODO: benchmark the method bellow for NCEP z500 for 60 years
 
 #        if ('20CRV2' in model) and ('z' in var):
-        if ('z' in var):  
+        if ('z' in var):
             tmp_total = []
             origvar = get_variable(model_nc)
 
             for z in model_nc:
-                tmp_n = 'tmp_%s' % (uuid.uuid1()) 
+                tmp_n = 'tmp_%s' % (uuid.uuid1())
                 b0=call(resource=z, variable=origvar, level_range=[int(level), int(level)], geom=bbox,
                 spatial_wrapping='wrap', prefix='levdom_'+os.path.basename(z)[0:-3])
                 tmp_total.append(b0)
@@ -399,8 +399,8 @@ class AnalogsreanalyseProcess(Process):
 
             # Clean
             for i in tmp_total:
-                tbr='rm -f %s' % (i) 
-                os.system(tbr)  
+                tbr='rm -f %s' % (i)
+                os.system(tbr)
 
             # Create new variable
             ds = Dataset(inter_subset_tmp, mode='a')
@@ -417,20 +417,20 @@ class AnalogsreanalyseProcess(Process):
                                     # conform_units_to=conform_units_to
                                     )
 
-        # If dataset is 20CRV2 the 6 hourly file should be converted to daily.  
+        # If dataset is 20CRV2 the 6 hourly file should be converted to daily.
         # Option to use previously 6h data from cache (if any) and not download daily files.
 
         if '20CRV2' in model:
             if timres == '6h':
                 from cdo import Cdo
-                
+
                 cdo = Cdo()
                 model_subset = '%s.nc' % uuid.uuid1()
                 tmp_f = '%s.nc' % uuid.uuid1()
 
                 cdo_op = getattr(cdo,'daymean')
                 cdo_op(input=model_subset_tmp, output=tmp_f)
-                sti = '00:00:00' 
+                sti = '00:00:00'
                 cdo_op = getattr(cdo,'settime')
                 cdo_op(sti, input=tmp_f, output=model_subset)
                 LOGGER.debug('File Converted from: %s to daily' % (timres))
@@ -447,12 +447,12 @@ class AnalogsreanalyseProcess(Process):
         # Original model subset kept to further visualisaion if needed
         # Now is issue with SLP:
         # TODO 1 Keep trend as separate file
-        # TODO 2 Think how to add options to plot abomalies AND original data... 
+        # TODO 2 Think how to add options to plot abomalies AND original data...
         #        May be do archive and simulation = call.. over NOT detrended data and keep it as well
         # TODO 3 Check with faster smoother add removing trend of each grid
 
         if detrend == 'None':
-            orig_model_subset = model_subset            
+            orig_model_subset = model_subset
         else:
             orig_model_subset = remove_mean_trend(model_subset, varname=var)
 
@@ -622,10 +622,10 @@ class AnalogsreanalyseProcess(Process):
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
 
         # TODO: Add try - except for pdfs
-        analogs_pdf = analogs.plot_analogs(configfile=config_file)   
+        analogs_pdf = analogs.plot_analogs(configfile=config_file)
         response.update_status('preparing output', 75)
         # response.outputs['config'].storage = FileStorage()
-        response.outputs['analog_pdf'].file = analogs_pdf 
+        response.outputs['analog_pdf'].file = analogs_pdf
         response.outputs['config'].file = config_file
         response.outputs['analogs'].file = output_file
         response.outputs['output_netcdf'].file = simulation

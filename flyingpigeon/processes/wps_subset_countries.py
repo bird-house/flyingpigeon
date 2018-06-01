@@ -1,13 +1,13 @@
 from flyingpigeon.subset import clipping
-from flyingpigeon.subset import countries, countries_longname
-from flyingpigeon.log import init_process_logger
+from flyingpigeon.subset import countries
+from eggshell.log import init_process_logger
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import rename_complexinputs
 
 from pywps import Process
 from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
-from pywps import Format, FORMATS
+from pywps import Format
 from pywps.app.Common import Metadata
 
 import logging
@@ -86,7 +86,8 @@ class ClippingProcess(Process):
             store_supported=True,
         )
 
-    def _handler(self, request, response):
+    @staticmethod
+    def _handler(request, response):
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 

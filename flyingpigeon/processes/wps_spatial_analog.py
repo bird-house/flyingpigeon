@@ -4,7 +4,7 @@ Process for spatial analog calculations.
 Author: David Huard (huard.david@ouranos.ca),
 """
 
-from flyingpigeon.log import init_process_logger
+from eggshell.log import init_process_logger
 from flyingpigeon.utils import archiveextract
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import get_values

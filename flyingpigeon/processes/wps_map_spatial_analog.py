@@ -1,4 +1,4 @@
-from flyingpigeon.log import init_process_logger
+from eggshell.log import init_process_logger
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.visualisation import map_spatial_analog, fig2plot

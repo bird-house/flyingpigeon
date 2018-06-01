@@ -13,7 +13,7 @@ from flyingpigeon.utils import searchfile
 from flyingpigeon.utils import search_landsea_mask_by_esgf
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.log import init_process_logger
+from eggshell.log import init_process_logger
 
 import logging
 LOGGER = logging.getLogger("PYWPS")

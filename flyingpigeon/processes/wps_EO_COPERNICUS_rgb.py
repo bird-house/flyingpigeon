@@ -4,7 +4,7 @@ from pywps import ComplexInput, LiteralInput, ComplexOutput
 from pywps import Format, FORMATS
 from pywps.app.Common import Metadata
 
-from flyingpigeon.log import init_process_logger
+from eggshell.log import init_process_logger
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon import eodata
 from flyingpigeon.config import cache_path
@@ -284,7 +284,7 @@ class EO_COP_rgbProcess(Process):
         if i is None:
             i = "dummy.png"
 
-        
+
 
         response.outputs['output_plot'].file = imgs[i]
 

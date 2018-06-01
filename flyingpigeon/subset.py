@@ -289,7 +289,7 @@ def get_ugid(polygons=None, geom=None):
 
 
 def get_geom(polygon=None):
-    """ returns the approriate shapefile (geom) for a given polygon abbreviation
+    """ returns the appropriate shapefile (geom) for a given polygon abbreviation
 
     :param polygon: polygon short name
 
@@ -317,7 +317,7 @@ _CONTINENTS_ = get_shp_column_values(geom='continents', columnname='CONTINENT')
 _COUNTRIES_ = {}
 _COUNTRIES_Europe_ = {}
 
-# === popultate polygons dictionaties
+# === populate polygon dictionaries
 ADM0_A3 = get_shp_column_values(geom='countries', columnname='ADM0_A3')
 NAMELONG = get_shp_column_values(geom='countries', columnname='NAME_LONG')
 CONTINENT = get_shp_column_values(geom='countries', columnname='CONTINENT')
