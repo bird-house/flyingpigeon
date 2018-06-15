@@ -7,14 +7,11 @@ from matplotlib import use
 use('Agg')   # use this if no xserver is available
 
 from matplotlib import pyplot as plt
-from cartopy import config as cartopy_config
-from cartopy.util import add_cyclic_point
-import cartopy.crs as ccrs
 
 LOGGER = logging.getLogger("PYWPS")
 
-from eggshell.visualisation import MidpointNormalize, fig2plot, plot_extend, plot_polygons, spaghetti, uncertainty, pdfmerge, concat_images
-from eggshell.visualisation import map_robustness, concat_images
+from eggshell.viz.visualisation import MidpointNormalize, fig2plot, plot_extend, plot_polygons, spaghetti, uncertainty, pdfmerge, concat_images
+from eggshell.viz.visualisation import map_robustness, concat_images
 
 def factsheetbrewer(png_region=None, png_spaghetti=None, png_uncertainty=None, png_robustness=None):
     """
@@ -117,6 +114,9 @@ def map_gbifoccurrences(latlon, dir='.', file_extension='png'):
     :return png: world map with occurences
     """
     # configure cartopy cache dir
+    from cartopy import config as cartopy_config
+    import cartopy.crs as ccrs
+
     try:
         cartopy_config['data_dir'] = os.path.join(dir, 'cartopy')
         # plotting ...
@@ -168,6 +168,8 @@ def map_PAmask(PAmask, file_extension='png'):
 
 
 def map_spatial_analog(ncfile, variable='dissimilarity', cmap='viridis', title='Spatial analog'):
+    from cartopy.util import add_cyclic_point
+    import cartopy.crs as ccrs
     """Return a matplotlib Figure instance showing a map of the dissimilarity measure.
     """
     import netCDF4 as nc

@@ -1,13 +1,8 @@
 import logging
 LOGGER = logging.getLogger("PYWPS")
 
-from flyingpigeon.config import testdata_path
-
-from eggshell.netcdf_utils import get_values, get_coordinates, get_index_lat
-
+from eggshell.nc.utils import get_values, get_coordinates, get_index_lat
 from os import path
-from os import listdir
-
 import numpy as np
 
 def fieldmean(resource):

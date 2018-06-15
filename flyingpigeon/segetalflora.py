@@ -3,8 +3,8 @@ import ocgis
 import logging
 LOGGER = logging.getLogger("PYWPS")
 from flyingpigeon.ocgis_module import call
-from eggshell.ocgis_utils import calc_grouping
-from eggshell.netcdf_utils import sort_by_filename
+from eggshell.ocg.utils import calc_grouping
+from eggshell.nc.utils import sort_by_filename
 
 def get_equation(culture_type='fallow', climate_type=2):
   """

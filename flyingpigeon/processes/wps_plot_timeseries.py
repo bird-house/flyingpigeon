@@ -97,8 +97,8 @@ class PlottimeseriesProcess(Process):
             LOGGER.info("spagetti plot done")
             response.update_status('Spagetti plot for %s %s files done' % (len(ncfiles), var), 50)
             response.outputs['plotout_spagetti'].file = plotout_spagetti_file
-        except Exception:
-            raise Exception("spagetti plot failed")
+        except Exception as e:
+            raise Exception("spagetti plot failed : {}".format(e))
 
         try:
             plotout_uncertainty_file = vs.uncertainty(ncfiles,

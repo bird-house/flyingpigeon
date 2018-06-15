@@ -23,6 +23,7 @@ dependencies:
 - libxslt
 - json-c=0.12.1 # See issue #251
 - pypdf2
+#- eggshell=0.3
 ################
 # tests
 - pytest

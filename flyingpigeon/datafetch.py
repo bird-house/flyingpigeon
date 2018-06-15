@@ -1,4 +1,4 @@
-from eggshell import general_utils as utils
+from eggshell.fs import utils as utils
 from datetime import datetime as dt
 from datetime import timedelta
 
@@ -277,14 +277,12 @@ def fetch_eodata(item_type, asset, token, bbox, period=[dt.today()-timedelta(day
     """
 
     import os
-    import json
     import requests
     from requests.auth import HTTPBasicAuth
-    from tempfile import mkstemp
     import shutil
     import time
     from os.path import join
-    from os import path, makedirs
+    from os import makedirs
     from flyingpigeon.config import cache_path
     #  Enter a bbox: min_lon, max_lon, min_lat, max_lat.
     #                xmin ymin xmax ymax

@@ -5,7 +5,7 @@ import config
 LOGGER = logging.getLogger("PYWPS")
 
 
-#from eggshell.ocgis_utils import call # Does not work from eggshell due to shapefile path from config that are wrong.
+#from eggshell.ocg.utils import call # Does not work from eggshell due to shapefile path from config that are wrong.
 
 def call(resource=[], variable=None, dimension_map=None, agg_selection=True, calc=None,
          calc_grouping=None, conform_units_to=None, crs=None, memory_limit=None,  prefix=None,

@@ -22,7 +22,7 @@ from ocgis.variable.temporal import TemporalVariable
 from ocgis.base import get_variable_names
 from ocgis.test.base import TestBase
 
-pytestmark = pytest.mark.skipif(reason="segmentation fault on next branch with snappy")
+#pytestmark = pytest.mark.skipif(reason="segmentation fault on next branch with snappy")
 
 
 class TestDissimilarity(TestBase):
@@ -75,6 +75,7 @@ class TestDissimilarity(TestBase):
 
         return field
 
+    # Likely a bug in ocgisDissimilarity.
     @pytest.mark.skip(reason="ocgis exception")
     def test1d(self):
         p1 = self.write_field_data('v1', ncol=1, nrow=1)
