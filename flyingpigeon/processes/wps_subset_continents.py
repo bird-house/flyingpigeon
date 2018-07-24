@@ -15,6 +15,7 @@ import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
+# TODO: Rename this to "SubsetcontinentProcess"
 class ClipcontinentProcess(Process):
     """
     TODO: opendap input support, additional metadata to display region names.
