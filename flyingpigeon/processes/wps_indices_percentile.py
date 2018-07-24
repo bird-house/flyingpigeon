@@ -180,8 +180,8 @@ class IndicespercentiledaysProcess(Process):
             LOGGER.debug('region %s' % region)
             LOGGER.debug('Nr of input files %s ' % len(resources))
 
-        except:
-            LOGGER.exception('failed to read in the arguments')
+        except Exception as e:
+            LOGGER.exception("failed to read in the arguments: %s" % e)
 
         from flyingpigeon.utils import sort_by_filename
         from flyingpigeon.ocgis_module import call
@@ -205,10 +205,10 @@ class IndicespercentiledaysProcess(Process):
                                   )
                     LOGGER.debug('percentile based indice done for %s' % result)
                     results.extend(result)
-                except:
-                    LOGGER.exception("failed to calculate percentil based indice for %s " % key)
-        except:
-            LOGGER.exception("failed to calculate percentile indices")
+                except Exception as e:
+                    LOGGER.exception("failed to calculate percentile based indice for %s: %s" % key, e)
+        except Exception as e:
+            LOGGER.exception("failed to calculate percentile indices: %s" % e)
 
         output_archive = archive(results)
 

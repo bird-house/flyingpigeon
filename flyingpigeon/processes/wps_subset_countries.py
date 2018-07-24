@@ -124,20 +124,20 @@ class ClippingProcess(Process):
                 # dimension_map=dimension_map,
             )
             LOGGER.info('results %s' % results)
-        except:
-            msg = 'clipping failed'
+        except Exception as e:
+            msg = 'Clipping failed: %s' % e
             LOGGER.exception(msg)
             raise Exception(msg)
 
         if not results:
-            raise Exception('no results produced.')
+            raise Exception('No results produced.')
 
         # prepare tar file
         try:
             tarf = archive(results)
-            LOGGER.info('Tar file prepared')
-        except:
-            msg = 'Tar file preparation failed'
+            LOGGER.info('Tar file prepared.')
+        except Exception as e:
+            msg = 'Tar file preparation failed: %s' % e
             LOGGER.exception(msg)
             raise Exception(msg)
 
