@@ -1,10 +1,9 @@
 import traceback
-
 from urlparse import urlparse
-from pywps import Process, LiteralInput, ComplexOutput, get_format
-from flyingpigeon.utils import CookieNetCDFTransfer
 
 from flyingpigeon.handler_common import wfs_common
+from flyingpigeon.utils import CookieNetCDFTransfer
+from pywps import Process, LiteralInput, ComplexOutput, get_format
 
 json_format = get_format('JSON')
 

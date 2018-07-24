@@ -1,26 +1,20 @@
-from pywps import Process
-# from pywps import LiteralInput
-from pywps import ComplexInput, LiteralInput, ComplexOutput
-from pywps import Format, FORMATS
-from pywps.app.Common import Metadata
-
-from flyingpigeon.log import init_process_logger
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon import eodata
-from flyingpigeon.config import cache_path
-
+import logging
+import zipfile
 from datetime import datetime as dt
 from datetime import timedelta, time
-from tempfile import mkstemp
-import zipfile
-
-
-from os.path import exists, join
 from os import makedirs
+from os.path import exists, join
 
-from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
+from flyingpigeon import eodata
+from flyingpigeon.config import cache_path
+from flyingpigeon.log import init_process_logger
+from pywps import Format
+# from pywps import LiteralInput
+from pywps import LiteralInput, ComplexOutput
+from pywps import Process
+from pywps.app.Common import Metadata
+from sentinelsat import SentinelAPI, geojson_to_wkt
 
-import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -33,7 +27,7 @@ class EO_COP_indicesProcess(Process):
                          data_type='string',
                          min_occurs=1,
                          max_occurs=1,
-                         allowed_values=['NDVI','BAI']
+                         allowed_values=['NDVI', 'BAI']
                          ),
 
             LiteralInput('BBox', 'Bounding Box',
@@ -173,12 +167,12 @@ class EO_COP_indicesProcess(Process):
         api = SentinelAPI(username, password)
 
         geom = {
-          "type": "Polygon",
-          "coordinates": [[[ bbox[0], bbox[1]],
-                           [ bbox[2], bbox[1]],
-                           [ bbox[2], bbox[3]],
-                           [ bbox[0], bbox[3]],
-                           [ bbox[0], bbox[1]]]]}
+            "type": "Polygon",
+            "coordinates": [[[bbox[0], bbox[1]],
+                             [bbox[2], bbox[1]],
+                             [bbox[2], bbox[3]],
+                             [bbox[0], bbox[3]],
+                             [bbox[0], bbox[1]]]]}
 
         footprint = geojson_to_wkt(geom)
 
@@ -200,11 +194,11 @@ class EO_COP_indicesProcess(Process):
 
         # api.download_all(products)
         # try:
-            # with open(filepathes, 'w') as fp:
-            #     fp.write('############################################\n')
-            #     fp.write('###     Following files are fetched      ###\n')
-            #     fp.write('############################################\n')
-            #     fp.write('\n')
+        # with open(filepathes, 'w') as fp:
+        #     fp.write('############################################\n')
+        #     fp.write('###     Following files are fetched      ###\n')
+        #     fp.write('############################################\n')
+        #     fp.write('\n')
 
         resources = []
 
@@ -214,8 +208,8 @@ class EO_COP_indicesProcess(Process):
                 # form = products[key]['format']
                 ID = str(products[key]['identifier'])
                 file_zip = join(DIR_EO, '%s.zip' % (ID))
-                DIR_tile =join(DIR_EO, '%s' % (filename))
-                response.update_status("fetch file %s" % ID , 20)
+                DIR_tile = join(DIR_EO, '%s' % (filename))
+                response.update_status("fetch file %s" % ID, 20)
                 LOGGER.debug('path: %s' % DIR_tile)
                 if exists(file_zip):
                     LOGGER.debug('file %s.zip already fetched' % ID)
@@ -228,7 +222,7 @@ class EO_COP_indicesProcess(Process):
                     except:
                         LOGGER.exception('failed to extract file %s' % filename)
                 if exists(DIR_tile):
-                     LOGGER.debug('file %s already unzipped' % filename)
+                    LOGGER.debug('file %s already unzipped' % filename)
                 else:
                     try:
                         # zipfile = join(DIR_EO, '%szip' % (filename)).strip(form)
@@ -250,13 +244,13 @@ class EO_COP_indicesProcess(Process):
         tiles = []
         for resource in resources:
             try:
-                response.update_status("Calculating %s indices " % ( indice ), 40)
+                response.update_status("Calculating %s indices " % (indice), 40)
                 if indice == 'NDVI':
-                    LOGGER.debug('Calculate NDVI for %s', resource )
+                    LOGGER.debug('Calculate NDVI for %s', resource)
                     tile = eodata.get_ndvi(resource)
                     LOGGER.debug('resources BAI calculated')
                 if indice == 'BAI':
-                    LOGGER.debug('Calculate BAI for %s', resource )
+                    LOGGER.debug('Calculate BAI for %s', resource)
                     tile = eodata.get_bai(resource)
                     LOGGER.debug('resources BAI calculated')
                 tiles.append(tile)

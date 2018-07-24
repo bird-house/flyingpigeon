@@ -1,19 +1,15 @@
-from pywps import Process
-from pywps import LiteralInput
+import logging
+
+from flyingpigeon.log import init_process_logger
+from flyingpigeon.subset import countries
+from flyingpigeon.utils import GROUPING
+from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import rename_complexinputs
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
-from pywps.app.Common import Metadata
+from pywps import LiteralInput
+from pywps import Process
 
-from flyingpigeon.indices import indices, indices_description
-from flyingpigeon.indices import calc_indice_percentile
-from flyingpigeon.subset import countries, countries_longname
-from flyingpigeon.utils import GROUPING
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.utils import archive, archiveextract
-from flyingpigeon import config
-from flyingpigeon.log import init_process_logger
-
-import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -184,7 +180,6 @@ class IndicespercentiledaysProcess(Process):
             LOGGER.exception('failed to read in the arguments')
 
         from flyingpigeon.utils import sort_by_filename
-        from flyingpigeon.ocgis_module import call
 
         datasets = sort_by_filename(resources, historical_concatination=True)
         results = []
@@ -201,7 +196,7 @@ class IndicespercentiledaysProcess(Process):
                 try:
                     result = calc(resource=datasets[key],
                                   calc=calc,
-                                #   calc_grouping='year'
+                                  #   calc_grouping='year'
                                   )
                     LOGGER.debug('percentile based indice done for %s' % result)
                     results.extend(result)

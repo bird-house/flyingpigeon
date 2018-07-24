@@ -1,18 +1,18 @@
+# TODO: Rename this file "wps_esmf_process"
+import logging
+import os
+
+import ESMF
+import ocgis
+from flyingpigeon.log import init_process_logger
 from flyingpigeon.utils import archiveextract
 from flyingpigeon.utils import rename_complexinputs
-import ocgis
-import ESMF
-
-from pywps import Process
-from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format, configuration, get_format
+from pywps import LiteralInput
+from pywps import Process
 from pywps.app.Common import Metadata
 
-from flyingpigeon.log import init_process_logger
-
-import os
-import logging
 LOGGER = logging.getLogger("PYWPS")
 
 json_format = get_format('JSON')
@@ -32,7 +32,7 @@ def extract_doc():
     def title(match):
         [name] = match.groups()
         n = len(name)
-        return '\n    ' + name + '\n    ' + n*'~'
+        return '\n    ' + name + '\n    ' + n * '~'
 
     doc = re.sub('(\w+) = \d', title, doc)
     lines = doc.splitlines()[3:]
@@ -40,6 +40,7 @@ def extract_doc():
     lines.insert(1, '    -----')
 
     return '\n'.join(lines)
+
 
 def actual_output_path(fn):
     """Return the path to an output file, adjusting for whether or not the server is active or not.
@@ -103,7 +104,7 @@ class ESMFRegridProcess(Process):
                          data_type="boolean",
                          min_occurs=0,
                          max_occurs=1)
-                         ]
+        ]
         outputs = [
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",

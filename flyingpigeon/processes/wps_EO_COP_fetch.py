@@ -1,19 +1,16 @@
-from pywps import Process
-# from pywps import LiteralInput
-from pywps import ComplexInput, LiteralInput, ComplexOutput
-from pywps import Format, FORMATS
-from pywps.app.Common import Metadata
-
-from flyingpigeon.log import init_process_logger
-from flyingpigeon.utils import rename_complexinputs
-
+import logging
 from datetime import datetime as dt
 from datetime import timedelta, time
 from tempfile import mkstemp
 
-from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
+from flyingpigeon.log import init_process_logger
+from pywps import Format
+# from pywps import LiteralInput
+from pywps import LiteralInput, ComplexOutput
+from pywps import Process
+from pywps.app.Common import Metadata
+from sentinelsat import SentinelAPI, geojson_to_wkt
 
-import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -21,6 +18,7 @@ class EO_COP_fetchProcess(Process):
     """
     TODO: like FetchProcess
     """
+
     def __init__(self):
         inputs = [
             LiteralInput("products", "Earth Observation Product Type",
@@ -156,31 +154,31 @@ class EO_COP_fetchProcess(Process):
         api = SentinelAPI(username, password)
 
         geom = {
-          "type": "Polygon",
-          "coordinates": [
-                  [
+            "type": "Polygon",
+            "coordinates": [
+                [
                     [
-                      14.00,
-                      8.00
+                        14.00,
+                        8.00
                     ],
                     [
-                      16.00,
-                      8.00
+                        16.00,
+                        8.00
                     ],
                     [
-                      16.00,
-                      10.00
+                        16.00,
+                        10.00
                     ],
                     [
-                      14.00,
-                      10.00
+                        14.00,
+                        10.00
                     ],
                     [
-                      14.00,
-                      8.00
+                        14.00,
+                        8.00
                     ]
-                  ]
                 ]
+            ]
         }
 
         footprint = geojson_to_wkt(geom)

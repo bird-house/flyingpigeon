@@ -1,26 +1,21 @@
-from pywps import Process
-# from pywps import LiteralInput
-from pywps import ComplexInput, LiteralInput, ComplexOutput
-from pywps import Format, FORMATS
-from pywps.app.Common import Metadata
-
-from flyingpigeon.log import init_process_logger
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon import eodata
-from flyingpigeon.config import cache_path
-
+import logging
+import zipfile
 from datetime import datetime as dt
 from datetime import timedelta, time
-from tempfile import mkstemp
-import zipfile
-
-
-from os.path import exists, join
 from os import makedirs
+from os.path import exists, join
+from tempfile import mkstemp
 
-from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
+from flyingpigeon import eodata
+from flyingpigeon.config import cache_path
+from flyingpigeon.log import init_process_logger
+from pywps import Format
+# from pywps import LiteralInput
+from pywps import LiteralInput, ComplexOutput
+from pywps import Process
+from pywps.app.Common import Metadata
+from sentinelsat import SentinelAPI, geojson_to_wkt
 
-import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -28,6 +23,7 @@ class EO_COP_fetchProcess(Process):
     """
     TODO: like FetchProcess
     """
+
     def __init__(self):
         inputs = [
             LiteralInput("products", "Earth Observation Product Type",
@@ -106,7 +102,6 @@ class EO_COP_fetchProcess(Process):
                           as_reference=True,
                           ),
 
-
             ComplexOutput("output_log", "Logging information",
                           abstract="Collected logs during process run.",
                           supported_formats=[Format("text/plain")],
@@ -171,12 +166,12 @@ class EO_COP_fetchProcess(Process):
         api = SentinelAPI(username, password)
 
         geom = {
-          "type": "Polygon",
-          "coordinates": [[[ bbox[0], bbox[1]],
-                           [ bbox[2], bbox[1]],
-                           [ bbox[2], bbox[3]],
-                           [ bbox[0], bbox[3]],
-                           [ bbox[0], bbox[1]]]]}
+            "type": "Polygon",
+            "coordinates": [[[bbox[0], bbox[1]],
+                             [bbox[2], bbox[1]],
+                             [bbox[2], bbox[3]],
+                             [bbox[0], bbox[3]],
+                             [bbox[0], bbox[1]]]]}
 
         footprint = geojson_to_wkt(geom)
 
@@ -212,7 +207,7 @@ class EO_COP_fetchProcess(Process):
                         response.update_status("fetch file %s" % filename, 20)
                         ID = str(products[key]['identifier'])
                         file_zip = join(DIR_EO, '%s.zip' % (ID))
-                        DIR_tile =join(DIR_EO, '%s' % (filename))
+                        DIR_tile = join(DIR_EO, '%s' % (filename))
 
                         if exists(file_zip):
                             LOGGER.debug('file %s.zip already fetched' % ID)
@@ -224,7 +219,7 @@ class EO_COP_fetchProcess(Process):
                             except:
                                 LOGGER.exception('failed to extract file %s' % filename)
                         if exists(DIR_tile):
-                             LOGGER.debug('file %s already unzipped' % filename)
+                            LOGGER.debug('file %s already unzipped' % filename)
                         else:
                             try:
                                 # zipfile = join(DIR_EO, '%szip' % (filename)).strip(form)
@@ -247,7 +242,7 @@ class EO_COP_fetchProcess(Process):
             LOGGER.exception('failed to fetch resource')
         # response.outputs['output'].file = filepathes
         try:
-            extend = [float(bboxStr[0])-5, float(bboxStr[1])+5, float(bboxStr[2])-5, float(bboxStr[3])+5]
+            extend = [float(bboxStr[0]) - 5, float(bboxStr[1]) + 5, float(bboxStr[2]) - 5, float(bboxStr[3]) + 5]
             img = eodata.plot_products(products, extend=extend)
             response.outputs['output_plot'].file = img
             LOGGER.debug('location of tiles plotted to map')

@@ -2,24 +2,22 @@
 Processes for Weather Classification
 Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 """
-from flyingpigeon.datafetch import _PRESSUREDATA_
-from flyingpigeon.weatherregimes import _TIMEREGIONS_
-from pywps import Process
-from pywps import LiteralInput
-from pywps import ComplexInput, ComplexOutput
-from pywps import BoundingBoxInput
-from pywps import Format, FORMATS
-from pywps.app.Common import Metadata
-from flyingpigeon.log import init_process_logger
-
+import logging
 from datetime import datetime as dt
 from datetime import time as dt_time
-from flyingpigeon import weatherregimes as wr
-from flyingpigeon.utils import archive, archiveextract, get_calendar
-from tempfile import mkstemp
 from os import path
+from tempfile import mkstemp
 
-import logging
+from flyingpigeon import weatherregimes as wr
+from flyingpigeon.log import init_process_logger
+from flyingpigeon.utils import archiveextract, get_calendar
+from flyingpigeon.weatherregimes import _TIMEREGIONS_
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
+from pywps.app.Common import Metadata
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -55,11 +53,11 @@ class WeatherregimesmodelProcess(Process):
             LiteralInput('BBox', 'Bounding Box',
                          data_type='string',
                          abstract="Enter a bbox: min_lon, max_lon, min_lat, max_lat."
-                            " min_lon=Western longitude,"
-                            " max_lon=Eastern longitude,"
-                            " min_lat=Southern or northern latitude,"
-                            " max_lat=Northern or southern latitude."
-                            " For example: -80,50,20,70",
+                                  " min_lon=Western longitude,"
+                                  " max_lon=Eastern longitude,"
+                                  " min_lat=Southern or northern latitude,"
+                                  " max_lat=Northern or southern latitude."
+                                  " For example: -80,50,20,70",
                          min_occurs=1,
                          max_occurs=1,
                          default='-80,50,20,70',
@@ -182,7 +180,7 @@ class WeatherregimesmodelProcess(Process):
             if type(resource) == list:
                 resource = sorted(resource, key=lambda i: path.splitext(path.basename(i))[0])
             else:
-                resource=[resource]
+                resource = [resource]
 
             # resources = self.getInputValues(identifier='resources')
             season = request.inputs['season'][0].data
@@ -220,21 +218,21 @@ class WeatherregimesmodelProcess(Process):
             end = dt.strptime(period.split('-')[1], '%Y%m%d')
 
             # OCGIS for models workaround - to catch 31 of Dec
-            start = dt.combine(start, dt_time(12,0))
-            end = dt.combine(end, dt_time(12,0))
+            start = dt.combine(start, dt_time(12, 0))
+            end = dt.combine(end, dt_time(12, 0))
 
             cycst = anualcycle.split('-')[0]
             cycen = anualcycle.split('-')[1]
             reference = [dt.strptime(cycst, '%Y%m%d'), dt.strptime(cycen, '%Y%m%d')]
             LOGGER.debug('Reference start: %s , end: %s ' % (reference[0], reference[1]))
 
-            reference[0] = dt.combine(reference[0],dt_time(12,0))
-            reference[1] = dt.combine(reference[1],dt_time(12,0))
+            reference[0] = dt.combine(reference[0], dt_time(12, 0))
+            reference[1] = dt.combine(reference[1], dt_time(12, 0))
             LOGGER.debug('New Reference start: %s , end: %s ' % (reference[0], reference[1]))
 
             # Check if 360_day calendar (all months are exactly 30 days):
             try:
-                if type(resource) is not list: resource=[resource]
+                if type(resource) is not list: resource = [resource]
                 modcal, calunits = get_calendar(resource[0])
                 if '360_day' in modcal:
                     if start.day == 31:
@@ -273,10 +271,10 @@ class WeatherregimesmodelProcess(Process):
 
         tmp_resource = []
         for re in resource:
-            s,e = get_timerange(re)
-            tmpSt = dt.strptime(s,'%Y%m%d')
-            tmpEn = dt.strptime(e,'%Y%m%d')
-            if ((tmpSt <= end ) and (tmpEn >= start)):
+            s, e = get_timerange(re)
+            tmpSt = dt.strptime(s, '%Y%m%d')
+            tmpEn = dt.strptime(e, '%Y%m%d')
+            if ((tmpSt <= end) and (tmpEn >= start)):
                 tmp_resource.append(re)
                 LOGGER.debug('Selected file: %s ' % (re))
         resource = tmp_resource
@@ -311,10 +309,9 @@ class WeatherregimesmodelProcess(Process):
         # call the R scripts
         ####################
         response.update_status('Start weather regime clustering ', 50)
-        import shlex
         import subprocess
         from flyingpigeon import config
-        from os.path import curdir, exists, join
+        from os.path import curdir, join
 
         try:
             rworkspace = curdir
@@ -336,7 +333,7 @@ class WeatherregimesmodelProcess(Process):
                     '%s' % start.year, '%s' % end.year,
                     '%s' % 'MODEL', '%s' % kappa]
             LOGGER.info('Rcall builded')
-            LOGGER.debug('ARGS: %s'%(args))
+            LOGGER.debug('ARGS: %s' % (args))
         except Exception as e:
             msg = 'failed to build the R command %s' % e
             LOGGER.error(msg)
@@ -360,7 +357,7 @@ class WeatherregimesmodelProcess(Process):
         # set the outputs
         ############################################
         response.update_status('Set the process outputs ', 95)
-        #bla=bla
+        # bla=bla
         response.outputs['Routput_graphic'].file = output_graphics
         response.outputs['output_pca'].file = file_pca
         response.outputs['output_classification'].file = file_class

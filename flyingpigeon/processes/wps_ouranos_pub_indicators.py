@@ -1,29 +1,26 @@
+import logging
 import os
-import tempfile
 import shutil
-
-from pywps import Process
-from pywps import LiteralInput
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format
-from pywps.app.Common import Metadata
-
-from flyingpigeon.utils import archiveextract
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.utils import GROUPING
-from flyingpigeon.log import init_process_logger
+import tempfile
+import uuid
+from os.path import abspath, curdir
 
 import numpy as np
 import ocgis
-from ocgis.calc import base
-from ocgis.calc.library import register
-from os.path import join, abspath, dirname, getsize, curdir
+from flyingpigeon.log import init_process_logger
+from flyingpigeon.utils import GROUPING
+from flyingpigeon.utils import archiveextract
+from flyingpigeon.utils import rename_complexinputs
 from ocgis import FunctionRegistry, OcgOperations, RequestDataset, env
+from ocgis.calc import base
 from ocgis.conv.nc import NcConverter
 from ocgis.util.units import get_are_units_equal_by_string_or_cfunits
-import uuid
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
+from pywps.app.Common import Metadata
 
-import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -38,7 +35,7 @@ class Average(base.AbstractMultivariateFunction):
     required_variables = ['v1', 'v2']
 
     def calculate(self, v1=None, v2=None):
-        return (v1+v2)/2.
+        return (v1 + v2) / 2.
 
     def validate_units(self):
         from ocgis.util.units import get_are_units_equal_by_string_or_cfunits
@@ -50,7 +47,7 @@ class Average(base.AbstractMultivariateFunction):
             else:
                 target = variable.units
                 match = get_are_units_equal_by_string_or_cfunits(source, target,
-                                                             try_cfunits=env.USE_CFUNITS)
+                                                                 try_cfunits=env.USE_CFUNITS)
                 if not match:
                     raise UnitsValidationError(variable, target, self.key)
 
@@ -64,6 +61,7 @@ class Average(base.AbstractMultivariateFunction):
         :rtype: str
         """
         return self.units
+
 
 FunctionRegistry.append(Average)
 
@@ -136,16 +134,16 @@ class OuranosPublicIndicatorProcess(Process, object):
                          Format('application/zip'),
                      ]),
 
-#        ComplexInput('tas', 'Mean daily temperature',
-#                     abstract='NetCDF Files or archive (tar/zip) containing netCDF files storing mean daily temperature.',
-#                     metadata=[Metadata('Info')],
-#                     min_occurs=0,
-#                     max_occurs=1000,
-#                     supported_formats=[
-#                         Format('application/x-netcdf'),
-#                         Format('application/x-tar'),
-#                         Format('application/zip'),
-#                     ]),
+        #        ComplexInput('tas', 'Mean daily temperature',
+        #                     abstract='NetCDF Files or archive (tar/zip) containing netCDF files storing mean daily temperature.',
+        #                     metadata=[Metadata('Info')],
+        #                     min_occurs=0,
+        #                     max_occurs=1000,
+        #                     supported_formats=[
+        #                         Format('application/x-netcdf'),
+        #                         Format('application/x-tar'),
+        #                         Format('application/zip'),
+        #                     ]),
 
         ComplexInput('pr', 'Total daily precipitation',
                      abstract='NetCDF Files or archive (tar/zip) containing netCDF files storing total daily precipitation.',
@@ -225,7 +223,7 @@ class OuranosPublicIndicatorProcess(Process, object):
                 request.inputs['tasmin']))
             res['tasmax'] = archiveextract(resource=rename_complexinputs(
                 request.inputs['tasmax']))
-            #res['tas'] = archiveextract(resource=rename_complexinputs(
+            # res['tas'] = archiveextract(resource=rename_complexinputs(
             #    request.inputs['tas']))
             res['pr'] = archiveextract(resource=rename_complexinputs(
                 request.inputs['pr']))
@@ -248,23 +246,25 @@ class OuranosPublicIndicatorProcess(Process, object):
         # Compute tas from tasmin and tasmax average
         rdn = RequestDataset(res['tasmin'])
         rdx = RequestDataset(res['tasmax'])
-        ops = OcgOperations(dataset=[rdn, rdx], calc=[{'func':'average', 'name':'tas', 'kwds':{'v1':'tasmin', 'v2':'tasmax'}}], output_format='nc')
+        ops = OcgOperations(dataset=[rdn, rdx],
+                            calc=[{'func': 'average', 'name': 'tas', 'kwds': {'v1': 'tasmin', 'v2': 'tasmax'}}],
+                            output_format='nc')
         res['tas'] = ops.execute()
 
         # Indices computation
         calc = {}
-        calc['tas'] = [{'func': 'icclim_TG', 'name':'TG'},
+        calc['tas'] = [{'func': 'icclim_TG', 'name': 'TG'},
                        {'func': 'icclim_GD4', 'name': 'GD4'},
-                      ]
-
-        calc['tasmax'] = [{'func': 'icclim_TX', 'name': 'TX'},
-                          {'func':'threshold', 'name':'ND>30', 'kwds':{'threshold':30+273.15, 'operation':'gt'}}
                        ]
 
-        calc['tasmin'] = [{'func': 'icclim_TN', 'name': 'TN'},]
+        calc['tasmax'] = [{'func': 'icclim_TX', 'name': 'TX'},
+                          {'func': 'threshold', 'name': 'ND>30', 'kwds': {'threshold': 30 + 273.15, 'operation': 'gt'}}
+                          ]
 
-        calc['pr'] = [{'func':'icclim_PRCPTOT', 'name':'PRCPTOT'},
-                   {'func': 'icclim_RX5day', 'name': 'RX5day'},]
+        calc['tasmin'] = [{'func': 'icclim_TN', 'name': 'TN'}, ]
+
+        calc['pr'] = [{'func': 'icclim_PRCPTOT', 'name': 'PRCPTOT'},
+                      {'func': 'icclim_RX5day', 'name': 'RX5day'}, ]
 
         calc['freezethaw'] = [{'func': 'freezethaw_oura', 'name': 'freezethaw',
                                'kwds': {'tasmin': 'tasmin',
@@ -272,7 +272,7 @@ class OuranosPublicIndicatorProcess(Process, object):
 
         scs = []
         for key, val in calc.items():
-            if key in ['pr',]:
+            if key in ['pr', ]:
                 rd = RequestDataset(res[key], conform_units_to='mm/day')
             elif key in ['freezethaw']:
                 rdmin = RequestDataset(res['tasmin'])

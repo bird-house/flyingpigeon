@@ -1,10 +1,11 @@
-from pywps import Process
+import logging
+
 # from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
-from pywps import Format, FORMATS
+from pywps import Format
+from pywps import Process
 from pywps.app.Common import Metadata
 
-import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -16,6 +17,7 @@ class FetchProcess(Process):
     TODO: Need a better way to provide multiple outputs (json file ... could be interpreted and displayed by UI),
     COWS has done somthing like this with an xml output.
     """
+
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
@@ -64,7 +66,6 @@ class FetchProcess(Process):
         from flyingpigeon.log import init_process_logger
         from flyingpigeon.utils import rename_complexinputs
         from flyingpigeon.datafetch import write_fileinfo
-        import os
 
         response.update_status("start fetching resource", 10)
 
