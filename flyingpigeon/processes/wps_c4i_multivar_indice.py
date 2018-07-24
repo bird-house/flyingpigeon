@@ -1,18 +1,13 @@
-from pywps.Process import WPSProcess
-
-import icclim
-import icclim.util.callback as callback
+import logging
 
 import dateutil.parser
-from datetime import datetime
-import os
+import icclim
+from pywps.Process import WPSProcess
 
 # from os.path import expanduser
 # from mkdir_p import *
 
 transfer_limit_Mb = 100
-
-import logging
 
 logger = logging.getLogger()
 

@@ -1,29 +1,25 @@
+import logging
 import os
-import tempfile
 import shutil
-
-from pywps import Process
-from pywps import LiteralInput
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format
-from pywps.app.Common import Metadata
-
-from flyingpigeon.utils import archiveextract
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.utils import GROUPING
-from flyingpigeon.log import init_process_logger
+import tempfile
+import uuid
+from os.path import abspath, curdir
 
 import numpy as np
 import ocgis
-from ocgis.calc import base
-from ocgis.calc.library import register
-from os.path import join, abspath, dirname, getsize, curdir
+from flyingpigeon.log import init_process_logger
+from flyingpigeon.utils import GROUPING
+from flyingpigeon.utils import archiveextract
+from flyingpigeon.utils import rename_complexinputs
 from ocgis import FunctionRegistry, OcgOperations, RequestDataset, env
+from ocgis.calc import base
 from ocgis.conv.nc import NcConverter
 from ocgis.util.units import get_are_units_equal_by_string_or_cfunits
-import uuid
-
-import logging
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
+from pywps.app.Common import Metadata
 
 LOGGER = logging.getLogger("PYWPS")
 

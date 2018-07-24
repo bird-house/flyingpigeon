@@ -1,32 +1,28 @@
+import logging
 import os
-from datetime import date
-from datetime import datetime as dt
-import time  # performance test
 import subprocess
-from subprocess import CalledProcessError
+import time  # performance test
 import uuid
+from datetime import datetime as dt
+from subprocess import CalledProcessError
 
-from netCDF4 import Dataset
-
-from numpy import squeeze
-
-from pywps import Process
-from pywps import LiteralInput, LiteralOutput
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format, FORMATS
-from pywps.app.Common import Metadata
-from pywps.inout.storage import FileStorage
-
+from flyingpigeon import analogs
+from flyingpigeon.calculation import remove_mean_trend
 from flyingpigeon.datafetch import _PRESSUREDATA_
 from flyingpigeon.datafetch import reanalyses as rl
-from flyingpigeon.ocgis_module import call
-from flyingpigeon import analogs
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.utils import get_variable
-from flyingpigeon.calculation import remove_mean_trend
 from flyingpigeon.log import init_process_logger
+from flyingpigeon.ocgis_module import call
+from flyingpigeon.utils import get_variable
+from netCDF4 import Dataset
+from numpy import squeeze
+from pywps import ComplexOutput
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
+from pywps.app.Common import Metadata
 
-import logging
+# from flyingpigeon.utils import rename_complexinputs
+# from pywps.inout.storage import FileStorage
 
 LOGGER = logging.getLogger("PYWPS")
 

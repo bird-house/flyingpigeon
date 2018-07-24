@@ -3,15 +3,14 @@ Processes to fetch data from GBIF data base
 Author: Nils Hempelmann (info@nilshempelmann.de)
 """
 
-from flyingpigeon.log import init_process_logger
-
-from pywps import Process
-from pywps import LiteralInput
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format, FORMATS
-from pywps.app.Common import Metadata
-
 import logging
+
+from flyingpigeon.log import init_process_logger
+from pywps import ComplexOutput
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
+from pywps.app.Common import Metadata
 
 LOGGER = logging.getLogger("PYWPS")
 

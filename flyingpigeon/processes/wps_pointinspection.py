@@ -1,19 +1,17 @@
-from flyingpigeon.utils import archive, archiveextract
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.ocgis_module import call
-from flyingpigeon.utils import sort_by_filename, get_values, get_time
-from numpy import savetxt, column_stack
-from shapely.geometry import Point
-
-from pywps import Process
-from pywps import LiteralInput
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format, FORMATS
-from pywps.app.Common import Metadata
+import logging
 
 from flyingpigeon.log import init_process_logger
-
-import logging
+from flyingpigeon.ocgis_module import call
+from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.utils import sort_by_filename, get_values, get_time
+from numpy import savetxt, column_stack
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
+from pywps.app.Common import Metadata
+from shapely.geometry import Point
 
 LOGGER = logging.getLogger("PYWPS")
 

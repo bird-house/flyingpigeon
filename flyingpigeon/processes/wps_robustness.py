@@ -1,17 +1,16 @@
-from flyingpigeon.utils import archiveextract
-from flyingpigeon import robustness as erob
-from tempfile import mkstemp
-from flyingpigeon.log import init_process_logger
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.datafetch import write_fileinfo
-
-from pywps import Process
-from pywps import LiteralInput
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format, FORMATS
-from pywps.app.Common import Metadata
-
 import logging
+from tempfile import mkstemp
+
+from flyingpigeon import robustness as erob
+from flyingpigeon.datafetch import write_fileinfo
+from flyingpigeon.log import init_process_logger
+from flyingpigeon.utils import archiveextract
+from flyingpigeon.utils import rename_complexinputs
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
+from pywps.app.Common import Metadata
 
 LOGGER = logging.getLogger("PYWPS")
 

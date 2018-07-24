@@ -3,24 +3,22 @@ Processes for Weather Classification
 Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 """
 
-from flyingpigeon.datafetch import _PRESSUREDATA_
-from flyingpigeon.weatherregimes import _TIMEREGIONS_
-from flyingpigeon import weatherregimes as wr
-from flyingpigeon.utils import archive, archiveextract
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.utils import download, get_time
-from os.path import abspath
+import logging
 from datetime import datetime as dt
+from os.path import abspath
 from tempfile import mkstemp
 
-from pywps import Process
-from pywps import LiteralInput
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format, FORMATS
-from pywps.app.Common import Metadata
+from flyingpigeon import weatherregimes as wr
 from flyingpigeon.log import init_process_logger
-
-import logging
+from flyingpigeon.utils import archiveextract
+from flyingpigeon.utils import download, get_time
+from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.weatherregimes import _TIMEREGIONS_
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
+from pywps.app.Common import Metadata
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -230,10 +228,9 @@ class WeatherregimesprojectionProcess(Process):
         # call the R scripts
         #######################
 
-        import shlex
         import subprocess
         from flyingpigeon import config
-        from os.path import curdir, exists, join
+        from os.path import curdir, join
 
         try:
             rworkspace = curdir

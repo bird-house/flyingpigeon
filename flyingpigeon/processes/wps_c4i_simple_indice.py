@@ -1,20 +1,14 @@
-from pywps.Process import WPSProcess
-
-import icclim
-import icclim.util.callback as callback
-
-import dateutil.parser
-from datetime import datetime
-import os
-# from os.path import expanduser
-
-from flyingpigeon.utils import make_dirs
-
-transfer_limit_Mb = 500
-
 import logging
 
+import dateutil.parser
+import icclim
+from pywps.Process import WPSProcess
+
 logger = logging.getLogger()
+
+# from os.path import expanduser
+
+transfer_limit_Mb = 500
 
 
 class ProcessSimpleIndice(WPSProcess):
@@ -159,7 +153,6 @@ class ProcessSimpleIndice(WPSProcess):
         # pathToAppendToOutputDirectory = "/WPS_"+self.identifier+"_" + datetime.now().strftime("%Y%m%dT%H%M%SZ")
 
         """ URL output path """
-        from flyingpigeon import config
 
         # fileOutURL  = os.environ['POF_OUTPUT_URL']  + pathToAppendToOutputDirectory+"/"
         # fileOutURL  = config.output_url()  + pathToAppendToOutputDirectory+"/"

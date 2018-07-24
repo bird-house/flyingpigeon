@@ -14,22 +14,20 @@ for it.
 Author: David Huard, Ouranos, 2017
 """
 
-from pywps import Process
-from pywps import LiteralInput
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format
-from pywps.app.Common import Metadata
-
-from flyingpigeon.utils import archiveextract
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.utils import GROUPING
-from flyingpigeon.log import init_process_logger
-
-from ocgis.calc.library import register
-from ocgis.contrib import library_icclim as libclim
+import logging
 from collections import OrderedDict
 
-import logging
+from flyingpigeon.log import init_process_logger
+from flyingpigeon.utils import GROUPING
+from flyingpigeon.utils import archiveextract
+from flyingpigeon.utils import rename_complexinputs
+from ocgis.calc.library import register
+from ocgis.contrib import library_icclim as libclim
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
+from pywps.app.Common import Metadata
 
 LOGGER = logging.getLogger("PYWPS")
 

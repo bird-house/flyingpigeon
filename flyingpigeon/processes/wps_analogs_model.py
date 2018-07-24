@@ -1,33 +1,27 @@
+import logging
 import os
+import time  # performance test
+from datetime import datetime as dt
+from datetime import time as dt_time
 from os import path
 from tempfile import mkstemp
-from datetime import datetime as dt
-# from datetime import timedelta as td
-from datetime import time as dt_time
-from datetime import date
-import time  # performance test
 
-# later goes to utils
-from netCDF4 import Dataset
-
-from flyingpigeon.datafetch import _PRESSUREDATA_
 from flyingpigeon import analogs
-from flyingpigeon.ocgis_module import call
+from flyingpigeon.calculation import remove_mean_trend
 from flyingpigeon.datafetch import get_level
+from flyingpigeon.log import init_process_logger
+from flyingpigeon.ocgis_module import call
+from flyingpigeon.utils import archiveextract
+from flyingpigeon.utils import get_timerange, get_calendar
 from flyingpigeon.utils import get_variable
 from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.utils import archive, archiveextract
-from flyingpigeon.utils import get_timerange, get_calendar
-from flyingpigeon.calculation import remove_mean_trend
-
-from pywps import Process
-from pywps import LiteralInput, LiteralOutput
+# later goes to utils
+from netCDF4 import Dataset
 from pywps import ComplexInput, ComplexOutput
-from pywps import Format, FORMATS
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
 from pywps.app.Common import Metadata
-from flyingpigeon.log import init_process_logger
-
-import logging
 
 LOGGER = logging.getLogger("PYWPS")
 

@@ -1,12 +1,11 @@
 import os
-import traceback
 import tempfile
-
-from pywps import Process, ComplexInput, ComplexOutput, Format
+import traceback
 
 import ocgis
-from ocgis import RequestDataset, OcgOperations
 from flyingpigeon.utils import archiveextract, rename_complexinputs
+from ocgis import RequestDataset, OcgOperations
+from pywps import Process, ComplexInput, ComplexOutput, Format
 
 
 class NCMergeProcess(Process):

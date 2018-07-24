@@ -2,25 +2,22 @@
 Processes for Species distribution
 Author: Nils Hempelmann ( info@nilshempelmann.de )
 """
-from pywps import Process
-from pywps import LiteralInput
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format
-from pywps.inout.literaltypes import AllowedValue
-from pywps.app.Common import Metadata
+import logging
+import tempfile
 
 from flyingpigeon import sdm
-from flyingpigeon.sdm import _SDMINDICES_
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.utils import archive, archiveextract, download
-from flyingpigeon.visualisation import map_gbifoccurrences
-from flyingpigeon.visualisation import map_PAmask
-from flyingpigeon.visualisation import pdfmerge, concat_images
-
 from flyingpigeon.log import init_process_logger
-
-import tempfile
-import logging
+from flyingpigeon.sdm import _SDMINDICES_
+from flyingpigeon.utils import archive, archiveextract, download
+from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.visualisation import map_PAmask
+from flyingpigeon.visualisation import map_gbifoccurrences
+from flyingpigeon.visualisation import pdfmerge, concat_images
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
+from pywps.app.Common import Metadata
 
 LOGGER = logging.getLogger("PYWPS")
 

@@ -3,13 +3,14 @@ KDDM Bias correction.
 
 Author: Seth McGinnis (KDDM algorithm), David Huard (WPS wrapper)
 """
-from pywps import Process, Format, LiteralInput, LiteralOutput
-from pywps import ComplexInput, ComplexOutput
+import logging
+
 import flyingpigeon
+import ocgis
 from flyingpigeon.log import init_process_logger
 from flyingpigeon.utils import archiveextract, rename_complexinputs
-import ocgis
-import logging
+from pywps import ComplexInput, ComplexOutput
+from pywps import Process, Format
 
 LOGGER = logging.getLogger("PYWPS")
 

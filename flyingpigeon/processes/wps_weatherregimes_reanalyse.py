@@ -3,19 +3,18 @@ Processes for Weather Classification
 Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 """
 
-from flyingpigeon.datafetch import _PRESSUREDATA_
-from flyingpigeon.weatherregimes import _TIMEREGIONS_
-from pywps import Process
-from pywps import LiteralInput
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format, FORMATS
-from pywps.app.Common import Metadata
-from flyingpigeon.log import init_process_logger
-
-from flyingpigeon.ocgis_module import call
+import logging
 from os.path import basename, splitext
 
-import logging
+from flyingpigeon.datafetch import _PRESSUREDATA_
+from flyingpigeon.log import init_process_logger
+from flyingpigeon.ocgis_module import call
+from flyingpigeon.weatherregimes import _TIMEREGIONS_
+from pywps import ComplexOutput
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
+from pywps.app.Common import Metadata
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -401,10 +400,9 @@ class WeatherregimesreanalyseProcess(Process):
         # call the R scripts
         #######################
         response.update_status('Start weather regime clustering ', 25)
-        import shlex
         import subprocess
         from flyingpigeon import config
-        from os.path import curdir, exists, join
+        from os.path import curdir, join
 
         try:
             rworkspace = curdir

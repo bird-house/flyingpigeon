@@ -1,19 +1,17 @@
 # TODO: Rename this file "wps_esmf_process"
+import logging
+import os
+
+import ESMF
+import ocgis
+from flyingpigeon.log import init_process_logger
 from flyingpigeon.utils import archiveextract
 from flyingpigeon.utils import rename_complexinputs
-import ocgis
-import ESMF
-
-from pywps import Process
-from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format, configuration, get_format
+from pywps import LiteralInput
+from pywps import Process
 from pywps.app.Common import Metadata
-
-from flyingpigeon.log import init_process_logger
-
-import os
-import logging
 
 LOGGER = logging.getLogger("PYWPS")
 

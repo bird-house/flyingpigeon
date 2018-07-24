@@ -1,21 +1,14 @@
-from pywps.Process import WPSProcess
-
-import icclim
-import icclim.util.callback as callback
-
-import dateutil.parser
-from datetime import datetime
-import os
-from os.path import expanduser
-# from mkdir_p import *
-
-from flyingpigeon.utils import make_dirs
-
-transfer_limit_Mb = 100
-
 import logging
 
+import dateutil.parser
+import icclim
+from pywps.Process import WPSProcess
+
 logger = logging.getLogger()
+
+# from mkdir_p import *
+
+transfer_limit_Mb = 100
 
 
 class ProcessPercentileIndice(WPSProcess):
