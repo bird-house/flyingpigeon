@@ -11,6 +11,7 @@ from pywps import Format, FORMATS
 from pywps.app.Common import Metadata
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -18,6 +19,7 @@ class ClipcontinentProcess(Process):
     """
     TODO: opendap input support, additional metadata to display region names.
     """
+
     def __init__(self):
         inputs = [
             LiteralInput('region', 'Region',
@@ -94,7 +96,7 @@ class ClipcontinentProcess(Process):
                      request.inputs['resource'][0].data_format.mime_type)
         ncs = archiveextract(
             resource=rename_complexinputs(request.inputs['resource']))
-            # mime_type=request.inputs['resource'][0].data_format.mime_type)
+        # mime_type=request.inputs['resource'][0].data_format.mime_type)
         # mosaic option
         # TODO: fix defaults in pywps 4.x
         if 'mosaic' in request.inputs:

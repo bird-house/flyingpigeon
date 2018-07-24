@@ -14,6 +14,7 @@ from flyingpigeon import config
 from flyingpigeon.log import init_process_logger
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -22,6 +23,7 @@ class IndicessingleProcess(Process):
     TODO: improved description
     TODO: additional ows:metadata to display indices and regions.
     """
+
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
@@ -85,7 +87,6 @@ class IndicessingleProcess(Process):
                           as_reference=True,
                           supported_formats=[Format('application/x-netcdf')]
                           ),
-
 
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",
@@ -178,9 +179,9 @@ class IndicessingleProcess(Process):
                     LOGGER.exception('failed for %s', key)
         except:
             LOGGER.exception('Failed to calculate indices')
-#         # if not results:
-#         #     raise Exception("failed to produce results")
-#         # response.update_status('num results %s' % len(results), 90)
+        #         # if not results:
+        #         #     raise Exception("failed to produce results")
+        #         # response.update_status('num results %s' % len(results), 90)
 
         tarf = archive(results)
 
@@ -191,5 +192,5 @@ class IndicessingleProcess(Process):
             i = "dummy.nc"
         response.outputs['ncout'].file = results[i]
 
-#       response.update_status("done", 100)
+        #       response.update_status("done", 100)
         return response

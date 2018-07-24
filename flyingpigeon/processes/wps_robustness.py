@@ -12,6 +12,7 @@ from pywps import Format, FORMATS
 from pywps.app.Common import Metadata
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -124,13 +125,13 @@ class RobustnessProcess(Process):
             version="0.5",
             metadata=[
                 Metadata("LSCE", "http://www.lsce.ipsl.fr/")
-                ],
+            ],
             abstract="Calculates the robustness as the ratio of noise to signal in an ensemle of timeseries",
             inputs=inputs,
             outputs=outputs,
             status_supported=True,
             store_supported=True
-            )
+        )
 
     def _handler(self, request, response):
         response.update_status('starting uncertainty process', 0)
@@ -169,11 +170,11 @@ class RobustnessProcess(Process):
         # if method == 'signal_noise_ratio':
 
         signal, low_agreement_mask, high_agreement_mask, text_src = erob.signal_noise_ratio(
-                resource=ncfiles,
-                start=start, end=end,
-                timeslice=timeslice,
-                # variable=variable
-                )  # graphic,
+            resource=ncfiles,
+            start=start, end=end,
+            timeslice=timeslice,
+            # variable=variable
+        )  # graphic,
 
         LOGGER.debug('Robustness calculated')
 

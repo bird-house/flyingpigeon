@@ -26,6 +26,7 @@ from pywps import Format, FORMATS
 from pywps.app.Common import Metadata
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -55,11 +56,11 @@ class AnalogscompareProcess(Process):
             LiteralInput('BBox', 'Bounding Box',
                          data_type='string',
                          abstract="Enter a bbox: min_lon, max_lon, min_lat, max_lat."
-                            " min_lon=Western longitude,"
-                            " max_lon=Eastern longitude,"
-                            " min_lat=Southern or northern latitude,"
-                            " max_lat=Northern or southern latitude."
-                            " For example: -80,50,20,70",
+                                  " min_lon=Western longitude,"
+                                  " max_lon=Eastern longitude,"
+                                  " min_lat=Southern or northern latitude,"
+                                  " max_lat=Northern or southern latitude."
+                                  " For example: -80,50,20,70",
                          min_occurs=1,
                          max_occurs=1,
                          default='-80,50,20,70',
@@ -164,7 +165,7 @@ class AnalogscompareProcess(Process):
                          min_occurs=1,
                          max_occurs=1,
                          allowed_values=['reanalyses']
-                         #allowed_values=['reanalyses', 'model']
+                         # allowed_values=['reanalyses', 'model']
                          ),
         ]
         outputs = [
@@ -233,7 +234,6 @@ class AnalogscompareProcess(Process):
             store_supported=True,
         )
 
-
     def _handler(self, request, response):
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
@@ -287,10 +287,10 @@ class AnalogscompareProcess(Process):
                 r_time_range = [anaSt, anaEn]
                 m_time_range = [refSt, refEn]
             elif direction == 'mo2re':
-                anaSt = dt.combine(dateSt, dt_time(12, 0)) #dt.strptime(refSt[0], '%Y-%m-%d')
-                anaEn = dt.combine(dateEn, dt_time(12, 0)) #dt.strptime(refEn[0], '%Y-%m-%d')
-                refSt = dt.combine(refSt, dt_time(0, 0))   #dt.strptime(dateSt[0], '%Y-%m-%d')
-                refEn = dt.combine(refEn, dt_time(0, 0))   #dt.strptime(dateEn[0], '%Y-%m-%d')
+                anaSt = dt.combine(dateSt, dt_time(12, 0))  # dt.strptime(refSt[0], '%Y-%m-%d')
+                anaEn = dt.combine(dateEn, dt_time(12, 0))  # dt.strptime(refEn[0], '%Y-%m-%d')
+                refSt = dt.combine(refSt, dt_time(0, 0))  # dt.strptime(dateSt[0], '%Y-%m-%d')
+                refEn = dt.combine(refEn, dt_time(0, 0))  # dt.strptime(dateEn[0], '%Y-%m-%d')
                 r_time_range = [refSt, refEn]
                 m_time_range = [anaSt, anaEn]
             else:
@@ -375,9 +375,9 @@ class AnalogscompareProcess(Process):
                 origvar = get_variable(nc_reanalyses)
 
                 for z in nc_reanalyses:
-                    #tmp_n = 'tmp_%s' % (uuid.uuid1())
-                    b0=call(resource=z, variable=origvar, level_range=[int(level), int(level)], geom=bbox,
-                    spatial_wrapping='wrap',prefix='levdom_'+path.basename(z)[0:-3])
+                    # tmp_n = 'tmp_%s' % (uuid.uuid1())
+                    b0 = call(resource=z, variable=origvar, level_range=[int(level), int(level)], geom=bbox,
+                              spatial_wrapping='wrap', prefix='levdom_' + path.basename(z)[0:-3])
                     tmp_total.append(b0)
 
                 tmp_total = sorted(tmp_total, key=lambda i: path.splitext(path.basename(i))[0])
@@ -394,15 +394,15 @@ class AnalogscompareProcess(Process):
                 nc_subset = call(inter_subset_tmp, variable='z%s' % level)
                 # Clean
                 for i in tmp_total:
-                    tbr='rm -f %s' % (i)
+                    tbr = 'rm -f %s' % (i)
                     system(tbr)
-                #for i in inter_subset_tmp
-                tbr='rm -f %s' % (inter_subset_tmp)
+                # for i in inter_subset_tmp
+                tbr = 'rm -f %s' % (inter_subset_tmp)
                 system(tbr)
             else:
                 nc_subset = call(resource=nc_reanalyses, variable=var,
                                  geom=bbox, spatial_wrapping='wrap', time_range=r_time_range,
-                                # conform_units_to=conform_units_to
+                                 # conform_units_to=conform_units_to
                                  )
 
             # nc_subset = call(resource=nc_reanalyses, variable=var, geom=bbox, spatial_wrapping='wrap') # XXXXXX wrap
@@ -422,7 +422,7 @@ class AnalogscompareProcess(Process):
         if type(resource) == list:
             resource = sorted(resource, key=lambda i: path.splitext(path.basename(i))[0])
         else:
-            resource=[resource]
+            resource = [resource]
 
         tmp_resource = []
 
@@ -430,10 +430,10 @@ class AnalogscompareProcess(Process):
         m_end = m_time_range[1]
 
         for re in resource:
-            s,e = get_timerange(re)
-            tmpSt = dt.strptime(s,'%Y%m%d')
-            tmpEn = dt.strptime(e,'%Y%m%d')
-            if ((tmpSt <= m_end ) and (tmpEn >= m_start)):
+            s, e = get_timerange(re)
+            tmpSt = dt.strptime(s, '%Y%m%d')
+            tmpEn = dt.strptime(e, '%Y%m%d')
+            if ((tmpSt <= m_end) and (tmpEn >= m_start)):
                 tmp_resource.append(re)
                 LOGGER.debug('Selected file: %s ' % (re))
         resource = tmp_resource
@@ -442,8 +442,8 @@ class AnalogscompareProcess(Process):
         # TODO: Check the callendars ! for model vs reanalyses.
         # TODO: Check the units! model vs reanalyses.
         try:
-            m_total=[]
-            modvar=get_variable(resource)
+            m_total = []
+            modvar = get_variable(resource)
             # resource properties
             ds = Dataset(resource[0])
             m_var = ds.variables[modvar]
@@ -459,37 +459,37 @@ class AnalogscompareProcess(Process):
 
             lev_units = 'hPa'
 
-            if (dimlen>3) :
+            if (dimlen > 3):
                 lev = ds.variables[dims[1]]
                 # actually index [1] need to be detected... assuming zg(time, plev, lat, lon)
                 lev_units = lev.units
 
-                if (lev_units=='Pa'):
-                    m_level = str(int(level)*100)
+                if (lev_units == 'Pa'):
+                    m_level = str(int(level) * 100)
                 else:
                     m_level = level
             else:
                 m_level = None
 
             if level == None:
-                level_range=None
+                level_range = None
             else:
                 level_range = [int(m_level), int(m_level)]
 
             ds.close()
 
             for z in resource:
-                tmp_n='tmp_%s' % (uuid.uuid1())
+                tmp_n = 'tmp_%s' % (uuid.uuid1())
                 # select level and regrid
-                b0=call(resource=z, variable=modvar, level_range=level_range,
-                        spatial_wrapping='wrap', cdover='system',
-                        regrid_destination=nc_reanalyses[0], regrid_options='bil', prefix=tmp_n)
+                b0 = call(resource=z, variable=modvar, level_range=level_range,
+                          spatial_wrapping='wrap', cdover='system',
+                          regrid_destination=nc_reanalyses[0], regrid_options='bil', prefix=tmp_n)
 
                 # select domain
-                b01=call(resource=b0, geom=bbox, spatial_wrapping='wrap', prefix='levregr_'+path.basename(z)[0:-3])
-                tbr='rm -f %s' % (b0)
+                b01 = call(resource=b0, geom=bbox, spatial_wrapping='wrap', prefix='levregr_' + path.basename(z)[0:-3])
+                tbr = 'rm -f %s' % (b0)
                 system(tbr)
-                tbr='rm -f %s.nc' % (tmp_n)
+                tbr = 'rm -f %s.nc' % (tmp_n)
                 system(tbr)
                 # get full resource
                 m_total.append(b01)
@@ -497,7 +497,7 @@ class AnalogscompareProcess(Process):
             model_subset = call(m_total, time_range=m_time_range)
 
             for i in m_total:
-                tbr='rm -f %s' % (i)
+                tbr = 'rm -f %s' % (i)
                 system(tbr)
 
             if m_level is not None:
@@ -513,73 +513,74 @@ class AnalogscompareProcess(Process):
             else:
                 mod_subset = model_subset
 
-#            if direction == 're2mo':
-#                try:
-#                    response.update_status('Preparing simulation data', 15)
-#                    reanalyses_subset = call(resource=nc_subset, time_range=[anaSt, anaEn])
-#                except:
-#                    msg = 'failed to prepare simulation period'
-#                    LOGGER.exception(msg)
-#                try:
-#                    response.update_status('Preparing target data', 17)
-#                    var_target = get_variable(resource)
-#                    # var_simulation = get_variable(simulation)
+        #            if direction == 're2mo':
+        #                try:
+        #                    response.update_status('Preparing simulation data', 15)
+        #                    reanalyses_subset = call(resource=nc_subset, time_range=[anaSt, anaEn])
+        #                except:
+        #                    msg = 'failed to prepare simulation period'
+        #                    LOGGER.exception(msg)
+        #                try:
+        #                    response.update_status('Preparing target data', 17)
+        #                    var_target = get_variable(resource)
+        #                    # var_simulation = get_variable(simulation)
 
-#                    model_subset_tmp = call(resource=resource, variable=var_target,
-#                                            time_range=[refSt, refEn],
-#                                            t_calendar='standard',
-#                                            spatial_wrapping='wrap',
-#                                            regrid_destination=nc_reanalyses[0],
-#                                            regrid_options='bil')
+        #                    model_subset_tmp = call(resource=resource, variable=var_target,
+        #                                            time_range=[refSt, refEn],
+        #                                            t_calendar='standard',
+        #                                            spatial_wrapping='wrap',
+        #                                            regrid_destination=nc_reanalyses[0],
+        #                                            regrid_options='bil')
 
-#                    # model_subset = call(resource=resource, variable=var_target,
-#                    #                     time_range=[refSt, refEn],
-#                    #                     geom=bbox,
-#                    #                     t_calendar='standard',
-#                    #                     # conform_units_to=conform_units_to,
-#                    #                     spatial_wrapping='wrap',
-#                    #                     regrid_destination=reanalyses_subset,
-#                    #                     regrid_options='bil') # XXXXXXXXXXXX ADD WRAP rem calendar
+        #                    # model_subset = call(resource=resource, variable=var_target,
+        #                    #                     time_range=[refSt, refEn],
+        #                    #                     geom=bbox,
+        #                    #                     t_calendar='standard',
+        #                    #                     # conform_units_to=conform_units_to,
+        #                    #                     spatial_wrapping='wrap',
+        #                    #                     regrid_destination=reanalyses_subset,
+        #                    #                     regrid_options='bil') # XXXXXXXXXXXX ADD WRAP rem calendar
 
-#                    model_subset = call(resource=model_subset_tmp,variable=var_target, geom=bbox, spatial_wrapping='wrap', t_calendar='standard')
+        #                    model_subset = call(resource=model_subset_tmp,variable=var_target, geom=bbox, spatial_wrapping='wrap', t_calendar='standard')
 
-#                   # ISSUE: the regrided model has white border with null! Check it.
-#                   # check t_calendar!
-#                except:
-#                    msg = 'failed subset archive model'
-#                    LOGGER.exception(msg)
-#                    raise Exception(msg)
-#            else:
-#                try:
-#                    response.update_status('Preparing target data', 15)
-#                    var_target = get_variable(resource)
-#                    # var_simulation = get_variable(simulation)
-#                    model_subset = call(resource=resource, variable=var_target,
-#                                        time_range=[refSt, refEn],
-#                                        geom=bbox,
-#                                        t_calendar='standard',
-#                                        # conform_units_to=conform_units_to,
-#                                        # spatial_wrapping='wrap',
-#                                        )
-#                except:
-#                    msg = 'failed subset archive model'
-#                    LOGGER.exception(msg)
-#                    raise Exception(msg)
-#                try:
-#                    response.update_status('Preparing simulation data', 17)
-#                    reanalyses_subset = call(resource=nc_subset,
-#                                             time_range=[anaSt, anaEn],
-#                                             regrid_destination=model_subset,
-#                                             regrid_options='bil')
-#                except:
-#                    msg = 'failed to prepare simulation period'
-#                    LOGGER.exception(msg)
+        #                   # ISSUE: the regrided model has white border with null! Check it.
+        #                   # check t_calendar!
+        #                except:
+        #                    msg = 'failed subset archive model'
+        #                    LOGGER.exception(msg)
+        #                    raise Exception(msg)
+        #            else:
+        #                try:
+        #                    response.update_status('Preparing target data', 15)
+        #                    var_target = get_variable(resource)
+        #                    # var_simulation = get_variable(simulation)
+        #                    model_subset = call(resource=resource, variable=var_target,
+        #                                        time_range=[refSt, refEn],
+        #                                        geom=bbox,
+        #                                        t_calendar='standard',
+        #                                        # conform_units_to=conform_units_to,
+        #                                        # spatial_wrapping='wrap',
+        #                                        )
+        #                except:
+        #                    msg = 'failed subset archive model'
+        #                    LOGGER.exception(msg)
+        #                    raise Exception(msg)
+        #                try:
+        #                    response.update_status('Preparing simulation data', 17)
+        #                    reanalyses_subset = call(resource=nc_subset,
+        #                                             time_range=[anaSt, anaEn],
+        #                                             regrid_destination=model_subset,
+        #                                             regrid_options='bil')
+        #                except:
+        #                    msg = 'failed to prepare simulation period'
+        #                    LOGGER.exception(msg)
+
         except:
             msg = 'failed to subset simulation or reference data'
             LOGGER.exception(msg)
             raise Exception(msg)
 
-# --------------------------------------------
+        # --------------------------------------------
         try:
             if direction == 'mo2re':
                 simulation = mod_subset
@@ -616,8 +617,8 @@ class AnalogscompareProcess(Process):
         try:
             if seacyc is True:
                 seasoncyc_base, seasoncyc_sim = analogs.seacyc(
-                                        archive, simulation,
-                                        method=normalize)
+                    archive, simulation,
+                    method=normalize)
             else:
                 seasoncyc_base = None
                 seasoncyc_sim = None
@@ -684,7 +685,7 @@ class AnalogscompareProcess(Process):
                 args,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
-                ).communicate()
+            ).communicate()
             LOGGER.info('analogue.out info:\n %s ' % output)
             LOGGER.exception('analogue.out errors:\n %s ' % error)
             response.update_status('**** CASTf90 suceeded', 90)
@@ -701,11 +702,10 @@ class AnalogscompareProcess(Process):
         # Stopper to keep twitcher results, for debug
         # dummy=dummy
         response.outputs['analog_pdf'].file = analogs_pdf
-        response.outputs['config'].file = config_file #config_output_url  # config_file )
+        response.outputs['config'].file = config_file  # config_output_url  # config_file )
         response.outputs['analogs'].file = output_file
         response.outputs['output_netcdf'].file = simulation
         response.outputs['target_netcdf'].file = archive
-
 
         ########################
         # generate analog viewer

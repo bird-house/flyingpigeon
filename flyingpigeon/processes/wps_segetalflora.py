@@ -15,6 +15,7 @@ from pywps.app.Common import Metadata
 from flyingpigeon.log import init_process_logger
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 

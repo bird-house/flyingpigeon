@@ -2,12 +2,12 @@ import os
 from os import path
 from tempfile import mkstemp
 from datetime import datetime as dt
-#from datetime import timedelta as td
+# from datetime import timedelta as td
 from datetime import time as dt_time
 from datetime import date
 import time  # performance test
 
-#later goes to utils
+# later goes to utils
 from netCDF4 import Dataset
 
 from flyingpigeon.datafetch import _PRESSUREDATA_
@@ -28,6 +28,7 @@ from pywps.app.Common import Metadata
 from flyingpigeon.log import init_process_logger
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -48,11 +49,11 @@ class AnalogsmodelProcess(Process):
             LiteralInput('BBox', 'Bounding Box',
                          data_type='string',
                          abstract="Enter a bbox: min_lon, max_lon, min_lat, max_lat."
-                            " min_lon=Western longitude,"
-                            " max_lon=Eastern longitude,"
-                            " min_lat=Southern or northern latitude,"
-                            " max_lat=Northern or southern latitude."
-                            " For example: -80,50,20,70",
+                                  " min_lon=Western longitude,"
+                                  " max_lon=Eastern longitude,"
+                                  " min_lat=Southern or northern latitude,"
+                                  " max_lat=Northern or southern latitude."
+                                  " For example: -80,50,20,70",
                          min_occurs=1,
                          max_occurs=1,
                          default='-20,40,30,70',
@@ -67,14 +68,14 @@ class AnalogsmodelProcess(Process):
                          allowed_values=[1000, 850, 700, 500, 250, 100, 50, 10]
                          ),
 
-                # self.BBox = self.addBBoxInput(
-                #     identifier="BBox",
-                #     title="Bounding Box",
-                #     abstract="coordinates to define the region to be analysed",
-                #     minOccurs=1,
-                #     maxOccurs=1,
-                #     crss=['EPSG:4326']
-                #     )
+            # self.BBox = self.addBBoxInput(
+            #     identifier="BBox",
+            #     title="Bounding Box",
+            #     abstract="coordinates to define the region to be analysed",
+            #     minOccurs=1,
+            #     maxOccurs=1,
+            #     crss=['EPSG:4326']
+            #     )
 
             LiteralInput('dateSt', 'Start date of analysis period',
                          data_type='date',
@@ -281,19 +282,19 @@ class AnalogsmodelProcess(Process):
 
             # bbox = [-80, 20, 50, 70]
             # TODO: Add checking for wrong cordinates and apply default if nesessary
-            #level = 500
+            # level = 500
 
             level = request.inputs['level'][0].data
-            if (level == 500): 
-                dummylevel = 1000 # dummy workaround for cdo sellevel
+            if (level == 500):
+                dummylevel = 1000  # dummy workaround for cdo sellevel
             else:
                 dummylevel = 500
             LOGGER.debug('LEVEL selected: %s hPa' % (level))
 
-            bbox=[]
+            bbox = []
             bboxStr = request.inputs['BBox'][0].data
             bboxStr = bboxStr.split(',')
-            #for i in bboxStr: bbox.append(int(i))
+            # for i in bboxStr: bbox.append(int(i))
             bbox.append(float(bboxStr[0]))
             bbox.append(float(bboxStr[2]))
             bbox.append(float(bboxStr[1]))
@@ -328,15 +329,15 @@ class AnalogsmodelProcess(Process):
             # dateSt = dt.strptime(dateSt[0], '%Y-%m-%d')
             # dateEn = dt.strptime(dateEn[0], '%Y-%m-%d')
 
-            #not nesessary if fix ocgis_module.py
-            refSt = dt.combine(refSt, dt_time(12,0))
-            refEn = dt.combine(refEn, dt_time(12,0))
-            dateSt = dt.combine(dateSt, dt_time(12,0))
-            dateEn = dt.combine(dateEn, dt_time(12,0))
+            # not nesessary if fix ocgis_module.py
+            refSt = dt.combine(refSt, dt_time(12, 0))
+            refEn = dt.combine(refEn, dt_time(12, 0))
+            dateSt = dt.combine(dateSt, dt_time(12, 0))
+            dateEn = dt.combine(dateEn, dt_time(12, 0))
 
             # Check if 360_day calendar:
             try:
-                if type(resource) is not list: resource=[resource]
+                if type(resource) is not list: resource = [resource]
                 modcal, calunits = get_calendar(resource[0])
                 if '360_day' in modcal:
                     if refSt.day == 31:
@@ -369,15 +370,15 @@ class AnalogsmodelProcess(Process):
             start = min(refSt, dateSt)
             end = max(refEn, dateEn)
 
-#            if bbox_obj is not None:
-#                LOGGER.info("bbox_obj={0}".format(bbox_obj.coords))
-#                bbox = [bbox_obj.coords[0][0],
-#                        bbox_obj.coords[0][1],
-#                        bbox_obj.coords[1][0],
-#                        bbox_obj.coords[1][1]]
-#                LOGGER.info("bbox={0}".format(bbox))
-#            else:
-#                bbox = None
+            #            if bbox_obj is not None:
+            #                LOGGER.info("bbox_obj={0}".format(bbox_obj.coords))
+            #                bbox = [bbox_obj.coords[0][0],
+            #                        bbox_obj.coords[0][1],
+            #                        bbox_obj.coords[1][0],
+            #                        bbox_obj.coords[1][1]]
+            #                LOGGER.info("bbox={0}".format(bbox))
+            #            else:
+            #                bbox = None
 
             LOGGER.info('environment set')
         except Exception as e:
@@ -400,10 +401,10 @@ class AnalogsmodelProcess(Process):
             # TODO: Add selection of the level. maybe bellow in call(..., level_range=[...,...])
 
             if type(resource) == list:
-                #resource.sort()
+                # resource.sort()
                 resource = sorted(resource, key=lambda i: path.splitext(path.basename(i))[0])
             else:
-                resource=[resource]
+                resource = [resource]
 
             # ===============================================================
             # REMOVE resources which are out of interest from the list 
@@ -412,10 +413,10 @@ class AnalogsmodelProcess(Process):
             tmp_resource = []
 
             for re in resource:
-                s,e = get_timerange(re)
-                tmpSt = dt.strptime(s,'%Y%m%d') 
-                tmpEn = dt.strptime(e,'%Y%m%d') 
-                if ((tmpSt <= end ) and (tmpEn >= start)):
+                s, e = get_timerange(re)
+                tmpSt = dt.strptime(s, '%Y%m%d')
+                tmpEn = dt.strptime(e, '%Y%m%d')
+                if ((tmpSt <= end) and (tmpEn >= start)):
                     tmp_resource.append(re)
                     LOGGER.debug('Selected file: %s ' % (re))
             resource = tmp_resource
@@ -433,22 +434,22 @@ class AnalogsmodelProcess(Process):
             dimlen = len(dims)
 
             try:
-                model_id = ds.getncattr('model_id') 
+                model_id = ds.getncattr('model_id')
             except AttributeError:
                 model_id = 'Unknown model'
 
-            LOGGER.debug('MODEL: %s ' % (model_id)) 
+            LOGGER.debug('MODEL: %s ' % (model_id))
 
             lev_units = 'hPa'
 
-            if (dimlen>3) :
+            if (dimlen > 3):
                 lev = ds.variables[dims[1]]
                 # actually index [1] need to be detected... assuming zg(time, plev, lat, lon)
                 lev_units = lev.units
 
-                if (lev_units=='Pa'):
-                    level = level*100
-                    dummylevel = dummylevel*100
+                if (lev_units == 'Pa'):
+                    level = level * 100
+                    dummylevel = dummylevel * 100
                     # TODO: OR check the NAME and units of vertical level and find 200 , 300, or 500 mbar in it
                     # Not just level = level * 100.
 
@@ -457,11 +458,11 @@ class AnalogsmodelProcess(Process):
             from cdo import Cdo
             cdo = Cdo()
 
-            lev_res=[]
-            if(dimlen>3):
+            lev_res = []
+            if (dimlen > 3):
                 for res_fn in resource:
                     tmp_f = 'lev_' + path.basename(res_fn)
-                    comcdo = '%s,%s' % (level,dummylevel)
+                    comcdo = '%s,%s' % (level, dummylevel)
                     cdo.sellevel(comcdo, input=res_fn, output=tmp_f)
                     lev_res.append(tmp_f)
             else:
@@ -471,7 +472,7 @@ class AnalogsmodelProcess(Process):
             regr_res = []
             for res_fn in lev_res:
                 tmp_f = 'dom_' + path.basename(res_fn)
-                comcdo = '%s,%s,%s,%s' % (bbox[0],bbox[2],bbox[1],bbox[3])
+                comcdo = '%s,%s,%s,%s' % (bbox[0], bbox[2], bbox[1], bbox[3])
                 cdo.sellonlatbox(comcdo, input=res_fn, output=tmp_f)
                 regr_res.append(tmp_f)
 
@@ -480,8 +481,8 @@ class AnalogsmodelProcess(Process):
             # TODO 1 Keep trend as separate file
             # TODO 2 Think how to add options to plot abomalies AND original data... 
             #        May be do archive and simulation = call.. over NOT detrended data and keep it as well
-            if (dimlen>3) :
-                res_tmp = get_level(regr_res, level = level)
+            if (dimlen > 3):
+                res_tmp = get_level(regr_res, level=level)
                 variable = 'z%s' % level
             else:
                 res_tmp = call(resource=regr_res, spatial_wrapping='wrap')
@@ -493,21 +494,21 @@ class AnalogsmodelProcess(Process):
 
             # ============================
 
-#            archive_tmp = call(resource=regr_res, time_range=[refSt, refEn], spatial_wrapping='wrap')
-#            simulation_tmp = call(resource=regr_res, time_range=[dateSt, dateEn], spatial_wrapping='wrap')
+            #            archive_tmp = call(resource=regr_res, time_range=[refSt, refEn], spatial_wrapping='wrap')
+            #            simulation_tmp = call(resource=regr_res, time_range=[dateSt, dateEn], spatial_wrapping='wrap')
 
             archive = call(resource=res_tmp, time_range=[refSt, refEn], spatial_wrapping='wrap')
             simulation = call(resource=res_tmp, time_range=[dateSt, dateEn], spatial_wrapping='wrap')
 
             #######################################################################################
             # TEMORAL dirty workaround to get the level and it's units - will be func in utils.py
-            
-            #if (dimlen>3) :
+
+            # if (dimlen>3) :
             #    archive = get_level(archive_tmp, level = level)
             #    simulation = get_level(simulation_tmp,level = level)
             #    variable = 'z%s' % level
             #    # TODO: here should be modulated
-            #else:
+            # else:
             #    archive = archive_tmp
             #    simulation = simulation_tmp
             #    # 3D, move forward
@@ -543,7 +544,7 @@ class AnalogsmodelProcess(Process):
                 seasoncyc_base=seasoncyc_base,
                 seasoncyc_sim=seasoncyc_sim,
                 base_id=model_id,
-                sim_id=model_id, 
+                sim_id=model_id,
                 timewin=timewin,
                 varname=variable,
                 seacyc=seacyc,
@@ -572,23 +573,23 @@ class AnalogsmodelProcess(Process):
         start_time = time.time()  # measure call castf90
         response.update_status('Start CASTf90 call', 20)
 
-        #-----------------------
+        # -----------------------
         try:
             import ctypes
             # TODO: This lib is for linux
             mkl_rt = ctypes.CDLL('libmkl_rt.so')
-            nth=mkl_rt.mkl_get_max_threads()
+            nth = mkl_rt.mkl_get_max_threads()
             LOGGER.debug('Current number of threads: %s' % (nth))
             mkl_rt.mkl_set_num_threads(ctypes.byref(ctypes.c_int(64)))
-            nth=mkl_rt.mkl_get_max_threads()
+            nth = mkl_rt.mkl_get_max_threads()
             LOGGER.debug('NEW number of threads: %s' % (nth))
             # TODO: Does it \/\/\/ work with default shell=False in subprocess... (?)
-            os.environ['MKL_NUM_THREADS']=str(nth)
-            os.environ['OMP_NUM_THREADS']=str(nth)
+            os.environ['MKL_NUM_THREADS'] = str(nth)
+            os.environ['OMP_NUM_THREADS'] = str(nth)
         except Exception as e:
             msg = 'Failed to set THREADS %s ' % e
             LOGGER.debug(msg)
-        #-----------------------
+        # -----------------------
 
         try:
             # response.update_status('execution of CASTf90', 50)
@@ -603,13 +604,13 @@ class AnalogsmodelProcess(Process):
             msg = 'CASTf90 failed %s ' % e
             LOGGER.error(msg)
             raise Exception(msg)
-        
+
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
         response.update_status('preparing output', 80)
         analogs_pdf = analogs.plot_analogs(configfile=config_file)
 
         response.outputs['analog_pdf'].file = analogs_pdf
-        response.outputs['config'].file = config_file #config_output_url  # config_file )
+        response.outputs['config'].file = config_file  # config_output_url  # config_file )
         response.outputs['analogs'].file = output_file
         response.outputs['output_netcdf'].file = simulation
         response.outputs['target_netcdf'].file = archive
@@ -619,10 +620,12 @@ class AnalogsmodelProcess(Process):
             response.outputs['sim_netcdf'].file = seasoncyc_sim
         else:
             # TODO: Still unclear how to overpass unknown number of outputs
-            dummy_base='dummy_base.nc'
-            dummy_sim='dummy_sim.nc'
-            with open(dummy_base, 'a'): os.utime(dummy_base, None)
-            with open(dummy_sim, 'a'): os.utime(dummy_sim, None)
+            dummy_base = 'dummy_base.nc'
+            dummy_sim = 'dummy_sim.nc'
+            with open(dummy_base, 'a'):
+                os.utime(dummy_base, None)
+            with open(dummy_sim, 'a'):
+                os.utime(dummy_sim, None)
             response.outputs['base_netcdf'].file = dummy_base
             response.outputs['sim_netcdf'].file = dummy_sim
 

@@ -21,6 +21,7 @@ from pywps.app.Common import Metadata
 from flyingpigeon.log import init_process_logger
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -241,7 +242,7 @@ class WeatherregimesprojectionProcess(Process):
 
             yr1 = start.year
             yr2 = end.year
-            time = get_time(model_season) # , format='%Y%m%d')
+            time = get_time(model_season)  # , format='%Y%m%d')
 
             # ip, output_graphics = mkstemp(dir=curdir ,suffix='.pdf')
             ip, file_pca = mkstemp(dir=curdir, suffix='.txt')

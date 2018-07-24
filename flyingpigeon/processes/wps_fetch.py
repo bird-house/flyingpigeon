@@ -5,6 +5,7 @@ from pywps import Format, FORMATS
 from pywps.app.Common import Metadata
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -16,6 +17,7 @@ class FetchProcess(Process):
     TODO: Need a better way to provide multiple outputs (json file ... could be interpreted and displayed by UI),
     COWS has done somthing like this with an xml output.
     """
+
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',

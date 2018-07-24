@@ -16,6 +16,7 @@ from pywps import Format
 from pywps.app.Common import Metadata
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -106,7 +107,7 @@ class FactsheetProcess(Process):
                 polygons=regions,
                 mosaic=True,
                 spatial_wrapping='wrap',
-                )
+            )
         else:
             subsets = ncs
             png_region = vs.plot_extend(ncs[0])
@@ -126,7 +127,7 @@ class FactsheetProcess(Process):
             _, png_uncertainty = mkstemp(dir='.', suffix='.png')
 
         try:
-            png_spaghetti = vs.spaghetti(subsets, variable=var,)
+            png_spaghetti = vs.spaghetti(subsets, variable=var, )
         except:
             LOGGER.exception('failed to generate the spaghetti plot')
             _, png_spaghetti = mkstemp(dir='.', suffix='.png')
@@ -156,7 +157,7 @@ class FactsheetProcess(Process):
             png_uncertainty=png_uncertainty,
             png_spaghetti=png_spaghetti,
             png_robustness=png_robustness
-            )
+        )
 
         response.outputs['output_nc'].file = tar_subsets
         response.outputs['output_factsheet'].file = factsheet

@@ -10,6 +10,7 @@ from flyingpigeon.log import init_process_logger
 from flyingpigeon.utils import archiveextract, rename_complexinputs
 import ocgis
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -21,6 +22,7 @@ class KDDM_BC_Process(Process):
 
 
     """
+
     def __init__(self):
         inputs = [
             ComplexInput('obs', 'Observation netCDF dataset',
@@ -28,9 +30,9 @@ class KDDM_BC_Process(Process):
                          min_occurs=1,
                          max_occurs=1000,
                          supported_formats=[Format('application/x-netcdf'),
-                             Format('application/x-tar'),
-                             Format('application/zip'),
-                        ]),
+                                            Format('application/x-tar'),
+                                            Format('application/zip'),
+                                            ]),
             ComplexInput('ref', 'Reference netCDF dataset',
                          abstract="netCDF files storing the reference data whose statistics are going to be mapped to "
                                   "the obs, typically simulations over the observed period.",
@@ -66,16 +68,16 @@ class KDDM_BC_Process(Process):
         outputs = [
             ComplexOutput('output_netcdf_ref', 'Bias-corrected ref dataset.',
                           as_reference=True,
-                          supported_formats=[Format('application/x-netcdf'),]
+                          supported_formats=[Format('application/x-netcdf'), ]
                           ),
             ComplexOutput('output_netcdf_fut', 'Bias-corrected fut dataset.',
                           as_reference=True,
-                          supported_formats=[Format('application/x-netcdf'),]
+                          supported_formats=[Format('application/x-netcdf'), ]
                           ),
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",
                           as_reference=True,
-                          supported_formats=[Format('text/plain'),]
+                          supported_formats=[Format('text/plain'), ]
                           ),
         ]
 
@@ -115,8 +117,8 @@ class KDDM_BC_Process(Process):
                 request.inputs['ref']))
             fut = archiveextract(resource=rename_complexinputs(
                 request.inputs['fut']))
-            #dedrizzle = request.inputs['dedrizzle'][0].data
-            #norm = request.inputs['norm'][0].data
+            # dedrizzle = request.inputs['dedrizzle'][0].data
+            # norm = request.inputs['norm'][0].data
         except Exception as e:
             msg = 'Failed to read input parameter {}'.format(e)
             msg += "obs: " + request.inputs['obs']
@@ -148,4 +150,3 @@ class KDDM_BC_Process(Process):
         response.outputs['output_netcdf_fut'].file = fut_out
 
         return response
-

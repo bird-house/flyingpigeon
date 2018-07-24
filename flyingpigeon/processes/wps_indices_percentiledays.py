@@ -14,6 +14,7 @@ from flyingpigeon import config
 from flyingpigeon.log import init_process_logger
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -22,6 +23,7 @@ class IndicespercentiledaysProcess(Process):
     TODO: need a more detailed description and an example.
     TODO: data input might need a data selection filter? metadata attributes could be used for this.
     """
+
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
@@ -124,7 +126,7 @@ class IndicespercentiledaysProcess(Process):
             title="Climate indices (Daily percentiles)",
             version="0.10",
             abstract="Climatological percentile for each day of the year "
-                    "computed over the entire dataset.",
+                     "computed over the entire dataset.",
             metadata=[
                 {'title': 'Doc',
                  'href': 'http://flyingpigeon.readthedocs.io/en/latest/descriptions/\
@@ -215,6 +217,6 @@ class IndicespercentiledaysProcess(Process):
             i = "dummy.nc"
         response.outputs['ncout'].file = results[i]
 
-#       response.update_status("done", 100)
+        #       response.update_status("done", 100)
         response.update_status("done", 100)
         return response

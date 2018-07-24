@@ -30,6 +30,7 @@ from ocgis.contrib import library_icclim as libclim
 from collections import OrderedDict
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 # Register ocgis functions, including icclim
@@ -115,7 +116,7 @@ class IndicatorProcess(Process, object):
         for obj in self.resource_inputs:
             key = obj.identifier
             out[key] = archiveextract(resource=rename_complexinputs(
-                        request.inputs[key]))
+                request.inputs[key]))
         return out
 
     def _option_input_handler(self, request):
@@ -170,16 +171,17 @@ class IndicatorProcess(Process, object):
             extras.update({k: k for k in resources.keys()})
 
         output = run_op(resource=resources,
-                          calc=[{'func': self.identifier,
-                                 'name': self.identifier,
-                                 'kwds': extras}],
-                          options=options)
+                        calc=[{'func': self.identifier,
+                               'name': self.identifier,
+                               'kwds': extras}],
+                        options=options)
 
         response.outputs['output_netcdf'].file = output
 
         response.update_status('Execution completed', 100)
 
         return response
+
 
 def run_op(resource, calc, options):
     """Create an OCGIS operation, launch it and return the results."""
@@ -207,6 +209,7 @@ def run_op(resource, calc, options):
                         output_format='nc')
 
     return ops.execute()
+
 
 #############################################
 #          Custom class definitions         #
@@ -253,6 +256,7 @@ class Duration(IndicatorProcess):
 class ICCLIMProcess(IndicatorProcess):
     """Process class instantiated using definitions from the ICCLIM library.
     """
+
     def load_meta(self):
         """Extract process meta data from underlying object."""
         self.icclim_func = libclim._icclim_function_map[self.key]['func']
@@ -283,7 +287,7 @@ class ICCLIMProcess(IndicatorProcess):
 
 def create_icclim_process_class(key):
     """Create a subclass of an ICCLIMProcess for a given indicator."""
-    clazz = type(key.upper()+'Process', (ICCLIMProcess,), {'key': key})
+    clazz = type(key.upper() + 'Process', (ICCLIMProcess,), {'key': key})
     return clazz
 
 

@@ -12,6 +12,7 @@ from pywps import Format, FORMATS
 from pywps.app.Common import Metadata
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -27,13 +28,13 @@ class GBIFfetchProcess(Process):
                          ),
         ]
 
-            # self.BBox = self.addBBoxInput(
-            # #         identifier="BBox",
-            # #         title="Bounding Box",
-            # #         abstract="coordinates to define the region for occurence data fetch",
-            # #         minOccurs=1,
-            # #         maxOccurs=1,
-            # #         crss=['EPSG:4326']
+        # self.BBox = self.addBBoxInput(
+        # #         identifier="BBox",
+        # #         title="Bounding Box",
+        # #         abstract="coordinates to define the region for occurence data fetch",
+        # #         minOccurs=1,
+        # #         maxOccurs=1,
+        # #         crss=['EPSG:4326']
 
         outputs = [
             ComplexOutput('output_map', 'Graphic of species occurences',

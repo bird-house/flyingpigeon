@@ -11,6 +11,7 @@ from pywps import Format, FORMATS
 from pywps.app.Common import Metadata
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -18,6 +19,7 @@ class ClippingProcess(Process):
     """
     TODO: opendap input support, additional metadata to display region names.
     """
+
     def __init__(self):
         inputs = [
             LiteralInput('region', 'Region',

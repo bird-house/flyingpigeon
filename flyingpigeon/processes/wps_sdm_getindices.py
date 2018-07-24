@@ -18,6 +18,7 @@ from flyingpigeon.utils import rename_complexinputs
 from os.path import basename
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -70,7 +71,6 @@ class SDMgetindicesProcess(Process):
                           as_reference=True,
                           supported_formats=[Format('application/x-netcdf')]
                           ),
-
 
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",

@@ -23,6 +23,7 @@ from pywps import Format, FORMATS
 from pywps.app.Common import Metadata
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -36,9 +37,9 @@ class SDMcsvindicesProcess(Process):
                          min_occurs=1,
                          max_occurs=500,
                          supported_formats=[
-                            Format('application/x-netcdf'),
-                            Format('application/x-tar'),
-                            Format('application/zip')],
+                             Format('application/x-netcdf'),
+                             Format('application/x-tar'),
+                             Format('application/zip')],
                          ),
 
             LiteralInput("gbif", "GBIF csv file",
@@ -47,7 +48,7 @@ class SDMcsvindicesProcess(Process):
                          data_type='string',
                          min_occurs=1,
                          max_occurs=1,
-                        #  default='https://bovec.dkrz.de/download/wpsoutputs/flyingpigeon/392f1c34-b4d1-11e7-a589-109836a7cf3a/tmp95yvix.csv'
+                         #  default='https://bovec.dkrz.de/download/wpsoutputs/flyingpigeon/392f1c34-b4d1-11e7-a589-109836a7cf3a/tmp95yvix.csv'
                          ),
 
             LiteralInput("period", "Reference period",

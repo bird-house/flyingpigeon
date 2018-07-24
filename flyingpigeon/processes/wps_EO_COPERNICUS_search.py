@@ -15,6 +15,7 @@ from tempfile import mkstemp
 from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -22,6 +23,7 @@ class EO_COP_searchProcess(Process):
     """
     TODO: like FetchProcess
     """
+
     def __init__(self):
         inputs = [
             LiteralInput("products", "Earth Observation Product Type",
@@ -100,7 +102,6 @@ class EO_COP_searchProcess(Process):
                           as_reference=True,
                           ),
 
-
             ComplexOutput("output_log", "Logging information",
                           abstract="Collected logs during process run.",
                           supported_formats=[Format("text/plain")],
@@ -164,12 +165,12 @@ class EO_COP_searchProcess(Process):
         api = SentinelAPI(username, password)
 
         geom = {
-          "type": "Polygon",
-          "coordinates": [[[ bbox[0], bbox[1]],
-                           [ bbox[2], bbox[1]],
-                           [ bbox[2], bbox[3]],
-                           [ bbox[0], bbox[3]],
-                           [ bbox[0], bbox[1]]]]}
+            "type": "Polygon",
+            "coordinates": [[[bbox[0], bbox[1]],
+                             [bbox[2], bbox[1]],
+                             [bbox[2], bbox[3]],
+                             [bbox[0], bbox[3]],
+                             [bbox[0], bbox[1]]]]}
 
         footprint = geojson_to_wkt(geom)
 
@@ -203,7 +204,7 @@ class EO_COP_searchProcess(Process):
             LOGGER.exception('failed to write resources to textfile')
         # response.outputs['output'].file = filepathes
         try:
-            extend = [float(bboxStr[0])-5, float(bboxStr[1])+5, float(bboxStr[2])-5, float(bboxStr[3])+5]
+            extend = [float(bboxStr[0]) - 5, float(bboxStr[1]) + 5, float(bboxStr[2]) - 5, float(bboxStr[3]) + 5]
             img = eodata.plot_products(products, extend=extend)
             response.outputs['output_plot'].file = img
         except:

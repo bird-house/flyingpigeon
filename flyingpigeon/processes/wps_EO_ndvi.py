@@ -19,6 +19,7 @@ from datetime import timedelta, time
 from tempfile import mkstemp
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -26,6 +27,7 @@ class NdviProcess(Process):
     """
     Normalized Difference Vegetation Index (NDVI)
     """
+
     def __init__(self):
         inputs = [
             LiteralInput("products", "Earth Observation Product",

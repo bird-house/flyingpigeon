@@ -14,6 +14,7 @@ from pywps.app.Common import Metadata
 from flyingpigeon.log import init_process_logger
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -21,6 +22,7 @@ class PointinspectionProcess(Process):
     """
     TODO: optionally provide point list as file (csv, geojson) and WFS service
     """
+
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
@@ -35,13 +37,14 @@ class PointinspectionProcess(Process):
                          ]),
 
             LiteralInput("coords", "Coordinates",
-                         abstract="A comma-seperated tuple of WGS85 lon,lat decimal coordinates (e.g. 2.356138, 48.846450)",  # noqa
+                         abstract="A comma-seperated tuple of WGS85 lon,lat decimal coordinates (e.g. 2.356138, 48.846450)",
+                         # noqa
                          default="2.356138, 48.846450",
                          data_type='string',
                          min_occurs=1,
                          max_occurs=100,
                          ),
-                         ]
+        ]
         outputs = [
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",
@@ -120,7 +123,7 @@ class PointinspectionProcess(Process):
             except Exception as e:
                 LOGGER.debug('failed for %s %s' % (key, e))
 
-    # set the outputs
+        # set the outputs
         response.update_status('*** creating output tar archive ****', 90)
         tarout_file = archive(filenames)
         response.outputs['tarout'].file = tarout_file

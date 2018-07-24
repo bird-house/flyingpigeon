@@ -22,7 +22,6 @@ from datetime import datetime as dt
 import os
 import tempfile
 
-
 import ocgis
 from ocgis import FunctionRegistry, RequestDataset, OcgOperations
 from flyingpigeon.ocgisDissimilarity import Dissimilarity, metrics
@@ -30,6 +29,7 @@ from flyingpigeon.ocgisDissimilarity import Dissimilarity, metrics
 FunctionRegistry.append(Dissimilarity)
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -206,14 +206,13 @@ class SpatialAnalogProcess(Process):
             LOGGER.error(msg)
             raise Exception(msg)
 
-        LOGGER.debug("init took {}".format(dt.now() - tic ) )
+        LOGGER.debug("init took {}".format(dt.now() - tic))
         response.update_status('Processed input parameters', 3)
-
 
         ######################################
         # Extract target time series
         ######################################
-        savetarget=False
+        savetarget = False
         try:
             # Using `call` creates a netCDF file in the tmp directory.
             #
@@ -224,7 +223,7 @@ class SpatialAnalogProcess(Process):
                                  time_range=[dateStartTarget, dateEndTarget],
                                  select_nearest=True, prefix=prefix)
 
-                #target_ts = [get_values(prefix+'.nc', ind) for ind in indices]
+                # target_ts = [get_values(prefix+'.nc', ind) for ind in indices]
 
             else:
                 trd = RequestDataset(target, variable=indices,
@@ -241,7 +240,6 @@ class SpatialAnalogProcess(Process):
             raise Exception(msg)
 
         response.update_status('Extracted target series', 5)
-
 
         ######################################
         # Compute dissimilarity metric
@@ -261,7 +259,6 @@ class SpatialAnalogProcess(Process):
             LOGGER.exception(msg)
             raise Exception(msg)
 
-
         add_metadata(output,
                      dist=dist,
                      indices=",".join(indices),
@@ -277,8 +274,9 @@ class SpatialAnalogProcess(Process):
         response.outputs['output_netcdf'].file = output
 
         response.update_status('Execution completed', 100)
-        LOGGER.debug("Total execution took {}".format( dt.now() - tic) )
+        LOGGER.debug("Total execution took {}".format(dt.now() - tic))
         return response
+
 
 def add_metadata(ncfile, **kwds):
     """Add metadata to the dissimilarity variable."""

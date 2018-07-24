@@ -21,6 +21,7 @@ from flyingpigeon.log import init_process_logger
 
 import tempfile
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -44,7 +45,7 @@ class SDMcsvProcess(Process):
                          data_type='string',
                          min_occurs=1,
                          max_occurs=1,
-                        #  default='http://localhost:8090/wpsoutputs/flyingpigeon/output_csv-abe15f64-c30d-11e6-bf63-142d277ef1f3.csv'
+                         #  default='http://localhost:8090/wpsoutputs/flyingpigeon/output_csv-abe15f64-c30d-11e6-bf63-142d277ef1f3.csv'
                          ),
 
             LiteralInput("indices", "Indices",
@@ -79,7 +80,6 @@ class SDMcsvProcess(Process):
                          )
         ]
         outputs = [
-
 
             ComplexOutput("output_gbif", "Graphic of GBIF coordinates",
                           abstract="PNG graphic file showing the presence of tree species\
@@ -152,7 +152,7 @@ class SDMcsvProcess(Process):
             outputs=outputs,
             status_supported=True,
             store_supported=True,
-            )
+        )
 
     def _handler(self, request, response):
         init_process_logger('log.txt')
@@ -224,7 +224,7 @@ class SDMcsvProcess(Process):
         response.update_status('Start processing for %s Datasets' % len(indices_dic.keys()))
         for count, key in enumerate(indices_dic.keys()):
             try:
-                staus_nr = 40 + count*10
+                staus_nr = 40 + count * 10
                 response.update_status('Start processing of %s' % key, staus_nr)
                 ncs = indices_dic[key]
                 LOGGER.info('with %s files' % len(ncs))
@@ -322,7 +322,6 @@ class SDMcsvProcess(Process):
             LOGGER.exception('failed to concat images')
             _, stat_infosconcat = tempfile.mkstemp(suffix='.pdf', prefix='foobar-', dir='.')
             _, PAmask_png = tempfile.mkstemp(suffix='.png', prefix='foobar-', dir='.')
-
 
         # self.output_csv.setValue(csv_file)
         response.outputs['output_gbif'].file = occurence_map

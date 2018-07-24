@@ -16,6 +16,7 @@ from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.log import init_process_logger
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -36,11 +37,12 @@ class LandseamaskProcess(Process):
             LiteralInput('dataset_opendap', 'Remote OpenDAP Data URL',
                          data_type='string',
                          abstract="Remote OpenDAP data URL, for example:"
-                                  " http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis2.dailyavgs/surface/mslp.2016.nc",  # noqa
+                                  " http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis2.dailyavgs/surface/mslp.2016.nc",
+                         # noqa
                          metadata=[
-                            Metadata(
-                                'application/x-ogc-dods',
-                                'https://www.iana.org/assignments/media-types/media-types.xhtml')],
+                             Metadata(
+                                 'application/x-ogc-dods',
+                                 'https://www.iana.org/assignments/media-types/media-types.xhtml')],
                          min_occurs=0,
                          max_occurs=100),
 

@@ -27,6 +27,7 @@ from flyingpigeon.calculation import remove_mean_trend
 from flyingpigeon.log import init_process_logger
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -55,11 +56,11 @@ class AnalogsreanalyseProcess(Process):
             LiteralInput('BBox', 'Bounding Box',
                          data_type='string',
                          abstract="Enter a bbox: min_lon, max_lon, min_lat, max_lat."
-                            " min_lon=Western longitude,"
-                            " max_lon=Eastern longitude,"
-                            " min_lat=Southern or northern latitude,"
-                            " max_lat=Northern or southern latitude."
-                            " For example: -80,50,20,70",
+                                  " min_lon=Western longitude,"
+                                  " max_lon=Eastern longitude,"
+                                  " min_lat=Southern or northern latitude,"
+                                  " max_lat=Northern or southern latitude."
+                                  " For example: -80,50,20,70",
                          min_occurs=1,
                          max_occurs=1,
                          default='-20,40,30,70',
@@ -261,7 +262,7 @@ class AnalogsreanalyseProcess(Process):
             nanalog = request.inputs['nanalog'][0].data
             timres = request.inputs['timeres'][0].data
 
-            #bbox = [-80, 20, 50, 70]
+            # bbox = [-80, 20, 50, 70]
             # TODO: Add checking for wrong cordinates and apply default if nesessary
             bbox = []
             bboxStr = request.inputs['BBox'][0].data
@@ -359,7 +360,7 @@ class AnalogsreanalyseProcess(Process):
         ##########################################
         # fetch Data from original data archive
         ##########################################
-                
+
         # NOTE: If ref is say 1950 - 1990, and sim is just 1 week in 2017 - ALL the data will be downloaded, 1950 - 2017 
         try:
             model_nc = rl(start=start.year,
@@ -377,21 +378,20 @@ class AnalogsreanalyseProcess(Process):
         LOGGER.debug("start and end time: %s - %s" % (start, end))
         time_range = [start, end]
 
-
         # For 20CRV2 geopotential height, daily dataset for 100 years is about 50 Gb
         # So it makes sense, to operate it step-by-step
         # TODO: need to create dictionary for such datasets (for models as well)
         # TODO: benchmark the method bellow for NCEP z500 for 60 years
 
-#        if ('20CRV2' in model) and ('z' in var):
-        if ('z' in var):  
+        #        if ('20CRV2' in model) and ('z' in var):
+        if ('z' in var):
             tmp_total = []
             origvar = get_variable(model_nc)
 
             for z in model_nc:
-                tmp_n = 'tmp_%s' % (uuid.uuid1()) 
-                b0=call(resource=z, variable=origvar, level_range=[int(level), int(level)], geom=bbox,
-                spatial_wrapping='wrap', prefix='levdom_'+os.path.basename(z)[0:-3])
+                tmp_n = 'tmp_%s' % (uuid.uuid1())
+                b0 = call(resource=z, variable=origvar, level_range=[int(level), int(level)], geom=bbox,
+                          spatial_wrapping='wrap', prefix='levdom_' + os.path.basename(z)[0:-3])
                 tmp_total.append(b0)
 
             tmp_total = sorted(tmp_total, key=lambda i: os.path.splitext(os.path.basename(i))[0])
@@ -399,10 +399,10 @@ class AnalogsreanalyseProcess(Process):
 
             # Clean
             for i in tmp_total:
-                tbr='rm -f %s' % (i) 
-                os.system(tbr)  
+                tbr = 'rm -f %s' % (i)
+                os.system(tbr)
 
-            # Create new variable
+                # Create new variable
             ds = Dataset(inter_subset_tmp, mode='a')
             z_var = ds.variables.pop(origvar)
             dims = z_var.dimensions
@@ -423,15 +423,15 @@ class AnalogsreanalyseProcess(Process):
         if '20CRV2' in model:
             if timres == '6h':
                 from cdo import Cdo
-                
+
                 cdo = Cdo()
                 model_subset = '%s.nc' % uuid.uuid1()
                 tmp_f = '%s.nc' % uuid.uuid1()
 
-                cdo_op = getattr(cdo,'daymean')
+                cdo_op = getattr(cdo, 'daymean')
                 cdo_op(input=model_subset_tmp, output=tmp_f)
-                sti = '00:00:00' 
-                cdo_op = getattr(cdo,'settime')
+                sti = '00:00:00'
+                cdo_op = getattr(cdo, 'settime')
                 cdo_op(sti, input=tmp_f, output=model_subset)
                 LOGGER.debug('File Converted from: %s to daily' % (timres))
             else:
@@ -452,7 +452,7 @@ class AnalogsreanalyseProcess(Process):
         # TODO 3 Check with faster smoother add removing trend of each grid
 
         if detrend == 'None':
-            orig_model_subset = model_subset            
+            orig_model_subset = model_subset
         else:
             orig_model_subset = remove_mean_trend(model_subset, varname=var)
 
@@ -589,23 +589,23 @@ class AnalogsreanalyseProcess(Process):
         #######################
         start_time = time.time()  # measure call castf90
 
-        #-----------------------
+        # -----------------------
         try:
             import ctypes
             # TODO: This lib is for linux
             mkl_rt = ctypes.CDLL('libmkl_rt.so')
-            nth=mkl_rt.mkl_get_max_threads()
+            nth = mkl_rt.mkl_get_max_threads()
             LOGGER.debug('Current number of threads: %s' % (nth))
             mkl_rt.mkl_set_num_threads(ctypes.byref(ctypes.c_int(64)))
-            nth=mkl_rt.mkl_get_max_threads()
+            nth = mkl_rt.mkl_get_max_threads()
             LOGGER.debug('NEW number of threads: %s' % (nth))
             # TODO: Does it \/\/\/ work with default shell=False in subprocess... (?)
-            os.environ['MKL_NUM_THREADS']=str(nth)
-            os.environ['OMP_NUM_THREADS']=str(nth)
+            os.environ['MKL_NUM_THREADS'] = str(nth)
+            os.environ['OMP_NUM_THREADS'] = str(nth)
         except Exception as e:
             msg = 'Failed to set THREADS %s ' % e
             LOGGER.debug(msg)
-        #-----------------------
+        # -----------------------
 
         response.update_status('Start CASTf90 call', 30)
         try:
@@ -622,10 +622,10 @@ class AnalogsreanalyseProcess(Process):
         LOGGER.debug("castf90 took %s seconds.", time.time() - start_time)
 
         # TODO: Add try - except for pdfs
-        analogs_pdf = analogs.plot_analogs(configfile=config_file)   
+        analogs_pdf = analogs.plot_analogs(configfile=config_file)
         response.update_status('preparing output', 75)
         # response.outputs['config'].storage = FileStorage()
-        response.outputs['analog_pdf'].file = analogs_pdf 
+        response.outputs['analog_pdf'].file = analogs_pdf
         response.outputs['config'].file = config_file
         response.outputs['analogs'].file = output_file
         response.outputs['output_netcdf'].file = simulation
@@ -636,10 +636,12 @@ class AnalogsreanalyseProcess(Process):
             response.outputs['sim_netcdf'].file = seasoncyc_sim
         else:
             # TODO: Still unclear how to overpass unknown number of outputs
-            dummy_base='dummy_base.nc'
-            dummy_sim='dummy_sim.nc'
-            with open(dummy_base, 'a'): os.utime(dummy_base, None)
-            with open(dummy_sim, 'a'): os.utime(dummy_sim, None)
+            dummy_base = 'dummy_base.nc'
+            dummy_sim = 'dummy_sim.nc'
+            with open(dummy_base, 'a'):
+                os.utime(dummy_base, None)
+            with open(dummy_sim, 'a'):
+                os.utime(dummy_sim, None)
             response.outputs['base_netcdf'].file = dummy_base
             response.outputs['sim_netcdf'].file = dummy_sim
 

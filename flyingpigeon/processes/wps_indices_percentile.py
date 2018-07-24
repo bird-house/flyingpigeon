@@ -14,6 +14,7 @@ from flyingpigeon import config
 from flyingpigeon.log import init_process_logger
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -201,7 +202,7 @@ class IndicespercentiledaysProcess(Process):
                 try:
                     result = calc(resource=datasets[key],
                                   calc=calc,
-                                #   calc_grouping='year'
+                                  #   calc_grouping='year'
                                   )
                     LOGGER.debug('percentile based indice done for %s' % result)
                     results.extend(result)

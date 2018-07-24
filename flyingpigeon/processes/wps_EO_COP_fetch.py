@@ -14,6 +14,7 @@ from tempfile import mkstemp
 from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -21,6 +22,7 @@ class EO_COP_fetchProcess(Process):
     """
     TODO: like FetchProcess
     """
+
     def __init__(self):
         inputs = [
             LiteralInput("products", "Earth Observation Product Type",
@@ -156,31 +158,31 @@ class EO_COP_fetchProcess(Process):
         api = SentinelAPI(username, password)
 
         geom = {
-          "type": "Polygon",
-          "coordinates": [
-                  [
+            "type": "Polygon",
+            "coordinates": [
+                [
                     [
-                      14.00,
-                      8.00
+                        14.00,
+                        8.00
                     ],
                     [
-                      16.00,
-                      8.00
+                        16.00,
+                        8.00
                     ],
                     [
-                      16.00,
-                      10.00
+                        16.00,
+                        10.00
                     ],
                     [
-                      14.00,
-                      10.00
+                        14.00,
+                        10.00
                     ],
                     [
-                      14.00,
-                      8.00
+                        14.00,
+                        8.00
                     ]
-                  ]
                 ]
+            ]
         }
 
         footprint = geojson_to_wkt(geom)
