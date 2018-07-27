@@ -14,7 +14,7 @@ class FetchProcess(Process):
     TODO: Provide first output directly.
     TODO: should provide urls of copied files.
     TODO: Need a better way to provide multiple outputs (json file ... could be interpreted and displayed by UI),
-    COWS has done somthing like this with an xml output.
+    COWS has done something like this with an xml output.
     """
     def __init__(self):
         inputs = [
@@ -32,7 +32,7 @@ class FetchProcess(Process):
 
         outputs = [
             ComplexOutput("output", "Fetched Files",
-                          abstract="File containing the local pathes to downloades files.",
+                          abstract="File containing the local paths to downloaded files.",
                           supported_formats=[Format('text/plain')],
                           as_reference=True,
                           ),
