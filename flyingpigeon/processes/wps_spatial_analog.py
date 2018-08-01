@@ -252,7 +252,7 @@ class SpatialAnalogProcess(Process):
                           )
 
         except Exception as e:
-            msg = 'Spatial analog failed: {}'.format(e)
+            msg = 'Spatial analog failed: %s' % e
             LOGGER.exception(msg)
             raise Exception(msg)
 

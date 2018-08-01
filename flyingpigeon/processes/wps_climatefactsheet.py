@@ -95,8 +95,8 @@ class FactsheetProcess(Process):
             regions = [inp.data for inp in request.inputs['region']]
             try:
                 png_region = vs.plot_polygons(regions)
-            except:
-                LOGGER.exception('failed to plot the polygon to world map')
+            except Exception as e:
+                LOGGER.exception('failed to plot the polygon to world map: %s' % e)
                 o1, png_region = mkstemp(dir='.', suffix='.png')
 
             # clip the demanded polygons
@@ -115,20 +115,20 @@ class FactsheetProcess(Process):
 
         try:
             tar_subsets = archive(subsets)
-        except:
-            LOGGER.exception('failed to archive subsets')
+        except Exception as e:
+            LOGGER.exception('failed to archive subsets: %s' % e)
             _, tar_subsets = mkstemp(dir='.', suffix='.tar')
 
         try:
             png_uncertainty = vs.uncertainty(subsets, variable=var)
-        except:
-            LOGGER.exception('failed to generate the uncertainty plot')
+        except Exception as e:
+            LOGGER.exception('failed to generate the uncertainty plot: %s' % e)
             _, png_uncertainty = mkstemp(dir='.', suffix='.png')
 
         try:
             png_spaghetti = vs.spaghetti(subsets, variable=var,)
-        except:
-            LOGGER.exception('failed to generate the spaghetti plot')
+        except Exception as e:
+            LOGGER.exception('failed to generate the spaghetti plot: %s' % e)
             _, png_spaghetti = mkstemp(dir='.', suffix='.png')
 
         try:
@@ -147,8 +147,8 @@ class FactsheetProcess(Process):
                                                #    title=title
                                                )
             LOGGER.info('robustness graphic generated')
-        except:
-            LOGGER.exception('failed to generate the robustness plot')
+        except Exception as e:
+            LOGGER.exception('failed to generate the robustness plot: %s' % e)
             _, png_robustness = mkstemp(dir='.', suffix='.png')
 
         factsheet = vs.factsheetbrewer(

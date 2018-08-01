@@ -122,8 +122,8 @@ class ClipcontinentProcess(Process):
                 # dimension_map=dimension_map,
             )
             LOGGER.info('results %s' % results)
-        except:
-            msg = 'clipping failed'
+        except Exception as e:
+            msg = 'Clipping failed: %s' % e
             LOGGER.exception(msg)
             raise Exception(msg)
 
