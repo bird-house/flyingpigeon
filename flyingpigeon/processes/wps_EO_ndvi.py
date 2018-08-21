@@ -13,7 +13,6 @@ from flyingpigeon.datafetch import fetch_eodata
 from flyingpigeon.datafetch import _EODATA_
 from flyingpigeon import eodata
 
-import os
 from datetime import datetime as dt
 from datetime import timedelta, time
 from tempfile import mkstemp
@@ -168,10 +167,10 @@ class NdviProcess(Process):
         else:
             start = end - timedelta(days=30)
 
-        if (start > end):
+        if start > end:
             start = dt.now() - timedelta(days=30)
             end = dt.now()
-            LOGGER.exception("periode end befor periode start, period is set to the last 30 days from now")
+            LOGGER.exception('failed adding species_files indices to archive')
 
         token = request.inputs['token'][0].data
         archive_format = request.inputs['archive_format'][0].data
@@ -184,7 +183,7 @@ class NdviProcess(Process):
                 item_type = 'PSScene4Band'
                 assets = ['analytic', 'analytic_xml']
                 for asset in assets:
-                    LOGGER.debug('itym type: %s , asset: %s' % (item_type, asset))
+                    LOGGER.debug('item type: {}, asset: {}'.format(item_type, asset))
                     fetch_sleep, tiles = fetch_eodata(item_type,
                                                       asset,
                                                       token,
@@ -207,20 +206,23 @@ class NdviProcess(Process):
                     #     print archive
 
                     # resources_sleeping.extend(fetch_sleep)
-                LOGGER.debug("%s tiles fetched" % len(resources))
-                response.update_status("calculating the NDVI ", 30)
+                LOGGER.debug('{} tiles fetched'.format(len(resources)))
+                response.update_status("calculating NDVI ", 30)
                 try:
                     LOGGER.debug('Start calculating NDVI')
                     ndvi_tiles = eodata.ndvi(resources, product)
                     # ndvi_merged = eodata.merge(ndvi_tiles)
-                except:
-                    LOGGER.exception('failed to calculate NDVI')
+                except Exception as ex:
+                    msg = 'failed to calculate NDVI: '.format(str(ex))
+                    LOGGER.exception(msg)
+                    raise Exception(msg)
         try:
             ndvi_archive = archive(ndvi_tiles, format=archive_format)
             LOGGER.info('geotiff files added to archive')
-        except:
-            msg = 'failed adding species_files indices to archive'
+        except Exception as ex:
+            msg = 'failed adding species_files indices to archive: {}'.format(str(ex))
             LOGGER.exception(msg)
+            raise Exception(msg)
 
         response.outputs['ndvi_archive'].file = ndvi_archive
 
@@ -228,9 +230,9 @@ class NdviProcess(Process):
         if i is None:
             response.outputs['ndviexample'].file = "dummy.png"
         else:
-            LOGGER.debug("start plotting test files for quick check")
+            LOGGER.debug('start plotting test files for quick check')
             ndvi_plot = eodata.plot_ndvi(ndvi_tiles[i])
-            LOGGER.debug("NDVI test plot %s" % ndvi_plot)
+            LOGGER.debug('NDVI test plot {}'.format(ndvi_plot))
 
             response.outputs['ndviexample'].file = ndvi_plot
 

@@ -12,8 +12,9 @@ from flyingpigeon.utils import make_dirs
 
 transfer_limit_Mb = 500
 
-import logging
-logger = logging.getLogger()
+# TODO: Integrate or remove logging from this
+# import logging
+# LOGGER = logging.getLogger()
 
 class ProcessSimpleIndice(WPSProcess):
 
@@ -147,13 +148,13 @@ class ProcessSimpleIndice(WPSProcess):
             stopdate  = dateutil.parser.parse(time_range.split("/")[1])
             time_range = [startdate,stopdate]
 
-        logger.debug("time_range: %s", time_range)
+        LOGGER.debug("time_range: %s", time_range)
 
         thresh = None
         if(thresholdlist):
             thresh = [float(threshold) for threshold in threshholdList]
 
-        logger.debug("thresh: %s", thresh)
+        LOGGER.debug("thresh: %s", thresh)
 
 
         self.status.set("Preparing....", 0)

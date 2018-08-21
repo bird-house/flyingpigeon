@@ -3,21 +3,20 @@ Processes for Species distribution
 Author: Nils Hempelmann , Wolfgang Falk
 """
 
-from pywps import Process
-from pywps import LiteralInput
+import logging
+
 from pywps import ComplexInput, ComplexOutput
-from pywps import Format, FORMATS
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
 from pywps.app.Common import Metadata
 
-from flyingpigeon.sdm import _SDMINDICES_
 from flyingpigeon import sdm
-from flyingpigeon.utils import archive, archiveextract, sort_by_filename
 from flyingpigeon.log import init_process_logger
+from flyingpigeon.sdm import _SDMINDICES_
+from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import rename_complexinputs
 
-from os.path import basename
-
-import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -71,7 +70,6 @@ class SDMgetindicesProcess(Process):
                           supported_formats=[Format('application/x-netcdf')]
                           ),
 
-
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",
                           as_reference=True,
@@ -115,8 +113,8 @@ class SDMgetindicesProcess(Process):
             indices = [inpt.data for inpt in request.inputs['indices']]
             LOGGER.debug("indices = %s", indices)
             archive_format = request.inputs['archive_format'][0].data
-        except:
-            msg = 'failed to read the arguments.'
+        except Exception as ex:
+            msg = 'failed to read the arguments: {}'.format(str(ex))
             LOGGER.exception(msg)
             raise Exception(msg)
         LOGGER.info('indices %s ' % indices)
@@ -130,8 +128,9 @@ class SDMgetindicesProcess(Process):
             response.update_status('calculation of indices', 30)
             ncs_indices = sdm.get_indices(resource=resources, indices=indices)
             LOGGER.info('indice calculation done')
-        except:
-            msg = 'indice calculation failed for {}'.format(ds_name)
+        except Exception as ex:
+            # TODO: 'ds_name' does not resolve. What is this referring to? This will throw a critical error
+            msg = 'indice calculation failed for {}: {}'.format(ds_name, str(ex))
             LOGGER.exception(msg)
             raise Exception(msg)
 
@@ -139,8 +138,8 @@ class SDMgetindicesProcess(Process):
         try:
             archive_indices = archive(ncs_indices, format=archive_format)
             LOGGER.info('indices 3D added to tarfile')
-        except:
-            msg = 'failed adding indices to tar'
+        except Exception as ex:
+            msg = 'failed adding indices to tar: {}'.format(str(ex))
             LOGGER.exception(msg)
             raise Exception(msg)
 

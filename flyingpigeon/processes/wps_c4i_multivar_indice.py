@@ -11,8 +11,9 @@ import os
 
 transfer_limit_Mb = 100
 
-import logging
-logger = logging.getLogger()
+# TODO: Integrate or remove logging from this
+# import logging
+# LOGGER = logging.getLogger()
     
 class ProcessMultivarIndice(WPSProcess):
 

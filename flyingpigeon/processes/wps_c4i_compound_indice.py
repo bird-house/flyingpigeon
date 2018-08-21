@@ -11,8 +11,9 @@ import os
 
 transfer_limit_Mb = 100
 
-import logging
-logger = logging.getLogger()
+# TODO: Integrate or remove logging from this
+# import logging
+# LOGGER = logging.getLogger()
 
 class ProcessCompoundIndice(WPSProcess):
 
@@ -262,4 +263,4 @@ class ProcessCompoundIndice(WPSProcess):
         #url = fileOutURL+"/"+out_file_name
         #self.opendapURL.setValue(url)
         self.output.setValue(out_file_name)
-        self.status.set("ready",100)
+        self.status.set("ready", 100)
