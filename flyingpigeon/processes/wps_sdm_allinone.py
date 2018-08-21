@@ -190,10 +190,13 @@ class SDMallinoneProcess(Process):
             period = period[0].data
             indices = [inpt.data for inpt in request.inputs['indices']]
             archive_format = request.inputs['archive_format'][0].data
-            LOGGER.exception("indices = %s for %s ", indices, taxon_name)
-            LOGGER.info("bbox={0}".format(bbox))
+            LOGGER.exception("indices = {} for {}".format(indices, taxon_name))
+            LOGGER.info("bbox={}".format(bbox))
         except Exception as ex:
-            LOGGER.exception('failed to read in the arguments: {}'.format(str(ex)))
+            msg = 'failed to read in the arguments: {}'.format(str(ex))
+            LOGGER.exception(msg)
+            raise Exception(msg)
+
         LOGGER.info('indices {}'.format(indices))
 
         try:
@@ -230,8 +233,7 @@ class SDMallinoneProcess(Process):
         # get the indices
         ncs_indices = None
         try:
-            response.update_status('start calculation of climate indices for %s'
-                            % indices, 30)
+            response.update_status('start calculation of climate indices for {}'.format(indices), 30)
             ncs_indices = sdm.get_indices(resource=resources, indices=indices)
             LOGGER.info('indice calculation done')
         except Exception as ex:
@@ -257,8 +259,8 @@ class SDMallinoneProcess(Process):
 
         for count, key in enumerate(indices_dic.keys()):
             try:
-                staus_nr = 40 + count*10
-                response.update_status('Start processing of {}'.format(key), staus_nr)
+                status_nr = 40 + count*10
+                response.update_status('Start processing of {}'.format(key), status_nr)
                 ncs = indices_dic[key]
                 LOGGER.info('with {} files'.format(len(ncs)))
 
@@ -267,7 +269,9 @@ class SDMallinoneProcess(Process):
                     PAmask = sdm.get_PAmask(coordinates=latlon, nc=ncs[0])
                     LOGGER.info('PA mask successfully generated')
                 except Exception as ex:
-                    LOGGER.exception('failed to generate the PA mask: {}'.format(str(ex)))
+                    msg = 'failed to generate the PA mask: {}'.format(str(ex))
+                    LOGGER.exception(msg)
+                    raise Exception(msg)
 
                 try:
                     response.update_status('Plotting PA mask', 25)
@@ -275,6 +279,7 @@ class SDMallinoneProcess(Process):
                 except Exception as ex:
                     msg = 'failed to plot the PA mask: {}'.format(str(ex))
                     LOGGER.exception(msg)
+                    raise Exception(msg)
 
                 try:
                     ncs_reference = sdm.get_reference(ncs_indices=ncs, period=period)
@@ -284,25 +289,27 @@ class SDMallinoneProcess(Process):
                 except Exception as ex:
                     msg = 'failed to calculate the reference: {}'.format(str(ex))
                     LOGGER.exception(msg)
+                    raise Exception(msg)
 
                 try:
                     gam_model, predict_gam, gam_info = sdm.get_gam(ncs_reference, PAmask)
                     stat_infos.append(gam_info)
-                    response.update_status('GAM sucessfully trained', staus_nr + 5)
+                    response.update_status('GAM sucessfully trained', status_nr + 5)
                 except Exception as ex:
                     msg = 'failed to train GAM for {}: {}'.format(key, str(ex))
                     LOGGER.exception(msg)
+                    raise Exception(msg)
 
                 try:
                     prediction = sdm.get_prediction(gam_model, ncs)
-                    response.update_status('prediction done', staus_nr + 7)
+                    response.update_status('prediction done', status_nr + 7)
                 except Exception as ex:
                     msg = 'failed to predict tree occurrence: {}'.format(str(ex))
                     LOGGER.exception(msg)
-                    # raise Exception(msg)
+                    raise Exception(msg)
 
                 # try:
-                #     response.update_status('land sea mask for predicted data',  staus_nr + 8)
+                #     response.update_status('land sea mask for predicted data',  status_nr + 8)
                 #     from numpy import invert, isnan, nan, broadcast_arrays  # , array, zeros, linspace, meshgrid
                 #     mask = invert(isnan(PAmask))
                 #     mask = broadcast_arrays(prediction, mask)[1]
@@ -316,7 +323,7 @@ class SDMallinoneProcess(Process):
                 except Exception as ex:
                     msg = 'failed to write species file: {}'.format(str(ex))
                     LOGGER.exception(msg)
-                    # raise Exception(msg)
+                    raise Exception(msg)
 
             except Exception as ex:
                 msg = 'failed to calculate reference indices: {}'.format(str(ex))
@@ -329,6 +336,7 @@ class SDMallinoneProcess(Process):
         except Exception as ex:
             msg = 'failed adding indices to archive: {}'.format(str(ex))
             LOGGER.exception(msg)
+            raise Exception(msg)
             archive_indices = tempfile.mkstemp(suffix='.tar', prefix='foobar-', dir='.')
 
         try:
@@ -337,6 +345,7 @@ class SDMallinoneProcess(Process):
         except Exception as ex:
             msg = 'failed adding reference indices to archive: {}'.format(str(ex))
             LOGGER.exception(msg)
+            raise Exception(msg)
             archive_references = tempfile.mkstemp(suffix='.tar', prefix='foobar-', dir='.')
 
         try:
@@ -349,11 +358,13 @@ class SDMallinoneProcess(Process):
 
         try:
             stat_infosconcat = pdfmerge(stat_infos)
-            LOGGER.debug('pngs %s' % PAmask_pngs)
+            LOGGER.debug('pngs {}'.format(PAmask_pngs))
             PAmask_png = concat_images(PAmask_pngs, orientation='h')
             LOGGER.info('stat info pdfs and mask pngs merged')
         except Exception as ex:
-            LOGGER.exception('failed to concat images: {}'.format(str(ex)))
+            msg = 'failed to concat images: {}'.format(str(ex))
+            LOGGER.exception(msg)
+            raise Exception(msg)
             _, stat_infosconcat = tempfile.mkstemp(suffix='.pdf', prefix='foobar-', dir='.')
             _, PAmask_png = tempfile.mkstemp(suffix='.png', prefix='foobar-', dir='.')
 

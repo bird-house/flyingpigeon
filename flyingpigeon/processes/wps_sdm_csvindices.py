@@ -201,13 +201,17 @@ class SDMcsvindicesProcess(Process):
                     PAmask = sdm.get_PAmask(coordinates=latlon, nc=ncs[0])
                     LOGGER.info('PA mask sucessfully generated')
                 except Exception as ex:
-                    LOGGER.exception('failed to generate the PA mask: {}'.format(str(ex)))
+                    msg = 'failed to generate the PA mask: {}'.format(str(ex))
+                    LOGGER.exception(msg)
+                    raise Exception(msg)
 
                 try:
                     response.update_status('Ploting PA mask', 25)
                     PAmask_pngs.extend([map_PAmask(PAmask)])
                 except Exception as ex:
-                    LOGGER.exception('failed to plot the PA mask: {}'.format(str(ex)))
+                    msg = 'failed to plot the PA mask: {}'.format(str(ex))
+                    LOGGER.exception(msg)
+                    raise Exception(msg)
 
                 try:
                     ncs_reference = sdm.get_reference(ncs_indices=ncs, period=period)
@@ -217,7 +221,7 @@ class SDMcsvindicesProcess(Process):
                 except Exception as ex:
                     msg = 'failed to calculate the reference: {}'.format(str(ex))
                     LOGGER.exception(msg)
-                    # raise Exception(msg)
+                    raise Exception(msg)
 
                 try:
                     gam_model, predict_gam, gam_info = sdm.get_gam(ncs_reference, PAmask, modelname=key)
@@ -226,6 +230,7 @@ class SDMcsvindicesProcess(Process):
                 except Exception as ex:
                     msg = 'failed to train GAM for {}: {}'.format(key, str(ex))
                     LOGGER.exception(msg)
+                    raise Exception(msg)
 
                 try:
                     prediction = sdm.get_prediction(gam_model, ncs)
@@ -233,7 +238,7 @@ class SDMcsvindicesProcess(Process):
                 except Exception as ex:
                     msg = 'failed to predict tree occurence: {}'.format(str(ex))
                     LOGGER.exception(msg)
-                    # raise Exception(msg)
+                    raise Exception(msg)
 
                 # try:
                 #     response.update_status('land sea mask for predicted data', status_nr + 8)
@@ -250,11 +255,12 @@ class SDMcsvindicesProcess(Process):
                 except Exception as ex:
                     msg = 'failed to write species file: {}'.format(str(ex))
                     LOGGER.exception(msg)
-                    # raise Exception(msg)
+                    raise Exception(msg)
+
             except Exception as ex:
                 msg = 'failed to process SDM chain for {} : {}'.format(key, str(ex))
                 LOGGER.exception(msg)
-                # raise Exception(msg)
+                raise Exception(msg)
 
         try:
             archive_references = archive(ncs_references, format=archive_format)
@@ -262,6 +268,7 @@ class SDMcsvindicesProcess(Process):
         except Exception as ex:
             msg = 'failed adding 2D indices to archive: {}'.format(str(ex))
             LOGGER.exception(msg)
+            raise Exception(msg)
             archive_references = tempfile.mkstemp(suffix='.tar', prefix='foobar-', dir='.')
 
         try:
@@ -270,6 +277,7 @@ class SDMcsvindicesProcess(Process):
         except Exception as ex:
             msg = 'failed adding species_files indices to archive: {}'.format(str(ex))
             LOGGER.exception(msg)
+            raise Exception(msg)
             archive_predicion = tempfile.mkstemp(suffix='.tar', prefix='foobar-', dir='.')
 
         try:
@@ -279,7 +287,9 @@ class SDMcsvindicesProcess(Process):
             PAmask_png = concat_images(PAmask_pngs, orientation='h')
             LOGGER.info('stat infos pdfs and mask pngs merged')
         except Exception as ex:
-            LOGGER.exception('failed to concat images: {}'.format(str(ex)))
+            msg = 'failed to concat images: {}'.format(str(ex))
+            LOGGER.exception(msg)
+            raise Exception(msg)
             _, stat_infosconcat = tempfile.mkstemp(suffix='.pdf', prefix='foobar-', dir='.')
             _, PAmask_png = tempfile.mkstemp(suffix='.png', prefix='foobar-', dir='.')
 

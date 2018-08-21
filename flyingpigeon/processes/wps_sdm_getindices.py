@@ -111,13 +111,13 @@ class SDMgetindicesProcess(Process):
             resources = archiveextract(
                 resource=rename_complexinputs(request.inputs['resource']))
             indices = [inpt.data for inpt in request.inputs['indices']]
-            LOGGER.debug("indices = %s", indices)
+            LOGGER.debug("indices = {}".format(indices))
             archive_format = request.inputs['archive_format'][0].data
         except Exception as ex:
             msg = 'failed to read the arguments: {}'.format(str(ex))
             LOGGER.exception(msg)
             raise Exception(msg)
-        LOGGER.info('indices %s ' % indices)
+        LOGGER.info('indices {}'.format(indices))
 
         #################################
         # calculate the climate indices
@@ -129,7 +129,7 @@ class SDMgetindicesProcess(Process):
             ncs_indices = sdm.get_indices(resource=resources, indices=indices)
             LOGGER.info('indice calculation done')
         except Exception as ex:
-            # TODO: 'ds_name' does not resolve. What is this referring to? This will throw a critical error
+            # TODO: 'ds_name' does not resolve. What is this referring to? This will throw a critical error!
             msg = 'indice calculation failed for {}: {}'.format(ds_name, str(ex))
             LOGGER.exception(msg)
             raise Exception(msg)
