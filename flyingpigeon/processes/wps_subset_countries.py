@@ -126,7 +126,7 @@ class ClippingProcess(Process):
             )
             LOGGER.info('results %s' % results)
         except Exception as ex:
-            msg = 'Clipping failed: %s'.format(str(ex))
+            msg = 'Clipping failed: {}'.format(str(ex))
             LOGGER.exception(msg)
             raise Exception(msg)
 

@@ -140,7 +140,7 @@ class IndicessingleProcess(Process):
             LOGGER.debug('region: {}'.format(region))
             LOGGER.debug('Nr of input files: {}'.format(len(resources)))
         except Exception as ex:
-            LOGGER.exception('failed to read in the arguments'.format(str(ex)))
+            LOGGER.exception('failed to read in the arguments: {}'.format(str(ex)))
 
         response.update_status(
             'starting: indices={}, grouping={}, num_files={}'.format(indices, grouping, len(resources)), 2)
@@ -155,7 +155,7 @@ class IndicessingleProcess(Process):
             indice = indices[0]  # for indice in indices:
             for key in datasets.keys():
                 try:
-                    response.update_status('Dataset %s: %s' % (len(results) + 1, key), 10)
+                    response.update_status('Dataset {}: {}'.format(len(results) + 1, key), 10)
 
                     LOGGER.debug('grouping: {}'.format(grouping))
                     LOGGER.debug('mosaic: {}'.format(mosaic))
@@ -171,7 +171,7 @@ class IndicessingleProcess(Process):
                         grouping=group,
                         # dir_output=path.curdir,
                     )
-                    LOGGER.debug('result: %s' % result)
+                    LOGGER.debug('result: {}'.format(result))
                     results.extend(result)
 
                 except Exception as ex:
@@ -180,7 +180,7 @@ class IndicessingleProcess(Process):
                     raise Exception(msg)
 
         except Exception as ex:
-            msg = 'Failed to calculate indices'.format(str(ex))
+            msg = 'Failed to calculate indices: {}'.format(str(ex))
             LOGGER.exception(msg)
             raise Exception(msg)
 

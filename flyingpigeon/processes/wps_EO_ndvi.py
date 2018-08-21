@@ -213,7 +213,7 @@ class NdviProcess(Process):
                     ndvi_tiles = eodata.ndvi(resources, product)
                     # ndvi_merged = eodata.merge(ndvi_tiles)
                 except Exception as ex:
-                    msg = 'failed to calculate NDVI: '.format(str(ex))
+                    msg = 'failed to calculate NDVI: {}'.format(str(ex))
                     LOGGER.exception(msg)
                     raise Exception(msg)
         try:
