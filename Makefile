@@ -157,7 +157,7 @@ conda_config: anaconda
 conda_env: anaconda conda_config
 	@echo "Update conda environment $(CONDA_ENV) ..."
 	@test -d $(CONDA_ENV_PATH) || "$(ANACONDA_HOME)/bin/conda" env create -n $(CONDA_ENV) -f environment.yml
-	"$(ANACONDA_HOME)/bin/conda" install -y -n $(CONDA_ENV)
+	"$(ANACONDA_HOME)/bin/conda" install -y -n $(CONDA_ENV) setuptools=$(SETUPTOOLS_VERSION)
 
 .PHONY: conda_pinned
 conda_pinned: conda_env
