@@ -1,23 +1,20 @@
-from pywps import Process
-# from pywps import LiteralInput
-from pywps import ComplexInput, LiteralInput, ComplexOutput
-from pywps import Format, FORMATS
-from pywps.app.Common import Metadata
-
-from flyingpigeon.log import init_process_logger
-# from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.utils import archive, archiveextract
-
-# from flyingpigeon.datafetch import write_fileinfo
-from flyingpigeon.datafetch import fetch_eodata
-from flyingpigeon.datafetch import _EODATA_
-from flyingpigeon import eodata
-
+import logging
 from datetime import datetime as dt
 from datetime import timedelta, time
-from tempfile import mkstemp
 
-import logging
+from pywps import Format
+# from pywps import LiteralInput
+from pywps import LiteralInput, ComplexOutput
+from pywps import Process
+from pywps.app.Common import Metadata
+
+from flyingpigeon import eodata
+# from flyingpigeon.datafetch import write_fileinfo
+from flyingpigeon.datafetch import fetch_eodata
+from flyingpigeon.log import init_process_logger
+# from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.utils import archive
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -25,6 +22,7 @@ class NdviProcess(Process):
     """
     Normalized Difference Vegetation Index (NDVI)
     """
+
     def __init__(self):
         inputs = [
             LiteralInput("products", "Earth Observation Product",
@@ -170,7 +168,7 @@ class NdviProcess(Process):
         if start > end:
             start = dt.now() - timedelta(days=30)
             end = dt.now()
-            LOGGER.exception('failed adding species_files indices to archive')
+            LOGGER.exception('period ends before period starts; period now set to the last 30 days from now')
 
         token = request.inputs['token'][0].data
         archive_format = request.inputs['archive_format'][0].data
@@ -231,6 +229,7 @@ class NdviProcess(Process):
             response.outputs['ndviexample'].file = "dummy.png"
         else:
             LOGGER.debug('start plotting test files for quick check')
+            # TODO plot_ndvi does not resolve. Critical error if called.
             ndvi_plot = eodata.plot_ndvi(ndvi_tiles[i])
             LOGGER.debug('NDVI test plot {}'.format(ndvi_plot))
 

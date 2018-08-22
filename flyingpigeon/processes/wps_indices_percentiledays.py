@@ -162,8 +162,10 @@ class IndicespercentiledaysProcess(Process):
             LOGGER.debug('region: {}'.format(region))
             LOGGER.debug('Nr of input files: {}'.format(len(resources)))
 
-        except:
-            LOGGER.exception('failed to read in the arguments')
+        except Exception as ex:
+            msg = 'failed to read in the arguments: {}'.format(str(ex))
+            LOGGER.exception(msg)
+            raise Exception(msg)
 
         from flyingpigeon.utils import sort_by_filename
         from flyingpigeon.ocgis_module import call

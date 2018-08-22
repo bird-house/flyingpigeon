@@ -87,7 +87,7 @@ class FactsheetProcess(Process):
             resource=rename_complexinputs(request.inputs['resource']))
 
         var = get_variable(ncs[0])
-        LOGGER.info('variable to be plotted: %s' % var)
+        LOGGER.info('variable to be plotted: {}'.format(var))
 
         # mosaic = self.mosaic.getValue()
         if 'region' in request.inputs:

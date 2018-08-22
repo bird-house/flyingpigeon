@@ -1,47 +1,45 @@
-from pywps.Process import WPSProcess
-
-import icclim
-import icclim.util.callback as callback
+import logging
 
 import dateutil.parser
-from datetime import datetime
-import os
-#from os.path import expanduser
+import icclim
+from pywps.Process import WPSProcess
 
-from flyingpigeon.utils import make_dirs
+# from os.path import expanduser
 
 transfer_limit_Mb = 500
 
-# TODO: Integrate or remove logging from this
-# import logging
-# LOGGER = logging.getLogger()
+LOGGER = logging.getLogger()
+
 
 class ProcessSimpleIndice(WPSProcess):
 
-
     def __init__(self):
         WPSProcess.__init__(self,
-                            identifier = 'wps_c4i_simple_indice', # only mandatary attribute = same file name
-                            title = 'c4i -- Simple Climate Indices',
-                            abstract = 'Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfall: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50. This processes is also available in Climate4Impact and uses ICCLIM.',
-                            version = "1.0",
-                            metadata = [
-                                {"title": "ICCLIM" , "href": "http://icclim.readthedocs.io/en/latest/"},
-                                {"title": "Climate4Impact", "href": "http://climate4impact.eu/impactportal/general/index.jsp"},
-                                {'title': "Simple Indices", "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/indices.html"}
+                            identifier='wps_c4i_simple_indice',  # only mandatary attribute = same file name
+                            title='c4i -- Simple Climate Indices',
+                            abstract='Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU,'
+                                     ' TR, CSU, GD4, FD, CFD, ID, HD17; of rainfall: CDD, CWD, RR, RR1, SDII, R10mm,'
+                                     ' R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50. This processes is'
+                                     ' also available in Climate4Impact and uses ICCLIM.',
+                            version="1.0",
+                            metadata=[
+                                {"title": "ICCLIM", "href": "http://icclim.readthedocs.io/en/latest/"},
+                                {"title": "Climate4Impact",
+                                 "href": "http://climate4impact.eu/impactportal/general/index.jsp"},
+                                {'title': "Simple Indices",
+                                 "href": "http://flyingpigeon.readthedocs.io/en/latest/descriptions/indices.html"}
                             ],
-                            storeSupported = True,
-                            statusSupported = True,
-                            grassLocation =False)
+                            storeSupported=True,
+                            statusSupported=True,
+                            grassLocation=False)
 
-
-        ## self.filesIn = self.addLiteralInput(identifier = 'files',
-        ##                                        title = 'Input netCDF files list',
-        ##                                        abstract="application/netcdf",
-        ##                                        type=type("S"),
-        ##                                        minOccurs=0,
-        ##                                        maxOccurs=1024,
-        ##                                        default = 'http://aims3.llnl.gov/thredds/dodsC/cmip5_css02_data/cmip5/output1/CMCC/CMCC-CM/rcp85/day/atmos/day/r1i1p1/tasmax/1/tasmax_day_CMCC-CM_rcp85_r1i1p1_20060101-20061231.nc')
+        # self.filesIn = self.addLiteralInput(identifier = 'files',
+        #                                        title = 'Input netCDF files list',
+        #                                        abstract="application/netcdf",
+        #     type=type("S"),
+        #     minOccurs=0,
+        #     maxOccurs=1024,
+        #     default = 'http://aims3.llnl.gov/thredds/dodsC/cmip5_css02_data/cmip5/output1/CMCC/CMCC-CM/rcp85/day/atmos/day/r1i1p1/tasmax/1/tasmax_day_CMCC-CM_rcp85_r1i1p1_20060101-20061231.nc')
 
         self.filesIn = self.addComplexInput(
             identifier="files",
@@ -50,155 +48,151 @@ class ProcessSimpleIndice(WPSProcess):
             minOccurs=1,
             maxOccurs=100,
             maxmegabites=10000,
-            formats=[{"mimeType":"application/x-netcdf"}],
-            )
+            formats=[{"mimeType": "application/x-netcdf"}],
+        )
 
-        self.indiceNameIn = self.addLiteralInput(identifier = 'indiceName',
-                                               title = 'Index name',
-                                               abstract = 'E.g. index=TG (Mean of mean temperature, variable=tas)',
-                                               type = type("String"),
-                                               minOccurs=1,
-                                               maxOccurs=1,
-                                               default = 'TG')
+        self.indiceNameIn = self.addLiteralInput(identifier='indiceName',
+                                                 title='Index name',
+                                                 abstract='E.g. index=TG (Mean of mean temperature, variable=tas)',
+                                                 type=type("String"),
+                                                 minOccurs=1,
+                                                 maxOccurs=1,
+                                                 default='TG')
 
-        self.indiceNameIn.values = ["TG","TX","TN","TXx","TXn","TNx","TNn","SU","TR","CSU","GD4","FD","CFD","ID","HD17","CDD","CWD","PRCPTOT","RR1","SDII","R10mm","R20mm","RX1day","RX5day","SD","SD1","SD5cm","SD50cm"]
+        self.indiceNameIn.values = ["TG", "TX", "TN", "TXx", "TXn", "TNx", "TNn", "SU", "TR", "CSU", "GD4", "FD", "CFD",
+                                    "ID", "HD17", "CDD", "CWD", "PRCPTOT", "RR1", "SDII", "R10mm", "R20mm", "RX1day",
+                                    "RX5day", "SD", "SD1", "SD5cm", "SD50cm"]
 
-
-        self.sliceModeIn = self.addLiteralInput(identifier = 'sliceMode',
-                                              title = 'Slice mode (temporal grouping)',
-                                              abstract = 'Slice mode (temporal grouping to apply to calculations)',
-                                              type = type("String"),
-                                              default = 'year')
-        self.sliceModeIn.values = ["year","month","ONDJFM","AMJJAS","DJF","MAM","JJA","SON"]
-
+        self.sliceModeIn = self.addLiteralInput(identifier='sliceMode',
+                                                title='Slice mode (temporal grouping)',
+                                                abstract='Slice mode (temporal grouping to apply to calculations)',
+                                                type=type('String'),
+                                                default='year')
+        self.sliceModeIn.values = ["year", "month", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON"]
 
         self.thresholdIn = self.addLiteralInput(
-            identifier = 'threshold',
-            title = "Threshold",
-            abstract = "Optional threshold(s) for certain indices (SU, CSU and TR). Can be a comma separated list, e.g. 20,21,22",
+            identifier='threshold',
+            title='Threshold',
+            abstract='Optional threshold(s) for certain indices (SU, CSU and TR).'
+                     ' Can be a comma separated list, e.g. 20,21,22',
             type=type("S"),
             minOccurs=0,
             maxOccurs=50)
 
-
-        self.varNameIn = self.addLiteralInput(identifier = 'varName',
-                                               title = 'Variable name to process',
-                                               abstract = 'E.g. tas=temperature at surface.',
-                                               type=type("String"),
-                                               minOccurs=1,
-                                               maxOccurs=1,
-                                               default = 'tas')
-
+        self.varNameIn = self.addLiteralInput(identifier='varName',
+                                              title='Variable name to process',
+                                              abstract='E.g. tas=temperature at surface.',
+                                              type=type("String"),
+                                              minOccurs=1,
+                                              maxOccurs=1,
+                                              default='tas')
 
         self.timeRangeIn = self.addLiteralInput(
-            identifier = 'timeRange',
-            title = "Time range",
-            abstract = "Optional time range, e.g. 2010-01-01/2012-12-31. If no time range is given, all dates in the file are taken.",
+            identifier='timeRange',
+            title="Time range",
+            abstract="Optional time range, e.g. 2010-01-01/2012-12-31."
+                     " If no time range is given, all dates in the file are taken.",
             type=type("String"),
             minOccurs=0,
             maxOccurs=1)
 
-        ## self.outputFileNameIn = self.addLiteralInput(identifier = 'outputFileName',
-        ##                                        title = 'Name of output netCDF file',
-        ##                                        type = type("String"),
-        ##                                        minOccurs=1,
-        ##                                        maxOccurs=1,
-        ##                                        default = 'out_icclim.nc')
+        # self.outputFileNameIn = self.addLiteralInput(identifier = 'outputFileName',
+        #     title = 'Name of output netCDF file',
+        #     type = type("String"),
+        #     minOccurs=1,
+        #     maxOccurs=1,
+        #     default = 'out_icclim.nc')
 
-        self.NLevelIn = self.addLiteralInput(identifier = 'NLevel',
-                                                title = 'Number of levels',
-                                                abstract = 'Optional number of levels (if 4D variable)',
-                                                minOccurs = 0,
-                                                type=type(1))
+        self.NLevelIn = self.addLiteralInput(identifier='NLevel',
+                                             title='Number of levels',
+                                             abstract='Optional number of levels (if 4D variable)',
+                                             minOccurs=0,
+                                             type=type(1))
 
         self.output = self.addComplexOutput(
             identifier="output",
             title="Climate Index",
             abstract="Calculated climate index with icclim.",
-            formats=[{"mimeType":"application/x-netcdf"}],
+            formats=[{"mimeType": "application/x-netcdf"}],
             asReference=True,
         )
 
-        #self.opendapURL = self.addLiteralOutput(identifier = "opendapURL",title = "opendapURL");
+        # self.opendapURL = self.addLiteralOutput(identifier = "opendapURL",title = "opendapURL");
 
-    def callback(self,message,percentage):
-        self.status.set("%s" % str(message),str(percentage));
-
+    def callback(self, message, percentage):
+        self.status.set("%s" % str(message), str(percentage));
 
     def execute(self):
         # Very important: This allows the NetCDF library to find the users credentials (X509 cert)
-        #homedir = os.environ['HOME']
-        #os.chdir(homedir)
+        # homedir = os.environ['HOME']
+        # os.chdir(homedir)
 
         def callback(b):
-          self.callback("Processing",b)
+            self.callback("Processing", b)
 
         files = self.getInputValues(identifier='files')
         var = self.varNameIn.getValue()
         indice_name = self.indiceNameIn.getValue()
         slice_mode = self.sliceModeIn.getValue()
         time_range = self.timeRangeIn.getValue()
-        #out_file_name = self.outputFileNameIn.getValue()
+        # out_file_name = self.outputFileNameIn.getValue()
         out_file_name = 'out.nc'
         level = self.NLevelIn.getValue()
         thresholdlist = self.getInputValues(identifier='threshold')
 
-        if (time_range):
+        if time_range:
             startdate = dateutil.parser.parse(time_range.split("/")[0])
-            stopdate  = dateutil.parser.parse(time_range.split("/")[1])
-            time_range = [startdate,stopdate]
+            stopdate = dateutil.parser.parse(time_range.split("/")[1])
+            time_range = [startdate, stopdate]
 
         LOGGER.debug("time_range: %s", time_range)
 
         thresh = None
-        if(thresholdlist):
-            thresh = [float(threshold) for threshold in threshholdList]
+        if thresholdlist:
+            thresh = [float(threshold) for threshold in thresholdlist]
 
         LOGGER.debug("thresh: %s", thresh)
 
-
         self.status.set("Preparing....", 0)
 
-        #pathToAppendToOutputDirectory = "/WPS_"+self.identifier+"_" + datetime.now().strftime("%Y%m%dT%H%M%SZ")
+        # pathToAppendToOutputDirectory = "/WPS_"+self.identifier+"_" + datetime.now().strftime("%Y%m%dT%H%M%SZ")
 
         """ URL output path """
-        from flyingpigeon import config
 
-        #fileOutURL  = os.environ['POF_OUTPUT_URL']  + pathToAppendToOutputDirectory+"/"
-        #fileOutURL  = config.output_url()  + pathToAppendToOutputDirectory+"/"
+        # fileOutURL  = os.environ['POF_OUTPUT_URL']  + pathToAppendToOutputDirectory+"/"
+        # fileOutURL  = config.output_url()  + pathToAppendToOutputDirectory+"/"
 
         """ Internal output path"""
-        #fileOutPath = os.environ['POF_OUTPUT_PATH']  + pathToAppendToOutputDirectory +"/"
-        #fileOutPath = config.output_path()  + pathToAppendToOutputDirectory +"/"
+        # fileOutPath = os.environ['POF_OUTPUT_PATH']  + pathToAppendToOutputDirectory +"/"
+        # fileOutPath = config.output_path()  + pathToAppendToOutputDirectory +"/"
 
         """ Create output directory """
-        #make_dirs(fileOutPath)
+        # make_dirs(fileOutPath)
 
-
-        self.status.set("Processing input list: "+str(files),0)
+        self.status.set("Processing input list: " + str(files), 0)
 
         icclim.indice(indice_name=indice_name,
-                        in_files=files,
-                        var_name=var,
-                        slice_mode=slice_mode,
-                        time_range=time_range,
-                        out_file=out_file_name,
-                        threshold=thresh,
-                        N_lev=level,
-                        transfer_limit_Mbytes=transfer_limit_Mb,
-                        callback=callback,
-                        callback_percentage_start_value=0,
-                        callback_percentage_total=100,
-                        base_period_time_range=None,
-                        window_width=5,
-                        only_leap_years=False,
-                        ignore_Feb29th=True,
-                        interpolation='hyndman_fan',
-                        netcdf_version='NETCDF4_CLASSIC',
-                        out_unit='days')
+                      in_files=files,
+                      var_name=var,
+                      slice_mode=slice_mode,
+                      time_range=time_range,
+                      out_file=out_file_name,
+                      threshold=thresh,
+                      N_lev=level,
+                      transfer_limit_Mbytes=transfer_limit_Mb,
+                      callback=callback,
+                      callback_percentage_start_value=0,
+                      callback_percentage_total=100,
+                      base_period_time_range=None,
+                      window_width=5,
+                      only_leap_years=False,
+                      ignore_Feb29th=True,
+                      interpolation='hyndman_fan',
+                      netcdf_version='NETCDF4_CLASSIC',
+                      out_unit='days')
 
         """ Set output """
-        #url = fileOutURL+"/"+out_file_name
-        #self.opendapURL.setValue(url)
+        # url = fileOutURL+"/"+out_file_name
+        # self.opendapURL.setValue(url)
         self.output.setValue(out_file_name)
-        self.status.set("ready",100)
+        self.status.set("ready", 100)
