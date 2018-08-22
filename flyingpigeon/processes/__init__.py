@@ -1,10 +1,10 @@
-# from .wps_EO_COPERNICUS_fetch import EO_COP_fetchProcess
-# from .wps_EO_COPERNICUS_indices import EO_COP_indicesProcess
-# from .wps_EO_COPERNICUS_rgb import EO_COP_rgbProcess
+from .wps_EO_COPERNICUS_fetch import EO_COP_fetchProcess
+from .wps_EO_COPERNICUS_indices import EO_COP_indicesProcess
+from .wps_EO_COPERNICUS_rgb import EO_COP_rgbProcess
 # from .wps_EO_fetch import FetcheodataProcess
 # from .wps_EO_ndvi import NdviProcess
 # from .wps_EO_merge import MergeProcess
-# from .wps_EO_COPERNICUS_search import EO_COP_searchProcess
+from .wps_EO_COPERNICUS_search import EO_COP_searchProcess
 # from .wps_climatefactsheet import FactsheetProcess
 from .wps_fetch import FetchProcess
 from .wps_indices_percentiledays import IndicespercentiledaysProcess
@@ -56,11 +56,11 @@ processes = [
                 SpatialAnalogProcess(),
                 MapSpatialAnalogProcess(),
                 # FetcheodataProcess(),
-                # EO_COP_searchProcess(),
-                # EO_COP_fetchProcess(),
+                EO_COP_searchProcess(),
+                EO_COP_fetchProcess(),
                 ESMFRegridProcess(),
-                # EO_COP_rgbProcess(),
-                # EO_COP_indicesProcess(),
+                EO_COP_rgbProcess(),
+                EO_COP_indicesProcess(),
                 # MergeProcess(),
                 # NdviProcess(),
             ] + [c() for c in OCGIS_INDEX_PROCESSES]
