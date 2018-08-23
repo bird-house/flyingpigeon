@@ -3,15 +3,16 @@ Processes to fetch data from GBIF data base
 Author: Nils Hempelmann (info@nilshempelmann.de)
 """
 
-from flyingpigeon.log import init_process_logger
+import logging
 
-from pywps import Process
+from pywps import ComplexOutput
+from pywps import Format
 from pywps import LiteralInput
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format, FORMATS
+from pywps import Process
 from pywps.app.Common import Metadata
 
-import logging
+from flyingpigeon.log import init_process_logger
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -27,13 +28,13 @@ class GBIFfetchProcess(Process):
                          ),
         ]
 
-            # self.BBox = self.addBBoxInput(
-            # #         identifier="BBox",
-            # #         title="Bounding Box",
-            # #         abstract="coordinates to define the region for occurence data fetch",
-            # #         minOccurs=1,
-            # #         maxOccurs=1,
-            # #         crss=['EPSG:4326']
+        # self.BBox = self.addBBoxInput(
+        # #         identifier="BBox",
+        # #         title="Bounding Box",
+        # #         abstract="coordinates to define the region for occurence data fetch",
+        # #         minOccurs=1,
+        # #         maxOccurs=1,
+        # #         crss=['EPSG:4326']
 
         outputs = [
             ComplexOutput('output_map', 'Graphic of species occurences',
@@ -78,7 +79,6 @@ class GBIFfetchProcess(Process):
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
         #
-        #
         # init_process_logger('log.txt')
         # self.output_log.setValue('log.txt')
         #
@@ -94,26 +94,26 @@ class GBIFfetchProcess(Process):
             #         bbox_obj.coords[0][1],
             #         bbox_obj.coords[1][0],
             #         bbox_obj.coords[1][1]]
-            LOGGER.info("bbox={0}".format(bbox))
-            LOGGER.info("Taxon Name = %s", taxon_name)
-        except:
-            msg = 'failed to read in the arguments.'
+            LOGGER.info("bbox={}".format(bbox))
+            LOGGER.info("Taxon Name={}".format(taxon_name))
+        except Exception as ex:
+            msg = 'failed to read in the arguments: {}'.format(str(ex))
             LOGGER.exception(msg)
             raise Exception(msg)
 
         try:
             response.update_status('Fetching GBIF Data', 10)
             gbifdic = sdm.get_gbif(taxon_name, bbox=bbox)
-        except:
-            msg = 'failed to search gbif.'
+        except Exception as ex:
+            msg = 'failed to search gbif: {}'.format(str(ex))
             LOGGER.exception(msg)
             raise Exception(msg)
 
         try:
             response.update_status('write csv file', 70)
             gbifcsv = sdm.gbifdic2csv(gbifdic)
-        except:
-            msg = 'failed to write csv file.'
+        except Exception as ex:
+            msg = 'failed to write csv file: {}'.format(str(ex))
             LOGGER.exception(msg)
             raise Exception(msg)
 
@@ -122,8 +122,8 @@ class GBIFfetchProcess(Process):
             from flyingpigeon.visualisation import map_gbifoccurrences
             latlon = sdm.latlon_gbifdic(gbifdic)
             occurence_map = map_gbifoccurrences(latlon)
-        except:
-            msg = 'failed to plot occurence map.'
+        except Exception as ex:
+            msg = 'failed to plot occurence map: {}'.format(str(ex))
             LOGGER.exception(msg)
             raise Exception(msg)
 

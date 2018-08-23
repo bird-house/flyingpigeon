@@ -1,24 +1,21 @@
-from pywps import Process
-# from pywps import LiteralInput
-from pywps import ComplexInput, LiteralInput, ComplexOutput
-from pywps import Format, FORMATS
-from pywps.app.Common import Metadata
-
-from flyingpigeon.log import init_process_logger
-# from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.utils import archive, archiveextract
-
-# from flyingpigeon.datafetch import write_fileinfo
-from flyingpigeon.datafetch import fetch_eodata
-from flyingpigeon.datafetch import _EODATA_
-from flyingpigeon import eodata
-
-import os
+import logging
 from datetime import datetime as dt
 from datetime import timedelta, time
-from tempfile import mkstemp
 
-import logging
+from pywps import Format
+# from pywps import LiteralInput
+from pywps import LiteralInput, ComplexOutput
+from pywps import Process
+from pywps.app.Common import Metadata
+
+from flyingpigeon import eodata
+from flyingpigeon.datafetch import _EODATA_
+# from flyingpigeon.datafetch import write_fileinfo
+from flyingpigeon.datafetch import fetch_eodata
+from flyingpigeon.log import init_process_logger
+# from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.utils import archive
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -26,6 +23,7 @@ class MergeProcess(Process):
     """
     TODO: like FetchProcess
     """
+
     def __init__(self):
         inputs = [
             LiteralInput("products", "Earth Observation Product",
@@ -164,10 +162,10 @@ class MergeProcess(Process):
         else:
             start = end - timedelta(days=30)
 
-        if (start > end):
+        if start > end:
             start = dt.now() - timedelta(days=30)
             end = dt.now()
-            LOGGER.exception("periode end befor periode start, period is set to the last 30 days from now")
+            LOGGER.exception("period ends before period starts; period now set to the last 30 days from now")
 
         token = request.inputs['token'][0].data
         archive_format = request.inputs['archive_format'][0].data
@@ -176,7 +174,7 @@ class MergeProcess(Process):
         # resources_sleeping = []
         for product in products:
             item_type, asset = product.split('__')
-            LOGGER.debug('itym type: %s , asset: %s' % (item_type, asset))
+            LOGGER.debug('item type: {} , asset: {}'.format(item_type, asset))
             fetch_sleep, tiles = fetch_eodata(item_type,
                                               asset,
                                               token,
@@ -197,28 +195,31 @@ class MergeProcess(Process):
 
             for date in dl:
                 try:
-                    LOGGER.debug("calculating date %s " % date)
+                    LOGGER.debug('calculating date {}'.format(date))
                     tiles_day = [tile for tile in tiles if eodata.get_timestamp(tile).date() == date]
-                    LOGGER.debug('%s files ready for merging' % len(tiles_day))
+                    LOGGER.debug('{} files ready for merging'.format(len(tiles_day)))
                     prefix = date.strftime("%Y%m%d")
                     mosaic = eodata.merge(tiles_day, prefix=prefix)
                     merged_tiles.extend([mosaic])
-                except:
-                    LOGGER.exception("merge failed for date %s " % date)
+                except Exception as ex:
+                    msg = 'merge failed for date {}: {}'.format(date, str(ex))
+                    LOGGER.exception(msg)
+                    raise Exception(msg)
         try:
             output_archive = archive(merged_tiles, format=archive_format)
             LOGGER.info('geotiff files added to archive')
-        except:
-            msg = 'failed adding species_files indices to archive'
+        except Exception as ex:
+            msg = 'failed to add species_files indices to archive: {}'.format(str(ex))
             LOGGER.exception(msg)
+            raise Exception(msg)
 
         # response.outputs['output'].file = write_fileinfo(resource, filepath=True)
         response.outputs['output_archive'].file = output_archive
 
         i = next((i for i, x in enumerate(merged_tiles) if x), None)
         if i is None:
-            i = "dummy.png"
-            LOGGER.excetion('failed to select example file')
+            i = 'dummy.png'
+            LOGGER.exception('failed to select example file')
 
         plot_example = eodata.plot_truecolorcomposite(merged_tiles[i])
         response.outputs['output_png'].file = plot_example

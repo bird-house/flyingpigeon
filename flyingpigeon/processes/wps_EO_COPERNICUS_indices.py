@@ -1,26 +1,21 @@
-from pywps import Process
-# from pywps import LiteralInput
-from pywps import ComplexInput, LiteralInput, ComplexOutput
-from pywps import Format, FORMATS
-from pywps.app.Common import Metadata
-
-from flyingpigeon.log import init_process_logger
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon import eodata
-from flyingpigeon.config import cache_path
-
+import logging
+import zipfile
 from datetime import datetime as dt
 from datetime import timedelta, time
-from tempfile import mkstemp
-import zipfile
-
-
-from os.path import exists, join
 from os import makedirs
+from os.path import exists, join
 
-from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
+from pywps import Format
+# from pywps import LiteralInput
+from pywps import LiteralInput, ComplexOutput
+from pywps import Process
+from pywps.app.Common import Metadata
+from sentinelsat import SentinelAPI, geojson_to_wkt
 
-import logging
+from flyingpigeon import eodata
+from flyingpigeon.config import cache_path
+from flyingpigeon.log import init_process_logger
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -33,7 +28,7 @@ class EO_COP_indicesProcess(Process):
                          data_type='string',
                          min_occurs=1,
                          max_occurs=1,
-                         allowed_values=['NDVI','BAI']
+                         allowed_values=['NDVI', 'BAI']
                          ),
 
             LiteralInput('BBox', 'Bounding Box',
@@ -121,7 +116,7 @@ class EO_COP_indicesProcess(Process):
             identifier="EO_COPERNICUS_indices",
             title="EO indices",
             version="0.1",
-            abstract="Derivateing indices like NDVI based on",
+            abstract="Derivations for NDVI and other indices",
             metadata=[
                 Metadata('Documentation', 'http://flyingpigeon.readthedocs.io/en/latest/'),
             ],
@@ -161,10 +156,10 @@ class EO_COP_indicesProcess(Process):
         else:
             start = end - timedelta(days=30)
 
-        if (start > end):
+        if start > end:
             start = dt.now() - timedelta(days=30)
             end = dt.now()
-            LOGGER.exception("periode end befor periode start, period is set to the last 30 days from now")
+            LOGGER.exception('period ends before period starts; period now set to the last 30 days from now')
 
         username = request.inputs['username'][0].data
         password = request.inputs['password'][0].data
@@ -173,16 +168,16 @@ class EO_COP_indicesProcess(Process):
         api = SentinelAPI(username, password)
 
         geom = {
-          "type": "Polygon",
-          "coordinates": [[[ bbox[0], bbox[1]],
-                           [ bbox[2], bbox[1]],
-                           [ bbox[2], bbox[3]],
-                           [ bbox[0], bbox[3]],
-                           [ bbox[0], bbox[1]]]]}
+            "type": "Polygon",
+            "coordinates": [[[bbox[0], bbox[1]],
+                             [bbox[2], bbox[1]],
+                             [bbox[2], bbox[3]],
+                             [bbox[0], bbox[3]],
+                             [bbox[0], bbox[1]]]]}
 
         footprint = geojson_to_wkt(geom)
 
-        response.update_status("start searching tiles acording query", 15)
+        response.update_status('start searching tiles according to query', 15)
 
         products = api.query(footprint,
                              date=(start, end),
@@ -192,7 +187,7 @@ class EO_COP_indicesProcess(Process):
                              # orbitdirection='ASCENDING',
                              )
 
-        LOGGER.debug('%s products found' % len(products.keys()))
+        LOGGER.debug('{} products found'.format(len(products.keys())))
         DIR_cache = cache_path()
         DIR_EO = join(DIR_cache, 'scihub.copernicus')
         if not exists(DIR_EO):
@@ -200,11 +195,11 @@ class EO_COP_indicesProcess(Process):
 
         # api.download_all(products)
         # try:
-            # with open(filepathes, 'w') as fp:
-            #     fp.write('############################################\n')
-            #     fp.write('###     Following files are fetched      ###\n')
-            #     fp.write('############################################\n')
-            #     fp.write('\n')
+        # with open(filepaths, 'w') as fp:
+        #     fp.write('############################################\n')
+        #     fp.write('###     Following files are fetched      ###\n')
+        #     fp.write('############################################\n')
+        #     fp.write('\n')
 
         resources = []
 
@@ -213,35 +208,46 @@ class EO_COP_indicesProcess(Process):
                 filename = products[key]['filename']
                 # form = products[key]['format']
                 ID = str(products[key]['identifier'])
-                file_zip = join(DIR_EO, '%s.zip' % (ID))
-                DIR_tile =join(DIR_EO, '%s' % (filename))
-                response.update_status("fetch file %s" % ID , 20)
-                LOGGER.debug('path: %s' % DIR_tile)
+                file_zip = join(DIR_EO, '{}.zip'.format(ID))
+                DIR_tile = join(DIR_EO, str(filename))
+                response.update_status('fetch file {}'.format(ID), 20)
+                LOGGER.debug('path: {}'.format(DIR_tile))
                 if exists(file_zip):
                     LOGGER.debug('file %s.zip already fetched' % ID)
                 else:
                     try:
                         api.download(key, directory_path=DIR_EO)
+                        # Does the '***' denote a string formatting function?
                         response.update_status("***%s sucessfully fetched" % ID, 20)
-                        LOGGER.debug('Tile %s fetched' % ID)
-                        LOGGER.debug('Files %s fetched ' % ID)
-                    except:
-                        LOGGER.exception('failed to extract file %s' % filename)
+                        # TODO: Figure out why these are duplicate
+                        LOGGER.debug('Tile {} fetched'.format(ID))
+                        LOGGER.debug('Files {} fetched'.format(ID))
+                    except Exception as ex:
+                        msg = 'failed to extract file {}: {}'.format(filename, str(ex))
+                        LOGGER.exception(msg)
+                        raise Exception(msg)
+
                 if exists(DIR_tile):
-                     LOGGER.debug('file %s already unzipped' % filename)
+                    LOGGER.debug('file {} already unzipped'.format(filename))
                 else:
                     try:
                         # zipfile = join(DIR_EO, '%szip' % (filename)).strip(form)
                         zip_ref = zipfile.ZipFile(file_zip, 'r')
                         zip_ref.extractall(DIR_EO)
                         zip_ref.close()
-                        LOGGER.debug('Tile %s unzipped' % ID)
-                    except:
-                        LOGGER.exception('failed to extract %s ' % file_zip)
-                resources.append(DIR_tile)
-            except:
-                LOGGER.exception('failed to fetch %s' % key)
+                        LOGGER.debug('Tile {} unzipped'.format(ID))
+                    except Exception as ex:
+                        msg = 'failed to extract {}'.format(file_zip)
+                        LOGGER.exception(msg)
+                        raise Exception(msg)
 
+                resources.append(DIR_tile)
+            except Exception as ex:
+                msg = 'failed to fetch {}: {}'.format(key, str(ex))
+                LOGGER.exception(msg)
+                raise Exception(msg)
+
+        # TODO: Find a place for these variables or remove them
         size = float(products[key]['size'].split(' ')[0])
         producttype = products[key]['producttype']
         beginposition = str(products[key]['beginposition'])
@@ -250,26 +256,30 @@ class EO_COP_indicesProcess(Process):
         tiles = []
         for resource in resources:
             try:
-                response.update_status("Calculating %s indices " % ( indice ), 40)
+                response.update_status('Calculating {} indices'.format(indice), 40)
                 if indice == 'NDVI':
-                    LOGGER.debug('Calculate NDVI for %s', resource )
+                    LOGGER.debug('Calculate NDVI for {}'.format(resource))
                     tile = eodata.get_ndvi(resource)
                     LOGGER.debug('resources BAI calculated')
                 if indice == 'BAI':
-                    LOGGER.debug('Calculate BAI for %s', resource )
+                    LOGGER.debug('Calculate BAI for {}'.format(resource))
                     tile = eodata.get_bai(resource)
                     LOGGER.debug('resources BAI calculated')
                 tiles.append(tile)
-            except:
-                LOGGER.exception('failed to calculate indice for %s ' % resource)
+            except Exception as ex:
+                msg = 'failed to calculate indice for {}: {}'.format(resource, str(ex))
+                LOGGER.exception(msg)
+                raise Exception(msg)
 
         for tile in tiles:
             try:
-                LOGGER.debug("Plot tile %s" % tile)
+                LOGGER.debug('Plot tile {}'.format(tile))
                 img = eodata.plot_band(tile, file_extension='PNG', colorscheem=indice)
                 imgs.append(img)
-            except:
-                LOGGER.exception("Failed de plot tile %s " % tile)
+            except Exception as ex:
+                msg = 'Failed to plot tile {}: {}'.format(tile, str(ex))
+                LOGGER.exception(msg)
+                raise Exception(msg)
 
         from flyingpigeon.utils import archive
         tarf = archive(imgs)
