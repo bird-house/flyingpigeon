@@ -23,7 +23,6 @@ bbox = [-80, 20, 20, 70]
 calc = '%s=%s*1' % (variable, variable)
 #
 
-
 rd = RequestDataset(ncs)
 
 ops = OcgOperations(rd,
