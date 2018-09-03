@@ -1,17 +1,22 @@
-from flyingpigeon.subset import clipping
+import logging
+
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
+from pywps.app.Common import Metadata
+
+from flyingpigeon.log import init_process_logger
 # from flyingpigeon.subset import countries, countries_longname
 from flyingpigeon.subset import _EUREGIONS_
+<<<<<<< HEAD
 from eggshell.log import init_process_logger
+=======
+from flyingpigeon.subset import clipping
+>>>>>>> master
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import rename_complexinputs
 
-from pywps import Process
-from pywps import LiteralInput
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format, FORMATS
-from pywps.app.Common import Metadata
-
-import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -19,11 +24,13 @@ class ClipregionseuropeProcess(Process):
     """
     TODO: opendap input support, additional metadata to display region names.
     """
+
     def __init__(self):
         inputs = [
             LiteralInput('region', 'Region',
                          data_type='string',
-                         abstract="European region code, see ISO-3166 Alpha2: https://en.wikipedia.org/wiki/ISO_3166-2 ",  # noqa
+                         abstract="European region code, see ISO-3166 Alpha2: https://en.wikipedia.org/wiki/ISO_3166-2 ",
+                         # noqa
                          min_occurs=1,
                          max_occurs=len(_EUREGIONS_),
                          default='DE.HH',
@@ -89,12 +96,11 @@ class ClipregionseuropeProcess(Process):
         response.outputs['output_log'].file = 'log.txt'
 
         # input files
-        LOGGER.debug("url=%s, mime_type=%s",
-                     request.inputs['resource'][0].url,
-                     request.inputs['resource'][0].data_format.mime_type)
+        LOGGER.debug("url={}, mime_type={}".format(request.inputs['resource'][0].url,
+                     request.inputs['resource'][0].data_format.mime_type))
         ncs = archiveextract(
             resource=rename_complexinputs(request.inputs['resource']))
-            # mime_type=request.inputs['resource'][0].data_format.mime_type)
+        # mime_type=request.inputs['resource'][0].data_format.mime_type)
         # mosaic option
         # TODO: fix defaults in pywps 4.x
         if 'mosaic' in request.inputs:
@@ -104,9 +110,9 @@ class ClipregionseuropeProcess(Process):
         # regions used for subsetting
         regions = [inp.data for inp in request.inputs['region']]
 
-        LOGGER.info('ncs = %s', ncs)
-        LOGGER.info('regions = %s', regions)
-        LOGGER.info('mosaic = %s', mosaic)
+        LOGGER.info('ncs = {}'.format(ncs))
+        LOGGER.info('regions = {}'.format(regions))
+        LOGGER.info('mosaic = {}'.format(mosaic))
 
         response.update_status("Arguments set for subset process", 0)
         LOGGER.debug('starting: regions=%s, num_files=%s', len(regions), len(ncs))
@@ -122,20 +128,20 @@ class ClipregionseuropeProcess(Process):
                 # dimension_map=dimension_map,
             )
             LOGGER.info('results %s' % results)
-        except:
-            msg = 'clipping failed'
+        except Exception as e:
+            msg = 'clipping failed: %s' % e
             LOGGER.exception(msg)
             raise Exception(msg)
 
         if not results:
-            raise Exception('no results produced.')
+            raise Exception('No results produced.')
 
         # prepare tar file
         try:
             tarf = archive(results)
             LOGGER.info('Tar file prepared')
-        except:
-            msg = 'Tar file preparation failed'
+        except Exception as e:
+            msg = 'Tar file preparation failed: %s' % e
             LOGGER.exception(msg)
             raise Exception(msg)
 

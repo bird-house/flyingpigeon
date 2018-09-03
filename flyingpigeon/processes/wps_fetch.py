@@ -1,10 +1,11 @@
-from pywps import Process
+import logging
+
 # from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
-from pywps import Format, FORMATS
+from pywps import Format
+from pywps import Process
 from pywps.app.Common import Metadata
 
-import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -14,8 +15,9 @@ class FetchProcess(Process):
     TODO: Provide first output directly.
     TODO: should provide urls of copied files.
     TODO: Need a better way to provide multiple outputs (json file ... could be interpreted and displayed by UI),
-    COWS has done somthing like this with an xml output.
+    COWS has done something like this with an xml output.
     """
+
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
@@ -32,7 +34,7 @@ class FetchProcess(Process):
 
         outputs = [
             ComplexOutput("output", "Fetched Files",
-                          abstract="File containing the local pathes to downloades files.",
+                          abstract="File containing the local paths to downloaded files.",
                           supported_formats=[Format('text/plain')],
                           as_reference=True,
                           ),
@@ -64,7 +66,6 @@ class FetchProcess(Process):
         from eggshell.log import init_process_logger
         from flyingpigeon.utils import rename_complexinputs
         from flyingpigeon.datafetch import write_fileinfo
-        import os
 
         response.update_status("start fetching resource", 10)
 
@@ -75,8 +76,8 @@ class FetchProcess(Process):
 
         response.outputs['output'].file = write_fileinfo(resource, filepath=True)
 
-        # filepathes = 'out.txt'
-        # with open(filepathes, 'w') as fp:
+        # filepaths = 'out.txt'
+        # with open(filepaths, 'w') as fp:
         #     fp.write('###############################################\n')
         #     fp.write('###############################################\n')
         #     fp.write('Following files are stored to your local discs: \n')
@@ -84,7 +85,7 @@ class FetchProcess(Process):
         #     for f in resources:
         #         fp.write('%s \n' % os.path.realpath(f))
 
-        # response.outputs['output'].file = filepathes
+        # response.outputs['output'].file = filepaths
         response.update_status("done", 100)
 
         return response

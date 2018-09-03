@@ -14,14 +14,23 @@ for it.
 Author: David Huard, Ouranos, 2017
 """
 
-from pywps import Process
-from pywps import LiteralInput
+import logging
+from collections import OrderedDict
+
+import ocgis
+from ocgis.calc.library import register
+from ocgis.contrib import library_icclim as libclim
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
 from pywps.app.Common import Metadata
 
+from flyingpigeon.log import init_process_logger
+from flyingpigeon.utils import GROUPING
 from flyingpigeon.utils import archiveextract
 from flyingpigeon.utils import rename_complexinputs
+<<<<<<< HEAD
 from flyingpigeon.utils import GROUPING
 from eggshell.log import init_process_logger
 
@@ -29,8 +38,9 @@ import ocgis
 from ocgis.calc.library import register
 from ocgis.contrib import library_icclim as libclim
 from collections import OrderedDict
+=======
+>>>>>>> master
 
-import logging
 LOGGER = logging.getLogger("PYWPS")
 
 # Register ocgis functions, including icclim
@@ -117,7 +127,7 @@ class IndicatorProcess(Process, object):
         for obj in self.resource_inputs:
             key = obj.identifier
             out[key] = archiveextract(resource=rename_complexinputs(
-                        request.inputs[key]))
+                request.inputs[key]))
         return out
 
     def _option_input_handler(self, request):
@@ -157,8 +167,8 @@ class IndicatorProcess(Process, object):
             options = self._option_input_handler(request)
             extras = self._extra_input_handler(request)
 
-        except Exception as e:
-            msg = 'Failed to read input parameter {}'.format(e)
+        except Exception as ex:
+            msg = 'Failed to read input parameter {}'.format(ex)
             LOGGER.error(msg)
             raise Exception(msg)
 
@@ -172,16 +182,17 @@ class IndicatorProcess(Process, object):
             extras.update({k: k for k in resources.keys()})
 
         output = run_op(resource=resources,
-                          calc=[{'func': self.identifier,
-                                 'name': self.identifier,
-                                 'kwds': extras}],
-                          options=options)
+                        calc=[{'func': self.identifier,
+                               'name': self.identifier,
+                               'kwds': extras}],
+                        options=options)
 
         response.outputs['output_netcdf'].file = output
 
         response.update_status('Execution completed', 100)
 
         return response
+
 
 def run_op(resource, calc, options):
     """Create an OCGIS operation, launch it and return the results."""
@@ -209,6 +220,7 @@ def run_op(resource, calc, options):
                         output_format='nc')
 
     return ops.execute()
+
 
 #############################################
 #          Custom class definitions         #
@@ -255,6 +267,7 @@ class Duration(IndicatorProcess):
 class ICCLIMProcess(IndicatorProcess):
     """Process class instantiated using definitions from the ICCLIM library.
     """
+
     def load_meta(self):
         """Extract process meta data from underlying object."""
         self.icclim_func = libclim._icclim_function_map[self.key]['func']
@@ -285,9 +298,10 @@ class ICCLIMProcess(IndicatorProcess):
 
 def create_icclim_process_class(key):
     """Create a subclass of an ICCLIMProcess for a given indicator."""
-    name = key.upper()+'Process'
+    name = key.upper() + 'Process'
     clazz = type(name, (ICCLIMProcess,), {'key': key, '__name__': name})
     return clazz
+
 
 ICCLIM_PROCESSES = [create_icclim_process_class(key) for key in icclim_classes]
 OCGIS_INDEX_PROCESSES = [FreezeThawProcess, Duration] + ICCLIM_PROCESSES

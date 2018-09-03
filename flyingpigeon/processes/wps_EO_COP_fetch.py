@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from pywps import Process
 # from pywps import LiteralInput
 from pywps import ComplexInput, LiteralInput, ComplexOutput
@@ -7,13 +8,22 @@ from pywps.app.Common import Metadata
 from eggshell.log import init_process_logger
 from flyingpigeon.utils import rename_complexinputs
 
+=======
+import logging
+>>>>>>> master
 from datetime import datetime as dt
 from datetime import timedelta, time
 from tempfile import mkstemp
 
-from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
+from pywps import Format
+# from pywps import LiteralInput
+from pywps import LiteralInput, ComplexOutput
+from pywps import Process
+from pywps.app.Common import Metadata
+from sentinelsat import SentinelAPI, geojson_to_wkt
 
-import logging
+from flyingpigeon.log import init_process_logger
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -21,6 +31,7 @@ class EO_COP_fetchProcess(Process):
     """
     TODO: like FetchProcess
     """
+
     def __init__(self):
         inputs = [
             LiteralInput("products", "Earth Observation Product Type",
@@ -145,10 +156,10 @@ class EO_COP_fetchProcess(Process):
         else:
             start = end - timedelta(days=30)
 
-        if (start > end):
+        if start > end:
             start = dt.now() - timedelta(days=30)
             end = dt.now()
-            LOGGER.exception("periode end befor periode start, period is set to the last 30 days from now")
+            LOGGER.exception('period ends before period starts; period now set to the last 30 days from now')
 
         username = request.inputs['username'][0].data
         password = request.inputs['password'][0].data
@@ -157,36 +168,36 @@ class EO_COP_fetchProcess(Process):
         api = SentinelAPI(username, password)
 
         geom = {
-          "type": "Polygon",
-          "coordinates": [
-                  [
+            "type": "Polygon",
+            "coordinates": [
+                [
                     [
-                      14.00,
-                      8.00
+                        14.00,
+                        8.00
                     ],
                     [
-                      16.00,
-                      8.00
+                        16.00,
+                        8.00
                     ],
                     [
-                      16.00,
-                      10.00
+                        16.00,
+                        10.00
                     ],
                     [
-                      14.00,
-                      10.00
+                        14.00,
+                        10.00
                     ],
                     [
-                      14.00,
-                      8.00
+                        14.00,
+                        8.00
                     ]
-                  ]
                 ]
+            ]
         }
 
         footprint = geojson_to_wkt(geom)
 
-        response.update_status("start searching tiles acording query", 15)
+        response.update_status("start searching tiles according to query", 15)
 
         products = api.query(footprint,
                              date=(start, end),
@@ -198,9 +209,9 @@ class EO_COP_fetchProcess(Process):
 
         response.update_status("write out information about files", 20)
         # api.download_all(products)
-        _, filepathes = mkstemp(dir='.', suffix='.txt')
+        _, filepaths = mkstemp(dir='.', suffix='.txt')
         try:
-            with open(filepathes, 'w') as fp:
+            with open(filepaths, 'w') as fp:
                 fp.write('######################################################\n')
                 fp.write('###     Following files are ready to download      ###\n')
                 fp.write('######################################################\n')
@@ -210,11 +221,13 @@ class EO_COP_fetchProcess(Process):
                     producttype = products[key]['producttype']
                     beginposition = str(products[key]['beginposition'])
                     ID = str(products[key]['identifier'])
-                    fp.write('%s \t %s \t %s \t %s \t %s \n' % (ID, size, producttype, beginposition, key))
-            response.outputs['output'].file = filepathes
-        except:
-            LOGGER.exception('failed to write resources to textfile')
-        # response.outputs['output'].file = filepathes
+                    fp.write('{} \t {} \t {} \t {} \t {} \n'.format(ID, size, producttype, beginposition, key))
+            response.outputs['output'].file = filepaths
+        except Exception as ex:
+            msg = 'failed to write resources to textfile: {}'.format(str(ex))
+            LOGGER.exception(msg)
+            raise Exception(msg)
+        # response.outputs['output'].file = filepaths
 
         response.update_status("done", 100)
         return response

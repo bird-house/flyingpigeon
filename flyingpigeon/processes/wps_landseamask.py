@@ -1,21 +1,22 @@
+import logging
 import os
 
-from pywps import Process
-from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
-from pywps.inout.literaltypes import AllowedValue
+from pywps import LiteralInput
+from pywps import Process
 from pywps.app.Common import Metadata
 
-from flyingpigeon import config
+from flyingpigeon.log import init_process_logger
 from flyingpigeon.subset import masking
-from flyingpigeon.utils import searchfile
-from flyingpigeon.utils import search_landsea_mask_by_esgf
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import rename_complexinputs
+<<<<<<< HEAD
 from eggshell.log import init_process_logger
+=======
+from flyingpigeon.utils import search_landsea_mask_by_esgf
+>>>>>>> master
 
-import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -36,11 +37,12 @@ class LandseamaskProcess(Process):
             LiteralInput('dataset_opendap', 'Remote OpenDAP Data URL',
                          data_type='string',
                          abstract="Remote OpenDAP data URL, for example:"
-                                  " http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis2.dailyavgs/surface/mslp.2016.nc",  # noqa
+                                  " http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis2.dailyavgs/surface/mslp.2016.nc",
+                         # noqa
                          metadata=[
-                            Metadata(
-                                'application/x-ogc-dods',
-                                'https://www.iana.org/assignments/media-types/media-types.xhtml')],
+                             Metadata(
+                                 'application/x-ogc-dods',
+                                 'https://www.iana.org/assignments/media-types/media-types.xhtml')],
                          min_occurs=0,
                          max_occurs=100),
 
@@ -127,19 +129,22 @@ class LandseamaskProcess(Process):
         max_count = len(datasets)
         for ds in datasets:
             ds_name = os.path.basename(ds)
-            LOGGER.info('masking dataset: %s', ds_name)
+            LOGGER.info('masking dataset: {}'.format(ds_name))
             if 'mask' in request.inputs:
                 landsea_mask = request.inputs['mask'][0].data
             else:
                 landsea_mask = search_landsea_mask_by_esgf(ds)
-            LOGGER.info("using landsea_mask: %s", landsea_mask)
+
+            LOGGER.info("using landsea_mask: {}".format(landsea_mask))
             prefix = 'masked_{}'.format(ds_name.replace('.nc', ''))
             try:
                 new_ds = masking(ds, landsea_mask, land_area=land_area_flag, prefix=prefix)
                 masked_datasets.append(new_ds)
-            except:
-                LOGGER.exception("Could not subset dataset.")
-                raise Exception("Could not subset dataset: %s" % ds_name)
+
+            except Exception as ex:
+                msg = 'Could not subset dataset {}: {}'.format(ds_name, str(ex))
+                LOGGER.exception(msg)
+                raise Exception(msg)
             count = count + 1
             response.update_status("masked: {:d}/{:d}".format(count, max_count), int(100.0 * count / max_count))
 

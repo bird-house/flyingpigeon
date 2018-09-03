@@ -1,17 +1,24 @@
-from flyingpigeon.utils import archiveextract
-from flyingpigeon import robustness as erob
+import logging
 from tempfile import mkstemp
+<<<<<<< HEAD
 from eggshell.log import init_process_logger
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.datafetch import write_fileinfo
+=======
+>>>>>>> master
 
-from pywps import Process
-from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
-from pywps import Format, FORMATS
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
 from pywps.app.Common import Metadata
 
-import logging
+from flyingpigeon import robustness as erob
+from flyingpigeon.datafetch import write_fileinfo
+from flyingpigeon.log import init_process_logger
+from flyingpigeon.utils import archiveextract
+from flyingpigeon.utils import rename_complexinputs
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -124,13 +131,13 @@ class RobustnessProcess(Process):
             version="0.5",
             metadata=[
                 Metadata("LSCE", "http://www.lsce.ipsl.fr/")
-                ],
+            ],
             abstract="Calculates the robustness as the ratio of noise to signal in an ensemle of timeseries",
             inputs=inputs,
             outputs=outputs,
             status_supported=True,
             store_supported=True
-            )
+        )
 
     def _handler(self, request, response):
         response.update_status('starting uncertainty process', 0)
@@ -140,6 +147,7 @@ class RobustnessProcess(Process):
 
         try:
             ncfiles = archiveextract(resource=rename_complexinputs(request.inputs['resource']))
+            # TODO: See where 'method' should be called
             method = request.inputs['method'][0].data
 
             if 'start' in request.inputs:
@@ -159,9 +167,10 @@ class RobustnessProcess(Process):
 
             response.update_status('arguments read', 5)
             LOGGER.info('Successfully read in the arguments')
-        except:
-            LOGGER.exception("failed to read in the arguments")
-            raise
+        except Exception as ex:
+            msg = 'failed to read in the arguments: {}'.format(str(ex))
+            LOGGER.exception(msg)
+            raise Exception(msg)
 
         response.outputs['output_text'].file = write_fileinfo(ncfiles)
 
@@ -169,11 +178,11 @@ class RobustnessProcess(Process):
         # if method == 'signal_noise_ratio':
 
         signal, low_agreement_mask, high_agreement_mask, text_src = erob.signal_noise_ratio(
-                resource=ncfiles,
-                start=start, end=end,
-                timeslice=timeslice,
-                # variable=variable
-                )  # graphic,
+            resource=ncfiles,
+            start=start, end=end,
+            timeslice=timeslice,
+            # variable=variable
+        )  # graphic,
 
         LOGGER.debug('Robustness calculated')
 
@@ -192,9 +201,8 @@ class RobustnessProcess(Process):
                                      title=title)
 
             LOGGER.info('graphic generated')
-        except:
-            msg = 'graphic generation failed'
-            LOGGER.exception(msg)
+        except Exception as ex:
+            LOGGER.exception('graphic generation failed: {}'.format(str(ex)))
             _, graphic = mkstemp(dir='.', suffix='.png')
 
         response.update_status('process worker done', 95)

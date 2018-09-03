@@ -2,25 +2,31 @@
 Processes for Species distribution
 Author: Nils Hempelmann ( info@nilshempelmann.de )
 """
-from pywps import Process
-from pywps import LiteralInput
+import logging
+import tempfile
+
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
-from pywps.inout.literaltypes import AllowedValue
+from pywps import LiteralInput
+from pywps import Process
 from pywps.app.Common import Metadata
 
 from flyingpigeon import sdm
+from flyingpigeon.log import init_process_logger
 from flyingpigeon.sdm import _SDMINDICES_
-from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import archive, archiveextract, download
-from flyingpigeon.visualisation import map_gbifoccurrences
+from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.visualisation import map_PAmask
+from flyingpigeon.visualisation import map_gbifoccurrences
 from flyingpigeon.visualisation import pdfmerge, concat_images
 
+<<<<<<< HEAD
 from eggshell.log import init_process_logger
 
 import tempfile
 import logging
+=======
+>>>>>>> master
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -44,7 +50,7 @@ class SDMcsvProcess(Process):
                          data_type='string',
                          min_occurs=1,
                          max_occurs=1,
-                        #  default='http://localhost:8090/wpsoutputs/flyingpigeon/output_csv-abe15f64-c30d-11e6-bf63-142d277ef1f3.csv'
+                         #  default='http://localhost:8090/wpsoutputs/flyingpigeon/output_csv-abe15f64-c30d-11e6-bf63-142d277ef1f3.csv'
                          ),
 
             LiteralInput("indices", "Indices",
@@ -79,7 +85,6 @@ class SDMcsvProcess(Process):
                          )
         ]
         outputs = [
-
 
             ComplexOutput("output_gbif", "Graphic of GBIF coordinates",
                           abstract="PNG graphic file showing the presence of tree species\
@@ -152,7 +157,7 @@ class SDMcsvProcess(Process):
             outputs=outputs,
             status_supported=True,
             store_supported=True,
-            )
+        )
 
     def _handler(self, request, response):
         init_process_logger('log.txt')
@@ -167,31 +172,38 @@ class SDMcsvProcess(Process):
             period = period[0].data
             indices = [inpt.data for inpt in request.inputs['indices']]
             archive_format = request.inputs['archive_format'][0].data
-            LOGGER.info("all arguments read in nr of files in resources: %s" % len(resources))
-        except Exception:
-            LOGGER.exception('failed to read in the arguments')
-            raise
+            LOGGER.info("all arguments read in nr of files in resources: {}".foirmat(len(resources)))
+        except Exception as ex:
+            msg = 'failed to read in the arguments: {}'.format(str(ex))
+            LOGGER.exception(msg)
+            raise Exception(msg)
 
         try:
             gbif_url = request.inputs['gbif'][0].data
             csv_file = download(gbif_url)
             LOGGER.info('CSV file fetched sucessfully: %s' % csv_file)
-        except:
-            LOGGER.exception('failed to fetch GBIF file')
+        except Exception as ex:
+            msg = 'failed to fetch GBIF file: {}'.format(str(ex))
+            LOGGER.exception(msg)
+            raise Exception(msg)
 
         try:
             response.update_status('read in latlon coordinates', 10)
             latlon = sdm.latlon_gbifcsv(csv_file)
             LOGGER.info('got occurence coordinates %s ' % csv_file)
-        except:
-            LOGGER.exception('failed to extract the latlon points from file: %s' % (csv_file))
+        except Exception as ex:
+            msg = 'failed to extract the latlon points from file {}: {}'.format(csv_file, str(ex))
+            LOGGER.exception(msg)
+            raise Exception(msg)
 
         try:
             response.update_status('plot map', 20)
             occurence_map = map_gbifoccurrences(latlon)
             LOGGER.info('GBIF occourence ploted')
-        except:
-            LOGGER.exception('failed to plot occurence map')
+        except Exception as ex:
+            msg = 'failed to plot occurence map: {}'.format(str(ex))
+            LOGGER.exception(msg)
+            raise Exception(msg)
 
         #################################
         # calculate the climate indices
@@ -202,8 +214,8 @@ class SDMcsvProcess(Process):
             response.update_status('start calculation of indices', 30)
             ncs_indices = sdm.get_indices(resource=resources, indices=indices)
             LOGGER.info('indice calculation done')
-        except:
-            msg = 'failed to calculate indices'
+        except Exception as ex:
+            msg = 'failed to calculate indices: {}'.format(str(ex))
             LOGGER.exception(msg)
             raise Exception(msg)
 
@@ -211,9 +223,10 @@ class SDMcsvProcess(Process):
             # sort indices
             indices_dic = sdm.sort_indices(ncs_indices)
             LOGGER.info('indice files sorted in dictionary')
-        except:
-            msg = 'failed to sort indices'
+        except Exception as ex:
+            msg = 'failed to sort indices: {}'.format(str(ex))
             LOGGER.exception(msg)
+            raise Exception(msg)
             indices_dic = {'dummy': []}
 
         ncs_references = []
@@ -221,55 +234,59 @@ class SDMcsvProcess(Process):
         stat_infos = []
         PAmask_pngs = []
 
-        response.update_status('Start processing for %s Datasets' % len(indices_dic.keys()))
+        response.update_status('Start processing for {} datasets'.format(len(indices_dic.keys())))
         for count, key in enumerate(indices_dic.keys()):
             try:
-                staus_nr = 40 + count*10
-                response.update_status('Start processing of %s' % key, staus_nr)
+                status_nr = 40 + count * 10
+                response.update_status('Start processing of {}'.format(key), status_nr)
                 ncs = indices_dic[key]
-                LOGGER.info('with %s files' % len(ncs))
+                LOGGER.info('with {} files'.format(len(ncs)))
 
                 try:
                     response.update_status('generating the PA mask', 20)
                     PAmask = sdm.get_PAmask(coordinates=latlon, nc=ncs[0])
                     LOGGER.info('PA mask sucessfully generated')
-                except:
-                    LOGGER.exception('failed to generate the PA mask')
+                except Exception as ex:
+                    msg = 'failed to generate the PA mask: {}'.format(str(ex))
+                    LOGGER.exception(msg)
+                    raise Exception(msg)
 
                 try:
                     response.update_status('Ploting PA mask', 25)
                     PAmask_pngs.extend([map_PAmask(PAmask)])
-                except:
-                    LOGGER.exception('failed to plot the PA mask')
+                except Exception as ex:
+                    msg = 'failed to plot the PA mask: {}'.format(str(ex))
+                    LOGGER.exception(msg)
+                    raise Exception(msg)
 
                 try:
                     ncs_reference = sdm.get_reference(ncs_indices=ncs, period=period)
                     ncs_references.extend(ncs_reference)
-                    LOGGER.info('reference indice calculated %s '
-                                % ncs_references)
-                except:
-                    msg = 'failed to calculate the reference'
+                    LOGGER.info('reference indice calculated {}'.format(ncs_references))
+                except Exception as ex:
+                    msg = 'failed to calculate the reference: {}'.format(str(ex))
                     LOGGER.exception(msg)
-                    # raise Exception(msg)
+                    raise Exception(msg)
 
                 try:
                     gam_model, predict_gam, gam_info = sdm.get_gam(ncs_reference, PAmask)
                     stat_infos.append(gam_info)
-                    response.update_status('GAM sucessfully trained', staus_nr + 5)
-                except:
-                    msg = 'failed to train GAM for %s' % (key)
+                    response.update_status('GAM sucessfully trained', status_nr + 5)
+                except Exception as ex:
+                    msg = 'failed to train GAM for {}: {}'.format(key, str(ex))
                     LOGGER.debug(msg)
+                    raise Exception(msg)
 
                 try:
                     prediction = sdm.get_prediction(gam_model, ncs)
-                    response.update_status('prediction done', staus_nr + 7)
-                except:
-                    msg = 'failed to predict tree occurence'
+                    response.update_status('prediction done', status_nr + 7)
+                except Exception as ex:
+                    msg = 'failed to predict tree occurence: {}'.format(str(ex))
                     LOGGER.exception(msg)
-                    # raise Exception(msg)
+                    raise Exception(msg)
                 #
                 # try:
-                #     response.update_status('land sea mask for predicted data',  staus_nr + 8)
+                #     response.update_status('land sea mask for predicted data',  status_nr + 8)
                 #     from numpy import invert, isnan, nan, broadcast_arrays  # , array, zeros, linspace, meshgrid
                 #     mask = invert(isnan(PAmask))
                 #     mask = broadcast_arrays(prediction, mask)[1]
@@ -279,50 +296,54 @@ class SDMcsvProcess(Process):
 
                 try:
                     species_files.append(sdm.write_to_file(ncs[0], prediction))
-                    LOGGER.info('Favourabillity written to file')
-                except:
-                    msg = 'failed to write species file'
+                    LOGGER.info('Favourability written to file')
+                except Exception as ex:
+                    msg = 'failed to write species file: {}'.format(str(ex))
                     LOGGER.debug(msg)
                     raise Exception(msg)
 
-            except:
-                msg = 'failed to process SDM chain for %s ' % key
+            except Exception as ex:
+                msg = 'failed to process SDM chain for {} : {}'.format(key, str(ex))
                 LOGGER.exception(msg)
+                raise Exception(msg)
 
         try:
             archive_indices = archive(ncs_indices, format=archive_format)
             LOGGER.info('indices added to archive')
-        except:
-            msg = 'failed adding indices to archive'
+        except Exception as ex:
+            msg = 'failed adding indices to archive: {}'.format(str(ex))
             LOGGER.exception(msg)
+            raise Exception(msg)
             archive_indices = tempfile.mkstemp(suffix='.tar', prefix='foobar-', dir='.')
 
         try:
             archive_references = archive(ncs_references, format=archive_format)
             LOGGER.info('indices reference added to archive')
-        except:
-            msg = 'failed adding reference indices to archive'
+        except Exception as ex:
+            msg = 'failed adding reference indices to archive: {}'.format(str(ex))
             LOGGER.exception(msg)
+            raise Exception(msg)
             archive_references = tempfile.mkstemp(suffix='.tar', prefix='foobar-', dir='.')
 
         try:
             archive_prediction = archive(species_files, format=archive_format)
             LOGGER.info('species_files added to archive')
-        except:
-            msg = 'failed adding species_files indices to archive'
+        except Exception as ex:
+            msg = 'failed adding species_files indices to archive: {}'.format(str(ex))
             LOGGER.exception(msg)
             raise Exception(msg)
 
         try:
             stat_infosconcat = pdfmerge(stat_infos)
-            LOGGER.debug('pngs %s' % PAmask_pngs)
+            LOGGER.debug('pngs {}'.format(PAmask_pngs))
             PAmask_png = concat_images(PAmask_pngs, orientation='h')
             LOGGER.info('stat infos pdfs and mask pngs merged')
-        except:
-            LOGGER.exception('failed to concat images')
+        except Exception as ex:
+            msg = 'failed to concat images: {}'.format(str(ex))
+            LOGGER.exception(msg)
+            raise Exception(msg)
             _, stat_infosconcat = tempfile.mkstemp(suffix='.pdf', prefix='foobar-', dir='.')
             _, PAmask_png = tempfile.mkstemp(suffix='.png', prefix='foobar-', dir='.')
-
 
         # self.output_csv.setValue(csv_file)
         response.outputs['output_gbif'].file = occurence_map

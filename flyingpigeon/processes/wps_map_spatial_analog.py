@@ -99,8 +99,8 @@ class MapSpatialAnalogProcess(Process):
             fmts = [e.data for e in request.inputs['fmt']]
             title = request.inputs['title'][0].data
 
-        except Exception as e:
-            msg = 'Failed to read input parameter {}'.format(e)
+        except Exception as ex:
+            msg = 'Failed to read input parameter {}'.format(ex)
             LOGGER.error(msg)
             raise Exception(msg)
 
@@ -113,8 +113,8 @@ class MapSpatialAnalogProcess(Process):
             for fmt in fmts:
                 output.append(fig2plot(fig, fmt))
 
-        except Exception as e:
-            msg = "Failed to create figure: {}".format(e)
+        except Exception as ex:
+            msg = "Failed to create figure: {}".format(ex)
             LOGGER.error(msg)
             raise Exception(msg)
 
