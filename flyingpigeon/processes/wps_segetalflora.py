@@ -1,20 +1,18 @@
-from os import mkdir, path, listdir
-from datetime import datetime as dt
+import logging
 import time
+from datetime import datetime as dt
 
-from flyingpigeon import segetalflora as sf
-from flyingpigeon.subset import countries  # REGION_EUROPE
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.utils import archive, archiveextract
-
-from pywps import Process
-from pywps import LiteralInput, LiteralOutput
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format, FORMATS
+from pywps import LiteralInput
+from pywps import Process
 from pywps.app.Common import Metadata
-from flyingpigeon.log import init_process_logger
 
-import logging
+from flyingpigeon import segetalflora as sf
+from flyingpigeon.log import init_process_logger
+from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import rename_complexinputs
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -94,7 +92,7 @@ class SegetalfloraProcess(Process):
         response.outputs['output_log'].file = 'log.txt'
         process_start_time = time.time()  # measure process execution time ...
 
-        response.update_status('execution started at : %s ' % dt.now(), 5)
+        response.update_status('execution started at: {}'.format(str(dt.now())), 5)
 
         LOGGER.debug('starting segetalflora process execution')
         response.update_status('starting calcualtion segetalflora', 5)
@@ -107,10 +105,10 @@ class SegetalfloraProcess(Process):
             climate_type = request.inputs['climate_type'][0].data
             culture_type = request.inputs['culture_type'][0].data
 
-            LOGGER.info('urls for %s ncs found' % (len(resource)))
-            LOGGER.info('culture type: %s ' % (culture_type))
-        except Exception:
-            msg = 'Failed to read in the arguments.'
+            LOGGER.info('urls for {} ncs found'.format(len(resource)))
+            LOGGER.info('culture type: {}'.format(culture_type))
+        except Exception as ex:
+            msg = 'Failed to read in the arguments: {}'.format(str(ex))
             LOGGER.exception(msg)
             raise Exception(msg)
 
@@ -120,8 +118,8 @@ class SegetalfloraProcess(Process):
             if type(culture_type) != list:
                 culture_type = list([culture_type])
             LOGGER.info('arguments are lists')
-        except Exception:
-            msg = 'Failed to transform arguments to lists.'
+        except Exception as ex:
+            msg = 'Failed to transform arguments to lists: {}'.format(str(ex))
             LOGGER.exception(msg)
             raise Exception(msg)
 
@@ -142,10 +140,10 @@ class SegetalfloraProcess(Process):
         ####################
 
         try:
-            response.update_status('preparting output', 99)
-            LOGGER.debug('length of sf: %s', len(nc_sf))
+            response.update_status('preparing output', 99)
+            LOGGER.debug('length of sf: {}'.format(len(nc_sf)))
             if len(nc_sf) == 1:
-                # TODO: fix pywps output formats OR use seperate output params.
+                # TODO: fix pywps output formats OR use separate output params.
                 response.outputs['out_segetalflora'].file = nc_sf[0]
                 response.outputs['out_segetalflora'].format = FORMATS.NETCDF
             else:
@@ -157,12 +155,12 @@ class SegetalfloraProcess(Process):
             else:
                 response.outputs['out_tasmean'].file = archive(nc_tasmean, format='tar', dir_output='.', mode='w')
                 response.outputs['out_segetalflora'].format = Format('application/x-tar')
-        except Exception:
-            msg = 'Failed to prepare output files.'
+        except Exception as ex:
+            msg = 'Failed to prepare output files: {}'.format(str(ex))
             LOGGER.exception(msg)
             raise Exception(msg)
 
         response.update_status('done', 100)
-        LOGGER.debug("total execution took %s seconds.", time.time() - process_start_time)
+        LOGGER.debug("total execution took {} seconds.".format(time.time() - process_start_time))
 
         return response
