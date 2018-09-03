@@ -1,12 +1,10 @@
-<<<<<<< HEAD
 from flyingpigeon.subset import clipping
 from flyingpigeon.subset import _CONTINENTS_
 from eggshell.log import init_process_logger
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import rename_complexinputs
-=======
+
 import logging
->>>>>>> master
 
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format

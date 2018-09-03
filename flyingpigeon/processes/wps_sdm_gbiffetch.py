@@ -3,11 +3,7 @@ Processes to fetch data from GBIF data base
 Author: Nils Hempelmann (info@nilshempelmann.de)
 """
 
-<<<<<<< HEAD
 from eggshell.log import init_process_logger
-=======
-import logging
->>>>>>> master
 
 from pywps import ComplexOutput
 from pywps import Format
@@ -17,8 +13,8 @@ from pywps.app.Common import Metadata
 
 from flyingpigeon.log import init_process_logger
 
-LOGGER = logging.getLogger("PYWPS")
-
+# import logging
+# LOGGER = logging.getLogger("PYWPS")
 
 class GBIFfetchProcess(Process):
     def __init__(self):

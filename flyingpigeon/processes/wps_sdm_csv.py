@@ -20,13 +20,11 @@ from flyingpigeon.visualisation import map_PAmask
 from flyingpigeon.visualisation import map_gbifoccurrences
 from flyingpigeon.visualisation import pdfmerge, concat_images
 
-<<<<<<< HEAD
 from eggshell.log import init_process_logger
 
 import tempfile
 import logging
-=======
->>>>>>> master
+
 LOGGER = logging.getLogger("PYWPS")
 
 

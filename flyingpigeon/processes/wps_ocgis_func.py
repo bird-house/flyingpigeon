@@ -30,7 +30,6 @@ from flyingpigeon.log import init_process_logger
 from flyingpigeon.utils import GROUPING
 from flyingpigeon.utils import archiveextract
 from flyingpigeon.utils import rename_complexinputs
-<<<<<<< HEAD
 from flyingpigeon.utils import GROUPING
 from eggshell.log import init_process_logger
 
@@ -38,8 +37,6 @@ import ocgis
 from ocgis.calc.library import register
 from ocgis.contrib import library_icclim as libclim
 from collections import OrderedDict
-=======
->>>>>>> master
 
 LOGGER = logging.getLogger("PYWPS")
 

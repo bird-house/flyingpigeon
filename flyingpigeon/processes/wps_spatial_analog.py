@@ -4,7 +4,6 @@ Process for spatial analog calculations.
 Author: David Huard (huard.david@ouranos.ca),
 """
 
-<<<<<<< HEAD
 from eggshell.log import init_process_logger
 from flyingpigeon.utils import archiveextract
 from flyingpigeon.utils import rename_complexinputs
@@ -12,9 +11,8 @@ from flyingpigeon.utils import get_values
 from flyingpigeon.ocgis_module import call
 from shapely.geometry import Point
 import netCDF4 as nc
-=======
+
 from datetime import datetime as dt
->>>>>>> master
 
 import netCDF4 as nc
 from ocgis import FunctionRegistry, RequestDataset, OcgOperations

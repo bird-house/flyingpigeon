@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 from pywps import Process
 # from pywps import LiteralInput
 from pywps import ComplexInput, LiteralInput, ComplexOutput
@@ -9,9 +9,7 @@ from eggshell.log import init_process_logger
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon import eodata
 
-=======
 import logging
->>>>>>> master
 from datetime import datetime as dt
 from datetime import timedelta, time
 from tempfile import mkstemp

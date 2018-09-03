@@ -1,7 +1,6 @@
 import logging
 from tempfile import mkstemp
 
-<<<<<<< HEAD
 from flyingpigeon.subset import countries, countries_longname
 from flyingpigeon.subset import clipping
 from eggshell.log import init_process_logger
@@ -12,8 +11,7 @@ from flyingpigeon import visualisation as vs
 
 from pywps import Process
 from pywps import LiteralInput
-=======
->>>>>>> master
+
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
 from pywps import LiteralInput

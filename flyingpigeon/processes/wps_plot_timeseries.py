@@ -6,15 +6,13 @@ from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
 
-<<<<<<< HEAD
 from eggshell.log import init_process_logger
-=======
+
 from flyingpigeon import visualisation as vs
-from flyingpigeon.log import init_process_logger
+
 from flyingpigeon.utils import archiveextract
 from flyingpigeon.utils import get_variable
 from flyingpigeon.utils import rename_complexinputs
->>>>>>> master
 
 LOGGER = logging.getLogger("PYWPS")
 

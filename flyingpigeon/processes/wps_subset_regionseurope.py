@@ -9,11 +9,9 @@ from pywps.app.Common import Metadata
 from flyingpigeon.log import init_process_logger
 # from flyingpigeon.subset import countries, countries_longname
 from flyingpigeon.subset import _EUREGIONS_
-<<<<<<< HEAD
-from eggshell.log import init_process_logger
-=======
+
+# from eggshell.log import init_process_logger
 from flyingpigeon.subset import clipping
->>>>>>> master
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import rename_complexinputs
 
