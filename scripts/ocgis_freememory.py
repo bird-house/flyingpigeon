@@ -32,7 +32,6 @@ ncs.sort()
 # calc = '%s=%s*1' % (variable, variable)
 #
 
-
 rd = RequestDataset(ncs)
 
 ops = OcgOperations(rd,

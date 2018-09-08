@@ -23,6 +23,7 @@ dependencies:
 - libxslt
 - json-c=0.12.1 # See issue #251
 - pypdf2
+#- eggshell=0.3
 ################
 # tests
 - pytest
@@ -93,7 +94,7 @@ dependencies:
 - r-ncdf4=1.15=1
 - r-fields #=8.4 conflicts with r3.3.1 needs 3.2
 - r-gridextra #=2.0.0
-- harfbuzz
+- harfbuzz 
 # #- r-cairo#=1.5_9 build in r-base
 ################
 # esgf

@@ -12,9 +12,12 @@ from pywps import Process
 from pywps.app.Common import Metadata
 
 from flyingpigeon import sdm
-from flyingpigeon.log import init_process_logger
+from flyingpigeon.utils import archive, archiveextract, sort_by_filename
+from eggshell.log import init_process_logger
+
 from flyingpigeon.sdm import _SDMINDICES_
 from flyingpigeon.utils import archive, archiveextract
+
 from flyingpigeon.utils import rename_complexinputs
 
 LOGGER = logging.getLogger("PYWPS")

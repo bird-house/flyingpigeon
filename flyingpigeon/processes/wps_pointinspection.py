@@ -8,6 +8,7 @@ from pywps import Process
 from pywps.app.Common import Metadata
 from shapely.geometry import Point
 
+# from eggshell.log import init_process_logger
 from flyingpigeon.log import init_process_logger
 from flyingpigeon.ocgis_module import call
 from flyingpigeon.utils import archive, archiveextract

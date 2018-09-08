@@ -39,3 +39,4 @@ def test_wps_subset_countries():
 
 
 
+test_wps_subset_countries()

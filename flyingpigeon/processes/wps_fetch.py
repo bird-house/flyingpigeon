@@ -63,7 +63,7 @@ class FetchProcess(Process):
         )
 
     def _handler(self, request, response):
-        from flyingpigeon.log import init_process_logger
+        from eggshell.log import init_process_logger
         from flyingpigeon.utils import rename_complexinputs
         from flyingpigeon.datafetch import write_fileinfo
 
