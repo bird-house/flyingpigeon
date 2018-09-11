@@ -12,10 +12,6 @@ from .wps_indices_single import IndicessingleProcess
 from .wps_landseamask import LandseamaskProcess
 from .wps_map_spatial_analog import MapSpatialAnalogProcess
 from .wps_ocgis_func import *
-# from .wps_analogs_reanalyse import AnalogsreanalyseProcess
-# from .wps_analogs_model import AnalogsmodelProcess
-# from .wps_analogs_compare import AnalogscompareProcess
-# from .wps_analogs_viewer import AnalogsviewerProcess
 # from .wps_robustness import RobustnessProcess
 from .wps_plot_timeseries import PlottimeseriesProcess
 from .wps_pointinspection import PointinspectionProcess
@@ -46,10 +42,6 @@ processes = [
                 SDMcsvindicesProcess(),
                 SDMcsvProcess(),
                 SDMallinoneProcess(),
-                # AnalogsreanalyseProcess(),
-                # AnalogsmodelProcess(),
-                # AnalogscompareProcess(),
-                # AnalogsviewerProcess(),
                 # RobustnessProcess(),
                 PlottimeseriesProcess(),
                 SegetalfloraProcess(),

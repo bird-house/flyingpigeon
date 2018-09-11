@@ -4,6 +4,7 @@ python:
 sudo: false
 install:
   - make install
+  - ln -s /home/travis/.conda/envs/flyingpigeon/lib/libnetcdf.so /home/travis/.conda/envs/flyingpigeon/lib/libnetcdf.so.11
   - make start
 before_script:
   - sleep 10

@@ -6,8 +6,10 @@ from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
 
+from eggshell.log import init_process_logger
+
 from flyingpigeon import visualisation as vs
-from flyingpigeon.log import init_process_logger
+
 from flyingpigeon.utils import archiveextract
 from flyingpigeon.utils import get_variable
 from flyingpigeon.utils import rename_complexinputs
@@ -96,8 +98,8 @@ class PlottimeseriesProcess(Process):
             LOGGER.info("spagetti plot done")
             response.update_status('Spagetti plot for %s %s files done' % (len(ncfiles), var), 50)
             response.outputs['plotout_spagetti'].file = plotout_spagetti_file
-        except Exception:
-            raise Exception("spagetti plot failed")
+        except Exception as e:
+            raise Exception("spagetti plot failed : {}".format(e))
 
         try:
             plotout_uncertainty_file = vs.uncertainty(ncfiles,

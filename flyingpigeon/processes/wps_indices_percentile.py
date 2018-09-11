@@ -9,7 +9,12 @@ from flyingpigeon.log import init_process_logger
 from flyingpigeon.subset import countries
 from flyingpigeon.utils import GROUPING
 from flyingpigeon.utils import archive, archiveextract
+
+from flyingpigeon import config
+from eggshell.log import init_process_logger
+
 from flyingpigeon.utils import rename_complexinputs
+
 
 LOGGER = logging.getLogger("PYWPS")
 

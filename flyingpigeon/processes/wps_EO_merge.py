@@ -8,6 +8,10 @@ from pywps import LiteralInput, ComplexOutput
 from pywps import Process
 from pywps.app.Common import Metadata
 
+from eggshell.log import init_process_logger
+# from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.utils import archive, archiveextract
+
 from flyingpigeon import eodata
 from flyingpigeon.datafetch import _EODATA_
 # from flyingpigeon.datafetch import write_fileinfo

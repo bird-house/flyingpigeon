@@ -6,6 +6,9 @@ Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 import logging
 import tempfile
 
+from flyingpigeon.sdm import _SDMINDICES_
+from eggshell.log import init_process_logger
+
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
 from pywps import LiteralInput
@@ -13,7 +16,6 @@ from pywps import Process
 from pywps.app.Common import Metadata
 
 from flyingpigeon import sdm
-from flyingpigeon.log import init_process_logger
 from flyingpigeon.utils import archive, archiveextract  # , get_domain
 from flyingpigeon.utils import download
 from flyingpigeon.utils import rename_complexinputs

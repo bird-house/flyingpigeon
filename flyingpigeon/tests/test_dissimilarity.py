@@ -7,7 +7,7 @@ from scipy import stats
 from scipy import integrate
 from scipy import spatial
 
-pytestmark = pytest.mark.skipif(reason="segmentation fault on next branch with snappy")
+#pytestmark = pytest.mark.skipif(reason="segmentation fault on next branch with snappy")
 
 
 def matlab_sample(n=30):
