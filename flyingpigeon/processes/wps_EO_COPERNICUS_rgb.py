@@ -1,26 +1,23 @@
-from pywps import Process
-# from pywps import LiteralInput
-from pywps import ComplexInput, LiteralInput, ComplexOutput
-from pywps import Format, FORMATS
-from pywps.app.Common import Metadata
+import logging
+import zipfile
+from datetime import datetime as dt
+from datetime import timedelta, time
+from os import makedirs
+from os.path import exists, join
 
-from flyingpigeon.log import init_process_logger
+from pywps import Format
+# from pywps import LiteralInput
+from pywps import LiteralInput, ComplexOutput
+from pywps import Process
+from pywps.app.Common import Metadata
+from sentinelsat import SentinelAPI, geojson_to_wkt
+
+from eggshell.log import init_process_logger
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon import eodata
 from flyingpigeon.config import cache_path
+from flyingpigeon.log import init_process_logger
 
-from datetime import datetime as dt
-from datetime import timedelta, time
-from tempfile import mkstemp
-import zipfile
-
-
-from os.path import exists, join
-from os import makedirs
-
-from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
-
-import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -42,7 +39,7 @@ class EO_COP_rgbProcess(Process):
                                          'land-water',
                                          'naturalcolors-athmosphericremoval',
                                          'shortwave-infrared',
-                                         'vegetation-analyses'] #
+                                         'vegetation-analyses']  #
                          ),
 
             LiteralInput('BBox', 'Bounding Box',
@@ -168,10 +165,10 @@ class EO_COP_rgbProcess(Process):
         else:
             start = end - timedelta(days=30)
 
-        if (start > end):
+        if start > end:
             start = dt.now() - timedelta(days=30)
             end = dt.now()
-            LOGGER.exception("periode end befor periode start, period is set to the last 30 days from now")
+            LOGGER.exception('period ends before period starts; period now set to the last 30 days from now')
 
         username = request.inputs['username'][0].data
         password = request.inputs['password'][0].data
@@ -180,12 +177,12 @@ class EO_COP_rgbProcess(Process):
         api = SentinelAPI(username, password)
 
         geom = {
-          "type": "Polygon",
-          "coordinates": [[[ bbox[0], bbox[1]],
-                           [ bbox[2], bbox[1]],
-                           [ bbox[2], bbox[3]],
-                           [ bbox[0], bbox[3]],
-                           [ bbox[0], bbox[1]]]]}
+            "type": "Polygon",
+            "coordinates": [[[bbox[0], bbox[1]],
+                             [bbox[2], bbox[1]],
+                             [bbox[2], bbox[3]],
+                             [bbox[0], bbox[3]],
+                             [bbox[0], bbox[1]]]]}
 
         footprint = geojson_to_wkt(geom)
 
@@ -205,7 +202,6 @@ class EO_COP_rgbProcess(Process):
         if not exists(DIR_EO):
             makedirs(DIR_EO)
 
-
         resources = []
 
         for key in products.keys():
@@ -214,21 +210,26 @@ class EO_COP_rgbProcess(Process):
                 # form = products[key]['format']
                 ID = str(products[key]['identifier'])
                 file_zip = join(DIR_EO, '%s.zip' % (ID))
-                DIR_tile =join(DIR_EO, '%s' % (filename))
-                response.update_status("fetch file %s" % ID , 20)
+                DIR_tile = join(DIR_EO, '%s' % (filename))
+                response.update_status("fetch file %s" % ID, 20)
                 LOGGER.debug('path: %s' % DIR_tile)
                 if exists(file_zip):
                     LOGGER.debug('file %s.zip already fetched' % ID)
                 else:
                     try:
                         api.download(key, directory_path=DIR_EO)
+                        # Does the '***' denote a string formatting function?
                         response.update_status("***%s sucessfully fetched" % ID, 20)
-                        LOGGER.debug('Tile %s fetched' % ID)
-                        LOGGER.debug('Files %s fetched ' % ID)
-                    except:
-                        LOGGER.exception('failed to extract file %s' % filename)
+                        # TODO: Figure out why these are duplicate
+                        LOGGER.debug('Tile {} fetched'.format(ID))
+                        LOGGER.debug('Files {} fetched'.format(ID))
+                    except Exception as ex:
+                        msg = 'failed to extract file {}: {}'.format(filename, str(ex))
+                        LOGGER.exception(msg)
+                        raise Exception(msg)
+
                 if exists(DIR_tile):
-                     LOGGER.debug('file %s already unzipped' % filename)
+                    LOGGER.debug('file %s already unzipped' % filename)
                 else:
                     try:
                         # zipfile = join(DIR_EO, '%szip' % (filename)).strip(form)
@@ -236,11 +237,17 @@ class EO_COP_rgbProcess(Process):
                         zip_ref.extractall(DIR_EO)
                         zip_ref.close()
                         LOGGER.debug('Tile %s unzipped' % ID)
-                    except:
-                        LOGGER.exception('failed to extract %s ' % file_zip)
+                    except Exception as ex:
+                        msg = 'failed to extract {}: {}'.format(file_zip, str(ex))
+                        LOGGER.exception(msg)
+                        raise Exception(msg)
+
                 resources.append(DIR_tile)
-            except:
-                LOGGER.exception('failed to fetch %s' % key)
+
+            except Exception as ex:
+                msg = 'failed to fetch {}: {}'.format(key, str(ex))
+                LOGGER.exception(msg)
+                raise Exception(msg)
 
         response.update_status("Plotting RGB graphics", 40)
         size = float(products[key]['size'].split(' ')[0])
@@ -269,11 +276,13 @@ class EO_COP_rgbProcess(Process):
                 # tile = eodata.get_RGB(recource)
                 LOGGER.debug('plot RGB image')
                 img = eodata.plot_RGB(recource, colorscheem=colorscheem)
-                LOGGER.debug('IMG plotted: %s' % img)
+                LOGGER.debug('IMG plotted: {}'.format(img))
                 imgs.append(img)
             LOGGER.debug('resources plotted')
-        except:
-            LOGGER.exception('failed to plot RGB graph')
+        except Exception as ex:
+            msg = 'failed to plot RGB graph: {}'.format(str(ex))
+            LOGGER.exception(msg)
+            raise Exception(msg)
 
         from flyingpigeon.utils import archive
         tarf = archive(imgs)
@@ -283,8 +292,6 @@ class EO_COP_rgbProcess(Process):
         i = next((i for i, x in enumerate(imgs) if x), None)
         if i is None:
             i = "dummy.png"
-
-        
 
         response.outputs['output_plot'].file = imgs[i]
 

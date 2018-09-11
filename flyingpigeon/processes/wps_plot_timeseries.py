@@ -1,18 +1,19 @@
-from flyingpigeon import visualisation as vs
-from flyingpigeon.utils import archiveextract
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.utils import get_variable
+import logging
 
-from pywps import Process
-from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
-from pywps.inout.literaltypes import AllowedValue
+from pywps import LiteralInput
+from pywps import Process
 from pywps.app.Common import Metadata
 
-from flyingpigeon.log import init_process_logger
+from eggshell.log import init_process_logger
 
-import logging
+from flyingpigeon import visualisation as vs
+
+from flyingpigeon.utils import archiveextract
+from flyingpigeon.utils import get_variable
+from flyingpigeon.utils import rename_complexinputs
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -87,30 +88,30 @@ class PlottimeseriesProcess(Process):
             var = get_variable(ncfiles[0])
             #  var = ncfiles[0].split("_")[0]
 
-        response.update_status('plotting variable %s' % var, 10)
+        response.update_status('plotting variable {}'.format(var), 10)
 
         try:
             plotout_spagetti_file = vs.spaghetti(ncfiles,
                                                  variable=var,
-                                                 title='Fieldmean of %s ' % (var),
+                                                 title='Field mean of {}'.format(var),
                                                  )
             LOGGER.info("spagetti plot done")
             response.update_status('Spagetti plot for %s %s files done' % (len(ncfiles), var), 50)
             response.outputs['plotout_spagetti'].file = plotout_spagetti_file
-        except Exception:
-            raise Exception("spagetti plot failed")
+        except Exception as e:
+            raise Exception("spagetti plot failed : {}".format(e))
 
         try:
             plotout_uncertainty_file = vs.uncertainty(ncfiles,
                                                       variable=var,
-                                                      title='Ensemble uncertainty for %s ' % (var),
+                                                      title='Ensemble uncertainty for {}'.format(var),
                                                       )
 
-            response.update_status('Uncertainty plot for %s %s files done' % (len(ncfiles), var), 90)
+            response.update_status('Uncertainty plot for {} {} files done'.format(len(ncfiles), var), 90)
             response.outputs['plotout_uncertainty'].file = plotout_uncertainty_file
             LOGGER.info("uncertainty plot done")
         except Exception as err:
-            raise Exception("uncertainty plot failed %s" % err.message)
+            raise Exception("uncertainty plot failed {}".format(err.message))
 
         response.update_status('visualisation done', 100)
         return response

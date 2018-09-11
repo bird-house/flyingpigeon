@@ -2,7 +2,9 @@ from os import path, mkdir, listdir
 import ocgis
 import logging
 LOGGER = logging.getLogger("PYWPS")
-
+from flyingpigeon.ocgis_module import call
+from eggshell.ocg.utils import calc_grouping
+from eggshell.nc.utils import sort_by_filename
 
 def get_equation(culture_type='fallow', climate_type=2):
   """
@@ -157,9 +159,6 @@ def get_yrmean(resource=[]):
 
   :return list: list of output files
   """
-
-  from flyingpigeon.utils import calc_grouping, sort_by_filename
-  from flyingpigeon.ocgis_module import call
   from flyingpigeon.subset import clipping
   ncs = sort_by_filename(resource)
   nc_tasmean = []
@@ -194,7 +193,6 @@ def get_segetalflora(resource=[], culture_type='fallow', climate_type=3):
   :return list: list of result segeltaflora files
   """
 
-  from flyingpigeon.ocgis_module import call
   from os import path
 
   if not type(culture_type) == list:

@@ -1,5 +1,4 @@
 from flyingpigeon import datafetch
-ncs = datafetch.reanalyses(start=2000, end=2017)
 
 from ocgis import RequestDataset, OcgOperations, env
 from ocgis.util.large_array import compute
@@ -19,16 +18,25 @@ level_range = [700, 700]
 time_range = [dt.strptime('20100315', '%Y%m%d'), dt.strptime('20111210', '%Y%m%d')]
 bbox = [-80, 20, 20, 70]
 
-# TODO: BUG: ocg compute is not running if calc == None
-calc = '%s=%s*1' % (variable, variable)
-#
 
+from os import listdir
+from os.path import join
+
+p = '/home/nils/data/CMIP5/'
+ncs = [join(p , nc ) for nc in listdir(p) if ".nc" in nc ]
+ncs.sort()
+
+#ncs = datafetch.reanalyses(start=2000, end=2003)
+
+# TODO: BUG: ocg compute is not running if calc == None
+# calc = '%s=%s*1' % (variable, variable)
+#
 
 rd = RequestDataset(ncs)
 
 ops = OcgOperations(rd,
                     time_range=time_range,
-                    calc = '%s=%s*1' % ('slp', 'slp'),
+                    # calc = '%s=%s*1' % ('slp', 'slp'),
                     # level_range=level_range,
                     geom=bbox,
                     output_format='nc',
