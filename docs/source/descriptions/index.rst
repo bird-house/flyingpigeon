@@ -1,3 +1,6 @@
+.. _processes:
+
+*********
 Processes
 *********
 
@@ -7,7 +10,7 @@ A combination of processes will be called a 'workflow'.
 .. note:: Flyingpigeon is a bird to develop and test processes and functions. Once they are in a major status they move to an other service.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    spatial_analogs
    indices
@@ -21,12 +24,13 @@ A combination of processes will be called a 'workflow'.
    visualisation
    eoprocesses
 
+.. _moved_processes:
 
 Moved Processes
 ---------------
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    analogues
    weatherregimes
