@@ -27,7 +27,6 @@ class PointinspectionProcess(Process):
         inputs = [
             ComplexInput('resource', 'Resource',
                          abstract='NetCDF Files or archive (tar/zip) containing NetCDF files.',
-                         metadata=[Metadata('Info')],
                          min_occurs=1,
                          max_occurs=1000,
                          supported_formats=[

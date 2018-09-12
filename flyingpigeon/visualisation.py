@@ -10,8 +10,8 @@ from matplotlib import pyplot as plt
 
 LOGGER = logging.getLogger("PYWPS")
 
-from eggshell.viz.visualisation import MidpointNormalize, fig2plot, plot_extend, plot_polygons, spaghetti, uncertainty, pdfmerge, concat_images
-from eggshell.viz.visualisation import map_robustness, concat_images
+from eggshell.visual.visualisation import MidpointNormalize, fig2plot, plot_extend, plot_polygons, spaghetti, uncertainty, pdfmerge, concat_images
+from eggshell.visual.visualisation import map_robustness, concat_images
 
 def factsheetbrewer(png_region=None, png_spaghetti=None, png_uncertainty=None, png_robustness=None):
     """
