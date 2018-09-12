@@ -4,7 +4,10 @@ import os
 from pywps import Service
 from pywps.tests import assert_response_success
 
-from flyingpigeon.processes import SpatialAnalogProcess, MapSpatialAnalogProcess
+try:
+    from flyingpigeon.processes import SpatialAnalogProcess, MapSpatialAnalogProcess
+except Exception:
+    pytestmark = pytest.mark.skip
 from flyingpigeon.utils import local_path
 from flyingpigeon.tests.common import TESTDATA, client_for, CFG_FILE
 from flyingpigeon.config import test_output_path

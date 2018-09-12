@@ -4,7 +4,10 @@ from pywps import Service
 from pywps.tests import assert_response_success
 
 from .common import TESTDATA, client_for, CFG_FILE
-from flyingpigeon.processes import PlottimeseriesProcess
+try:
+    from flyingpigeon.processes import PlottimeseriesProcess
+except Exception:
+    pytestmark = pytest.mark.skip
 
 
 @pytest.mark.slow

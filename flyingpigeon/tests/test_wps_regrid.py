@@ -1,7 +1,8 @@
+import pytest
 from pywps import Service
 from pywps.tests import assert_response_success
 
-from flyingpigeon.processes import ESMFRegridProcess
+# from flyingpigeon.processes import ESMFRegridProcess
 from flyingpigeon.tests.common import TESTDATA, client_for, CFG_FILE
 
 datainputs_fmt = (
@@ -11,6 +12,8 @@ datainputs_fmt = (
         "snippet={3};"
     )
 
+
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_wps_esmfregrid_process():
     client = client_for(
         Service(processes=[ESMFRegridProcess()], cfgfiles=CFG_FILE))

@@ -1,13 +1,19 @@
 import pytest
 
-from flyingpigeon import dissimilarity as dd
+try:
+    from flyingpigeon import dissimilarity as dd
+except Exception:
+    pytestmark = pytest.mark.skip
 import numpy as np
 from numpy.testing import assert_equal as aeq, assert_almost_equal as aaeq
-from scipy import stats
-from scipy import integrate
-from scipy import spatial
+try:
+    from scipy import stats
+    from scipy import integrate
+    from scipy import spatial
+except Exception:
+    pytestmark = pytest.mark.skip
 
-#pytestmark = pytest.mark.skipif(reason="segmentation fault on next branch with snappy")
+# pytestmark = pytest.mark.skipif(reason="segmentation fault on next branch with snappy")
 
 
 def matlab_sample(n=30):
