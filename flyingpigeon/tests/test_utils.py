@@ -14,11 +14,13 @@ from flyingpigeon.utils import local_path
 from eggshell.config import Paths
 paths = Paths(fp)
 
+
 def test_local_path():
     assert local_path('file:///tmp/test.nc') == '/tmp/test.nc'
     assert local_path('/tmp/test.nc') == '/tmp/test.nc'
 
 
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_download_with_cache():
     filename = utils.download(TESTDATA['cmip5_tasmax_2006_nc'], cache=paths.cache)
     assert os.path.basename(filename) == 'tasmax_Amon_MPI-ESM-MR_rcp45_r1i1p1_200601-200612.nc'
@@ -71,10 +73,11 @@ def test_get_time():
     assert 23 == len(values)
 
 
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_unrotate_pole():
     ncs = [local_path(TESTDATA['cordex_tasmax_2006_nc']),
            local_path(TESTDATA['cordex_tasmax_2007_nc'])]
-    lats,  lons = utils.unrotate_pole(ncs)
+    lats, lons = utils.unrotate_pole(ncs)
     assert lats.shape == (103, 106)
 
 
@@ -94,7 +97,7 @@ def test_get_coordinates():
            local_path(TESTDATA['cordex_tasmax_2007_nc'])]
 
     lats, lons = utils.get_coordinates(ncs, unrotate=False)
-    
+
     assert 1 == len(lats.shape)
 
     lats, lons = utils.get_coordinates(ncs)
