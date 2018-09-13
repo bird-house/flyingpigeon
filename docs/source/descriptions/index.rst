@@ -11,7 +11,7 @@ A combination of processes will be called a 'workflow'.
 Processes
 *********
 
-   .. warning:: Due to dependency issues most of the processes are currently disabled. We are working on enabling them again. Contact a developer if you urgently need one of the following processes. 
+.. warning:: Due to dependency issues most of the processes are currently disabled. We are working on enabling them again. Contact a developer if you urgently need one of the following processes. 
 
 .. toctree::
    :maxdepth: 2
