@@ -1,6 +1,16 @@
 Releasenotes
 ************
 
+1.2.1 (2018-09-14)
+==================
+
+Bug-fix release:
+
+* disabled many processes due to conda dependency conflicts (#261).
+* simplified `buildout.cfg` (#245).
+* tests for `subset_countries` added (#237).
+* numerous others fixes.
+
 1.2.0 (2018-04-04)
 ==================
 
