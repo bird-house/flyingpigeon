@@ -4,29 +4,29 @@ Process for spatial analog calculations.
 Author: David Huard (huard.david@ouranos.ca),
 """
 
+import os
+import tempfile
+from datetime import datetime as dt
+
+import netCDF4 as nc
+import ocgis
 from flyingpigeon.log import init_process_logger
+from flyingpigeon.ocgisDissimilarity import Dissimilarity, metrics
+from flyingpigeon.ocgis_module import call
 from flyingpigeon.utils import archiveextract
 from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.utils import get_values
-from flyingpigeon.ocgis_module import call
-from shapely.geometry import Point
-import netCDF4 as nc
-
-from pywps import Process
-from pywps import LiteralInput
+from ocgis import FunctionRegistry, RequestDataset, OcgOperations
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
 from pywps.app.Common import Metadata
-
-from datetime import datetime as dt
-import os
-
-from ocgis import FunctionRegistry, RequestDataset, OcgOperations
-from flyingpigeon.ocgisDissimilarity import Dissimilarity, metrics
+from shapely.geometry import Point
 
 FunctionRegistry.append(Dissimilarity)
 
 import logging
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -155,6 +155,8 @@ class SpatialAnalogProcess(Process):
 
     def _handler(self, request, response):
 
+        ocgis.env.DIR_OUTPUT = tempfile.mkdtemp(dir=os.getcwd())
+        ocgis.env.OVERWRITE = True
         tic = dt.now()
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
@@ -201,14 +203,13 @@ class SpatialAnalogProcess(Process):
             LOGGER.error(msg)
             raise Exception(msg)
 
-        LOGGER.debug("init took {}".format(dt.now() - tic ) )
+        LOGGER.debug("init took {}".format(dt.now() - tic))
         response.update_status('Processed input parameters', 3)
-
 
         ######################################
         # Extract target time series
         ######################################
-        savetarget=False
+        savetarget = False
         try:
             # Using `call` creates a netCDF file in the tmp directory.
             #
@@ -219,7 +220,7 @@ class SpatialAnalogProcess(Process):
                                  time_range=[dateStartTarget, dateEndTarget],
                                  select_nearest=True, prefix=prefix)
 
-                #target_ts = [get_values(prefix+'.nc', ind) for ind in indices]
+                # target_ts = [get_values(prefix+'.nc', ind) for ind in indices]
 
             else:
                 trd = RequestDataset(target, variable=indices,
@@ -236,7 +237,6 @@ class SpatialAnalogProcess(Process):
             raise Exception(msg)
 
         response.update_status('Extracted target series', 5)
-
 
         ######################################
         # Compute dissimilarity metric
@@ -256,7 +256,6 @@ class SpatialAnalogProcess(Process):
             LOGGER.exception(msg)
             raise Exception(msg)
 
-
         add_metadata(output,
                      dist=dist,
                      indices=",".join(indices),
@@ -272,8 +271,9 @@ class SpatialAnalogProcess(Process):
         response.outputs['output_netcdf'].file = output
 
         response.update_status('Execution completed', 100)
-        LOGGER.debug("Total execution took {}".format( dt.now() - tic) )
+        LOGGER.debug("Total execution took {}".format(dt.now() - tic))
         return response
+
 
 def add_metadata(ncfile, **kwds):
     """Add metadata to the dissimilarity variable."""

@@ -1,23 +1,25 @@
-from flyingpigeon.subset import clipping
-from flyingpigeon.subset import _CONTINENTS_
+import logging
+
 from flyingpigeon.log import init_process_logger
+from flyingpigeon.subset import _CONTINENTS_
+from flyingpigeon.subset import clipping
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import rename_complexinputs
-
-from pywps import Process
-from pywps import LiteralInput
 from pywps import ComplexInput, ComplexOutput
-from pywps import Format, FORMATS
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
 from pywps.app.Common import Metadata
 
-import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
+# TODO: Rename this to "SubsetcontinentProcess"
 class ClipcontinentProcess(Process):
     """
     TODO: opendap input support, additional metadata to display region names.
     """
+
     def __init__(self):
         inputs = [
             LiteralInput('region', 'Region',
@@ -94,7 +96,7 @@ class ClipcontinentProcess(Process):
                      request.inputs['resource'][0].data_format.mime_type)
         ncs = archiveextract(
             resource=rename_complexinputs(request.inputs['resource']))
-            # mime_type=request.inputs['resource'][0].data_format.mime_type)
+        # mime_type=request.inputs['resource'][0].data_format.mime_type)
         # mosaic option
         # TODO: fix defaults in pywps 4.x
         if 'mosaic' in request.inputs:

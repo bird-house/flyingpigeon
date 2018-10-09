@@ -1,20 +1,17 @@
-from os import mkdir, path, listdir
-from datetime import datetime as dt
+import logging
 import time
+from datetime import datetime as dt
 
 from flyingpigeon import segetalflora as sf
-from flyingpigeon.subset import countries  # REGION_EUROPE
-from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.log import init_process_logger
 from flyingpigeon.utils import archive, archiveextract
-
-from pywps import Process
-from pywps import LiteralInput, LiteralOutput
+from flyingpigeon.utils import rename_complexinputs
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format, FORMATS
+from pywps import LiteralInput
+from pywps import Process
 from pywps.app.Common import Metadata
-from flyingpigeon.log import init_process_logger
 
-import logging
 LOGGER = logging.getLogger("PYWPS")
 
 

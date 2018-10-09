@@ -2,7 +2,7 @@
 FROM birdhouse/bird-base:latest
 MAINTAINER https://github.com/bird-house
 
-LABEL Description="flyingpigeon application" Vendor="Birdhouse" Version="0.11"
+LABEL Description="flyingpigeon application" Vendor="Birdhouse" Version="1.1_dev"
 
 # Configure hostname and ports for services
 ENV HTTP_PORT 8080
@@ -31,6 +31,9 @@ ENV CONDA_ENVS_DIR /opt/conda/envs
 
 # Run install and fix permissions
 RUN make clean install && chmod 755 /opt/birdhouse/etc && chmod 755 /opt/birdhouse/var/run
+
+# Install PAVICS version of pywps
+RUN /opt/conda/envs/flyingpigeon/bin/pip install --upgrade git+https://github.com/Ouranosinc/pywps.git@pavics
 
 # Volume for data, cache, logfiles, ...
 VOLUME /opt/birdhouse/var/lib

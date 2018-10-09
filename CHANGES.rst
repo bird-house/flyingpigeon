@@ -1,6 +1,69 @@
 Releasenotes
 ************
 
+1.1.0 (2017-12-22)
+==================
+
+* disabled analogs processes (using castf90) ... moved to black-swan.
+* added new spatial analogs process.
+* added initial version of satellite processes using scihub.coperniucs data.
+* updated weatherregimes processes.
+
+1.0.3 (2017-12-21)
+==================
+
+* fixed sphinx build.
+
+1.0.2 (2017-12-20)
+==================
+
+* updated conda environment.
+* fixed pytest configuration.
+* updated travis link in Readme.
+
+1.0.1 (2017-11-14)
+==================
+
+* fixed version number
+* fixed changes formatting
+* display version number in service title
+
+1.0.0 (2017-11-01)
+==================
+
+* code adapted to pywps4
+* ocgis v2 depoyed
+* Tests for components
+* `Version published in Computers & Geosciences <http://www.sciencedirect.com/science/article/pii/S0098300416302801>`_
+
+Set of processes
+################
+
+Base processes:
+
+* Fetch resources
+* Fetch GBIF Species Coordination
+* Subset Polygons
+* Point Inspection
+* Timeseries visualisation
+* Climate Indices Calculation
+
+Climate Impact:
+
+* Species Distribution Model
+* Segetal Flora Calculation
+
+Extreme Weather Events Assessment:
+
+* Analogs of Circulation for reanalyzes Datasets
+* Analogs of Circulation for model data
+* Analogs of Circulation Comparison between reanalyzes and climate model data
+* Analogs output data visualisation
+* Weather regime Determination for reanalyzes Datasets
+* Weather regime Determination for model datasets
+* Weather regime projections  (based on previous analyses)
+
+
 0.11.0 (2017-07-11)
 ===================
 

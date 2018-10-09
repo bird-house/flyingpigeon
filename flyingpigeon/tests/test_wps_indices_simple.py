@@ -7,6 +7,7 @@ from .common import TESTDATA, client_for, CFG_FILE
 from flyingpigeon.processes import IndicessingleProcess
 
 
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_wps_indices_simple():
     client = client_for(Service(processes=[IndicessingleProcess()], cfgfiles=CFG_FILE))
     datainputs = "resource=files@xlink:href={0};indices=SU;grouping=yr".\

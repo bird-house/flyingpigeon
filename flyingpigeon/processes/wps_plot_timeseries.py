@@ -1,18 +1,16 @@
-from flyingpigeon import visualisation as vs
-from flyingpigeon.utils import archiveextract
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.utils import get_variable
+import logging
 
-from pywps import Process
-from pywps import LiteralInput
+from flyingpigeon import visualisation as vs
+from flyingpigeon.log import init_process_logger
+from flyingpigeon.utils import archiveextract
+from flyingpigeon.utils import get_variable
+from flyingpigeon.utils import rename_complexinputs
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
-from pywps.inout.literaltypes import AllowedValue
+from pywps import LiteralInput
+from pywps import Process
 from pywps.app.Common import Metadata
 
-from flyingpigeon.log import init_process_logger
-
-import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -66,13 +64,13 @@ class PlottimeseriesProcess(Process):
             version="0.10",
             metadata=[
                 Metadata('Doc', 'http://flyingpigeon.readthedocs.io/en/latest/'),
-                    ],
+            ],
             abstract="Outputs some timeseries of the file field means. Spaghetti and uncertainty plot",
             inputs=inputs,
             outputs=outputs,
             status_supported=True,
             store_supported=True,
-            )
+        )
 
     def _handler(self, request, response):
         init_process_logger('log.txt')
@@ -96,8 +94,9 @@ class PlottimeseriesProcess(Process):
                                                  )
             LOGGER.info("spagetti plot done")
             response.update_status('Spagetti plot for %s %s files done' % (len(ncfiles), var), 50)
-        except:
-            LOGGER.exception("spagetti plot failed")
+            response.outputs['plotout_spagetti'].file = plotout_spagetti_file
+        except Exception:
+            raise Exception("spagetti plot failed")
 
         try:
             plotout_uncertainty_file = vs.uncertainty(ncfiles,
@@ -106,11 +105,10 @@ class PlottimeseriesProcess(Process):
                                                       )
 
             response.update_status('Uncertainty plot for %s %s files done' % (len(ncfiles), var), 90)
+            response.outputs['plotout_uncertainty'].file = plotout_uncertainty_file
             LOGGER.info("uncertainty plot done")
-        except:
-            LOGGER.exception("uncertainty plot failed")
+        except Exception as err:
+            raise Exception("uncertainty plot failed %s" % err.message)
 
-        response.outputs['plotout_spagetti'].file = plotout_spagetti_file
-        response.outputs['plotout_uncertainty'].file = plotout_uncertainty_file
         response.update_status('visualisation done', 100)
         return response

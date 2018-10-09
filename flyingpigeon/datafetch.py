@@ -1,4 +1,6 @@
 from flyingpigeon import utils
+from datetime import datetime as dt
+from datetime import timedelta
 
 # import logging
 # logger = logging.getLogger(__name__)
@@ -23,8 +25,47 @@ _PRESSUREDATA_ = [
 
 _EOBSVARIABLES_ = ['tg', 'tx', 'tn', 'rr']
 
+_EODATA_ = ["PSScene3Band__visual",
+            "PSScene4Band__analytic",
+            "PSScene4Band__analytic_xml",
+            "Sentinel2L1C__metadata_aux",
+            "Sentinel2L1C__analytic_b1",
+            "Sentinel2L1C__analytic_b2",  # blue
+            "Sentinel2L1C__analytic_b3",  # green
+            "Sentinel2L1C__analytic_b4",  # red
+            "Sentinel2L1C__analytic_b8",  # nivr
+            ]
 
-def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP'):
+# PSScene3Band	PlanetScope Scenes
+# PSScene4Band	PlanetScope Scenes
+# PSOrthoTile	PlanetScope OrthoTiles
+# REOrthoTile	RapidEye OrthoTiles
+# REScene	    RapidEye Scenes (unorthorectified strips)
+# SkySatScene	SkySat Scenes
+# Landsat8L1G	Landsat8 Scenes
+# Sentinel2L1C	Copernicus Sentinel-2 Scenes
+
+#  "_permissions": [
+#   "assets.analytic_b1:download",
+#   "assets.analytic_b3:download",
+#   "assets.analytic_b2:download",
+#   "assets.analytic_b5:download",
+#   "assets.analytic_b4:download",
+#   "assets.analytic_b7:download",
+#   "assets.analytic_b6:download",
+#   "assets.analytic_b9:download",
+#   "assets.analytic_b8:download",
+#   "assets.analytic_b8a:download",
+#   "assets.visual:download",
+#   "assets.metadata_aux:download",
+#   "assets.analytic_b10:download",
+#   "assets.analytic_b11:download",
+#   "assets.analytic_b12:download"
+#  ],
+#
+
+
+def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP', timres='day', getlevel=True):
     """
     Fetches the reanalysis data (NCEP, 20CR or ERA_20C) to local file system
     :param start: int for start year to fetch source data
@@ -34,7 +75,8 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP'):
     :return list: list of path/files.nc
     """
     # used for NETCDF convertion
-    from os import path
+    from netCDF4 import Dataset
+    from os import path, system
     from flyingpigeon.ocgis_module import call
     from shutil import move
     # used for NETCDF convertion
@@ -75,14 +117,26 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP'):
                         url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/pressure/hgt.%s.nc' % (year)  # noqa
                 elif dataset == '20CRV2':
                     if variable == 'prmsl':
-                        url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2/monolevel/prmsl.%s.nc' % year  # noqa
+                        if timres == '6h':
+                            url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2/monolevel/prmsl.%s.nc' % year  # noqa
+                        else:
+                            url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2/Dailies/monolevel/prmsl.%s.nc' % year  # noqa
                     if 'z' in variable:
-                        url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2/pressure/hgt.%s.nc' % (year)  # noqa
+                        if timres == '6h':
+                            url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2/pressure/hgt.%s.nc' % (year)  # noqa
+                        else:
+                            url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2/Dailies/pressure/hgt.%s.nc' % (year)  # noqa
                 elif dataset == '20CRV2c':
                     if variable == 'prmsl':
-                        url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/monolevel/prmsl.%s.nc' % year  # noqa
+                        if timres == '6h':
+                            url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/monolevel/prmsl.%s.nc' % year  # noqa
+                        else:
+                            url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/Dailies/monolevel/prmsl.%s.nc' % year  # noqa
                     if 'z' in variable:
-                        url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/pressure/hgt.%s.nc' % (year)  # noqa
+                        if timres == '6h':
+                            url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/pressure/hgt.%s.nc' % (year)  # noqa
+                        else:
+                            url = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/20thC_ReanV2c/Dailies/pressure/hgt.%s.nc' % (year)  # noqa
                 else:
                     LOGGER.debug('Dataset %s not known' % dataset)
                 LOGGER.debug('url: %s' % url)
@@ -94,15 +148,27 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP'):
                 LOGGER.debug('single file fetched %s ' % year)
                 # convert to NETCDF4_CLASSIC
                 try:
-                    p, f = path.split(path.abspath(df))
-                    LOGGER.debug("path = %s , file %s " % (p, f))
-                    move(df, f)
-                    conv = call(resource=f,
-                                output_format_options={'data_model': 'NETCDF4_CLASSIC'},
-                                dir_output=p,
-                                prefix=f.replace('.nc', ''))
-                    obs_data.append(conv)
-                    LOGGER.debug('file %s to NETCDF4_CLASSIC converted' % conv)
+                    ds = Dataset(df)
+                    df_time = ds.variables['time']
+                    # Here, need to check not just calendar, but that file is ncdf_classic already...
+                    if (hasattr(df_time, 'calendar')) is False:
+                        p, f = path.split(path.abspath(df))
+                        LOGGER.debug("path = %s , file %s " % (p, f))
+                        # May be an issue if several users are working at the same time
+                        move(df, f)
+                        conv = call(resource=f,
+                                    output_format_options={'data_model': 'NETCDF4_CLASSIC'},
+                                    dir_output=p,
+                                    prefix=f.replace('.nc', ''))
+                        obs_data.append(conv)
+                        LOGGER.debug('file %s to NETCDF4_CLASSIC converted' % conv)
+                        # Cleaning, could be 50gb... for each (!) user
+                        # TODO Check how links work
+                        cmdrm = 'rm -f %s' % (f)
+                        system(cmdrm)
+                    else:
+                        obs_data.append(df)
+                    ds.close()
                 except:
                     LOGGER.exception('failed to convert into NETCDF4_CLASSIC')
             except:
@@ -114,7 +180,7 @@ def reanalyses(start=1948, end=None, variable='slp', dataset='NCEP'):
         LOGGER.exception(msg)
         raise Exception(msg)
 
-    if level is None:
+    if (level is None) or (getlevel==False):
         data = obs_data
     else:
         LOGGER.info('get level: %s' % level)
@@ -127,11 +193,14 @@ def get_level(resource, level):
     from netCDF4 import Dataset
     from flyingpigeon.utils import get_variable
     from numpy import squeeze
+    from os import path
 
     try:
-        level_data = call(resource, level_range=[int(level), int(level)])
         if type(resource) == list:
-            resource.sort()
+            resource = sorted(resource, key=lambda i: path.splitext(path.basename(i))[0])
+            # resource.sort()
+
+        level_data = call(resource, level_range=[int(level), int(level)])
         variable = get_variable(level_data)
         LOGGER.info('found %s in file' % variable)
         ds = Dataset(level_data, mode='a')
@@ -140,6 +209,13 @@ def get_level(resource, level):
         new_var = ds.createVariable('z%s' % level, var.dtype, dimensions=(dims[0], dims[2], dims[3]))
         # i = where(var[:]==level)
         new_var[:, :, :] = squeeze(var[:, 0, :, :])
+
+        # TODO: Here may be an error! in case of exception, dataset will not close!
+        # Exception arise for example for 20CRV2 data...
+        try:
+            new_var.setncatts({k: var.getncattr(k) for k in var.ncattrs()})
+        except:
+            LOGGER.info('Could not set attributes for z%s' % level)
         ds.close()
         LOGGER.info('level %s extracted' % level)
         data = call(level_data, variable='z%s' % level)
@@ -182,3 +258,182 @@ def write_fileinfo(resource, filepath=False):
         LOGGER.exception('failed to write file names to file')
 
     return text_src
+
+
+def fetch_eodata(item_type, asset, token, bbox, period=[dt.today()-timedelta(days=30), dt.today()],  cloud_cover=0.5, cache=True):
+    """
+    search for given EO data product provided by planet.
+    The search and appropriate download is limited by bbox and search period
+
+    :param item_type: product provided by planet
+    :param asset: product asset, (visible, analytic, bands)
+    :param token: Authentification token generated by planet Earth Obersavation Explorer
+    :param bbox: latitude longitude coordinates defining a bounding box
+    :param period: [start , end] datetime objects (default last 30 days)
+    :param cloud_cover: threshold for cloud_cover tolerance. 0 = 0percent cloud_cover 1=100percent cloud_cover
+    :param cache: if True file (default) is stored in local cache
+
+    return list: list of pathes for fetched products
+    """
+
+    import os
+    import json
+    import requests
+    from requests.auth import HTTPBasicAuth
+    from tempfile import mkstemp
+    import shutil
+    import time
+    from os.path import join
+    from os import path, makedirs
+    from flyingpigeon.config import cache_path
+    #  Enter a bbox: min_lon, max_lon, min_lat, max_lat.
+    #                xmin ymin xmax ymax
+    geojson_geometry = {"type": "Polygon",
+                        "coordinates": [[
+                                [bbox[0], bbox[1]],  # [14.600830078125, 8.677421123289992],
+                                [bbox[2], bbox[1]],  # [14.797210693359375, 8.677421123289992],
+                                [bbox[2], bbox[3]],  # [14.797210693359375, 8.90678000752024],
+                                [bbox[0], bbox[3]],  # [14.600830078125, 8.90678000752024],
+                                [bbox[0], bbox[1]],  # [14.600830078125, 8.677421123289992]
+                                    ]]}
+
+    LOGGER.debug("geojson_geometry: %s" % geojson_geometry)
+    # get images that overlap with our AOI
+    geometry_filter = {
+      "type": "GeometryFilter",
+      "field_name": "geometry",
+      "config": geojson_geometry
+    }
+
+    start = period[0]
+    end = period[1]
+
+
+    LOGGER.debug("Period %s to %s " % (start, end))
+
+    # get images acquired within a date range
+    date_range_filter = {
+      "type": "DateRangeFilter",
+      "field_name": "acquired",
+      "config": {
+        "gte": "%s000Z" % (start.strftime('%Y-%m-%dT%H:%M:%S.')),
+        "lte": "%s000Z" % (end.strftime('%Y-%m-%dT%H:%M:%S.')),
+      }
+    }
+
+    # only get images which have <50% cloud coverage
+    cloud_cover_filter = {
+      "type": "RangeFilter",
+      "field_name": "cloud_cover",
+      "config": {
+        "lte": cloud_cover
+      }
+    }
+
+    # combine our geo, date, cloud filters
+    combined_filter = {"type": "AndFilter",
+                       "config": [geometry_filter, date_range_filter, cloud_cover_filter]}
+
+   # API Key
+    PLANET_API_KEY = token  # os.getenv('PL_API_KEY')
+
+    # item_type = item_type, assetproducts[0]  # "PSScene4Band"
+    # API request object
+
+    search_request = {
+      "interval": "day",
+      "item_types": [item_type],
+      "filter": combined_filter
+    }
+
+    if cache:
+        DIR_archiv = cache_path()
+    else:
+        DIR_archiv = '.'
+    DIR = join(DIR_archiv, "EO_data", item_type, asset)
+
+    if not os.path.exists(DIR):
+        makedirs(DIR)
+
+    # fire off the POST request
+    search_result = requests.post(
+        'https://api.planet.com/data/v1/quick-search',
+        auth=HTTPBasicAuth(PLANET_API_KEY, ''),
+        json=search_request)
+
+    # LOGGER.info('Search result: %s ' % json.dumps(search_result.json(), indent=1))
+
+    # extract image IDs only
+    image_ids = [feature['id'] for feature in search_result.json()['features']]
+    LOGGER.info("image IDs:  %s " % image_ids)
+
+    resources = []
+    resources_sleeping = []
+
+    for image_id in image_ids:
+
+        id0 = image_id
+        if "xml" in asset:
+                filename = "%s.xml" % id0
+        else:
+            filename = "%s.tif" % id0
+
+        local_file = join(DIR, filename)  # mkstemp(dir="/home/nils/data/planet/", prefix=id0, suffix='.tif')
+
+        if os.path.exists(local_file):
+            LOGGER.info('File %s in cache' % filename)
+            resources.extend([local_file])
+        else:
+            id0_url = 'https://api.planet.com/data/v1/item-types/{}/items/{}/assets'.format(item_type, id0)
+
+            # Returns JSON metadata for assets in this ID. Learn more: planet.com/docs/reference/data-api/items-assets/#asset
+            result = requests.get(id0_url, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
+            # List of asset types available for this particular satellite image
+            keys = result.json().keys()
+            LOGGER.debug("assets in file %s : %s " % (filename, keys))
+            # This is "inactive" if the "visual" asset has not yet been activated; otherwise 'active'
+            #  if 'analytic' in result.json().keys():
+            if asset in keys:
+                LOGGER.debug("downloading file %s" % filename)
+                # LOGGER.debug(result.json()[asset]['status'])
+                # Parse out useful links
+                links = result.json()[asset]["_links"]  # u"analytic"
+                self_link = links["_self"]
+                activation_link = links["activate"]
+                # Request activation of the 'visual' asset:
+                activate_result = requests.get(activation_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
+                # Parse out useful links
+                links = result.json()[asset]["_links"]  # u"analytic"
+                self_link = links["_self"]
+                activation_link = links["activate"]
+                # Request activation of the 'visual' asset:
+                activate_result = requests.get(activation_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
+                activation_status_result = requests.get(self_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
+
+                try:
+                    timeout = time.time() + 30   # 30 seconds from now
+                    while activation_status_result.json()["status"] != 'active':
+                        if time.time() > timeout and activation_status_result.json()["status"] == 'inactive':
+                            LOGGER.debug("File %s is still inactive after 30sec. Giving up" % filename)
+                            resources_sleeping.extend([filename])
+                            break
+                        else:
+                            LOGGER.debug('File %s is sleeping. gently waking up' % filename)
+                            LOGGER.debug(activation_status_result.json()["status"])
+                            time.sleep(30)
+                            activation_status_result = requests.get(self_link, auth=HTTPBasicAuth(PLANET_API_KEY, ''))
+
+                    if time.time() < timeout or activation_status_result.json()["status"] == 'active':
+                        LOGGER.debug('File ready to download: %s' % (activation_status_result.json()["status"]))
+                        # Image can be downloaded by making a GET with your Planet API key, from here:
+                        download_link = activation_status_result.json()["location"]
+                        r = requests.get(download_link, stream=True, verify=False)
+                        with open(local_file, 'wb') as fp:
+                            shutil.copyfileobj(r.raw, fp)
+                            resources.extend([local_file])
+                except:
+                    LOGGER.exception("failed to download file %s " % filename)
+            else:
+                LOGGER.debug('Asset not found in keys, most likely no permissions for this data set %s ' % filename)
+
+    return resources_sleeping, resources

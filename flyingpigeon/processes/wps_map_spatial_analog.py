@@ -1,18 +1,17 @@
+import logging
+from datetime import datetime as dt
+
 from flyingpigeon.log import init_process_logger
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.visualisation import map_spatial_analog, fig2plot
-
-from pywps import Process
-from pywps import LiteralInput
+from matplotlib import pyplot as plt
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
 from pywps.app.Common import Metadata
 
-from datetime import datetime as dt
-from matplotlib import pyplot as plt
-
-import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -21,7 +20,7 @@ class MapSpatialAnalogProcess(Process):
         inputs = [
             ComplexInput('resource', 'netCDF dataset',
                          abstract="Dissimilarity between target at selected "
-                                   "location and candidate distributions over the entire grid.",
+                                  "location and candidate distributions over the entire grid.",
                          metadata=[Metadata('Info')],
                          min_occurs=1,
                          max_occurs=1,
@@ -54,7 +53,7 @@ class MapSpatialAnalogProcess(Process):
                           supported_formats=[Format('image/png'),
                                              Format('application/pdf'),
                                              Format('image/svg+xml'),
-                                             Format('application/postscript'),],
+                                             Format('application/postscript'), ],
                           ),
 
             ComplexOutput('output_log', 'Logging information',
@@ -68,7 +67,8 @@ class MapSpatialAnalogProcess(Process):
             self._handler,
             identifier="map_spatial_analog",
             title="Map of dissimilarity values calculated by the spatial_analog process.",
-            abstract="Produce map showing the dissimilarity values computed by the spatial_analog process as well as indicating by a marker the location of the target site.",
+            abstract="Produce map showing the dissimilarity values computed by the "
+                     "spatial_analog process as well as indicating by a marker the location of the target site.",
             version="0.1",
             metadata=[
                 Metadata('Doc',
@@ -81,7 +81,6 @@ class MapSpatialAnalogProcess(Process):
         )
 
     def _handler(self, request, response):
-        from tempfile import mkstemp
 
         tic = dt.now()
         init_process_logger('log.txt')

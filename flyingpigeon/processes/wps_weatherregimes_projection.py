@@ -3,24 +3,23 @@ Processes for Weather Classification
 Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 """
 
-from flyingpigeon.datafetch import _PRESSUREDATA_
-from flyingpigeon.weatherregimes import _TIMEREGIONS_
-from flyingpigeon import weatherregimes as wr
-from flyingpigeon.utils import archive, archiveextract
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.utils import download, get_time
-from os.path import abspath
+import logging
 from datetime import datetime as dt
+from os.path import abspath
 from tempfile import mkstemp
 
-from pywps import Process
-from pywps import LiteralInput
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format, FORMATS
-from pywps.app.Common import Metadata
+from flyingpigeon import weatherregimes as wr
 from flyingpigeon.log import init_process_logger
+from flyingpigeon.utils import archiveextract
+from flyingpigeon.utils import download, get_time
+from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.weatherregimes import _TIMEREGIONS_
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
+from pywps.app.Common import Metadata
 
-import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -213,9 +212,9 @@ class WeatherregimesprojectionProcess(Process):
         #######################
         try:
             cycst = anualcycle.split('-')[0]
-            cycen = anualcycle.split('-')[0]
+            cycen = anualcycle.split('-')[1]
             reference = [dt.strptime(cycst, '%Y%m%d'), dt.strptime(cycen, '%Y%m%d')]
-            model_anomal = wr.get_anomalies(model_subset, reference=reference)
+            model_anomal = wr.get_anomalies(model_subset, reference=reference, sseas='multi')
 
             #####################
             # extracting season
@@ -229,10 +228,9 @@ class WeatherregimesprojectionProcess(Process):
         # call the R scripts
         #######################
 
-        import shlex
         import subprocess
         from flyingpigeon import config
-        from os.path import curdir, exists, join
+        from os.path import curdir, join
 
         try:
             rworkspace = curdir
@@ -241,7 +239,7 @@ class WeatherregimesprojectionProcess(Process):
 
             yr1 = start.year
             yr2 = end.year
-            time = get_time(model_season, format='%Y%m%d')
+            time = get_time(model_season)  # , format='%Y%m%d')
 
             # ip, output_graphics = mkstemp(dir=curdir ,suffix='.pdf')
             ip, file_pca = mkstemp(dir=curdir, suffix='.txt')
