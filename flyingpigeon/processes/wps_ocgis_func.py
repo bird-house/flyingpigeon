@@ -16,6 +16,7 @@ Author: David Huard, Ouranos, 2017
 
 import logging
 from collections import OrderedDict
+<<<<<<< HEAD
 
 import ocgis
 from ocgis.calc.library import register
@@ -25,18 +26,27 @@ from pywps import Format
 from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
+=======
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 
 from flyingpigeon.log import init_process_logger
 from flyingpigeon.utils import GROUPING
 from flyingpigeon.utils import archiveextract
 from flyingpigeon.utils import rename_complexinputs
+<<<<<<< HEAD
 from flyingpigeon.utils import GROUPING
 from eggshell.log import init_process_logger
 
 import ocgis
+=======
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 from ocgis.calc.library import register
 from ocgis.contrib import library_icclim as libclim
-from collections import OrderedDict
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
+from pywps.app.Common import Metadata
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -295,8 +305,12 @@ class ICCLIMProcess(IndicatorProcess):
 
 def create_icclim_process_class(key):
     """Create a subclass of an ICCLIMProcess for a given indicator."""
+<<<<<<< HEAD
     name = key.upper() + 'Process'
     clazz = type(name, (ICCLIMProcess,), {'key': key, '__name__': name})
+=======
+    clazz = type(key.upper() + 'Process', (ICCLIMProcess,), {'key': key})
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
     return clazz
 
 

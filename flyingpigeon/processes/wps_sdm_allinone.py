@@ -3,24 +3,29 @@ Processes for Species distribution
 Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 """
 
-from pywps import Process
-from pywps import LiteralInput
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format, FORMATS
-from pywps.app.Common import Metadata
+import logging
+import tempfile
 
+<<<<<<< HEAD
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import rename_complexinputs
 from eggshell.log import init_process_logger
+=======
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 from flyingpigeon import sdm
+from flyingpigeon.log import init_process_logger
 from flyingpigeon.sdm import _SDMINDICES_
 from flyingpigeon.utils import archive, archiveextract
-from flyingpigeon.visualisation import map_gbifoccurrences
+from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.visualisation import map_PAmask
+from flyingpigeon.visualisation import map_gbifoccurrences
 from flyingpigeon.visualisation import pdfmerge, concat_images
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
+from pywps.app.Common import Metadata
 
-import tempfile
-import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -45,7 +50,6 @@ class SDMallinoneProcess(Process):
                          max_occurs=1,
                          default='Fagus sylvatica'
                          ),
-
 
             #  self.BBox = self.addBBoxInput(
             #     identifier="BBox",
@@ -76,7 +80,6 @@ class SDMallinoneProcess(Process):
                          allowed_values=['all', '1951-1980', '1961-1990',
                                          '1971-2000', '1981-2010']
                          ),
-
 
             LiteralInput("archive_format", "Archive format",
                          abstract="Result files will be compressed into archives.\
@@ -233,7 +236,12 @@ class SDMallinoneProcess(Process):
         # get the indices
         ncs_indices = None
         try:
+<<<<<<< HEAD
             response.update_status('start calculation of climate indices for {}'.format(indices), 30)
+=======
+            response.update_status('start calculation of climate indices for %s'
+                                   % indices, 30)
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
             ncs_indices = sdm.get_indices(resource=resources, indices=indices)
             LOGGER.info('indice calculation done')
         except Exception as ex:
@@ -259,8 +267,13 @@ class SDMallinoneProcess(Process):
 
         for count, key in enumerate(indices_dic.keys()):
             try:
+<<<<<<< HEAD
                 status_nr = 40 + count*10
                 response.update_status('Start processing of {}'.format(key), status_nr)
+=======
+                staus_nr = 40 + count * 10
+                response.update_status('Start processing of %s' % key, staus_nr)
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
                 ncs = indices_dic[key]
                 LOGGER.info('with {} files'.format(len(ncs)))
 

@@ -4,12 +4,15 @@ Author: Nils Hempelmann ( info@nilshempelmann.de )
 """
 import logging
 import tempfile
+<<<<<<< HEAD
 
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
 from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
+=======
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 
 from flyingpigeon import sdm
 from flyingpigeon.log import init_process_logger
@@ -19,12 +22,20 @@ from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.visualisation import map_PAmask
 from flyingpigeon.visualisation import map_gbifoccurrences
 from flyingpigeon.visualisation import pdfmerge, concat_images
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
+from pywps.app.Common import Metadata
 
+<<<<<<< HEAD
 from eggshell.log import init_process_logger
 
 import tempfile
 import logging
 
+=======
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -235,8 +246,13 @@ class SDMcsvProcess(Process):
         response.update_status('Start processing for {} datasets'.format(len(indices_dic.keys())))
         for count, key in enumerate(indices_dic.keys()):
             try:
+<<<<<<< HEAD
                 status_nr = 40 + count * 10
                 response.update_status('Start processing of {}'.format(key), status_nr)
+=======
+                staus_nr = 40 + count * 10
+                response.update_status('Start processing of %s' % key, staus_nr)
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
                 ncs = indices_dic[key]
                 LOGGER.info('with {} files'.format(len(ncs)))
 

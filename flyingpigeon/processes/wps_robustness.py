@@ -1,21 +1,33 @@
 import logging
 from tempfile import mkstemp
+<<<<<<< HEAD
 from eggshell.log import init_process_logger
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.datafetch import write_fileinfo
 
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format
-from pywps import LiteralInput
-from pywps import Process
-from pywps.app.Common import Metadata
+=======
 
 from flyingpigeon import robustness as erob
 from flyingpigeon.datafetch import write_fileinfo
 from flyingpigeon.log import init_process_logger
 from flyingpigeon.utils import archiveextract
 from flyingpigeon.utils import rename_complexinputs
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
+from pywps.app.Common import Metadata
 
+<<<<<<< HEAD
+from flyingpigeon import robustness as erob
+from flyingpigeon.datafetch import write_fileinfo
+from flyingpigeon.log import init_process_logger
+from flyingpigeon.utils import archiveextract
+from flyingpigeon.utils import rename_complexinputs
+
+=======
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 LOGGER = logging.getLogger("PYWPS")
 
 

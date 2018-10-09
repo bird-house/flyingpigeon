@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime as dt
 from datetime import timedelta, time
+<<<<<<< HEAD
 
 from pywps import Format
 # from pywps import LiteralInput
@@ -15,11 +16,23 @@ from flyingpigeon.utils import archive, archiveextract
 
 from flyingpigeon import eodata
 
+=======
+
+from flyingpigeon import eodata
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 # from flyingpigeon.datafetch import write_fileinfo
 from flyingpigeon.datafetch import fetch_eodata
 from flyingpigeon.log import init_process_logger
 # from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.utils import archive
+<<<<<<< HEAD
+=======
+from pywps import Format
+# from pywps import LiteralInput
+from pywps import LiteralInput, ComplexOutput
+from pywps import Process
+from pywps.app.Common import Metadata
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 
 LOGGER = logging.getLogger("PYWPS")
 

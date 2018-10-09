@@ -1,19 +1,32 @@
+<<<<<<< HEAD
+=======
+# TODO: Rename this file "wps_esmf_process"
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 import logging
 import os
 
 import ESMF
 import ocgis
+<<<<<<< HEAD
+=======
+from flyingpigeon.log import init_process_logger
+from flyingpigeon.utils import archiveextract
+from flyingpigeon.utils import rename_complexinputs
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format, configuration, get_format
 from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
 
+<<<<<<< HEAD
 from eggshell.log import init_process_logger
 from flyingpigeon.utils import archiveextract
 from flyingpigeon.utils import rename_complexinputs
 
 
+=======
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 LOGGER = logging.getLogger("PYWPS")
 
 json_format = get_format('JSON')
@@ -22,6 +35,30 @@ json_format = get_format('JSON')
 methods = list(map(str.lower, ESMF.RegridMethod.__members__.keys()))
 
 
+<<<<<<< HEAD
+=======
+def extract_doc():
+    """Format the documentation about the ESMF regridding methods."""
+    import inspect
+    import re
+
+    source = inspect.getsource(ESMF.RegridMethod)
+    doc = source.replace('"""', '')
+
+    def title(match):
+        [name] = match.groups()
+        n = len(name)
+        return '\n    ' + name + '\n    ' + n * '~'
+
+    doc = re.sub('(\w+) = \d', title, doc)
+    lines = doc.splitlines()[3:]
+    lines.insert(0, '    Notes')
+    lines.insert(1, '    -----')
+
+    return '\n'.join(lines)
+
+
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 def actual_output_path(fn):
     """Return the path to an output file, adjusting for whether or not the server is active or not.
 

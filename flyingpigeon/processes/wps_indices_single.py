@@ -1,9 +1,12 @@
 import logging
+<<<<<<< HEAD
 
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
 from pywps import LiteralInput
 from pywps import Process
+=======
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 
 from flyingpigeon.indices import calc_indice_simple
 from flyingpigeon.indices import indices
@@ -11,9 +14,17 @@ from flyingpigeon.log import init_process_logger
 from flyingpigeon.subset import countries
 from flyingpigeon.utils import GROUPING
 from flyingpigeon.utils import archive, archiveextract
+<<<<<<< HEAD
 from flyingpigeon import config
 from eggshell.log import init_process_logger
 from flyingpigeon.utils import rename_complexinputs
+=======
+from flyingpigeon.utils import rename_complexinputs
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -175,6 +186,7 @@ class IndicessingleProcess(Process):
                     )
                     LOGGER.debug('result: {}'.format(result))
                     results.extend(result)
+<<<<<<< HEAD
 
                 except Exception as ex:
                     msg = 'failed for {}: {}'.format(key, str(ex))
@@ -186,6 +198,12 @@ class IndicessingleProcess(Process):
             LOGGER.exception(msg)
             raise Exception(msg)
 
+=======
+                except:
+                    LOGGER.exception('failed for %s', key)
+        except:
+            LOGGER.exception('Failed to calculate indices')
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
         #         # if not results:
         #         #     raise Exception("failed to produce results")
         #         # response.update_status('num results %s' % len(results), 90)

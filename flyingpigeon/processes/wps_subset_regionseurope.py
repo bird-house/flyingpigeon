@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import logging
 
 from pywps import ComplexInput, ComplexOutput
@@ -14,10 +15,27 @@ from flyingpigeon.subset import _EUREGIONS_
 from flyingpigeon.subset import clipping
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import rename_complexinputs
+=======
+# TODO: Rename this file to "wps_subset_europe"
+import logging
+
+from flyingpigeon.log import init_process_logger
+# from flyingpigeon.subset import countries, countries_longname
+from flyingpigeon.subset import _EUREGIONS_
+from flyingpigeon.subset import clipping
+from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import rename_complexinputs
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
+from pywps.app.Common import Metadata
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 
 LOGGER = logging.getLogger("PYWPS")
 
 
+# TODO: rename this process "SubseteuropeProcess"
 class ClipregionseuropeProcess(Process):
     """
     TODO: opendap input support, additional metadata to display region names.

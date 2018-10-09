@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from pywps import Process
 # from pywps import LiteralInput
 from pywps import ComplexInput, LiteralInput, ComplexOutput
@@ -12,22 +13,35 @@ from flyingpigeon.config import cache_path
 import logging
 #import zipfile
 
+=======
+import logging
+import zipfile
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 from datetime import datetime as dt
 from datetime import timedelta, time
 from os import makedirs
 from os.path import exists, join
 from tempfile import mkstemp
 
+<<<<<<< HEAD
+=======
+from flyingpigeon import eodata
+from flyingpigeon.config import cache_path
+from flyingpigeon.log import init_process_logger
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 from pywps import Format
 # from pywps import LiteralInput
 from pywps import LiteralInput, ComplexOutput
 from pywps import Process
 from pywps.app.Common import Metadata
 from sentinelsat import SentinelAPI, geojson_to_wkt
+<<<<<<< HEAD
 
 # from flyingpigeon import eodata
 from flyingpigeon.config import cache_path
 from flyingpigeon.log import init_process_logger
+=======
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -220,8 +234,13 @@ class EO_COP_fetchProcess(Process):
                         form = products[key]['format']
                         response.update_status("fetch file {}".format(filename), 20)
                         ID = str(products[key]['identifier'])
+<<<<<<< HEAD
                         file_zip = join(DIR_EO, '{}.zip'.format(ID))
                         DIR_tile = join(DIR_EO, str(filename))
+=======
+                        file_zip = join(DIR_EO, '%s.zip' % (ID))
+                        DIR_tile = join(DIR_EO, '%s' % (filename))
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 
                         if exists(file_zip):
                             LOGGER.debug('file {}.zip already fetched'.format(ID))
@@ -237,7 +256,11 @@ class EO_COP_fetchProcess(Process):
                                 raise Exception(msg)
 
                         if exists(DIR_tile):
+<<<<<<< HEAD
                             LOGGER.debug('file {} already unzipped'.format(filename))
+=======
+                            LOGGER.debug('file %s already unzipped' % filename)
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
                         else:
                             try:
                                 # zipfile = join(DIR_EO, '%szip' % (filename)).strip(form)
