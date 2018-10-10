@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 # TODO: Rename this file "wps_esmf_process"
 >>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 import logging

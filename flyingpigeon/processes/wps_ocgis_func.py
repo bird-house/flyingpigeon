@@ -16,30 +16,17 @@ Author: David Huard, Ouranos, 2017
 
 import logging
 from collections import OrderedDict
-<<<<<<< HEAD
-
-import ocgis
-from ocgis.calc.library import register
-from ocgis.contrib import library_icclim as libclim
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format
-from pywps import LiteralInput
-from pywps import Process
-from pywps.app.Common import Metadata
-=======
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 
 from flyingpigeon.log import init_process_logger
-from flyingpigeon.utils import GROUPING
+# from flyingpigeon.utils import GROUPING
 from flyingpigeon.utils import archiveextract
 from flyingpigeon.utils import rename_complexinputs
-<<<<<<< HEAD
+
 from flyingpigeon.utils import GROUPING
 from eggshell.log import init_process_logger
 
 import ocgis
-=======
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
+
 from ocgis.calc.library import register
 from ocgis.contrib import library_icclim as libclim
 from pywps import ComplexInput, ComplexOutput

@@ -5,12 +5,7 @@ from datetime import timedelta, time
 from os import makedirs
 from os.path import exists, join
 
-<<<<<<< HEAD
-=======
-from flyingpigeon import eodata
-from flyingpigeon.config import cache_path
-from flyingpigeon.log import init_process_logger
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
+from eggshell.log import init_process_logger
 from pywps import Format
 # from pywps import LiteralInput
 from pywps import LiteralInput, ComplexOutput
@@ -18,16 +13,10 @@ from pywps import Process
 from pywps.app.Common import Metadata
 from sentinelsat import SentinelAPI, geojson_to_wkt
 
-<<<<<<< HEAD
-from eggshell.log import init_process_logger
-from flyingpigeon.utils import rename_complexinputs
-
 from flyingpigeon import eodata
 from flyingpigeon.config import cache_path
 from flyingpigeon.log import init_process_logger
 
-=======
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -207,11 +196,7 @@ class EO_COP_indicesProcess(Process):
 
         # api.download_all(products)
         # try:
-<<<<<<< HEAD
         # with open(filepaths, 'w') as fp:
-=======
-        # with open(filepathes, 'w') as fp:
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
         #     fp.write('############################################\n')
         #     fp.write('###     Following files are fetched      ###\n')
         #     fp.write('############################################\n')
@@ -224,17 +209,12 @@ class EO_COP_indicesProcess(Process):
                 filename = products[key]['filename']
                 # form = products[key]['format']
                 ID = str(products[key]['identifier'])
-<<<<<<< HEAD
+
                 file_zip = join(DIR_EO, '{}.zip'.format(ID))
                 DIR_tile = join(DIR_EO, str(filename))
                 response.update_status('fetch file {}'.format(ID), 20)
                 LOGGER.debug('path: {}'.format(DIR_tile))
-=======
-                file_zip = join(DIR_EO, '%s.zip' % (ID))
-                DIR_tile = join(DIR_EO, '%s' % (filename))
-                response.update_status("fetch file %s" % ID, 20)
-                LOGGER.debug('path: %s' % DIR_tile)
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
+
                 if exists(file_zip):
                     LOGGER.debug('file %s.zip already fetched' % ID)
                 else:
@@ -251,11 +231,8 @@ class EO_COP_indicesProcess(Process):
                         raise Exception(msg)
 
                 if exists(DIR_tile):
-<<<<<<< HEAD
                     LOGGER.debug('file {} already unzipped'.format(filename))
-=======
-                    LOGGER.debug('file %s already unzipped' % filename)
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
+
                 else:
                     try:
                         # zipfile = join(DIR_EO, '%szip' % (filename)).strip(form)
@@ -283,7 +260,6 @@ class EO_COP_indicesProcess(Process):
         tiles = []
         for resource in resources:
             try:
-<<<<<<< HEAD
                 response.update_status('Calculating {} indices'.format(indice), 40)
                 if indice == 'NDVI':
                     LOGGER.debug('Calculate NDVI for {}'.format(resource))
@@ -291,15 +267,7 @@ class EO_COP_indicesProcess(Process):
                     LOGGER.debug('resources BAI calculated')
                 if indice == 'BAI':
                     LOGGER.debug('Calculate BAI for {}'.format(resource))
-=======
-                response.update_status("Calculating %s indices " % (indice), 40)
-                if indice == 'NDVI':
-                    LOGGER.debug('Calculate NDVI for %s', resource)
-                    tile = eodata.get_ndvi(resource)
-                    LOGGER.debug('resources BAI calculated')
-                if indice == 'BAI':
-                    LOGGER.debug('Calculate BAI for %s', resource)
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
+
                     tile = eodata.get_bai(resource)
                     LOGGER.debug('resources BAI calculated')
                 tiles.append(tile)

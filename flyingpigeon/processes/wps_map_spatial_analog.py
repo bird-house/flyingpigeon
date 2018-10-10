@@ -1,20 +1,18 @@
-<<<<<<< HEAD
-from eggshell.log import init_process_logger
-=======
 import logging
 from datetime import datetime as dt
 
-from flyingpigeon.log import init_process_logger
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
-from flyingpigeon.utils import archive, archiveextract
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.visualisation import map_spatial_analog, fig2plot
+from eggshell.log import init_process_logger
 from matplotlib import pyplot as plt
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
 from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
+
+from flyingpigeon.log import init_process_logger
+from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.visualisation import map_spatial_analog, fig2plot
 
 LOGGER = logging.getLogger("PYWPS")
 

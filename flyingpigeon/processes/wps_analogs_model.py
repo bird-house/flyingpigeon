@@ -11,10 +11,10 @@ from flyingpigeon.calculation import remove_mean_trend
 from flyingpigeon.datafetch import get_level
 from flyingpigeon.log import init_process_logger
 from flyingpigeon.ocgis_module import call
-from flyingpigeon.utils import archiveextract
-from flyingpigeon.utils import get_timerange, get_calendar
-from flyingpigeon.utils import get_variable
-from flyingpigeon.utils import rename_complexinputs
+from eggshell.nc.utils import archiveextract
+from eggshell.nc.utils import get_timerange, get_calendar
+from eggshell.nc.utils import get_variable
+from eggshell.nc.utils import rename_complexinputs
 # later goes to utils
 from netCDF4 import Dataset
 from pywps import ComplexInput, ComplexOutput

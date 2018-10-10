@@ -7,10 +7,6 @@ from os.path import abspath, curdir
 
 import numpy as np
 import ocgis
-from flyingpigeon.log import init_process_logger
-from flyingpigeon.utils import GROUPING
-from flyingpigeon.utils import archiveextract
-from flyingpigeon.utils import rename_complexinputs
 from ocgis import FunctionRegistry, OcgOperations, RequestDataset, env
 from ocgis.calc import base
 from ocgis.conv.nc import NcConverter
@@ -20,6 +16,11 @@ from pywps import Format
 from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
+
+from flyingpigeon.log import init_process_logger
+from flyingpigeon.utils import GROUPING
+from flyingpigeon.utils import archiveextract
+from flyingpigeon.utils import rename_complexinputs
 
 LOGGER = logging.getLogger("PYWPS")
 

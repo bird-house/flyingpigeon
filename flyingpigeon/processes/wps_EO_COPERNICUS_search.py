@@ -1,39 +1,17 @@
-<<<<<<< HEAD
-
-from pywps import Process
-# from pywps import LiteralInput
-from pywps import ComplexInput, LiteralInput, ComplexOutput
-from pywps import Format, FORMATS
-from pywps.app.Common import Metadata
-
-from eggshell.log import init_process_logger
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon import eodata
-
-=======
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 import logging
 from datetime import datetime as dt
 from datetime import timedelta, time
 from tempfile import mkstemp
 
-<<<<<<< HEAD
-=======
-from flyingpigeon import eodata
-from flyingpigeon.log import init_process_logger
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
+from eggshell.log import init_process_logger
 from pywps import Format
-# from pywps import LiteralInput
 from pywps import LiteralInput, ComplexOutput
 from pywps import Process
 from pywps.app.Common import Metadata
 from sentinelsat import SentinelAPI, geojson_to_wkt
-<<<<<<< HEAD
 
 from flyingpigeon import eodata
 from flyingpigeon.log import init_process_logger
-=======
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 
 LOGGER = logging.getLogger("PYWPS")
 

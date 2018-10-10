@@ -12,7 +12,7 @@ from flyingpigeon.datafetch import _PRESSUREDATA_
 from flyingpigeon.datafetch import reanalyses as rl
 from flyingpigeon.log import init_process_logger
 from flyingpigeon.ocgis_module import call
-from flyingpigeon.utils import get_variable
+from eggshell.nc.utils import get_variable
 from netCDF4 import Dataset
 from numpy import squeeze
 from pywps import ComplexOutput
