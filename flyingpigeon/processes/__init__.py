@@ -1,63 +1,3 @@
-<<<<<<< HEAD
-# from .wps_EO_COPERNICUS_fetch import EO_COP_fetchProcess
-# from .wps_EO_COPERNICUS_indices import EO_COP_indicesProcess
-# from .wps_EO_COPERNICUS_rgb import EO_COP_rgbProcess
-# from .wps_EO_fetch import FetcheodataProcess
-# from .wps_EO_ndvi import NdviProcess
-# from .wps_EO_merge import MergeProcess
-# from .wps_EO_COPERNICUS_search import EO_COP_searchProcess
-# from .wps_climatefactsheet import FactsheetProcess
-# from .wps_fetch import FetchProcess
-# from .wps_indices_percentiledays import IndicespercentiledaysProcess
-# from .wps_indices_single import IndicessingleProcess
-# from .wps_landseamask import LandseamaskProcess
-# from .wps_map_spatial_analog import MapSpatialAnalogProcess
-from .wps_ocgis_func import OCGIS_INDEX_PROCESSES
-# from .wps_robustness import RobustnessProcess
-# from .wps_plot_timeseries import PlottimeseriesProcess
-from .wps_pointinspection import PointinspectionProcess
-# from .wps_regrid import ESMFRegridProcess
-# from .wps_sdm_allinone import SDMallinoneProcess
-# from .wps_sdm_csv import SDMcsvProcess
-# from .wps_sdm_csvindices import SDMcsvindicesProcess
-# from .wps_sdm_gbiffetch import GBIFfetchProcess
-# from .wps_sdm_getindices import SDMgetindicesProcess
-# from .wps_segetalflora import SegetalfloraProcess
-# from .wps_spatial_analog import SpatialAnalogProcess
-from .wps_subset_continents import ClipcontinentProcess
-from .wps_subset_countries import ClippingProcess
-# from .wps_subset_regionseurope import ClipregionseuropeProcess
-
-processes = [
-    ClippingProcess(),
-    ClipcontinentProcess(),
-    # ClipregionseuropeProcess(),
-    PointinspectionProcess(),
-    # LandseamaskProcess(),
-    # FactsheetProcess(),
-    # FetchProcess(),
-    # IndicespercentiledaysProcess(),
-    # IndicessingleProcess(),
-    # GBIFfetchProcess(),
-    # SDMgetindicesProcess(),
-    # SDMcsvindicesProcess(),
-    # SDMcsvProcess(),
-    # SDMallinoneProcess(),
-    # RobustnessProcess(),
-    # PlottimeseriesProcess(),
-    # SegetalfloraProcess(),
-    # SpatialAnalogProcess(),
-    # MapSpatialAnalogProcess(),
-    # FetcheodataProcess(),
-    # EO_COP_searchProcess(),
-    # EO_COP_fetchProcess(),
-    # ESMFRegridProcess(),
-    # EO_COP_rgbProcess(),
-    # EO_COP_indicesProcess(),
-    # MergeProcess(),
-    # NdviProcess(),
-] + [c() for c in OCGIS_INDEX_PROCESSES]
-=======
 from .wps_EO_COPERNICUS_fetch import EO_COP_fetchProcess
 from .wps_EO_COPERNICUS_indices import EO_COP_indicesProcess
 from .wps_EO_COPERNICUS_rgb import EO_COP_rgbProcess
@@ -148,21 +88,20 @@ processes = [
                 # NdviProcess(),
                 KDDM_BC_Process(),
             ] + OCGIS_INDEX_PROCESSES
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 
-"""
-pywps3 processes:
 
-# climate for impact processes
-"wps_c4i_simple_indice",
-<<<<<<< HEAD
-# processes under development
-# "wps_eobs2cordex",
-=======
->>>>>>> master
+# pywps3 processes:
+#
+# # climate for impact processes
+# "wps_c4i_simple_indice",
+# <<<<<<< HEAD
+# # processes under development
+# # "wps_eobs2cordex",
+# =======
+# >>>>>>> master
+#
+# # TODO: c4i processes with multiple input sources
+# # "wps_c4i_multivar_indice",
+# # "wps_c4i_percentile_indice",
+# # "wps_c4i_compound_indice",
 
-# TODO: c4i processes with multiple input sources
-# "wps_c4i_multivar_indice",
-# "wps_c4i_percentile_indice",
-# "wps_c4i_compound_indice",
-"""

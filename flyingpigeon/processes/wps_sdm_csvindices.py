@@ -6,34 +6,19 @@ Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 import logging
 import tempfile
 
-<<<<<<< HEAD
-from flyingpigeon.sdm import _SDMINDICES_
 from eggshell.log import init_process_logger
-
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format
-from pywps import LiteralInput
-from pywps import Process
-from pywps.app.Common import Metadata
-
 from flyingpigeon import sdm
-=======
-from flyingpigeon import sdm
-from flyingpigeon.log import init_process_logger
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 from flyingpigeon.utils import archive, archiveextract  # , get_domain
 from flyingpigeon.utils import download
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.visualisation import map_PAmask
 from flyingpigeon.visualisation import map_gbifoccurrences
-<<<<<<< HEAD
-=======
+
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
 from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 
 LOGGER = logging.getLogger("PYWPS")
 

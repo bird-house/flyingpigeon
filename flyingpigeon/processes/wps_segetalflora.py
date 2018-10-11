@@ -2,27 +2,16 @@ import logging
 import time
 from datetime import datetime as dt
 
-<<<<<<< HEAD
-=======
-from flyingpigeon import segetalflora as sf
-from flyingpigeon.log import init_process_logger
-from flyingpigeon.utils import archive, archiveextract
-from flyingpigeon.utils import rename_complexinputs
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format, FORMATS
 from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
-<<<<<<< HEAD
 from eggshell.log import init_process_logger
-
 from flyingpigeon import segetalflora as sf
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import rename_complexinputs
 
-=======
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 
 LOGGER = logging.getLogger("PYWPS")
 

@@ -8,17 +8,18 @@ from datetime import datetime as dt
 from os.path import abspath
 from tempfile import mkstemp
 
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
+from pywps.app.Common import Metadata
+
 from flyingpigeon import weatherregimes as wr
 from flyingpigeon.log import init_process_logger
 from flyingpigeon.utils import archiveextract
 from flyingpigeon.utils import download, get_time
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.weatherregimes import _TIMEREGIONS_
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format
-from pywps import LiteralInput
-from pywps import Process
-from pywps.app.Common import Metadata
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -142,15 +143,15 @@ class WeatherregimesprojectionProcess(Process):
             LOGGER.info('read in the arguments')
             # resources = self.getInputValues(identifier='resources')
             season = request.inputs['season'][0].data
-            LOGGER.info('season %s', season)
+            LOGGER.info('season: {}'.format(season))
 
             period = request.inputs['period'][0].data
-            LOGGER.info('period %s', period)
+            LOGGER.info('period: {}'.format(period))
             anualcycle = request.inputs['anualcycle'][0].data
 
             start = dt.strptime(period.split('-')[0], '%Y%m%d')
             end = dt.strptime(period.split('-')[1], '%Y%m%d')
-            LOGGER.debug('start: %s , end: %s ' % (start, end))
+            LOGGER.debug('start: {0}, end: {1}'.format(start, end))
 
             resource = archiveextract(resource=rename_complexinputs(request.inputs['resource']))
             # resource = archiveextract(resource=[res.file for res in request.inputs['resource']])
@@ -160,14 +161,16 @@ class WeatherregimesprojectionProcess(Process):
             # season = self.getInputValues(identifier='season')[0]
             # period = self.getInputValues(identifier='period')[0]
             # anualcycle = self.getInputValues(identifier='anualcycle')[0]
-            LOGGER.info('period %s' % str(period))
-            LOGGER.info('season %s' % str(season))
-            LOGGER.info('read in the arguments')
-            LOGGER.info('url_ref_file: %s' % url_ref_file)
-            LOGGER.info('url_Rdat: %s' % url_Rdat)
-            LOGGER.info('url_dat: %s' % url_dat)
-        except Exception as e:
-            LOGGER.debug('failed to convert arguments %s ' % e)
+            LOGGER.info('period: {}'.format(period))
+            LOGGER.info('season: {}'.format(season))
+            LOGGER.info('reading in the arguments')
+            LOGGER.info('url_ref_file: {}'.forma(url_ref_file))
+            LOGGER.info('url_Rdat: {}'.format(url_Rdat))
+            LOGGER.info('url_dat: {}'.format(url_dat))
+        except Exception as ex:
+            msg = 'failed to convert arguments: {}'.format(ex)
+            LOGGER.debug(msg)
+            raise Exception(msg)
 
         ############################
         # fetching trainging data
@@ -177,8 +180,10 @@ class WeatherregimesprojectionProcess(Process):
             dat = abspath(download(url_dat))
             Rdat = abspath(download(url_Rdat))
             LOGGER.info('training data fetched')
-        except Exception as e:
-            LOGGER.error('failed to fetch training data %s' % e)
+        except Exception as ex:
+            msg = 'failed to fetch training data %s'.format(ex)
+            LOGGER.error(msg)
+            raise Exception(msg)
 
         ##########################################################
         # get the required bbox and time region from resource data
@@ -197,15 +202,17 @@ class WeatherregimesprojectionProcess(Process):
                     resource=resource, variable=variable,
                     time_range=time_range,  # conform_units_to=conform_units_to, geom=bbox, spatial_wrapping='wrap',
                     regrid_destination=ref_file, regrid_options='bil')
-                LOGGER.info('Dataset subset with regridding done: %s ' % model_subset)
+                LOGGER.info('Dataset subset with regridding done: {}'.format(model_subset))
             else:
                 model_subset = call(
                     resource=resource, variable=variable,
                     time_range=time_range,  # conform_units_to=conform_units_to, geom=bbox, spatial_wrapping='wrap',
                 )
-                LOGGER.info('Dataset time period extracted: %s ' % model_subset)
-        except:
-            LOGGER.exception('failed to make a data subset ')
+                LOGGER.info('Dataset time period extracted: {}'.format(model_subset))
+        except Exception as ex:
+            msg = 'failed to subset data: {}'.format(ex)
+            LOGGER.exception(msg)
+            raise Exception(msg)
 
         #######################
         # computing anomalies
@@ -246,6 +253,7 @@ class WeatherregimesprojectionProcess(Process):
             ip, file_class = mkstemp(dir=curdir, suffix='.Rdat')
             ip, output_frec = mkstemp(dir=curdir, suffix='.txt')
 
+            # TODO: Rewrite this using os.path.join or pathlib libraries
             args = ['Rscript', join(Rsrc, Rfile), '%s/' % curdir,
                     '%s/' % Rsrc,
                     '%s' % model_season,
@@ -263,22 +271,22 @@ class WeatherregimesprojectionProcess(Process):
                     '%s' % 'MODEL']
 
             LOGGER.info('Rcall builded')
-        except Exception as e:
-            msg = 'failed to build the R command %s' % e
+        except Exception as ex:
+            msg = 'failed to build the R command: {}'.format(ex)
             LOGGER.error(msg)
             raise Exception(msg)
         try:
             output, error = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
             # , shell=True
-            LOGGER.info('R outlog info:\n %s ' % output)
-            LOGGER.debug('R outlog errors:\n %s ' % error)
+            LOGGER.info('R outlog info:\n {}'.format(output))
+            LOGGER.debug('R outlog errors:\n {}'.format(error))
             if len(output) > 0:
                 response.update_status('**** weatherregime in R suceeded', 90)
             else:
                 LOGGER.error('NO! output returned from R call')
-        except Exception as e:
-            msg = 'weatherregime in R %s ' % e
-            LOGGER.error(msg)
+        except Exception as ex:
+            msg = 'failed to run the R weatherregime: {}'.format(ex)
+            LOGGER.exception(msg)
             raise Exception(msg)
 
         #################

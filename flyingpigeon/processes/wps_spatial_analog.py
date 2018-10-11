@@ -4,31 +4,14 @@ Process for spatial analog calculations.
 Author: David Huard (huard.david@ouranos.ca),
 """
 
-<<<<<<< HEAD
-from eggshell.log import init_process_logger
-from flyingpigeon.utils import archiveextract
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.utils import get_values
-from flyingpigeon.ocgis_module import call
-from shapely.geometry import Point
-import netCDF4 as nc
-
-from datetime import datetime as dt
-
-import netCDF4 as nc
-=======
+import logging
 import os
 import tempfile
 from datetime import datetime as dt
 
 import netCDF4 as nc
 import ocgis
-from flyingpigeon.log import init_process_logger
-from flyingpigeon.ocgisDissimilarity import Dissimilarity, metrics
-from flyingpigeon.ocgis_module import call
-from flyingpigeon.utils import archiveextract
-from flyingpigeon.utils import rename_complexinputs
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
+from eggshell.log import init_process_logger
 from ocgis import FunctionRegistry, RequestDataset, OcgOperations
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
@@ -36,21 +19,15 @@ from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
 from shapely.geometry import Point
-<<<<<<< HEAD
 
-from flyingpigeon.log import init_process_logger
 from flyingpigeon.ocgisDissimilarity import Dissimilarity, metrics
 from flyingpigeon.ocgis_module import call
 from flyingpigeon.utils import archiveextract
 from flyingpigeon.utils import rename_complexinputs
-=======
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
-
-FunctionRegistry.append(Dissimilarity)
-
-import logging
 
 LOGGER = logging.getLogger("PYWPS")
+
+FunctionRegistry.append(Dissimilarity)
 
 
 class SpatialAnalogProcess(Process):

@@ -1,28 +1,5 @@
-<<<<<<< HEAD
-
-from flyingpigeon.subset import clipping
-from flyingpigeon.subset import countries
 from eggshell.log import init_process_logger
-from flyingpigeon.utils import archive, archiveextract
-from flyingpigeon.utils import rename_complexinputs
 
-import logging
-
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format
-
-from pywps import LiteralInput
-from pywps import Process
-
-from pywps.app.Common import Metadata
-
-from flyingpigeon.log import init_process_logger
-from flyingpigeon.subset import clipping
-from flyingpigeon.subset import countries
-from flyingpigeon.utils import archive, archiveextract
-from flyingpigeon.utils import rename_complexinputs
-
-=======
 import logging
 
 from flyingpigeon.log import init_process_logger
@@ -36,7 +13,6 @@ from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
 
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 LOGGER = logging.getLogger("PYWPS")
 
 

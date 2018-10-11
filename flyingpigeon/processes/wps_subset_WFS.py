@@ -1,9 +1,11 @@
 import traceback
 from urlparse import urlparse
-
+import logging
 from flyingpigeon.handler_common import wfs_common
 from flyingpigeon.utils import CookieNetCDFTransfer
 from pywps import Process, LiteralInput, ComplexOutput, get_format
+
+LOGGER = logging.getLogger("PYWPS")
 
 json_format = get_format('JSON')
 
@@ -74,5 +76,7 @@ class SubsetWFSProcess(Process):
             with CookieNetCDFTransfer(request, opendap_hostnames):
                 result = wfs_common(request, response, mode='subsetter')
             return result
-        except:
+        except Exception as ex:
+            msg = 'Connection to OPeNDAP failed: {}'.format(ex)
+            LOGGER.exception(msg)
             raise Exception(traceback.format_exc())

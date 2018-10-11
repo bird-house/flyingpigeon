@@ -4,37 +4,19 @@ Author: Nils Hempelmann , Wolfgang Falk
 """
 
 import logging
-<<<<<<< HEAD
 
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format
-from pywps import LiteralInput
-from pywps import Process
-from pywps.app.Common import Metadata
-
-from flyingpigeon import sdm
-from flyingpigeon.utils import archive, archiveextract, sort_by_filename
 from eggshell.log import init_process_logger
-
-from flyingpigeon.sdm import _SDMINDICES_
-from flyingpigeon.utils import archive, archiveextract
-
-from flyingpigeon.utils import rename_complexinputs
-
-=======
-
-from flyingpigeon import sdm
-from flyingpigeon.log import init_process_logger
-from flyingpigeon.sdm import _SDMINDICES_
-from flyingpigeon.utils import archive, archiveextract
-from flyingpigeon.utils import rename_complexinputs
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
 from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
 
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
+from flyingpigeon import sdm
+from flyingpigeon.sdm import _SDMINDICES_
+from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import rename_complexinputs
+
 LOGGER = logging.getLogger("PYWPS")
 
 
