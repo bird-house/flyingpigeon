@@ -1,16 +1,18 @@
 import logging
 from datetime import datetime as dt
 
-from flyingpigeon.log import init_process_logger
-from flyingpigeon.utils import archive, archiveextract
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.visualisation import map_spatial_analog, fig2plot
+from eggshell.log import init_process_logger
 from matplotlib import pyplot as plt
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
 from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
+
+from flyingpigeon.log import init_process_logger
+from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.visualisation import map_spatial_analog, fig2plot
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -98,8 +100,8 @@ class MapSpatialAnalogProcess(Process):
             fmts = [e.data for e in request.inputs['fmt']]
             title = request.inputs['title'][0].data
 
-        except Exception as e:
-            msg = 'Failed to read input parameter {}'.format(e)
+        except Exception as ex:
+            msg = 'Failed to read input parameter {}'.format(ex)
             LOGGER.error(msg)
             raise Exception(msg)
 
@@ -112,8 +114,8 @@ class MapSpatialAnalogProcess(Process):
             for fmt in fmts:
                 output.append(fig2plot(fig, fmt))
 
-        except Exception as e:
-            msg = "Failed to create figure: {}".format(e)
+        except Exception as ex:
+            msg = "Failed to create figure: {}".format(ex)
             LOGGER.error(msg)
             raise Exception(msg)
 

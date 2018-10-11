@@ -1,23 +1,45 @@
 import logging
+<<<<<<< HEAD
+
+import dateutil.parser
+import icclim
+from pywps.Process import WPSProcess
+=======
 
 import dateutil.parser
 import icclim
 from pywps.Process import WPSProcess
 
 logger = logging.getLogger()
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 
 # from os.path import expanduser
 
 transfer_limit_Mb = 500
 
+<<<<<<< HEAD
+LOGGER = logging.getLogger()
+=======
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 
+
+<<<<<<< HEAD
 class ProcessSimpleIndice(WPSProcess):
 
+=======
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
     def __init__(self):
         WPSProcess.__init__(self,
                             identifier='wps_c4i_simple_indice',  # only mandatary attribute = same file name
                             title='c4i -- Simple Climate Indices',
+<<<<<<< HEAD
+                            abstract='Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU,'
+                                     ' TR, CSU, GD4, FD, CFD, ID, HD17; of rainfall: CDD, CWD, RR, RR1, SDII, R10mm,'
+                                     ' R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50. This processes is'
+                                     ' also available in Climate4Impact and uses ICCLIM.',
+=======
                             abstract='Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU, TR, CSU, GD4, FD, CFD, ID, HD17; of rainfall: CDD, CWD, RR, RR1, SDII, R10mm, R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50. This processes is also available in Climate4Impact and uses ICCLIM.',
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
                             version="1.0",
                             metadata=[
                                 {"title": "ICCLIM", "href": "http://icclim.readthedocs.io/en/latest/"},
@@ -30,6 +52,15 @@ class ProcessSimpleIndice(WPSProcess):
                             statusSupported=True,
                             grassLocation=False)
 
+<<<<<<< HEAD
+        # self.filesIn = self.addLiteralInput(identifier = 'files',
+        #                                        title = 'Input netCDF files list',
+        #                                        abstract="application/netcdf",
+        #     type=type("S"),
+        #     minOccurs=0,
+        #     maxOccurs=1024,
+        #     default = 'http://aims3.llnl.gov/thredds/dodsC/cmip5_css02_data/cmip5/output1/CMCC/CMCC-CM/rcp85/day/atmos/day/r1i1p1/tasmax/1/tasmax_day_CMCC-CM_rcp85_r1i1p1_20060101-20061231.nc')
+=======
         ## self.filesIn = self.addLiteralInput(identifier = 'files',
         ##                                        title = 'Input netCDF files list',
         ##                                        abstract="application/netcdf",
@@ -37,6 +68,7 @@ class ProcessSimpleIndice(WPSProcess):
         ##                                        minOccurs=0,
         ##                                        maxOccurs=1024,
         ##                                        default = 'http://aims3.llnl.gov/thredds/dodsC/cmip5_css02_data/cmip5/output1/CMCC/CMCC-CM/rcp85/day/atmos/day/r1i1p1/tasmax/1/tasmax_day_CMCC-CM_rcp85_r1i1p1_20060101-20061231.nc')
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 
         self.filesIn = self.addComplexInput(
             identifier="files",
@@ -63,14 +95,24 @@ class ProcessSimpleIndice(WPSProcess):
         self.sliceModeIn = self.addLiteralInput(identifier='sliceMode',
                                                 title='Slice mode (temporal grouping)',
                                                 abstract='Slice mode (temporal grouping to apply to calculations)',
+<<<<<<< HEAD
+                                                type=type('String'),
+=======
                                                 type=type("String"),
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
                                                 default='year')
         self.sliceModeIn.values = ["year", "month", "ONDJFM", "AMJJAS", "DJF", "MAM", "JJA", "SON"]
 
         self.thresholdIn = self.addLiteralInput(
             identifier='threshold',
+<<<<<<< HEAD
+            title='Threshold',
+            abstract='Optional threshold(s) for certain indices (SU, CSU and TR).'
+                     ' Can be a comma separated list, e.g. 20,21,22',
+=======
             title="Threshold",
             abstract="Optional threshold(s) for certain indices (SU, CSU and TR). Can be a comma separated list, e.g. 20,21,22",
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
             type=type("S"),
             minOccurs=0,
             maxOccurs=50)
@@ -86,17 +128,22 @@ class ProcessSimpleIndice(WPSProcess):
         self.timeRangeIn = self.addLiteralInput(
             identifier='timeRange',
             title="Time range",
+<<<<<<< HEAD
+            abstract="Optional time range, e.g. 2010-01-01/2012-12-31."
+                     " If no time range is given, all dates in the file are taken.",
+=======
             abstract="Optional time range, e.g. 2010-01-01/2012-12-31. If no time range is given, all dates in the file are taken.",
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
             type=type("String"),
             minOccurs=0,
             maxOccurs=1)
 
-        ## self.outputFileNameIn = self.addLiteralInput(identifier = 'outputFileName',
-        ##                                        title = 'Name of output netCDF file',
-        ##                                        type = type("String"),
-        ##                                        minOccurs=1,
-        ##                                        maxOccurs=1,
-        ##                                        default = 'out_icclim.nc')
+        # self.outputFileNameIn = self.addLiteralInput(identifier = 'outputFileName',
+        #     title = 'Name of output netCDF file',
+        #     type = type("String"),
+        #     minOccurs=1,
+        #     maxOccurs=1,
+        #     default = 'out_icclim.nc')
 
         self.NLevelIn = self.addLiteralInput(identifier='NLevel',
                                              title='Number of levels',
@@ -135,19 +182,27 @@ class ProcessSimpleIndice(WPSProcess):
         level = self.NLevelIn.getValue()
         thresholdlist = self.getInputValues(identifier='threshold')
 
-        if (time_range):
+        if time_range:
             startdate = dateutil.parser.parse(time_range.split("/")[0])
             stopdate = dateutil.parser.parse(time_range.split("/")[1])
             time_range = [startdate, stopdate]
 
-        logger.debug("time_range: %s", time_range)
+        LOGGER.debug("time_range: %s", time_range)
 
         thresh = None
+<<<<<<< HEAD
+        if thresholdlist:
+            thresh = [float(threshold) for threshold in thresholdlist]
+
+        LOGGER.debug("thresh: %s", thresh)
+
+=======
         if (thresholdlist):
             thresh = [float(threshold) for threshold in threshholdList]
 
         logger.debug("thresh: %s", thresh)
 
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
         self.status.set("Preparing....", 0)
 
         # pathToAppendToOutputDirectory = "/WPS_"+self.identifier+"_" + datetime.now().strftime("%Y%m%dT%H%M%SZ")

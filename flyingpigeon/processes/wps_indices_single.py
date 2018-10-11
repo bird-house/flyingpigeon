@@ -1,5 +1,11 @@
 import logging
 
+from eggshell.log import init_process_logger
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
+
 from flyingpigeon.indices import calc_indice_simple
 from flyingpigeon.indices import indices
 from flyingpigeon.log import init_process_logger
@@ -7,10 +13,6 @@ from flyingpigeon.subset import countries
 from flyingpigeon.utils import GROUPING
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import rename_complexinputs
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format
-from pywps import LiteralInput
-from pywps import Process
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -133,16 +135,16 @@ class IndicessingleProcess(Process):
             else:
                 region = None
 
-            LOGGER.debug("grouping %s " % grouping)
-            LOGGER.debug("mosaic %s " % mosaic)
-            LOGGER.debug('indices= %s ' % indices)
-            LOGGER.debug('region %s' % region)
-            LOGGER.debug('Nr of input files %s ' % len(resources))
-        except:
-            LOGGER.exception('failed to read in the arguments')
+            LOGGER.debug('grouping: {}'.format(grouping))
+            LOGGER.debug('mosaic: {}'.format(mosaic))
+            LOGGER.debug('indices: {}'.format(indices))
+            LOGGER.debug('region: {}'.format(region))
+            LOGGER.debug('Nr of input files: {}'.format(len(resources)))
+        except Exception as ex:
+            LOGGER.exception('failed to read in the arguments: {}'.format(str(ex)))
 
-        response.update_status('starting: indices=%s, grouping=%s, num_files=%s'
-                               % (indices, grouping, len(resources)), 2)
+        response.update_status(
+            'starting: indices={}, grouping={}, num_files={}'.format(indices, grouping, len(resources)), 2)
 
         results = []
 
@@ -154,13 +156,13 @@ class IndicessingleProcess(Process):
             indice = indices[0]  # for indice in indices:
             for key in datasets.keys():
                 try:
-                    response.update_status('Dataset %s: %s' % (len(results) + 1, key), 10)
+                    response.update_status('Dataset {}: {}'.format(len(results) + 1, key), 10)
 
-                    LOGGER.debug("group %s " % group)
-                    LOGGER.debug("mosaic %s " % mosaic)
-                    LOGGER.debug('indice %s ' % indice)
-                    LOGGER.debug('region %s' % region)
-                    LOGGER.debug('Nr of input files %s ' % len(datasets[key]))
+                    LOGGER.debug('grouping: {}'.format(grouping))
+                    LOGGER.debug('mosaic: {}'.format(mosaic))
+                    LOGGER.debug('indice: {}'.format(indice))
+                    LOGGER.debug('region: {}'.format(region))
+                    LOGGER.debug('Nr of input files: {}'.format(len(datasets[key])))
 
                     result = calc_indice_simple(
                         resource=datasets[key],
@@ -170,12 +172,19 @@ class IndicessingleProcess(Process):
                         grouping=group,
                         # dir_output=path.curdir,
                     )
-                    LOGGER.debug('result: %s' % result)
+                    LOGGER.debug('result: {}'.format(result))
                     results.extend(result)
-                except:
-                    LOGGER.exception('failed for %s', key)
-        except:
-            LOGGER.exception('Failed to calculate indices')
+
+                except Exception as ex:
+                    msg = 'failed for {}: {}'.format(key, str(ex))
+                    LOGGER.exception(msg)
+                    raise Exception(msg)
+
+        except Exception as ex:
+            msg = 'Failed to calculate indices: {}'.format(str(ex))
+            LOGGER.exception(msg)
+            raise Exception(msg)
+
         #         # if not results:
         #         #     raise Exception("failed to produce results")
         #         # response.update_status('num results %s' % len(results), 90)
@@ -186,7 +195,7 @@ class IndicessingleProcess(Process):
 
         i = next((i for i, x in enumerate(results) if x), None)
         if i is None:
-            i = "dummy.nc"
+            i = 'dummy.nc'
         response.outputs['ncout'].file = results[i]
 
         #       response.update_status("done", 100)

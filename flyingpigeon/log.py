@@ -1,4 +1,3 @@
-import os
 import logging
 
 
@@ -17,3 +16,4 @@ def init_process_logger(filename=None):
     # add ch to root logger
     logger = logging.getLogger()
     logger.addHandler(ch)
+

@@ -89,19 +89,19 @@ processes = [
                 KDDM_BC_Process(),
             ] + OCGIS_INDEX_PROCESSES
 
-"""
-pywps3 processes:
 
-# climate for impact processes
-"wps_c4i_simple_indice",
-<<<<<<< HEAD
-# processes under development
-# "wps_eobs2cordex",
-=======
->>>>>>> master
+# pywps3 processes:
+#
+# # climate for impact processes
+# "wps_c4i_simple_indice",
+# <<<<<<< HEAD
+# # processes under development
+# # "wps_eobs2cordex",
+# =======
+# >>>>>>> master
+#
+# # TODO: c4i processes with multiple input sources
+# # "wps_c4i_multivar_indice",
+# # "wps_c4i_percentile_indice",
+# # "wps_c4i_compound_indice",
 
-# TODO: c4i processes with multiple input sources
-# "wps_c4i_multivar_indice",
-# "wps_c4i_percentile_indice",
-# "wps_c4i_compound_indice",
-"""

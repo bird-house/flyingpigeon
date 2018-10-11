@@ -17,10 +17,8 @@ Author: David Huard, Ouranos, 2017
 import logging
 from collections import OrderedDict
 
-from flyingpigeon.log import init_process_logger
-from flyingpigeon.utils import GROUPING
-from flyingpigeon.utils import archiveextract
-from flyingpigeon.utils import rename_complexinputs
+import ocgis
+from eggshell.log import init_process_logger
 from ocgis.calc.library import register
 from ocgis.contrib import library_icclim as libclim
 from pywps import ComplexInput, ComplexOutput
@@ -28,6 +26,11 @@ from pywps import Format
 from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
+
+from flyingpigeon.utils import GROUPING
+# from flyingpigeon.utils import GROUPING
+from flyingpigeon.utils import archiveextract
+from flyingpigeon.utils import rename_complexinputs
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -40,7 +43,7 @@ icclim_classes = [k for k in fr.keys() if isinstance(k, str) and k.startswith('i
 class IndicatorProcess(Process, object):
     """A Process class wrapping OCGIS functions."""
     key = 'to_be_subclassed'
-    version = '1.0'
+    version = ocgis.__version__
 
     #################
     # Common inputs #
@@ -95,6 +98,7 @@ class IndicatorProcess(Process, object):
             identifier=self.identifier,
             title=self.title,
             abstract=self.abstract,
+            version=self.version,
             inputs=self.resource_inputs + self.option_inputs + self.extra_inputs,
             outputs=self.outputs,
             status_supported=True,
@@ -154,8 +158,8 @@ class IndicatorProcess(Process, object):
             options = self._option_input_handler(request)
             extras = self._extra_input_handler(request)
 
-        except Exception as e:
-            msg = 'Failed to read input parameter {}'.format(e)
+        except Exception as ex:
+            msg = 'Failed to read input parameter {}'.format(ex)
             LOGGER.error(msg)
             raise Exception(msg)
 
@@ -285,15 +289,15 @@ class ICCLIMProcess(IndicatorProcess):
 
 def create_icclim_process_class(key):
     """Create a subclass of an ICCLIMProcess for a given indicator."""
-    clazz = type(key.upper() + 'Process', (ICCLIMProcess,), {'key': key})
+    name = key.upper() + 'Process'
+    clazz = type(name, (ICCLIMProcess,), {'key': key, '__name__': name})
     return clazz
 
 
-def icclim_process_generator(keys):
-    """Dynamically create derived classes for ICCLIM processes."""
-    for key in keys:
-        yield create_icclim_process_class(key)()
+ICCLIM_PROCESSES = [create_icclim_process_class(key) for key in icclim_classes]
+OCGIS_INDEX_PROCESSES = [FreezeThawProcess, Duration] + ICCLIM_PROCESSES
+__all__ = [c.__name__ for c in OCGIS_INDEX_PROCESSES] + ['OCGIS_INDEX_PROCESSES']
 
-
-ICCLIM_PROCESSES = [p for p in icclim_process_generator(icclim_classes)]
-OCGIS_INDEX_PROCESSES = [FreezeThawProcess(), Duration()] + ICCLIM_PROCESSES
+# Add generated classes to namespace
+for c in ICCLIM_PROCESSES:
+    globals()[c.__name__] = c

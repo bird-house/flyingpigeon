@@ -4,15 +4,16 @@ from datetime import datetime as dt
 from datetime import timedelta, time
 from tempfile import mkstemp
 
+from eggshell.log import init_process_logger
+from pywps import Format
+from pywps import LiteralInput, ComplexOutput
+from pywps import Process
+from pywps.app.Common import Metadata
+
 from flyingpigeon.datafetch import _EODATA_
 # from flyingpigeon.datafetch import write_fileinfo
 from flyingpigeon.datafetch import fetch_eodata
 from flyingpigeon.log import init_process_logger
-from pywps import Format
-# from pywps import LiteralInput
-from pywps import LiteralInput, ComplexOutput
-from pywps import Process
-from pywps.app.Common import Metadata
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -143,10 +144,10 @@ class FetcheodataProcess(Process):
         else:
             start = end - timedelta(days=30)
 
-        if (start > end):
+        if start > end:
             start = dt.now() - timedelta(days=30)
             end = dt.now()
-            LOGGER.exception("periode end befor periode start, period is set to the last 30 days from now")
+            LOGGER.exception("period ends before period starts; period now set to the last 30 days from now")
 
         token = request.inputs['token'][0].data
 
@@ -154,7 +155,7 @@ class FetcheodataProcess(Process):
         resources_sleeping = []
         for product in products:
             item_type, asset = product.split('__')
-            LOGGER.debug('itym type: %s , asset: %s' % (item_type, asset))
+            LOGGER.debug('item type: {} , asset: {}'.format(item_type, asset))
             fetch_sleep, fetch = fetch_eodata(item_type,
                                               asset,
                                               token,
@@ -165,9 +166,9 @@ class FetcheodataProcess(Process):
             resources.extend(fetch)
             resources_sleeping.extend(fetch_sleep)
 
-        _, filepathes = mkstemp(dir='.', suffix='.txt')
+        _, filepaths = mkstemp(dir='.', suffix='.txt')
         try:
-            with open(filepathes, 'w') as fp:
+            with open(filepaths, 'w') as fp:
                 fp.write('######################################################\n')
                 fp.write('### Following files are stored to compute provider ###:\n')
                 fp.write('######################################################\n')
@@ -181,9 +182,11 @@ class FetcheodataProcess(Process):
                 fp.write('######################################################\n')
                 for f in resources_sleeping:
                     fp.write('%s \n' % f)
-            response.outputs['output'].file = filepathes
-        except:
-            LOGGER.exception('failed to write resources to textfile')
+            response.outputs['output'].file = filepaths
+        except Exception as ex:
+            msg = 'failed to write resources to textfile: {}'.format(str(ex))
+            LOGGER.exception(msg)
+            raise Exception(msg)
         # response.outputs['output'].file = write_fileinfo(resource, filepath=True)
         response.update_status("done", 100)
 

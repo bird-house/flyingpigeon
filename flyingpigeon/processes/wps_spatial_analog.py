@@ -4,17 +4,14 @@ Process for spatial analog calculations.
 Author: David Huard (huard.david@ouranos.ca),
 """
 
+import logging
 import os
 import tempfile
 from datetime import datetime as dt
 
 import netCDF4 as nc
 import ocgis
-from flyingpigeon.log import init_process_logger
-from flyingpigeon.ocgisDissimilarity import Dissimilarity, metrics
-from flyingpigeon.ocgis_module import call
-from flyingpigeon.utils import archiveextract
-from flyingpigeon.utils import rename_complexinputs
+from eggshell.log import init_process_logger
 from ocgis import FunctionRegistry, RequestDataset, OcgOperations
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
@@ -23,11 +20,14 @@ from pywps import Process
 from pywps.app.Common import Metadata
 from shapely.geometry import Point
 
-FunctionRegistry.append(Dissimilarity)
-
-import logging
+from flyingpigeon.ocgisDissimilarity import Dissimilarity, metrics
+from flyingpigeon.ocgis_module import call
+from flyingpigeon.utils import archiveextract
+from flyingpigeon.utils import rename_complexinputs
 
 LOGGER = logging.getLogger("PYWPS")
+
+FunctionRegistry.append(Dissimilarity)
 
 
 class SpatialAnalogProcess(Process):
@@ -180,8 +180,8 @@ class SpatialAnalogProcess(Process):
             dateStartTarget = request.inputs['dateStartTarget'][0].data
             dateEndTarget = request.inputs['dateEndTarget'][0].data
 
-        except Exception as e:
-            msg = 'Failed to read input parameter {}'.format(e)
+        except Exception as ex:
+            msg = 'Failed to read input parameter {}'.format(ex)
             LOGGER.error(msg)
             raise Exception(msg)
 
@@ -198,8 +198,8 @@ class SpatialAnalogProcess(Process):
             dateStartTarget = dt.strptime(dateStartTarget, '%Y-%m-%d')
             dateEndTarget = dt.strptime(dateEndTarget, '%Y-%m-%d')
 
-        except Exception as e:
-            msg = 'failed to process inputs {} '.format(e)
+        except Exception as ex:
+            msg = 'failed to process inputs {}'.format(ex)
             LOGGER.error(msg)
             raise Exception(msg)
 
@@ -231,8 +231,8 @@ class SpatialAnalogProcess(Process):
                 out = op.execute()
                 target_ts = out.get_element()
 
-        except Exception as e:
-            msg = 'Target extraction failed {}'.format(e)
+        except Exception as ex:
+            msg = 'Target extraction failed {}'.format(ex)
             LOGGER.debug(msg)
             raise Exception(msg)
 
@@ -251,8 +251,8 @@ class SpatialAnalogProcess(Process):
                           time_range=[dateStartCandidate, dateEndCandidate],
                           )
 
-        except Exception as e:
-            msg = 'Spatial analog failed: {}'.format(e)
+        except Exception as ex:
+            msg = 'Spatial analog failed: {}'.format(ex)
             LOGGER.exception(msg)
             raise Exception(msg)
 

@@ -1,6 +1,19 @@
 import logging
 from tempfile import mkstemp
 
+<<<<<<< HEAD
+from flyingpigeon.subset import countries, countries_longname
+from flyingpigeon.subset import clipping
+from eggshell.log import init_process_logger
+from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import get_variable
+from flyingpigeon import visualisation as vs
+
+from pywps import Process
+from pywps import LiteralInput
+
+=======
 from flyingpigeon import visualisation as vs
 from flyingpigeon.log import init_process_logger
 from flyingpigeon.subset import clipping
@@ -8,12 +21,24 @@ from flyingpigeon.subset import countries
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import get_variable
 from flyingpigeon.utils import rename_complexinputs
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
 from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
 
+<<<<<<< HEAD
+from flyingpigeon import visualisation as vs
+from flyingpigeon.log import init_process_logger
+from flyingpigeon.subset import clipping
+from flyingpigeon.subset import countries
+from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import get_variable
+from flyingpigeon.utils import rename_complexinputs
+
+=======
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -86,15 +111,17 @@ class FactsheetProcess(Process):
             resource=rename_complexinputs(request.inputs['resource']))
 
         var = get_variable(ncs[0])
-        LOGGER.info('variable to be plotted: %s' % var)
+        LOGGER.info('variable to be plotted: {}'.format(var))
 
         # mosaic = self.mosaic.getValue()
         if 'region' in request.inputs:
             regions = [inp.data for inp in request.inputs['region']]
             try:
                 png_region = vs.plot_polygons(regions)
-            except:
-                LOGGER.exception('failed to plot the polygon to world map')
+            except Exception as ex:
+                msg = 'failed to plot the polygon to world map: {}'.format(str(ex))
+                LOGGER.exception(msg)
+                raise Exception(msg)
                 o1, png_region = mkstemp(dir='.', suffix='.png')
 
             # clip the demanded polygons
@@ -113,20 +140,31 @@ class FactsheetProcess(Process):
 
         try:
             tar_subsets = archive(subsets)
-        except:
-            LOGGER.exception('failed to archive subsets')
+        except Exception as ex:
+            msg = 'failed to archive subsets: {}'.format(ex)
+            LOGGER.exception(msg)
+            raise Exception(msg)
             _, tar_subsets = mkstemp(dir='.', suffix='.tar')
 
         try:
             png_uncertainty = vs.uncertainty(subsets, variable=var)
-        except:
-            LOGGER.exception('failed to generate the uncertainty plot')
+        except Exception as ex:
+            msg = 'failed to generate the uncertainty plot: {}'.format(ex)
+            LOGGER.exception(msg)
+            raise Exception(msg)
             _, png_uncertainty = mkstemp(dir='.', suffix='.png')
 
         try:
             png_spaghetti = vs.spaghetti(subsets, variable=var, )
+<<<<<<< HEAD
+        except Exception as ex:
+            msg = 'failed to generate the spaghetti plot: {}'.format(str(ex))
+            LOGGER.exception(msg)
+            raise Exception(msg)
+=======
         except:
             LOGGER.exception('failed to generate the spaghetti plot')
+>>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
             _, png_spaghetti = mkstemp(dir='.', suffix='.png')
 
         try:
@@ -145,8 +183,10 @@ class FactsheetProcess(Process):
                                                #    title=title
                                                )
             LOGGER.info('robustness graphic generated')
-        except:
-            LOGGER.exception('failed to generate the robustness plot')
+        except Exception as ex:
+            msg = 'failed to generate the robustness plot: {}'.format(ex)
+            LOGGER.exception(msg)
+            raise Exception(msg)
             _, png_robustness = mkstemp(dir='.', suffix='.png')
 
         factsheet = vs.factsheetbrewer(

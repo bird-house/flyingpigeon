@@ -2,11 +2,10 @@
 FROM birdhouse/bird-base:latest
 MAINTAINER https://github.com/bird-house
 
-LABEL Description="flyingpigeon application" Vendor="Birdhouse" Version="1.1_dev"
+LABEL Description="Flyingpigeon WPS" Vendor="Birdhouse"
 
 # Configure hostname and ports for services
-ENV HTTP_PORT 8080
-ENV HTTPS_PORT 8443
+ENV HTTP_PORT 5000
 ENV OUTPUT_PORT 8000
 ENV HOSTNAME localhost
 
@@ -20,7 +19,7 @@ COPY . /opt/birdhouse/src/flyingpigeon
 WORKDIR /opt/birdhouse/src/flyingpigeon
 
 # Provide custom.cfg with settings for docker image
-RUN printf "[buildout]\nextends=profiles/docker.cfg" > custom.cfg
+COPY .docker.cfg custom.cfg
 
 # Install system dependencies
 RUN bash bootstrap.sh -i && bash requirements.sh
@@ -42,7 +41,7 @@ VOLUME /opt/birdhouse/var/log
 VOLUME /opt/birdhouse/etc
 
 # Ports used in birdhouse
-EXPOSE 9001 $HTTP_PORT $HTTPS_PORT $OUTPUT_PORT
+EXPOSE $HTTP_PORT $OUTPUT_PORT
 
 # Start supervisor in foreground
 ENV DAEMON_OPTS --nodaemon

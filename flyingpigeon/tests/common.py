@@ -1,5 +1,6 @@
 import os
 from pywps.tests import WpsClient, WpsTestResponse
+from pywps.app.basic import xpath_ns
 
 # SERVICE = "http://localhost:8093/wps"
 
@@ -80,3 +81,19 @@ class WpsTestClient(WpsClient):
 
 def client_for(service):
     return WpsTestClient(service, WpsTestResponse)
+
+
+def get_output(xml):
+    """Return a dictionary of output values from the WPS response xml."""
+    output = {}
+    for output_el in xpath_ns(xml, '/wps:ExecuteResponse'
+                                   '/wps:ProcessOutputs/wps:Output'):
+        [identifier_el] = xpath_ns(output_el, './ows:Identifier')
+        [value_el] = xpath_ns(output_el, './wps:Reference')
+        if value_el is not None:
+            output[identifier_el.text] = value_el.attrib["{http://www.w3.org/1999/xlink}href"]
+        else:
+            [value_el] = xpath_ns(output_el, './wps:Data/wps:LiteralData')
+            output[identifier_el.text] = value_el.text
+
+    return output

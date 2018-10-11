@@ -5,12 +5,16 @@ from flyingpigeon.log import init_process_logger
 from flyingpigeon.subset import masking
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import rename_complexinputs
+
+from eggshell.log import init_process_logger
+
 from flyingpigeon.utils import search_landsea_mask_by_esgf
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
 from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
+
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -124,19 +128,22 @@ class LandseamaskProcess(Process):
         max_count = len(datasets)
         for ds in datasets:
             ds_name = os.path.basename(ds)
-            LOGGER.info('masking dataset: %s', ds_name)
+            LOGGER.info('masking dataset: {}'.format(ds_name))
             if 'mask' in request.inputs:
                 landsea_mask = request.inputs['mask'][0].data
             else:
                 landsea_mask = search_landsea_mask_by_esgf(ds)
-            LOGGER.info("using landsea_mask: %s", landsea_mask)
+
+            LOGGER.info("using landsea_mask: {}".format(landsea_mask))
             prefix = 'masked_{}'.format(ds_name.replace('.nc', ''))
             try:
                 new_ds = masking(ds, landsea_mask, land_area=land_area_flag, prefix=prefix)
                 masked_datasets.append(new_ds)
-            except:
-                LOGGER.exception("Could not subset dataset.")
-                raise Exception("Could not subset dataset: %s" % ds_name)
+
+            except Exception as ex:
+                msg = 'Could not subset dataset {}: {}'.format(ds_name, str(ex))
+                LOGGER.exception(msg)
+                raise Exception(msg)
             count = count + 1
             response.update_status("masked: {:d}/{:d}".format(count, max_count), int(100.0 * count / max_count))
 

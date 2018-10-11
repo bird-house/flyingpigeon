@@ -1,26 +1,11 @@
-from os.path import join, abspath, dirname, getsize, curdir, isfile
 from netCDF4 import Dataset
-from flyingpigeon import config
+from os.path import  abspath, curdir, isfile
 import logging
+import config
 LOGGER = logging.getLogger("PYWPS")
 
 
-def has_Lambert_Conformal(resource):
-    """
-    Check if grid is organised as Lambert_Conformal
-
-    :param resource: file to be checked
-
-    :return Boolean: True/False
-    """
-    if type(resource) != list:
-        resource = [resource]
-    for nc in resource:
-        ds = Dataset(nc)
-        if 'Lambert_Conformal' not in ds.variables.keys():
-            return False
-    return True
-
+#from eggshell.ocg.utils import call # Does not work from eggshell due to shapefile path from config that are wrong.
 
 def call(resource=[], variable=None, dimension_map=None, agg_selection=True, calc=None,
          calc_grouping=None, conform_units_to=None, crs=None, memory_limit=None,  prefix=None,
@@ -31,7 +16,6 @@ def call(resource=[], variable=None, dimension_map=None, agg_selection=True, cal
          time_range=None, dir_output=None, output_format='nc'):
     '''
     ocgis operation call
-
     :param resource:
     :param variable: variable in the input file to be picked
     :param dimension_map: dimension map in case of unconventional storage of data
@@ -256,11 +240,11 @@ def call(resource=[], variable=None, dimension_map=None, agg_selection=True, cal
                 output = abspath(curdir)+'/'+output
                 comcdo = 'cdo -O %s,%s %s %s' % (remap, regrid_destination, geom_file, output)
                 system(comcdo)
-                
+
                 if(isfile(output)==False):
                     comcdo = '/usr/bin/cdo -O %s,%s %s %s' % (remap, regrid_destination, geom_file, output)
                     system(comcdo)
-                
+
                 if(isfile(output)==False): cdover='python'
 
                 # need to substitute by subprocess call
@@ -292,6 +276,21 @@ def call(resource=[], variable=None, dimension_map=None, agg_selection=True, cal
     #     LOGGER.exception('failed to unrotate pole')
     return output
 
+def has_Lambert_Conformal(resource):
+    """
+    Check if grid is organised as Lambert_Conformal
+
+    :param resource: file to be checked
+
+    :return Boolean: True/False
+    """
+    if type(resource) != list:
+        resource = [resource]
+    for nc in resource:
+        ds = Dataset(nc)
+        if 'Lambert_Conformal' not in ds.variables.keys():
+            return False
+    return True
 
 def eval_timerange(resource, time_range):
     """

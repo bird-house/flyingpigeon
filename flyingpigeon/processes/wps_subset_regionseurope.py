@@ -1,17 +1,19 @@
 # TODO: Rename this file to "wps_subset_europe"
 import logging
 
+from eggshell.log import init_process_logger
+from pywps import ComplexInput, ComplexOutput
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
+from pywps.app.Common import Metadata
+
 from flyingpigeon.log import init_process_logger
 # from flyingpigeon.subset import countries, countries_longname
 from flyingpigeon.subset import _EUREGIONS_
 from flyingpigeon.subset import clipping
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import rename_complexinputs
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format
-from pywps import LiteralInput
-from pywps import Process
-from pywps.app.Common import Metadata
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -93,9 +95,8 @@ class ClipregionseuropeProcess(Process):
         response.outputs['output_log'].file = 'log.txt'
 
         # input files
-        LOGGER.debug("url=%s, mime_type=%s",
-                     request.inputs['resource'][0].url,
-                     request.inputs['resource'][0].data_format.mime_type)
+        LOGGER.debug("url={}, mime_type={}".format(request.inputs['resource'][0].url,
+                                                   request.inputs['resource'][0].data_format.mime_type))
         ncs = archiveextract(
             resource=rename_complexinputs(request.inputs['resource']))
         # mime_type=request.inputs['resource'][0].data_format.mime_type)
@@ -108,9 +109,9 @@ class ClipregionseuropeProcess(Process):
         # regions used for subsetting
         regions = [inp.data for inp in request.inputs['region']]
 
-        LOGGER.info('ncs = %s', ncs)
-        LOGGER.info('regions = %s', regions)
-        LOGGER.info('mosaic = %s', mosaic)
+        LOGGER.info('ncs = {}'.format(ncs))
+        LOGGER.info('regions = {}'.format(regions))
+        LOGGER.info('mosaic = {}'.format(mosaic))
 
         response.update_status("Arguments set for subset process", 0)
         LOGGER.debug('starting: regions=%s, num_files=%s', len(regions), len(ncs))
@@ -125,21 +126,21 @@ class ClipregionseuropeProcess(Process):
                 # dir_output=os.path.abspath(os.curdir),
                 # dimension_map=dimension_map,
             )
-            LOGGER.info('results %s' % results)
-        except:
-            msg = 'clipping failed'
+            LOGGER.info('results {}'.format(results))
+        except Exception as ex:
+            msg = 'clipping failed: {}'.format(ex)
             LOGGER.exception(msg)
             raise Exception(msg)
 
         if not results:
-            raise Exception('no results produced.')
+            raise Exception('No results produced.')
 
         # prepare tar file
         try:
             tarf = archive(results)
             LOGGER.info('Tar file prepared')
-        except:
-            msg = 'Tar file preparation failed'
+        except Exception as ex:
+            msg = 'Tar file preparation failed: {}'.format(ex)
             LOGGER.exception(msg)
             raise Exception(msg)
 
@@ -157,7 +158,7 @@ class ClipregionseuropeProcess(Process):
 #
 # from flyingpigeon.subset import clipping
 # from flyingpigeon.subset import _EUREGIONS_  # countries, countries_longname
-# from flyingpigeon.log import init_process_logger
+# from eggshell.log import init_process_logger
 #
 # from pywps.Process import WPSProcess
 #

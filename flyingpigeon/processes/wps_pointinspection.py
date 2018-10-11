@@ -1,10 +1,6 @@
 import logging
 
-from flyingpigeon.log import init_process_logger
-from flyingpigeon.ocgis_module import call
-from flyingpigeon.utils import archive, archiveextract
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.utils import sort_by_filename, get_values, get_time
+
 from numpy import savetxt, column_stack
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
@@ -12,6 +8,14 @@ from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
 from shapely.geometry import Point
+
+# from eggshell.log import init_process_logger
+from flyingpigeon.log import init_process_logger
+from flyingpigeon.ocgis_module import call
+from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.utils import sort_by_filename, get_values, get_time
+
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -25,7 +29,6 @@ class PointinspectionProcess(Process):
         inputs = [
             ComplexInput('resource', 'Resource',
                          abstract='NetCDF Files or archive (tar/zip) containing NetCDF files.',
-                         metadata=[Metadata('Info')],
                          min_occurs=1,
                          max_occurs=1000,
                          supported_formats=[
@@ -51,7 +54,7 @@ class PointinspectionProcess(Process):
                           ),
 
             ComplexOutput('tarout', 'Subsets',
-                          abstract="Tar archive containing the netCDF files",
+                          abstract="Tar archive containing one CSV file per input file, each one storing time series column-wise for all point coordinates.",
                           as_reference=True,
                           supported_formats=[Format('application/x-tar')]
                           ),
@@ -79,30 +82,30 @@ class PointinspectionProcess(Process):
 
         ncs = archiveextract(
             resource=rename_complexinputs(request.inputs['resource']))
-        LOGGER.info("ncs: %s " % ncs)
+        LOGGER.info('ncs: {}'.format(ncs))
 
         coords = []
         for coord in request.inputs['coords']:
             coords.append(coord.data)
 
-        LOGGER.info("coords %s", coords)
+        LOGGER.info('coords {}'.format(coords))
         filenames = []
         nc_exp = sort_by_filename(ncs, historical_concatination=True)
 
         for key in nc_exp.keys():
             try:
-                LOGGER.info('start calculation for %s ' % key)
+                LOGGER.info('start calculation for {}'.format(key))
                 ncs = nc_exp[key]
                 times = get_time(ncs)  # , format='%Y-%m-%d_%H:%M:%S')
                 concat_vals = times  # ['%s-%02d-%02d_%02d:%02d:%02d' %
                 # (t.year, t.month, t.day, t.hour, t.minute, t.second) for t in times]
                 header = 'date_time'
-                filename = '%s.csv' % key
+                filename = '{}.csv'.format(key)
                 filenames.append(filename)
 
                 for p in coords:
                     try:
-                        response.update_status('processing point : {0}'.format(p), 20)
+                        response.update_status('processing point: {}'.format(p), 20)
                         # define the point:
                         p = p.split(',')
                         point = Point(float(p[0]), float(p[1]))
@@ -112,14 +115,16 @@ class PointinspectionProcess(Process):
                         vals = get_values(timeseries)
 
                         # concatenation of values
-                        header = header + ',%s-%s' % (p[0], p[1])
+                        header = header + ',{}-{}'.format(p[0], p[1])
                         concat_vals = column_stack([concat_vals, vals])
                     except Exception as e:
-                        LOGGER.debug('failed for point %s %s' % (p, e))
+                        LOGGER.debug('failed for point {} {}'.format(p, e))
                 response.update_status('*** all points processed for {0} ****'.format(key), 50)
+
+                # TODO: Ascertain whether this 'savetxt' is a valid command without string formatting argument: '%s'
                 savetxt(filename, concat_vals, fmt='%s', delimiter=',', header=header)
-            except Exception as e:
-                LOGGER.debug('failed for %s %s' % (key, e))
+            except Exception as ex:
+                LOGGER.debug('failed for {}: {}'.format(key, str(ex)))
 
         # set the outputs
         response.update_status('*** creating output tar archive ****', 90)

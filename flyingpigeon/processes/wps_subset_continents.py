@@ -1,15 +1,19 @@
+
+from eggshell.log import init_process_logger
+
 import logging
 
-from flyingpigeon.log import init_process_logger
-from flyingpigeon.subset import _CONTINENTS_
-from flyingpigeon.subset import clipping
-from flyingpigeon.utils import archive, archiveextract
-from flyingpigeon.utils import rename_complexinputs
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
 from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
+
+
+from flyingpigeon.subset import _CONTINENTS_
+from flyingpigeon.subset import clipping
+from flyingpigeon.utils import archive, archiveextract
+from flyingpigeon.utils import rename_complexinputs
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -91,9 +95,8 @@ class ClipcontinentProcess(Process):
         response.outputs['output_log'].file = 'log.txt'
 
         # input files
-        LOGGER.debug("url=%s, mime_type=%s",
-                     request.inputs['resource'][0].url,
-                     request.inputs['resource'][0].data_format.mime_type)
+        LOGGER.debug("url={}, mime_type={}".format(request.inputs['resource'][0].url,
+                     request.inputs['resource'][0].data_format.mime_type))
         ncs = archiveextract(
             resource=rename_complexinputs(request.inputs['resource']))
         # mime_type=request.inputs['resource'][0].data_format.mime_type)
@@ -106,12 +109,12 @@ class ClipcontinentProcess(Process):
         # regions used for subsetting
         regions = [inp.data for inp in request.inputs['region']]
 
-        LOGGER.info('ncs = %s', ncs)
-        LOGGER.info('regions = %s', regions)
-        LOGGER.info('mosaic = %s', mosaic)
+        LOGGER.info('ncs: {}'.format(ncs))
+        LOGGER.info('regions: {}'.format(regions))
+        LOGGER.info('mosaic: {}'.format(mosaic))
 
         response.update_status("Arguments set for subset process", 0)
-        LOGGER.debug('starting: regions=%s, num_files=%s', len(regions), len(ncs))
+        LOGGER.debug('starting: regions={}, num_files={}'.format(len(regions), len(ncs)))
 
         try:
             results = clipping(
@@ -124,20 +127,22 @@ class ClipcontinentProcess(Process):
                 # dimension_map=dimension_map,
             )
             LOGGER.info('results %s' % results)
-        except:
-            msg = 'clipping failed'
+
+        except Exception as ex:
+            msg = 'Clipping failed: {}'.format(str(ex))
             LOGGER.exception(msg)
             raise Exception(msg)
 
         if not results:
-            raise Exception('no results produced.')
+            raise Exception('No results produced.')
 
         # prepare tar file
         try:
             tarf = archive(results)
             LOGGER.info('Tar file prepared')
-        except:
-            msg = 'Tar file preparation failed'
+
+        except Exception as ex:
+            msg = 'Tar file preparation failed: {}'.format(str(ex))
             LOGGER.exception(msg)
             raise Exception(msg)
 

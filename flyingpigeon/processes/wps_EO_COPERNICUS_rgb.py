@@ -5,15 +5,17 @@ from datetime import timedelta, time
 from os import makedirs
 from os.path import exists, join
 
-from flyingpigeon import eodata
-from flyingpigeon.config import cache_path
-from flyingpigeon.log import init_process_logger
+from eggshell.log import init_process_logger
 from pywps import Format
 # from pywps import LiteralInput
 from pywps import LiteralInput, ComplexOutput
 from pywps import Process
 from pywps.app.Common import Metadata
 from sentinelsat import SentinelAPI, geojson_to_wkt
+
+from flyingpigeon import eodata
+from flyingpigeon.config import cache_path
+from flyingpigeon.log import init_process_logger
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -162,10 +164,10 @@ class EO_COP_rgbProcess(Process):
         else:
             start = end - timedelta(days=30)
 
-        if (start > end):
+        if start > end:
             start = dt.now() - timedelta(days=30)
             end = dt.now()
-            LOGGER.exception("periode end befor periode start, period is set to the last 30 days from now")
+            LOGGER.exception('period ends before period starts; period now set to the last 30 days from now')
 
         username = request.inputs['username'][0].data
         password = request.inputs['password'][0].data
@@ -215,11 +217,16 @@ class EO_COP_rgbProcess(Process):
                 else:
                     try:
                         api.download(key, directory_path=DIR_EO)
+                        # Does the '***' denote a string formatting function?
                         response.update_status("***%s sucessfully fetched" % ID, 20)
-                        LOGGER.debug('Tile %s fetched' % ID)
-                        LOGGER.debug('Files %s fetched ' % ID)
-                    except:
-                        LOGGER.exception('failed to extract file %s' % filename)
+                        # TODO: Figure out why these are duplicate
+                        LOGGER.debug('Tile {} fetched'.format(ID))
+                        LOGGER.debug('Files {} fetched'.format(ID))
+                    except Exception as ex:
+                        msg = 'failed to extract file {}: {}'.format(filename, str(ex))
+                        LOGGER.exception(msg)
+                        raise Exception(msg)
+
                 if exists(DIR_tile):
                     LOGGER.debug('file %s already unzipped' % filename)
                 else:
@@ -229,11 +236,17 @@ class EO_COP_rgbProcess(Process):
                         zip_ref.extractall(DIR_EO)
                         zip_ref.close()
                         LOGGER.debug('Tile %s unzipped' % ID)
-                    except:
-                        LOGGER.exception('failed to extract %s ' % file_zip)
+                    except Exception as ex:
+                        msg = 'failed to extract {}: {}'.format(file_zip, str(ex))
+                        LOGGER.exception(msg)
+                        raise Exception(msg)
+
                 resources.append(DIR_tile)
-            except:
-                LOGGER.exception('failed to fetch %s' % key)
+
+            except Exception as ex:
+                msg = 'failed to fetch {}: {}'.format(key, str(ex))
+                LOGGER.exception(msg)
+                raise Exception(msg)
 
         response.update_status("Plotting RGB graphics", 40)
         size = float(products[key]['size'].split(' ')[0])
@@ -262,11 +275,13 @@ class EO_COP_rgbProcess(Process):
                 # tile = eodata.get_RGB(recource)
                 LOGGER.debug('plot RGB image')
                 img = eodata.plot_RGB(recource, colorscheem=colorscheem)
-                LOGGER.debug('IMG plotted: %s' % img)
+                LOGGER.debug('IMG plotted: {}'.format(img))
                 imgs.append(img)
             LOGGER.debug('resources plotted')
-        except:
-            LOGGER.exception('failed to plot RGB graph')
+        except Exception as ex:
+            msg = 'failed to plot RGB graph: {}'.format(str(ex))
+            LOGGER.exception(msg)
+            raise Exception(msg)
 
         from flyingpigeon.utils import archive
         tarf = archive(imgs)

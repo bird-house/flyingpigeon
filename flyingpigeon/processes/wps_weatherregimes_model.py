@@ -8,15 +8,16 @@ from datetime import time as dt_time
 from os import path
 from tempfile import mkstemp
 
-from flyingpigeon import weatherregimes as wr
-from flyingpigeon.log import init_process_logger
-from flyingpigeon.utils import archiveextract, get_calendar
-from flyingpigeon.weatherregimes import _TIMEREGIONS_
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
 from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
+
+from flyingpigeon import weatherregimes as wr
+from flyingpigeon.log import init_process_logger
+from flyingpigeon.utils import archiveextract, get_calendar
+from flyingpigeon.weatherregimes import _TIMEREGIONS_
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -160,7 +161,7 @@ class WeatherregimesmodelProcess(Process):
 
         LOGGER.info('Start process')
 
-        response.update_status('execution started at : %s ' % dt.now(), 5)
+        response.update_status('execution started at : {}'.format(dt.now()), 5)
 
         ################################
         # reading in the input arguments
@@ -184,7 +185,7 @@ class WeatherregimesmodelProcess(Process):
 
             # resources = self.getInputValues(identifier='resources')
             season = request.inputs['season'][0].data
-            LOGGER.info('season %s', season)
+            LOGGER.info('season {}'.format(season))
 
             # if 'bbox' in request.inputs:
             #    bbox = request.inputs['bbox'][0].data
@@ -199,20 +200,20 @@ class WeatherregimesmodelProcess(Process):
             bbox.append(float(bboxStr[2]))
             bbox.append(float(bboxStr[1]))
             bbox.append(float(bboxStr[3]))
-            LOGGER.debug('BBOX for ocgis: %s ' % (bbox))
-            LOGGER.debug('BBOX original: %s ' % (bboxStr))
+            LOGGER.debug('BBOX for ocgis: {}'.format(bbox))
+            LOGGER.debug('BBOX original: {}'.format(bboxStr))
 
             period = request.inputs['period'][0].data
-            LOGGER.info('period %s', period)
+            LOGGER.info('period: {}'.format(period))
             anualcycle = request.inputs['anualcycle'][0].data
             kappa = request.inputs['kappa'][0].data
-            LOGGER.info('kappa %s', kappa)
+            LOGGER.info('kappa: {}'.format(kappa))
 
             method = request.inputs['method'][0].data
-            LOGGER.info('Calc annual cycle with %s', method)
+            LOGGER.info('Calc annual cycle with {}'.format(method))
 
             sseas = request.inputs['sseas'][0].data
-            LOGGER.info('Annual cycle calc with %s', sseas)
+            LOGGER.info('Annual cycle calc with {}'.format(sseas))
 
             start = dt.strptime(period.split('-')[0], '%Y%m%d')
             end = dt.strptime(period.split('-')[1], '%Y%m%d')
@@ -224,11 +225,11 @@ class WeatherregimesmodelProcess(Process):
             cycst = anualcycle.split('-')[0]
             cycen = anualcycle.split('-')[1]
             reference = [dt.strptime(cycst, '%Y%m%d'), dt.strptime(cycen, '%Y%m%d')]
-            LOGGER.debug('Reference start: %s , end: %s ' % (reference[0], reference[1]))
+            LOGGER.debug('Reference start: {0}, end: {1}'.format(reference[0], reference[1]))
 
             reference[0] = dt.combine(reference[0], dt_time(12, 0))
             reference[1] = dt.combine(reference[1], dt_time(12, 0))
-            LOGGER.debug('New Reference start: %s , end: %s ' % (reference[0], reference[1]))
+            LOGGER.debug('New Reference start: {0}, end: {1}'.format(reference[0], reference[1]))
 
             # Check if 360_day calendar (all months are exactly 30 days):
             try:
@@ -237,25 +238,27 @@ class WeatherregimesmodelProcess(Process):
                 if '360_day' in modcal:
                     if start.day == 31:
                         start = start.replace(day=30)
-                        LOGGER.debug('Date has been changed for: %s' % (start))
+                        LOGGER.debug('Date has been changed for: {}'.format(start))
                     if end.day == 31:
                         end = end.replace(day=30)
-                        LOGGER.debug('Date has been changed for: %s' % (end))
+                        LOGGER.debug('Date has been changed for: {}'.format(end))
                     if reference[0].day == 31:
                         reference[0] = reference[0].replace(day=30)
-                        LOGGER.debug('Date has been changed for: %s' % (reference[0]))
+                        LOGGER.debug('Date has been changed for: {}'.format(reference[0]))
                     if reference[1].day == 31:
                         reference[1] = reference[1].replace(day=30)
-                        LOGGER.debug('Date has been changed for: %s' % (reference[1]))
-            except:
-                LOGGER.debug('Could not detect calendar')
+                        LOGGER.debug('Date has been changed for: {}'.format(reference[1]))
+            except Exception as ex:
+                msg = 'Could not detect calendar: {}'.format(ex)
+                LOGGER.debug(msg)
+                raise Exception(msg)
 
-            LOGGER.debug('start: %s , end: %s ', start, end)
-            LOGGER.info('bbox %s', bbox)
-            LOGGER.info('period %s', period)
-            LOGGER.info('season %s', season)
-        except Exception as e:
-            msg = 'failed to read in the arguments'
+            LOGGER.debug('start: {0}, end: {1}'.format(start, end))
+            LOGGER.info('bbox: {}'.format(bbox))
+            LOGGER.info('period {}'.format(period))
+            LOGGER.info('season {}'.format(season))
+        except Exception as ex:
+            msg = 'failed to read in the arguments: {}'.format(ex)
             LOGGER.exception(msg)
             raise Exception(msg)
 
@@ -274,9 +277,9 @@ class WeatherregimesmodelProcess(Process):
             s, e = get_timerange(re)
             tmpSt = dt.strptime(s, '%Y%m%d')
             tmpEn = dt.strptime(e, '%Y%m%d')
-            if ((tmpSt <= end) and (tmpEn >= start)):
+            if (tmpSt <= end) and (tmpEn >= start):
                 tmp_resource.append(re)
-                LOGGER.debug('Selected file: %s ' % (re))
+                LOGGER.debug('Selected file: {}'.format(re))
         resource = tmp_resource
 
         # Here start trick with z... levels and regriding...
@@ -288,7 +291,7 @@ class WeatherregimesmodelProcess(Process):
             resource=resource, variable=variable,
             geom=bbox, spatial_wrapping='wrap', time_range=time_range,  # conform_units_to=conform_units_to
         )
-        LOGGER.info('Dataset subset done: %s ' % model_subset)
+        LOGGER.info('Dataset subset done: {}'.format(model_subset))
         response.update_status('dataset subsetted', 18)
 
         #####################
@@ -326,6 +329,7 @@ class WeatherregimesmodelProcess(Process):
             ip, file_pca = mkstemp(dir=curdir, suffix='.txt')
             ip, file_class = mkstemp(dir=curdir, suffix='.Rdat')
 
+            # TODO: Rewrite this using os.path.join or pathlib libraries
             args = ['Rscript', join(Rsrc, Rfile), '%s/' % curdir,
                     '%s/' % Rsrc, '%s' % infile, '%s' % variable,
                     '%s' % output_graphics, '%s' % file_pca,
@@ -333,23 +337,23 @@ class WeatherregimesmodelProcess(Process):
                     '%s' % start.year, '%s' % end.year,
                     '%s' % 'MODEL', '%s' % kappa]
             LOGGER.info('Rcall builded')
-            LOGGER.debug('ARGS: %s' % (args))
-        except Exception as e:
-            msg = 'failed to build the R command %s' % e
+            LOGGER.debug('ARGS: {}' .format(args))
+        except Exception as ex:
+            msg = 'failed to build the R command {}'.format(ex)
             LOGGER.error(msg)
             raise Exception(msg)
         try:
             output, error = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
             # ,shell=True
-            LOGGER.info('R outlog info:\n %s ' % output)
-            LOGGER.debug('R outlog errors:\n %s ' % error)
+            LOGGER.info('R outlog info:\n {}'.format(output))
+            LOGGER.debug('R outlog errors:\n {}'.format(error))
             if len(output) > 0:
                 response.update_status('**** weatherregime in R suceeded', 90)
             else:
                 LOGGER.error('NO! output returned from R call')
-        except Exception as e:
-            msg = 'weatherregime in R %s ' % e
-            LOGGER.error(msg)
+        except Exception as ex:
+            msg = 'failed to run the R weatherregime: {}'.format(ex)
+            LOGGER.exception(msg)
             raise Exception(msg)
 
         response.update_status('Weather regime clustering done ', 92)

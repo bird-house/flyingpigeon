@@ -7,6 +7,7 @@ from .common import client_for
 from flyingpigeon.processes import processes
 from flyingpigeon.processes.wps_ocgis_func import OCGIS_INDEX_PROCESSES
 
+
 def test_caps():
     client = client_for(Service(processes=processes))
     resp = client.get(service='wps', request='getcapabilities', version='1.0.0')
@@ -18,10 +19,10 @@ def test_caps():
     print sorted_names
 
     expected_names = [
-        'EO_COPERNICUS_fetch',
-        'EO_COPERNICUS_indices',
-        'EO_COPERNICUS_rgb',
-        'EO_COPERNICUS_search',
+        # 'EO_COPERNICUS_fetch',
+        # 'EO_COPERNICUS_indices',
+        # 'EO_COPERNICUS_rgb',
+        # 'EO_COPERNICUS_search',
         # 'analogs_compare',
         # 'analogs_model',
         # 'analogs_reanalyse',
@@ -30,8 +31,8 @@ def test_caps():
         'averager_WFS',
         'averager_bbox',
         # 'climatefactsheet',
-        'esmf_regrid',
-        'fetch_resources',
+        # 'esmf_regrid',
+        # 'fetch_resources',
         # 'indices_percentile,
         'indices_percentiledays',
         'indices_single',
@@ -54,10 +55,7 @@ def test_caps():
         'subset_WFS',
         'subset_continents',
         'subset_countries',
-        'subset_regionseurope',
-        'weatherregimes_model',
-        'weatherregimes_projection',
-        'weatherregimes_reanalyse',
-    ] + [p.identifier for p in OCGIS_INDEX_PROCESSES]
+        # 'subset_regionseurope',
+    ] + [p().identifier for p in OCGIS_INDEX_PROCESSES]
 
     assert sorted_names == sorted(expected_names)

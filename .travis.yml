@@ -1,21 +1,15 @@
 language: python
-branches:
-  only:
-    - master
-    - next
-    - 1.0.x
-    - pingudev
-    - satdev
 python:
   - "2.7"
 sudo: false
 install:
   - make install
+  # - ln -s /home/travis/.conda/envs/flyingpigeon/lib/libnetcdf.so /home/travis/.conda/envs/flyingpigeon/lib/libnetcdf.so.11
   - make start
 before_script:
   - sleep 10
 script:
-  - export GDAL_DATA=/home/travis/.conda/envs/flyingpigeon/share/gdal 
+  - export GDAL_DATA=/home/travis/.conda/envs/flyingpigeon/share/gdal
 #  - make docs
   - make testall
 #after_success:

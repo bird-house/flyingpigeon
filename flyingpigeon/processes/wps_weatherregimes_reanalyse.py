@@ -6,15 +6,16 @@ Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 import logging
 from os.path import basename, splitext
 
-from flyingpigeon.datafetch import _PRESSUREDATA_
-from flyingpigeon.log import init_process_logger
-from flyingpigeon.ocgis_module import call
-from flyingpigeon.weatherregimes import _TIMEREGIONS_
 from pywps import ComplexOutput
 from pywps import Format
 from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
+
+from flyingpigeon.datafetch import _PRESSUREDATA_
+from flyingpigeon.log import init_process_logger
+from flyingpigeon.ocgis_module import call
+from flyingpigeon.weatherregimes import _TIMEREGIONS_
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -211,27 +212,27 @@ class WeatherregimesreanalyseProcess(Process):
         bbox.append(float(bboxStr[2]))
         bbox.append(float(bboxStr[1]))
         bbox.append(float(bboxStr[3]))
-        LOGGER.debug('BBOX for ocgis: %s ' % (bbox))
-        LOGGER.debug('BBOX original: %s ' % (bboxStr))
+        LOGGER.debug('BBOX for ocgis: {}'.format(bbox))
+        LOGGER.debug('BBOX original: {}'.format(bboxStr))
 
         model_var = request.inputs['reanalyses'][0].data
         model, variable = model_var.split('_')
 
         period = request.inputs['period'][0].data
-        LOGGER.info('period %s', period)
+        LOGGER.info('period: {}'.format(period))
         anualcycle = request.inputs['anualcycle'][0].data
         kappa = request.inputs['kappa'][0].data
-        LOGGER.info('kappa %s', kappa)
+        LOGGER.info('kappa: {}', kappa)
 
         method = request.inputs['method'][0].data
-        LOGGER.info('Calc annual cycle with %s', method)
+        LOGGER.info('Calc annual cycle with {}'.format(method))
 
         sseas = request.inputs['sseas'][0].data
-        LOGGER.info('Annual cycle calc with %s', sseas)
+        LOGGER.info('Annual cycle calc with {}'.format(sseas))
 
         start = dt.strptime(period.split('-')[0], '%Y%m%d')
         end = dt.strptime(period.split('-')[1], '%Y%m%d')
-        LOGGER.debug('start: %s , end: %s ' % (start, end))
+        LOGGER.debug('start: {0}, end: {1}'.format(start, end))
 
         ###########################
         # set the environment
@@ -258,9 +259,9 @@ class WeatherregimesreanalyseProcess(Process):
                     conform_units_to = 'hPa'
             else:
                 LOGGER.exception('Reanalyses dataset not known')
-            LOGGER.info('environment set for model: %s' % model)
-        except:
-            msg = 'failed to set environment'
+            LOGGER.info('environment set for model: {}'.format(model))
+        except Exception as ex:
+            msg = 'failed to set environment: {}'.format(ex)
             LOGGER.exception(msg)
             raise Exception(msg)
 
@@ -282,8 +283,8 @@ class WeatherregimesreanalyseProcess(Process):
                           variable=variable,
                           getlevel=getlevel)
             LOGGER.info('reanalyses data fetched')
-        except:
-            msg = 'failed to get reanalyses data'
+        except Exception as ex:
+            msg = 'failed to get reanalyses data: {}'.format(ex)
             LOGGER.exception(msg)
             raise Exception(msg)
 
@@ -305,11 +306,11 @@ class WeatherregimesreanalyseProcess(Process):
         LevMulti = False
 
         # ===========================================================================================
-        if ('z' in variable):
+        if 'z' in variable:
             tmp_total = []
             origvar = get_variable(model_nc)
 
-            if (LevMulti == False):
+            if LevMulti == False:
                 for z in model_nc:
                     b0 = call(resource=z, variable=origvar, level_range=[int(level), int(level)], geom=bbox,
                               spatial_wrapping='wrap', prefix='levdom_' + basename(z)[0:-3])
@@ -323,15 +324,15 @@ class WeatherregimesreanalyseProcess(Process):
                     # TODO: This lib is for linux
                     mkl_rt = ctypes.CDLL('libmkl_rt.so')
                     nth = mkl_rt.mkl_get_max_threads()
-                    LOGGER.debug('Current number of threads: %s' % (nth))
+                    LOGGER.debug('Current number of threads: {}'.format(nth))
                     mkl_rt.mkl_set_num_threads(ctypes.byref(ctypes.c_int(64)))
                     nth = mkl_rt.mkl_get_max_threads()
-                    LOGGER.debug('NEW number of threads: %s' % (nth))
+                    LOGGER.debug('NEW number of threads: {}'.format(nth))
                     # TODO: Does it \/\/\/ work with default shell=False in subprocess... (?)
                     os.environ['MKL_NUM_THREADS'] = str(nth)
                     os.environ['OMP_NUM_THREADS'] = str(nth)
-                except Exception as e:
-                    msg = 'Failed to set THREADS %s ' % e
+                except Exception as ex:
+                    msg = 'Failed to set THREADS: {}'.format(ex)
                     LOGGER.debug(msg)
                 # -----------------------
 
@@ -348,32 +349,33 @@ class WeatherregimesreanalyseProcess(Process):
                 pool.close()
                 pool.join()
 
-            LOGGER.debug('Temporal subset files: %s' % (tmp_total))
+            LOGGER.debug('Temporal subset files: {}'.format(tmp_total))
 
             tmp_total = sorted(tmp_total, key=lambda i: splitext(basename(i))[0])
             inter_subset_tmp = call(resource=tmp_total, variable=origvar, time_range=time_range)
 
+            # FIXME: System calls to rm are dangerous! Use os.rmdir instead!
             # Clean
             for i in tmp_total:
-                tbr = 'rm -f %s' % (i)
+                tbr = 'rm -f {}'.format(i)
                 system(tbr)
 
             # Create new variable
             ds = Dataset(inter_subset_tmp, mode='a')
             z_var = ds.variables.pop(origvar)
             dims = z_var.dimensions
-            new_var = ds.createVariable('z%s' % level, z_var.dtype, dimensions=(dims[0], dims[2], dims[3]))
+            new_var = ds.createVariable('z{}'.format(level), z_var.dtype, dimensions=(dims[0], dims[2], dims[3]))
             new_var[:, :, :] = squeeze(z_var[:, 0, :, :])
             # new_var.setncatts({k: z_var.getncattr(k) for k in z_var.ncattrs()})
             ds.close()
-            model_subset = call(inter_subset_tmp, variable='z%s' % level)
+            model_subset = call(inter_subset_tmp, variable='z{}'.format(level))
         else:
             model_subset = call(resource=model_nc, variable=variable,
                                 geom=bbox, spatial_wrapping='wrap', time_range=time_range,
                                 # conform_units_to=conform_units_to
                                 )
         # =============================================================================================
-        LOGGER.info('Dataset subset done: %s ', model_subset)
+        LOGGER.info('Dataset subset done: {}'.format(model_subset))
 
         response.update_status('dataset subsetted', 18)
         ##############################################
@@ -384,7 +386,7 @@ class WeatherregimesreanalyseProcess(Process):
         cycst = anualcycle.split('-')[0]
         cycen = anualcycle.split('-')[1]
         reference = [dt.strptime(cycst, '%Y%m%d'), dt.strptime(cycen, '%Y%m%d')]
-        LOGGER.info('reference time: %s', reference)
+        LOGGER.info('reference time: {}'.format(reference))
 
         model_anomal = wr.get_anomalies(model_subset, reference=reference, method=method,
                                         sseas=sseas)  # , variable=variable)
@@ -417,6 +419,7 @@ class WeatherregimesreanalyseProcess(Process):
             ip, file_pca = mkstemp(dir=curdir, suffix='.txt')
             ip, file_class = mkstemp(dir=curdir, suffix='.Rdat')
 
+            # TODO: Rewrite this using os.path.join or pathlib libraries
             args = ['Rscript', join(Rsrc, Rfile), '%s/' % curdir,
                     '%s/' % Rsrc, '%s' % infile, '%s' % variable,
                     '%s' % output_graphics, '%s' % file_pca,
@@ -425,20 +428,20 @@ class WeatherregimesreanalyseProcess(Process):
                     '%s' % model_var, '%s' % kappa]
             LOGGER.info('Rcall builded')
             LOGGER.debug('ARGS: %s' % (args))
-        except:
-            msg = 'failed to build the R command'
+        except Exception as ex:
+            msg = 'failed to build the R command: {}'.format(ex)
             LOGGER.exception(msg)
             raise Exception(msg)
         try:
             output, error = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-            LOGGER.info('R outlog info:\n %s ' % output)
-            LOGGER.exception('R outlog errors:\n %s ' % error)
+            LOGGER.info('R outlog info:\n {}'.format(output))
+            LOGGER.exception('R outlog errors:\n {}'.format(error))
             if len(output) > 0:
                 response.update_status('**** weatherregime in R suceeded', 90)
             else:
-                LOGGER.exception('NO! output returned from R call')
-        except:
-            msg = 'weatherregime in R'
+                LOGGER.exception('No output returned from R call')
+        except Exception as ex:
+            msg = 'failed to run the R weatherregime: {}'.format(ex)
             LOGGER.exception(msg)
             raise Exception(msg)
 

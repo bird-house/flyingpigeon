@@ -1,13 +1,17 @@
 import logging
 
+# from eggshell.log import init_process_logger
+
 from flyingpigeon.log import init_process_logger
 from flyingpigeon.subset import countries, clipping
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import rename_complexinputs
+
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
 from pywps import LiteralInput
 from pywps import Process
+
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -156,13 +160,15 @@ class IndicespercentiledaysProcess(Process):
 
             percentile = request.inputs['percentile'][0].data
 
-            LOGGER.debug("mosaic %s " % mosaic)
-            LOGGER.debug('percentile: %s' % percentile)
-            LOGGER.debug('region %s' % region)
-            LOGGER.debug('Nr of input files %s ' % len(resources))
+            LOGGER.debug('mosaic: {}'.format(mosaic))
+            LOGGER.debug('percentile: {}'.format(percentile))
+            LOGGER.debug('region: {}'.format(region))
+            LOGGER.debug('Nr of input files: {}'.format(len(resources)))
 
-        except:
-            LOGGER.exception('failed to read in the arguments')
+        except Exception as ex:
+            msg = 'failed to read in the arguments: {}'.format(str(ex))
+            LOGGER.exception(msg)
+            raise Exception(msg)
 
         from flyingpigeon.utils import sort_by_filename
         from flyingpigeon.ocgis_module import call
@@ -185,7 +191,7 @@ class IndicespercentiledaysProcess(Process):
                                       # calc_grouping='year'
                                       )
                         results.extend([result])
-                        LOGGER.debug('percentile based indice done for %s' % result)
+                        LOGGER.debug('percentile based indice done for {}'.format(result))
                     else:
                         result = clipping(resource=datasets[key],
                                           #  variable=None,
@@ -197,10 +203,16 @@ class IndicespercentiledaysProcess(Process):
                                           mosaic=mosaic
                                           )
                         results.extend(result)
-                except:
-                    LOGGER.exception("failed to calculate percentil based indice for %s " % key)
-        except:
-            LOGGER.exception("failed to calculate percentile indices")
+
+                except Exception as ex:
+                    msg = 'failed to calculate percentile-based indice for {}: {}'.format(key, str(ex))
+                    LOGGER.exception(msg)
+                    raise Exception(msg)
+
+        except Exception as ex:
+            msg = "failed to calculate percentile-based indices: {}".format(str(ex))
+            LOGGER.exception(msg)
+            raise Exception(msg)
 
         tarf = archive(results)
 
