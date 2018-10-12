@@ -1,8 +1,5 @@
-<<<<<<< HEAD
-=======
 import logging
 
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 import dateutil.parser
 import icclim
 from pywps.Process import WPSProcess
@@ -12,16 +9,13 @@ from pywps.Process import WPSProcess
 
 transfer_limit_Mb = 100
 
-<<<<<<< HEAD
-=======
 logger = logging.getLogger()
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
+
 
 # TODO: Integrate or remove logging from this
 # import logging
 # LOGGER = logging.getLogger()
 
-class ProcessMultivarIndice(WPSProcess):
 
 class ProcessMultivarIndice(WPSProcess):
 
@@ -93,17 +87,10 @@ class ProcessMultivarIndice(WPSProcess):
                                                 type=type("String"),
                                                 minOccurs=0)
 
-<<<<<<< HEAD
         # self.outputFileNameIn = self.addLiteralInput(identifier = 'outputFileName'
         #     title = 'Name of output netCDF file',
         #     type="String",
         #     default = './out_icclim.nc')
-=======
-        ## self.outputFileNameIn = self.addLiteralInput(identifier = 'outputFileName', 
-        ##                                        title = 'Name of output netCDF file',
-        ##                                        type="String",
-        ##                                        default = './out_icclim.nc')
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 
         self.NLevelIn = self.addLiteralInput(identifier='NLevel',
                                              title='Number of levels (if 4D variable)',
