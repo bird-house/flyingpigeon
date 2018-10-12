@@ -1,16 +1,11 @@
-<<<<<<< HEAD
-import dateutil.parser
-import icclim
-from pywps.Process import WPSProcess
-=======
 import logging
 
+import dateutil.parser
 import dateutil.parser
 import icclim
 from pywps.Process import WPSProcess
 
 logger = logging.getLogger()
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 
 # from mkdir_p import *
 
@@ -21,23 +16,16 @@ transfer_limit_Mb = 100
 # import logging
 # LOGGER = logging.getLogger()
 
-<<<<<<< HEAD
 class ProcessPercentileIndice(WPSProcess):
 
-=======
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
     def __init__(self):
         WPSProcess.__init__(self,
                             identifier='wps_percentile_indice',  # only mandatory attribute = same file name
                             title='c4i - Percentile Indices',
-<<<<<<< HEAD
                             abstract='Computes single input, percentile based indices of temperature: TG10p, TX10p,'
                                      ' TN10p, TG90p, TX90p, TN90p, WSDI, CSDI; and of rainfall R75p, R95p, R99p,'
                                      ' R75TOT, R95TOT, R99TOT.'
                                      'This processes is also available in Climate4Impact and uses ICCLIM.',
-=======
-                            abstract='Computes single input, percentile based indices of temperature: TG10p, TX10p, TN10p, TG90p, TX90p, TN90p, WSDI, CSDI; and of rainfall R75p, R95p, R99p, R75TOT, R95TOT, R99TOT. This processes is also available in Climate4Impact and uses ICCLIM.',
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
                             version="1.0",
                             metadata=[
                                 {"title": "ICCLIM", "href": "http://icclim.readthedocs.io/en/latest/"},
@@ -48,7 +36,6 @@ class ProcessPercentileIndice(WPSProcess):
                             statusSupported=True,
                             grassLocation=False)
 
-<<<<<<< HEAD
         # self.filesBasePeriodIn = self.addLiteralInput(identifier = 'filesBasePeriod',
         #     title = 'Input netCDF files list (base (reference) period)',
         #     abstract="application/netcdf",
@@ -59,18 +46,6 @@ class ProcessPercentileIndice(WPSProcess):
         #       'http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20260101-20501231.nc,' +
         #       'http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20510101-20751231.nc,' +
         #       'http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20760101-21001231.nc')
-=======
-        ## self.filesBasePeriodIn = self.addLiteralInput(identifier = 'filesBasePeriod',
-        ##                                        title = 'Input netCDF files list (base (reference) period)',
-        ##                                        abstract="application/netcdf",
-        ##                                        type=type("S"),
-        ##                                        minOccurs=0,
-        ##                                        maxOccurs=1024,
-        ##                                        default = 'http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20060101-20251231.nc,' +
-        ##                                                   'http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20260101-20501231.nc,' +
-        ##                                                   'http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20510101-20751231.nc,' +
-        ##                                                   'http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20760101-21001231.nc')
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 
         self.filesBasePeriodIn = self.addComplexInput(
             identifier="filesBasePeriod",
@@ -114,7 +89,9 @@ class ProcessPercentileIndice(WPSProcess):
                                                        type=type("S"),
                                                        minOccurs=0,
                                                        maxOccurs=100,
-                                                       default='http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20060101-20251231.nc')
+                                                       default='http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/'
+                                                        'TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20060101-20251231.nc')
+
         # 'http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20260101-20501231.nc',
         # 'http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20510101-20751231.nc',
         # 'http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20760101-21001231.nc'
@@ -135,29 +112,18 @@ class ProcessPercentileIndice(WPSProcess):
         self.leapNonLeapYearsIn = self.addLiteralInput(
             identifier='leapNonLeapYears',
             title='Take only leap years?',
-<<<<<<< HEAD
             abstract='Method for computing a percentile value for the calendar day of'
                      ' February 29th. Default: take all years (leap and non-leap)',
-=======
-            abstract="Method for computing a percentile value for the calendar day of February 29th. Default: take all years (leap and non-leap)",
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
             type=type(False),
             minOccurs=1,
             maxOccurs=1,
             default=False)
         # self.leapNonLeapYearsIn.values = ["take all years (leap and non-leap)", "take only leap years"]
 
-<<<<<<< HEAD
         # self.outputFileNameIn = self.addLiteralInput(identifier = 'outputFileName',
         #     title = 'Name of output netCDF file',
         #     type=type("String"),
         #     default = './out_icclim.nc')
-=======
-        ## self.outputFileNameIn = self.addLiteralInput(identifier = 'outputFileName', 
-        ##                                        title = 'Name of output netCDF file',
-        ##                                        type=type("String"),
-        ##                                        default = './out_icclim.nc')
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 
         self.NLevelIn = self.addLiteralInput(
             identifier='NLevel',
@@ -175,11 +141,7 @@ class ProcessPercentileIndice(WPSProcess):
             asReference=True)
 
     def callback(self, message, percentage):
-<<<<<<< HEAD
         self.status.set(str(message), str(percentage))
-=======
-        self.status.set("%s" % str(message), str(percentage));
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 
     def execute(self):
         # Very important: This allows the NetCDF library to find the users credentials (X509 cert)
@@ -217,17 +179,10 @@ class ProcessPercentileIndice(WPSProcess):
             stopdate = dateutil.parser.parse(time_range_study_period.split("/")[1])
             time_range_study_period = [startdate, stopdate]
 
-<<<<<<< HEAD
         # if (leap_nonleap_years == "take all years (leap and non-leap)"):
         #     leap_nonleap_years = False
         # else:
         #     leap_nonleap_years = True
-=======
-        ## if (leap_nonleap_years == "take all years (leap and non-leap)"):
-        ##     leap_nonleap_years = False
-        ## else:
-        ##     leap_nonleap_years = True 
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 
         # home = expanduser("~")
 
@@ -244,11 +199,7 @@ class ProcessPercentileIndice(WPSProcess):
         """ Create output directory """
         # mkdir_p(fileOutPath)
 
-<<<<<<< HEAD
         self.status.set("Processing input list: {}".format(str(in_files)), 0)
-=======
-        self.status.set("Processing input list: " + str(in_files), 0)
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 
         icclim.indice(indice_name=indice_name,
                       in_files=in_files,
@@ -273,4 +224,4 @@ class ProcessPercentileIndice(WPSProcess):
         # url = fileOutURL+"/"+out_file_name;
         # self.opendapURL.setValue(url);
         self.output.setValue(out_file_name)
-        self.status.set("ready", 100);
+        self.status.set("ready", 100)

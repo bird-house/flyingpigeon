@@ -1,17 +1,11 @@
-<<<<<<< HEAD
-=======
 import logging
 
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 import dateutil.parser
 import icclim
 from pywps.Process import WPSProcess
 
-<<<<<<< HEAD
-=======
 logger = logging.getLogger()
 
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
 # from os.path import expanduser
 # from mkdir_p import *
 
@@ -22,11 +16,8 @@ transfer_limit_Mb = 100
 # import logging
 # LOGGER = logging.getLogger()
 
-<<<<<<< HEAD
 class ProcessCompoundIndice(WPSProcess):
 
-=======
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
     def __init__(self):
         WPSProcess.__init__(self,
                             identifier='wps_c4i_compound_indice',  # only mandatory attribute = same file name
@@ -132,17 +123,10 @@ class ProcessCompoundIndice(WPSProcess):
             default=False)
         # self.leapNonLeapYearsIn.values = ["take all years (leap and non-leap)","take only leap years"]
 
-<<<<<<< HEAD
-        # self.outputFileNameIn = self.addLiteralInput(identifier = 'outputFileName'
-        #     title = 'Name of output netCDF file',
-        #     type="String",
-        #     default = './out_icclim.nc')
-=======
-        ## self.outputFileNameIn = self.addLiteralInput(identifier = 'outputFileName', 
-        ##                                         title = 'Name of output netCDF file',
-        ##                                         type="String",
-        ##                                         default = './out_icclim.nc')
->>>>>>> 19815922c9b8e810550156a12b0c458b221d7c41
+        # self.outputFileNameIn = self.addLiteralInput(identifier = 'outputFileName',
+        #   title = 'Name of output netCDF file',
+        #   type="String",
+        #   default = './out_icclim.nc')
 
         self.NLevelIn = self.addLiteralInput(identifier='NLevel',
                                              title='Number of levels (if 4D variable)',
