@@ -33,20 +33,20 @@
 # from .wps_sdm_getindices import SDMgetindicesProcess
 # from .wps_segetalflora import SegetalfloraProcess
 # from .wps_spatial_analog import SpatialAnalogProcess
-# from .wps_subset import SubsetProcess
-# from .wps_subset_WFS import SubsetWFSProcess
+from .wps_subset import SubsetProcess
+from .wps_subset_WFS import SubsetWFSProcess
 from .wps_subset_bbox import SubsetBboxProcess
-# from .wps_subset_continents import ClipcontinentProcess
-# from .wps_subset_countries import ClippingProcess
-# from .wps_subset_regionseurope import ClipregionseuropeProcess
+from .wps_subset_continents import ClipcontinentProcess
+from .wps_subset_countries import ClippingProcess
+from .wps_subset_regionseurope import ClipregionseuropeProcess
 # from .wps_weatherregimes_model import WeatherregimesmodelProcess
 # from .wps_weatherregimes_projection import WeatherregimesprojectionProcess
 # from .wps_weatherregimes_reanalyse import WeatherregimesreanalyseProcess
 
 processes = [
-                # ClippingProcess(),
-                # ClipcontinentProcess(),
-                # ClipregionseuropeProcess(),
+                ClippingProcess(),
+                ClipcontinentProcess(),
+                ClipregionseuropeProcess(),
                 # PointinspectionProcess(),
                 # LandseamaskProcess(),
                 # FactsheetProcess(),
@@ -70,9 +70,9 @@ processes = [
                 # SegetalfloraProcess(),
                 # SpatialAnalogProcess(),
                 # MapSpatialAnalogProcess(),
-                # SubsetProcess(),
+                SubsetProcess(),
                 # AveragerProcess(),
-                # SubsetWFSProcess(),
+                SubsetWFSProcess(),
                 # AveragerWFSProcess(),
                 SubsetBboxProcess(),
                 # AveragerBboxProcess(),
