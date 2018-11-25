@@ -4,7 +4,7 @@ from pywps import Service
 from pywps.tests import assert_response_success
 
 from .common import TESTDATA, client_for, CFG_FILE
-from flyingpigeon.processes import IndicessingleProcess
+# from flyingpigeon.processes import IndicessingleProcess
 
 
 @pytest.mark.skip(reason="no way of currently testing this")

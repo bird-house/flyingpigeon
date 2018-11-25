@@ -1,19 +1,21 @@
-from pywps import Process
-from pywps import LiteralInput
+import logging
+
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
-from pywps.app.Common import Metadata
+from pywps import LiteralInput
+from pywps import Process
 
-from flyingpigeon.indices import indices, indices_description
-from flyingpigeon.indices import calc_indice_percentile
-from flyingpigeon.subset import countries, countries_longname
-from flyingpigeon.utils import GROUPING
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.utils import archive, archiveextract
-from flyingpigeon import config
 from flyingpigeon.log import init_process_logger
+from flyingpigeon.subset import countries
+from flyingpigeon.utils import GROUPING
+from flyingpigeon.utils import archive, archiveextract
 
-import logging
+from flyingpigeon import config
+from eggshell.log import init_process_logger
+
+from flyingpigeon.utils import rename_complexinputs
+
+
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -172,19 +174,21 @@ class IndicespercentiledaysProcess(Process):
             # response.update_status('starting: indices=%s, grouping=%s, num_files=%s'
             #                        % (indices,  grouping, len(resources)), 2)
 
-            LOGGER.debug("grouping %s " % grouping)
-            LOGGER.debug("mosaic %s " % mosaic)
+            LOGGER.debug('grouping: {}'.format(grouping))
+            LOGGER.debug('mosaic: {}'.format(mosaic))
+            LOGGER.debug('percentile: {}'.format(percentile))
+            LOGGER.debug('region: {}'.format(region))
+            LOGGER.debug('Nr of input files: {}'.format(len(resources)))
+
             # LOGGER.debug("refperiod set to %s, %s " % (start, end))
             # LOGGER.debug('indices= %s ' % indices)
-            LOGGER.debug('percentile: %s' % percentile)
-            LOGGER.debug('region %s' % region)
-            LOGGER.debug('Nr of input files %s ' % len(resources))
 
-        except:
-            LOGGER.exception('failed to read in the arguments')
+        except Exception as ex:
+            msg = 'failed to read in the arguments: {}'.format(str(ex))
+            LOGGER.exception(msg)
+            raise Exception(msg)
 
         from flyingpigeon.utils import sort_by_filename
-        from flyingpigeon.ocgis_module import call
 
         datasets = sort_by_filename(resources, historical_concatination=True)
         results = []
@@ -201,14 +205,20 @@ class IndicespercentiledaysProcess(Process):
                 try:
                     result = calc(resource=datasets[key],
                                   calc=calc,
-                                #   calc_grouping='year'
+                                  #   calc_grouping='year'
                                   )
-                    LOGGER.debug('percentile based indice done for %s' % result)
+                    LOGGER.debug('percentile based indice done for {}'.format(result))
                     results.extend(result)
-                except:
-                    LOGGER.exception("failed to calculate percentil based indice for %s " % key)
-        except:
-            LOGGER.exception("failed to calculate percentile indices")
+
+                except Exception as ex:
+                    msg = 'failed to calculate percentile based indice for {}: {}'.format(key, str(ex))
+                    LOGGER.exception(msg)
+                    raise Exception(msg)
+
+        except Exception as ex:
+            msg = 'failed to calculate percentile indices: {}'.format(str(ex))
+            LOGGER.exception(msg)
+            raise Exception(msg)
 
         output_archive = archive(results)
 

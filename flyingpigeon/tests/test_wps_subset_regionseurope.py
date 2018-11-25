@@ -1,7 +1,11 @@
+import pytest
 from pywps import Service
 from pywps.tests import assert_response_success
 
-from flyingpigeon.processes import ClippingProcess
+try:
+    from flyingpigeon.processes import ClipregionseuropeProcess
+except Exception:
+    pytestmark = pytest.mark.skip
 from flyingpigeon.tests.common import TESTDATA, client_for, CFG_FILE, get_output
 import os
 
@@ -13,18 +17,18 @@ datainputs_fmt = (
 )
 
 
-def test_wps_subset_countries():
+def test_wps_subset_regions_europe():
     client = client_for(
-        Service(processes=[ClippingProcess()], cfgfiles=CFG_FILE))
+        Service(processes=[ClipregionseuropeProcess()], cfgfiles=CFG_FILE))
 
     datainputs = datainputs_fmt.format(
         TESTDATA['cmip5_tasmax_2006_nc'],
-        'CAN',
+        'DE.HH',
         "True",)
 
     resp = client.get(
         service='wps', request='execute', version='1.0.0',
-        identifier='subset_countries',
+        identifier='subset_regionseurope',
         datainputs=datainputs)
 
     assert_response_success(resp)

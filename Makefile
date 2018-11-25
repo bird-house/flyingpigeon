@@ -1,4 +1,4 @@
-VERSION := 0.3.16
+VERSION := 0.3.17
 RELEASE := master
 
 # Include custom config if it is available
@@ -15,7 +15,7 @@ CPU_ARCH := $(shell uname -m 2>/dev/null || uname -p 2>/dev/null || echo "unknow
 # Python
 SETUPTOOLS_VERSION := 36.5.0
 CONDA_VERSION := 4.5
-BUILDOUT_VERSION := 2.11
+BUILDOUT_VERSION := 2.12.1
 
 # Anaconda
 ANACONDA_HOME ?= $(HOME)/anaconda
@@ -188,11 +188,6 @@ install: bootstrap
 	@echo "Installing application with buildout ..."
 	@-bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);bin/buildout buildout:anaconda-home=$(ANACONDA_HOME) -c custom.cfg"
 	@echo "\nStart service with \`make start'"
-
-.PHONY: post-install
-post-install:
-	@echo "Installing snappy ..."
-	@-bash $(APP_ROOT)"/requirements/snappy-install.sh" $(CONDA_ENV_PATH) $(APP_ROOT)
 
 .PHONY: update
 update:

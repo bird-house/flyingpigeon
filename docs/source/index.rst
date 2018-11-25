@@ -5,11 +5,12 @@
 
 .. _introduction:
 
-Introduction
-============
+Overview
+========
 
 Flyingpigeon is a Web Processing Service with a collection of processes for the climate community as a compartment of the `Birdhouse`_
 
+.. note:: It is one of the early birds from birdhouse and currently declared as testbed or sandbox to test new processes. Once the processes and functions are in a mature state, they move into a dedicated other or new bird. Flyingpigeon is currently the test-suite.
 
 .. toctree::
    :maxdepth: 1
@@ -21,7 +22,6 @@ Flyingpigeon is a Web Processing Service with a collection of processes for the 
    tutorials/index
    notebooks
    releasenotes
-
 
 
 Further reading:
