@@ -2,7 +2,8 @@ from tempfile import mkstemp
 from osgeo import gdal, osr
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
-from eggshell.viz import visualisation as vs
+from flyingpigeon import visualisation as vs
+# from flyingpigeon.eggshell import visualisation as vs
 import io
 from PIL import Image
 import rasterio

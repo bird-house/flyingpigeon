@@ -189,6 +189,12 @@ install: bootstrap
 	@-bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);bin/buildout buildout:anaconda-home=$(ANACONDA_HOME) -c custom.cfg"
 	@echo "\nStart service with \`make start'"
 
+.PHONY: post-install
+post-install:
+	@echo "Installing snappy ..."
+	@-bash $(APP_ROOT)"/requirements/snappy-install.sh" $(CONDA_ENV_PATH) $(APP_ROOT)
+
+
 .PHONY: update
 update:
 	@echo "Update application config with buildout (offline mode) ..."
