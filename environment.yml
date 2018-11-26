@@ -97,7 +97,7 @@ dependencies:
 # esgf
 - esgf-pyclient
 # satetlite
-# - rasterio
+- rasterio
 # - retrying
 - pip:
 #   - pygbif==0.2.0 #0.1.4

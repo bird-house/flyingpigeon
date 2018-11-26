@@ -83,6 +83,7 @@ def get_timestamp(tile):
         timestamp = dt.strptime(ts, '%Y:%m:%d %H:%M:%S')
     except:
         LOGGER.exception('failed to get timestamp for: %s' % tile)
+
     return timestamp
 
 
@@ -106,29 +107,32 @@ def plot_products(products, extend=[10, 20, 5, 15]):
     from cartopy.util import add_cyclic_point
     import re
 
+    try:
+        fig = plt.figure(dpi=90, facecolor='w', edgecolor='k')
+        projection = ccrs.PlateCarree()
+        ax = plt.axes(projection=projection)
+        ax.set_extent(extend)
+        ax.stock_img()
+        ax.coastlines()
+        ax.add_feature(cfeature.BORDERS)
 
-    fig = plt.figure(dpi=90, facecolor='w', edgecolor='k')
-    projection = ccrs.PlateCarree()
-    ax = plt.axes(projection=projection)
-    ax.set_extent(extend)
-    ax.stock_img()
-    ax.coastlines()
-    ax.add_feature(cfeature.BORDERS)
+        pat = re.compile(r'''(-*\d+\.\d+ -*\d+\.\d+);*''')
 
-    pat = re.compile(r'''(-*\d+\.\d+ -*\d+\.\d+);*''')
+        for key in products.keys():
+            polygon = str(products[key]['footprint'])
 
-    for key in products.keys():
-        polygon = str(products[key]['footprint'])
+            # s = 'POLYGON ((15.71888453311329 9.045763865974665,15.7018748825589 8.97110837227606,15.66795226563288 8.822558900399137,15.639498612331632 8.69721920092792,15.63428409805786 8.674303514900869,15.600477269179995 8.525798537094156,15.566734239298787 8.377334323160321,15.53315342410745 8.228822837291709,15.499521168391912 8.080353481086165,15.493321895031096 8.052970059354971,14.999818486685434 8.053569047879877,14.999818016115439 9.046743365203026,15.71888453311329 9.045763865974665))'
+            matches = pat.findall(polygon)
+            if matches:
+                xy = np.array([map(float, m.split()) for m in matches])
+                ax.add_patch(mpatches.Polygon(xy, closed=True,  transform=ccrs.PlateCarree(), alpha=0.4)) # color='coral'
+        # ccrs.Geodetic()
 
-        # s = 'POLYGON ((15.71888453311329 9.045763865974665,15.7018748825589 8.97110837227606,15.66795226563288 8.822558900399137,15.639498612331632 8.69721920092792,15.63428409805786 8.674303514900869,15.600477269179995 8.525798537094156,15.566734239298787 8.377334323160321,15.53315342410745 8.228822837291709,15.499521168391912 8.080353481086165,15.493321895031096 8.052970059354971,14.999818486685434 8.053569047879877,14.999818016115439 9.046743365203026,15.71888453311329 9.045763865974665))'
-        matches = pat.findall(polygon)
-        if matches:
-            xy = np.array([map(float, m.split()) for m in matches])
-            ax.add_patch(mpatches.Polygon(xy, closed=True,  transform=ccrs.PlateCarree(), alpha=0.4)) # color='coral'
-    # ccrs.Geodetic()
-
-    ax.gridlines(draw_labels=True,)
-    img = vs.fig2plot(fig, output_dir='.')
+        ax.gridlines(draw_labels=True,)
+        img = vs.fig2plot(fig, output_dir='.')
+    except:
+        LOGGER.debug('failed to plot EO products')
+        _, img = mkstemp(dir='.', prefix='dummy_', suffix='.png')
 
     return img
 
