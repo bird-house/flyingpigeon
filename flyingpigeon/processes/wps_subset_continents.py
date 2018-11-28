@@ -1,8 +1,5 @@
-from flyingpigeon.subset import clipping
-from flyingpigeon.subset import _CONTINENTS_
+
 from eggshell.log import init_process_logger
-from flyingpigeon.utils import archive, archiveextract
-from flyingpigeon.utils import rename_complexinputs
 
 import logging
 
@@ -12,7 +9,7 @@ from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
 
-from flyingpigeon.log import init_process_logger
+
 from flyingpigeon.subset import _CONTINENTS_
 from flyingpigeon.subset import clipping
 from flyingpigeon.utils import archive, archiveextract
@@ -21,6 +18,7 @@ from flyingpigeon.utils import rename_complexinputs
 LOGGER = logging.getLogger("PYWPS")
 
 
+# TODO: Rename this to "SubsetcontinentProcess"
 class ClipcontinentProcess(Process):
     """
     TODO: opendap input support, additional metadata to display region names.

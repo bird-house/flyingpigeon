@@ -1,3 +1,5 @@
+import logging
+
 import dateutil.parser
 import icclim
 from pywps.Process import WPSProcess
@@ -7,10 +9,13 @@ from pywps.Process import WPSProcess
 
 transfer_limit_Mb = 100
 
+logger = logging.getLogger()
+
 
 # TODO: Integrate or remove logging from this
 # import logging
 # LOGGER = logging.getLogger()
+
 
 class ProcessMultivarIndice(WPSProcess):
 

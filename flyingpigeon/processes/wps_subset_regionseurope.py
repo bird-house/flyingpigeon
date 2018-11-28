@@ -1,5 +1,7 @@
+# TODO: Rename this file to "wps_subset_europe"
 import logging
 
+from eggshell.log import init_process_logger
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
 from pywps import LiteralInput
@@ -9,8 +11,6 @@ from pywps.app.Common import Metadata
 from flyingpigeon.log import init_process_logger
 # from flyingpigeon.subset import countries, countries_longname
 from flyingpigeon.subset import _EUREGIONS_
-
-# from eggshell.log import init_process_logger
 from flyingpigeon.subset import clipping
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import rename_complexinputs
@@ -18,6 +18,7 @@ from flyingpigeon.utils import rename_complexinputs
 LOGGER = logging.getLogger("PYWPS")
 
 
+# TODO: rename this process "SubseteuropeProcess"
 class ClipregionseuropeProcess(Process):
     """
     TODO: opendap input support, additional metadata to display region names.
@@ -95,7 +96,7 @@ class ClipregionseuropeProcess(Process):
 
         # input files
         LOGGER.debug("url={}, mime_type={}".format(request.inputs['resource'][0].url,
-                     request.inputs['resource'][0].data_format.mime_type))
+                                                   request.inputs['resource'][0].data_format.mime_type))
         ncs = archiveextract(
             resource=rename_complexinputs(request.inputs['resource']))
         # mime_type=request.inputs['resource'][0].data_format.mime_type)
@@ -125,9 +126,9 @@ class ClipregionseuropeProcess(Process):
                 # dir_output=os.path.abspath(os.curdir),
                 # dimension_map=dimension_map,
             )
-            LOGGER.info('results %s' % results)
-        except Exception as e:
-            msg = 'clipping failed: %s' % e
+            LOGGER.info('results {}'.format(results))
+        except Exception as ex:
+            msg = 'clipping failed: {}'.format(ex)
             LOGGER.exception(msg)
             raise Exception(msg)
 
@@ -138,8 +139,8 @@ class ClipregionseuropeProcess(Process):
         try:
             tarf = archive(results)
             LOGGER.info('Tar file prepared')
-        except Exception as e:
-            msg = 'Tar file preparation failed: %s' % e
+        except Exception as ex:
+            msg = 'Tar file preparation failed: {}'.format(ex)
             LOGGER.exception(msg)
             raise Exception(msg)
 

@@ -5,15 +5,13 @@ from datetime import timedelta, time
 from os import makedirs
 from os.path import exists, join
 
+from eggshell.log import init_process_logger
 from pywps import Format
 # from pywps import LiteralInput
 from pywps import LiteralInput, ComplexOutput
 from pywps import Process
 from pywps.app.Common import Metadata
 from sentinelsat import SentinelAPI, geojson_to_wkt
-
-from eggshell.log import init_process_logger
-from flyingpigeon.utils import rename_complexinputs
 
 from flyingpigeon import eodata
 from flyingpigeon.config import cache_path
@@ -211,10 +209,12 @@ class EO_COP_indicesProcess(Process):
                 filename = products[key]['filename']
                 # form = products[key]['format']
                 ID = str(products[key]['identifier'])
+
                 file_zip = join(DIR_EO, '{}.zip'.format(ID))
                 DIR_tile = join(DIR_EO, str(filename))
                 response.update_status('fetch file {}'.format(ID), 20)
                 LOGGER.debug('path: {}'.format(DIR_tile))
+
                 if exists(file_zip):
                     LOGGER.debug('file %s.zip already fetched' % ID)
                 else:
@@ -232,6 +232,7 @@ class EO_COP_indicesProcess(Process):
 
                 if exists(DIR_tile):
                     LOGGER.debug('file {} already unzipped'.format(filename))
+
                 else:
                     try:
                         # zipfile = join(DIR_EO, '%szip' % (filename)).strip(form)
@@ -266,6 +267,7 @@ class EO_COP_indicesProcess(Process):
                     LOGGER.debug('resources BAI calculated')
                 if indice == 'BAI':
                     LOGGER.debug('Calculate BAI for {}'.format(resource))
+
                     tile = eodata.get_bai(resource)
                     LOGGER.debug('resources BAI calculated')
                 tiles.append(tile)

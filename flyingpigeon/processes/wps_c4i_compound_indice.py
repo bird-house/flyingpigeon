@@ -1,6 +1,10 @@
+import logging
+
 import dateutil.parser
 import icclim
 from pywps.Process import WPSProcess
+
+logger = logging.getLogger()
 
 # from os.path import expanduser
 # from mkdir_p import *
@@ -119,10 +123,10 @@ class ProcessCompoundIndice(WPSProcess):
             default=False)
         # self.leapNonLeapYearsIn.values = ["take all years (leap and non-leap)","take only leap years"]
 
-        # self.outputFileNameIn = self.addLiteralInput(identifier = 'outputFileName'
-        #     title = 'Name of output netCDF file',
-        #     type="String",
-        #     default = './out_icclim.nc')
+        # self.outputFileNameIn = self.addLiteralInput(identifier = 'outputFileName',
+        #   title = 'Name of output netCDF file',
+        #   type="String",
+        #   default = './out_icclim.nc')
 
         self.NLevelIn = self.addLiteralInput(identifier='NLevel',
                                              title='Number of levels (if 4D variable)',

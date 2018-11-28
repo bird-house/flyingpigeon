@@ -1,6 +1,7 @@
 import logging
 
 import dateutil.parser
+import dateutil.parser
 import icclim
 from pywps.Process import WPSProcess
 
@@ -17,10 +18,12 @@ class ProcessSimpleIndice(WPSProcess):
         WPSProcess.__init__(self,
                             identifier='wps_c4i_simple_indice',  # only mandatary attribute = same file name
                             title='c4i -- Simple Climate Indices',
+
                             abstract='Computes single input indices of temperature TG, TX, TN, TXx, TXn, TNx, TNn, SU,'
                                      ' TR, CSU, GD4, FD, CFD, ID, HD17; of rainfall: CDD, CWD, RR, RR1, SDII, R10mm,'
                                      ' R20mm, RX1day, RX5day; and of snowfall: SD, SD1, SD5, SD50. This processes is'
                                      ' also available in Climate4Impact and uses ICCLIM.',
+
                             version="1.0",
                             metadata=[
                                 {"title": "ICCLIM", "href": "http://icclim.readthedocs.io/en/latest/"},
@@ -39,7 +42,8 @@ class ProcessSimpleIndice(WPSProcess):
         #     type=type("S"),
         #     minOccurs=0,
         #     maxOccurs=1024,
-        #     default = 'http://aims3.llnl.gov/thredds/dodsC/cmip5_css02_data/cmip5/output1/CMCC/CMCC-CM/rcp85/day/atmos/day/r1i1p1/tasmax/1/tasmax_day_CMCC-CM_rcp85_r1i1p1_20060101-20061231.nc')
+        #     default = 'http://aims3.llnl.gov/thredds/dodsC/cmip5_css02_data/cmip5/output1/CMCC/CMCC-CM/
+        #       rcp85/day/atmos/day/r1i1p1/tasmax/1/tasmax_day_CMCC-CM_rcp85_r1i1p1_20060101-20061231.nc')
 
         self.filesIn = self.addComplexInput(
             identifier="files",
@@ -120,7 +124,7 @@ class ProcessSimpleIndice(WPSProcess):
         # self.opendapURL = self.addLiteralOutput(identifier = "opendapURL",title = "opendapURL");
 
     def callback(self, message, percentage):
-        self.status.set("%s" % str(message), str(percentage));
+        self.status.set('{}'.format(message), str(percentage))
 
     def execute(self):
         # Very important: This allows the NetCDF library to find the users credentials (X509 cert)
@@ -145,13 +149,14 @@ class ProcessSimpleIndice(WPSProcess):
             stopdate = dateutil.parser.parse(time_range.split("/")[1])
             time_range = [startdate, stopdate]
 
-        LOGGER.debug("time_range: %s", time_range)
+        LOGGER.debug("time_range: {}".format(time_range))
 
         thresh = None
+
         if thresholdlist:
             thresh = [float(threshold) for threshold in thresholdlist]
 
-        LOGGER.debug("thresh: %s", thresh)
+        LOGGER.debug("thresh: ".format(thresh))
 
         self.status.set("Preparing....", 0)
 
