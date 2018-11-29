@@ -1,5 +1,13 @@
-Authors
-*******
+=======
+Credits
+=======
 
-Nils Hempelmann <info@nilshempelmann.de>
-Carsten Ehbrecht <ehbrecht@dkrz.de>
+Development Lead
+----------------
+
+* Nils Hempelmann <info@nilshempelmann.de>
+
+Contributors
+------------
+
+None yet. Why not be the first?

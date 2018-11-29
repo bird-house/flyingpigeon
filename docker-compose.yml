@@ -1,16 +1,13 @@
-flyingpigeon:
-  image: birdhouse/flyingpigeon
-  environment:
-    HOSTNAME: $HOSTNAME
-    HTTP_PORT: $HTTP_PORT
-    HTTPS_PORT: $HTTPS_PORT
-    OUTPUT_PORT: $OUTPUT_PORT
-  ports:
-    - "$SUPERVISOR_PORT:9001"
-    - "$HTTP_PORT:$HTTP_PORT"
-    - "$HTTPS_PORT:$HTTPS_PORT"
-    - "$OUTPUT_PORT:$OUTPUT_PORT"
-#  volumes:
-#    - /tmp/data:/opt/birdhouse/var/lib
-#    - /tmp/log:/opt/birdhouse/var/log
-#  volume_driver: local
+version: '3'
+services:
+  emu:
+    build: .
+    image: bird-house/flyingpigeon
+    ports:
+      - "8093:8093"
+
+
+# docker-compose build
+# docker-compose up
+# docker-compose down
+# docker-compose rm

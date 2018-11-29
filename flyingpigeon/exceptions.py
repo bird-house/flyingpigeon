@@ -1,2 +1,0 @@
-class CalculationException(Exception):
-    pass

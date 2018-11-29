@@ -1,3 +1,6 @@
+include Makefile
+include *.txt
 include *.rst
-graft flyingpigeon
-global-exclude *.pyc *.*~
+recursive-include flyingpigeon *
+global-exclude __pycache__
+global-exclude *.py[co]

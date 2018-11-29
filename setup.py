@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""The setup script."""
+
 import os
 
 from setuptools import setup, find_packages
@@ -7,35 +12,38 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.rst')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.rst')).read()
 
-reqs = [line.strip() for line in open('requirements/deploy.txt')]
+reqs = [line.strip() for line in open('requirements.txt')]
 
 classifiers = [
     'Development Status :: 3 - Alpha',
+    'Intended Audience :: Developers',
     'Intended Audience :: Science/Research',
     'Operating System :: MacOS :: MacOS X',
-    'Operating System :: Microsoft :: Windows',
     'Operating System :: POSIX',
     'Programming Language :: Python',
+    'Natural Language :: English',
+    "Programming Language :: Python :: 2",
+    'Programming Language :: Python :: 2.7',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.6',
     'Topic :: Scientific/Engineering :: Atmospheric Science',
+    'License :: OSI Approved :: Apache Software License',
 ]
 
 setup(name='flyingpigeon',
       version=version,
-      description='Processes for climate data, indices and extreme events',
+      description="A Web Processing Service for Climate Data Analysis.",
       long_description=README + '\n\n' + CHANGES,
-      classifiers=classifiers,
-      author='Nils Hempelmann',
+      author="Nils Hempelmann",
       author_email='info@nilshempelmann.de',
-      url='http://flyingpigeon.readthedocs.io/en/latest/',
-      license="http://www.apache.org/licenses/LICENSE-2.0",
-      keywords='wps flyingpigeon pywps ipsl birdhouse conda climate indices species',
+      url='https://github.com/bird-house/flyingpigeon',
+      classifiers=classifiers,
+      license="Apache Software License 2.0",
+      keywords='wps pywps birdhouse flyingpigeon',
       packages=find_packages(),
       include_package_data=True,
-      zip_safe=False,
-      test_suite='flyingpigeon',
       install_requires=reqs,
       entry_points={
           'console_scripts': [
-             'flyingpigeon=flyingpigeon:main',
-          ]},
-      )
+             'flyingpigeon=flyingpigeon.cli:cli',
+          ]},)
