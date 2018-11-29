@@ -3,24 +3,24 @@ Processes for Species distribution
 Author: Nils Hempelmann (nils.hempelmann@lsce.ipsl.fr)
 """
 
-from pywps import Process
-from pywps import LiteralInput
+import logging
+import tempfile
+
+from eggshell.log import init_process_logger
 from pywps import ComplexInput, ComplexOutput
-from pywps import Format, FORMATS
+from pywps import Format
+from pywps import LiteralInput
+from pywps import Process
 from pywps.app.Common import Metadata
 
-from flyingpigeon.utils import archive, archiveextract
-from flyingpigeon.utils import rename_complexinputs
-from eggshell.log import init_process_logger
 from flyingpigeon import sdm
 from flyingpigeon.sdm import _SDMINDICES_
 from flyingpigeon.utils import archive, archiveextract
-from flyingpigeon.visualisation import map_gbifoccurrences
+from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.visualisation import map_PAmask
+from flyingpigeon.visualisation import map_gbifoccurrences
 from flyingpigeon.visualisation import pdfmerge, concat_images
 
-import tempfile
-import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -45,7 +45,6 @@ class SDMallinoneProcess(Process):
                          max_occurs=1,
                          default='Fagus sylvatica'
                          ),
-
 
             #  self.BBox = self.addBBoxInput(
             #     identifier="BBox",
@@ -76,7 +75,6 @@ class SDMallinoneProcess(Process):
                          allowed_values=['all', '1951-1980', '1961-1990',
                                          '1971-2000', '1981-2010']
                          ),
-
 
             LiteralInput("archive_format", "Archive format",
                          abstract="Result files will be compressed into archives.\
@@ -234,6 +232,7 @@ class SDMallinoneProcess(Process):
         ncs_indices = None
         try:
             response.update_status('start calculation of climate indices for {}'.format(indices), 30)
+
             ncs_indices = sdm.get_indices(resource=resources, indices=indices)
             LOGGER.info('indice calculation done')
         except Exception as ex:
@@ -259,8 +258,9 @@ class SDMallinoneProcess(Process):
 
         for count, key in enumerate(indices_dic.keys()):
             try:
-                status_nr = 40 + count*10
+                status_nr = 40 + count * 10
                 response.update_status('Start processing of {}'.format(key), status_nr)
+
                 ncs = indices_dic[key]
                 LOGGER.info('with {} files'.format(len(ncs)))
 

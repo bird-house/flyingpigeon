@@ -1,17 +1,7 @@
 import logging
 from tempfile import mkstemp
 
-from flyingpigeon.subset import countries, countries_longname
-from flyingpigeon.subset import clipping
 from eggshell.log import init_process_logger
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.utils import archive, archiveextract
-from flyingpigeon.utils import get_variable
-from flyingpigeon import visualisation as vs
-
-from pywps import Process
-from pywps import LiteralInput
-
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
 from pywps import LiteralInput
@@ -19,7 +9,7 @@ from pywps import Process
 from pywps.app.Common import Metadata
 
 from flyingpigeon import visualisation as vs
-from flyingpigeon.log import init_process_logger
+# from flyingpigeon.log import init_process_logger
 from flyingpigeon.subset import clipping
 from flyingpigeon.subset import countries
 from flyingpigeon.utils import archive, archiveextract
@@ -143,6 +133,7 @@ class FactsheetProcess(Process):
 
         try:
             png_spaghetti = vs.spaghetti(subsets, variable=var, )
+
         except Exception as ex:
             msg = 'failed to generate the spaghetti plot: {}'.format(str(ex))
             LOGGER.exception(msg)

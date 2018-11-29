@@ -1,14 +1,14 @@
 import logging
 from tempfile import mkstemp
+
 from eggshell.log import init_process_logger
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.datafetch import write_fileinfo
 
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
 from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
+
 
 from flyingpigeon import robustness as erob
 from flyingpigeon.datafetch import write_fileinfo

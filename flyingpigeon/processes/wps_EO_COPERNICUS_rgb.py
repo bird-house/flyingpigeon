@@ -5,6 +5,7 @@ from datetime import timedelta, time
 from os import makedirs
 from os.path import exists, join
 
+from eggshell.log import init_process_logger
 from pywps import Format
 # from pywps import LiteralInput
 from pywps import LiteralInput, ComplexOutput
@@ -12,8 +13,6 @@ from pywps import Process
 from pywps.app.Common import Metadata
 from sentinelsat import SentinelAPI, geojson_to_wkt
 
-from eggshell.log import init_process_logger
-from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon import eodata
 from flyingpigeon.config import cache_path
 from flyingpigeon.log import init_process_logger

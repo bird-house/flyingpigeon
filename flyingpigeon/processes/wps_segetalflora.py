@@ -8,7 +8,6 @@ from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
 from eggshell.log import init_process_logger
-
 from flyingpigeon import segetalflora as sf
 from flyingpigeon.utils import archive, archiveextract
 from flyingpigeon.utils import rename_complexinputs

@@ -2,9 +2,12 @@
 Processes for Species distribution
 Author: Nils Hempelmann ( info@nilshempelmann.de )
 """
-import logging
-import tempfile
+# import tempfile
 
+import logging
+
+from eggshell.log import init_process_logger
+# from flyingpigeon.visualisation import pdfmerge, concat_images
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
 from pywps import LiteralInput
@@ -12,18 +15,11 @@ from pywps import Process
 from pywps.app.Common import Metadata
 
 from flyingpigeon import sdm
-from flyingpigeon.log import init_process_logger
 from flyingpigeon.sdm import _SDMINDICES_
 from flyingpigeon.utils import archive, archiveextract, download
 from flyingpigeon.utils import rename_complexinputs
 from flyingpigeon.visualisation import map_PAmask
 from flyingpigeon.visualisation import map_gbifoccurrences
-from flyingpigeon.visualisation import pdfmerge, concat_images
-
-from eggshell.log import init_process_logger
-
-import tempfile
-import logging
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -237,6 +233,7 @@ class SDMcsvProcess(Process):
             try:
                 status_nr = 40 + count * 10
                 response.update_status('Start processing of {}'.format(key), status_nr)
+
                 ncs = indices_dic[key]
                 LOGGER.info('with {} files'.format(len(ncs)))
 

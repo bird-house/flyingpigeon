@@ -1,6 +1,11 @@
+import logging
+
+import dateutil.parser
 import dateutil.parser
 import icclim
 from pywps.Process import WPSProcess
+
+logger = logging.getLogger()
 
 # from mkdir_p import *
 
@@ -84,7 +89,9 @@ class ProcessPercentileIndice(WPSProcess):
                                                        type=type("S"),
                                                        minOccurs=0,
                                                        maxOccurs=100,
-                                                       default='http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20060101-20251231.nc')
+                                                       default='http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/'
+                                                        'TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20060101-20251231.nc')
+
         # 'http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20260101-20501231.nc',
         # 'http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20510101-20751231.nc',
         # 'http://opendap.knmi.nl/knmi/thredds/dodsC/IS-ENES/TESTSETS/tas_day_EC-EARTH_rcp26_r8i1p1_20760101-21001231.nc'
@@ -217,4 +224,4 @@ class ProcessPercentileIndice(WPSProcess):
         # url = fileOutURL+"/"+out_file_name;
         # self.opendapURL.setValue(url);
         self.output.setValue(out_file_name)
-        self.status.set("ready", 100);
+        self.status.set("ready", 100)

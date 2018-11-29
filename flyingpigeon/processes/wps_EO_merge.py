@@ -2,15 +2,11 @@ import logging
 from datetime import datetime as dt
 from datetime import timedelta, time
 
+from eggshell.log import init_process_logger
 from pywps import Format
-# from pywps import LiteralInput
 from pywps import LiteralInput, ComplexOutput
 from pywps import Process
 from pywps.app.Common import Metadata
-
-from eggshell.log import init_process_logger
-# from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.utils import archive, archiveextract
 
 from flyingpigeon import eodata
 from flyingpigeon.datafetch import _EODATA_

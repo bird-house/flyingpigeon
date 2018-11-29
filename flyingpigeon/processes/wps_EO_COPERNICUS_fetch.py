@@ -1,30 +1,19 @@
-from pywps import Process
-# from pywps import LiteralInput
-from pywps import ComplexInput, LiteralInput, ComplexOutput
-from pywps import Format, FORMATS
-from pywps.app.Common import Metadata
-
-from eggshell.log import init_process_logger
-from flyingpigeon.utils import rename_complexinputs
-# from flyingpigeon import eodata
-from flyingpigeon.config import cache_path
-
 import logging
-#import zipfile
-
+import zipfile
 from datetime import datetime as dt
 from datetime import timedelta, time
 from os import makedirs
 from os.path import exists, join
 from tempfile import mkstemp
 
+from eggshell.log import init_process_logger
 from pywps import Format
-# from pywps import LiteralInput
 from pywps import LiteralInput, ComplexOutput
 from pywps import Process
 from pywps.app.Common import Metadata
 from sentinelsat import SentinelAPI, geojson_to_wkt
 
+from flyingpigeon import eodata
 # from flyingpigeon import eodata
 from flyingpigeon.config import cache_path
 from flyingpigeon.log import init_process_logger
@@ -238,6 +227,7 @@ class EO_COP_fetchProcess(Process):
 
                         if exists(DIR_tile):
                             LOGGER.debug('file {} already unzipped'.format(filename))
+
                         else:
                             try:
                                 # zipfile = join(DIR_EO, '%szip' % (filename)).strip(form)
