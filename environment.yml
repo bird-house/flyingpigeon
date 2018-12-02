@@ -13,3 +13,5 @@ dependencies:
 - python=3
 - numpy
 - ocgis
+- pip:
+   - -e git+https://github.com/bird-house/eggshell.git#egg=eggshell
