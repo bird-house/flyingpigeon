@@ -25,7 +25,7 @@
 # from .wps_analogs_viewer import AnalogsviewerProcess
 # from .wps_robustness import RobustnessProcess
 # from .wps_plot_timeseries import PlottimeseriesProcess
-# from .wps_pointinspection import PointinspectionProcess
+from .wps_pointinspection import PointinspectionProcess
 # from .wps_regrid import ESMFRegridProcess
 # from .wps_sdm_allinone import SDMallinoneProcess
 # from .wps_sdm_csv import SDMcsvProcess
