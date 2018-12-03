@@ -1,7 +1,7 @@
 # vim:set ft=dockerfile:
 FROM continuumio/miniconda3
 MAINTAINER https://github.com/bird-house/flyingpigeon
-LABEL Description="Flyingpigeon WPS" Vendor="Birdhouse" Version="1.3.1"
+LABEL Description="Flyingpigeon WPS" Vendor="Birdhouse" Version="1.4.0"
 
 # Update Debian system
 RUN apt-get update && apt-get install -y \
