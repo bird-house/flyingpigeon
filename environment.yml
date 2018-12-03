@@ -10,8 +10,8 @@ dependencies:
 - psutil
 # - eggshell
 # analytic
-- python=3
-- numpy
-- ocgis
-- pip:
-   - -e git+https://github.com/bird-house/eggshell.git#egg=eggshell
+#- python=3
+# - numpy
+# - ocgis
+#- pip:
+#   - -e git+https://github.com/bird-house/eggshell.git#egg=eggshell
