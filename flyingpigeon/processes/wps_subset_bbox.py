@@ -1,11 +1,12 @@
 import logging
 import traceback
-from urlparse import urlparse
+# from urlparse import urlparse
+from urllib.parse import urlparse
 
 from pywps import Process, LiteralInput, ComplexOutput, get_format
 
 from flyingpigeon.handler_common import wfs_common
-from flyingpigeon.utils import CookieNetCDFTransfer
+from eggshell.nc.nc_utils import CookieNetCDFTransfer
 
 LOGGER = logging.getLogger("PYWPS")
 

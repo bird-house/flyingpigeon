@@ -5,65 +5,78 @@ Developer Guide
 
 .. contents::
     :local:
-    :depth: 2
+    :depth: 1
 
+.. WARNING:: To create new processes look at examples in Emu_.
 
-.. _wps_test_env:
+Building the docs
+-----------------
 
-Running WPS service in test environment
----------------------------------------
-
-For development purposes you can run the WPS service without nginx and supervisor.
-Use the following instructions:
+First install dependencies for the documentation:
 
 .. code-block:: sh
 
-    # get the source code
-    $ git clone https://github.com/bird-house/flyingpigeon.git
-    $ cd flyingpigeon
+  $ make bootstrap_dev
+  $ make docs
 
-    # create conda environment
-    $ conda env create -f environment.yml
+.. _testing:
 
-    # activate conda environment
-    $ source activate flyingpigeon
+Running tests
+-------------
 
-    # install flyingpigeon code into conda environment
-    $ python setup.py develop
+Run tests using `pytest`_.
 
-    # start the WPS service
-    $ flyingpigeon
-
-    # open your browser on the default service url
-    $ firefox http://localhost:5000/wps
-
-    # ... and service capabilities url
-    $ firefox http://localhost:5000/wps?service=WPS&request=GetCapabilities
-
-The ``flyingpigeon`` service command-line has more options:
+First activate the ``flyingpigeon`` Conda environment and install ``pytest``.
 
 .. code-block:: sh
 
-    $ flyingpigeon -h
+   $ source activate flyingpigeon
+   $ conda install pytest flake8  # if not already installed
 
-For example you can start the WPS with enabled debug logging mode:
-
-.. code-block:: sh
-
-    $ flyingpigeon --debug
-
-Or you can overwrite the default `PyWPS`_ configuration by providing your own
-PyWPS configuration file (just modifiy the options you want to change):
+Run quick tests (skip slow and online):
 
 .. code-block:: sh
 
-    # edit your local pywps configuration file
-    $ cat mydev.cfg
-    [logging]
-    level = WARN
-    file = /tmp/mydev.log
+    $ pytest -m 'not slow and not online'"
 
-    # start the service with this configuration
-    $ flyingpigeon -c mydev.cfg
+Run all tests:
 
-.. _PyWPS: http://pywps.org/
+.. code-block:: sh
+
+    $ pytest
+
+Check pep8:
+
+.. code-block:: sh
+
+    $ flake8
+
+Run tests the lazy way
+----------------------
+
+Do the same as above using the ``Makefile``.
+
+.. code-block:: sh
+
+    $ make test
+    $ make testall
+    $ make pep8
+
+Bump a new version
+------------------
+
+Make a new version of Flyingpigeon in the following steps:
+
+* Make sure everything is commit to GitHub.
+* Update ``CHANGES.rst`` with the next version.
+* Dry Run: ``bumpversion --dry-run --verbose --new-version 0.8.1 patch``
+* Do it: ``bumpversion --new-version 0.8.1 patch``
+* ... or: ``bumpversion --new-version 0.9.0 minor``
+* Push it: ``git push``
+* Push tag: ``git push --tags``
+
+See the bumpversion_ documentation for details.
+
+.. _bumpversion: https://pypi.org/project/bumpversion/
+.. _pytest: https://docs.pytest.org/en/latest/
+.. _Emu: https://github.com/bird-house/emu

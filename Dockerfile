@@ -1,50 +1,33 @@
 # vim:set ft=dockerfile:
-FROM birdhouse/bird-base:latest
-MAINTAINER https://github.com/bird-house
+FROM continuumio/miniconda3
+MAINTAINER https://github.com/bird-house/flyingpigeon
+LABEL Description="Flyingpigeon WPS" Vendor="Birdhouse" Version="1.3.1"
 
-LABEL Description="Flyingpigeon WPS" Vendor="Birdhouse"
+# Update Debian system
+RUN apt-get update && apt-get install -y \
+ build-essential \
+&& rm -rf /var/lib/apt/lists/*
 
-# Configure hostname and ports for services
-ENV HTTP_PORT 5000
-ENV OUTPUT_PORT 8000
-ENV HOSTNAME localhost
+# Update conda
+RUN conda update -n base conda
 
-# Set current home
-ENV HOME /root
+# Copy WPS project
+COPY . /opt/wps
 
-# Copy application sources
-COPY . /opt/birdhouse/src/flyingpigeon
+WORKDIR /opt/wps
 
-# cd into application
-WORKDIR /opt/birdhouse/src/flyingpigeon
+# Create conda environment
+RUN conda env create -n wps -f environment.yml
 
-# Provide custom.cfg with settings for docker image
-COPY .docker.cfg custom.cfg
+# Install WPS
+RUN ["/bin/bash", "-c", "source activate wps && python setup.py develop"]
 
-# Install system dependencies
-RUN bash bootstrap.sh -i && bash requirements.sh
+# Start WPS service on port 8093 on 0.0.0.0
+EXPOSE 8093
+ENTRYPOINT ["/bin/bash", "-c"]
+CMD ["source activate wps && exec emu start -b 0.0.0.0 -config /opt/wps/etc/demo.cfg"]
 
-# Set conda enviroment
-ENV ANACONDA_HOME /opt/conda
-ENV CONDA_ENVS_DIR /opt/conda/envs
-
-# Run install and fix permissions
-RUN make clean install && chmod 755 /opt/birdhouse/etc && chmod 755 /opt/birdhouse/var/run
-
-# Install PAVICS version of pywps
-RUN /opt/conda/envs/flyingpigeon/bin/pip install --upgrade git+https://github.com/Ouranosinc/pywps.git@pavics
-
-# Volume for data, cache, logfiles, ...
-VOLUME /opt/birdhouse/var/lib
-VOLUME /opt/birdhouse/var/log
-# Volume for configs
-VOLUME /opt/birdhouse/etc
-
-# Ports used in birdhouse
-EXPOSE $HTTP_PORT $OUTPUT_PORT
-
-# Start supervisor in foreground
-ENV DAEMON_OPTS --nodaemon
-
-# Start service ...
-CMD ["make", "update-config", "start"]
+# docker build -t bird-house/flyingpigeon .
+# docker run -p 8093:8093 bird-house/flyingpigeon
+# http://localhost:8093/wps?request=GetCapabilities&service=WPS
+# http://localhost:8093/wps?request=DescribeProcess&service=WPS&identifier=all&version=1.0.0

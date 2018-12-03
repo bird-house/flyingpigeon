@@ -1,5 +1,10 @@
-Releasenotes
-************
+Changes
+*******
+
+1.4.0 (2018-12-04)
+==================
+
+New FlyingPigeon without buildout deployment.
 
 1.3.0 (2018-12-03)
 ==================

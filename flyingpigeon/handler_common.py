@@ -13,7 +13,7 @@ from ocgis.exc import ExtentError
 import netCDF4
 from shapely.geometry import shape
 
-from flyingpigeon.utils import guess_main_variables, opendap_or_download
+from eggshell.nc.nc_utils import guess_main_variables, opendap_or_download
 
 json_format = get_format('JSON')
 
@@ -42,7 +42,7 @@ def wfs_common(request, response, mode, spatial_mode='wfs'):
                 one_resource.data,
                 auth_tkt_cookie=request.http_request.cookies,
                 output_path='/tmp')
-        except:
+        except Exception:
             raise Exception(traceback.format_exc())
         list_of_files.append(nc_file)
 
@@ -99,7 +99,7 @@ def wfs_common(request, response, mode, spatial_mode='wfs'):
         output_files = []
         output_urls = []
         mv_dir = tempfile.mkdtemp(dir=outputpath)
-        os.chmod(mv_dir, 0755)
+        # os.chmod(mv_dir, 0755) # raise an error SyntaxError: invalid token
 
         for one_file in list_of_files:
             file_name = os.path.basename(one_file)
@@ -176,7 +176,7 @@ def wfs_common(request, response, mode, spatial_mode='wfs'):
                     url_file = os.path.join(
                         outputurl, os.path.basename(mv_dir), mv_name)
                     output_urls.append(url_file)
-    except:
+    except Exception:
         raise Exception(traceback.format_exc())
 
     # If only ExtentError occured, the output_urls will be empty...
