@@ -1,17 +1,14 @@
-from .wps_EO_COPERNICUS_fetch import EO_COP_fetchProcess
-from .wps_EO_COPERNICUS_search import EO_COP_searchProcess
+# from .wps_EO_COPERNICUS_fetch import EO_COP_fetchProcess
+# from .wps_EO_COPERNICUS_search import EO_COP_searchProcess
 # from .wps_EO_COPERNICUS_indices import EO_COP_indicesProcess
 # from .wps_EO_COPERNICUS_rgb import EO_COP_rgbProcess
 # from .wps_EO_fetch import FetcheodataProcess
 # from .wps_EO_ndvi import NdviProcess
 # from .wps_EO_merge import MergeProcess
-<<<<<<< HEAD
-=======
 # from .wps_EO_COPERNICUS_search import EO_COP_searchProcess
 # from .wps_averager import AveragerProcess
 # from .wps_averager_WFS import AveragerWFSProcess
 # from .wps_averager_bbox import AveragerBboxProcess
->>>>>>> master
 # from .wps_climatefactsheet import FactsheetProcess
 # from .wps_fetch import FetchProcess
 # from .wps_indices_percentiledays import IndicespercentiledaysProcess
@@ -37,22 +34,21 @@ from .wps_EO_COPERNICUS_search import EO_COP_searchProcess
 # from .wps_sdm_getindices import SDMgetindicesProcess
 # from .wps_segetalflora import SegetalfloraProcess
 # from .wps_spatial_analog import SpatialAnalogProcess
-from .wps_subset import SubsetProcess
-from .wps_subset_WFS import SubsetWFSProcess
-from .wps_subset_bbox import SubsetBboxProcess
+# from .wps_subset import SubsetProcess
+# from .wps_subset_WFS import SubsetWFSProcess
+# from .wps_subset_bbox import SubsetBboxProcess
 from .wps_subset_continents import ClipcontinentProcess
 from .wps_subset_countries import ClippingProcess
-from .wps_subset_regionseurope import ClipregionseuropeProcess
+# from .wps_subset_regionseurope import ClipregionseuropeProcess
 # from .wps_weatherregimes_model import WeatherregimesmodelProcess
 # from .wps_weatherregimes_projection import WeatherregimesprojectionProcess
 # from .wps_weatherregimes_reanalyse import WeatherregimesreanalyseProcess
 
 processes = [
-<<<<<<< HEAD
     ClippingProcess(),
     ClipcontinentProcess(),
     # ClipregionseuropeProcess(),
-    PointinspectionProcess(),
+    # PointinspectionProcess(),
     # LandseamaskProcess(),
     # FactsheetProcess(),
     # FetchProcess(),
@@ -69,74 +65,24 @@ processes = [
     # SpatialAnalogProcess(),
     # MapSpatialAnalogProcess(),
     # FetcheodataProcess(),
-    EO_COP_searchProcess(),
-    EO_COP_fetchProcess(),
+    # EO_COP_searchProcess(),
+    # EO_COP_fetchProcess(),
     # ESMFRegridProcess(),
     # EO_COP_rgbProcess(),
     # EO_COP_indicesProcess(),
     # MergeProcess(),
     # NdviProcess(),
-] + [c() for c in OCGIS_INDEX_PROCESSES]
-=======
-                ClippingProcess(),
-                ClipcontinentProcess(),
-                ClipregionseuropeProcess(),
-                # PointinspectionProcess(),
-                # LandseamaskProcess(),
-                # FactsheetProcess(),
-                # FetchProcess(),
-                # IndicespercentiledaysProcess(),
-                # IndicessingleProcess(),
-                # GBIFfetchProcess(),
-                # SDMgetindicesProcess(),
-                # SDMcsvindicesProcess(),
-                # SDMcsvProcess(),
-                # SDMallinoneProcess(),
-                # WeatherregimesreanalyseProcess(),
-                # WeatherregimesprojectionProcess(),
-                # WeatherregimesmodelProcess(),
-                # AnalogsreanalyseProcess(),
-                # AnalogsmodelProcess(),
-                # AnalogscompareProcess(),
-                # AnalogsviewerProcess(),
-                # RobustnessProcess(),
-                # PlottimeseriesProcess(),
-                # SegetalfloraProcess(),
-                # SpatialAnalogProcess(),
-                # MapSpatialAnalogProcess(),
-                SubsetProcess(),
-                # AveragerProcess(),
-                SubsetWFSProcess(),
-                # AveragerWFSProcess(),
-                SubsetBboxProcess(),
-                # AveragerBboxProcess(),
-                # OuranosPublicIndicatorProcess(),
-                # NCMergeProcess(),
-                # FetcheodataProcess(),
-                # EO_COP_searchProcess(),
-                # EO_COP_fetchProcess(),
-                # ESMFRegridProcess(),
-                # EO_COP_rgbProcess(),
-                # EO_COP_indicesProcess(),
-                # MergeProcess(),
-                # NdviProcess(),
-                # KDDM_BC_Process(),
-            ]  # + OCGIS_INDEX_PROCESSES
->>>>>>> master
+]  # + [c() for c in OCGIS_INDEX_PROCESSES]
 
 
 # pywps3 processes:
 #
 # # climate for impact processes
 # "wps_c4i_simple_indice",
-# <<<<<<< HEAD
 # # processes under development
 # # "wps_eobs2cordex",
-# =======
-# >>>>>>> master
 #
 # # TODO: c4i processes with multiple input sources
 # # "wps_c4i_multivar_indice",
 # # "wps_c4i_percentile_indice",
 # # "wps_c4i_compound_indice",
-
