@@ -1,25 +1,20 @@
 
-from eggshell.log import init_process_logger
+# from eggshell.log import init_process_logger
 
 import logging
 
-from pywps import ComplexInput, ComplexOutput
-from pywps import Format
-from pywps import LiteralInput
-from pywps import Process
+from pywps import ComplexInput, ComplexOutput, Format, LiteralInput, Process
 from pywps.app.Common import Metadata
-
 
 from flyingpigeon.subset import _CONTINENTS_
 from flyingpigeon.subset import clipping
-from flyingpigeon.utils import archive, archiveextract
-from flyingpigeon.utils import rename_complexinputs
+from eggshell.utils.utils import archive, extract_archive #archiveextract
+from eggshell.utils.utils import rename_complexinputs
 
 LOGGER = logging.getLogger("PYWPS")
 
-
 # TODO: Rename this to "SubsetcontinentProcess"
-class ClipcontinentProcess(Process):
+class SubsetcontinentProcess(Process):
     """
     TODO: opendap input support, additional metadata to display region names.
     """
@@ -74,11 +69,11 @@ class ClipcontinentProcess(Process):
                           )
         ]
 
-        super(ClipcontinentProcess, self).__init__(
+        super(SubsetcontinentProcess, self).__init__(
             self._handler,
             identifier="subset_continents",
             title="Subset (Continents)",
-            version="0.10",
+            version="0.11",
             abstract="Return the data whose grid cells intersect the selected continents for each input dataset.",
             metadata=[
                 # Metadata('LSCE', 'http://www.lsce.ipsl.fr/en/index.php'),
@@ -91,13 +86,13 @@ class ClipcontinentProcess(Process):
         )
 
     def _handler(self, request, response):
-        init_process_logger('log.txt')
+        # init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
         # input files
         LOGGER.debug("url={}, mime_type={}".format(request.inputs['resource'][0].url,
                      request.inputs['resource'][0].data_format.mime_type))
-        ncs = archiveextract(
+        ncs = extract_archive(
             resource=rename_complexinputs(request.inputs['resource']))
         # mime_type=request.inputs['resource'][0].data_format.mime_type)
         # mosaic option
