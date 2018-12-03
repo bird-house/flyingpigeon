@@ -11,7 +11,7 @@ Release with merged processes from PAVICS projects.
 
 **warning**:
 This is not a functional release due to unresolved issues and dependency conflicts.
-The release is kept as reference for the available functionalilty.
+The release is kept as reference for the available functionality.
 
 1.2.1 (2018-09-14)
 ==================
