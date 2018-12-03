@@ -1,6 +1,18 @@
 Releasenotes
 ************
 
+1.3.0 (2018-12-03)
+==================
+
+Release with merged processes from PAVICS projects.
+
+* Merged processes from Ouranos/PAVICS fork (#262).
+* Multiple fixes.
+
+**warning**:
+This is not a functional release due to unresolved issues and dependency conflicts.
+The release is kept as reference for the available functionalilty.
+
 1.2.1 (2018-09-14)
 ==================
 
