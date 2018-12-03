@@ -1,10 +1,10 @@
 Changes
 *******
 
-1.4.0 (2018-12-04)
+1.4.0 (2018-12-03)
 ==================
 
-New FlyingPigeon without buildout deployment.
+New FlyingPigeon without buildout deployment (#265).
 
 1.3.0 (2018-12-03)
 ==================
