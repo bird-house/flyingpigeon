@@ -5,7 +5,7 @@ from pywps.app.Common import Metadata
 
 from flyingpigeon.subset import clipping
 from flyingpigeon.subset import countries
-from eggshell.utils import archive, archiveextract
+from eggshell.utils import archive, extract_archive
 from eggshell.utils import rename_complexinputs
 
 LOGGER = logging.getLogger("PYWPS")

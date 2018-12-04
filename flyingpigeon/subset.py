@@ -22,7 +22,7 @@ def countries():
     """
     countries = _COUNTRIES_.keys()
     # countries = ['DEU', 'FRA', 'GBR', 'ESP', 'ITA']
-    countries.sort()
+    # countries.sort()
     return countries
 
 
