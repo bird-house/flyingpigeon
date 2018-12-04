@@ -3,15 +3,16 @@ import logging
 from pywps import ComplexInput, ComplexOutput, Format, LiteralInput, Process
 from pywps.app.Common import Metadata
 
-from flyingpigeon.subset import _CONTINENTS_
 from flyingpigeon.subset import clipping
-from eggshell.utils import archive, extract_archive #archiveextract
+from flyingpigeon.subset import countries
+from eggshell.utils import archive, archiveextract
 from eggshell.utils import rename_complexinputs
 
 LOGGER = logging.getLogger("PYWPS")
 
-# TODO: Rename this to "SubsetcontinentProcess"
-class SubsetcontinentProcess(Process):
+
+# TODO: Rename this to "SubsetcountryProcess"
+class SubsetcountryProcess(Process):
     """
     TODO: opendap input support, additional metadata to display region names.
     """
@@ -20,11 +21,13 @@ class SubsetcontinentProcess(Process):
         inputs = [
             LiteralInput('region', 'Region',
                          data_type='string',
-                         abstract="Continent name.",
+                         # abstract= countries_longname(), # need to handle special non-ascii char in countries.
+                         abstract="Country code, see ISO-3166-3:\
+                          https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3#Officially_assigned_code_elements",
                          min_occurs=1,
-                         max_occurs=len(_CONTINENTS_),
-                         default='Africa',
-                         allowed_values=_CONTINENTS_),  # REGION_EUROPE #COUNTRIES
+                         max_occurs=len(countries()),
+                         default='DEU',
+                         allowed_values=countries()),  # REGION_EUROPE #COUNTRIES
 
             LiteralInput('mosaic', 'Union of multiple regions',
                          data_type='boolean',
@@ -35,7 +38,7 @@ class SubsetcontinentProcess(Process):
                          default=False),
 
             ComplexInput('resource', 'Resource',
-                         abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
+                         abstract='NetCDF Files or archive (tar/zip) containing NetCDF files.',
                          metadata=[Metadata('Info')],
                          min_occurs=1,
                          max_occurs=1000,
@@ -66,14 +69,14 @@ class SubsetcontinentProcess(Process):
                           )
         ]
 
-        super(SubsetcontinentProcess, self).__init__(
+        super(SubsetcountryProcess, self).__init__(
             self._handler,
-            identifier="subset_continents",
-            title="Subset Continents",
+            identifier="subset_countries",
+            title="Subset Countries",
             version="0.11",
-            abstract="Return the data whose grid cells intersect the selected continents for each input dataset.",
+            abstract="Return the data whose grid cells intersect the selected countries for each input dataset.",
             metadata=[
-                # Metadata('LSCE', 'http://www.lsce.ipsl.fr/en/index.php'),
+                Metadata('LSCE', 'http://www.lsce.ipsl.fr/en/index.php'),
                 Metadata('Doc', 'http://flyingpigeon.readthedocs.io/en/latest/'),
             ],
             inputs=inputs,
@@ -82,14 +85,15 @@ class SubsetcontinentProcess(Process):
             store_supported=True,
         )
 
-    def _handler(self, request, response):
-        # init_process_logger('log.txt')
+    @staticmethod
+    def _handler(request, response):
+        init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
         # input files
-        LOGGER.debug("url={}, mime_type={}".format(request.inputs['resource'][0].url,
-                     request.inputs['resource'][0].data_format.mime_type))
-        ncs = extract_archive(
+        LOGGER.debug('url={}, mime_type={}'.format(request.inputs['resource'][0].url,
+                                                   request.inputs['resource'][0].data_format.mime_type))
+        ncs = archiveextract(
             resource=rename_complexinputs(request.inputs['resource']))
         # mime_type=request.inputs['resource'][0].data_format.mime_type)
         # mosaic option
@@ -101,9 +105,9 @@ class SubsetcontinentProcess(Process):
         # regions used for subsetting
         regions = [inp.data for inp in request.inputs['region']]
 
-        LOGGER.info('ncs: {}'.format(ncs))
-        LOGGER.info('regions: {}'.format(regions))
-        LOGGER.info('mosaic: {}'.format(mosaic))
+        LOGGER.info('ncs={}'.format(ncs))
+        LOGGER.info('regions={}'.format(regions))
+        LOGGER.info('mosaic={}'.format(mosaic))
 
         response.update_status("Arguments set for subset process", 0)
         LOGGER.debug('starting: regions={}, num_files={}'.format(len(regions), len(ncs)))
@@ -119,7 +123,6 @@ class SubsetcontinentProcess(Process):
                 # dimension_map=dimension_map,
             )
             LOGGER.info('results %s' % results)
-
         except Exception as ex:
             msg = 'Clipping failed: {}'.format(str(ex))
             LOGGER.exception(msg)
@@ -131,8 +134,7 @@ class SubsetcontinentProcess(Process):
         # prepare tar file
         try:
             tarf = archive(results)
-            LOGGER.info('Tar file prepared')
-
+            LOGGER.info('Tar file prepared.')
         except Exception as ex:
             msg = 'Tar file preparation failed: {}'.format(str(ex))
             LOGGER.exception(msg)
