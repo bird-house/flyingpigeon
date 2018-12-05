@@ -80,7 +80,7 @@ class SubsetProcess(Process):
             self._handler,
             identifier='subset',
             title='Subset',
-            version='0.1',
+            version='0.2',
             abstract=('Return the data for which grid cells intersect the '
                       'selected polygon for each input dataset as well as'
                       'the time range selected.'),

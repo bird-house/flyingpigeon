@@ -13,5 +13,5 @@ def test_wps_caps():
                             '/wps:Process'
                             '/ows:Identifier')
     assert sorted(names.split()) == [
-        'hello',
+        'subset', 'subset_bbox', 'subset_continents', 'subset_countries'
     ]
