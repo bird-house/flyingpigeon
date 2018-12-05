@@ -36,7 +36,8 @@ class PointinspectionProcess(Process):
                          ]),
 
             LiteralInput("coords", "Coordinates",
-                         abstract="A comma-seperated tuple of WGS85 lon,lat decimal coordinates (e.g. 2.356138, 48.846450)",
+                         abstract="A comma-seperated tuple of WGS85 lon,lat decimal coordinates\
+                          (e.g. 2.356138, 48.846450)",
                          # noqa
                          default="2.356138, 48.846450",
                          data_type='string',
@@ -52,7 +53,8 @@ class PointinspectionProcess(Process):
                           ),
 
             ComplexOutput('tarout', 'Subsets',
-                          abstract="Tar archive containing one CSV file per input file, each one storing time series column-wise for all point coordinates.",
+                          abstract="Tar archive containing one CSV file per input file,\
+                           each one storing time series column-wise for all point coordinates.",
                           as_reference=True,
                           supported_formats=[Format('application/x-tar')]
                           ),
@@ -75,10 +77,10 @@ class PointinspectionProcess(Process):
         )
 
     def _handler(self, request, response):
-        init_process_logger('log.txt')
+        # init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
-        ncs = archiveextract(
+        ncs = extract_archive(
             resource=rename_complexinputs(request.inputs['resource']))
         LOGGER.info('ncs: {}'.format(ncs))
 
