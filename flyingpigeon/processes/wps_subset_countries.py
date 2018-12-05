@@ -21,13 +21,14 @@ class SubsetcountryProcess(Process):
         inputs = [
             LiteralInput('region', 'Region',
                          data_type='string',
-                         # abstract= countries_longname(), # need to handle special non-ascii char in countries.
+                         # abstract= countries_longname(),
+                         # need to handle special non-ascii char in countries.
                          abstract="Country code, see ISO-3166-3:\
                           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-3#Officially_assigned_code_elements",
                          min_occurs=1,
                          max_occurs=len(countries()),
                          default='DEU',
-                         allowed_values=countries()),  # REGION_EUROPE #COUNTRIES
+                         allowed_values=countries()),
 
             LiteralInput('mosaic', 'Union of multiple regions',
                          data_type='boolean',
@@ -91,8 +92,9 @@ class SubsetcountryProcess(Process):
         response.outputs['output_log'].file = 'log.txt'
 
         # input files
-        LOGGER.debug('url={}, mime_type={}'.format(request.inputs['resource'][0].url,
-                                                   request.inputs['resource'][0].data_format.mime_type))
+        LOGGER.debug('url={}, mime_type={}'.format(
+                      request.inputs['resource'][0].url,
+                      request.inputs['resource'][0].data_format.mime_type))
         ncs = archiveextract(
             resource=rename_complexinputs(request.inputs['resource']))
         # mime_type=request.inputs['resource'][0].data_format.mime_type)
