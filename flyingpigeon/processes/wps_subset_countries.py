@@ -88,14 +88,14 @@ class SubsetcountryProcess(Process):
 
     @staticmethod
     def _handler(request, response):
-        init_process_logger('log.txt')
+        # init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
         # input files
         LOGGER.debug('url={}, mime_type={}'.format(
-                      request.inputs['resource'][0].url,
-                      request.inputs['resource'][0].data_format.mime_type))
-        ncs = archiveextract(
+            request.inputs['resource'][0].url,
+            request.inputs['resource'][0].data_format.mime_type))
+        ncs = extract_archive(
             resource=rename_complexinputs(request.inputs['resource']))
         # mime_type=request.inputs['resource'][0].data_format.mime_type)
         # mosaic option

@@ -1,4 +1,3 @@
-# from cdo import Cdo
 from tempfile import mkstemp
 import os
 
@@ -126,8 +125,8 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None, output_f
             else:
                 geom = geoms.pop()
             ugids = get_ugid(polygons=polygons, geom=geom)
-        except:
-            LOGGER.exception('geom identification failed')
+        except Exception as ex:
+            LOGGER.exception('geom identification failed {}'.format(str(ex)))
         for i, key in enumerate(ncs.keys()):
             try:
                 # if variable is None:
@@ -144,9 +143,9 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None, output_f
                                  spatial_wrapping=spatial_wrapping, memory_limit=memory_limit,
                                  dir_output=dir_output, dimension_map=dimension_map)
                 geom_files.append(geom_file)
-                LOGGER.info('ocgis mosaik clipping done for %s ' % (key))
-            except:
-                msg = 'ocgis mosaik clipping failed for %s ' % (key)
+                LOGGER.info('ocgis mosaik clipping done for %s' % (key))
+            except Exception as ex:
+                msg = 'ocgis mosaik clipping failed for %s, %s ' % (key, ex)
                 LOGGER.exception(msg)
     else:
         for i, polygon in enumerate(polygons):
@@ -169,12 +168,12 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None, output_f
                                          memory_limit=memory_limit, time_range=time_range, time_region=time_region,
                                          )
                         geom_files.append(geom_file)
-                        LOGGER.info('ocgis clipping done for %s ' % (key))
-                    except:
-                        msg = 'ocgis clipping failed for %s ' % (key)
+                        LOGGER.info('ocgis clipping done for %s' % (key))
+                    except Exception as ex:
+                        msg = 'ocgis clipping failed for %s: %s ' % (key, ex)
                         LOGGER.exception(msg)
-            except:
-                LOGGER.exception('geom identification failed')
+            except Exception as ex:
+                LOGGER.exception('geom identification failed {}'.format(str(ex)))
     return geom_files
 
 
