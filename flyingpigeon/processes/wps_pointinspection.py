@@ -26,7 +26,7 @@ class PointinspectionProcess(Process):
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
-                         abstract='NetCDF Files or archive (tar/zip) containing NetCDF files.',
+                         abstract='NetCDF files or archive (tar/zip) containing NetCDF files.',
                          min_occurs=1,
                          max_occurs=1000,
                          supported_formats=[
@@ -36,8 +36,8 @@ class PointinspectionProcess(Process):
                          ]),
 
             LiteralInput("coords", "Coordinates",
-                         abstract="A comma-seperated tuple of WGS85 lon,lat decimal coordinates\
-                          (e.g. 2.356138, 48.846450)",
+                         abstract="Comma-seperated tuple of WGS85 lon, lat decimal coordinates "
+                          "(e.g. 2.356138, 48.846450).",
                          # noqa
                          default="2.356138, 48.846450",
                          data_type='string',
@@ -46,17 +46,16 @@ class PointinspectionProcess(Process):
                          ),
         ]
         outputs = [
+            ComplexOutput('tarout', 'Subsets',
+                          abstract="Tar archive containing one CSV file per input file, " 
+                           "each one storing time series column-wise for all point coordinates.",
+                          as_reference=True,
+                          supported_formats=[Format('application/x-tar')]
+                          ),
             ComplexOutput('output_log', 'Logging information',
                           abstract="Collected logs during process run.",
                           as_reference=True,
                           supported_formats=[Format('text/plain')]
-                          ),
-
-            ComplexOutput('tarout', 'Subsets',
-                          abstract="Tar archive containing one CSV file per input file,\
-                           each one storing time series column-wise for all point coordinates.",
-                          as_reference=True,
-                          supported_formats=[Format('application/x-tar')]
                           ),
         ]
 
