@@ -12,7 +12,7 @@ datainputs_fmt = (
 )
 
 
-def test_wps_point_inspection():
+def test_wps_pointinspection():
     client = client_for(
         Service(processes=[PointinspectionProcess()], cfgfiles=CFG_FILE))
     datainputs = datainputs_fmt.format(

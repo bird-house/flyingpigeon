@@ -18,7 +18,7 @@ except ImportError:
 class TestSubsetWFS(unittest.TestCase):
 
     def setUp(self):
-        self.config = ConfigParser.RawConfigParser()
+        self.config = configparser.RawConfigParser()
         if os.path.isfile('configtests.cfg'):
             self.config.read('configtests.cfg')
         else:
@@ -28,53 +28,53 @@ class TestSubsetWFS(unittest.TestCase):
         self.client = client_for(Service(processes=[SubsetWFSProcess()]))
 
     def test_getcapabilities(self):
-        config_dict = wps_tests_utils.config_is_available(
+        config_dict = test_wps_utils.config_is_available(
             'subsetwfs', [], self.config, set_wps_host=True)
 
-        html_response = wps_tests_utils.wps_response(
+        html_response = test_wps_utils.wps_response(
             config_dict['wps_host'],
             '?service=WPS&request=GetCapabilities&version=1.0.0',
             self.client)
         self.assertTrue(html_response)
 
     def test_getcapabilities_repeat(self):
-        config_dict = wps_tests_utils.config_is_available(
+        config_dict = test_wps_utils.config_is_available(
             'subsetwfs', [], self.config, set_wps_host=True)
 
         for i in range(10):
-            html_response = wps_tests_utils.wps_response(
+            html_response = test_wps_utils.wps_response(
                 config_dict['wps_host'],
                 '?service=WPS&request=GetCapabilities&version=1.0.0',
                 self.client)
             self.assertTrue(html_response)
 
     def test_process_exists(self):
-        config_dict = wps_tests_utils.config_is_available(
+        config_dict = test_wps_utils.config_is_available(
             'subsetwfs', [], self.config, set_wps_host=True)
 
-        html_response = wps_tests_utils.wps_response(
+        html_response = test_wps_utils.wps_response(
             config_dict['wps_host'],
             '?service=WPS&request=GetCapabilities&version=1.0.0',
             self.client)
-        processes = wps_tests_utils.parse_getcapabilities(html_response)
+        processes = test_wps_utils.parse_getcapabilities(html_response)
         self.assertTrue('subset_WFS' in processes)
 
     def test_describeprocess(self):
-        config_dict = wps_tests_utils.config_is_available(
+        config_dict = test_wps_utils.config_is_available(
             'subsetwfs', [], self.config, set_wps_host=True)
 
-        html_response = wps_tests_utils.wps_response(
+        html_response = test_wps_utils.wps_response(
             config_dict['wps_host'],
             ('?service=WPS&request=DescribeProcess&version=1.0.0&'
              'identifier=subset_WFS'),
             self.client)
-        describe_process = wps_tests_utils.parse_describeprocess(html_response)
+        describe_process = test_wps_utils.parse_describeprocess(html_response)
         self.assertTrue('mosaic' in describe_process[0]['inputs'])
         self.assertTrue('output' in describe_process[0]['outputs'])
 
     def test_subset_wfs_opendap_01(self):
         # pairing0.1.1-montreal_circles0.1.1
-        config_dict = wps_tests_utils.config_is_available(
+        config_dict = test_wps_utils.config_is_available(
             'pairing0.1.1-montreal_circles0.1.1',
             ['opendap_path', 'fileserver_path', 'geoserver'],
             self.config, set_wps_host=True)
@@ -93,9 +93,9 @@ class TestSubsetWFS(unittest.TestCase):
                 'montreal_circles.43',
                 config_dict['geoserver'])
 
-        html_response = wps_tests_utils.wps_response(
+        html_response = test_wps_utils.wps_response(
             config_dict['wps_host'], wps_request, self.client)
-        outputs = wps_tests_utils.parse_execute_response(html_response)
+        outputs = test_wps_utils.parse_execute_response(html_response)
         if outputs['status'] == 'ProcessFailed':
             raise RuntimeError(wps_request)
         output_json = outputs['outputs']['output']
@@ -105,14 +105,14 @@ class TestSubsetWFS(unittest.TestCase):
             json_data = json.loads(f1.read())
             f1.close()
         else:
-            json_data = json.loads(wps_tests_utils.get_wps_xlink(output_json))
+            json_data = json.loads(test_wps_utils.get_wps_xlink(output_json))
         output_netcdf = json_data[0]
         if output_netcdf[:7] == 'file://':
             tmp_output_netcdf = output_netcdf[7:]
         else:
             tmp_output_netcdf = '/tmp/testtmp.nc'
             f1 = open(tmp_output_netcdf, 'w')
-            f1.write(wps_tests_utils.get_wps_xlink(output_netcdf))
+            f1.write(test_wps_utils.get_wps_xlink(output_netcdf))
             f1.close()
 
         nc = netCDF4.Dataset(tmp_output_netcdf, 'r')
@@ -130,7 +130,7 @@ class TestSubsetWFS(unittest.TestCase):
 
     def test_subset_wfs_opendap_01_default_geoserver(self):
         # pairing0.1.1-montreal_circles0.1.1
-        config_dict = wps_tests_utils.config_is_available(
+        config_dict = test_wps_utils.config_is_available(
             'pairing0.1.1-montreal_circles0.1.1',
             ['opendap_path', 'fileserver_path', 'geoserver',
              'test_default_geoserver'],
@@ -150,9 +150,9 @@ class TestSubsetWFS(unittest.TestCase):
                 'montreal_circles.43',
                 config_dict['geoserver'])
 
-        html_response = wps_tests_utils.wps_response(
+        html_response = test_wps_utils.wps_response(
             config_dict['wps_host'], wps_request, self.client)
-        outputs = wps_tests_utils.parse_execute_response(html_response)
+        outputs = test_wps_utils.parse_execute_response(html_response)
         if outputs['status'] == 'ProcessFailed':
             raise RuntimeError(wps_request)
         output_json = outputs['outputs']['output']
@@ -162,14 +162,14 @@ class TestSubsetWFS(unittest.TestCase):
             json_data = json.loads(f1.read())
             f1.close()
         else:
-            json_data = json.loads(wps_tests_utils.get_wps_xlink(output_json))
+            json_data = json.loads(test_wps_utils.get_wps_xlink(output_json))
         output_netcdf = json_data[0]
         if output_netcdf[:7] == 'file://':
             tmp_output_netcdf = output_netcdf[7:]
         else:
             tmp_output_netcdf = '/tmp/testtmp.nc'
             f1 = open(tmp_output_netcdf, 'w')
-            f1.write(wps_tests_utils.get_wps_xlink(output_netcdf))
+            f1.write(test_wps_utils.get_wps_xlink(output_netcdf))
             f1.close()
 
         nc = netCDF4.Dataset(tmp_output_netcdf, 'r')
@@ -187,7 +187,7 @@ class TestSubsetWFS(unittest.TestCase):
 
     def test_subset_wfs_fileserver_01(self):
         # pairing0.1.1-montreal_circles0.1.1
-        config_dict = wps_tests_utils.config_is_available(
+        config_dict = test_wps_utils.config_is_available(
             'pairing0.1.1-montreal_circles0.1.1',
             ['opendap_path', 'fileserver_path', 'geoserver'],
             self.config, set_wps_host=True)
@@ -206,9 +206,9 @@ class TestSubsetWFS(unittest.TestCase):
                 'montreal_circles.43',
                 config_dict['geoserver'])
 
-        html_response = wps_tests_utils.wps_response(
+        html_response = test_wps_utils.wps_response(
             config_dict['wps_host'], wps_request, self.client)
-        outputs = wps_tests_utils.parse_execute_response(html_response)
+        outputs = test_wps_utils.parse_execute_response(html_response)
         if outputs['status'] == 'ProcessFailed':
             raise RuntimeError(wps_request)
         output_json = outputs['outputs']['output']
@@ -218,14 +218,14 @@ class TestSubsetWFS(unittest.TestCase):
             json_data = json.loads(f1.read())
             f1.close()
         else:
-            json_data = json.loads(wps_tests_utils.get_wps_xlink(output_json))
+            json_data = json.loads(test_wps_utils.get_wps_xlink(output_json))
         output_netcdf = json_data[0]
         if output_netcdf[:7] == 'file://':
             tmp_output_netcdf = output_netcdf[7:]
         else:
             tmp_output_netcdf = '/tmp/testtmp.nc'
             f1 = open(tmp_output_netcdf, 'w')
-            f1.write(wps_tests_utils.get_wps_xlink(output_netcdf))
+            f1.write(test_wps_utils.get_wps_xlink(output_netcdf))
             f1.close()
 
         nc = netCDF4.Dataset(tmp_output_netcdf, 'r')
@@ -243,7 +243,7 @@ class TestSubsetWFS(unittest.TestCase):
 
     def test_subset_wfs_opendap_multi_inputs_01(self):
         # pairing0.1.1-montreal_circles0.1.1
-        config_dict = wps_tests_utils.config_is_available(
+        config_dict = test_wps_utils.config_is_available(
             'pairing0.1.1-montreal_circles0.1.1',
             ['opendap_path', 'fileserver_path', 'geoserver'],
             self.config, set_wps_host=True)
@@ -265,9 +265,9 @@ class TestSubsetWFS(unittest.TestCase):
                 'montreal_circles.43', 'montreal_circles.45',
                 config_dict['geoserver'])
 
-        html_response = wps_tests_utils.wps_response(
+        html_response = test_wps_utils.wps_response(
             config_dict['wps_host'], wps_request, self.client)
-        outputs = wps_tests_utils.parse_execute_response(html_response)
+        outputs = test_wps_utils.parse_execute_response(html_response)
         if outputs['status'] == 'ProcessFailed':
             raise RuntimeError(wps_request)
         output_json = outputs['outputs']['output']
@@ -277,7 +277,7 @@ class TestSubsetWFS(unittest.TestCase):
             json_data = json.loads(f1.read())
             f1.close()
         else:
-            json_data = json.loads(wps_tests_utils.get_wps_xlink(output_json))
+            json_data = json.loads(test_wps_utils.get_wps_xlink(output_json))
         self.assertEqual(len(json_data), 4)
         output_netcdf = json_data[0]
         if output_netcdf[:7] == 'file://':
@@ -285,7 +285,7 @@ class TestSubsetWFS(unittest.TestCase):
         else:
             tmp_output_netcdf = '/tmp/testtmp.nc'
             f1 = open(tmp_output_netcdf, 'w')
-            f1.write(wps_tests_utils.get_wps_xlink(output_netcdf))
+            f1.write(test_wps_utils.get_wps_xlink(output_netcdf))
             f1.close()
 
         nc = netCDF4.Dataset(tmp_output_netcdf, 'r')

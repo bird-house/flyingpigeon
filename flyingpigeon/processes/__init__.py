@@ -4,6 +4,7 @@ from .wps_subset_bbox import SubsetBboxProcess
 from .wps_subset_continents import SubsetcontinentProcess
 from .wps_subset_countries import SubsetcountryProcess
 from .wps_pointinspection import PointinspectionProcess
+from .wps_subset_WFS import SubsetWFSProcess
 
 processes = [
     # SayHello(),
@@ -12,4 +13,5 @@ processes = [
     SubsetcontinentProcess(),
     SubsetcountryProcess(),
     PointinspectionProcess(),
+    SubsetWFSProcess()
 ]

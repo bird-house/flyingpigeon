@@ -18,7 +18,7 @@ except ImportError:
 class TestSubset(unittest.TestCase):
 
     def setUp(self):
-        self.config = configparser.rawconfigparser()
+        self.config = configparser.RawConfigParser()
         if os.path.isfile('configtests.cfg'):
             self.config.read('configtests.cfg')
         else:
@@ -28,31 +28,31 @@ class TestSubset(unittest.TestCase):
         self.client = client_for(Service(processes=[SubsetProcess()]))
 
     def test_getcapabilities(self):
-        config_dict = wps_tests_utils.config_is_available(
+        config_dict = test_wps_utils.config_is_available(
             'subsetwfs', [], self.config, set_wps_host=True)
-        wps_tests_utils.get_capabilities(config_dict['wps_host'], self.client)
+        test_wps_utils.get_capabilities(config_dict['wps_host'], self.client)
 
     def test_getcapabilities_repeat(self):
-        config_dict = wps_tests_utils.config_is_available(
+        config_dict = test_wps_utils.config_is_available(
             'subsetwfs', [], self.config, set_wps_host=True)
 
         for i in range(10):
-            wps_tests_utils.get_capabilities(config_dict['wps_host'],
+            test_wps_utils.get_capabilities(config_dict['wps_host'],
                                              self.client)
 
     def test_process_exists(self):
-        config_dict = wps_tests_utils.config_is_available(
+        config_dict = test_wps_utils.config_is_available(
             'subsetwfs', [], self.config, set_wps_host=True)
 
-        wps = wps_tests_utils.get_capabilities(config_dict['wps_host'],
+        wps = test_wps_utils.get_capabilities(config_dict['wps_host'],
                                                self.client)
         self.assertIn('subset', [x.identifier for x in wps.processes])
 
     def test_describeprocess(self):
-        config_dict = wps_tests_utils.config_is_available(
+        config_dict = test_wps_utils.config_is_available(
             'subsetwfs', [], self.config, set_wps_host=True)
 
-        process = wps_tests_utils.describe_process(
+        process = test_wps_utils.describe_process(
             'subset', config_dict['wps_host'], self.client)
         self.assertIn('resource',
                       [x.identifier for x in process.dataInputs])
@@ -63,7 +63,7 @@ class TestSubset(unittest.TestCase):
 
     def test_subset_wfs_opendap_01(self):
         # pairing0.1.1-montreal_circles0.1.1
-        config_dict = wps_tests_utils.config_is_available(
+        config_dict = test_wps_utils.config_is_available(
             'pairing0.1.1-montreal_circles0.1.1',
             ['opendap_path', 'fileserver_path', 'geoserver'],
             self.config, set_wps_host=True)
@@ -73,7 +73,7 @@ class TestSubset(unittest.TestCase):
             config_dict['opendap_path'],
             'pairing_day_global-reg-grid_360_720_nobounds_ref180.nc')
 
-        execution = wps_tests_utils.execute(
+        execution = test_wps_utils.execute(
             'subset', inputs=[
                 ('resource', resource),
                 ('typename', 'testgeom:montreal_circles'),
@@ -93,14 +93,14 @@ class TestSubset(unittest.TestCase):
             json_data = json.loads(f1.read())
             f1.close()
         else:
-            json_data = json.loads(wps_tests_utils.get_wps_xlink(output_json))
+            json_data = json.loads(test_wps_utils.get_wps_xlink(output_json))
         output_netcdf = json_data[0]
         if output_netcdf[:7] == 'file://':
             tmp_output_netcdf = output_netcdf[7:]
         else:
             tmp_output_netcdf = '/tmp/testtmp.nc'
             f1 = open(tmp_output_netcdf, 'w')
-            f1.write(wps_tests_utils.get_wps_xlink(output_netcdf))
+            f1.write(test_wps_utils.get_wps_xlink(output_netcdf))
             f1.close()
 
         nc = netCDF4.Dataset(tmp_output_netcdf, 'r')
@@ -118,7 +118,7 @@ class TestSubset(unittest.TestCase):
 
     def test_subset_wfs_opendap_01_default_geoserver(self):
         # pairing0.1.1-montreal_circles0.1.1
-        config_dict = wps_tests_utils.config_is_available(
+        config_dict = test_wps_utils.config_is_available(
             'pairing0.1.1-montreal_circles0.1.1',
             ['opendap_path', 'fileserver_path', 'test_default_geoserver'],
             self.config, set_wps_host=True)
@@ -128,7 +128,7 @@ class TestSubset(unittest.TestCase):
             config_dict['opendap_path'],
             'pairing_day_global-reg-grid_360_720_nobounds_ref180.nc')
 
-        execution = wps_tests_utils.execute(
+        execution = test_wps_utils.execute(
             'subset', inputs=[
                 ('resource', resource),
                 ('typename', 'testgeom:montreal_circles'),
@@ -147,14 +147,14 @@ class TestSubset(unittest.TestCase):
             json_data = json.loads(f1.read())
             f1.close()
         else:
-            json_data = json.loads(wps_tests_utils.get_wps_xlink(output_json))
+            json_data = json.loads(test_wps_utils.get_wps_xlink(output_json))
         output_netcdf = json_data[0]
         if output_netcdf[:7] == 'file://':
             tmp_output_netcdf = output_netcdf[7:]
         else:
             tmp_output_netcdf = '/tmp/testtmp.nc'
             f1 = open(tmp_output_netcdf, 'w')
-            f1.write(wps_tests_utils.get_wps_xlink(output_netcdf))
+            f1.write(test_wps_utils.get_wps_xlink(output_netcdf))
             f1.close()
 
         nc = netCDF4.Dataset(tmp_output_netcdf, 'r')
@@ -172,7 +172,7 @@ class TestSubset(unittest.TestCase):
 
     def test_subset_wfs_fileserver_01(self):
         # pairing0.1.1-montreal_circles0.1.1
-        config_dict = wps_tests_utils.config_is_available(
+        config_dict = test_wps_utils.config_is_available(
             'pairing0.1.1-montreal_circles0.1.1',
             ['opendap_path', 'fileserver_path', 'geoserver'],
             self.config, set_wps_host=True)
@@ -182,7 +182,7 @@ class TestSubset(unittest.TestCase):
             config_dict['fileserver_path'],
             'pairing_day_global-reg-grid_360_720_nobounds_ref180.nc')
 
-        execution = wps_tests_utils.execute(
+        execution = test_wps_utils.execute(
             'subset', inputs=[
                 ('resource', resource),
                 ('typename', 'testgeom:montreal_circles'),
@@ -202,14 +202,14 @@ class TestSubset(unittest.TestCase):
             json_data = json.loads(f1.read())
             f1.close()
         else:
-            json_data = json.loads(wps_tests_utils.get_wps_xlink(output_json))
+            json_data = json.loads(test_wps_utils.get_wps_xlink(output_json))
         output_netcdf = json_data[0]
         if output_netcdf[:7] == 'file://':
             tmp_output_netcdf = output_netcdf[7:]
         else:
             tmp_output_netcdf = '/tmp/testtmp.nc'
             f1 = open(tmp_output_netcdf, 'w')
-            f1.write(wps_tests_utils.get_wps_xlink(output_netcdf))
+            f1.write(test_wps_utils.get_wps_xlink(output_netcdf))
             f1.close()
 
         nc = netCDF4.Dataset(tmp_output_netcdf, 'r')
@@ -227,7 +227,7 @@ class TestSubset(unittest.TestCase):
 
     def test_subset_wfs_opendap_multi_inputs_01(self):
         # pairing0.1.1-montreal_circles0.1.1
-        config_dict = wps_tests_utils.config_is_available(
+        config_dict = test_wps_utils.config_is_available(
             'pairing0.1.1-montreal_circles0.1.1',
             ['opendap_path', 'fileserver_path', 'geoserver'],
             self.config, set_wps_host=True)
@@ -240,7 +240,7 @@ class TestSubset(unittest.TestCase):
             config_dict['opendap_path'],
             'pairing_day_global-reg-grid_360_720_bounds_ref180.nc')
 
-        execution = wps_tests_utils.execute(
+        execution = test_wps_utils.execute(
             'subset', inputs=[
                 ('resource', resource1),
                 ('resource', resource2),
@@ -262,7 +262,7 @@ class TestSubset(unittest.TestCase):
             json_data = json.loads(f1.read())
             f1.close()
         else:
-            json_data = json.loads(wps_tests_utils.get_wps_xlink(output_json))
+            json_data = json.loads(test_wps_utils.get_wps_xlink(output_json))
         self.assertEqual(len(json_data), 4)
         output_netcdf = json_data[0]
         if output_netcdf[:7] == 'file://':
@@ -270,7 +270,7 @@ class TestSubset(unittest.TestCase):
         else:
             tmp_output_netcdf = '/tmp/testtmp.nc'
             f1 = open(tmp_output_netcdf, 'w')
-            f1.write(wps_tests_utils.get_wps_xlink(output_netcdf))
+            f1.write(test_wps_utils.get_wps_xlink(output_netcdf))
             f1.close()
 
         nc = netCDF4.Dataset(tmp_output_netcdf, 'r')

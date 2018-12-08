@@ -99,7 +99,7 @@ def wfs_common(request, response, mode, spatial_mode='wfs'):
         output_files = []
         output_urls = []
         mv_dir = tempfile.mkdtemp(dir=outputpath)
-        # os.chmod(mv_dir, 0755) # raise an error SyntaxError: invalid token
+        os.chmod(mv_dir, 0o755)
 
         for one_file in list_of_files:
             file_name = os.path.basename(one_file)
@@ -176,7 +176,7 @@ def wfs_common(request, response, mode, spatial_mode='wfs'):
                     url_file = os.path.join(
                         outputurl, os.path.basename(mv_dir), mv_name)
                     output_urls.append(url_file)
-    except Exception:
+    except Exeption:
         raise Exception(traceback.format_exc())
 
     # If only ExtentError occured, the output_urls will be empty...
