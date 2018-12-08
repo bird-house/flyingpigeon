@@ -2,17 +2,35 @@ import pytest
 
 from .common import TESTDATA
 
+from eggshell.nc import ocg_utils
+
+
 import os.path
 import tempfile
 import tarfile
 import zipfile
 from netCDF4 import Dataset
 
-import flyingpigeon as fp
-from flyingpigeon import utils
-from flyingpigeon.utils import local_path
+from eggshell import utils
+# from eggshell.utils import local_path
 from eggshell.config import Paths
+import flyingpigeon as fp
 paths = Paths(fp)
+
+
+def test_ocgis_import():
+    from ocgis import constants
+
+#
+# def test_has_Lambert_Conformal():
+#     has_lambert = ocg_utils.has_Lambert_Conformal(
+#         [local_path(TESTDATA['cordex_tasmax_2006_nc']),
+#          local_path(TESTDATA['cordex_tasmax_2007_nc'])])
+#     assert False == has_lambert
+
+
+def test_gdal():
+    from flyingpigeon.subset import clipping
 
 
 def test_local_path():
@@ -108,7 +126,6 @@ def test_get_coordinates():
 def test_get_variable():
     variable = utils.get_variable(local_path(TESTDATA['cmip5_tasmax_2007_nc']))
     assert 'tasmax' == variable
-
     variable = utils.get_variable(local_path(TESTDATA['cordex_tasmax_2007_nc']))
     assert 'tasmax' == variable
 

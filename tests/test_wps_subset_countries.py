@@ -1,8 +1,8 @@
 from pywps import Service
 from pywps.tests import assert_response_success
 
-from flyingpigeon.processes import ClippingProcess
-from flyingpigeon.tests.common import TESTDATA, client_for, CFG_FILE, get_output
+from flyingpigeon.processes import SubsetcountryProcess
+from tests.common import TESTDATA, client_for, CFG_FILE, get_output
 import os
 
 
@@ -15,7 +15,7 @@ datainputs_fmt = (
 
 def test_wps_subset_countries():
     client = client_for(
-        Service(processes=[ClippingProcess()], cfgfiles=CFG_FILE))
+        Service(processes=[SubsetcountryProcess()], cfgfiles=CFG_FILE))
 
     datainputs = datainputs_fmt.format(
         TESTDATA['cmip5_tasmax_2006_nc'],

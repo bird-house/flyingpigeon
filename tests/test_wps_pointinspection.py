@@ -2,7 +2,7 @@ from pywps import Service
 from pywps.tests import assert_response_success
 
 from flyingpigeon.processes import PointinspectionProcess
-from flyingpigeon.tests.common import TESTDATA, client_for, CFG_FILE
+from .common import TESTDATA, client_for, CFG_FILE
 import os
 
 

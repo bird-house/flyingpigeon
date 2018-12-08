@@ -1,7 +1,7 @@
 import os
 import sys
 import unittest
-import ConfigParser
+import configparser
 import json
 
 from pywps import Service
@@ -10,15 +10,15 @@ import numpy.ma as ma
 import netCDF4
 
 try:
-    from flyingpigeon.tests import wps_tests_utils
+    from tests import test_wps_utils
 except ImportError:
-    import wps_tests_utils
+    import test_wps_utils
 
 
 class TestSubset(unittest.TestCase):
 
     def setUp(self):
-        self.config = ConfigParser.RawConfigParser()
+        self.config = configparser.rawconfigparser()
         if os.path.isfile('configtests.cfg'):
             self.config.read('configtests.cfg')
         else:
