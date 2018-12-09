@@ -47,16 +47,16 @@ class PointinspectionProcess(Process):
         ]
         outputs = [
             ComplexOutput('tarout', 'Subsets',
-                          abstract="Tar archive containing one CSV file per input file, " 
+                          abstract="Tar archive containing one CSV file per input file, "
                            "each one storing time series column-wise for all point coordinates.",
                           as_reference=True,
                           supported_formats=[Format('application/x-tar')]
                           ),
-            ComplexOutput('output_log', 'Logging information',
-                          abstract="Collected logs during process run.",
-                          as_reference=True,
-                          supported_formats=[Format('text/plain')]
-                          ),
+            # ComplexOutput('output_log', 'Logging information',
+            #               abstract="Collected logs during process run.",
+            #               as_reference=True,
+            #               supported_formats=[Format('text/plain')]
+            #               ),
         ]
 
         super(PointinspectionProcess, self).__init__(
@@ -77,10 +77,10 @@ class PointinspectionProcess(Process):
 
     def _handler(self, request, response):
         # init_process_logger('log.txt')
-        response.outputs['output_log'].file = 'log.txt'
+        # response.outputs['output_log'].file = 'log.txt'
 
         ncs = extract_archive(
-            resource=rename_complexinputs(request.inputs['resource']))
+            resources=rename_complexinputs(request.inputs['resource']))
         LOGGER.info('ncs: {}'.format(ncs))
 
         coords = []

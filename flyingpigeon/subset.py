@@ -1,21 +1,19 @@
 from tempfile import mkstemp
 import os
 
-from eggshell.nc.ocg_utils import call
-from eggshell.nc.nc_utils import sort_by_filename, guess_main_variables
+from eggshell.nc.ocg_utils import call, get_variable
+from eggshell.nc.nc_utils import sort_by_filename
+from ocgis import env, ShpCabinetIterator, ShpCabinet
+
+
+from eggshell.config import Paths
+import flyingpigeon as fp
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
+paths = Paths(fp)
 
-_PATH = os.path.abspath(os.path.dirname(__file__))
-
-
-def shapefiles_path():
-    return os.path.join(data_path(), 'shapefiles')
-
-
-def data_path():
-    return os.path.join(_PATH, 'data')
+env.DIR_SHPCABINET = paths.shapefiles
 
 
 def countries():
@@ -130,7 +128,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None, output_f
         for i, key in enumerate(ncs.keys()):
             try:
                 # if variable is None:
-                variable = guess_main_variables(ncs[key])
+                variable = get_variable(ncs[key])
                 LOGGER.info('variable %s detected in resource' % (variable))
                 if prefix is None:
                     name = key + nameadd
@@ -155,7 +153,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None, output_f
                 for key in ncs.keys():
                     try:
                         # if variable is None:
-                        variable = guess_main_variables(ncs[key])
+                        variable = get_variable(ncs[key])
                         LOGGER.info('variable %s detected in resource' % (variable))
                         if prefix is None:
                             name = key + '_' + polygon.replace(' ', '')
@@ -237,10 +235,10 @@ def get_shp_column_values(geom, columnname):
 
     returns list: column names
     """
-    from ocgis import env, ShpCabinetIterator
+
     # import ocgis
 
-    env.DIR_SHPCABINET = shapefiles_path()
+    # env.DIR_SHPCABINET = shapefiles_path()
     sci = ShpCabinetIterator(geom)
 
     vals = []
@@ -258,8 +256,6 @@ def get_ugid(polygons=None, geom=None):
 
     :returns list: ugids used by ocgis
     """
-    from ocgis import env, ShpCabinetIterator
-    # from ocgis import env
 
     if polygons is None:
         result = None
@@ -267,7 +263,7 @@ def get_ugid(polygons=None, geom=None):
         if type(polygons) != list:
             polygons = list([polygons])
 
-        env.DIR_SHPCABINET = shapefiles_path()
+        # env.DIR_SHPCABINET = shapefiles_path()
         sc_iter = ShpCabinetIterator(geom)
         result = []
 
@@ -289,8 +285,7 @@ def get_ugid(polygons=None, geom=None):
                     if row['properties']['CONTINENT'] == polygon:
                         result.append(row['properties']['UGID'])
         else:
-            from ocgis import ShpCabinet
-            sc = ShpCabinet(shapefiles_path())
+            sc = ShpCabinet(paths.shapefiles)
             LOGGER.debug('geom: %s not found in shape cabinet. Available geoms are: %s ', geom, sc)
     return result
 
