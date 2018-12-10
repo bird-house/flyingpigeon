@@ -235,10 +235,6 @@ def get_shp_column_values(geom, columnname):
 
     returns list: column names
     """
-
-    # import ocgis
-
-    # env.DIR_SHPCABINET = shapefiles_path()
     sci = ShpCabinetIterator(geom)
 
     vals = []
