@@ -2,7 +2,7 @@ from pywps import Service
 from pywps.tests import assert_response_success
 
 from flyingpigeon.processes import PointinspectionProcess
-from .common import TESTDATA, client_for, CFG_FILE
+from .common import TESTDATA, client_for  # ,CFG_FILE
 import os
 
 
@@ -14,7 +14,7 @@ datainputs_fmt = (
 
 def test_wps_pointinspection():
     client = client_for(
-        Service(processes=[PointinspectionProcess()], cfgfiles=CFG_FILE))
+        Service(processes=[PointinspectionProcess()]))  # ,cfgfiles=CFG_FILE
     datainputs = datainputs_fmt.format(
         TESTDATA['cmip5_tasmax_2006_nc'],
         "2.356138, 48.846450",)
