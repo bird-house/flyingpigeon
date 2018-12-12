@@ -76,6 +76,7 @@ def execute(identifier, inputs=[], wps_host=None, wps_client=None,
 # Most of these xml parsing functions should be obsolete with the use of
 # owslib above...
 
+
 def xml_children_as_dict(element):
     """Create dictionary from xml element children.
 

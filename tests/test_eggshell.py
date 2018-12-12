@@ -61,8 +61,8 @@ def test_archive_tar():
 
 def test_archive_zip():
     result = utils.archive(local_path(TESTDATA['cmip5_tasmax_2006_nc']),
-        format='zip',
-        output_dir=tempfile.mkdtemp())
+                           format='zip',
+                           output_dir=tempfile.mkdtemp())
     zipf = zipfile.ZipFile(result)
     assert len(zipf.namelist()) == 1
 
@@ -80,7 +80,7 @@ def test_get_values():
     assert 12 == len(values)
 
     values = nc_utils.get_values([local_path(TESTDATA['cordex_tasmax_2006_nc']),
-                               local_path(TESTDATA['cordex_tasmax_2007_nc'])])
+                                 local_path(TESTDATA['cordex_tasmax_2007_nc'])])
     assert 23 == len(values)
 
 
@@ -92,7 +92,7 @@ def test_get_time():
     assert 12 == len(timestamps)
 
     values = nc_utils.get_values([local_path(TESTDATA['cordex_tasmax_2006_nc']),
-                               local_path(TESTDATA['cordex_tasmax_2007_nc'])])
+                                 local_path(TESTDATA['cordex_tasmax_2007_nc'])])
     assert 23 == len(values)
 
 
@@ -137,7 +137,7 @@ def test_get_variable():
 
 def test_sort_by_time():
     result = nc_utils.sort_by_time([local_path(TESTDATA['cmip5_tasmax_2007_nc']),
-                                 local_path(TESTDATA['cmip5_tasmax_2006_nc'])])
+                                   local_path(TESTDATA['cmip5_tasmax_2006_nc'])])
     assert '200601' in result[0]
     assert '200701' in result[1]
 
@@ -157,7 +157,7 @@ def test_get_timerange():
     assert "20071216" == end
 
     start, end = nc_utils.get_timerange([local_path(TESTDATA['cordex_tasmax_2006_nc']),
-                                     local_path(TESTDATA['cordex_tasmax_2007_nc'])])
+                                        local_path(TESTDATA['cordex_tasmax_2007_nc'])])
     assert "20060215" == start
     assert "20071216" == end
 
@@ -204,42 +204,43 @@ def test_aggregations():
     assert agg['filename'] == 'tasmax_MPI-ESM-MR_RCP4.5_r1i1p1_20060116-20071216.nc'
 
 
-def get_coordinates(resource, variable=None, unrotate=False):
-    """
-    reads out the coordinates of a variable
-    :param resource: netCDF resource file
-    :param variable: variable name
-    :param unrotate: If True the coordinates will be returned for unrotated pole
-    :returns list, list: latitudes , longitudes
-    """
-    if type(resource) != list:
-        resource = [resource]
-
-    if variable is None:
-        variable = get_variable(resource)
-
-    if unrotate is False:
-        try:
-            if len(resource) > 1:
-                ds = MFDataset(resource)
-            else:
-                ds = Dataset(resource[0])
-
-            var = ds.variables[variable]
-            dims = list(var.dimensions)
-            if 'time' in dims: dims.remove('time')
-            # TODO: find position of lat and long in list and replace dims[0] dims[1]
-            lats = ds.variables[dims[0]][:]
-            lons = ds.variables[dims[1]][:]
-            ds.close()
-            LOGGER.info('got coordinates without pole rotation')
-        except Exception:
-            msg = 'failed to extract coordinates'
-            LOGGER.exception(msg)
-    else:
-        lats, lons = unrotate_pole(resource)
-        LOGGER.info('got coordinates with pole rotation')
-    return lats, lons
+# def get_coordinates(resource, variable=None, unrotate=False):
+#     """
+#     reads out the coordinates of a variable
+#     :param resource: netCDF resource file
+#     :param variable: variable name
+#     :param unrotate: If True the coordinates will be returned for unrotated pole
+#     :returns list, list: latitudes , longitudes
+#     """
+#     if type(resource) != list:
+#         resource = [resource]
+#
+#     if variable is None:
+#         variable = get_variable(resource)
+#
+#     if unrotate is False:
+#         try:
+#             if len(resource) > 1:
+#                 ds = MFDataset(resource)
+#             else:
+#                 ds = Dataset(resource[0])
+#
+#             var = ds.variables[variable]
+#             dims = list(var.dimensions)
+#             if 'time' in dims:
+#                 dims.remove('time')
+#             # TODO: find position of lat and long in list and replace dims[0] dims[1]
+#             lats = ds.variables[dims[0]][:]
+#             lons = ds.variables[dims[1]][:]
+#             ds.close()
+#             LOGGER.info('got coordinates without pole rotation')
+#         except Exception:
+#             msg = 'failed to extract coordinates'
+#             LOGGER.exception(msg)
+#     else:
+#         lats, lons = unrotate_pole(resource)
+#         LOGGER.info('got coordinates with pole rotation')
+#     return lats, lons
 
 
 def test_has_variable():
@@ -254,5 +255,5 @@ def test_calc_grouping():
         [12, 1, 2], [3, 4, 5], [6, 7, 8], [9, 10, 11], 'unique']
 
     # check invalid value: should raise an exception
-    with pytest.raises(Exception) as e_info:
-        indices.calc_grouping('unknown') == ['year']
+    with pytest.raises(Exception):
+        ocg_utils.calc_grouping('unknown') == ['year']

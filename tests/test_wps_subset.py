@@ -38,14 +38,14 @@ class TestSubset(unittest.TestCase):
 
         for i in range(10):
             test_wps_utils.get_capabilities(config_dict['wps_host'],
-                                             self.client)
+                                            self.client)
 
     def test_process_exists(self):
         config_dict = test_wps_utils.config_is_available(
             'subsetwfs', [], self.config, set_wps_host=True)
 
         wps = test_wps_utils.get_capabilities(config_dict['wps_host'],
-                                               self.client)
+                                              self.client)
         self.assertIn('subset', [x.identifier for x in wps.processes])
 
     def test_describeprocess(self):
@@ -81,9 +81,6 @@ class TestSubset(unittest.TestCase):
                 ('geoserver', config_dict['geoserver'])],
             wps_host=config_dict['wps_host'], wps_client=self.client)
 
-        #if outputs['status'] == 'ProcessFailed':
-        #    raise RuntimeError(wps_request)
-
         while execution.status == 'ProcessAccepted':
             execution.checkStatus(sleepSecs=1)
         output_json = execution.processOutputs[0].reference
@@ -110,8 +107,8 @@ class TestSubset(unittest.TestCase):
         self.assertEqual(nclon.shape, (21,))
         self.assertEqual(nclat.shape, (21,))
         self.assertEqual(ncvar.shape, (365, 21, 21))
-        self.assertTrue(ncvar[0,0,0] is ma.masked)
-        self.assertEqual(ncvar[0,10,10], 271213.0)
+        self.assertTrue(ncvar[0, 0, 0] is ma.masked)
+        self.assertEqual(ncvar[0, 10, 10], 271213.0)
         self.assertEqual(nc.subset_typename, 'testgeom:montreal_circles')
         self.assertEqual(nc.subset_featureid, 'montreal_circles.43')
         nc.close()
@@ -135,9 +132,6 @@ class TestSubset(unittest.TestCase):
                 ('featureids', 'montreal_circles.43')],
             wps_host=config_dict['wps_host'], wps_client=self.client)
 
-        #if outputs['status'] == 'ProcessFailed':
-        #    raise RuntimeError(wps_request)
-
         while execution.status == 'ProcessAccepted':
             execution.checkStatus(sleepSecs=1)
         output_json = execution.processOutputs[0].reference
@@ -164,8 +158,8 @@ class TestSubset(unittest.TestCase):
         self.assertEqual(nclon.shape, (21,))
         self.assertEqual(nclat.shape, (21,))
         self.assertEqual(ncvar.shape, (365, 21, 21))
-        self.assertTrue(ncvar[0,0,0] is ma.masked)
-        self.assertEqual(ncvar[0,10,10], 271213.0)
+        self.assertTrue(ncvar[0, 0, 0] is ma.masked)
+        self.assertEqual(ncvar[0, 10, 10], 271213.0)
         self.assertEqual(nc.subset_typename, 'testgeom:montreal_circles')
         self.assertEqual(nc.subset_featureid, 'montreal_circles.43')
         nc.close()
@@ -190,9 +184,6 @@ class TestSubset(unittest.TestCase):
                 ('geoserver', config_dict['geoserver'])],
             wps_host=config_dict['wps_host'], wps_client=self.client)
 
-        #if outputs['status'] == 'ProcessFailed':
-        #    raise RuntimeError(wps_request)
-
         while execution.status == 'ProcessAccepted':
             execution.checkStatus(sleepSecs=1)
         output_json = execution.processOutputs[0].reference
@@ -219,8 +210,8 @@ class TestSubset(unittest.TestCase):
         self.assertEqual(nclon.shape, (21,))
         self.assertEqual(nclat.shape, (21,))
         self.assertEqual(ncvar.shape, (365, 21, 21))
-        self.assertTrue(ncvar[0,0,0] is ma.masked)
-        self.assertEqual(ncvar[0,10,10], 271213.0)
+        self.assertTrue(ncvar[0, 0, 0] is ma.masked)
+        self.assertEqual(ncvar[0, 10, 10], 271213.0)
         self.assertEqual(nc.subset_typename, 'testgeom:montreal_circles')
         self.assertEqual(nc.subset_featureid, 'montreal_circles.43')
         nc.close()
@@ -250,9 +241,6 @@ class TestSubset(unittest.TestCase):
                 ('geoserver', config_dict['geoserver'])],
             wps_host=config_dict['wps_host'], wps_client=self.client)
 
-        #if outputs['status'] == 'ProcessFailed':
-        #    raise RuntimeError(wps_request)
-
         while execution.status == 'ProcessAccepted':
             execution.checkStatus(sleepSecs=1)
         output_json = execution.processOutputs[0].reference
@@ -280,8 +268,8 @@ class TestSubset(unittest.TestCase):
         self.assertEqual(nclon.shape, (21,))
         self.assertEqual(nclat.shape, (21,))
         self.assertEqual(ncvar.shape, (365, 21, 21))
-        self.assertTrue(ncvar[0,0,0] is ma.masked)
-        self.assertEqual(ncvar[0,10,10], 271213.0)
+        self.assertTrue(ncvar[0, 0, 0] is ma.masked)
+        self.assertEqual(ncvar[0, 10, 10], 271213.0)
         self.assertEqual(nc.subset_typename, 'testgeom:montreal_circles')
         self.assertEqual(nc.subset_featureid, 'montreal_circles.43')
         nc.close()

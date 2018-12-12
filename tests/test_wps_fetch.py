@@ -11,7 +11,7 @@ except Exception:
 
 
 def test_wps_fetch():
-    client = client_for(Service(processes=[FetchProcess()]))  # , cfgfiles=CFG_FILE
+    client = client_for(Service(processes=[FetchProcess()]))
     datainputs = "resource=files@xlink:href={0}".format(TESTDATA['cmip5_tasmax_2006_nc'])
     resp = client.get(
         service='WPS', request='Execute', version='1.0.0',

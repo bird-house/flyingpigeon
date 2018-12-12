@@ -48,7 +48,7 @@ class PointinspectionProcess(Process):
         outputs = [
             ComplexOutput('tarout', 'Subsets',
                           abstract="Tar archive containing one CSV file per input file, "
-                           "each one storing time series column-wise for all point coordinates.",
+                                   "each one storing time series column-wise for all point coordinates.",
                           as_reference=True,
                           supported_formats=[Format('application/x-tar')]
                           ),

@@ -176,7 +176,7 @@ def wfs_common(request, response, mode, spatial_mode='wfs'):
                     url_file = os.path.join(
                         outputurl, os.path.basename(mv_dir), mv_name)
                     output_urls.append(url_file)
-    except Exeption:
+    except Exception:
         raise Exception(traceback.format_exc())
 
     # If only ExtentError occured, the output_urls will be empty...
