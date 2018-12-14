@@ -21,10 +21,11 @@ Flyingpigeon
 Flyingpigeon (the bird)
   *Flyingpigeon is a bird ...*
 
-A Web Processing Service for Climate Data Analysis.
+A Web Processing Service - Testbed for new process development.
 
 * Free software: Apache Software License 2.0
 * Documentation: https://flyingpigeon.readthedocs.io.
+* Birdhouse Overview: https://flyingpigeon.readthedocs.io/en/latest/
 
 Credits
 -------
