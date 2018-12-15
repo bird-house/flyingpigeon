@@ -13,7 +13,7 @@ from ocgis.exc import ExtentError
 import netCDF4
 from shapely.geometry import shape
 
-from eggshell.nc.nc_utils import guess_main_variables, opendap_or_download
+from eggshell.nc.nc_utils import get_variable, opendap_or_download
 
 json_format = get_format('JSON')
 
@@ -99,7 +99,7 @@ def wfs_common(request, response, mode, spatial_mode='wfs'):
         output_files = []
         output_urls = []
         mv_dir = tempfile.mkdtemp(dir=outputpath)
-        # os.chmod(mv_dir, 0755) # raise an error SyntaxError: invalid token
+        os.chmod(mv_dir, 0o755)
 
         for one_file in list_of_files:
             file_name = os.path.basename(one_file)
@@ -110,7 +110,7 @@ def wfs_common(request, response, mode, spatial_mode='wfs'):
             ocgis.env.DIR_OUTPUT = tempfile.mkdtemp(dir=os.getcwd())
             ocgis.env.OVERWRITE = True
             nc = netCDF4.Dataset(one_file, 'r')
-            var_names = guess_main_variables(nc)
+            var_names = get_variable(nc)
             nc.close()
             rd = ocgis.RequestDataset(one_file, var_names)
             for i, one_geom in enumerate(geom):

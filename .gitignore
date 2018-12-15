@@ -86,3 +86,6 @@ testdata.json
 *.a
 *.mod
 *.out
+
+# custom 
+etc/custom.cgf

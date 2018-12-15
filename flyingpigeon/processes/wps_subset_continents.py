@@ -2,6 +2,7 @@ import logging
 
 from pywps import ComplexInput, ComplexOutput, Format, LiteralInput, Process
 from pywps.app.Common import Metadata
+from tempfile import mkstemp
 
 from flyingpigeon.subset import _CONTINENTS_
 from flyingpigeon.subset import clipping
@@ -59,11 +60,11 @@ class SubsetcontinentProcess(Process):
                           supported_formats=[Format('application/x-netcdf')]
                           ),
 
-            ComplexOutput('output_log', 'Logging information',
-                          abstract="Collected logs during process run.",
-                          as_reference=True,
-                          supported_formats=[Format('text/plain')]
-                          )
+            # ComplexOutput('output_log', 'Logging information',
+            #               abstract="Collected logs during process run.",
+            #               as_reference=True,
+            #               supported_formats=[Format('text/plain')]
+            #               )
         ]
 
         super(SubsetcontinentProcess, self).__init__(
@@ -83,14 +84,14 @@ class SubsetcontinentProcess(Process):
         )
 
     def _handler(self, request, response):
-        # init_process_logger('log.txt')
-        response.outputs['output_log'].file = 'log.txt'
+        # init_process_logger('log.txt') mkstemp(suffix='.log', prefix='tmp', dir=self.workdir, text=True)
+        # response.outputs['output_log'].file = mkstemp(suffix='.log', prefix='tmp', dir=self.workdir, text=True)
 
         # input files
         LOGGER.debug("url={}, mime_type={}".format(request.inputs['resource'][0].url,
                      request.inputs['resource'][0].data_format.mime_type))
         ncs = extract_archive(
-            resource=rename_complexinputs(request.inputs['resource']))
+            resources=rename_complexinputs(request.inputs['resource']))
         # mime_type=request.inputs['resource'][0].data_format.mime_type)
         # mosaic option
         # TODO: fix defaults in pywps 4.x
@@ -115,7 +116,7 @@ class SubsetcontinentProcess(Process):
                 mosaic=mosaic,
                 spatial_wrapping='wrap',
                 # variable=variable,
-                # dir_output=os.path.abspath(os.curdir),
+                dir_output=self.workdir,
                 # dimension_map=dimension_map,
             )
             LOGGER.info('results %s' % results)

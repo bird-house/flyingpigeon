@@ -13,5 +13,9 @@ def test_wps_caps():
                             '/wps:Process'
                             '/ows:Identifier')
     assert sorted(names.split()) == [
-        'subset', 'subset_bbox', 'subset_continents', 'subset_countries'
-    ]
+        'pointinspection',
+        'subset',
+        'subset_WFS',
+        'subset_bbox',
+        'subset_continents',
+        'subset_countries']

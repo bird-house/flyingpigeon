@@ -63,11 +63,11 @@ class SubsetcountryProcess(Process):
                           supported_formats=[Format('application/x-netcdf')]
                           ),
 
-            ComplexOutput('output_log', 'Logging information',
-                          abstract="Collected logs during process run.",
-                          as_reference=True,
-                          supported_formats=[Format('text/plain')]
-                          )
+            # ComplexOutput('output_log', 'Logging information',
+            #               abstract="Collected logs during process run.",
+            #               as_reference=True,
+            #               supported_formats=[Format('text/plain')]
+            #               )
         ]
 
         super(SubsetcountryProcess, self).__init__(
@@ -89,14 +89,14 @@ class SubsetcountryProcess(Process):
     @staticmethod
     def _handler(request, response):
         # init_process_logger('log.txt')
-        response.outputs['output_log'].file = 'log.txt'
+        # response.outputs['output_log'].file = 'log.txt'
 
         # input files
         LOGGER.debug('url={}, mime_type={}'.format(
             request.inputs['resource'][0].url,
             request.inputs['resource'][0].data_format.mime_type))
         ncs = extract_archive(
-            resource=rename_complexinputs(request.inputs['resource']))
+            resources=rename_complexinputs(request.inputs['resource']))
         # mime_type=request.inputs['resource'][0].data_format.mime_type)
         # mosaic option
         # TODO: fix defaults in pywps 4.x
