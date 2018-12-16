@@ -1,13 +1,13 @@
 import logging
 
-from eggshell.log import init_process_logger
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
 from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
 
-from eggshell.plot import visualisation as v\
+from eggshell.log import init_process_logger
+from eggshell.plot import plt_ncdata
 from eggshell.utils import extract_archive
 from eggshell.nc.nc_utils import get_variable
 from eggshell.utils import rename_complexinputs
@@ -77,8 +77,8 @@ class PlottimeseriesProcess(Process):
         init_process_logger('log.txt')
         response.outputs['output_log'].file = 'log.txt'
 
-        ncfiles = archiveextract(
-            resource=rename_complexinputs(request.inputs['resource']))
+        ncfiles = extract_archive(
+            resources=rename_complexinputs(request.inputs['resource']))
 
         if 'variable' in request.inputs:
             var = request.inputs['variable'][0].data
@@ -89,7 +89,7 @@ class PlottimeseriesProcess(Process):
         response.update_status('plotting variable {}'.format(var), 10)
 
         try:
-            plotout_spagetti_file = vs.spaghetti(ncfiles,
+            plotout_spagetti_file = plt_ncdata.spaghetti(ncfiles,
                                                  variable=var,
                                                  title='Field mean of {}'.format(var),
                                                  )
@@ -100,7 +100,7 @@ class PlottimeseriesProcess(Process):
             raise Exception("spagetti plot failed : {}".format(e))
 
         try:
-            plotout_uncertainty_file = vs.uncertainty(ncfiles,
+            plotout_uncertainty_file = plt_ncdata.uncertainty(ncfiles,
                                                       variable=var,
                                                       title='Ensemble uncertainty for {}'.format(var),
                                                       )

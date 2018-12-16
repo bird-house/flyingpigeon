@@ -14,5 +14,12 @@ dependencies:
 - python=3
 - numpy
 - ocgis
+- pandas
+##############
+# plotting
+- matplotlib
+- cartopy
+##############
+# pip install
 - pip:
   - -e git+https://github.com/bird-house/eggshell.git#egg=eggshell
