@@ -90,9 +90,9 @@ class PlottimeseriesProcess(Process):
 
         try:
             plotout_spagetti_file = plt_ncdata.spaghetti(ncfiles,
-                                                 variable=var,
-                                                 title='Field mean of {}'.format(var),
-                                                 )
+                                                         variable=var,
+                                                         title='Field mean of {}'.format(var),
+                                                         )
             LOGGER.info("spagetti plot done")
             response.update_status('Spagetti plot for %s %s files done' % (len(ncfiles), var), 50)
             response.outputs['plotout_spagetti'].file = plotout_spagetti_file
@@ -101,9 +101,9 @@ class PlottimeseriesProcess(Process):
 
         try:
             plotout_uncertainty_file = plt_ncdata.uncertainty(ncfiles,
-                                                      variable=var,
-                                                      title='Ensemble uncertainty for {}'.format(var),
-                                                      )
+                                                              variable=var,
+                                                              title='Ensemble uncertainty for {}'.format(var),
+                                                              )
 
             response.update_status('Uncertainty plot for {} {} files done'.format(len(ncfiles), var), 90)
             response.outputs['plotout_uncertainty'].file = plotout_uncertainty_file
