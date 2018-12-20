@@ -39,11 +39,11 @@ class PlottimeseriesProcess(Process):
         ]
 
         outputs = [
-            ComplexOutput('output_log', 'Logging information',
-                          abstract="Collected logs during process run.",
-                          as_reference=True,
-                          supported_formats=[Format('text/plain')]
-                          ),
+            # ComplexOutput('output_log', 'Logging information',
+            #               abstract="Collected logs during process run.",
+            #               as_reference=True,
+            #               supported_formats=[Format('text/plain')]
+            #               ),
 
             ComplexOutput("plotout_spagetti", "Visualisation, Spaghetti plot",
                           abstract="Visualisation of single variables as a spaghetti plot",
@@ -74,8 +74,8 @@ class PlottimeseriesProcess(Process):
         )
 
     def _handler(self, request, response):
-        init_process_logger('log.txt')
-        response.outputs['output_log'].file = 'log.txt'
+        # init_process_logger('log.txt')
+        # response.outputs['output_log'].file = 'log.txt'
 
         ncfiles = extract_archive(
             resources=rename_complexinputs(request.inputs['resource']))
