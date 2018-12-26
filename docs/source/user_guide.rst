@@ -30,13 +30,12 @@ Screenshot with Phoenix
 
 
 Process Descriptions:
-----------------------
+=====================
 
-Following is a detailed description of
+Following is a detailed description of processes in Flyingpigeon
 
-subset processes
-.................
-
+Subset Processes
+----------------
 
 Generates a polygon subset of input netCDF files. Based on an ocgis call, several pre-defined polygons (e.g. world countries) can be used to generate an appropriate subset of input netCDF files.
 
@@ -75,3 +74,10 @@ For optimization of the subset process, the appropriate shapefiles are prepared 
    :maxdepth: 1
 
    preparation
+
+
+Visualization:
+---------------
+
+Time series visualization of netCDF files.
+Creates a spaghetti plot and an uncertainty plot.
