@@ -16,10 +16,11 @@ command line
 with birdy
 (reference to birdy)
 
-Python call:
--------------
 
-Example of a python call
+.. toctree::
+   :maxdepth: 2
+
+   flyingpigeon_tutorial
 
 
 Phoenix gui

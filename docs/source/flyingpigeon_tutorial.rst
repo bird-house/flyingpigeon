@@ -1,8 +1,12 @@
+.. _python_guide:
+
+Python syntax:
+--------------
 
 .. code:: ipython3
 
     """Python WPS execute"""
-    
+
     from owslib.wps import WebProcessingService, monitorExecution
     from os import system
 
@@ -38,12 +42,12 @@
 .. code:: ipython3
 
     # define some data urls
-    
-    
+
+
     url1 = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.2000.nc'
     url2 = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.2001.nc'
     url3 = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.2002.nc'
-    url4 = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.2003.nc' 
+    url4 = 'https://www.esrl.noaa.gov/psd/thredds/fileServer/Datasets/ncep.reanalysis.dailyavgs/surface/slp.2003.nc'
 
 .. code:: ipython3
 
@@ -54,12 +58,12 @@
            ("resource",url2),
            ("resource",url3),
            ("resource",url4),
-           # ("variable" , "slp"), 
+           # ("variable" , "slp"),
            ])
-    
+
     monitorExecution(execute, sleepSecs=5)
     print(execute.getStatus())
-    
+
     for o in execute.processOutputs:
         print(o.reference)
 
