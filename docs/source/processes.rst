@@ -27,7 +27,6 @@ Subset Processes
    :docstring:
    :skiplines: 1
 
-
 .. autoprocess:: flyingpigeon.processes.wps_subset_bbox.SubsetBboxProcess
    :docstring:
    :skiplines: 1
