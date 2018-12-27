@@ -1,7 +1,7 @@
 .. _user_guide:
 
-User Guidelines
-===============
+User Guide
+==========
 
 .. contents::
     :local:
