@@ -5,6 +5,7 @@ from .wps_subset_continents import SubsetcontinentProcess
 from .wps_subset_countries import SubsetcountryProcess
 from .wps_pointinspection import PointinspectionProcess
 from .wps_subset_WFS import SubsetWFSProcess
+from .wps_plot_timeseries import PlottimeseriesProcess
 
 processes = [
     # SayHello(),
@@ -13,5 +14,6 @@ processes = [
     SubsetcontinentProcess(),
     SubsetcountryProcess(),
     PointinspectionProcess(),
-    SubsetWFSProcess()
+    SubsetWFSProcess(),
+    PlottimeseriesProcess()
 ]
