@@ -35,6 +35,6 @@ Subset Processes
 Plot Timeseries
 ---------------
 
-.. autoprocess:: flyingpigeon.processes.wps_plot_timeseries
+.. autoprocess:: flyingpigeon.processes.wps_plot_timeseries.PlottimeseriesProcess
   :docstring:
   :skiplines: 1
