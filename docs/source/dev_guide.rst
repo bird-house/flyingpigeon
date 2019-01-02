@@ -65,6 +65,8 @@ Do the same as above using the ``Makefile``.
 Bump a new version
 ------------------
 
+For new versions of subversions see the birdhouse_guideline_ for orientation:
+
 Make a new version of Flyingpigeon in the following steps:
 
 * Make sure everything is commit to GitHub.
@@ -77,6 +79,7 @@ Make a new version of Flyingpigeon in the following steps:
 
 See the bumpversion_ documentation for details.
 
+.. _birdhouse_version_guideline: https://birdhouse.readthedocs.io/en/latest/dev_guide.html
 .. _bumpversion: https://pypi.org/project/bumpversion/
 .. _pytest: https://docs.pytest.org/en/latest/
 .. _Emu: https://github.com/bird-house/emu

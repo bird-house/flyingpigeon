@@ -30,3 +30,11 @@ Subset Processes
 .. autoprocess:: flyingpigeon.processes.wps_subset_bbox.SubsetBboxProcess
    :docstring:
    :skiplines: 1
+
+
+Plot Timeseries
+---------------
+
+.. autoprocess:: flyingpigeon.processes.wps_plot_timeseries
+  :docstring:
+  :skiplines: 1

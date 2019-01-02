@@ -8,7 +8,8 @@
    configuration
    dev_guide
    user_guide
-   processes
+   processes_des
+   processes_api
    changes
 
 Indices and tables

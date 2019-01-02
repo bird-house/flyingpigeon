@@ -31,13 +31,13 @@ You can use qgis to select countries you wish to extract from the world shapefil
 The Attribute Table will then be updated and you can choose all the rows. This selection will be displayed on the map in the main window of qgis:
 
 
-.. image:: ../pics/Europe_regions.png
+.. image:: ./pics/Europe_regions.png
    :alt: alternate text
    :align: center
 
 You can save this selection in the format of an ESRI Shapefile:
 
-Layer -> Save as -> Save only selected features   
+Layer -> Save as -> Save only selected features
 
 
 Simplify using mapshaper (command line)
@@ -54,7 +54,7 @@ $ mapshaper -i adm1-EU.shp -simplify 1% -o adm1-EU-mapshaped1.shp
 
 This produced a simplified map, shown here (purple) superimposed on the original map (blue), zoomed on the coastline of Norway:
 
-.. image:: ../pics/Norway_mapshaper_commandline.png
+.. image:: ./pics/Norway_mapshaper_commandline.png
    :alt: alternate text
    :align: center
 
@@ -72,15 +72,15 @@ Also, the GUI seems to be more successful at repairing all intersections.
 
 The figure below shows the original (cyan), NoSnapVertices-WeightedArea (magenta), and NoSnapVertices-EffectiveArea (purple):
 
-.. image:: ../pics/Norway_orig.png
+.. image:: ./pics/Norway_orig.png
    :alt: alternate text
    :align: center
 
-.. image:: ../pics/Norway_cyan.png
+.. image:: ./pics/Norway_magenta.png
    :alt:
    :align: center
 
-.. image:: ../pics/Norway_purple.png
+.. image:: ./pics/Norway_purple.png
    :alt: alternate text
    :align: center
 
@@ -94,7 +94,7 @@ Customize shapefile
 
 The shapefile produced from the adm1 level of the ESRI shapefile as described above shows all regions of the selected countries, but when displayed on the screen, some regions were too small both visually and for the resolution of our models (~100 km):
 
-.. image:: ../pics/Europe_too_many_regions.png
+.. image:: ./pics/Europe_too_many_regions.png
    :alt: alternate text
    :align: center
 
@@ -119,7 +119,7 @@ Steps:
 4. The other countries (whose regions are large enough to be resolved) were selected in the Attribute Table in the same way, but using ID_1 (corresponding to level adm1) as the identifier.
 
 5. Finally, the two shapefiles were fused together:
-   
+
    Vector -> Data Management Tools -> Merge shapefiles to one
 
 6. The resulting shapefile was simplified with the `mapshaper GUI <http://www.mapshaper.org/>`_ at 0.1%, which can then be read into the flyingpigeon python scripts.
@@ -131,8 +131,6 @@ Steps:
 
 Here is the resulting file containing region-level and country-level areas:
 
-.. image:: ../pics/Europe_merged_regions.png
+.. image:: ./pics/Europe_merged_regions.png
    :alt: alternate text
    :align: center
-
-
