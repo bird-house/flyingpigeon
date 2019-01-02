@@ -6,8 +6,8 @@
 
    installation
    configuration
-   user_guide
    dev_guide
+   user_guide
    processes
    changes
 

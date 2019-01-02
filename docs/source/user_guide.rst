@@ -29,9 +29,8 @@ Phoenix gui
 Screenshot with Phoenix
 
 
-
-Process Descriptions:
-=====================
+Process Descriptions
+====================
 
 Following is a detailed description of processes in Flyingpigeon
 
@@ -44,7 +43,6 @@ Method:
 .......
 
 Integrated ocgis performs the sub-setting.
-
 
 Process identifiers:
 ...................
