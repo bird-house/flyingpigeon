@@ -46,7 +46,7 @@ In case of polygon subsetting used to subset the shape of e.g. countries or cont
 
    preparation
 
-Data Visualisation:
+Data Visualization:
 -------------------
 
 They are various ways of data visualization. In flyingpigeon are realized the basic ones of creating an ordinary graphic file. It helps to have a quick understanding of your data.
