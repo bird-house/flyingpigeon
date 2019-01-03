@@ -1,53 +1,60 @@
-.. _processes_description
+.. _processes_description:
 
 Process Descriptions
 ====================
 
-Following is a detailed description of processes in Flyingpigeon
+.. contents::
+    :local:
+    :depth: 1
+
+Following is a detailed description of processes in Flyingpigeon. As Flyingpigeon is currently dedicated to be the Testbed for Process development, existing processes might migrate to other birds (WPS services in birdhouse) in upcoming version.
+
+Migrated Processes:
+-------------------
+Here comes a list of Processes already beeing migrated and where you can find them:
+
++-------------------------------+---------------------+----------------------------+
+| Process group                 | migrated to:        | brief description          |
++===============================+=====================+============================+
+| Analogs of atmospheric flow   |  BLACKSWAN          | Extreme Weather Analytics  |
++-------------------------------+---------------------+----------------------------+
+| Weather Regimes               |  BLACKSWAN          | Extreme Weather Analytics  |
++-------------------------------+---------------------+----------------------------+
+| Climate Indices               |  FINCH              | Climate Monitoring         |
++-------------------------------+---------------------+----------------------------+
+| Species Distribution Models   |  Disabled           | Climate Impact             |
++-------------------------------+---------------------+----------------------------+
+| Segetal Flora                 |  Disabled           | Climate Impact             |
++-------------------------------+---------------------+----------------------------+
+
 
 Subset Processes
 ----------------
 
-Generates a polygon subset of input netCDF files. Based on an ocgis call, several pre-defined polygons (e.g. world countries) can be used to generate an appropriate subset of input netCDF files.
+Generates a polygon subset of input netCDF files. Based on an ocgis call, several pre-defined polygons (e.g. world countries) can be used to generate an appropriate subset of input netCDF files. Spatial subsetting are methods of deriving a new set of data from another set of data using interpolation techniques to generate different spatial or temporal resolutions.
 
-Method:
-.......
+The User can make the principal decisions to define the area or areas to be subsetted and in case of multiple areas wether they should stay in separate files or be merged to an unit.
 
-Integrated ocgis performs the sub-setting.
+Point-inspection can be seen as a special form of subsetting. On defined coordinates a 1D time-series will be generated for each coordinate point.
 
-Process identifiers:
-...................
+.. NOTE:: See the :ref:`subset_processes_api` for detailed options and data-IO.
 
-  * **subset_continents**
-      subsets continents
-  * **subset_countries**
-      subsets countries
-  * **point-inspection**
-      extracts time-series for given coordinate subset_points
-
-Input parameter:
-................
-
-**Polygons**
-  Abbreviation of the appropriate polygon.
-
-**Mosaic**
-  The option 'MOSAIC' as a checkbox allows you to decide, in the case of multiple polygon selection, if the polygons should be stitched together into one polygon (e.g. shape of Germany and France as one polygon) or calculated as separate output files.
-
-
-Shapefile optimization:
-.......................
-
-For optimization of the subset process, the appropriate shapefiles are prepared as follows:
+In case of polygon subsetting used to subset the shape of e.g. countries or continents, **flyingpigeon contains prepared shapefiles**. To increase the performance the shapefiles had been optimized with the following steps:
 
 .. toctree::
    :maxdepth: 1
 
    preparation
 
+Data Visualisation:
+-------------------
 
-Visualization:
----------------
+They are various ways of data visualization. In flyingpigeon are realized the basic ones of creating an ordinary graphic file. It helps to have a quick understanding of your data.
 
-Time series visualization of netCDF files.
-Creates a spaghetti plot and an uncertainty plot.
+Time series visualization of netCDF files. Creates a spaghetti plot and an uncertainty plot.
+
+Plots are generated based on matplotlib. Appropriate functions are located in eggshell.
+
+.. NOTE:: See the :ref:`plot_processes_api` for detailed options and data-IO.
+
+.. TODO:: include an example
