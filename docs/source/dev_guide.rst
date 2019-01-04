@@ -65,7 +65,7 @@ Do the same as above using the ``Makefile``.
 Bump a new version
 ------------------
 
-For new versions of subversions see the birdhouse_guideline_ for orientation:
+For new versions of subversions see the birdhouse_version_guideline_ for orientation:
 
 Make a new version of Flyingpigeon in the following steps:
 

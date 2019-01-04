@@ -6,8 +6,8 @@
 
    installation
    configuration
-   dev_guide
    user_guide
+   dev_guide
    processes_des
    processes_api
    changes

@@ -7,7 +7,7 @@ Process Descriptions
     :local:
     :depth: 1
 
-Following is a detailed description of processes in Flyingpigeon. As Flyingpigeon is currently dedicated to be the Testbed for Process development, existing processes might migrate to other birds (WPS services in birdhouse) in upcoming version.
+Following is a detailed description of processes in Flyingpigeon. As Flyingpigeon is currently dedicated to be the Testbed for Process development, existing processes (like published for flyingpigeon_version_v1.0_ ) might migrate to other birds (WPS services in birdhouse) in upcoming version.
 
 Migrated Processes:
 -------------------
@@ -18,9 +18,9 @@ Here comes a list of Processes already developed but currently not available in 
 +===============================+=====================+============================+
 | Analogs of atmospheric flow   |  BLACKSWAN          | Extreme Weather Analytics  |
 +-------------------------------+---------------------+----------------------------+
-| Spatial Analogs               |  Disabled           | Climate Monitoring         |
-+-------------------------------+---------------------+----------------------------+
 | Weather Regimes               |  BLACKSWAN          | Extreme Weather Analytics  |
++-------------------------------+---------------------+----------------------------+
+| Spatial Analogs               |  Disabled           | Climate Monitoring         |
 +-------------------------------+---------------------+----------------------------+
 | Climate Indices               |  FINCH              | Climate Monitoring         |
 +-------------------------------+---------------------+----------------------------+
@@ -60,3 +60,6 @@ Plots are generated based on matplotlib. Appropriate functions are located in eg
 .. NOTE:: See the :ref:`plot_processes_api` for detailed options and data-IO.
 
 .. TODO:: include an example
+
+
+.. _flyingpigeon_version_v1.0: https://flyingpigeon.readthedocs.io/en/1.1.0/descriptions/index.html
