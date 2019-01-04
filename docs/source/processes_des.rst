@@ -11,12 +11,14 @@ Following is a detailed description of processes in Flyingpigeon. As Flyingpigeo
 
 Migrated Processes:
 -------------------
-Here comes a list of Processes already beeing migrated and where you can find them:
+Here comes a list of Processes already developed but currently not available in flyingpigeon. In case the processes were migrated you can see the WPS where you can find them:
 
 +-------------------------------+---------------------+----------------------------+
 | Process group                 | migrated to:        | brief description          |
 +===============================+=====================+============================+
 | Analogs of atmospheric flow   |  BLACKSWAN          | Extreme Weather Analytics  |
++-------------------------------+---------------------+----------------------------+
+| Spatial Analogs               |  Disabled           | Climate Monitoring         |
 +-------------------------------+---------------------+----------------------------+
 | Weather Regimes               |  BLACKSWAN          | Extreme Weather Analytics  |
 +-------------------------------+---------------------+----------------------------+
