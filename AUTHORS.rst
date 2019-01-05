@@ -10,4 +10,7 @@ Development Lead
 Contributors
 ------------
 
-None yet. Why not be the first?
+* Carsten Ehbrecht <ehbrecht@dkrz.de>
+* David Huard <huard.david@ouranos.ca>
+* Cathy Nangini
+* Trevor James Smith

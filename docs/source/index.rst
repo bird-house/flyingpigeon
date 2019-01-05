@@ -11,6 +11,7 @@
    processes_des
    processes_api
    changes
+   authors
 
 Indices and tables
 ==================
