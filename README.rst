@@ -17,12 +17,14 @@ Flyingpigeon
     :target: https://gitter.im/bird-house/birdhouse?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
     :alt: Join the chat at https://gitter.im/bird-house/birdhouse
 
-
-Flying Pigeon (the bird)
-  *The pigeon finds its way home over extremely long distances. [..].* ( `Wikipedia <https://en.wikipedia.org/wiki/Pigeon_flying>`_ ).
+|
+|
 
 Flying Pigeon (the bike)
   *Flying Pigeon is a Chinese bicycle company [..]. The Flying Pigeon is the most popular vehicle ever.* ( `Wikipedia <https://en.wikipedia.org/wiki/Flying_Pigeon>`_ )
+
+Flying Pigeon (the bird)
+  *The pigeon finds its way home over extremely long distances. [..].* ( `Wikipedia <https://en.wikipedia.org/wiki/Pigeon_flying>`_ ).
 
 A Web Processing Service - Testbed for new process development.
 ---------------------------------------------------------------
@@ -40,11 +42,3 @@ Recently, eggshell was introduced to birdhouse which is containing most of the c
 * Documentation: https://flyingpigeon.readthedocs.io.
 * GitHub repository: https://github.com/bird-house/flyingpigeon
 * Birdhouse Overview: https://flyingpigeon.readthedocs.io/en/latest/
-
-Credits
--------
-
-This package was created with Cookiecutter_ and the `bird-house/cookiecutter-birdhouse`_ project template.
-
-.. _Cookiecutter: https://github.com/audreyr/cookiecutter
-.. _`bird-house/cookiecutter-birdhouse`: https://github.com/bird-house/cookiecutter-birdhouse
