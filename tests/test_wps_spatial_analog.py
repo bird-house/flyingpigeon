@@ -4,13 +4,11 @@ import os
 from pywps import Service
 from pywps.tests import assert_response_success
 
-try:
-    from flyingpigeon.processes import SpatialAnalogProcess, MapSpatialAnalogProcess
-except Exception:
-    pytestmark = pytest.mark.skip
-from flyingpigeon.utils import local_path
-from flyingpigeon.tests.common import TESTDATA, client_for, CFG_FILE
-from flyingpigeon.config import test_output_path
+from flyingpigeon.processes import SpatialAnalogProcess, MapSpatialAnalogProcess
+
+
+from .common import TESTDATA, client_for, CFG_FILE
+
 
 import numpy as np
 import datetime as dt
@@ -24,6 +22,14 @@ from ocgis.spatial.grid import Grid
 from ocgis.variable.temporal import TemporalVariable
 from ocgis.base import get_variable_names
 from ocgis.test.base import TestBase
+
+from eggshell.utils import local_path
+# from eggshell.config import Paths
+#
+# import eggshell as eg
+# path = Paths(eg)
+#
+# test_output_path
 
 #pytestmark = pytest.mark.skipif(reason="segmentation fault on next branch with snappy")
 
@@ -142,7 +148,7 @@ class TestDissimilarity(TestBase):
             axes.flat[i].imshow(out)
             axes.flat[i].set_title(dist)
 
-        path = os.path.join(test_output_path, 'test_spatial_analog_metrics.png')
+        path = os.path.join(path.outputpath, 'test_spatial_analog_metrics.png')
         plt.savefig(path)
         plt.close()
 
