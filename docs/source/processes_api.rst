@@ -69,10 +69,10 @@ Plot Timeseries API
 Spatial Analogs:
 ----------------
 
-.. autoclass:: flyingpigeon.processes.wps_spatial_analog.SpatialAnalogProcess
+.. autoprocess:: flyingpigeon.processes.wps_spatial_analog.SpatialAnalogProcess
   :docstring:
   :skiplines: 1
 
-.. autoclass:: flyingpigeon.processes.wps_map_spatial_analog.MapSpatialAnalogProcess
+.. autoprocess:: flyingpigeon.processes.wps_map_spatial_analog.MapSpatialAnalogProcess
   :docstring:
   :skiplines: 1
