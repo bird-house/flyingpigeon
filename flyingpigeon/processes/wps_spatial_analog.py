@@ -11,7 +11,7 @@ from datetime import datetime as dt
 
 import netCDF4 as nc
 import ocgis
-from eggshell.log import init_process_logger
+
 from ocgis import FunctionRegistry, RequestDataset, OcgOperations
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
@@ -20,10 +20,12 @@ from pywps import Process
 from pywps.app.Common import Metadata
 from shapely.geometry import Point
 
+from eggshell.nc.ocg_utils import call
+from eggshell.utils import extract_archive
+from eggshell.utils import rename_complexinputs
+# from eggshell.log import init_process_logger
+
 from flyingpigeon.ocgisDissimilarity import Dissimilarity, metrics
-from flyingpigeon.ocgis_module import call
-from flyingpigeon.utils import archiveextract
-from flyingpigeon.utils import rename_complexinputs
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -127,11 +129,11 @@ class SpatialAnalogProcess(Process):
                           supported_formats=[Format('application/x-netcdf')]
                           ),
 
-            ComplexOutput('output_log', 'Logging information',
-                          abstract="Collected logs during process run.",
-                          as_reference=True,
-                          supported_formats=[Format('text/plain')]
-                          ),
+            # ComplexOutput('output_log', 'Logging information',
+            #               abstract="Collected logs during process run.",
+            #               as_reference=True,
+            #               supported_formats=[Format('text/plain')]
+            #               ),
         ]
 
         super(SpatialAnalogProcess, self).__init__(
@@ -143,7 +145,7 @@ class SpatialAnalogProcess(Process):
                      "target indices with the distribution of spatially "
                      "distributed candidate indices and returns a value  "
                      "measuring the dissimilarity between both distributions over the candidate grid.",
-            version="0.1",
+            version="0.2",
             metadata=[
                 Metadata('Doc', 'http://flyingpigeon.readthedocs.io/en/latest/'),
             ],
@@ -158,8 +160,8 @@ class SpatialAnalogProcess(Process):
         ocgis.env.DIR_OUTPUT = tempfile.mkdtemp(dir=os.getcwd())
         ocgis.env.OVERWRITE = True
         tic = dt.now()
-        init_process_logger('log.txt')
-        response.outputs['output_log'].file = 'log.txt'
+        # init_process_logger('log.txt')
+        # response.outputs['output_log'].file = 'log.txt'
 
         LOGGER.info('Start process')
         response.update_status('Execution started at : {}'.format(tic), 1)
@@ -168,9 +170,9 @@ class SpatialAnalogProcess(Process):
         # Read inputs
         ######################################
         try:
-            candidate = archiveextract(resource=rename_complexinputs(
+            candidate = extract_archive(resource=rename_complexinputs(
                 request.inputs['candidate']))
-            target = archiveextract(resource=rename_complexinputs(
+            target = extract_archive(resource=rename_complexinputs(
                 request.inputs['target']))
             location = request.inputs['location'][0].data
             indices = [el.data for el in request.inputs['indices']]

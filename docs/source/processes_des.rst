@@ -62,4 +62,7 @@ Plots are generated based on matplotlib. Appropriate functions are located in eg
 .. TODO:: include an example
 
 
+.. include:: spatial_analog.rst
+
+
 .. _flyingpigeon_version_v1.0: https://flyingpigeon.readthedocs.io/en/1.1.0/descriptions/index.html
