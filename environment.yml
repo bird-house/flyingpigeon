@@ -21,6 +21,9 @@ dependencies:
 - matplotlib
 - cartopy
 ##############
+# tests
+- nose
+##############
 # pip install
 - pip:
   - -e git+https://github.com/bird-house/eggshell.git#egg=eggshell
