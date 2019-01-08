@@ -1,7 +1,6 @@
-import logging
 from datetime import datetime as dt
 
-from eggshell.log import init_process_logger
+# from eggshell.log import init_process_logger
 from matplotlib import pyplot as plt
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
@@ -9,11 +8,12 @@ from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
 
-from flyingpigeon.log import init_process_logger
-from flyingpigeon.utils import archive, archiveextract
-from flyingpigeon.utils import rename_complexinputs
-from flyingpigeon.visualisation import map_spatial_analog, fig2plot
+from eggshell.utils import archive, extract_archive
+from eggshell.utils import rename_complexinputs
+from eggshell.plot.plt_utils import fig2plot
+from eggshell.plot.plt_ncdata import map_spatial_analog
 
+import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
@@ -58,11 +58,11 @@ class MapSpatialAnalogProcess(Process):
                                              Format('application/postscript'), ],
                           ),
 
-            ComplexOutput('output_log', 'Logging information',
-                          abstract="Collected logs during process run.",
-                          as_reference=True,
-                          supported_formats=[Format('text/plain')]
-                          ),
+            # ComplexOutput('output_log', 'Logging information',
+            #               abstract="Collected logs during process run.",
+            #               as_reference=True,
+            #               supported_formats=[Format('text/plain')]
+            #               ),
         ]
 
         super(MapSpatialAnalogProcess, self).__init__(
@@ -85,8 +85,8 @@ class MapSpatialAnalogProcess(Process):
     def _handler(self, request, response):
 
         tic = dt.now()
-        init_process_logger('log.txt')
-        response.outputs['output_log'].file = 'log.txt'
+        # init_process_logger('log.txt')
+        # response.outputs['output_log'].file = 'log.txt'
 
         LOGGER.info('Start process')
         response.update_status('Execution started at : {}'.format(tic), 1)
@@ -95,7 +95,7 @@ class MapSpatialAnalogProcess(Process):
         # Read inputs
         ######################################
         try:
-            resource = archiveextract(resource=rename_complexinputs(
+            resource = extract_archive(resource=rename_complexinputs(
                 request.inputs['resource']))[0]
             fmts = [e.data for e in request.inputs['fmt']]
             title = request.inputs['title'][0].data
