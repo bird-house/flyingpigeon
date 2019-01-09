@@ -9,7 +9,7 @@ from pywps import Process
 from pywps.app.Common import Metadata
 
 from eggshell.utils import archive, extract_archive
-from eggshell.utils import rename_complexinputs
+# from eggshell.utils import rename_complexinputs
 from eggshell.plot.plt_utils import fig2plot
 from eggshell.plot.plt_ncdata import map_spatial_analog
 
@@ -95,8 +95,9 @@ class MapSpatialAnalogProcess(Process):
         # Read inputs
         ######################################
         try:
-            resource = extract_archive(resources=rename_complexinputs(
-                request.inputs['resource']))[0]
+            resource = extract_archive(
+                resources=[inpt.file for inpt in request.inputs['resource']],
+                output_dir=self.workdir)[0]
             fmts = [e.data for e in request.inputs['fmt']]
             title = request.inputs['title'][0].data
 

@@ -22,7 +22,7 @@ from shapely.geometry import Point
 
 from eggshell.nc.ocg_utils import call
 from eggshell.utils import extract_archive
-from eggshell.utils import rename_complexinputs
+# from eggshell.utils import rename_complexinputs
 # from eggshell.log import init_process_logger
 
 from flyingpigeon.ocgisDissimilarity import Dissimilarity, metrics
@@ -170,10 +170,12 @@ class SpatialAnalogProcess(Process):
         # Read inputs
         ######################################
         try:
-            candidate = extract_archive(resources=rename_complexinputs(
-                request.inputs['candidate']))
-            target = extract_archive(resources=rename_complexinputs(
-                request.inputs['target']))
+            candidate = extract_archive(
+                resources=[inpt.file for inpt in request.inputs['candidate']],
+                output_dir=self.workdir)
+            target = extract_archive(
+                resources=[inpt.file for inpt in request.inputs['target']],
+                output_dir=self.workdir)
             location = request.inputs['location'][0].data
             indices = [el.data for el in request.inputs['indices']]
             dist = request.inputs['dist'][0].data

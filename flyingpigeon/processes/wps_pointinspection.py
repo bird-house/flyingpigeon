@@ -12,7 +12,7 @@ from eggshell.nc.ocg_utils import call
 from eggshell.nc.nc_utils import sort_by_filename, get_values, get_time
 
 from eggshell.utils import archive, extract_archive
-from eggshell.utils import rename_complexinputs
+# from eggshell.utils import rename_complexinputs
 
 
 LOGGER = logging.getLogger("PYWPS")
@@ -78,9 +78,9 @@ class PointinspectionProcess(Process):
     def _handler(self, request, response):
         # init_process_logger('log.txt')
         # response.outputs['output_log'].file = 'log.txt'
-
         ncs = extract_archive(
-            resources=rename_complexinputs(request.inputs['resource']))
+            resources=[inpt.file for inpt in request.inputs['resource']],
+            output_dir=self.workdir)
         LOGGER.info('ncs: {}'.format(ncs))
 
         coords = []
