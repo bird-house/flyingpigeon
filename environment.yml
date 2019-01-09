@@ -16,6 +16,7 @@ dependencies:
 - ocgis=2.1.0=py_3
 - pandas
 - gdal=2.2.4
+- scikit-learn # for spatial_analog
 ##############
 # plotting
 - matplotlib
