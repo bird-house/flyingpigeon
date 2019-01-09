@@ -8,6 +8,7 @@ from flyingpigeon.subset import _CONTINENTS_
 from flyingpigeon.subset import clipping
 from eggshell.utils import archive, extract_archive
 from eggshell.utils import rename_complexinputs
+from os.path import abspath
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -60,11 +61,6 @@ class SubsetcontinentProcess(Process):
                           supported_formats=[Format('application/x-netcdf')]
                           ),
 
-            # ComplexOutput('output_log', 'Logging information',
-            #               abstract="Collected logs during process run.",
-            #               as_reference=True,
-            #               supported_formats=[Format('text/plain')]
-            #               )
         ]
 
         super(SubsetcontinentProcess, self).__init__(
@@ -84,8 +80,6 @@ class SubsetcontinentProcess(Process):
         )
 
     def _handler(self, request, response):
-        # init_process_logger('log.txt') mkstemp(suffix='.log', prefix='tmp', dir=self.workdir, text=True)
-        # response.outputs['output_log'].file = mkstemp(suffix='.log', prefix='tmp', dir=self.workdir, text=True)
 
         # input files
         LOGGER.debug("url={}, mime_type={}".format(request.inputs['resource'][0].url,
@@ -102,9 +96,12 @@ class SubsetcontinentProcess(Process):
         # regions used for subsetting
         regions = [inp.data for inp in request.inputs['region']]
 
+        dir_output = abspath(self.workdir)
+
         LOGGER.info('ncs: {}'.format(ncs))
         LOGGER.info('regions: {}'.format(regions))
         LOGGER.info('mosaic: {}'.format(mosaic))
+        LOGGER.info('flyingpigeon dir_output : {}'.format(dir_output))
 
         response.update_status("Arguments set for subset process", 0)
         LOGGER.debug('starting: regions={}, num_files={}'.format(len(regions), len(ncs)))
@@ -116,7 +113,7 @@ class SubsetcontinentProcess(Process):
                 mosaic=mosaic,
                 spatial_wrapping='wrap',
                 # variable=variable,
-                dir_output=self.workdir,
+                dir_output=dir_output,
                 # dimension_map=dimension_map,
             )
             LOGGER.info('results %s' % results)
