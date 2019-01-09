@@ -181,8 +181,8 @@ def test_dissimilarity_op():
     lon, lat = -72, 46
     g = Point(lon, lat)
 
-    cfn = local_path(TESTDATA['indicators_small.nc'])
-    tfn = local_path(TESTDATA['indicators_medium.nc'])
+    cfn = local_path(TESTDATA['indicators_small_nc'])
+    tfn = local_path(TESTDATA['indicators_medium_nc'])
 
     indices = ['meantemp', 'totalpr']
 
@@ -248,8 +248,8 @@ def test_wps_spatial_analog_process_small_sample():
         "dateStartTarget={7};"
         "dateEndTarget={8}"
     ).format(
-        TESTDATA['indicators_small.nc'],
-        TESTDATA['indicators_medium.nc'],
+        TESTDATA['indicators_small_nc'],
+        TESTDATA['indicators_medium_nc'],
         -72,
         46,
         'meantemp',
@@ -273,7 +273,7 @@ def test_wps_map_spatial_analog():
         "resource=files@xlink:href={0};"
         "fmt={1};fmt={2};fmt={3};fmt={4};"
         "title={5}"
-    ).format(TESTDATA['dissimilarity.nc'], 'png', 'pdf', 'svg', 'eps', "Spatial Analog Example")
+    ).format(TESTDATA['dissimilarity_nc'], 'png', 'pdf', 'svg', 'eps', "Spatial Analog Example")
 
     resp = client.get(
         service='wps', request='execute', version='1.0.0',
@@ -290,7 +290,7 @@ def test_wps_spatial_analog_process():
     datainputs = "candidate=files@xlink:href={1};target=files@xlink:href={" \
                  "0};location={2},{3};indices={4};indices={5};dist={6};dateStartCandidate={7};\
                  dateEndCandidate={8};dateStartTarget={7};dateEndTarget={8}"\
-        .format(TESTDATA['indicators_small.nc'], TESTDATA['indicators_medium.nc'], -72, 46, 'meantemp',
+        .format(TESTDATA['indicators_small_nc'], TESTDATA['indicators_medium_nc'], -72, 46, 'meantemp',
                 'totalpr', 'seuclidean', '1970-01-01', '1990-01-01')
 
     resp = client.get(

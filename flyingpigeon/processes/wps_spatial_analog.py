@@ -170,9 +170,9 @@ class SpatialAnalogProcess(Process):
         # Read inputs
         ######################################
         try:
-            candidate = extract_archive(resource=rename_complexinputs(
+            candidate = extract_archive(resources=rename_complexinputs(
                 request.inputs['candidate']))
-            target = extract_archive(resource=rename_complexinputs(
+            target = extract_archive(resources=rename_complexinputs(
                 request.inputs['target']))
             location = request.inputs['location'][0].data
             indices = [el.data for el in request.inputs['indices']]

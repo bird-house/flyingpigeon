@@ -95,7 +95,7 @@ class MapSpatialAnalogProcess(Process):
         # Read inputs
         ######################################
         try:
-            resource = extract_archive(resource=rename_complexinputs(
+            resource = extract_archive(resources=rename_complexinputs(
                 request.inputs['resource']))[0]
             fmts = [e.data for e in request.inputs['fmt']]
             title = request.inputs['title'][0].data
