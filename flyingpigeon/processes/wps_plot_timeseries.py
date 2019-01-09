@@ -10,7 +10,7 @@ from eggshell.log import init_process_logger
 from eggshell.plot import plt_ncdata
 from eggshell.utils import extract_archive
 from eggshell.nc.nc_utils import get_variable
-from eggshell.utils import rename_complexinputs
+# from eggshell.utils import rename_complexinputs
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -78,7 +78,8 @@ class PlottimeseriesProcess(Process):
         # response.outputs['output_log'].file = 'log.txt'
 
         ncfiles = extract_archive(
-            resources=rename_complexinputs(request.inputs['resource']))
+            resources=[inpt.file for inpt in request.inputs['resource']],
+            output_dir=self.workdir)
 
         if 'variable' in request.inputs:
             var = request.inputs['variable'][0].data
