@@ -66,11 +66,11 @@ TESTDATA = {
         'testdata',
         'spatial_analog',
         'indicators_medium.nc')),
-     'dissimilarity_nc': "file://{0}".format(os.path.join(
-         TESTS_HOME,
-         'testdata',
-         'spatial_analog',
-         'dissimilarity.nc')),
+    'dissimilarity_nc': "file://{0}".format(os.path.join(
+        TESTS_HOME,
+        'testdata',
+        'spatial_analog',
+        'dissimilarity.nc')),
 }
 
 

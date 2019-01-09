@@ -163,6 +163,13 @@ class TestKS():
 # ==================================================================== #
 #                       Analytical results
 # ==================================================================== #
+# def analytical_KLDiv(p, q):
+#     # TODO: This is not pep8 conform: E731 do not assign a lambda expression, use a def
+#     func = lambda x: p.pdf(x) * np.log(p.pdf(x) / q.pdf(x))
+#     a = 1E-5
+#     return integrate.quad(func, max(p.ppf(a), q.ppf(a)), min(p.isf(a), q.isf(a)))[0]
+# ==================================================================== #
+
 def analytical_KLDiv(p, q):
     """Return the Kullback-Leibler divergence between two distributions.
 
@@ -176,12 +183,11 @@ def analytical_KLDiv(p, q):
     out : float
       The Kullback-Leibler divergence computed by numerically integrating
       p(x)*log(p(x)/q(x)).
-    """
-    # TODO: This is not pep8 conform: E731 do not assign a lambda expression, use a def
-    func = lambda x: p.pdf(x) * np.log(p.pdf(x) / q.pdf(x))
+        """
+    def func(x):
+        return p.pdf(x) * np.log(p.pdf(x) / q.pdf(x))
     a = 1E-5
     return integrate.quad(func, max(p.ppf(a), q.ppf(a)), min(p.isf(a), q.isf(a)))[0]
-# ==================================================================== #
 
 
 @pytest.mark.slow
