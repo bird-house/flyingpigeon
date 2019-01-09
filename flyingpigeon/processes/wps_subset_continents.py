@@ -7,7 +7,7 @@ from tempfile import mkstemp
 from flyingpigeon.subset import _CONTINENTS_
 from flyingpigeon.subset import clipping
 from eggshell.utils import archive, extract_archive
-from eggshell.utils import rename_complexinputs
+# from eggshell.utils import rename_complexinputs
 from os.path import abspath
 
 LOGGER = logging.getLogger("PYWPS")
@@ -85,7 +85,8 @@ class SubsetcontinentProcess(Process):
         LOGGER.debug("url={}, mime_type={}".format(request.inputs['resource'][0].url,
                      request.inputs['resource'][0].data_format.mime_type))
         ncs = extract_archive(
-            resources=rename_complexinputs(request.inputs['resource']))
+            resources=[inpt.file for inpt in request.inputs['resource']],
+            output_dir=self.workdir)
         # mime_type=request.inputs['resource'][0].data_format.mime_type)
         # mosaic option
         # TODO: fix defaults in pywps 4.x
@@ -96,12 +97,10 @@ class SubsetcontinentProcess(Process):
         # regions used for subsetting
         regions = [inp.data for inp in request.inputs['region']]
 
-        dir_output = abspath(self.workdir)
-
         LOGGER.info('ncs: {}'.format(ncs))
         LOGGER.info('regions: {}'.format(regions))
         LOGGER.info('mosaic: {}'.format(mosaic))
-        LOGGER.info('flyingpigeon dir_output : {}'.format(dir_output))
+        LOGGER.info('flyingpigeon dir_output : {}'.format(abspath(self.workdir)))
 
         response.update_status("Arguments set for subset process", 0)
         LOGGER.debug('starting: regions={}, num_files={}'.format(len(regions), len(ncs)))
@@ -113,7 +112,7 @@ class SubsetcontinentProcess(Process):
                 mosaic=mosaic,
                 spatial_wrapping='wrap',
                 # variable=variable,
-                dir_output=dir_output,
+                dir_output=self.workdir,
                 # dimension_map=dimension_map,
             )
             LOGGER.info('results %s' % results)
@@ -128,7 +127,7 @@ class SubsetcontinentProcess(Process):
 
         # prepare tar file
         try:
-            tarf = archive(results)
+            tarf = archive(results, output_dir=self.workdir)
             LOGGER.info('Tar file prepared')
 
         except Exception as ex:
