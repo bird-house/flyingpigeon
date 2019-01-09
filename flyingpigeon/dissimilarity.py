@@ -260,18 +260,18 @@ def skezely_rizzo(x, y):
     raise NotImplementedError
 
     x, y = reshape_sample(x, y)
-    nx, d = x.shape
-    ny, d = y.shape
-
-    v = x.std(0, ddof=1) * y.std(0, ddof=1)
-
-    dx = spatial.distance.pdist(x, 'seuclidean', V=v)
-    dy = spatial.distance.pdist(y, 'seuclidean', V=v)
-    dxy = spatial.distance.cdist(x, y, 'seuclidean', V=v)
-
-    phix = -np.log(dx).sum() / nx / (nx - 1)
-    phiy = -np.log(dy).sum() / ny / (ny - 1)
-    phixy = np.log(dxy).sum() / nx / ny
+    # nx, d = x.shape
+    # ny, d = y.shape
+    #
+    # v = x.std(0, ddof=1) * y.std(0, ddof=1)
+    #
+    # dx = spatial.distance.pdist(x, 'seuclidean', V=v)
+    # dy = spatial.distance.pdist(y, 'seuclidean', V=v)
+    # dxy = spatial.distance.cdist(x, y, 'seuclidean', V=v)
+    #
+    # phix = -np.log(dx).sum() / nx / (nx - 1)
+    # phiy = -np.log(dy).sum() / ny / (ny - 1)
+    # phixy = np.log(dxy).sum() / nx / ny
 
     # z = dxy.sum() * 2. / (nx*ny) - (1./nx**2) *
 
@@ -358,15 +358,15 @@ def kolmogorov_smirnov(x, y):
 
         # Multiplicating factor converting d-dim booleans to a unique integer.
         mf = (2 ** np.arange(d)).reshape(1, d, 1)
-        l = 2 ** d
+        minlength = 2 ** d
 
         # Assign a unique integer according on whether or not x[i] <= sample
         ix = ((x.T <= np.atleast_3d(x)) * mf).sum(1)
         iy = ((x.T <= np.atleast_3d(y)) * mf).sum(1)
 
         # Count the number of samples in each quadrant
-        cx = 1. * np.apply_along_axis(np.bincount, 0, ix, minlength=l) / nx
-        cy = 1. * np.apply_along_axis(np.bincount, 0, iy, minlength=l) / ny
+        cx = 1. * np.apply_along_axis(np.bincount, 0, ix, minlength=minlength) / nx
+        cy = 1. * np.apply_along_axis(np.bincount, 0, iy, minlength=minlength) / ny
 
         # This is from https://github.com/syrte/ndtest/blob/master/ndtest.py
         # D = cx - cy
@@ -383,7 +383,7 @@ def kldiv(x, y, k=1):
     Compute the Kullback-Leibler divergence between two multivariate samples.
 
     .. math
-        D(P||Q) = \frac{d}{n} \sum_i^n \log{\frac{r_k(x_i)}{s_k(x_i)}} + \log{\frac{m}{n-1}}
+        D(P||Q) = "\"frac{d}{n} "\"sum_i^n "\"log{"\"frac{r_k(x_i)}{s_k(x_i)}} + "\"log{"\"frac{m}{n-1}}
 
     where r_k(x_i) and s_k(x_i) are, respectively, the euclidean distance
     to the kth neighbour of x_i in the x array (excepting x_i) and
@@ -417,7 +417,7 @@ def kldiv(x, y, k=1):
     For probability distributions P and Q of a continuous random variable,
     the K–L  divergence is defined as:
 
-        D_{KL}(P||Q) = \int p(x) \log{p()/q(x)} dx
+        D_{KL}(P||Q) = "\"int p(x) "\"log{p()/q(x)} dx
 
     This formula assumes we have a representation of the probability
     densities p(x) and q(x).  In many cases, we only have samples from the
@@ -466,9 +466,7 @@ def kldiv(x, y, k=1):
         # The 0th nearest neighbour of x[i] in x is x[i] itself.
         # Hence we take the k'th + 1, which in 0-based indexing is given by
         # index k.
-        out.append(
-            -np.log(r[:, ki] / s[:, ki - 1]).sum() * d / nx +
-            np.log(ny / (nx - 1.)))
+        out.append(-np.log(r[:, ki] / s[:, ki - 1]).sum() * d / nx + np.log(ny / (nx - 1.)))
 
     if mk:
         return out

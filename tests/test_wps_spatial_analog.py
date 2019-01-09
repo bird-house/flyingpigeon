@@ -4,12 +4,6 @@ import os
 from pywps import Service
 from pywps.tests import assert_response_success
 
-from flyingpigeon.processes import SpatialAnalogProcess, MapSpatialAnalogProcess
-
-
-from .common import TESTDATA, client_for, CFG_FILE
-
-
 import numpy as np
 import datetime as dt
 from shapely.geometry import Point
@@ -24,14 +18,10 @@ from ocgis.base import get_variable_names
 from ocgis.test.base import TestBase
 
 from eggshell.utils import local_path
-# from eggshell.config import Paths
-#
-# import eggshell as eg
-# path = Paths(eg)
-#
-# test_output_path
+from flyingpigeon.processes import SpatialAnalogProcess, MapSpatialAnalogProcess
+from .common import TESTDATA, client_for, CFG_FILE
 
-#pytestmark = pytest.mark.skipif(reason="segmentation fault on next branch with snappy")
+# pytestmark = pytest.mark.skipif(reason="segmentation fault on next branch with snappy")
 
 
 class TestDissimilarity(TestBase):
@@ -114,6 +104,9 @@ class TestDissimilarity(TestBase):
         """Compute the dissimilarity will all metrics."""
         from flyingpigeon import dissimilarity
         from matplotlib import pyplot as plt
+        import flyingpigeon as fp
+        from eggshell.config import Paths
+        paths = Paths(fp)
 
         p1 = self.write_field_data('v1', ncol=1, nrow=1)
         p2 = self.write_field_data('v2', ncol=1, nrow=1)
@@ -121,8 +114,7 @@ class TestDissimilarity(TestBase):
         p4 = self.write_field_data('v2', ncol=11, nrow=10, dir='c')
 
         ref_range = [dt.datetime(2000, 3, 1), dt.datetime(2000, 3, 31)]
-        ref = [ocgis.RequestDataset(p, time_range=ref_range) for p in [p1,
-                                                                       p2]]
+        ref = [ocgis.RequestDataset(p, time_range=ref_range) for p in [p1, p2]]
         reference = ocgis.MultiRequestDataset(ref)
         reference = reference.get()
 
@@ -148,7 +140,7 @@ class TestDissimilarity(TestBase):
             axes.flat[i].imshow(out)
             axes.flat[i].set_title(dist)
 
-        path = os.path.join(path.outputpath, 'test_spatial_analog_metrics.png')
+        path = os.path.join(paths.outputpath, 'test_spatial_analog_metrics.png')
         plt.savefig(path)
         plt.close()
 
@@ -296,7 +288,8 @@ def test_wps_map_spatial_analog():
 def test_wps_spatial_analog_process():
     client = client_for(Service(processes=[SpatialAnalogProcess()]))
     datainputs = "candidate=files@xlink:href={1};target=files@xlink:href={" \
-                 "0};location={2},{3};indices={4};indices={5};dist={6};dateStartCandidate={7};dateEndCandidate={8};dateStartTarget={7};dateEndTarget={8}"\
+                 "0};location={2},{3};indices={4};indices={5};dist={6};dateStartCandidate={7};\
+                 dateEndCandidate={8};dateStartTarget={7};dateEndTarget={8}"\
         .format(TESTDATA['indicators_small.nc'], TESTDATA['indicators_medium.nc'], -72, 46, 'meantemp',
                 'totalpr', 'seuclidean', '1970-01-01', '1990-01-01')
 
@@ -315,8 +308,10 @@ message by going up the stack into the function and print resp.response
 
 
 birdy spatial_analog \
---candidate https://bovec.dkrz.de/download/wpsoutputs/flyingpigeon/8d7aed7a-72d9-11e7-9ab2-109836a7cf3a/FD_NAM-44_CCCma-CanESM2_historical_r1i1p1_SMHI-RCA4_v1_yr_20010101-20051231.nc  \
---target https://bovec.dkrz.de/download/wpsoutputs/flyingpigeon/ba4bd292-72d9-11e7-a663-109836a7cf3a/FD_NAM-44_CCCma-CanESM2_rcp85_r1i1p1_SMHI-RCA4_v1_yr_20510101-20551231.nc  \
+--candidate https://bovec.dkrz.de/download/wpsoutputs/flyingpigeon/\
+  8d7aed7a-72d9-11e7-9ab2-109836a7cf3a/FD_NAM-44_CCCma-CanESM2_historical_r1i1p1_SMHI-RCA4_v1_yr_20010101-20051231.nc  \
+--target https://bovec.dkrz.de/download/wpsoutputs/flyingpigeon/\
+  ba4bd292-72d9-11e7-a663-109836a7cf3a/FD_NAM-44_CCCma-CanESM2_rcp85_r1i1p1_SMHI-RCA4_v1_yr_20510101-20551231.nc  \
 --location=-100,54  \
 --indices FD  \
 --dist kldiv  \

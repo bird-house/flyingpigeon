@@ -109,9 +109,10 @@ class TestNN():
 class TestZAE():
     def test_simple(self):
         d = 2
-        n, m = 200, 200
+        n = 200
+        # m = 200
         x = np.random.randn(n, d)
-        y = np.random.randn(m, d)
+        # y = np.random.randn(m, d)
 
         # Almost identical samples
         dm = dd.zech_aslan(x + .001, x)
@@ -176,13 +177,12 @@ def analytical_KLDiv(p, q):
       The Kullback-Leibler divergence computed by numerically integrating
       p(x)*log(p(x)/q(x)).
     """
+    # TODO: This is not pep8 conform: E731 do not assign a lambda expression, use a def
     func = lambda x: p.pdf(x) * np.log(p.pdf(x) / q.pdf(x))
     a = 1E-5
-    return \
-    integrate.quad(func, max(p.ppf(a), q.ppf(a)), min(p.isf(a), q.isf(a)))[0]
-
-
+    return integrate.quad(func, max(p.ppf(a), q.ppf(a)), min(p.isf(a), q.isf(a)))[0]
 # ==================================================================== #
+
 
 @pytest.mark.slow
 class TestKLDIV:
@@ -195,7 +195,7 @@ class TestKLDIV:
 
         N = 10000
         np.random.seed(2)
-        x, y = p.rvs(N), q.rvs(N)
+        # x, y = p.rvs(N), q.rvs(N)
 
         re = dd.kldiv(p.rvs(N), q.rvs(N))
 

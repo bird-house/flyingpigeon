@@ -95,7 +95,6 @@ class Dissimilarity(AbstractFieldFunction, AbstractParameterizedFunction):
         # is what is returned by the execute() call.
         self.vc.add_variable(fill)
 
-
         # Create a well-formed climatology time variable for the full time extent (with bounds).
         tgv = self.field.time.get_grouping('all')
         # Replaces the time value on the field.
