@@ -20,8 +20,6 @@ Here comes a list of Processes already developed but currently not available in 
 +-------------------------------+---------------------+----------------------------+
 | Weather Regimes               |  BLACKSWAN          | Extreme Weather Analytics  |
 +-------------------------------+---------------------+----------------------------+
-| Spatial Analogs               |  Disabled           | Climate Monitoring         |
-+-------------------------------+---------------------+----------------------------+
 | Climate Indices               |  FINCH              | Climate Monitoring         |
 +-------------------------------+---------------------+----------------------------+
 | Species Distribution Models   |  Disabled           | Climate Impact             |
