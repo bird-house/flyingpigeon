@@ -5,6 +5,7 @@ import traceback
 from urllib.parse import urlparse
 
 from pywps import Process, LiteralInput, ComplexOutput, get_format
+from pywps.app.Common import Metadata
 
 from flyingpigeon.handler_common import wfs_common
 from eggshell.nc.nc_utils import CookieNetCDFTransfer
