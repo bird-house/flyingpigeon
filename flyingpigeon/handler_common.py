@@ -29,7 +29,7 @@ def wfs_common(request, response, mode, spatial_mode='wfs', dir_output=','):
 
     """
 
-    outputpath = configuration.get_config_value('server', 'outputpath')
+    # outputpath = configuration.get_config_value('server', 'outputpath')
     outputurl = configuration.get_config_value('server', 'outputurl')
 
     list_of_files = []
@@ -107,7 +107,7 @@ def wfs_common(request, response, mode, spatial_mode='wfs', dir_output=','):
                 file_prefix = file_name[:-3]
             else:
                 file_prefix = file_name
-            ocgis.env.DIR_OUTPUT = dir_output # tempfile.mkdtemp(dir=os.getcwd())
+            ocgis.env.DIR_OUTPUT = dir_output  # tempfile.mkdtemp(dir=os.getcwd())
             ocgis.env.OVERWRITE = True
             nc = netCDF4.Dataset(one_file, 'r')
             var_names = get_variable(nc)

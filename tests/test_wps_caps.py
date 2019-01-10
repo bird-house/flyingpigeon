@@ -21,4 +21,4 @@ def test_wps_caps():
         'subset_bbox',
         'subset_continents',
         'subset_countries',
-        'subset_polygon',]
+        'subset_polygon', ]
