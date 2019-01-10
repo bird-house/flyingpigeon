@@ -17,7 +17,7 @@ import logging
 LOGGER = logging.getLogger("PYWPS")
 
 
-class MapSpatialAnalogProcess(Process):
+class PlotSpatialAnalogProcess(Process):
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'netCDF dataset',
@@ -67,7 +67,7 @@ class MapSpatialAnalogProcess(Process):
 
         super(MapSpatialAnalogProcess, self).__init__(
             self._handler,
-            identifier="map_spatial_analog",
+            identifier="plot_spatial_analog",
             title="Map of dissimilarity values calculated by the spatial_analog process.",
             abstract="Produce map showing the dissimilarity values computed by the "
                      "spatial_analog process as well as indicating by a marker the location of the target site.",

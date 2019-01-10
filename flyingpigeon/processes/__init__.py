@@ -1,21 +1,22 @@
-from .wps_subset import SubsetProcess
+from .wps_pointinspection import PointinspectionProcess
 from .wps_subset_bbox import SubsetBboxProcess
+from .wps_subset_polygon import SubsetpolygonProcess
 from .wps_subset_continents import SubsetcontinentProcess
 from .wps_subset_countries import SubsetcountryProcess
-from .wps_pointinspection import PointinspectionProcess
 from .wps_subset_WFS import SubsetWFSProcess
-from .wps_plot_timeseries import PlottimeseriesProcess
 from .wps_spatial_analog import SpatialAnalogProcess
-from .wps_map_spatial_analog import MapSpatialAnalogProcess
+from .wps_plot_spatial_analog import PlotSpatialAnalogProcess
+from .wps_plot_timeseries import PlottimeseriesProcess
+
 
 processes = [
-    SubsetProcess(),
     SubsetBboxProcess(),
+    SubsetpolygonProcess(),
     SubsetcontinentProcess(),
     SubsetcountryProcess(),
     PointinspectionProcess(),
     SubsetWFSProcess(),
-    PlottimeseriesProcess(),
     SpatialAnalogProcess(),
-    MapSpatialAnalogProcess()
+    PlottimeseriesProcess(),
+    PlotSpatialAnalogProcess()
 ]

@@ -15,7 +15,7 @@ json_format = get_format('JSON')
 
 
 # TODO: Refactor this to "SubsetpolygonProcess"
-class SubsetProcess(Process):
+class SubsetpolygonProcess(Process):
     """Subset a NetCDF file using WFS geometry."""
 
     def __init__(self):
@@ -78,7 +78,7 @@ class SubsetProcess(Process):
 
         super(SubsetProcess, self).__init__(
             self._handler,
-            identifier='subset',
+            identifier='subset_polygon',
             title='Subset',
             version='0.2',
             abstract=('Return the data for which grid cells intersect the '
