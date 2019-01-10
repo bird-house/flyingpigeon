@@ -1,4 +1,5 @@
 import logging
+from os.path import join
 
 from numpy import savetxt, column_stack
 from pywps import ComplexInput, ComplexOutput
@@ -98,7 +99,7 @@ class PointinspectionProcess(Process):
                 times = get_time(ncs)
                 concat_vals = times
                 header = 'date_time'
-                filename = '{}.csv'.format(key)
+                filename = join(self.workdir, '{}.csv'.format(key))
                 filenames.append(filename)
 
                 for p in coords:
@@ -109,7 +110,7 @@ class PointinspectionProcess(Process):
                         point = Point(float(p[0]), float(p[1]))
 
                         # get the values
-                        timeseries = call(resource=ncs, geom=point, select_nearest=True)
+                        timeseries = call(resource=ncs, geom=point, select_nearest=True, dir_output=self.workdir)
                         vals = get_values(timeseries)
 
                         # concatenation of values
