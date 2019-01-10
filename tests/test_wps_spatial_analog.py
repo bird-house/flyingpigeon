@@ -18,7 +18,7 @@ from ocgis.base import get_variable_names
 from ocgis.test.base import TestBase
 
 from eggshell.utils import local_path
-from flyingpigeon.processes import SpatialAnalogProcess, MapSpatialAnalogProcess
+from flyingpigeon.processes import SpatialAnalogProcess, PlotSpatialAnalogProcess
 from .common import TESTDATA, client_for, CFG_FILE
 
 # pytestmark = pytest.mark.skipif(reason="segmentation fault on next branch with snappy")
@@ -266,9 +266,9 @@ def test_wps_spatial_analog_process_small_sample():
     assert_response_success(resp)
 
 
-def test_wps_map_spatial_analog():
+def test_wps_plot_spatial_analog():
     client = client_for(
-        Service(processes=[MapSpatialAnalogProcess()], cfgfiles=CFG_FILE))
+        Service(processes=[PlotSpatialAnalogProcess()], cfgfiles=CFG_FILE))
     datainputs = (
         "resource=files@xlink:href={0};"
         "fmt={1};fmt={2};fmt={3};fmt={4};"
@@ -277,7 +277,7 @@ def test_wps_map_spatial_analog():
 
     resp = client.get(
         service='wps', request='execute', version='1.0.0',
-        identifier='map_spatial_analog',
+        identifier='plot_spatial_analog',
         datainputs=datainputs)
 
     assert_response_success(resp)

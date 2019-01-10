@@ -24,8 +24,8 @@ class TestSubset(unittest.TestCase):
         else:
             self.config.read('flyingpigeon/tests/configtests.cfg')
         sys.path.append('/'.join(os.getcwd().split('/')[:-1]))
-        from flyingpigeon.processes import SubsetProcess
-        self.client = client_for(Service(processes=[SubsetProcess()]))
+        from flyingpigeon.processes import SubsetpolygonProcess
+        self.client = client_for(Service(processes=[SubsetpolygonProcess()]))
 
     def test_getcapabilities(self):
         config_dict = test_wps_utils.config_is_available(

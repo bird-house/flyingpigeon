@@ -65,7 +65,7 @@ class PlotSpatialAnalogProcess(Process):
             #               ),
         ]
 
-        super(MapSpatialAnalogProcess, self).__init__(
+        super(PlotSpatialAnalogProcess, self).__init__(
             self._handler,
             identifier="plot_spatial_analog",
             title="Map of dissimilarity values calculated by the spatial_analog process.",

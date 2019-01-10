@@ -77,7 +77,7 @@ class SubsetpolygonProcess(Process):
                           as_reference=True,
                           supported_formats=[json_format])]
 
-        super(SubsetProcess, self).__init__(
+        super(SubsetpolygonProcess, self).__init__(
             self._handler,
             identifier='subset_polygon',
             title='Subset',
