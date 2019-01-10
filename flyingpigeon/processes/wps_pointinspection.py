@@ -80,7 +80,7 @@ class PointinspectionProcess(Process):
         # response.outputs['output_log'].file = 'log.txt'
         ncs = extract_archive(
             resources=[inpt.file for inpt in request.inputs['resource']],
-            output_dir=self.workdir)
+            dir_output=self.workdir)
         LOGGER.info('ncs: {}'.format(ncs))
 
         coords = []
@@ -126,6 +126,6 @@ class PointinspectionProcess(Process):
 
         # set the outputs
         response.update_status('*** creating output tar archive ****', 90)
-        tarout_file = archive(filenames, output_dir=self.workdir)
+        tarout_file = archive(filenames, dir_output=self.workdir)
         response.outputs['tarout'].file = tarout_file
         return response

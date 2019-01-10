@@ -89,7 +89,7 @@ class SubsetBboxProcess(Process):
                 urlparse(r.data).hostname for r in request.inputs['resource']]
             with CookieNetCDFTransfer(request, opendap_hostnames):
                 result = wfs_common(request, response, mode='subsetter',
-                                    spatial_mode='bbox')
+                                    spatial_mode='bbox', dir_output=self.workdir)
             return result
         except Exception as ex:
             msg = 'Connection to OPeNDAP failed: {}'.format(ex)

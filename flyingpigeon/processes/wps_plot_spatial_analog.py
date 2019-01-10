@@ -11,7 +11,7 @@ from pywps.app.Common import Metadata
 from eggshell.utils import archive, extract_archive
 # from eggshell.utils import rename_complexinputs
 from eggshell.plot.plt_utils import fig2plot
-from eggshell.plot.plt_ncdata import map_spatial_analog
+from eggshell.plot.plt_ncdata import plot_spatial_analog
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
@@ -97,7 +97,7 @@ class PlotSpatialAnalogProcess(Process):
         try:
             resource = extract_archive(
                 resources=[inpt.file for inpt in request.inputs['resource']],
-                output_dir=self.workdir)[0]
+                dir_output=self.workdir)[0]
             fmts = [e.data for e in request.inputs['fmt']]
             title = request.inputs['title'][0].data
 
@@ -109,11 +109,11 @@ class PlotSpatialAnalogProcess(Process):
         response.update_status('Input parameters ingested', 2)
 
         try:
-            fig = map_spatial_analog(resource, title=title)
+            fig = plot_spatial_analog(resource, title=title)
             output = []
 
             for fmt in fmts:
-                output.append(fig2plot(fig, fmt))
+                output.append(fig2plot(fig, fmt, dir_output=self.workdir))
 
         except Exception as ex:
             msg = "Failed to create figure: {}".format(ex)
@@ -126,7 +126,7 @@ class PlotSpatialAnalogProcess(Process):
         if len(fmts) == 1:
             output = output[0]
         else:
-            output = archive(output)
+            output = archive(output, dir_output=self.workdir)
 
         response.outputs['output_figure'].file = output
         response.update_status("done", 100)

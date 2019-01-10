@@ -6,11 +6,11 @@ from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
 
-from eggshell.log import init_process_logger
 from eggshell.plot import plt_ncdata
 from eggshell.utils import extract_archive
 from eggshell.nc.nc_utils import get_variable
 # from eggshell.utils import rename_complexinputs
+# from eggshell.log import init_process_logger
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -80,7 +80,7 @@ class PlottimeseriesProcess(Process):
 
         ncfiles = extract_archive(
             resources=[inpt.file for inpt in request.inputs['resource']],
-            output_dir=self.workdir)
+            dir_output=self.workdir)
 
         if 'variable' in request.inputs:
             var = request.inputs['variable'][0].data
@@ -94,6 +94,7 @@ class PlottimeseriesProcess(Process):
             plotout_spagetti_file = plt_ncdata.spaghetti(ncfiles,
                                                          variable=var,
                                                          title='Field mean of {}'.format(var),
+                                                         dir_output=self.workdir,
                                                          )
             LOGGER.info("spagetti plot done")
             response.update_status('Spagetti plot for %s %s files done' % (len(ncfiles), var), 50)
@@ -105,6 +106,7 @@ class PlottimeseriesProcess(Process):
             plotout_uncertainty_file = plt_ncdata.uncertainty(ncfiles,
                                                               variable=var,
                                                               title='Ensemble uncertainty for {}'.format(var),
+                                                              dir_output=self.workdir,
                                                               )
 
             response.update_status('Uncertainty plot for {} {} files done'.format(len(ncfiles), var), 90)

@@ -86,7 +86,7 @@ class SubsetcontinentProcess(Process):
                      request.inputs['resource'][0].data_format.mime_type))
         ncs = extract_archive(
             resources=[inpt.file for inpt in request.inputs['resource']],
-            output_dir=self.workdir)
+            dir_output=self.workdir)
         # mime_type=request.inputs['resource'][0].data_format.mime_type)
         # mosaic option
         # TODO: fix defaults in pywps 4.x
@@ -108,7 +108,7 @@ class SubsetcontinentProcess(Process):
         try:
             results = clipping(
                 resource=ncs,
-                polygons=regions,  # self.region.getValue(),
+                polygons=regions,
                 mosaic=mosaic,
                 spatial_wrapping='wrap',
                 # variable=variable,
@@ -127,7 +127,7 @@ class SubsetcontinentProcess(Process):
 
         # prepare tar file
         try:
-            tarf = archive(results, output_dir=self.workdir)
+            tarf = archive(results, dir_output=self.workdir)
             LOGGER.info('Tar file prepared')
 
         except Exception as ex:

@@ -157,7 +157,7 @@ class SpatialAnalogProcess(Process):
 
     def _handler(self, request, response):
 
-        ocgis.env.DIR_OUTPUT = tempfile.mkdtemp(dir=os.getcwd())
+        ocgis.env.DIR_OUTPUT = self.workdir   # , tempfile.mkdtemp(dir=os.getcwd())
         ocgis.env.OVERWRITE = True
         tic = dt.now()
         # init_process_logger('log.txt')
@@ -172,10 +172,10 @@ class SpatialAnalogProcess(Process):
         try:
             candidate = extract_archive(
                 resources=[inpt.file for inpt in request.inputs['candidate']],
-                output_dir=self.workdir)
+                dir_output=self.workdir)
             target = extract_archive(
                 resources=[inpt.file for inpt in request.inputs['target']],
-                output_dir=self.workdir)
+                dir_output=self.workdir)
             location = request.inputs['location'][0].data
             indices = [el.data for el in request.inputs['indices']]
             dist = request.inputs['dist'][0].data
@@ -222,7 +222,7 @@ class SpatialAnalogProcess(Process):
                 prefix = 'target_ts'
                 target_ts = call(resource=target, geom=point, variable=indices,
                                  time_range=[dateStartTarget, dateEndTarget],
-                                 select_nearest=True, prefix=prefix)
+                                 select_nearest=True, prefix=prefix, dir_output=self.workdir)
 
                 # target_ts = [get_values(prefix+'.nc', ind) for ind in indices]
 
@@ -231,7 +231,7 @@ class SpatialAnalogProcess(Process):
                                      time_range=[dateStartTarget, dateEndTarget])
 
                 op = OcgOperations(trd, geom=point, select_nearest=True,
-                                   search_radius_mult=1.75)
+                                   search_radius_mult=1.75, dir_output=self.workdir)
                 out = op.execute()
                 target_ts = out.get_element()
 
@@ -253,6 +253,7 @@ class SpatialAnalogProcess(Process):
                                  'kwds': {'dist': dist, 'target': target_ts,
                                           'candidate': indices}}],
                           time_range=[dateStartCandidate, dateEndCandidate],
+                          dir_output=self.workdir,
                           )
 
         except Exception as ex:

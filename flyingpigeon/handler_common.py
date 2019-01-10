@@ -18,7 +18,7 @@ from eggshell.nc.nc_utils import get_variable, opendap_or_download
 json_format = get_format('JSON')
 
 
-def wfs_common(request, response, mode, spatial_mode='wfs'):
+def wfs_common(request, response, mode, spatial_mode='wfs', dir_output=','):
     """Common part of wps process for wfs operations.
 
     :param request: request for wps process handler
@@ -98,8 +98,8 @@ def wfs_common(request, response, mode, spatial_mode='wfs'):
     try:
         output_files = []
         output_urls = []
-        mv_dir = tempfile.mkdtemp(dir=outputpath)
-        os.chmod(mv_dir, 0o755)
+        # mv_dir = tempfile.mkdtemp(dir=outputpath)
+        # os.chmod(mv_dir, 0o755)
 
         for one_file in list_of_files:
             file_name = os.path.basename(one_file)
@@ -107,7 +107,7 @@ def wfs_common(request, response, mode, spatial_mode='wfs'):
                 file_prefix = file_name[:-3]
             else:
                 file_prefix = file_name
-            ocgis.env.DIR_OUTPUT = tempfile.mkdtemp(dir=os.getcwd())
+            ocgis.env.DIR_OUTPUT = dir_output # tempfile.mkdtemp(dir=os.getcwd())
             ocgis.env.OVERWRITE = True
             nc = netCDF4.Dataset(one_file, 'r')
             var_names = get_variable(nc)
@@ -162,10 +162,10 @@ def wfs_common(request, response, mode, spatial_mode='wfs'):
                     mv_name = '{0}_{1}.nc'.format(
                         os.path.basename(ops)[:-3], 'subset')
 
-                mv_file = os.path.join(mv_dir, mv_name)
-                shutil.move(ops, mv_file)
+                mv_file = os.path.join(dir_output, mv_name)
+                shutil.move(ops, mv_file)  # rename the file
                 output_files.append(mv_file)
-                shutil.rmtree(ocgis.env.DIR_OUTPUT)
+                # shutil.rmtree(ocgis.env.DIR_OUTPUT) # not necessary, pywps removes the workdir
 
                 # Cover the case of an online wps server and the offline
                 # mode for tests.
@@ -174,7 +174,7 @@ def wfs_common(request, response, mode, spatial_mode='wfs'):
                     output_urls.append(disk_file)
                 else:
                     url_file = os.path.join(
-                        outputurl, os.path.basename(mv_dir), mv_name)
+                        outputurl, os.path.basename(dir_output), mv_name)
                     output_urls.append(url_file)
     except Exception:
         raise Exception(traceback.format_exc())
