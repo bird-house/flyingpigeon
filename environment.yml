@@ -23,6 +23,8 @@ dependencies:
 - cartopy
 ##############
 # tests
+- pytest
+- pytest-flake8
 - nose
 ##############
 # pip install

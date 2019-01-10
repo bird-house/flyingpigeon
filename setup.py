@@ -13,6 +13,7 @@ README = open(os.path.join(here, 'README.rst')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.rst')).read()
 
 reqs = [line.strip() for line in open('requirements.txt')]
+extra_reqs = [line.strip() for line in open('requirements_dev.txt')]
 
 classifiers = [
     'Development Status :: 3 - Alpha',
@@ -43,6 +44,7 @@ setup(name='flyingpigeon',
       packages=find_packages(),
       include_package_data=True,
       install_requires=reqs,
+      extra_requires=extra_reqs,
       entry_points={
           'console_scripts': [
              'flyingpigeon=flyingpigeon.cli:cli',
