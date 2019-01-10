@@ -64,6 +64,9 @@ class SubsetWFSProcess(Process):
             version='0.1',
             abstract=('Return the data for which grid cells intersect the '
                       'selected polygon for each input dataset.'),
+            metadata=[
+                Metadata('Doc', 'https://flyingpigeon.readthedocs.io/en/latest/processes_des.html#subset-processes'),
+            ],
             inputs=inputs,
             outputs=outputs,
             status_supported=True,

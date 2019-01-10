@@ -70,9 +70,9 @@ class SubsetcontinentProcess(Process):
             version="0.11",
             abstract="Return the data whose grid cells intersect the selected continents for each input dataset.",
             metadata=[
-                # Metadata('LSCE', 'http://www.lsce.ipsl.fr/en/index.php'),
-                Metadata('Doc', 'http://flyingpigeon.readthedocs.io/en/latest/'),
-            ],
+              Metadata('Doc',
+                       'https://flyingpigeon.readthedocs.io/en/latest/processes_des.html#subset-processes'),
+                       ],
             inputs=inputs,
             outputs=outputs,
             status_supported=True,

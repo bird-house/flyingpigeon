@@ -73,6 +73,10 @@ class SubsetBboxProcess(Process):
             abstract=('Return the data for which grid cells intersect the '
                       'bounding box for each input dataset as well as'
                       'the time range selected.'),
+            metadata=[
+              Metadata('Doc',
+                       'https://flyingpigeon.readthedocs.io/en/latest/processes_des.html#subset-processes'),
+                       ],
             inputs=inputs,
             outputs=outputs,
             status_supported=True,

@@ -64,7 +64,8 @@ class PlottimeseriesProcess(Process):
             title="Graphics (timeseries)",
             version="0.11",
             metadata=[
-                Metadata('Doc', 'http://flyingpigeon.readthedocs.io/en/latest/'),
+                Metadata('Doc',
+                         'https://flyingpigeon.readthedocs.io/en/latest/processes_des.html#data-visualization'),
             ],
             abstract="Outputs some timeseries of the file field means. Spaghetti and uncertainty plot",
             inputs=inputs,
