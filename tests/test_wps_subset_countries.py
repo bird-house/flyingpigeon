@@ -7,7 +7,7 @@ import os
 
 
 datainputs_fmt = (
-    "resource=files@xlink:href={0};"
+    "resource=@xlink:href={0};"
     "region={1};"
     "mosaic={2};"
 )
@@ -20,7 +20,7 @@ def test_wps_subset_countries():
     datainputs = datainputs_fmt.format(
         TESTDATA['cmip5_tasmax_2006_nc'],
         'CAN',
-        "True",)
+        "True")
 
     resp = client.get(
         service='wps', request='execute', version='1.0.0',

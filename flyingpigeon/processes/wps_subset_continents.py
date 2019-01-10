@@ -38,7 +38,6 @@ class SubsetcontinentProcess(Process):
 
             ComplexInput('resource', 'Resource',
                          abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
-                         metadata=[Metadata('Info')],
                          min_occurs=1,
                          max_occurs=1000,
                          supported_formats=[
@@ -70,9 +69,9 @@ class SubsetcontinentProcess(Process):
             version="0.11",
             abstract="Return the data whose grid cells intersect the selected continents for each input dataset.",
             metadata=[
-              Metadata('Doc',
-                       'https://flyingpigeon.readthedocs.io/en/latest/processes_des.html#subset-processes'),
-                       ],
+                Metadata('Doc',
+                         'https://flyingpigeon.readthedocs.io/en/latest/processes_des.html#subset-processes'),
+            ],
             inputs=inputs,
             outputs=outputs,
             status_supported=True,
