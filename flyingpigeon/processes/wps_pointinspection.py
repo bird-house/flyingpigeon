@@ -126,6 +126,6 @@ class PointinspectionProcess(Process):
 
         # set the outputs
         response.update_status('*** creating output tar archive ****', 90)
-        tarout_file = archive(filenames, output_dir=self.workdir)
+        tarout_file = archive(filenames, dir_output=self.workdir)
         response.outputs['tarout'].file = tarout_file
         return response
