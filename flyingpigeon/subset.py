@@ -23,7 +23,7 @@ def countries():
     countries = _COUNTRIES_.keys()
     # countries = ['DEU', 'FRA', 'GBR', 'ESP', 'ITA']
     # countries.sort()
-    return countries
+    return list(countries)
 
 
 def countries_longname():

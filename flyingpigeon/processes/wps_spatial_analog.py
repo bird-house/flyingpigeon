@@ -7,7 +7,7 @@ Author: David Huard (huard.david@ouranos.ca),
 import logging
 import os
 import tempfile
-from datetime import datetime as dt
+import datetime as dt
 
 import netCDF4 as nc
 import ocgis
@@ -86,54 +86,44 @@ class SpatialAnalogProcess(Process):
             LiteralInput('dateStartCandidate', 'Candidate start date',
                          abstract="Beginning of period (YYYY-MM-DD) for candidate data. "
                                   "Defaults to first entry.",
-                         data_type='string',
+                         data_type='dateTime',
                          min_occurs=0,
                          max_occurs=1,
-                         default='',
                          ),
 
             LiteralInput('dateEndCandidate', 'Candidate end date',
-                         abstract="End of period (YYYY-MM_DD) for candidate data. Defaults to last entry.",
-                         data_type='string',
+                         abstract="End of period (YYYY-MM-DD) for candidate data. Defaults to last entry.",
+                         data_type='dateTime',
                          min_occurs=0,
                          max_occurs=1,
-                         default='',
                          ),
 
             LiteralInput('dateStartTarget', 'Target start date',
                          abstract="Beginning of period (YYYY-MM-DD) for target "
                                   "data. "
                                   "Defaults to first entry.",
-                         data_type='string',
+                         data_type='dateTime',
                          min_occurs=0,
                          max_occurs=1,
-                         default='',
                          ),
 
             LiteralInput('dateEndTarget', 'Target end date',
-                         abstract="End of period (YYYY-MM_DD) for target data. "
+                         abstract="End of period (YYYY-MM-DD) for target data. "
                                   "Defaults to last entry.",
-                         data_type='string',
+                         data_type='dateTime',
                          min_occurs=0,
                          max_occurs=1,
-                         default='',
                          ),
         ]
 
         outputs = [
 
-            ComplexOutput('output_netcdf', 'Dissimilarity values',
+            ComplexOutput('output', 'Dissimilarity values',
                           abstract="Dissimilarity between target at selected "
                                    "location and candidate distributions over the entire grid.",
                           as_reference=True,
                           supported_formats=[Format('application/x-netcdf')]
                           ),
-
-            # ComplexOutput('output_log', 'Logging information',
-            #               abstract="Collected logs during process run.",
-            #               as_reference=True,
-            #               supported_formats=[Format('text/plain')]
-            #               ),
         ]
 
         super(SpatialAnalogProcess, self).__init__(
@@ -159,7 +149,7 @@ class SpatialAnalogProcess(Process):
 
         ocgis.env.DIR_OUTPUT = self.workdir
         ocgis.env.OVERWRITE = True
-        tic = dt.now()
+        tic = dt.datetime.now()
 
         LOGGER.info('Start process')
         response.update_status('Execution started at : {}'.format(tic), 1)
@@ -177,41 +167,26 @@ class SpatialAnalogProcess(Process):
             location = request.inputs['location'][0].data
             indices = [el.data for el in request.inputs['indices']]
             dist = request.inputs['dist'][0].data
-            dateStartCandidate = request.inputs['dateStartCandidate'][0].data
-            dateEndCandidate = request.inputs['dateEndCandidate'][0].data
-            dateStartTarget = request.inputs['dateStartTarget'][0].data
-            dateEndTarget = request.inputs['dateEndTarget'][0].data
-
-        except Exception as ex:
-            msg = 'Failed to read input parameter {}'.format(ex)
-            LOGGER.error(msg)
-            raise Exception(msg)
-
-        response.update_status('Read input parameters', 2)
-
-        ######################################
-        # Process inputs
-        ######################################
-
-        try:
+            start_candidate = request.inputs['dateStartCandidate'][0].data
+            end_candidate = request.inputs['dateEndCandidate'][0].data
+            start_target = request.inputs['dateStartTarget'][0].data
+            end_target = request.inputs['dateEndTarget'][0].data
             point = Point(*map(float, location.split(',')))
-            dateStartCandidate = dt.strptime(dateStartCandidate, '%Y-%m-%d')
-            dateEndCandidate = dt.strptime(dateEndCandidate, '%Y-%m-%d')
-            dateStartTarget = dt.strptime(dateStartTarget, '%Y-%m-%d')
-            dateEndTarget = dt.strptime(dateEndTarget, '%Y-%m-%d')
-
         except Exception as ex:
-            msg = 'Failed to process inputs {}'.format(ex)
+            msg = 'Failed to parse input parameter {}'.format(ex)
             LOGGER.error(msg)
             raise Exception(msg)
 
-        LOGGER.debug("init took {}".format(dt.now() - tic))
+        response.update_status('Parsed input parameters', 2)
+
+        LOGGER.debug("init took {}".format(dt.datetime.now() - tic))
         response.update_status('Processed input parameters', 3)
 
         ######################################
         # Extract target time series
         ######################################
-        savetarget = False
+
+        savetarget = False  # For debugging
         try:
             # Using `call` creates a netCDF file in the tmp directory.
             #
@@ -219,14 +194,12 @@ class SpatialAnalogProcess(Process):
             if savetarget:
                 prefix = 'target_ts'
                 target_ts = call(resource=target, geom=point, variable=indices,
-                                 time_range=[dateStartTarget, dateEndTarget],
+                                 time_range=[start_target, end_target],
                                  select_nearest=True, prefix=prefix, dir_output=self.workdir)
-
-                # target_ts = [get_values(prefix+'.nc', ind) for ind in indices]
 
             else:
                 trd = RequestDataset(target, variable=indices,
-                                     time_range=[dateStartTarget, dateEndTarget])
+                                     time_range=[start_target, end_target])
 
                 op = OcgOperations(trd, geom=point, select_nearest=True,
                                    search_radius_mult=1.75, dir_output=self.workdir)
@@ -250,7 +223,7 @@ class SpatialAnalogProcess(Process):
                           calc=[{'func': 'dissimilarity', 'name': 'spatial_analog',
                                  'kwds': {'dist': dist, 'target': target_ts,
                                           'candidate': indices}}],
-                          time_range=[dateStartCandidate, dateEndCandidate],
+                          time_range=[start_candidate, end_candidate],
                           dir_output=self.workdir,
                           )
 
@@ -263,25 +236,25 @@ class SpatialAnalogProcess(Process):
                      dist=dist,
                      indices=",".join(indices),
                      target_location=location,
-                     candidate_time_range="{},{}".format(dateStartCandidate,
-                                                         dateEndCandidate),
-                     target_time_range="{},{}".format(dateStartTarget,
-                                                      dateEndTarget)
+                     candidate_time_range="{},{}".format(start_candidate,
+                                                         end_candidate),
+                     target_time_range="{},{}".format(start_target,
+                                                      end_target)
                      )
 
         response.update_status('Computed spatial analog', 95)
 
-        response.outputs['output_netcdf'].file = output
+        response.outputs['output'].file = output
 
         response.update_status('Execution completed', 100)
-        LOGGER.debug("Total execution took {}".format(dt.now() - tic))
+        LOGGER.debug("Total execution took {}".format(dt.datetime.now() - tic))
         return response
 
 
 def add_metadata(ncfile, **kwds):
     """Add metadata to the dissimilarity variable."""
-    D = nc.Dataset(ncfile, 'a')
-    V = D.variables['dissimilarity']
+    ds = nc.Dataset(ncfile, 'a')
+    v = ds.variables['dissimilarity']
     for key, val in kwds.items():
-        V.setncattr(key, val)
-    D.close()
+        v.setncattr(key, val)
+    ds.close()

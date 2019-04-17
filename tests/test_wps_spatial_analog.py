@@ -74,8 +74,6 @@ class TestDissimilarity(TestBase):
 
         return field
 
-    # Likely a bug in ocgisDissimilarity.
-    @pytest.mark.skip(reason="ocgis exception")
     def test1d(self):
         p1 = self.write_field_data('v1', ncol=1, nrow=1)
         p3 = self.write_field_data('v1', dir='b')
@@ -144,7 +142,6 @@ class TestDissimilarity(TestBase):
         plt.savefig(path)
         plt.close()
 
-    @pytest.mark.skip(reason="ocgis exception")
     def test_simple(self):
         p1 = self.write_field_data('v1', ncol=1, nrow=1)
         p2 = self.write_field_data('v2', ncol=1, nrow=1)
@@ -234,35 +231,30 @@ def test_dissimilarity_op():
 
 
 def test_wps_spatial_analog_process_small_sample():
-    client = client_for(
-        Service(processes=[SpatialAnalogProcess()], cfgfiles=CFG_FILE))
-    datainputs = (
-        "candidate=files@xlink:href={0};"
-        "target=files@xlink:href={1};"
-        "location={2},{3};"
-        "indices={4};"
-        "indices={5};"
-        "dist={6};"
-        "dateStartCandidate={7};"
-        "dateEndCandidate={8};"
-        "dateStartTarget={7};"
-        "dateEndTarget={8}"
-    ).format(
-        TESTDATA['indicators_small_nc'],
-        TESTDATA['indicators_medium_nc'],
-        -72,
-        46,
-        'meantemp',
-        'totalpr',
-        'kldiv',
-        '1970-01-01',
-        '1990-01-01')
+    client = client_for(Service(processes=[SpatialAnalogProcess()]))
+    datainputs = "candidate=files@xlink:href={c};" \
+                 "target=files@xlink:href={t};" \
+                 "location={lon},{lat};" \
+                 "indices={i1};indices={i2};" \
+                 "dist={dist};" \
+                 "dateStartCandidate={start};" \
+                 "dateEndCandidate={end};" \
+                 "dateStartTarget={start};" \
+                 "dateEndTarget={end}"\
+        .format(c=TESTDATA['indicators_small_nc'],
+                t=TESTDATA['indicators_medium_nc'],
+                lon=-72,
+                lat=46,
+                i1='meantemp',
+                i2='totalpr',
+                dist='seuclidean',
+                start=dt.datetime(1970, 1, 1),
+                end=dt.datetime(1990, 1, 1))
 
     resp = client.get(
         service='wps', request='execute', version='1.0.0',
         identifier='spatial_analog',
         datainputs=datainputs)
-
     assert_response_success(resp)
 
 
@@ -283,40 +275,30 @@ def test_wps_plot_spatial_analog():
     assert_response_success(resp)
 
 
-# @pytest.mark.slow
-@pytest.mark.skip(reason="test is hanging")
+@pytest.mark.slow
 def test_wps_spatial_analog_process():
     client = client_for(Service(processes=[SpatialAnalogProcess()]))
-    datainputs = "candidate=files@xlink:href={1};target=files@xlink:href={" \
-                 "0};location={2},{3};indices={4};indices={5};dist={6};dateStartCandidate={7};\
-                 dateEndCandidate={8};dateStartTarget={7};dateEndTarget={8}"\
-        .format(TESTDATA['indicators_small_nc'], TESTDATA['indicators_medium_nc'], -72, 46, 'meantemp',
-                'totalpr', 'seuclidean', '1970-01-01', '1990-01-01')
+    datainputs = "candidate=files@xlink:href={c};" \
+                 "target=files@xlink:href={t};" \
+                 "location={lon},{lat};" \
+                 "indices={i1};indices={i2};" \
+                 "dist={dist};" \
+                 "dateStartCandidate={start};" \
+                 "dateEndCandidate={end};" \
+                 "dateStartTarget={start};" \
+                 "dateEndTarget={end}"\
+        .format(t=TESTDATA['indicators_small_nc'],
+                c=TESTDATA['indicators_medium_nc'],
+                lon=-72,
+                lat=46,
+                i1='meantemp',
+                i2='totalpr',
+                dist='seuclidean',
+                start=dt.datetime(1970, 1, 1),
+                end=dt.datetime(1990, 1, 1))
 
     resp = client.get(
         service='wps', request='execute', version='1.0.0',
         identifier='spatial_analog',
         datainputs=datainputs)
     assert_response_success(resp)
-
-
-"""
-Testing notes
--------------
-If you run a test function in ipython and launch %debug, you can access the error
-message by going up the stack into the function and print resp.response
-
-
-birdy spatial_analog \
---candidate https://bovec.dkrz.de/download/wpsoutputs/flyingpigeon/\
-  8d7aed7a-72d9-11e7-9ab2-109836a7cf3a/FD_NAM-44_CCCma-CanESM2_historical_r1i1p1_SMHI-RCA4_v1_yr_20010101-20051231.nc  \
---target https://bovec.dkrz.de/download/wpsoutputs/flyingpigeon/\
-  ba4bd292-72d9-11e7-a663-109836a7cf3a/FD_NAM-44_CCCma-CanESM2_rcp85_r1i1p1_SMHI-RCA4_v1_yr_20510101-20551231.nc  \
---location=-100,54  \
---indices FD  \
---dist kldiv  \
---dateStartCandidate 2001-01-01  \
---dateEndCandidate 2006-12-31 \
---dateStartTarget 2051-01-01  \
---dateEndTarget 2056-12-31
-"""
