@@ -5,8 +5,6 @@ Author: David Huard (huard.david@ouranos.ca),
 """
 
 import logging
-import os
-import tempfile
 import datetime as dt
 
 import netCDF4 as nc
