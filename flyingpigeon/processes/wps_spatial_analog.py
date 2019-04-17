@@ -157,11 +157,9 @@ class SpatialAnalogProcess(Process):
 
     def _handler(self, request, response):
 
-        ocgis.env.DIR_OUTPUT = self.workdir   # , tempfile.mkdtemp(dir=os.getcwd())
+        ocgis.env.DIR_OUTPUT = self.workdir
         ocgis.env.OVERWRITE = True
         tic = dt.now()
-        # init_process_logger('log.txt')
-        # response.outputs['output_log'].file = 'log.txt'
 
         LOGGER.info('Start process')
         response.update_status('Execution started at : {}'.format(tic), 1)
@@ -189,7 +187,7 @@ class SpatialAnalogProcess(Process):
             LOGGER.error(msg)
             raise Exception(msg)
 
-        response.update_status('Input parameters ingested', 2)
+        response.update_status('Read input parameters', 2)
 
         ######################################
         # Process inputs
@@ -203,7 +201,7 @@ class SpatialAnalogProcess(Process):
             dateEndTarget = dt.strptime(dateEndTarget, '%Y-%m-%d')
 
         except Exception as ex:
-            msg = 'failed to process inputs {}'.format(ex)
+            msg = 'Failed to process inputs {}'.format(ex)
             LOGGER.error(msg)
             raise Exception(msg)
 
