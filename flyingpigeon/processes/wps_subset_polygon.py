@@ -1,10 +1,9 @@
-# TODO: Refactor this file to "wps_subset_polygon"
 import logging
 import traceback
 # from urlparse import urlparse
 from urllib.parse import urlparse
 
-from pywps import Process, LiteralInput, ComplexOutput, get_format
+from pywps import Process, LiteralInput, ComplexInput, ComplexOutput, get_format, FORMATS
 
 from flyingpigeon.handler_common import wfs_common
 from eggshell.nc.nc_utils import CookieNetCDFTransfer
@@ -14,16 +13,15 @@ LOGGER = logging.getLogger("PYWPS")
 json_format = get_format('JSON')
 
 
-# TODO: Refactor this to "SubsetpolygonProcess"
-class SubsetProcess(Process):
+class SubsetPolygonProcess(Process):
     """Subset a NetCDF file using WFS geometry."""
 
     def __init__(self):
         inputs = [
-            LiteralInput('resource',
+            ComplexInput('resource',
                          'NetCDF resource',
                          abstract='NetCDF files, can be OPEnDAP urls.',
-                         data_type='string',
+                         supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
                          max_occurs=1000),
             LiteralInput('typename',
                          'TypeName',
@@ -76,9 +74,9 @@ class SubsetProcess(Process):
                           as_reference=True,
                           supported_formats=[json_format])]
 
-        super(SubsetProcess, self).__init__(
+        super(SubsetPolygonProcess, self).__init__(
             self._handler,
-            identifier='subset',
+            identifier='subset-polygon',
             title='Subset',
             version='0.2',
             abstract=('Return the data for which grid cells intersect the '
@@ -95,7 +93,7 @@ class SubsetProcess(Process):
             opendap_hostnames = [
                 urlparse(r.data).hostname for r in request.inputs['resource']]
             with CookieNetCDFTransfer(request, opendap_hostnames):
-                result = wfs_common(request, response, mode='subsetter')
+                result = wfs_common(request, response, mode='subsetter', workdir=self.workdir)
             return result
         except Exception as ex:
             msg = 'Connection to OPeNDAP failed: {}'.format(ex)

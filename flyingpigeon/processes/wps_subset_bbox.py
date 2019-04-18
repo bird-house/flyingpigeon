@@ -3,7 +3,7 @@ import traceback
 # from urlparse import urlparse
 from urllib.parse import urlparse
 
-from pywps import Process, LiteralInput, ComplexOutput, get_format
+from pywps import Process, LiteralInput, ComplexInput, ComplexOutput, get_format, FORMATS
 
 from flyingpigeon.handler_common import wfs_common
 from eggshell.nc.nc_utils import CookieNetCDFTransfer
@@ -18,10 +18,10 @@ class SubsetBboxProcess(Process):
 
     def __init__(self):
         inputs = [
-            LiteralInput('resource',
+            ComplexInput('resource',
                          'NetCDF resource',
                          abstract='NetCDF files, can be OPEnDAP urls.',
-                         data_type='string',
+                         supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
                          max_occurs=1000),
             LiteralInput('lon0',
                          'Minimum longitude',
@@ -60,19 +60,24 @@ class SubsetBboxProcess(Process):
 
         outputs = [
             ComplexOutput('output',
-                          'JSON file with link to NetCDF outputs',
-                          abstract='JSON file with link to NetCDF outputs.',
+                          'NetCDF output for first resource file.',
                           as_reference=True,
-                          supported_formats=[json_format])]
+                          supported_formats=[FORMATS.NETCDF]),
+            ComplexOutput('metalink',
+                          'Metalink file with links to all NetCDF outputs.',
+                          as_reference=True,
+                          supported_formats=[FORMATS.META4])
+        ]
 
         super(SubsetBboxProcess, self).__init__(
             self._handler,
-            identifier='subset_bbox',
+            identifier='subset-bbox',
             title='Subset BBox',
             version='0.2',
             abstract=('Return the data for which grid cells intersect the '
                       'bounding box for each input dataset as well as'
-                      'the time range selected.'),
+                      'the time range selected. This implies that the centroid of'
+                      'a grid cell can be outside the bounding box.'),
             inputs=inputs,
             outputs=outputs,
             status_supported=True,
@@ -81,11 +86,11 @@ class SubsetBboxProcess(Process):
 
     def _handler(self, request, response):
         try:
-            opendap_hostnames = [
-                urlparse(r.data).hostname for r in request.inputs['resource']]
-            with CookieNetCDFTransfer(request, opendap_hostnames):
-                result = wfs_common(request, response, mode='subsetter',
-                                    spatial_mode='bbox')
+            #opendap_hostnames = [
+            #    urlparse(r.url).hostname for r in request.inputs['resource']]
+            #with CookieNetCDFTransfer(request, opendap_hostnames):
+            result = wfs_common(request, response, mode='subsetter', workdir=self.workdir,
+                                spatial_mode='bbox')
             return result
         except Exception as ex:
             msg = 'Connection to OPeNDAP failed: {}'.format(ex)

@@ -8,6 +8,7 @@ from pywps import Service
 from pywps.tests import client_for
 import numpy.ma as ma
 import netCDF4
+from flyingpigeon.processes import SubsetPolygonProcess
 
 try:
     from tests import test_wps_utils
@@ -24,8 +25,8 @@ class TestSubset(unittest.TestCase):
         else:
             self.config.read('flyingpigeon/tests/configtests.cfg')
         sys.path.append('/'.join(os.getcwd().split('/')[:-1]))
-        from flyingpigeon.processes import SubsetProcess
-        self.client = client_for(Service(processes=[SubsetProcess()]))
+
+        self.client = client_for(Service(processes=[SubsetPolygonProcess()]))
 
     def test_getcapabilities(self):
         config_dict = test_wps_utils.config_is_available(
