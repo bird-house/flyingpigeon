@@ -40,35 +40,12 @@ def make_geoms(feature, mosaic=False):
         for merge_geom in geoms[1:]:
             new_geom['geom'] = new_geom['geom'].union(merge_geom['geom'])
         new_geom['properties'] = {'bbox': feature['bbox']}
-        return new_geom
+        return [new_geom,]
 
     return geoms
 
 
-def opendap_or_netcdf_path(inputs):
-    """Return a generator returning for all input values an OPeNDAP url of the file path.
 
-    :param pywps.ComplexInput input: NetCDF resource.
-    :return: path to dataset.
-    """
-
-    for input in inputs:
-        url = input.url
-        if url and not url.startswith("file"):
-            r = requests.get(url + ".dds")
-            if r.status_code == 200 and r.content.decode().startswith("Dataset"):
-                path = url
-        else:
-            # Accessing the file property loads the data in the data property
-            # and writes it to disk
-            path = input.file
-
-            # We need to cleanup the data property, otherwise it will be
-            # written in the database and to the output status xml file
-            # and it can get too large.
-            input._data = ""
-
-        yield path
 
 
 class Subsetter(Process):

@@ -1,28 +1,22 @@
 import logging
-import traceback
-# from urlparse import urlparse
-from urllib.parse import urlparse
+import tempfile
+from pathlib import Path
 
-from pywps import Process, LiteralInput, ComplexInput, ComplexOutput, get_format, FORMATS
+from pywps import Process, LiteralInput, FORMATS
+from pywps.inout.outputs import MetaFile, MetaLink4
 
-from flyingpigeon.handler_common import wfs_common
-from eggshell.nc.nc_utils import CookieNetCDFTransfer
+from .subset_base import Subsetter, resource, variable, start, end, output, metalink
 
-LOGGER = logging.getLogger("PYWPS")
-
-json_format = get_format('JSON')
+import ocgis
+import ocgis.exc
 
 
-class SubsetPolygonProcess(Process):
+class SubsetPolygonProcess(Process, Subsetter):
     """Subset a NetCDF file using WFS geometry."""
 
     def __init__(self):
         inputs = [
-            ComplexInput('resource',
-                         'NetCDF resource',
-                         abstract='NetCDF files, can be OPEnDAP urls.',
-                         supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
-                         max_occurs=1000),
+            resource,
             LiteralInput('typename',
                          'TypeName',
                          abstract='Name of the layer in GeoServer.',
@@ -48,31 +42,9 @@ class SubsetPolygonProcess(Process):
                          data_type='boolean',
                          min_occurs=0,
                          default=False),
-            LiteralInput('initial_datetime',
-                         'Initial datetime',
-                         abstract='Initial datetime for temporal subsetting.',
-                         data_type='dateTime',
-                         min_occurs=0,
-                         max_occurs=1),
-            LiteralInput('final_datetime',
-                         'Final datetime',
-                         abstract='Final datetime for temporal subsetting.',
-                         data_type='dateTime',
-                         min_occurs=0,
-                         max_occurs=1),
-            LiteralInput('variable',
-                         'Variable',
-                         abstract=('Name of the variable in the NetCDF file.'
-                                   'Will be guessed if not provided.'),
-                         data_type='string',
-                         min_occurs=0)]
+            start, end, variable]
 
-        outputs = [
-            ComplexOutput('output',
-                          'JSON file with link to NetCDF outputs',
-                          abstract='JSON file with link to NetCDF outputs.',
-                          as_reference=True,
-                          supported_formats=[json_format])]
+        outputs = [output, metalink]
 
         super(SubsetPolygonProcess, self).__init__(
             self._handler,
@@ -89,13 +61,44 @@ class SubsetPolygonProcess(Process):
         )
 
     def _handler(self, request, response):
-        try:
-            opendap_hostnames = [
-                urlparse(r.data).hostname for r in request.inputs['resource']]
-            with CookieNetCDFTransfer(request, opendap_hostnames):
-                result = wfs_common(request, response, mode='subsetter', workdir=self.workdir)
-            return result
-        except Exception as ex:
-            msg = 'Connection to OPeNDAP failed: {}'.format(ex)
-            LOGGER.exception(msg)
-            raise Exception(traceback.format_exc())
+
+        geoms = self.parse_feature(request)
+        dr = self.parse_daterange(request)
+
+        ml = MetaLink4('subset', workdir=self.workdir)
+
+        for res in self.parse_resources(request):
+            variables = self.parse_variable(request, res)
+
+            for geom in geoms:
+                prefix = Path(res).stem
+                if 'featuresids' in request.inputs:
+                    prefix += "_feature"
+
+                rd = ocgis.RequestDataset(res, variables)
+
+                try:
+                    ops = ocgis.OcgOperations(
+                        dataset=rd, geom=geom['geom'],
+                        spatial_operation='clip', aggregate=True,
+                        time_range=dr, output_format='nc',
+                        interpolate_spatial_bounds=True,
+                        prefix=prefix, dir_output=tempfile.mkdtemp(dir=self.workdir))
+
+                    out = ops.execute()
+
+                    mf = MetaFile(prefix, fmt=FORMATS.NETCDF)
+                    mf.file = out
+                    ml.append(mf)
+
+                except ocgis.exc.ExtentError:
+                    continue
+
+        response.outputs['output'].file = ml.files[0].file
+        response.outputs['metalink'].data = ml.xml
+        response.update_status("Completed", 100)
+
+        return response
+
+
+# print(etree.tostring(etree.fromstring(s.encode()), pretty_print=True).decode())

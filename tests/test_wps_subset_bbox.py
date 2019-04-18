@@ -29,11 +29,11 @@ def test_wps_subset_bbox():
     check_bnds(ds['lat_bnds'], 2, 4)
     check_bnds(ds['lon_bnds'], 3, 5)
 
-    m = out['metalink']
+    assert 'metalink' in out
+
 
 def check_bnds(bnds, low, high):
     """Assert that bounds are at least partially within low and high."""
     for b in bnds:
         assert b[1] > low
         assert b[0] < high
-

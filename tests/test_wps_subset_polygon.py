@@ -1,31 +1,34 @@
-import pytest
-
 from pywps import Service
 from pywps.tests import client_for, assert_response_success
 
-from .common import get_output, CFG_FILE
+from .common import get_output, TESTDATA, CFG_FILE
 from flyingpigeon.processes import SubsetPolygonProcess
 import xarray as xr
-import numpy as np
+import datetime as dt
 
 
-def test_wps_xclim_indices(tas_data_set):
+def test_wps_xclim_indices():
     client = client_for(Service(processes=[SubsetPolygonProcess()], cfgfiles=CFG_FILE))
 
     datainputs = "resource=files@xlink:href=file://{fn};" \
-                 "lat0={lat0};" \
-                 "lon0={lon0};" \
-                 "lat1={lat1};" \
-                 "lon1={lon1};" \
-                 "y0={y0};" \
-                 "y1={y1};".format(fn=tas_data_set, lat0=2., lon0=3., lat1=4, lon1=5, y0=2000, y1=2003)
+                 "typename=public:{tn};" \
+                 "featureids={tn}.{fid};" \
+                 "geoserver={geoserver};" \
+                 "start={start};" \
+                 "end={end};" \
+        .format(fn=TESTDATA['cmip5_tasmax_2006_nc'],
+                tn='global_admin_boundaries',
+                fid=1,
+                geoserver='https://pavics.ouranos.ca/geoserver/wfs',
+                start=dt.datetime(2006, 1, 1),
+                end=dt.datetime(2006, 6, 1))
+
 
     resp = client.get(
-        "?service=WPS&request=Execute&version=1.0.0&identifier=subset_bbox&datainputs={}".format(
+        "?service=WPS&request=Execute&version=1.0.0&identifier=subset-polygon&datainputs={}".format(
             datainputs))
 
     assert_response_success(resp)
     out = get_output(resp.xml)
     ds = xr.open_dataset(out['output'][6:])
-    np.testing.assert_array_equal(ds.lat, [2, 3, 4])
-    np.testing.assert_array_equal(ds.lon, [3, 4])
+
