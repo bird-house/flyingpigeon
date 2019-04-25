@@ -72,11 +72,8 @@ def reshape_sample(x, y):
     if y.shape[0] == 1:
         y = y.T
 
-    nx, dx = x.shape
-    ny, dy = y.shape
-
-    # Check the arrays have the same dimension.
-    assert (dx == dy)
+    if x.shape[1] != y.shape[1]:
+        raise AttributeError("Shape mismatch")
 
     return x, y
 
@@ -141,22 +138,6 @@ def seuclidean(x, y):
     return spatial.distance.seuclidean(mx, my, x.var(0, ddof=1))
 
 
-"""
-I'm wondering if there is value in writing a generator version of these
-functions, such as the example below, to optimize computations in the case
-multiple candidate samples are compared to the same reference sample.
-
-def seuclidean_gen(x, y):
-    mx = x.mean(0)
-
-    for vec in y:
-        my = vec.mean(0)
-        yield spatial.distance.seuclidean(mx, my, x.var(0, ddof=1))
-
-seuclidean_gen.__doc__ = seuclidean.__doc__
-"""
-
-
 def nearest_neighbor(x, y):
     """
     Compute a dissimilarity metric based on the number of points in the
@@ -182,12 +163,12 @@ def nearest_neighbor(x, y):
     x, y = reshape_sample(x, y)
     x, y = standardize(x, y)
 
-    nx, dx = x.shape
+    nx, _ = x.shape
 
     # Pool the samples and find the nearest neighbours
     xy = np.vstack([x, y])
     tree = KDTree(xy)
-    r, ind = tree.query(xy, k=2, eps=0, p=2, n_jobs=2)
+    _, ind = tree.query(xy, k=2, eps=0, p=2, n_jobs=2)
 
     # Identify points whose neighbors are from the same sample
     same = ~np.logical_xor(*(ind < nx).T)
@@ -259,7 +240,7 @@ def skezely_rizzo(x, y):
     """
     raise NotImplementedError
 
-    x, y = reshape_sample(x, y)
+    # x, y = reshape_sample(x, y)
     # nx, d = x.shape
     # ny, d = y.shape
     #
@@ -310,8 +291,8 @@ def friedman_rafsky(x, y):
     from scipy.sparse.csgraph import minimum_spanning_tree
 
     x, y = reshape_sample(x, y)
-    nx, d = x.shape
-    ny, d = y.shape
+    nx, _ = x.shape
+    ny, _ = y.shape
     n = nx + ny
 
     xy = np.vstack([x, y])
@@ -443,7 +424,8 @@ def kldiv(x, y, k=1):
     ny, d = y.shape
 
     # Limit the number of dimensions to 10, too slow otherwise.
-    assert (d < 10)
+    if d > 10:
+        raise ValueError("Too many dimensions: {}.".format(d))
 
     # Not enough data to draw conclusions.
     if nx < 5 or ny < 5:
@@ -456,8 +438,8 @@ def kldiv(x, y, k=1):
     # Get the k'th nearest neighbour from each points in x for both x and y.
     # We get the values for K + 1 to make sure the output is a 2D array.
     kmax = max(ka) + 1
-    r, indx = xtree.query(x, k=kmax, eps=0, p=2, n_jobs=2)
-    s, indy = ytree.query(x, k=kmax, eps=0, p=2, n_jobs=2)
+    r, _ = xtree.query(x, k=kmax, eps=0, p=2, n_jobs=2)
+    s, _ = ytree.query(x, k=kmax, eps=0, p=2, n_jobs=2)
 
     # There is a mistake in the paper. In Eq. 14, the right side misses a
     # negative sign on the first term of the right hand side.
