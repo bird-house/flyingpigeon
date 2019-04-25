@@ -150,16 +150,6 @@ class TestKS():
         aaeq(dm, 0.96667, 4)
 
 
-# ==================================================================== #
-#                       Analytical results
-# ==================================================================== #
-# def analytical_KLDiv(p, q):
-#     # TODO: This is not pep8 conform: E731 do not assign a lambda expression, use a def
-#     func = lambda x: p.pdf(x) * np.log(p.pdf(x) / q.pdf(x))
-#     a = 1E-5
-#     return integrate.quad(func, max(p.ppf(a), q.ppf(a)), min(p.isf(a), q.isf(a)))[0]
-# ==================================================================== #
-
 def analytical_KLDiv(p, q):
     """Return the Kullback-Leibler divergence between two distributions.
 
@@ -197,7 +187,7 @@ class TestKLDIV:
 
         aaeq(re, ra, 1)
 
-    def accuracy_vs_kth(self, N=100, trials=100):
+    def accuracy_vs_kth(self, n=100, trials=100):
         """Evalute the accuracy of the algorithm as a function of k.
 
         Parameters
@@ -219,7 +209,7 @@ class TestKLDIV:
 
         out = []
         for n in range(trials):
-            out.append(dd.kldiv(p.rvs(N), q.rvs(N), k))
+            out.append(dd.kldiv(p.rvs(n), q.rvs(n), k))
         out = np.array(out)
 
         # Compare with analytical value
@@ -230,7 +220,7 @@ class TestKLDIV:
 
     #
     def check_accuracy(self):
-        m, s = self.accuracy_vs_kth(N=500, trials=300)
+        m, _ = self.accuracy_vs_kth(n=500, trials=300)
         aaeq(np.mean(m[0:2]), 0, 2)
 
     #
@@ -240,16 +230,16 @@ class TestKLDIV:
 
         ra = analytical_KLDiv(p, q)
 
-        N = 6000
+        n = 6000
         # Same sample size for x and y
-        re = [dd.kldiv(p.rvs(N), q.rvs(N)) for i in range(30)]
+        re = [dd.kldiv(p.rvs(n), q.rvs(n)) for i in range(30)]
         aaeq(np.mean(re), ra, 2)
 
         # Different sample sizes
-        re = [dd.kldiv(p.rvs(N * 2), q.rvs(N)) for i in range(30)]
+        re = [dd.kldiv(p.rvs(n * 2), q.rvs(n)) for i in range(30)]
         aaeq(np.mean(re), ra, 2)
 
-        re = [dd.kldiv(p.rvs(N), q.rvs(N * 2)) for i in range(30)]
+        re = [dd.kldiv(p.rvs(n), q.rvs(n * 2)) for i in range(30)]
         aaeq(np.mean(re), ra, 2)
 
     #
@@ -257,10 +247,10 @@ class TestKLDIV:
         """Compare the results to the figure 2 in the paper."""
         from numpy.random import normal, multivariate_normal
 
-        N = 30000
-        p = normal(0, 1, size=(N, 2))
+        n = 30000
+        p = normal(0, 1, size=(n, 2))
         np.random.seed(1)
-        q = multivariate_normal([.5, -.5], [[.5, .1], [.1, .3]], size=N)
+        q = multivariate_normal([.5, -.5], [[.5, .1], [.1, .3]], size=n)
 
         aaeq(dd.kldiv(p, q), 1.39, 1)
         aaeq(dd.kldiv(q, p), 0.62, 1)

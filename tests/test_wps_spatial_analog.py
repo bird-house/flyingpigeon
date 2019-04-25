@@ -9,7 +9,7 @@ import datetime as dt
 from shapely.geometry import Point
 
 import ocgis
-from ocgis import RequestDataset, OcgOperations
+from ocgis import OcgOperations
 from ocgis.collection.field import Field
 from ocgis.variable.base import Variable
 from ocgis.spatial.grid import Grid
@@ -21,8 +21,6 @@ from eggshell.utils import local_path
 from flyingpigeon.processes import SpatialAnalogProcess, PlotSpatialAnalogProcess
 from .common import TESTDATA, client_for, CFG_FILE
 
-# pytestmark = pytest.mark.skipif(reason="segmentation fault on next branch with snappy")
-
 
 class TestDissimilarity(TestBase):
     """Simple auto-generated test field."""
@@ -32,9 +30,9 @@ class TestDissimilarity(TestBase):
     def tearDown(self):
         super(self.__class__, self).tearDown()
 
-    def write_field_data(self, variable_name, dir='a', nrow=2, ncol=2):
+    def write_field_data(self, variable_name, path='a', nrow=2, ncol=2):
         path = self.get_temporary_file_path('{0}_{1}.nc'.format(
-            dir, variable_name))
+            path, variable_name))
         field = self.get_field(variable_name=variable_name, ntime=365,
                                nrow=nrow, ncol=ncol)
         field.write(path)
@@ -76,7 +74,7 @@ class TestDissimilarity(TestBase):
 
     def test1d(self):
         p1 = self.write_field_data('v1', ncol=1, nrow=1)
-        p3 = self.write_field_data('v1', dir='b')
+        p3 = self.write_field_data('v1', path='b')
 
         ref_range = [dt.datetime(2000, 3, 1), dt.datetime(2000, 3, 31)]
         reference = ocgis.RequestDataset(p1, time_range=ref_range).get()
@@ -93,8 +91,7 @@ class TestDissimilarity(TestBase):
         ret = ops.execute()
         actual_field = ret.get_element()
         actual_variables = get_variable_names(actual_field.data_variables)
-        self.assertEqual(actual_variables[0],
-                         ('dissimilarity'))
+        self.assertEqual(actual_variables[0], 'dissimilarity')
         dist = actual_field['dissimilarity']
         self.assertEqual(dist.shape, (1, 1, 2, 2))
 
@@ -108,8 +105,8 @@ class TestDissimilarity(TestBase):
 
         p1 = self.write_field_data('v1', ncol=1, nrow=1)
         p2 = self.write_field_data('v2', ncol=1, nrow=1)
-        p3 = self.write_field_data('v1', ncol=11, nrow=10, dir='c')
-        p4 = self.write_field_data('v2', ncol=11, nrow=10, dir='c')
+        p3 = self.write_field_data('v1', ncol=11, nrow=10, path='c')
+        p4 = self.write_field_data('v2', ncol=11, nrow=10, path='c')
 
         ref_range = [dt.datetime(2000, 3, 1), dt.datetime(2000, 3, 31)]
         ref = [ocgis.RequestDataset(p, time_range=ref_range) for p in [p1, p2]]
@@ -139,14 +136,14 @@ class TestDissimilarity(TestBase):
             axes.flat[i].set_title(dist)
 
         path = os.path.join(paths.outputpath, 'test_spatial_analog_metrics.png')
-        plt.savefig(path)
+        fig.savefig(path)
         plt.close()
 
     def test_simple(self):
         p1 = self.write_field_data('v1', ncol=1, nrow=1)
         p2 = self.write_field_data('v2', ncol=1, nrow=1)
-        p3 = self.write_field_data('v1', dir='b')
-        p4 = self.write_field_data('v2', dir='b')
+        p3 = self.write_field_data('v1', path='b')
+        p4 = self.write_field_data('v2', path='b')
 
         ref_range = [dt.datetime(2000, 3, 1), dt.datetime(2000, 3, 31)]
         ref = [ocgis.RequestDataset(p, time_range=ref_range) for p in [p1, p2]]
@@ -166,15 +163,13 @@ class TestDissimilarity(TestBase):
         ret = ops.execute()
         actual_field = ret.get_element()
         actual_variables = get_variable_names(actual_field.data_variables)
-        self.assertEqual(actual_variables[0],
-                         ('dissimilarity'))
+        self.assertEqual(actual_variables[0], 'dissimilarity')
         dist = actual_field['dissimilarity']
         self.assertEqual(dist.shape, (1, 1, 2, 2))
 
 
 def test_dissimilarity_op():
     """Test with a real file."""
-    import datetime as dt
     lon, lat = -72, 46
     g = Point(lon, lat)
 
@@ -193,15 +188,15 @@ def test_dissimilarity_op():
     # dataset. Below is the code to create the small dataset.
     # Running the test with the full file takes about 2 minutes, so we'll
     # crop the data to 4 grid cells.
-    """
-    op = ocgis.OcgOperations(dataset=crd, geom=g,
-                             select_nearest=False, search_radius_mult=1.75,
-                             output_format='nc',
-                             output_format_options={'data_model': 'NETCDF4'},
-                             dir_output='/tmp', prefix='indicators_small'
-                             )
-    res = op.execute()
-    """
+
+    # op = ocgis.OcgOperations(dataset=crd, geom=g,
+    #                          select_nearest=False, search_radius_mult=1.75,
+    #                          output_format='nc',
+    #                          output_format_options={'data_model': 'NETCDF4'},
+    #                          dir_output='/tmp', prefix='indicators_small'
+    #                          )
+    # res = op.execute()
+
     # Target fields
     # Extract values from one grid cell
     trd = ocgis.RequestDataset(tfn,
@@ -275,7 +270,7 @@ def test_wps_plot_spatial_analog():
     assert_response_success(resp)
 
 
-@pytest.mark.slow
+@pytest.mark.skip("slow")
 def test_wps_spatial_analog_process():
     client = client_for(Service(processes=[SpatialAnalogProcess()]))
     datainputs = "candidate=files@xlink:href={c};" \
