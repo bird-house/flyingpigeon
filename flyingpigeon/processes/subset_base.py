@@ -1,22 +1,14 @@
-import os
-import shutil
-import time
 import json
-import tempfile
-import traceback
-
-from pywps import Process, LiteralInput, ComplexInput, ComplexOutput, get_format, FORMATS
-from pywps import Process, get_format, configuration, FORMATS
-from pywps.inout.outputs import MetaFile, MetaLink4
+from pywps import LiteralInput, ComplexInput, ComplexOutput
+from pywps import configuration, FORMATS
 import owslib
 from owslib.wfs import WebFeatureService
 import ocgis
-from ocgis.exc import ExtentError
 import netCDF4 as nc
 from shapely.geometry import shape
 import requests
-from pathlib import Path
-from eggshell.nc.nc_utils import get_variable, opendap_or_download
+
+from eggshell.nc.nc_utils import get_variable
 
 resource = ComplexInput('resource',
                         'NetCDF resource',
@@ -59,7 +51,7 @@ def get_feature(url, typename, features):
     """Return geometry for WFS server."""
     wfs = WebFeatureService(url, version='2.0.0')
     resp = wfs.getfeature([typename], featureid=features,
-                           outputFormat='application/json')
+                          outputFormat='application/json')
     return json.loads(resp.read())
 
 
@@ -85,7 +77,6 @@ def make_geoms(feature, mosaic=False):
 
 
 class Subsetter:
-
 
     def parse_resources(self, request):
         """Return a generator returning for all input values an OPeNDAP url of the file path.
@@ -148,11 +139,11 @@ class Subsetter:
 
     def parse_bbox(self, request):
         return [request.inputs['lon0'][0].data,
-                 request.inputs['lat0'][0].data,
-                 request.inputs['lon1'][0].data,
-                 request.inputs['lat1'][0].data]
+                request.inputs['lat0'][0].data,
+                request.inputs['lon1'][0].data,
+                request.inputs['lat1'][0].data]
 
-    def parse_variable(self, request,  path):
+    def parse_variable(self, request, path):
         """Parse variables specified in request and confirm they are present in file.
         If no variable is specified in the request, guess the variables from the file content.
 
