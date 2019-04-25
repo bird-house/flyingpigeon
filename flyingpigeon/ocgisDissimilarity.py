@@ -39,7 +39,8 @@ class Dissimilarity(AbstractFieldFunction, AbstractParameterizedFunction):
            'kolmogorov_smirnov', 'friedman_rafsky', 'kldiv'}
             Name of the distance measure, or dissimilarity metric.
         """
-        assert (dist in self._potential_dist)
+        if dist not in self._potential_dist:
+            raise ValueError("`dist` should be one of {}".format(self._potential_dist))
 
         # Get the function from the module.
         metric = getattr(dd, dist)
@@ -50,7 +51,9 @@ class Dissimilarity(AbstractFieldFunction, AbstractParameterizedFunction):
 
         # Build the (n,d) array for the target sample.
         ref = np.array([target[c].get_value().squeeze() for c in candidate]).T
-        assert ref.ndim == 2
+
+        if ref.ndim != 2:
+            raise ValueError("`ref` array should be two-dimensional.")
 
         # Create the fill variable based on the first candidate variable.
         variable = self.field[candidate[0]]
