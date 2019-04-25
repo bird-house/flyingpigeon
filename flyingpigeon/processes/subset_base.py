@@ -12,7 +12,7 @@ from eggshell.nc.nc_utils import get_variable
 
 resource = ComplexInput('resource',
                         'NetCDF resource',
-                        abstract='NetCDF files, can be OPEnDAP urls.',
+                        abstract='NetCDF file or OPEnDAP url pointing to netCDF file.',
                         supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
                         max_occurs=1000)
 
