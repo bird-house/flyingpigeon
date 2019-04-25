@@ -20,8 +20,6 @@ Here comes a list of Processes already developed but currently not available in 
 +-------------------------------+---------------------+----------------------------+
 | Weather Regimes               |  BLACKSWAN          | Extreme Weather Analytics  |
 +-------------------------------+---------------------+----------------------------+
-| Spatial Analogs               |  Disabled           | Climate Monitoring         |
-+-------------------------------+---------------------+----------------------------+
 | Climate Indices               |  FINCH              | Climate Monitoring         |
 +-------------------------------+---------------------+----------------------------+
 | Species Distribution Models   |  Disabled           | Climate Impact             |
@@ -60,6 +58,10 @@ Plots are generated based on matplotlib. Appropriate functions are located in eg
 .. NOTE:: See the :ref:`plot_processes_api` for detailed options and data-IO.
 
 .. TODO:: include an example
+
+
+
+.. include:: spatial_analogs.rst
 
 
 .. _flyingpigeon_version_v1.0: https://flyingpigeon.readthedocs.io/en/1.1.0/descriptions/index.html

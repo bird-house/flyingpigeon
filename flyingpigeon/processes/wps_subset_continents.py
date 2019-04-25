@@ -7,7 +7,8 @@ from tempfile import mkstemp
 from flyingpigeon.subset import _CONTINENTS_
 from flyingpigeon.subset import clipping
 from eggshell.utils import archive, extract_archive
-from eggshell.utils import rename_complexinputs
+# from eggshell.utils import rename_complexinputs
+from os.path import abspath
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -37,7 +38,6 @@ class SubsetcontinentProcess(Process):
 
             ComplexInput('resource', 'Resource',
                          abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
-                         metadata=[Metadata('Info')],
                          min_occurs=1,
                          max_occurs=1000,
                          supported_formats=[
@@ -60,11 +60,6 @@ class SubsetcontinentProcess(Process):
                           supported_formats=[Format('application/x-netcdf')]
                           ),
 
-            # ComplexOutput('output_log', 'Logging information',
-            #               abstract="Collected logs during process run.",
-            #               as_reference=True,
-            #               supported_formats=[Format('text/plain')]
-            #               )
         ]
 
         super(SubsetcontinentProcess, self).__init__(
@@ -74,8 +69,8 @@ class SubsetcontinentProcess(Process):
             version="0.11",
             abstract="Return the data whose grid cells intersect the selected continents for each input dataset.",
             metadata=[
-                # Metadata('LSCE', 'http://www.lsce.ipsl.fr/en/index.php'),
-                Metadata('Doc', 'http://flyingpigeon.readthedocs.io/en/latest/'),
+                Metadata('Doc',
+                         'https://flyingpigeon.readthedocs.io/en/latest/processes_des.html#subset-processes'),
             ],
             inputs=inputs,
             outputs=outputs,
@@ -84,14 +79,13 @@ class SubsetcontinentProcess(Process):
         )
 
     def _handler(self, request, response):
-        # init_process_logger('log.txt') mkstemp(suffix='.log', prefix='tmp', dir=self.workdir, text=True)
-        # response.outputs['output_log'].file = mkstemp(suffix='.log', prefix='tmp', dir=self.workdir, text=True)
 
         # input files
         LOGGER.debug("url={}, mime_type={}".format(request.inputs['resource'][0].url,
                      request.inputs['resource'][0].data_format.mime_type))
         ncs = extract_archive(
-            resources=rename_complexinputs(request.inputs['resource']))
+            resources=[inpt.file for inpt in request.inputs['resource']],
+            dir_output=self.workdir)
         # mime_type=request.inputs['resource'][0].data_format.mime_type)
         # mosaic option
         # TODO: fix defaults in pywps 4.x
@@ -105,6 +99,7 @@ class SubsetcontinentProcess(Process):
         LOGGER.info('ncs: {}'.format(ncs))
         LOGGER.info('regions: {}'.format(regions))
         LOGGER.info('mosaic: {}'.format(mosaic))
+        LOGGER.info('flyingpigeon dir_output : {}'.format(abspath(self.workdir)))
 
         response.update_status("Arguments set for subset process", 0)
         LOGGER.debug('starting: regions={}, num_files={}'.format(len(regions), len(ncs)))
@@ -112,7 +107,7 @@ class SubsetcontinentProcess(Process):
         try:
             results = clipping(
                 resource=ncs,
-                polygons=regions,  # self.region.getValue(),
+                polygons=regions,
                 mosaic=mosaic,
                 spatial_wrapping='wrap',
                 # variable=variable,
@@ -131,7 +126,7 @@ class SubsetcontinentProcess(Process):
 
         # prepare tar file
         try:
-            tarf = archive(results)
+            tarf = archive(results, dir_output=self.workdir)
             LOGGER.info('Tar file prepared')
 
         except Exception as ex:

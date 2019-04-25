@@ -6,8 +6,8 @@ from pywps import Process, LiteralInput, FORMATS
 from pywps.inout.outputs import MetaFile, MetaLink4
 
 from .subset_base import Subsetter, resource, variable, start, end, output, metalink
+from pywps.app.Common import Metadata
 
-import ocgis
 import ocgis.exc
 
 LOGGER = logging.getLogger("PYWPS")
@@ -47,6 +47,11 @@ class SubsetBboxProcess(Subsetter, Process):
                       'bounding box for each input dataset as well as'
                       'the time range selected. This implies that the centroid of'
                       'a grid cell can be outside the bounding box.'),
+            metadata=[
+                Metadata('Doc',
+                         'https://flyingpigeon.readthedocs.io/en/latest/processes_des.html#subset-processes'),
+            ],
+
             inputs=inputs,
             outputs=outputs,
             status_supported=True,

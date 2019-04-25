@@ -58,10 +58,21 @@ Sub-setting is performed with ocgis. Appropriate functions are located in eggshe
 Plot Timeseries API
 -------------------
 
-
 .. autoprocess:: flyingpigeon.processes.wps_plot_timeseries.PlottimeseriesProcess
   :docstring:
   :skiplines: 1
 
 |
 |
+
+
+Spatial Analogs:
+----------------
+
+.. autoprocess:: flyingpigeon.processes.wps_spatial_analog.SpatialAnalogProcess
+  :docstring:
+  :skiplines: 1
+
+.. autoprocess:: flyingpigeon.processes.wps_map_spatial_analog.MapSpatialAnalogProcess
+  :docstring:
+  :skiplines: 1

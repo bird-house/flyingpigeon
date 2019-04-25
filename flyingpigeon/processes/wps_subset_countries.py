@@ -6,7 +6,7 @@ from pywps.app.Common import Metadata
 from flyingpigeon.subset import clipping
 from flyingpigeon.subset import countries
 from eggshell.utils import archive, extract_archive
-from eggshell.utils import rename_complexinputs
+# from eggshell.utils import rename_complexinputs
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -40,7 +40,6 @@ class SubsetcountryProcess(Process):
 
             ComplexInput('resource', 'Resource',
                          abstract='NetCDF Files or archive (tar/zip) containing NetCDF files.',
-                         metadata=[Metadata('Info')],
                          min_occurs=1,
                          max_occurs=1000,
                          supported_formats=[
@@ -77,8 +76,7 @@ class SubsetcountryProcess(Process):
             version="0.11",
             abstract="Return the data whose grid cells intersect the selected countries for each input dataset.",
             metadata=[
-                Metadata('LSCE', 'http://www.lsce.ipsl.fr/en/index.php'),
-                Metadata('Doc', 'http://flyingpigeon.readthedocs.io/en/latest/'),
+                Metadata('Doc', 'https://flyingpigeon.readthedocs.io/en/latest/processes_des.html#subset-processes'),
             ],
             inputs=inputs,
             outputs=outputs,
@@ -86,8 +84,7 @@ class SubsetcountryProcess(Process):
             store_supported=True,
         )
 
-    @staticmethod
-    def _handler(request, response):
+    def _handler(self, request, response):
         # init_process_logger('log.txt')
         # response.outputs['output_log'].file = 'log.txt'
 
@@ -96,7 +93,8 @@ class SubsetcountryProcess(Process):
             request.inputs['resource'][0].url,
             request.inputs['resource'][0].data_format.mime_type))
         ncs = extract_archive(
-            resources=rename_complexinputs(request.inputs['resource']))
+            resources=[inpt.file for inpt in request.inputs['resource']],
+            dir_output=self.workdir)
         # mime_type=request.inputs['resource'][0].data_format.mime_type)
         # mosaic option
         # TODO: fix defaults in pywps 4.x
@@ -121,7 +119,7 @@ class SubsetcountryProcess(Process):
                 mosaic=mosaic,
                 spatial_wrapping='wrap',
                 # variable=variable,
-                # dir_output=os.path.abspath(os.curdir),
+                dir_output=self.workdir,
                 # dimension_map=dimension_map,
             )
             LOGGER.info('results %s' % results)
@@ -135,7 +133,7 @@ class SubsetcountryProcess(Process):
 
         # prepare tar file
         try:
-            tarf = archive(results)
+            tarf = archive(results, dir_output=self.workdir)
             LOGGER.info('Tar file prepared.')
         except Exception as ex:
             msg = 'Tar file preparation failed: {}'.format(str(ex))
