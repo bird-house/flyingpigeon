@@ -6,6 +6,7 @@ from flyingpigeon.processes import SubsetWFSPolygonProcess
 import datetime as dt
 import netCDF4 as nc
 
+
 def test_wps_xclim_indices():
     client = client_for(Service(processes=[SubsetWFSPolygonProcess()], cfgfiles=CFG_FILE))
 
@@ -22,12 +23,10 @@ def test_wps_xclim_indices():
                 start=dt.datetime(2006, 1, 1),
                 end=dt.datetime(2006, 6, 1))
 
-
     resp = client.get(
         "?service=WPS&request=Execute&version=1.0.0&identifier=subset-wfs-polygon&datainputs={}".format(
             datainputs))
 
     assert_response_success(resp)
     out = get_output(resp.xml)
-    ds = nc.Dataset(out['output'][6:])
-
+    nc.Dataset(out['output'][6:])
