@@ -8,7 +8,7 @@ WPS, OWS = get_ElementMakerForVersion(VERSION)
 xpath_ns = get_xpath_ns(VERSION)
 
 TESTS_HOME = os.path.abspath(os.path.dirname(__file__))
-# CFG_FILE = os.path.join(TESTS_HOME, 'test.cfg')
+CFG_FILE = os.path.join(TESTS_HOME, 'test.cfg')
 
 TESTDATA = {
     'cmip5_tasmax_2006_nc': "file://{0}".format(os.path.join(
@@ -56,6 +56,21 @@ TESTDATA = {
         'testdata',
         'cordex',
         'tasmax_EUR-44_MPI-M-MPI-ESM-LR_rcp45_r1i1p1_MPI-CSC-REMO2009_v1_mon_200701-200712.nc')),
+    'indicators_small_nc': "file://{0}".format(os.path.join(
+        TESTS_HOME,
+        'testdata',
+        'spatial_analog',
+        'indicators_small.nc')),
+    'indicators_medium_nc': "file://{0}".format(os.path.join(
+        TESTS_HOME,
+        'testdata',
+        'spatial_analog',
+        'indicators_medium.nc')),
+    'dissimilarity_nc': "file://{0}".format(os.path.join(
+        TESTS_HOME,
+        'testdata',
+        'spatial_analog',
+        'dissimilarity.nc')),
 }
 
 

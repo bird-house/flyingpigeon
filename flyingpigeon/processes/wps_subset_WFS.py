@@ -5,6 +5,7 @@ import logging
 from flyingpigeon.handler_common import wfs_common
 from eggshell.nc.nc_utils import CookieNetCDFTransfer
 from pywps import Process, LiteralInput, ComplexOutput, get_format
+from pywps.app.Common import Metadata
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -64,6 +65,9 @@ class SubsetWFSProcess(Process):
             version='0.1',
             abstract=('Return the data for which grid cells intersect the '
                       'selected polygon for each input dataset.'),
+            metadata=[
+                Metadata('Doc', 'https://flyingpigeon.readthedocs.io/en/latest/processes_des.html#subset-processes'),
+            ],
             inputs=inputs,
             outputs=outputs,
             status_supported=True,
@@ -75,7 +79,7 @@ class SubsetWFSProcess(Process):
             opendap_hostnames = [
                 urlparse(r.data).hostname for r in request.inputs['resource']]
             with CookieNetCDFTransfer(request, opendap_hostnames):
-                result = wfs_common(request, response, mode='subsetter')
+                result = wfs_common(request, response, mode='subsetter', dir_output=self.workdir)
             return result
         except Exception as ex:
             msg = 'Connection to OPeNDAP failed: {}'.format(ex)

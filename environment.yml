@@ -4,7 +4,7 @@ channels:
 - conda-forge
 - defaults
 dependencies:
-- pywps=4.1
+- pywps=4.2
 - jinja2
 - click
 - psutil
@@ -15,11 +15,17 @@ dependencies:
 - numpy
 # - ocgis  # moved to pip
 - pandas
+- scikit-learn # for spatial_analog
 - gdal=2.4
 ##############
 # plotting
 - matplotlib
 - cartopy
+##############
+# tests
+- pytest
+- pytest-flake8
+- nose
 ##############
 # pip install
 - pip:

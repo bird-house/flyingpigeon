@@ -7,6 +7,7 @@ from pywps import Process, LiteralInput, ComplexOutput, get_format
 
 from flyingpigeon.handler_common import wfs_common
 from eggshell.nc.nc_utils import CookieNetCDFTransfer
+from pywps.app.Common import Metadata
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -73,6 +74,10 @@ class SubsetBboxProcess(Process):
             abstract=('Return the data for which grid cells intersect the '
                       'bounding box for each input dataset as well as'
                       'the time range selected.'),
+            metadata=[
+                Metadata('Doc',
+                         'https://flyingpigeon.readthedocs.io/en/latest/processes_des.html#subset-processes'),
+            ],
             inputs=inputs,
             outputs=outputs,
             status_supported=True,
@@ -85,7 +90,7 @@ class SubsetBboxProcess(Process):
                 urlparse(r.data).hostname for r in request.inputs['resource']]
             with CookieNetCDFTransfer(request, opendap_hostnames):
                 result = wfs_common(request, response, mode='subsetter',
-                                    spatial_mode='bbox')
+                                    spatial_mode='bbox', dir_output=self.workdir)
             return result
         except Exception as ex:
             msg = 'Connection to OPeNDAP failed: {}'.format(ex)

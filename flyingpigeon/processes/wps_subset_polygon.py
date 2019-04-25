@@ -5,6 +5,7 @@ import traceback
 from urllib.parse import urlparse
 
 from pywps import Process, LiteralInput, ComplexOutput, get_format
+from pywps.app.Common import Metadata
 
 from flyingpigeon.handler_common import wfs_common
 from eggshell.nc.nc_utils import CookieNetCDFTransfer
@@ -15,7 +16,7 @@ json_format = get_format('JSON')
 
 
 # TODO: Refactor this to "SubsetpolygonProcess"
-class SubsetProcess(Process):
+class SubsetpolygonProcess(Process):
     """Subset a NetCDF file using WFS geometry."""
 
     def __init__(self):
@@ -76,14 +77,17 @@ class SubsetProcess(Process):
                           as_reference=True,
                           supported_formats=[json_format])]
 
-        super(SubsetProcess, self).__init__(
+        super(SubsetpolygonProcess, self).__init__(
             self._handler,
-            identifier='subset',
+            identifier='subset_polygon',
             title='Subset',
             version='0.2',
             abstract=('Return the data for which grid cells intersect the '
                       'selected polygon for each input dataset as well as'
                       'the time range selected.'),
+            metadata=[
+                Metadata('Doc', 'https://flyingpigeon.readthedocs.io/en/latest/processes_des.html#subset-processes'),
+            ],
             inputs=inputs,
             outputs=outputs,
             status_supported=True,
@@ -95,7 +99,7 @@ class SubsetProcess(Process):
             opendap_hostnames = [
                 urlparse(r.data).hostname for r in request.inputs['resource']]
             with CookieNetCDFTransfer(request, opendap_hostnames):
-                result = wfs_common(request, response, mode='subsetter')
+                result = wfs_common(request, response, mode='subsetter', dir_output=self.workdir)
             return result
         except Exception as ex:
             msg = 'Connection to OPeNDAP failed: {}'.format(ex)

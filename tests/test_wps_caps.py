@@ -13,10 +13,12 @@ def test_wps_caps():
                             '/wps:Process'
                             '/ows:Identifier')
     assert sorted(names.split()) == [
+        'plot_spatial_analog',
         'plot_timeseries',
         'pointinspection',
-        'subset',
+        'spatial_analog',
         'subset_WFS',
         'subset_bbox',
         'subset_continents',
-        'subset_countries']
+        'subset_countries',
+        'subset_polygon', ]

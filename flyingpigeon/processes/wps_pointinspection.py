@@ -1,4 +1,5 @@
 import logging
+from os.path import join
 
 from numpy import savetxt, column_stack
 from pywps import ComplexInput, ComplexOutput
@@ -12,7 +13,7 @@ from eggshell.nc.ocg_utils import call
 from eggshell.nc.nc_utils import sort_by_filename, get_values, get_time
 
 from eggshell.utils import archive, extract_archive
-from eggshell.utils import rename_complexinputs
+# from eggshell.utils import rename_complexinputs
 
 
 LOGGER = logging.getLogger("PYWPS")
@@ -78,9 +79,9 @@ class PointinspectionProcess(Process):
     def _handler(self, request, response):
         # init_process_logger('log.txt')
         # response.outputs['output_log'].file = 'log.txt'
-
         ncs = extract_archive(
-            resources=rename_complexinputs(request.inputs['resource']))
+            resources=[inpt.file for inpt in request.inputs['resource']],
+            dir_output=self.workdir)
         LOGGER.info('ncs: {}'.format(ncs))
 
         coords = []
@@ -98,7 +99,7 @@ class PointinspectionProcess(Process):
                 times = get_time(ncs)
                 concat_vals = times
                 header = 'date_time'
-                filename = '{}.csv'.format(key)
+                filename = join(self.workdir, '{}.csv'.format(key))
                 filenames.append(filename)
 
                 for p in coords:
@@ -109,7 +110,7 @@ class PointinspectionProcess(Process):
                         point = Point(float(p[0]), float(p[1]))
 
                         # get the values
-                        timeseries = call(resource=ncs, geom=point, select_nearest=True)
+                        timeseries = call(resource=ncs, geom=point, select_nearest=True, dir_output=self.workdir)
                         vals = get_values(timeseries)
 
                         # concatenation of values
