@@ -19,4 +19,4 @@ def test_wps_caps():
         'subset-wfs-polygon',
         'subset_continents',
         'subset_countries',
-        ]
+    ]
