@@ -15,8 +15,8 @@ def test_wps_caps():
     assert sorted(names.split()) == [
         'plot_timeseries',
         'pointinspection',
-        'subset',
-        'subset_WFS',
-        'subset_bbox',
+        'subset-bbox',
+        'subset-wfs-polygon',
         'subset_continents',
-        'subset_countries']
+        'subset_countries',
+        ]

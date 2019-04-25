@@ -48,7 +48,7 @@ class SubsetWFSPolygonProcess(Process, Subsetter):
 
         super(SubsetWFSPolygonProcess, self).__init__(
             self._handler,
-            identifier='subset-polygon',
+            identifier='subset-wfs-polygon',
             title='Subset',
             version='0.2',
             abstract=('Return the data for which grid cells intersect the '
