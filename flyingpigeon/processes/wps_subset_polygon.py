@@ -11,7 +11,7 @@ import ocgis
 import ocgis.exc
 
 
-class SubsetPolygonProcess(Process, Subsetter):
+class SubsetWFSPolygonProcess(Process, Subsetter):
     """Subset a NetCDF file using WFS geometry."""
 
     def __init__(self):
@@ -46,7 +46,7 @@ class SubsetPolygonProcess(Process, Subsetter):
 
         outputs = [output, metalink]
 
-        super(SubsetPolygonProcess, self).__init__(
+        super(SubsetWFSPolygonProcess, self).__init__(
             self._handler,
             identifier='subset-polygon',
             title='Subset',
