@@ -40,7 +40,7 @@ class SubsetBboxProcess(Subsetter, Process):
 
         super(SubsetBboxProcess, self).__init__(
             self._handler,
-            identifier='subset-bbox',
+            identifier='subset_bbox',
             title='Subset netCDF file on bounding box',
             version='0.2',
             abstract=('Return the data for which grid cells intersect the '
