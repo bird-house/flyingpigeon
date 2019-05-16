@@ -15,8 +15,8 @@ def test_wps_caps():
         'plot_timeseries',
         'pointinspection',
         'spatial_analog',
-        'subset-bbox',
         'subset-wfs-polygon',
+        'subset_bbox',
         'subset_continents',
         'subset_countries',
     ]
