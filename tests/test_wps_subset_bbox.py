@@ -19,9 +19,10 @@ def test_wps_subset_bbox():
                  .format(fn=TESTDATA['cmip5_tasmax_2006_nc'], lat0=2., lon0=3., lat1=4., lon1=5.)
 
     resp = client.get(
-        "?service=WPS&request=Execute&version=1.0.0&identifier=subset-bbox&datainputs={}".format(
+        "?service=WPS&request=Execute&version=1.0.0&identifier=subset_bbox&datainputs={}".format(
             datainputs))
 
+    print(resp.get_data())
     assert_response_success(resp)
 
     out = get_output(resp.xml)
