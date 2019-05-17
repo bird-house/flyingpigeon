@@ -1,6 +1,4 @@
 from pywps import Service
-from pywps.tests import assert_response_success
-
 from .common import client_for
 from flyingpigeon.processes import processes
 
@@ -17,8 +15,8 @@ def test_wps_caps():
         'plot_timeseries',
         'pointinspection',
         'spatial_analog',
-        'subset_WFS',
+        'subset-wfs-polygon',
         'subset_bbox',
         'subset_continents',
         'subset_countries',
-        'subset_polygon', ]
+    ]
