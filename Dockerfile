@@ -1,7 +1,7 @@
 # vim:set ft=dockerfile:
 FROM continuumio/miniconda3
 MAINTAINER https://github.com/bird-house/flyingpigeon
-LABEL Description="Flyingpigeon WPS" Vendor="Birdhouse" Version="1.3.1"
+LABEL Description="Flyingpigeon WPS" Vendor="Birdhouse" Version="1.4.0"
 
 # Update Debian system
 RUN apt-get update && apt-get install -y \
@@ -25,7 +25,7 @@ RUN ["/bin/bash", "-c", "source activate wps && python setup.py develop"]
 # Start WPS service on port 8093 on 0.0.0.0
 EXPOSE 8093
 ENTRYPOINT ["/bin/bash", "-c"]
-CMD ["source activate wps && exec emu start -b 0.0.0.0 -config /opt/wps/etc/demo.cfg"]
+CMD ["source activate wps && exec flyingpigeon start -b 0.0.0.0 -c /opt/wps/etc/demo.cfg"]
 
 # docker build -t bird-house/flyingpigeon .
 # docker run -p 8093:8093 bird-house/flyingpigeon
