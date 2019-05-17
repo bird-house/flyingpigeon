@@ -4,6 +4,8 @@ channels:
 - conda-forge
 - defaults
 dependencies:
+- python=3
+- pip
 # - pywps=4.2
 - jinja2
 - click
@@ -11,7 +13,6 @@ dependencies:
 # - eggshell
 ##############
 # analytic
-- python=3
 - numpy
 # - ocgis  # moved to pip
 - pandas
