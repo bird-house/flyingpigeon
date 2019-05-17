@@ -23,6 +23,7 @@ help:
 	@echo "  install     to install $(APP_NAME) by running 'python setup.py develop'."
 	@echo "  start       to start $(APP_NAME) service as daemon (background process)."
 	@echo "  stop        to stop $(APP_NAME) service."
+	@echo "  restart     to restart $(APP_NAME) service."
 	@echo "  status      to show status of $(APP_NAME) service."
 	@echo "  clean       to remove *all* files that are not controlled by 'git'. WARNING: use it *only* if you know what you do!"
 	@echo "\nTesting targets:"
@@ -31,8 +32,10 @@ help:
 	@echo "  pep8        to run pep8 code style checks."
 	@echo "\nSphinx targets:"
 	@echo "  docs        to generate HTML documentation with Sphinx."
+	@echo "\nDeployment targets:"
+	@echo "  spec        to generate Conda spec file."
 
-## Anaconda targets
+## Conda targets
 
 .PHONY: check_conda
 check_conda:
@@ -50,6 +53,11 @@ envclean: check_conda
 	@echo "Removing conda env $(CONDA_ENV)"
 	@-"$(CONDA)" remove -n $(CONDA_ENV) --yes --all
 
+.PHONY: spec
+spec: check_conda
+	@echo "Updating conda environment specification file ..."
+	@-"$(CONDA)" list -n $(CONDA_ENV) --explicit > spec-file.txt
+
 ## Build targets
 
 .PHONY: bootstrap
@@ -59,7 +67,7 @@ bootstrap: check_conda conda_env bootstrap_dev
 .PHONY: bootstrap_dev
 bootstrap_dev:
 	@echo "Installing development requirements for tests and docs ..."
-	@-bash -c "$(CONDA) install -y -n $(CONDA_ENV) -c conda-forge pytest flake8 sphinx bumpversion"
+	@-bash -c "$(CONDA) install -y -n $(CONDA_ENV) pytest flake8 sphinx gunicorn psycopg2"
 	@-bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV) && pip install -r requirements_dev.txt"
 
 .PHONY: install
@@ -77,6 +85,10 @@ start: check_conda
 stop: check_conda
 	@echo "Stopping application ..."
 	@-bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV) && $(APP_NAME) stop"
+
+.PHONY: restart
+restart: stop start
+	@echo "Restarting application ..."
 
 .PHONY: status
 status: check_conda
@@ -106,17 +118,17 @@ distclean: clean
 .PHONY: test
 test: check_conda
 	@echo "Running tests (skip slow and online tests) ..."
-	@-bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);pytest -v -m 'not slow and not online' tests/"
+	@bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);pytest -v -m 'not slow and not online'"
 
 .PHONY: testall
 testall: check_conda
 	@echo "Running all tests (including slow and online tests) ..."
-	@-bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV) && pytest -v tests/"
+	@bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV) && pytest -v"
 
 .PHONY: pep8
 pep8: check_conda
 	@echo "Running pep8 code style checks ..."
-	@-bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV) && flake8"
+	@bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV) && flake8"
 
 ##  Sphinx targets
 
