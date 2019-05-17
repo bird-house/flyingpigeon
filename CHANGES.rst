@@ -1,6 +1,14 @@
 Changes
 *******
 
+1.4.1 (2019-05-20)
+==================
+
+* Subset processes enabled (#274).
+* Point-inspection process enabled (#271).
+* Spatial-analog process enabled (#280).
+* Fixed docs build on RTD (#279).
+
 1.4.0 (2018-12-03)
 ==================
 
