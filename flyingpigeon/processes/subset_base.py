@@ -90,16 +90,16 @@ class Subsetter:
             if url and not url.startswith("file"):
                 r = requests.get(url + ".dds")
                 if r.status_code == 200 and r.content.decode().startswith("Dataset"):
-                    path = url
-            else:
-                # Accessing the file property loads the data in the data property
-                # and writes it to disk
-                path = input.file
+                    yield path
 
-                # We need to cleanup the data property, otherwise it will be
-                # written in the database and to the output status xml file
-                # and it can get too large.
-                input._data = ""
+            # Accessing the file property loads the data in the data property
+            # and writes it to disk
+            path = input.file
+
+            # We need to cleanup the data property, otherwise it will be
+            # written in the database and to the output status xml file
+            # and it can get too large.
+            input._data = ""
 
             yield path
 
