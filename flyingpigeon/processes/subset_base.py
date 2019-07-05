@@ -81,7 +81,7 @@ class Subsetter:
     def parse_resources(self, request):
         """Return a generator returning for all input values an OPeNDAP url of the file path.
 
-        :param [pywps.ComplexInput,] resources: List of NetCDF resources.
+        :param request: WPS request object.
         :return: path to dataset.
         """
 
@@ -90,7 +90,7 @@ class Subsetter:
             if url and not url.startswith("file"):
                 r = requests.get(url + ".dds")
                 if r.status_code == 200 and r.content.decode().startswith("Dataset"):
-                    yield path
+                    yield url
 
             # Accessing the file property loads the data in the data property
             # and writes it to disk
