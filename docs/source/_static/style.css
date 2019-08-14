@@ -1,0 +1,24 @@
+@import url("theme.css");
+
+.wy-side-nav-search>a img.logo,
+.wy-side-nav-search .wy-dropdown>a img.logo {
+  width: 12rem;
+}
+
+/* Logo and search background color */
+.wy-side-nav-search {
+  background-color: #eee;
+}
+
+/* The color of the Flyingpigeon text above the logo. */
+.wy-side-nav-search>a{
+  color: #2f3974;
+}
+
+.wy-side-nav-search>div.version {
+  display: none;
+}
+
+.wy-nav-top {
+  background-color: #555;
+}
