@@ -25,7 +25,7 @@ Sub-setting is performed with ocgis. Appropriate functions are located in eggshe
 |
 |
 
-.. autoprocess:: flyingpigeon.processes.wps_subset.SubsetProcess
+.. autoprocess:: flyingpigeon.processes.wps_subset_wfs_polygon.SubsetWFSPolygonProcess
    :docstring:
    :skiplines: 1
 
@@ -65,14 +65,15 @@ Plot Timeseries API
 |
 |
 
+.. _analog_processes_api:
 
-Spatial Analogs:
-----------------
+Spatial Analogs API
+-------------------
 
 .. autoprocess:: flyingpigeon.processes.wps_spatial_analog.SpatialAnalogProcess
   :docstring:
   :skiplines: 1
 
-.. autoprocess:: flyingpigeon.processes.wps_map_spatial_analog.MapSpatialAnalogProcess
+.. autoprocess:: flyingpigeon.processes.wps_plot_spatial_analog.PlotSpatialAnalogProcess
   :docstring:
   :skiplines: 1
