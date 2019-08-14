@@ -1,16 +1,4 @@
-==============================
-Advanced climate data analysis
-==============================
-
-
-.. contents::
-   :local:
-   :depth: 3
-
-
-
-
-Spatial analogues
+Spatial Analogues
 -----------------
 
 Spatial analogues are maps showing which areas have a present-day climate that is
