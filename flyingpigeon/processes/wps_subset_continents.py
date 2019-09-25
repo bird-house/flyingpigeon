@@ -2,7 +2,6 @@ import logging
 
 from pywps import ComplexInput, ComplexOutput, Format, LiteralInput, Process
 from pywps.app.Common import Metadata
-from tempfile import mkstemp
 
 from flyingpigeon.subset import _CONTINENTS_
 from flyingpigeon.subset import clipping

@@ -1,6 +1,3 @@
-from tempfile import mkstemp
-import os
-
 from eggshell.nc.ocg_utils import call, get_variable
 from eggshell.nc.nc_utils import sort_by_filename
 from ocgis import env, ShpCabinetIterator, ShpCabinet

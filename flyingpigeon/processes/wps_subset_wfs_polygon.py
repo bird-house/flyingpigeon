@@ -1,4 +1,3 @@
-import logging
 import tempfile
 from pathlib import Path
 
