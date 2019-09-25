@@ -52,7 +52,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Flyingpigeon'
-copyright = u"2018, Nils Hempelmann"
+copyright = u"2019, Nils Hempelmann"
 author = u"Nils Hempelmann"
 
 # The version info for the project you're documenting, acts as replacement
@@ -87,15 +87,7 @@ todo_include_todos = False
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-# html_theme = 'alabaster'
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-
-if on_rtd:
-    html_theme = 'default'
-else:  # only import and set the theme if we're building docs locally
-    import sphinx_rtd_theme
-    html_theme = 'sphinx_rtd_theme'
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+html_theme = 'alabaster'
 
 # Theme options are theme-specific and customize the look and feel of a
 # theme further.  For a list of options available for each theme, see the
