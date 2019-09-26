@@ -14,7 +14,7 @@ dependencies:
 ##############
 # analytic
 - numpy
-# - ocgis  # moved to pip
+# - ocgis  # moved to pip (dependent eggshell ?)
 - pandas
 - scikit-learn # for spatial_analog
 - gdal=2.4
