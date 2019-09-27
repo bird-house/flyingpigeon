@@ -6,7 +6,7 @@ channels:
 dependencies:
 - python=3
 - pip
-# - pywps=4.2
+- pywps=4.2.2
 - jinja2
 - click
 - psutil
@@ -32,5 +32,4 @@ dependencies:
 - pip:
   - -e git+https://github.com/bird-house/eggshell.git#egg=eggshell
   - -e git+https://github.com/NCPP/ocgis#egg=owslib
-  - -e git+https://github.com/geopython/pywps.git#egg=pywps
   - sphinx_rtd_theme
