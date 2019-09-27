@@ -2,8 +2,6 @@
 
 """Top-level package for Flyingpigeon."""
 
-from .wsgi import application
+from .__version__ import __author__, __email__, __version__  # noqa: F401
 
-__author__ = """Nils Hempelmann"""
-__email__ = 'info@nilshempelmann.de'
-__version__ = '1.4.1'
+from .wsgi import application  # noqa: F401

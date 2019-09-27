@@ -5,7 +5,6 @@ from pywps.tests import assert_response_success
 
 from flyingpigeon.processes import SubsetcontinentProcess
 from tests.common import TESTDATA, client_for, get_output, CFG_FILE
-import os
 
 
 datainputs_fmt = (

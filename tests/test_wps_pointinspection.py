@@ -3,7 +3,6 @@ from pywps.tests import assert_response_success
 
 from flyingpigeon.processes import PointinspectionProcess
 from .common import TESTDATA, client_for, CFG_FILE
-import os
 
 
 datainputs_fmt = (
