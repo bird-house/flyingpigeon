@@ -1,6 +1,5 @@
 name: flyingpigeon
 channels:
-- birdhouse
 - conda-forge
 - defaults
 dependencies:
@@ -10,6 +9,7 @@ dependencies:
 - jinja2
 - click
 - psutil
+- psycopg2
 # - eggshell
 ##############
 # analytic
