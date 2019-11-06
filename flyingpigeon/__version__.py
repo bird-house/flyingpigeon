@@ -6,4 +6,4 @@
 
 __author__ = """Nils Hempelmann"""
 __email__ = 'info@nilshempelmann.de'
-__version__ = '1.4.1'
+__version__ = '1.5.0'
