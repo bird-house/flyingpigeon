@@ -1,6 +1,21 @@
 Changes
 *******
 
+1.5.1 (2019-11-11)
+==================
+* Add Postgres library to docker image.
+* Pin PyWPS 4.2.3.
+
+1.5 (2019-10-01)
+==================
+* Update from cookiecutter template.
+* Pin PyWPS 4.2.2.
+
+1.4.2 (2019-09-18)
+==================
+* Fixed the logic of the nc resource handler in subset (#288).
+* Various documentation fixes.
+
 1.4.1 (2019-05-20)
 ==================
 
