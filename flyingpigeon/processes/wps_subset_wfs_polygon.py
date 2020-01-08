@@ -61,6 +61,7 @@ class SubsetWFSPolygonProcess(Process, Subsetter):
 
     def _handler(self, request, response):
 
+        # Gather geometries, aggregate if mosaic is True.
         geoms = self.parse_feature(request)
         dr = self.parse_daterange(request)
 
@@ -69,10 +70,9 @@ class SubsetWFSPolygonProcess(Process, Subsetter):
         for res in self.parse_resources(request):
             variables = self.parse_variable(request, res)
 
-            for geom in geoms:
+            for fid, geom in geoms.items():
                 prefix = Path(res).stem
-                if 'featuresids' in request.inputs:
-                    prefix += "_feature"
+                prefix += f"_{fid}"
 
                 rd = ocgis.RequestDataset(res, variables)
 

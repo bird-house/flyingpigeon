@@ -48,15 +48,51 @@ metalink = ComplexOutput('metalink',
 
 
 def get_feature(url, typename, features):
-    """Return geometry for WFS server."""
+    """Return geometry from WFS server."""
     wfs = WebFeatureService(url, version='2.0.0')
     resp = wfs.getfeature([typename], featureid=features,
                           outputFormat='application/json')
     return json.loads(resp.read())
 
 
+def is_opendap_url(url):
+    """
+    Check if a provided url is an OpenDAP url.
+    The DAP Standard specifies that a specific tag must be included in the
+    Content-Description header of every request. This tag is one of:
+        "dods-dds" | "dods-das" | "dods-data" | "dods-error"
+    So we can check if the header starts with `dods`.
+    Even then, some OpenDAP servers seem to not include the specified header...
+    So we need to let the netCDF4 library actually open the file.
+    """
+    from requests.exceptions import MissingSchema, ConnectionError, InvalidSchema
+    import netCDF4
+
+    try:
+        content_description = requests.head(url, timeout=5).headers.get("Content-Description")
+    except (ConnectionError, MissingSchema, InvalidSchema):
+        return False
+
+    if content_description:
+        return content_description.lower().startswith("dods")
+    else:
+        try:
+            dataset = netCDF4.Dataset(url)
+        except OSError:
+            return False
+        return dataset.disk_format in ('DAP2', 'DAP4')
+
+
 def make_geoms(feature, mosaic=False):
-    """Return list of feature dictionaries."""
+    """Return list of feature dictionaries.
+
+    Parameters
+    ----------
+    feature : list
+      List of features.
+    mosaic : bool
+      If True return the union of all geometries.
+    """
 
     crs_code = owslib.crs.Crs(
         feature['crs']['properties']['name']).code
@@ -87,26 +123,37 @@ class Subsetter:
 
         for input in request.inputs['resource']:
             url = input.url
-            if url and not url.startswith("file"):
-                r = requests.get(url + ".dds")
-                if r.status_code == 200 and r.content.decode().startswith("Dataset"):
-                    yield url
+            if is_opendap_url(url):
+                yield url
+            else:
+                # Accessing the file property loads the data in the data property
+                # and writes it to disk
+                path = input.file
 
-            # Accessing the file property loads the data in the data property
-            # and writes it to disk
-            path = input.file
+                # We need to cleanup the data property, otherwise it will be
+                # written in the database and to the output status xml file
+                # and it can get too large.
+                input._data = ""
 
-            # We need to cleanup the data property, otherwise it will be
-            # written in the database and to the output status xml file
-            # and it can get too large.
-            input._data = ""
-
-            yield path
+                yield path
 
     def parse_feature(self, request):
+        """Parse individual features and aggregate them if mosaic is True.
+
+        Parameters
+        ----------
+        request : PyWPS.WPSRequest
+          Execution request.
+
+        Returns
+        -------
+        out : dict
+          Geometries keyed by feature id. If mosaic is true, the key
+          is 'mosaic'.
+        """
         if ('typename' in request.inputs) and ('featureids' in request.inputs):
             typename = request.inputs['typename'][0].data
-            features = [f.data for f in request.inputs['featureids']]
+            featureids = [f.data for f in request.inputs['featureids']]
             if 'geoserver' in request.inputs:
                 geoserver = request.inputs['geoserver'][0].data
             else:
@@ -115,18 +162,22 @@ class Subsetter:
             mosaic = request.inputs['mosaic'][0].data
 
             try:
-                feature = get_feature(geoserver, typename, features)
+                feature = get_feature(geoserver, typename, featureids)
                 geoms = make_geoms(feature, mosaic)
 
             except Exception as e:
                 msg = ('Failed to fetch features.\ngeoserver: {0} \n'
                        'typename: {1}\nfeatures {2}\n{3}').format(
-                    geoserver, typename, features, e)
-                raise Exception(msg)
-        else:
-            geoms = [None, ]
+                    geoserver, typename, featureids, e)
+                raise Exception(msg) from e
 
-        return geoms
+            if mosaic:
+                return {'mosaic': geoms}
+            else:
+                return dict(zip(featureids, geoms))
+
+        else:
+            return {}
 
     def parse_daterange(self, request):
         """Return [start, end] or None."""
