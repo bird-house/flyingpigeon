@@ -2,3 +2,8 @@
 exclude_paths:
   - 'tests/**'
   - 'docs/source/conf.py'
+---
+engines:
+ pylint:
+   enabled: true
+   python_version: 3

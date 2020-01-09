@@ -65,19 +65,19 @@ def is_opendap_url(url):
     Even then, some OpenDAP servers seem to not include the specified header...
     So we need to let the netCDF4 library actually open the file.
     """
-    from requests.exceptions import MissingSchema, ConnectionError, InvalidSchema
-    import netCDF4
+    from requests.exceptions import MissingSchema, InvalidSchema
+    from requests.exceptions import ConnectionError as reqCE
 
     try:
         content_description = requests.head(url, timeout=5).headers.get("Content-Description")
-    except (ConnectionError, MissingSchema, InvalidSchema):
+    except (ConnectionError, reqCE, MissingSchema, InvalidSchema):
         return False
 
     if content_description:
         return content_description.lower().startswith("dods")
     else:
         try:
-            dataset = netCDF4.Dataset(url)
+            dataset = nc.Dataset(url)
         except OSError:
             return False
         return dataset.disk_format in ('DAP2', 'DAP4')
