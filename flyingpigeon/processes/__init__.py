@@ -6,6 +6,7 @@ from .wps_subset_continents import SubsetcontinentProcess
 from .wps_subset_countries import SubsetcountryProcess
 from .wps_pointinspection import PointinspectionProcess
 from .wps_spatial_analog import SpatialAnalogProcess
+from .wps_ensemble_statistic import EnsemblestatisticProcess
 from .wps_plot_spatial_analog import PlotSpatialAnalogProcess
 from .wps_plot_timeseries import PlottimeseriesProcess
 from .wps_plot_spaghetti import PlotspaghettiProcess
@@ -19,6 +20,7 @@ processes = [
     SubsetcontinentProcess(),
     SubsetcountryProcess(),
     PointinspectionProcess(),
+    EnsemblestatisticProcess(),
     PlottimeseriesProcess(),
     PlotspaghettiProcess(),
     PlotmapProcess(),
