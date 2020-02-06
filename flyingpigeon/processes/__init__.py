@@ -9,6 +9,7 @@ from .wps_spatial_analog import SpatialAnalogProcess
 from .wps_plot_spatial_analog import PlotSpatialAnalogProcess
 from .wps_plot_timeseries import PlottimeseriesProcess
 from .wps_plot_spaghetti import PlotspaghettiProcess
+from .wps_plot_map import PlotmapProcess
 
 
 processes = [
@@ -20,6 +21,7 @@ processes = [
     PointinspectionProcess(),
     PlottimeseriesProcess(),
     PlotspaghettiProcess(),
+    PlotmapProcess(),
     SpatialAnalogProcess(),
     PlotSpatialAnalogProcess()
 ]
