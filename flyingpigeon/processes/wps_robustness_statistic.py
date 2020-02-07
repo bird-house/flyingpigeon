@@ -9,7 +9,7 @@ from pywps.app.Common import Metadata
 
 from eggshell.utils import extract_archive
 from eggshell.nc.nc_utils import get_variable
-from eggshell.nc.calculation import ens_stats
+from eggshell.nc.calculation import robustness_stats
 # from eggshell.utils import rename_complexinputs
 # from eggshell.log import init_process_logger
 
@@ -71,9 +71,9 @@ class RobustnesstatisticProcess(Process):
                           ),
             ]
 
-        super(EnsemblestatisticProcess, self).__init__(
+        super(RobustnesstatisticProcess, self).__init__(
             self._handler,
-            identifier="ensemble_statistic",
+            identifier="robustness_statistic",
             title="Ensemble Statistic",
             version="0.1",
             metadata=[

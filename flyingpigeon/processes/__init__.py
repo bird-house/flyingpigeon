@@ -20,7 +20,7 @@ processes = [
     SubsetcontinentProcess(),
     SubsetcountryProcess(),
     PointinspectionProcess(),
-    RobusttatistictatisticProcess(),
+    RobustnesstatisticProcess(),
     PlottimeseriesProcess(),
     PlotspaghettiProcess(),
     PlotmapProcess(),
