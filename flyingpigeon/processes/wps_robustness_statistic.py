@@ -16,7 +16,7 @@ from eggshell.nc.calculation import ens_stats
 LOGGER = logging.getLogger("PYWPS")
 
 
-class EnsemblestatisticProcess(Process):
+class RobustnesstatisticProcess(Process):
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
@@ -58,8 +58,14 @@ class EnsemblestatisticProcess(Process):
         ]
 
         outputs = [
-            ComplexOutput("median", "Ensemble Median",
-                          abstract="netCDF file containing the ensembel median",
+            ComplexOutput("output_ensmean", "Ensemble Mean",
+                          abstract="netCDF file containing the ensemble median",
+                          supported_formats=[Format('application/x-netcdf')],
+                          as_reference=True,
+                          ),
+
+            ComplexOutput("output_ensstd", "Ensemble Standard Deviation",
+                          abstract="netCDF file containing the ensemble standard deviation",
                           supported_formats=[Format('application/x-netcdf')],
                           as_reference=True,
                           ),
@@ -108,13 +114,15 @@ class EnsemblestatisticProcess(Process):
         # dateEnd = dt.strptime(dateStart_str, '%Y-%m-%d'),
 
         try:
-            out_median = ens_stats(ncfiles,
-                                   time_range=[dateStart, dateEnd],
-                                   dir_output=self.workdir)
+            output_ensmean, output_ensstd = robustness_stats(ncfiles,
+                                                       time_range=[dateStart, dateEnd],
+                                                       dir_output=self.workdir)
 
             LOGGER.info("Ensemble Statistic calculated ")
             response.update_status('Ensemble Statistic calculated', 50)
-            response.outputs['median'].file = out_median
+            response.outputs['output_ensmean'].file = output_ensmean
+            response.outputs['output_ensstd'].file = output_ensstd
+
         except Exception as e:
             raise Exception("Ensemble Statistic calculation failed : {}".format(e))
 
