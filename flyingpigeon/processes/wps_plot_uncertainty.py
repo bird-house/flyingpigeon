@@ -61,7 +61,7 @@ class PlotuncertaintyProcess(Process):
 
         super(PlotuncertaintyProcess, self).__init__(
             self._handler,
-            identifier="plotout_uncertainty",
+            identifier="plot_uncertainty",
             title="Timeseries as uncertainty plot",
             version="0.1",
             metadata=[
@@ -93,14 +93,14 @@ class PlotuncertaintyProcess(Process):
         response.update_status('plotting variable {}'.format(var), 10)
 
         try:
-            plotout_spaghetti_file = plt_ncdata.uncertainty(ncfiles,
-                                                         variable=var,
-                                                         title='Field mean of {}'.format(var),
-                                                         dir_output=self.workdir,
-                                                         )
+            plotout_file = plt_ncdata.uncertainty(ncfiles,
+                                                  variable=var,
+                                                  title='Field mean of {}'.format(var),
+                                                  dir_output=self.workdir,
+                                                  )
             LOGGER.info("uncertainty plot done")
             response.update_status('Uncertainty plot for %s %s files done' % (len(ncfiles), var), 50)
-            response.outputs['plotout_uncertanty'].file = plotout_spaghetti_file
+            response.outputs['plotout_uncertainty'].file = plotout_file
         except Exception as e:
             raise Exception("Uncertainty plot failed : {}".format(e))
 

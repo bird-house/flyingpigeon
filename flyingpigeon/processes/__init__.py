@@ -9,8 +9,9 @@ from .wps_spatial_analog import SpatialAnalogProcess
 from .wps_robustness_statistic import RobustnesstatisticProcess
 from .wps_climatechange_signal import ClimatechangesignalProcess
 from .wps_plot_spatial_analog import PlotSpatialAnalogProcess
-from .wps_plot_timeseries import PlottimeseriesProcess
+# from .wps_plot_timeseries import PlottimeseriesProcess
 from .wps_plot_spaghetti import PlotspaghettiProcess
+from .wps_plot_uncertainty import PlotuncertaintyProcess
 from .wps_plot_map import PlotmapProcess
 
 
@@ -23,9 +24,10 @@ processes = [
     PointinspectionProcess(),
     RobustnesstatisticProcess(),
     ClimatechangesignalProcess(),
-    PlottimeseriesProcess(),
-    PlotspaghettiProcess(),
-    PlotmapProcess(),
     SpatialAnalogProcess(),
-    PlotSpatialAnalogProcess()
+    PlotSpatialAnalogProcess(),
+    PlotspaghettiProcess(),
+    PlotuncertaintyProcess(),
+    PlotmapProcess(),
+    # PlottimeseriesProcess(),
 ]
