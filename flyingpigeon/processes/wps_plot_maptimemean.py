@@ -15,11 +15,12 @@ from eggshell.nc.nc_utils import get_variable
 LOGGER = logging.getLogger("PYWPS")
 
 
-class PlotmapProcess(Process):
+class PlottimemeanProcess(Process):
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
-                         abstract='NetCDF Files (with one variable) or archive (tar/zip) containing NetCDF files.',
+                         abstract='NetCDF Files (with one variable) or archive (tar/zip) containing NetCDF files.'\
+                                  'if multiple files are provided, a mean over all will be displayed',
                          metadata=[Metadata('Info')],
                          min_occurs=1,
                          max_occurs=1000,
@@ -43,6 +44,24 @@ class PlotmapProcess(Process):
                          data_type='string',
                          min_occurs=0,
                          max_occurs=1,
+                         ),
+
+            LiteralInput('dateStart', 'Start date for time period',
+                         abstract="Beginning of period (YYYY-MM-DD). "
+                                  "If not set, the first timestep will be considerd as start.",
+                         data_type='dateTime',
+                         min_occurs=0,
+                         max_occurs=1,
+                         default=None,
+                         ),
+
+            LiteralInput('dateEnd', 'End date for time period',
+                         abstract="End of period (YYYY-MM-DD)."
+                                  "If not set, the last timestep will be considerd as end.",
+                         data_type='dateTime',
+                         min_occurs=0,
+                         max_occurs=1,
+                         default=None,
                          ),
 
 
@@ -70,16 +89,17 @@ class PlotmapProcess(Process):
                           ),
             ]
 
-        super(PlotmapProcess, self).__init__(
+        super(PlottimemeanProcess, self).__init__(
             self._handler,
-            identifier="plot_map",
+            identifier="plot_map_timemean",
             title="Plot Map",
             version="0.1",
             metadata=[
                 Metadata('Doc',
                          'https://flyingpigeon.readthedocs.io/en/latest/processes_des.html#data-visualization'),
             ],
-            abstract="Visualisation of map realized with cartopy as a mean over timestepps",
+            abstract="Visualisation of map realized with cartopy as a mean over timestepps"\
+                     "If multiple files are provided, an ensemble mean over the means of the single files will be calculated",
             inputs=inputs,
             outputs=outputs,
             status_supported=True,
@@ -105,6 +125,15 @@ class PlotmapProcess(Process):
         cmap = request.inputs['cmap'][0].data
         delta = request.inputs['delta'][0].data
 
+        if 'dateStart' in request.inputs:
+            dateStart = request.inputs['dateStart'][0].data
+        else:
+            dateStart = None
+        if 'dateEnd' in request.inputs:
+            dateEnd = request.inputs['dateEnd'][0].data
+        else:
+            dateEnd = None
+
         if 'title' in request.inputs:
             title = request.inputs['title'][0].data
         else:
@@ -115,14 +144,15 @@ class PlotmapProcess(Process):
         try:
             LOGGER.info('Start ploting map')
             response.update_status('Start ploting map', 20)
-            for ncfile in ncfiles:
-                plotout_map_file = plt_ncdata.plot_map(ncfile,
-                                                       variable=var,
-                                                       title=title,
-                                                       dir_output=self.workdir,
-                                                       cmap=cmap,
-                                                       delta=delta,
-                                                       )
+
+            plotout_map_file = plt_ncdata.plot_map_timemean(ncfiles,
+                                                            variable=var,
+                                                            title=title,
+                                                            dir_output=self.workdir,
+                                                            cmap=cmap,
+                                                            delta=delta,
+                                                            time_range=[dateStart, dateEnd]
+                                                            )
             LOGGER.info("plot map done")
             response.update_status('plot map done', 50)
 

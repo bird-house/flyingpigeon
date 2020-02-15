@@ -12,7 +12,7 @@ from .wps_plot_spatial_analog import PlotSpatialAnalogProcess
 # from .wps_plot_timeseries import PlottimeseriesProcess
 from .wps_plot_spaghetti import PlotspaghettiProcess
 from .wps_plot_uncertainty import PlotuncertaintyProcess
-from .wps_plot_map import PlotmapProcess
+from .wps_plot_maptimemean import PlottimemeanProcess
 
 
 processes = [
@@ -28,6 +28,6 @@ processes = [
     PlotSpatialAnalogProcess(),
     PlotspaghettiProcess(),
     PlotuncertaintyProcess(),
-    PlotmapProcess(),
+    PlottimemeanProcess(),
     # PlottimeseriesProcess(),
 ]

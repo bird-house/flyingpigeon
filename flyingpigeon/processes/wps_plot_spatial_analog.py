@@ -11,7 +11,7 @@ from pywps.app.Common import Metadata
 from eggshell.utils import archive, extract_archive
 # from eggshell.utils import rename_complexinputs
 from eggshell.plot.plt_utils import fig2plot
-from eggshell.plot.plt_ncdata import plot_spatial_analog
+from eggshell.plot.plt_ncdata import plot_map_spatialanalog
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
@@ -109,7 +109,7 @@ class PlotSpatialAnalogProcess(Process):
         response.update_status('Input parameters ingested', 2)
 
         try:
-            fig = plot_spatial_analog(resource, title=title)
+            fig = plot_map_spatialanalog(resource, title=title)
             output = []
 
             for fmt in fmts:

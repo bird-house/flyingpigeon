@@ -91,7 +91,7 @@ class PlottimeseriesProcess(Process):
         response.update_status('plotting variable {}'.format(var), 10)
 
         try:
-            plotout_spagetti_file = plt_ncdata.spaghetti(ncfiles,
+            plotout_spagetti_file = plt_ncdata.plot_ts_spaghetti(ncfiles,
                                                          variable=var,
                                                          title='Field mean of {}'.format(var),
                                                          dir_output=self.workdir,
@@ -103,7 +103,7 @@ class PlottimeseriesProcess(Process):
             raise Exception("spagetti plot failed : {}".format(e))
 
         try:
-            plotout_uncertainty_file = plt_ncdata.uncertainty(ncfiles,
+            plotout_uncertainty_file = plt_ncdata.plot_ts_uncertainty(ncfiles,
                                                               variable=var,
                                                               title='Ensemble uncertainty for {}'.format(var),
                                                               dir_output=self.workdir,

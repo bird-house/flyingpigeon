@@ -92,7 +92,7 @@ class PlotspaghettiProcess(Process):
         response.update_status('plotting variable {}'.format(var), 10)
 
         try:
-            plotout_spaghetti_file = plt_ncdata.spaghetti(ncfiles,
+            plotout_spaghetti_file = plt_ncdata.plot_ts_spaghetti(ncfiles,
                                                          variable=var,
                                                          title='Field mean of {}'.format(var),
                                                          dir_output=self.workdir,
