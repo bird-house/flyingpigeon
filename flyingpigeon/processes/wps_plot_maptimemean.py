@@ -74,10 +74,26 @@ class PlottimemeanProcess(Process):
                          ),
 
           LiteralInput('delta', 'Delta',
-                       abstract='To set an offset for the values.\
-                        e.g. -273.15 to transform Kelvin to Celsius',
+                       abstract='To set an offset for the values.'\
+                                'e.g. -273.15 to transform Kelvin to Celsius',
                        data_type='float',
-                       default=0,),
+                       default=0,
+                       min_occurs=0,
+                       max_occurs=1,),
+
+          LiteralInput('vmin', 'vmin',
+                        abstract='Minimum limit of colorbar.',
+                        data_type='float',
+                        default=None,
+                        min_occurs=0,
+                        max_occurs=1,),
+
+          LiteralInput('vmax', 'vmax',
+                        abstract='Maximum limit of colorbar.',
+                        data_type='float',
+                        default=None,
+                        min_occurs=0,
+                        max_occurs=1,),
 
         ]
 
@@ -129,10 +145,22 @@ class PlottimemeanProcess(Process):
             dateStart = request.inputs['dateStart'][0].data
         else:
             dateStart = None
+
         if 'dateEnd' in request.inputs:
             dateEnd = request.inputs['dateEnd'][0].data
         else:
             dateEnd = None
+
+        if 'vmin' in request.inputs:
+            vmin = request.inputs['vmin'][0].data
+        else:
+            vmin = None
+
+        if 'vmax' in request.inputs:
+            vmax = request.inputs['vmax'][0].data
+        else:
+            vmax = None
+
 
         if 'title' in request.inputs:
             title = request.inputs['title'][0].data
@@ -150,6 +178,8 @@ class PlottimemeanProcess(Process):
                                                             title=title,
                                                             dir_output=self.workdir,
                                                             cmap=cmap,
+                                                            vmin=vmin,
+                                                            vmax=vmax,
                                                             delta=delta,
                                                             time_range=[dateStart, dateEnd]
                                                             )
