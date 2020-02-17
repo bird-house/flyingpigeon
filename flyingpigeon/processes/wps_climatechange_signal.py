@@ -90,6 +90,38 @@ class ClimatechangesignalProcess(Process):
                          default=None,
                          ),
 
+            LiteralInput('vmin', 'vmin',
+                         abstract='Minimum limit of colorbar.',
+                         data_type='float',
+                         default=None,
+                         min_occurs=0,
+                         max_occurs=1,),
+
+
+            LiteralInput('vmax', 'vmax',
+                         abstract='Maximum limit of colorbar.',
+                         data_type='float',
+                         default=None,
+                         min_occurs=0,
+                         max_occurs=1,),
+
+
+            LiteralInput("cmap", "Colormap",
+                         abstract="Colormap according to python matplotlib.",
+                         default='RdYlBu_r',
+                         data_type='string',
+                         min_occurs=0,
+                         max_occurs=1,
+                         ),
+
+
+            LiteralInput("title", "Title",
+                         abstract="Title to be written over the graphic",
+                         default=None,
+                         data_type='string',
+                         min_occurs=0,
+                         max_occurs=1,
+                         ),
         ]
 
         outputs = [
@@ -156,6 +188,24 @@ class ClimatechangesignalProcess(Process):
         dateStart_proj = request.inputs['dateStart_proj'][0].data
         dateEnd_proj = request.inputs['dateEnd_proj'][0].data
 
+        cmap = request.inputs['cmap'][0].data
+
+        if 'vmin' in request.inputs:
+            vmin = request.inputs['vmin'][0].data
+        else:
+            vmin = None
+
+        if 'vmax' in request.inputs:
+            vmax = request.inputs['vmax'][0].data
+        else:
+            vmax = None
+
+        if 'title' in request.inputs:
+            title = request.inputs['title'][0].data
+        else:
+            title = None
+
+
         LOGGER.debug('time region set to {}-{}'.format(dt.strftime(dateStart_ref, '%Y-%m-%d'), dt.strftime(dateEnd_ref, '%Y-%m-%d')))
         #
         # dateStart = dt.strptime(dateStart_str, '%Y-%m-%d'),
@@ -183,14 +233,19 @@ class ClimatechangesignalProcess(Process):
         try:
             out_cc_signal, out_mean_std = robustness_cc_signal(
                                     variable_mean=[output_ensmean_ref, output_ensmean_proj],
-                                    standard_deviation=[output_ensstd_ref, output_ensstd_proj])
+                                    standard_deviation=[output_ensstd_ref, output_ensstd_proj],
+                                    )
             LOGGER.info("Climate Change signal calculated")
             response.update_status('Climate Change signal calculated', 90)
         except Exception as e:
             raise Exception("Climate Change signal calculation failed: {}".format(e))
 
         try:
-            out_graphic = plot_map_ccsignal(signal=out_cc_signal, standard_deviation=out_mean_std)
+            out_graphic = plot_map_ccsignal(signal=out_cc_signal,
+                                            robustness=None,
+                                            vmin=vmin, vmax=vmax,
+                                            title=title,
+                                            cmap=cmap)
             LOGGER.info("Climate Change signal plotted")
             response.update_status('Climate Change signal graphic plotted', 95)
         except Exception as e:

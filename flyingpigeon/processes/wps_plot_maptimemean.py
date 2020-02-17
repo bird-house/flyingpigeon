@@ -73,27 +73,30 @@ class PlottimemeanProcess(Process):
                          max_occurs=1,
                          ),
 
-          LiteralInput('delta', 'Delta',
-                       abstract='To set an offset for the values.'\
-                                'e.g. -273.15 to transform Kelvin to Celsius',
-                       data_type='float',
-                       default=0,
-                       min_occurs=0,
-                       max_occurs=1,),
 
-          LiteralInput('vmin', 'vmin',
-                        abstract='Minimum limit of colorbar.',
-                        data_type='float',
-                        default=None,
-                        min_occurs=0,
-                        max_occurs=1,),
+            LiteralInput('delta', 'Delta',
+                         abstract='To set an offset for the values.'
+                         'e.g. -273.15 to transform Kelvin to Celsius',
+                         data_type='float',
+                         default=0,
+                         min_occurs=0,
+                         max_occurs=1,),
 
-          LiteralInput('vmax', 'vmax',
-                        abstract='Maximum limit of colorbar.',
-                        data_type='float',
-                        default=None,
-                        min_occurs=0,
-                        max_occurs=1,),
+
+            LiteralInput('vmin', 'vmin',
+                         abstract='Minimum limit of colorbar.',
+                         data_type='float',
+                         default=None,
+                         min_occurs=0,
+                         max_occurs=1,),
+
+
+            LiteralInput('vmax', 'vmax',
+                         abstract='Maximum limit of colorbar.',
+                         data_type='float',
+                         default=None,
+                         min_occurs=0,
+                         max_occurs=1,),
 
         ]
 

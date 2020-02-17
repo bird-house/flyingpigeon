@@ -52,6 +52,21 @@ class PlotuncertaintyProcess(Process):
                          default=0,
                          ),
 
+           LiteralInput('ymin', 'ymin',
+                         abstract='Minimum limit of colorbar.',
+                         data_type='float',
+                         default=None,
+                         min_occurs=0,
+                         max_occurs=1,),
+
+           LiteralInput('ymax', 'ymax',
+                         abstract='Maximum limit of colorbar.',
+                         data_type='float',
+                         default=None,
+                         min_occurs=0,
+                         max_occurs=1,),
+
+
             LiteralInput('figsize', 'Figure Size',   data_type='string',
                          abstract='Give two numbers (as a string:"7,10") to define the size of the graphic',
                          default='10,10',
@@ -119,6 +134,17 @@ class PlotuncertaintyProcess(Process):
         else:
             title = None
 
+        if 'ymin' in request.inputs:
+            ymin = request.inputs['ymin'][0].data
+        else:
+            ymin = None
+
+        if 'ymax' in request.inputs:
+            ymax = request.inputs['ymax'][0].data
+        else:
+            ymax = None
+
+
         f_str = request.inputs['figsize'][0].data
         figsize = tuple([float(f) for f in f_str.split(',')])
         response.update_status('plotting variable {}'.format(var), 10)
@@ -129,6 +155,7 @@ class PlotuncertaintyProcess(Process):
                                                   title=title,
                                                   delta=delta,
                                                   figsize=figsize,
+                                                  ylim=(ymin,ymax),
                                                   dir_output=self.workdir,
                                                   )
             LOGGER.info("uncertainty plot done")
