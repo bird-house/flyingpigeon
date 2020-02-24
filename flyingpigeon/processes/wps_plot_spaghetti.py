@@ -15,11 +15,11 @@ from eggshell.nc.nc_utils import get_variable
 LOGGER = logging.getLogger("PYWPS")
 
 
-class PlottimeseriesProcess(Process):
+class PlotspaghettiProcess(Process):
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
-                         abstract='NetCDF Files or archive (tar/zip) containing NetCDF files.',
+                         abstract='NetCDF Files (with one variable) or archive (tar/zip) containing NetCDF files.',
                          metadata=[Metadata('Info')],
                          min_occurs=1,
                          max_occurs=1000,
@@ -45,29 +45,30 @@ class PlottimeseriesProcess(Process):
             #               supported_formats=[Format('text/plain')]
             #               ),
 
-            ComplexOutput("plotout_spagetti", "Visualisation, Spaghetti plot",
+            ComplexOutput("plotout_spaghetti", "Visualisation, Spaghetti plot",
                           abstract="Visualisation of single variables as a spaghetti plot",
                           supported_formats=[Format("image/png")],
                           as_reference=True,
                           ),
-
-            ComplexOutput("plotout_uncertainty", "Visualisation Uncertainty plot",
-                          abstract="Visualisation of single variables ensemble mean with uncertainty",
-                          supported_formats=[Format("image/png")],
-                          as_reference=True,
-                          )
+            #
+            # ComplexOutput("plotout_uncertainty", "Visualisation Uncertainty plot",
+            #               abstract="Visualisation of single variables ensemble mean with uncertainty",
+            #               supported_formats=[Format("image/png")],
+            #               as_reference=True,
+            #               )
         ]
 
-        super(PlottimeseriesProcess, self).__init__(
+        super(PlotspaghettiProcess, self).__init__(
             self._handler,
-            identifier="plot_timeseries",
-            title="Graphics (timeseries)",
-            version="0.11",
+            identifier="plot_spaghetti",
+            title="Timeseries as Spaghetti Plot",
+            version="0.1",
             metadata=[
                 Metadata('Doc',
                          'https://flyingpigeon.readthedocs.io/en/latest/processes_des.html#data-visualization'),
             ],
-            abstract="Outputs some timeseries of the file field means. Spaghetti and uncertainty plot",
+            abstract="Outputs timeseries of all inputfiles as a Spaghetti plot.\
+                      The single lines are colorcoded according to the IPCC graphic guidelines.",
             inputs=inputs,
             outputs=outputs,
             status_supported=True,
@@ -91,29 +92,17 @@ class PlottimeseriesProcess(Process):
         response.update_status('plotting variable {}'.format(var), 10)
 
         try:
-            plotout_spagetti_file = plt_ncdata.plot_ts_spaghetti(ncfiles,
+            plotout_spaghetti_file = plt_ncdata.plot_ts_spaghetti(ncfiles,
                                                          variable=var,
                                                          title='Field mean of {}'.format(var),
                                                          dir_output=self.workdir,
                                                          )
-            LOGGER.info("spagetti plot done")
-            response.update_status('Spagetti plot for %s %s files done' % (len(ncfiles), var), 50)
-            response.outputs['plotout_spagetti'].file = plotout_spagetti_file
+            LOGGER.info("spaghetti plot done")
+            response.update_status('Spaghetti plot for %s %s files done' % (len(ncfiles), var), 50)
+            response.outputs['plotout_spaghetti'].file = plotout_spaghetti_file
         except Exception as e:
-            raise Exception("spagetti plot failed : {}".format(e))
+            raise Exception("spaghetti plot failed : {}".format(e))
 
-        try:
-            plotout_uncertainty_file = plt_ncdata.plot_ts_uncertainty(ncfiles,
-                                                              variable=var,
-                                                              title='Ensemble uncertainty for {}'.format(var),
-                                                              dir_output=self.workdir,
-                                                              )
-
-            response.update_status('Uncertainty plot for {} {} files done'.format(len(ncfiles), var), 90)
-            response.outputs['plotout_uncertainty'].file = plotout_uncertainty_file
-            LOGGER.info("uncertainty plot done")
-        except Exception as err:
-            raise Exception("uncertainty plot failed {}".format(err.message))
 
         response.update_status('visualisation done', 100)
         return response

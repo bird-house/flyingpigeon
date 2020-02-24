@@ -6,8 +6,13 @@ from .wps_subset_continents import SubsetcontinentProcess
 from .wps_subset_countries import SubsetcountryProcess
 from .wps_pointinspection import PointinspectionProcess
 from .wps_spatial_analog import SpatialAnalogProcess
+from .wps_robustness_statistic import RobustnesstatisticProcess
+from .wps_climatechange_signal import ClimatechangesignalProcess
 from .wps_plot_spatial_analog import PlotSpatialAnalogProcess
-from .wps_plot_timeseries import PlottimeseriesProcess
+# from .wps_plot_timeseries import PlottimeseriesProcess
+from .wps_plot_spaghetti import PlotspaghettiProcess
+from .wps_plot_uncertainty import PlotuncertaintyProcess
+from .wps_plot_maptimemean import PlottimemeanProcess
 
 
 processes = [
@@ -17,8 +22,12 @@ processes = [
     SubsetcontinentProcess(),
     SubsetcountryProcess(),
     PointinspectionProcess(),
-    PlottimeseriesProcess(),
+    RobustnesstatisticProcess(),
+    ClimatechangesignalProcess(),
     SpatialAnalogProcess(),
-    PlottimeseriesProcess(),
-    PlotSpatialAnalogProcess()
+    PlotSpatialAnalogProcess(),
+    PlotspaghettiProcess(),
+    PlotuncertaintyProcess(),
+    PlottimemeanProcess(),
+    # PlottimeseriesProcess(),
 ]
