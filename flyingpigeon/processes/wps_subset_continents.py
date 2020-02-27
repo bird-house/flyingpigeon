@@ -1,13 +1,17 @@
 import logging
 
-from pywps import ComplexInput, ComplexOutput, Format, LiteralInput, Process
+from pywps import ComplexInput, Format, LiteralInput, Process, FORMATS
+# from pywps import Process, LiteralInput
 from pywps.app.Common import Metadata
+
+from pywps.inout.outputs import MetaFile, MetaLink4
+from .subset_base import output, metalink
 
 from flyingpigeon.subset import _CONTINENTS_
 from flyingpigeon.subset import clipping
 from eggshell.utils import archive, extract_archive
 # from eggshell.utils import rename_complexinputs
-from os.path import abspath
+from os.path import abspath, basename
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -46,20 +50,22 @@ class SubsetcontinentProcess(Process):
                          ]),
         ]
 
-        outputs = [
-            ComplexOutput('output', 'Tar archive',
-                          abstract="Tar archive of the subsetted netCDF files.",
-                          as_reference=True,
-                          supported_formats=[Format('application/x-tar')]
-                          ),
+        outputs = [output, metalink]
 
-            ComplexOutput('ncout', 'Example netCDF file',
-                          abstract="NetCDF file with subset for one dataset.",
-                          as_reference=True,
-                          supported_formats=[Format('application/x-netcdf')]
-                          ),
-
-        ]
+        # outputs = [
+        #     ComplexOutput('output', 'Tar archive',
+        #                   abstract="Tar archive of the subsetted netCDF files.",
+        #                   as_reference=True,
+        #                   supported_formats=[Format('application/x-tar')]
+        #                   ),
+        #
+        #     ComplexOutput('ncout', 'Example netCDF file',
+        #                   abstract="NetCDF file with subset for one dataset.",
+        #                   as_reference=True,
+        #                   supported_formats=[Format('application/x-netcdf')]
+        #                   ),
+        #
+        # ]
 
         super(SubsetcontinentProcess, self).__init__(
             self._handler,
@@ -104,39 +110,54 @@ class SubsetcontinentProcess(Process):
         LOGGER.debug('starting: regions={}, num_files={}'.format(len(regions), len(ncs)))
 
         try:
-            results = clipping(
-                resource=ncs,
-                polygons=regions,
-                mosaic=mosaic,
-                spatial_wrapping='wrap',
-                # variable=variable,
-                dir_output=self.workdir,
-                # dimension_map=dimension_map,
-            )
-            LOGGER.info('results %s' % results)
+            ml = MetaLink4('subset', workdir=self.workdir)
+            for nc in ncs:
+                out = clipping(
+                    resource=nc,
+                    polygons=regions,
+                    mosaic=mosaic,
+                    spatial_wrapping='wrap',
+                    # variable=variable,
+                    dir_output=self.workdir,
+                    # dimension_map=dimension_map,
+                )
+                LOGGER.info('result: {}'.format(out[0]))
+
+                prefix = basename(nc).replace('.nc', '')
+                mf = MetaFile(prefix, fmt=FORMATS.NETCDF)
+                mf.file = out[0]
+                ml.append(mf)
 
         except Exception as ex:
             msg = 'Clipping failed: {}'.format(str(ex))
             LOGGER.exception(msg)
             raise Exception(msg)
 
-        if not results:
-            raise Exception('No results produced.')
+        response.outputs['output'].file = ml.files[0].file
+        response.outputs['metalink'].data = ml.xml
+        response.update_status("Completed", 100)
 
-        # prepare tar file
-        try:
-            tarf = archive(results, dir_output=self.workdir)
-            LOGGER.info('Tar file prepared')
-
-        except Exception as ex:
-            msg = 'Tar file preparation failed: {}'.format(str(ex))
-            LOGGER.exception(msg)
-            raise Exception(msg)
-
-        response.outputs['output'].file = tarf
-
-        i = next((i for i, x in enumerate(results) if x), None)
-        response.outputs['ncout'].file = results[i]
-
-        response.update_status("done", 100)
         return response
+
+
+
+        # if not results:
+        #     raise Exception('No results produced.')
+
+        # # prepare tar file
+        # try:
+        #     tarf = archive(results, dir_output=self.workdir)
+        #     LOGGER.info('Tar file prepared')
+        #
+        # except Exception as ex:
+        #     msg = 'Tar file preparation failed: {}'.format(str(ex))
+        #     LOGGER.exception(msg)
+        #     raise Exception(msg)
+
+        # response.outputs['output'].file = tarf
+        #
+        # i = next((i for i, x in enumerate(results) if x), None)
+        # response.outputs['ncout'].file = results[i]
+        #
+        # response.update_status("done", 100)
+        # return response
