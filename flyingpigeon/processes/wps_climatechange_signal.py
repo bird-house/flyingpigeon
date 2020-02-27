@@ -177,7 +177,7 @@ class ClimatechangesignalProcess(Process):
         if 'variable' in request.inputs:
             var = request.inputs['variable'][0].data
         else:
-            var = get_variable(ncfiles[0])
+            var = get_variable(ncfiles_ref[0])
             #  var = ncfiles[0].split("_")[0]
 
         response.update_status('ensemble variable {}'.format(var), 10)
