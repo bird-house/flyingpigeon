@@ -1,13 +1,13 @@
 import logging
 
-from pywps import ComplexInput, ComplexOutput, Format, LiteralInput, Process, FORMATS
+from pywps import ComplexInput, Format, LiteralInput, Process, FORMATS
 from pywps.app.Common import Metadata
 from pywps.inout.outputs import MetaFile, MetaLink4
 from .subset_base import output, metalink
 
 from flyingpigeon.subset import clipping
 from flyingpigeon.subset import countries
-from eggshell.utils import archive, extract_archive
+from eggshell.utils import extract_archive
 # from eggshell.utils import rename_complexinputs
 from os.path import basename
 

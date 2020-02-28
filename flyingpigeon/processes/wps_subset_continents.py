@@ -9,7 +9,7 @@ from .subset_base import output, metalink
 
 from flyingpigeon.subset import _CONTINENTS_
 from flyingpigeon.subset import clipping
-from eggshell.utils import archive, extract_archive
+from eggshell.utils import extract_archive
 # from eggshell.utils import rename_complexinputs
 from os.path import abspath, basename
 

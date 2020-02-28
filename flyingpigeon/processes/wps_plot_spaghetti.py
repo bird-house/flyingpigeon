@@ -93,16 +93,14 @@ class PlotspaghettiProcess(Process):
 
         try:
             plotout_spaghetti_file = plt_ncdata.plot_ts_spaghetti(ncfiles,
-                                                         variable=var,
-                                                         title='Field mean of {}'.format(var),
-                                                         dir_output=self.workdir,
-                                                         )
+                                                                  variable=var,
+                                                                  title='Field mean of {}'.format(var),
+                                                                  dir_output=self.workdir)
             LOGGER.info("spaghetti plot done")
             response.update_status('Spaghetti plot for %s %s files done' % (len(ncfiles), var), 50)
             response.outputs['plotout_spaghetti'].file = plotout_spaghetti_file
         except Exception as e:
             raise Exception("spaghetti plot failed : {}".format(e))
-
 
         response.update_status('visualisation done', 100)
         return response

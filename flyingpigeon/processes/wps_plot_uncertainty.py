@@ -46,20 +46,20 @@ class PlotuncertaintyProcess(Process):
                          ),
 
             LiteralInput('delta', 'Delta',
-                         abstract='To set an offset for the values.'\
-                                   'e.g. -273.15 to transform Kelvin to Celsius',
+                         abstract='To set an offset for the values.'
+                                  'e.g. -273.15 to transform Kelvin to Celsius',
                          data_type='float',
                          default=0,
                          ),
 
-           LiteralInput('ymin', 'ymin',
+            LiteralInput('ymin', 'ymin',
                          abstract='Minimum limit of colorbar.',
                          data_type='float',
                          default=None,
                          min_occurs=0,
                          max_occurs=1,),
 
-           LiteralInput('ymax', 'ymax',
+            LiteralInput('ymax', 'ymax',
                          abstract='Maximum limit of colorbar.',
                          data_type='float',
                          default=None,
@@ -144,26 +144,23 @@ class PlotuncertaintyProcess(Process):
         else:
             ymax = None
 
-
         f_str = request.inputs['figsize'][0].data
         figsize = tuple([float(f) for f in f_str.split(',')])
         response.update_status('plotting variable {}'.format(var), 10)
 
         try:
             plotout_file = plt_ncdata.plot_ts_uncertainty(ncfiles,
-                                                  variable=var,
-                                                  title=title,
-                                                  delta=delta,
-                                                  figsize=figsize,
-                                                  ylim=(ymin,ymax),
-                                                  dir_output=self.workdir,
-                                                  )
+                                                          variable=var,
+                                                          title=title,
+                                                          delta=delta,
+                                                          figsize=figsize,
+                                                          ylim=(ymin, ymax),
+                                                          dir_output=self.workdir)
             LOGGER.info("uncertainty plot done")
             response.update_status('Uncertainty plot for %s %s files done' % (len(ncfiles), var), 50)
             response.outputs['plotout_uncertainty'].file = plotout_file
         except Exception as e:
             raise Exception("Uncertainty plot failed : {}".format(e))
-
 
         response.update_status('visualisation done', 100)
         return response

@@ -19,7 +19,7 @@ class PlotmaptimemeanProcess(Process):
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
-                         abstract='NetCDF Files (with one variable) or archive (tar/zip) containing NetCDF files.'\
+                         abstract='NetCDF Files (with one variable) or archive (tar/zip) containing NetCDF files.'
                                   'if multiple files are provided, a mean over all will be displayed',
                          metadata=[Metadata('Info')],
                          min_occurs=1,
@@ -117,8 +117,8 @@ class PlotmaptimemeanProcess(Process):
                 Metadata('Doc',
                          'https://flyingpigeon.readthedocs.io/en/latest/processes_des.html#data-visualization'),
             ],
-            abstract="Visualisation of map realized with cartopy as a mean over timestepps"\
-                     "If multiple files are provided, an ensemble mean over the means of the single files will be calculated",
+            abstract="Visualisation of map realized with cartopy as a mean over timestepps"
+                     "If multiple files are provided, an ensemble mean will be calculated",
             inputs=inputs,
             outputs=outputs,
             status_supported=True,
@@ -163,7 +163,6 @@ class PlotmaptimemeanProcess(Process):
             vmax = request.inputs['vmax'][0].data
         else:
             vmax = None
-
 
         if 'title' in request.inputs:
             title = request.inputs['title'][0].data

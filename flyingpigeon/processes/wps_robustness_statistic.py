@@ -6,7 +6,6 @@ from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
 
-
 from eggshell.utils import extract_archive
 from eggshell.nc.nc_utils import get_variable
 from eggshell.nc.calculation import robustness_stats
@@ -108,15 +107,16 @@ class RobustnesstatisticProcess(Process):
         dateEnd = request.inputs['dateEnd'][0].data
 
         from datetime import datetime as dt
-        LOGGER.debug('time region set to {}-{}'.format(dt.strftime(dateStart, '%Y-%m-%d'), dt.strftime(dateEnd, '%Y-%m-%d')))
+        LOGGER.debug('time region set to {}-{}'.format(dt.strftime(dateStart, '%Y-%m-%d'),
+                                                       dt.strftime(dateEnd, '%Y-%m-%d')))
         #
         # dateStart = dt.strptime(dateStart_str, '%Y-%m-%d'),
         # dateEnd = dt.strptime(dateStart_str, '%Y-%m-%d'),
 
         try:
             output_ensmean, output_ensstd = robustness_stats(ncfiles,
-                                                       time_range=[dateStart, dateEnd],
-                                                       dir_output=self.workdir)
+                                                             time_range=[dateStart, dateEnd],
+                                                             dir_output=self.workdir)
 
             LOGGER.info("Ensemble Statistic calculated ")
             response.update_status('Ensemble Statistic calculated', 50)

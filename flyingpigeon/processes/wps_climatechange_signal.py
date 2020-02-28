@@ -177,7 +177,7 @@ class ClimatechangesignalProcess(Process):
         if 'variable' in request.inputs:
             var = request.inputs['variable'][0].data
         else:
-            var = get_variable(ncfiles[0])
+            var = get_variable(ncfiles_ref[0])
             #  var = ncfiles[0].split("_")[0]
 
         response.update_status('ensemble variable {}'.format(var), 10)
@@ -205,16 +205,17 @@ class ClimatechangesignalProcess(Process):
         else:
             title = None
 
-
-        LOGGER.debug('time region set to {}-{}'.format(dt.strftime(dateStart_ref, '%Y-%m-%d'), dt.strftime(dateEnd_ref, '%Y-%m-%d')))
+        LOGGER.debug('time region set to {}-{}'.format(
+                                                dt.strftime(dateStart_ref, '%Y-%m-%d'),
+                                                dt.strftime(dateEnd_ref, '%Y-%m-%d')))
         #
         # dateStart = dt.strptime(dateStart_str, '%Y-%m-%d'),
         # dateEnd = dt.strptime(dateStart_str, '%Y-%m-%d'),
 
         try:
             output_ensmean_ref, output_ensstd_ref = robustness_stats(ncfiles_ref,
-                                                     time_range=[dateStart_ref, dateEnd_ref],
-                                                     dir_output=self.workdir)
+                                                                     time_range=[dateStart_ref, dateEnd_ref],
+                                                                     dir_output=self.workdir)
             LOGGER.info("Ensemble Statistic calculated for reference periode ")
             response.update_status('Ensemble Statistic calculated for reference periode', 30)
         except Exception as e:
@@ -222,19 +223,17 @@ class ClimatechangesignalProcess(Process):
 
         try:
             output_ensmean_proj, output_ensstd_proj = robustness_stats(ncfiles_proj,
-                                                       time_range=[dateStart_proj, dateEnd_proj],
-                                                       dir_output=self.workdir)
+                                                                       time_range=[dateStart_proj, dateEnd_proj],
+                                                                       dir_output=self.workdir)
             LOGGER.info("Ensemble Statistic calculated for projection periode ")
             response.update_status('Ensemble Statistic calculated for projection periode', 60)
         except Exception as e:
             raise Exception("Ensemble Statistic calculation failed for projection periode: {}".format(e))
 
-
         try:
-            out_cc_signal, out_mean_std = robustness_cc_signal(
-                                    variable_mean=[output_ensmean_ref, output_ensmean_proj],
-                                    standard_deviation=[output_ensstd_ref, output_ensstd_proj],
-                                    )
+            out_cc_signal, out_mean_std = robustness_cc_signal(variable_mean=[output_ensmean_ref, output_ensmean_proj],
+                                                               standard_deviation=[output_ensstd_ref,
+                                                                                   output_ensstd_proj])
             LOGGER.info("Climate Change signal calculated")
             response.update_status('Climate Change signal calculated', 90)
         except Exception as e:
