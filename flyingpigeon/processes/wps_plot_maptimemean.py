@@ -8,14 +8,14 @@ from pywps.app.Common import Metadata
 
 from eggshell.plot import plt_ncdata
 from eggshell.utils import extract_archive
-from eggshell.nc.nc_utils import get_variable
+from eggshell.nc.nc_utils import get_variable, get_time
 # from eggshell.utils import rename_complexinputs
 # from eggshell.log import init_process_logger
 
 LOGGER = logging.getLogger("PYWPS")
 
 
-class PlottimemeanProcess(Process):
+class PlotmaptimemeanProcess(Process):
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
@@ -108,7 +108,7 @@ class PlottimemeanProcess(Process):
                           ),
             ]
 
-        super(PlottimemeanProcess, self).__init__(
+        super(PlotmaptimemeanProcess, self).__init__(
             self._handler,
             identifier="plot_map_timemean",
             title="Plot Map",
@@ -147,12 +147,12 @@ class PlottimemeanProcess(Process):
         if 'dateStart' in request.inputs:
             dateStart = request.inputs['dateStart'][0].data
         else:
-            dateStart = None
+            dateStart = get_time(ncfiles)[0]
 
         if 'dateEnd' in request.inputs:
             dateEnd = request.inputs['dateEnd'][0].data
         else:
-            dateEnd = None
+            dateEnd = get_time(ncfiles)[-1]
 
         if 'vmin' in request.inputs:
             vmin = request.inputs['vmin'][0].data
