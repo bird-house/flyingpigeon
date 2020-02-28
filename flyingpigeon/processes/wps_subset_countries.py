@@ -54,26 +54,6 @@ class SubsetcountryProcess(Process):
 
         outputs = [output, metalink]
 
-        # outputs = [
-        #     ComplexOutput('output', 'Tar archive',
-        #                   abstract="Tar archive of the subsetted netCDF files.",
-        #                   as_reference=True,
-        #                   supported_formats=[Format('application/x-tar')]
-        #                   ),
-        #
-        #     ComplexOutput('ncout', 'Example netCDF file',
-        #                   abstract="NetCDF file with subset for one dataset.",
-        #                   as_reference=True,
-        #                   supported_formats=[Format('application/x-netcdf')]
-        #                   ),
-
-            # ComplexOutput('output_log', 'Logging information',
-            #               abstract="Collected logs during process run.",
-            #               as_reference=True,
-            #               supported_formats=[Format('text/plain')]
-            #               )
-        # ]
-
         super(SubsetcountryProcess, self).__init__(
             self._handler,
             identifier="subset_countries",
@@ -147,24 +127,3 @@ class SubsetcountryProcess(Process):
         response.update_status("Completed", 100)
 
         return response
-
-        #
-        # if not results:
-        #     raise Exception('No results produced.')
-        #
-        # # prepare tar file
-        # try:
-        #     tarf = archive(results, dir_output=self.workdir)
-        #     LOGGER.info('Tar file prepared.')
-        # except Exception as ex:
-        #     msg = 'Tar file preparation failed: {}'.format(str(ex))
-        #     LOGGER.exception(msg)
-        #     raise Exception(msg)
-        #
-        # response.outputs['output'].file = tarf
-        #
-        # i = next((i for i, x in enumerate(results) if x), None)
-        # response.outputs['ncout'].file = results[i]
-        #
-        # response.update_status("done", 100)
-        # return response
