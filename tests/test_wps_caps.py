@@ -11,9 +11,13 @@ def test_wps_caps():
                             '/wps:Process'
                             '/ows:Identifier')
     assert sorted(names.split()) == [
+        'climatechange_signal',
+        'plot_map_timemean',
+        'plot_spaghetti',
         'plot_spatial_analog',
-        'plot_timeseries',
+        'plot_uncertainty',
         'pointinspection',
+        'robustness_statistic',
         'spatial_analog',
         'subset-wfs-polygon',
         'subset_bbox',
