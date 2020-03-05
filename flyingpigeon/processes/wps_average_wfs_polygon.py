@@ -38,6 +38,10 @@ class AverageWFSPolygonProcess(Process, Subsetter):
         geoms = self.parse_feature(request)
         dr = self.parse_daterange(request)
 
+        # Remove properties because it crashes ocgis
+        for geom in geoms.values():
+            geom.pop("properties")
+
         ml = MetaLink4('subset', workdir=self.workdir)
 
         for res in self.parse_resources(request):
@@ -47,7 +51,7 @@ class AverageWFSPolygonProcess(Process, Subsetter):
 
             try:
                 ops = ocgis.OcgOperations(
-                    dataset=rd, geom=geoms.values(),
+                    dataset=rd, geom=[g for g in geoms.values()],
                     spatial_operation='clip', aggregate=True,
                     time_range=dr, output_format='nc',
                     interpolate_spatial_bounds=True,
