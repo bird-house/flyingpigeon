@@ -1,5 +1,6 @@
 
 # from .wps_say_hello import SayHello
+from .wps_average_wfs_polygon import AverageWFSPolygonProcess
 from .wps_subset_wfs_polygon import SubsetWFSPolygonProcess
 from .wps_subset_bbox import SubsetBboxProcess
 from .wps_subset_continents import SubsetcontinentProcess
@@ -17,6 +18,7 @@ from .wps_plot_maptimemean import PlotmaptimemeanProcess
 
 processes = [
     # SayHello(),
+    AverageWFSPolygonProcess(),
     SubsetWFSPolygonProcess(),
     SubsetBboxProcess(),
     SubsetcontinentProcess(),

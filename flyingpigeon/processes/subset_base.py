@@ -46,6 +46,35 @@ metalink = ComplexOutput('metalink',
                          as_reference=True,
                          supported_formats=[FORMATS.META4])
 
+typename = LiteralInput('typename',
+                        'TypeName',
+                        abstract='Name of the layer in GeoServer.',
+                        data_type='string',
+                        min_occurs=0,
+                        max_occurs=1)
+
+featureids = LiteralInput('featureids',
+                          'Feature Ids',
+                          abstract='fid(s) of the feature in the layer.',
+                          data_type='string',
+                          min_occurs=0,
+                          max_occurs=1000)
+
+geoserver = LiteralInput('geoserver',
+                         'Geoserver',
+                         abstract=('Typically of the form '
+                                   'http://host:port/geoserver/wfs'),
+                         data_type='string',
+                         min_occurs=0)
+
+mosaic = LiteralInput('mosaic',
+                      'Union of Feature Ids',
+                      abstract=('If True, selected regions will be '
+                                'merged into a single geometry.'),
+                      data_type='boolean',
+                      min_occurs=0,
+                      default=False)
+
 
 def get_feature(url, typename, features):
     """Return geometry from WFS server."""
