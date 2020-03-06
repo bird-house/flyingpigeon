@@ -75,6 +75,13 @@ mosaic = LiteralInput('mosaic',
                       min_occurs=0,
                       default=False)
 
+shape = ComplexInput('shape', 'Vector Shape',
+                     abstract='An ESRI Shapefile, GML, JSON, GeoJSON, or single layer GeoPackage.'
+                              ' The ESRI Shapefile must be zipped and contain the .shp, .shx, and .dbf.',
+                     min_occurs=1,
+                     max_occurs=1,
+                     supported_formats=[FORMATS.GEOJSON, FORMATS.GML, FORMATS.JSON, FORMATS.SHP])
+
 
 def get_feature(url, typename, features):
     """Return geometry from WFS server."""
@@ -128,7 +135,7 @@ def make_geoms(feature, mosaic=False):
     crs = ocgis.CoordinateReferenceSystem(epsg=crs_code)
     geoms = [
         {'geom': shape(f['geometry']), 'crs': crs,
-         'properties': f['properties']}
+         'properties': f['properties'] if not isinstance(f['properties'], list) else "List not supported by ocgis"}
         for f in feature['features']]
 
     if mosaic:
@@ -200,13 +207,19 @@ class Subsetter:
                     geoserver, typename, featureids, e)
                 raise Exception(msg) from e
 
+            # Remove properties because it crashes ocgis
+            for geom in geoms.values():
+                if isinstance(geom, dict):
+                    geom.pop("properties")
+
+
             if mosaic:
                 return {'mosaic': geoms}
             else:
                 return dict(zip(featureids, geoms))
 
-        else:
-            return {}
+        elif 'shape' in request.inputs:
+            return {'_shp_': request.inputs['shape'][0].file}
 
     def parse_daterange(self, request):
         """Return [start, end] or None."""

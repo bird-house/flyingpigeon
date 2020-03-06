@@ -22,7 +22,7 @@ class AverageWFSPolygonProcess(Process, Subsetter):
             self._handler,
             identifier='average-wfs-polygon',
             title='Average over polygon',
-            version='0.2',
+            version='0.1',
             abstract=('Return the average of the data for which grid cells intersect the '
                       'selected polygon for each input dataset as well as'
                       'the time range selected.'),
@@ -38,11 +38,12 @@ class AverageWFSPolygonProcess(Process, Subsetter):
         geoms = self.parse_feature(request)
         dr = self.parse_daterange(request)
 
-        # Remove properties because it crashes ocgis
-        for geom in geoms.values():
-            geom.pop("properties")
-
         ml = MetaLink4('subset', workdir=self.workdir)
+
+        if geoms.get('_shp_', None) is not None:
+            geom = geoms['_shp_']
+        else:
+            geom = [g for g in geoms.values()]
 
         for res in self.parse_resources(request):
             variables = self.parse_variable(request, res)
@@ -51,7 +52,7 @@ class AverageWFSPolygonProcess(Process, Subsetter):
 
             try:
                 ops = ocgis.OcgOperations(
-                    dataset=rd, geom=[g for g in geoms.values()],
+                    dataset=rd, geom=geom,
                     spatial_operation='clip', aggregate=True,
                     time_range=dr, output_format='nc',
                     interpolate_spatial_bounds=True,
