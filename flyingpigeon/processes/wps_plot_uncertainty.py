@@ -129,6 +129,7 @@ class PlotuncertaintyProcess(Process):
             delta = request.inputs['delta'][0].data
         else:
             delta = 0
+
         if 'title' in request.inputs:
             title = request.inputs['title'][0].data
         else:

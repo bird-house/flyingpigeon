@@ -36,6 +36,41 @@ class PlotspaghettiProcess(Process):
                          min_occurs=0,
                          max_occurs=1,
                          ),
+
+            LiteralInput('delta', 'Delta',
+                         abstract='To set an offset for the values.'
+                                  'e.g. -273.15 to transform Kelvin to Celsius',
+                         data_type='float',
+                         default=0,
+                         ),
+
+            LiteralInput("title", "Title",
+                         abstract="Title to be written over the graphic",
+                         default=None,
+                         data_type='string',
+                         min_occurs=0,
+                         max_occurs=1,
+                         ),
+
+            LiteralInput('ymin', 'ymin',
+                         abstract='Minimum limit of colorbar.',
+                         data_type='float',
+                         default=None,
+                         min_occurs=0,
+                         max_occurs=1,),
+
+            LiteralInput('ymax', 'ymax',
+                         abstract='Maximum limit of colorbar.',
+                         data_type='float',
+                         default=None,
+                         min_occurs=0,
+                         max_occurs=1,),
+
+
+            LiteralInput('figsize', 'Figure Size',   data_type='string',
+                         abstract='Give two numbers (as a string:"7,10") to define the size of the graphic',
+                         default='10,10',
+                         ),
         ]
 
         outputs = [
@@ -88,13 +123,37 @@ class PlotspaghettiProcess(Process):
         else:
             var = get_variable(ncfiles[0])
             #  var = ncfiles[0].split("_")[0]
+        if 'delta' in request.inputs:
+            delta = request.inputs['delta'][0].data
+        else:
+            delta = 0
 
+        if 'title' in request.inputs:
+            title = request.inputs['title'][0].data
+        else:
+            title = None
+
+        if 'ymin' in request.inputs:
+            ymin = request.inputs['ymin'][0].data
+        else:
+            ymin = None
+
+        if 'ymax' in request.inputs:
+            ymax = request.inputs['ymax'][0].data
+        else:
+            ymax = None
+
+        f_str = request.inputs['figsize'][0].data
+        figsize = tuple([float(f) for f in f_str.split(',')])
         response.update_status('plotting variable {}'.format(var), 10)
 
         try:
             plotout_spaghetti_file = plt_ncdata.plot_ts_spaghetti(ncfiles,
                                                                   variable=var,
-                                                                  title='Field mean of {}'.format(var),
+                                                                  title=title,
+                                                                  delta=delta,
+                                                                  figsize=figsize,
+                                                                  ylim=(ymin, ymax),
                                                                   dir_output=self.workdir)
             LOGGER.info("spaghetti plot done")
             response.update_status('Spaghetti plot for %s %s files done' % (len(ncfiles), var), 50)
