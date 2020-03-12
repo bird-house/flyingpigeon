@@ -1,6 +1,6 @@
 from eggshell.nc.nc_utils import get_values, get_coordinates, get_index_lat, get_variable
 # from eggshell.nc.ocg_utils import call
-from os import path
+
 from os.path import basename, join
 from datetime import datetime as dt
 from shutil import copyfile
@@ -96,7 +96,6 @@ def robustness_cc_signal(variable_mean, standard_deviation=None, variable=None):
     else:
         out_mean_std = None
 
-
     bn_cc_signal = 'cc-signal_{}_{}_{}'.format(basename_ref[1], basename_ref[-2], basename_proj[-1])
 
     out_cc_signal = copyfile(variable_mean[0], bn_cc_signal)
@@ -107,9 +106,11 @@ def robustness_cc_signal(variable_mean, standard_deviation=None, variable=None):
 
     return out_cc_signal, out_mean_std
 
+
 def robustness_stats(resources, time_range=[None, None], dir_output=None, variable=None):
     """
-    calculating the spatial mean and corresponding standard deviation for an ensemble of consistent datasets containing one variableself.
+    calculating the spatial mean and corresponding standard deviation for an ensemble
+    of consistent datasets containing one variableself.
     If a time range is given the statistical values are calculated only in the disired timeperiod.
 
     :param resources: str or list of str containing the netCDF files paths
@@ -132,7 +133,8 @@ def robustness_stats(resources, time_range=[None, None], dir_output=None, variab
         rd = RequestDataset(resource, variable)
         prefix = basename(resource).replace('.nc', '')
         LOGGER.debug('processing mean of {}'.format(prefix))
-        calc = [{'func': 'median', 'name': variable}]  #  {'func': 'median', 'name': 'monthly_median'}
+        calc = [{'func': 'median', 'name': variable}]
+        # {'func': 'median', 'name': 'monthly_median'}
         ops = OcgOperations(dataset=rd, calc=calc, calc_grouping=['all'],
                             output_format='nc', prefix='median_'+prefix, time_range=time_range, dir_output=dir_output)
         out_means.append(ops.execute())

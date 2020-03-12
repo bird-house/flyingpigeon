@@ -3,20 +3,8 @@ from tempfile import mkstemp
 import logging
 # from matplotlib import use
 # use('Agg')   # use this if no xserver is available
-import numpy as np
+
 import os
-
-from os.path import abspath, curdir, join
-
-from matplotlib import pyplot as plt
-from matplotlib.patches import Polygon
-import matplotlib.patches as mpatches
-from matplotlib.collections import PatchCollection
-from matplotlib.colors import Normalize
-
-import cartopy.crs as ccrs
-
-
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -55,7 +43,6 @@ def concat_images(images, orientation='v', dir_output='.'):
     :return string: path to image
     """
     from PIL import Image
-    import sys
 
     LOGGER.debug('Images to be concatinated: %s' % images)
 

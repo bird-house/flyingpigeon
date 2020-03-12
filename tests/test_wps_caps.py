@@ -16,6 +16,7 @@ def test_wps_caps():
         'plot_spaghetti',
         'plot_spatial_analog',
         'plot_uncertainty',
+        'plot_uncertaintyrcp',
         'pointinspection',
         'robustness_statistic',
         'spatial_analog',

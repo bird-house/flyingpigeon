@@ -1,23 +1,17 @@
 """
 visualization of netCDF data
 """
-
-from tempfile import mkstemp
-# from matplotlib import use
-# use('Agg')   # use this if no xserver is available
-import numpy as np
-
 from matplotlib import pyplot as plt
 from matplotlib import colors
-from matplotlib.patches import Polygon
+# from matplotlib.patches import Polygon
 import matplotlib.patches as mpatches
 import cartopy.feature as cfeature
 
 import cartopy.crs as ccrs
 from cartopy.util import add_cyclic_point
 
-from flyingpigeon.calculation import fieldmean
-from flyingpigeon.nc_utils import get_variable, get_frequency, get_coordinates
+# from flyingpigeon.calculation import fieldmean
+from flyingpigeon.nc_utils import get_variable, get_coordinates
 from flyingpigeon.nc_utils import get_time, sort_by_filename, get_values
 from flyingpigeon.plt_utils import fig2plot
 
@@ -25,13 +19,14 @@ from numpy import meshgrid
 from netCDF4 import Dataset
 import numpy as np
 import pandas as pd
-
 from datetime import datetime as dt
-from os.path import basename
-
+from tempfile import mkstemp
+# from matplotlib import use
+# use('Agg')   # use this if no xserver is available
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
+
 
 class MidpointNormalize(colors.Normalize):
     def __init__(self, vmin=None, vmax=None, vcenter=None, clip=False):
@@ -57,7 +52,6 @@ def add_colorbar(im, aspect=20, pad_fraction=0.5,):
     plt.sca(current_ax)
 
     return im.axes.figure.colorbar(im, cax=cax)
-
 
 
 def plot_extend(resource, file_extension='png'):
@@ -152,7 +146,8 @@ def plot_ts_spaghetti(resource, variable=None, ylim=None, title=None,
                 else:
                     col = 'green'
 
-                dt = get_time(nc) # [datetime.strptime(elem, '%Y-%m-%d') for elem in strDate[0]]
+                dt = get_time(nc)
+                # [datetime.strptime(elem, '%Y-%m-%d') for elem in strDate[0]]
                 # ts = fieldmean(nc)
 
                 ds = Dataset(nc)
@@ -161,7 +156,7 @@ def plot_ts_spaghetti(resource, variable=None, ylim=None, title=None,
                 d2 = np.nanmean(tg_val, axis=1)
                 ts = np.nanmean(d2, axis=1)
 
-                plt.plot(dt, ts, col )
+                plt.plot(dt, ts, col)
                 plt.grid()
                 plt.title(title)
                 #
@@ -174,7 +169,7 @@ def plot_ts_spaghetti(resource, variable=None, ylim=None, title=None,
         plt.title(title, fontsize=20)
         plt.ylim(ylim)
         plt.xticks(fontsize=16, rotation=45)
-        plt.yticks(fontsize=16, ) # rotation=90
+        plt.yticks(fontsize=16)
         plt.grid()
 
         output_png = fig2plot(fig=fig, file_extension=file_extension, dir_output=dir_output)
@@ -185,6 +180,7 @@ def plot_ts_spaghetti(resource, variable=None, ylim=None, title=None,
         msg = 'matplotlib spaghetti plot failed: {}'.format(ex)
         LOGGER.exception(msg)
     return output_png
+
 
 def ts_data(datasets, delta=0):
     """
@@ -225,12 +221,12 @@ def ts_data(datasets, delta=0):
             LOGGER.debug('read in pandas series timeseries for: {}'.format(key))
         except Exception:
             LOGGER.exception('failed to read data timeseries for %s ' % (key))
-
     return df
 
+
 def plot_ts_uncertainty(resource, variable=None, ylim=None, title=None,
-                file_extension='png', delta=0, window=None, dir_output=None,
-                figsize=(10,10)):
+                        file_extension='png', delta=0, window=None, dir_output=None,
+                        figsize=(10, 10)):
     """
     creates a png file containing the appropriate uncertainty plot.
 
@@ -295,7 +291,7 @@ def plot_ts_uncertainty(resource, variable=None, ylim=None, title=None,
 
         try:
             x = pd.to_datetime(df.index.values)
-            x1 = x[x<=dt.strptime('2005-12-31',  "%Y-%m-%d")]
+            x1 = x[x <= dt.strptime('2005-12-31', "%Y-%m-%d")]
             x2 = x[len(x1)-1:]  # -1 to catch up with the last historical value
 
             plt.fill_between(x, q05, q95, alpha=0.5, color='grey')
@@ -306,7 +302,7 @@ def plot_ts_uncertainty(resource, variable=None, ylim=None, title=None,
             # plt.xlim(min(df.index.values), max(df.index.values))
             plt.ylim(ylim)
             plt.xticks(fontsize=16, rotation=45)
-            plt.yticks(fontsize=16, ) # rotation=90
+            plt.yticks(fontsize=16,)
             plt.title(title, fontsize=20)
             plt.grid()  # .grid_line_alpha=0.3
 
@@ -317,13 +313,13 @@ def plot_ts_uncertainty(resource, variable=None, ylim=None, title=None,
             raise Exception('failed to calculate quantiles. {}'.format(e))
     except Exception as e:
         LOGGER.exception('uncertainty plot failed for {}: {}'.format(variable, e))
-        _, output_png = mkstemp(dir='.', suffix='.png')
+        _, output_png = mkstemp(dir=dir_output, suffix='.png')
     return output_png
 
 
 def plot_ts_uncertaintyrcp(resource, variable=None, ylim=None, title=None,
-                file_extension='png', delta=0, window=None, dir_output=None,
-                figsize=(10,10)):
+                           file_extension='png', delta=0, window=None, dir_output=None,
+                           figsize=(10, 10)):
     """
     creates a png file containing the appropriate uncertainty plot.
 
@@ -372,7 +368,8 @@ def plot_ts_uncertaintyrcp(resource, variable=None, ylim=None, title=None,
             #     window = 3  # 0
             # else:
             #     LOGGER.debug('frequency %s is not included' % frq)
-            window = 10  #TODO: include detection of frq = get_frequency(resource[0])
+            window = 10
+            # TODO: include detection of frq = get_frequency(resource[0])
 
         if len(df.index.values) >= window * 2:
             # TODO: calculate windowsize according to timestapms (day,mon,yr ... with get_frequency)
@@ -397,10 +394,10 @@ def plot_ts_uncertaintyrcp(resource, variable=None, ylim=None, title=None,
         try:
             rcp26_rmean = np.squeeze(df_rcp26.quantile([0.5], axis=1,).values)
             # skipna=False  quantile([0.5], axis=1, numeric_only=False )
-            rcp26_q05 = np.squeeze(df_rcp26.quantile([0.10], axis=1,).values)  # numeric_only=False)
-            rcp26_q33 = np.squeeze(df_rcp26.quantile([0.33], axis=1,).values)  # numeric_only=False)
-            rcp26_q66 = np.squeeze(df_rcp26.quantile([0.66], axis=1,).values)  # numeric_only=False)
-            rcp26_q95 = np.squeeze(df_rcp26.quantile([0.90], axis=1,).values)  # numeric_only=False)
+            rcp26_q05 = np.squeeze(df_rcp26.quantile([0.10], axis=1,).values)
+            rcp26_q33 = np.squeeze(df_rcp26.quantile([0.33], axis=1,).values)
+            rcp26_q66 = np.squeeze(df_rcp26.quantile([0.66], axis=1,).values)
+            rcp26_q95 = np.squeeze(df_rcp26.quantile([0.90], axis=1,).values)
             LOGGER.info('quantile calculated for all input data')
         except Exception as e:
             LOGGER.exception('failed to calculate quantiles: {}'.format(e))
@@ -408,10 +405,10 @@ def plot_ts_uncertaintyrcp(resource, variable=None, ylim=None, title=None,
         try:
             rcp85_rmean = np.squeeze(df_rcp85.quantile([0.5], axis=1,).values)
             # skipna=False  quantile([0.5], axis=1, numeric_only=False )
-            rcp85_q05 = np.squeeze(df_rcp85.quantile([0.10], axis=1,).values)  # numeric_only=False)
-            rcp85_q33 = np.squeeze(df_rcp85.quantile([0.33], axis=1,).values)  # numeric_only=False)
-            rcp85_q66 = np.squeeze(df_rcp85.quantile([0.66], axis=1,).values)  # numeric_only=False)
-            rcp85_q95 = np.squeeze(df_rcp85.quantile([0.90], axis=1,).values)  # numeric_only=False)
+            rcp85_q05 = np.squeeze(df_rcp85.quantile([0.10], axis=1,).values)
+            rcp85_q33 = np.squeeze(df_rcp85.quantile([0.33], axis=1,).values)
+            rcp85_q66 = np.squeeze(df_rcp85.quantile([0.66], axis=1,).values)
+            rcp85_q95 = np.squeeze(df_rcp85.quantile([0.90], axis=1,).values)
             LOGGER.info('quantile calculated for all input data')
         except Exception as e:
             LOGGER.exception('failed to calculate quantiles: {}'.format(e))
@@ -419,7 +416,7 @@ def plot_ts_uncertaintyrcp(resource, variable=None, ylim=None, title=None,
         # plot for rcp26:
         try:
             x = pd.to_datetime(df.index.values)
-            x1 = x[x<=dt.strptime('2005-12-31',  "%Y-%m-%d")]
+            x1 = x[x <= dt.strptime('2005-12-31', "%Y-%m-%d")]
             x2 = x[len(x1)-1:]  # -1 to catch up with the last historical value
 
             plt.fill_between(x, rcp26_q05, rcp26_q95, alpha=0.5, color='grey')
@@ -440,7 +437,7 @@ def plot_ts_uncertaintyrcp(resource, variable=None, ylim=None, title=None,
 
             plt.ylim(ylim)
             plt.xticks(fontsize=16, rotation=45)
-            plt.yticks(fontsize=16, ) # rotation=90
+            plt.yticks(fontsize=16,)
             plt.title(title, fontsize=20)
             plt.grid()  # .grid_line_alpha=0.3
 
@@ -451,13 +448,13 @@ def plot_ts_uncertaintyrcp(resource, variable=None, ylim=None, title=None,
             raise Exception('failed to calculate quantiles. {}'.format(e))
     except Exception as e:
         LOGGER.exception('uncertainty plot failed for {}: {}'.format(variable, e))
-        _, output_png = mkstemp(dir='.', suffix='.png')
+        _, output_png = mkstemp(dir=dir_output, suffix='.png')
     return output_png
 
 
 def plot_map_timemean(resource, variable=None, time_range=None,
-             title=None, delta=0, cmap=None, vmin=None, vmax=None, figsize=(15, 15),
-             file_extension='png', dir_output='.'):
+                      title=None, delta=0, cmap=None, vmin=None, vmax=None, figsize=(15, 15),
+                      file_extension='png', dir_output='.'):
     """
     creates a spatial map with the mean over the timestepps.
     If multiple files are provided, a mean over all files are condidered.
@@ -476,7 +473,6 @@ def plot_map_timemean(resource, variable=None, time_range=None,
     """
     # from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 
-
     try:
         LOGGER.debug('plot_map function read in values for {}'.format(resource))
 
@@ -493,8 +489,9 @@ def plot_map_timemean(resource, variable=None, time_range=None,
             lons, lats = meshgrid(lon, lat)
 
             var = ds.variables[variable]
-            var = get_values(f, time_range=time_range, variable=variable).data
-            var_mean = np.nanmean(var, axis=0) + delta # mean over whole periode 30 Years 1981-2010 and transform to Celsius
+            var = get_values(resource, time_range=time_range, variable=variable).data
+            var_mean = np.nanmean(var, axis=0) + delta
+            # mean over whole periode 30 Years 1981-2010 and transform to Celsius
         else:
             for i, f in enumerate(resource):
                 if i == 0:
@@ -551,7 +548,7 @@ def plot_map_timemean(resource, variable=None, time_range=None,
 
         cax = fig.add_axes([ax.get_position().x1 + 0.1, ax.get_position().y0,
                             0.02, ax.get_position().height])
-        cbar = plt.colorbar(cs, cax=cax) # Similar to fig.colorbar(im, cax = cax)
+        cbar = plt.colorbar(cs, cax=cax)
         cbar.ax.tick_params(labelsize=20)
 
         # ticklabs = cbar.ax.get_yticklabels()
@@ -571,8 +568,8 @@ def plot_map_timemean(resource, variable=None, time_range=None,
 
 
 def plot_map_ccsignal(signal, robustness=None,
-                   variable=None, cmap=None, title=None,
-                   file_extension='png', vmin=None, vmax=None):  # 'seismic'
+                      variable=None, cmap=None, title=None,
+                      file_extension='png', vmin=None, vmax=None):  # 'seismic'
     """
     generates a graphic for the output of the ensembleRobustness process for a lat/long file.
 
@@ -583,10 +580,6 @@ def plot_map_ccsignal(signal, robustness=None,
     :param title: default='Model agreement of signal'
     :returns str: path/to/file.png
     """
-    # from flyingpigeon import utils
-
-    from numpy import mean, ma
-
     if variable is None:
         variable = get_variable(signal)
 
@@ -641,9 +634,9 @@ def plot_map_ccsignal(signal, robustness=None,
         if cmap is None:
             if variable in ['pr', 'prAdjust',
                             'prcptot', 'rx1day',
-                            'wetdays', # 'cdd',
+                            'wetdays',  # 'cdd',
                             'cwd', 'sdii',
-                            'max_5_day_precipitation_amount']:
+                            'rx5day']:
                 cmap = 'BrBG'
             if variable in ['tas', 'tasAdjust', 'tg', 'tg_mean']:
                 cmap = 'seismic'
@@ -654,25 +647,27 @@ def plot_map_ccsignal(signal, robustness=None,
         maxval = round(np.nanmax(val_signal)+.5)
         minval = round(np.nanmin(val_signal))
 
-        norm = MidpointNormalize( vmin=minval, vcenter=0, vmax=maxval)  # )  vcenter=0,,
+        norm = MidpointNormalize(vmin=minval, vcenter=0, vmax=maxval)
+        # )vcenter=0,,
 
-        cs = plt.pcolormesh(lons, lats, val_signal, transform=ccrs.PlateCarree(), cmap=cmap, norm=norm, vmin=vmin, vmax=vmax)
-                #  60,
+        cs = plt.pcolormesh(lons, lats, val_signal,
+                            transform=ccrs.PlateCarree(),
+                            cmap=cmap, norm=norm, vmin=vmin, vmax=vmax)
         plt.colorbar(cs)
 
-        if robustness != None:
-            ch = plt.contourf(lons, lats, val_rob, transform=ccrs.PlateCarree(), hatches=[None, '/', '.'], alpha=0, colors='none', cmap=None)    # colors='white'
-            # cl = plt.contourf(lons, lats, mask_l, 1, transform=ccrs.PlateCarree(), hatches=[None, '/'], alpha=0, colors='none', cmap=None)     # ,
+        if robustness is not None:
+            plt.contourf(lons, lats, val_rob, transform=ccrs.PlateCarree(),
+                         hatches=[None, '/', '.'], alpha=0, colors='none', cmap=None)    # colors='white'
+            # cl = plt.contourf(lons, lats, mask_l, 1,
+            # transform=ccrs.PlateCarree(), hatches=[None, '/'], alpha=0, colors='none', cmap=None)     # ,
 
             plt.annotate('// = low model ensemble agreement', (0, 0), (0, -10),
                          xycoords='axes fraction', textcoords='offset points', va='top')
             plt.annotate('..  = high model ensemble agreement', (0, 0), (0, -20),
                          xycoords='axes fraction', textcoords='offset points', va='top')
 
-        # ch = plt.contourf(lons, lats, mask, 1, transform=ccrs.PlateCarree(), colors='none', hatches=[None,'.' ])
-
         ax.add_feature(cfeature.BORDERS, linewidth=2, linestyle='--')
-        ax.add_feature(cfeature.COASTLINE, linewidth=2,) #  coastlines()
+        ax.add_feature(cfeature.COASTLINE, linewidth=2,)  # coastlines()
         gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True,
                           linewidth=2, color='gray', alpha=0.5, linestyle='--')
         gl.xlabels_top = False
@@ -680,32 +675,26 @@ def plot_map_ccsignal(signal, robustness=None,
         gl.xlabel_style = {'size': 15, 'color': 'black'}
         gl.ylabel_style = {'size': 15, 'color': 'black'}
 
-        if title != None:
-            plt.title(title, fontsize=20 )
+        if title is not None:
+            plt.title(title, fontsize=20)
 
         plt.xticks(fontsize=16, rotation=45)
-        plt.yticks(fontsize=16, ) # rotation=90
-
-
-        # # artists, labels = ch.legend_elements()
-        # # plt.legend(artists, labels, handleheight=2)
-        #
-        # ax.gridlines()
-        # # ax.set_global()
+        plt.yticks(fontsize=16)
 
         graphic = fig2plot(fig=fig, file_extension=file_extension)
         plt.close()
 
         LOGGER.info('Plot created and figure saved')
-    except:
-        msg = 'failed to plot graphic'
+    except Exception as e:
+        msg = 'failed to plot graphic: {}'.format(e)
         LOGGER.exception(msg)
-
     return graphic
 
 
-def plot_map_spatialanalog(ncfile, variable='dissimilarity', cmap='viridis', title='Spatial analog'):
-    """Return a matplotlib Figure instance showing a map of the dissimilarity measure.
+def plot_map_spatialanalog(ncfile, variable='dissimilarity',
+                           cmap='viridis', title='Spatial analog'):
+    """
+    Return a matplotlib Figure instance showing a map of the dissimilarity measure.
     """
     import netCDF4 as nc
     from eggshell.nc import nc_utils

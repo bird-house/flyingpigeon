@@ -8,20 +8,16 @@ import tarfile
 import requests
 import shutil
 
-from netCDF4 import Dataset, MFDataset
 from re import search
 from urllib.parse import urlparse
 from zipfile import ZipFile
 
-import eggshell as eg
-from eggshell.config import Paths
-from eggshell.nc.nc_utils import get_variable
-
-paths = Paths(eg)
-
+import flyingpigeon as fp
+from .config import Paths
 import logging
 
-LOGGER = logging.getLogger("EGGSHELL")
+LOGGER = logging.getLogger("PYWPS")
+paths = Paths(fp)
 
 
 def archive(resources, format='tar', dir_output=None, mode=None):

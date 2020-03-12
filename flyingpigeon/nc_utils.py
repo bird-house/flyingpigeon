@@ -1,5 +1,4 @@
 from netCDF4 import Dataset, MFDataset, num2date
-from ocgis import RequestDataset
 from datetime import datetime as dt
 # TODO: change to nc_utils guess_main_variables
 # from eggshell.nc.ocg_utils import get_variable
@@ -347,7 +346,7 @@ def sort_by_filename(resource, historical_concatination=False):
                 try:
                     nc_datasets[key].sort()
                     start, _ = get_timerange(nc_datasets[key][0])  # get first timestep of first file
-                    _ , end = get_timerange(nc_datasets[key][-1])  # get last  timestep of last file
+                    _, end = get_timerange(nc_datasets[key][-1])  # get last  timestep of last file
                     newkey = key + '_' + start + '-' + end
                     tmp_dic[newkey] = nc_datasets[key]
                 except Exception:
@@ -468,8 +467,8 @@ def get_timerange(resource):
     try:
         resource.sort()
         if len(resource) > 1:
-            #ds = MFDataset(resource)
-            LOGGER.exception('functon expect single file, Mulitple files found' % len(resource))
+            # ds = MFDataset(resource)
+            LOGGER.error('functon expect single file, Mulitple files found {}'.format(len(resource)))
         else:
             ds = Dataset(resource[0])
             LOGGER.debug('Dataset loaded for %s file in resource:' % len(resource))
@@ -583,12 +582,11 @@ def get_values(resource, variable=None, time_range=None):
         LOGGER.exception('resource is a list containing {} files. Should be only one'.format(len(resource)))
     vals = squeeze(ds.variables[variable][:])
 
-    if time_range != None:
+    if time_range is not None:
         ts = array(get_time(resource))
         id_start = where(ts >= time_range[0])[0][0]
         id_end = where(ts <= time_range[1])[0][-1]
-        vals = vals[id_start:id_end+1,:,:]
-
+        vals = vals[id_start:id_end+1, :, :]
     return vals
 
 

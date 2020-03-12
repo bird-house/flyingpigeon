@@ -105,8 +105,8 @@ class PlotuncertaintyRcpProcess(Process):
                          'https://flyingpigeon.readthedocs.io/en/latest/processes_des.html#data-visualization'),
             ],
             abstract="Outputs timeseries of all inputfiles with the ensemble running mean and correponding bandwidth."
-                      "medians are caluclated seperately for each RCP, the uncertainty over all files."
-                      "The single lines are colorcoded according to the IPCC graphic guidelines.",
+                     "medians are caluclated seperately for each RCP, the uncertainty over all files."
+                     "The single lines are colorcoded according to the IPCC graphic guidelines.",
             inputs=inputs,
             outputs=outputs,
             status_supported=True,
@@ -152,12 +152,12 @@ class PlotuncertaintyRcpProcess(Process):
 
         try:
             plotout_file = plt_ncdata.plot_ts_uncertaintyrcp(ncfiles,
-                                                          variable=var,
-                                                          title=title,
-                                                          delta=delta,
-                                                          figsize=figsize,
-                                                          ylim=(ymin, ymax),
-                                                          dir_output=self.workdir)
+                                                             variable=var,
+                                                             title=title,
+                                                             delta=delta,
+                                                             figsize=figsize,
+                                                             ylim=(ymin, ymax),
+                                                             dir_output=self.workdir)
             LOGGER.info("uncertainty plot done")
             response.update_status('Uncertainty plot for %s %s files done' % (len(ncfiles), var), 50)
             response.outputs['plotout_uncertainty'].file = plotout_file
