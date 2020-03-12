@@ -197,7 +197,7 @@ def ts_data(datasets, delta=0):
     """
     # Create index out of existing timestemps
     for i, key in enumerate(datasets.keys()):
-        for nc in datasetsqqq[key]:
+        for nc in datasets[key]:
             ds = Dataset(nc)
             ts = get_time(nc)
             if i == 0:
@@ -269,17 +269,7 @@ def plot_ts_uncertainty(resource, variable=None, ylim=None, title=None,
         df = ts_data(dic, delta=delta)
 
         if window is None:
-            # if frq == 'day':
-            #     window = 1095  # 1
-            # elif frq == 'man':
-            #     window = 35  # 9
-            # elif frq == 'sem':
-            #     window = 11  # 9
-            # elif frq == 'yr':
-            #     window = 3  # 0
-            # else:
-            #     LOGGER.debug('frequency %s is not included' % frq)
-            window = 10  #TODO: include detection of frq = get_frequency(resource[0])
+            window = 10  # TODO: include detection of frq = get_frequency(resource[0])
 
         if len(df.index.values) >= window * 2:
             # TODO: calculate windowsize according to timestapms (day,mon,yr ... with get_frequency)
@@ -395,28 +385,59 @@ def plot_ts_uncertaintyrcp(resource, variable=None, ylim=None, title=None,
                      fontsize=20, color='red',
                      ha='right', va='bottom', alpha=0.5)
 
+        # split into differnet RCPs:
+        # TODO: inlcude rcp45 and 65
+        rcp26 = [ds for ds in df_smooth.columns if 'rcp26' in ds]
+        rcp85 = [ds for ds in df_smooth.columns if 'rcp85' in ds]
+
+        df_rcp26 = df_smooth[rcp26]
+        df_rcp85 = df_smooth[rcp85]
+
+        # for rcp26:
         try:
-            rmean = np.squeeze(df_smooth.quantile([0.5], axis=1,).values)
+            rcp26_rmean = np.squeeze(df_rcp26.quantile([0.5], axis=1,).values)
             # skipna=False  quantile([0.5], axis=1, numeric_only=False )
-            q05 = np.squeeze(df_smooth.quantile([0.10], axis=1,).values)  # numeric_only=False)
-            q33 = np.squeeze(df_smooth.quantile([0.33], axis=1,).values)  # numeric_only=False)
-            q66 = np.squeeze(df_smooth.quantile([0.66], axis=1,).values)  # numeric_only=False)
-            q95 = np.squeeze(df_smooth.quantile([0.90], axis=1,).values)  # numeric_only=False)
+            rcp26_q05 = np.squeeze(df_rcp26.quantile([0.10], axis=1,).values)  # numeric_only=False)
+            rcp26_q33 = np.squeeze(df_rcp26.quantile([0.33], axis=1,).values)  # numeric_only=False)
+            rcp26_q66 = np.squeeze(df_rcp26.quantile([0.66], axis=1,).values)  # numeric_only=False)
+            rcp26_q95 = np.squeeze(df_rcp26.quantile([0.90], axis=1,).values)  # numeric_only=False)
             LOGGER.info('quantile calculated for all input data')
         except Exception as e:
             LOGGER.exception('failed to calculate quantiles: {}'.format(e))
 
         try:
+            rcp85_rmean = np.squeeze(df_rcp85.quantile([0.5], axis=1,).values)
+            # skipna=False  quantile([0.5], axis=1, numeric_only=False )
+            rcp85_q05 = np.squeeze(df_rcp85.quantile([0.10], axis=1,).values)  # numeric_only=False)
+            rcp85_q33 = np.squeeze(df_rcp85.quantile([0.33], axis=1,).values)  # numeric_only=False)
+            rcp85_q66 = np.squeeze(df_rcp85.quantile([0.66], axis=1,).values)  # numeric_only=False)
+            rcp85_q95 = np.squeeze(df_rcp85.quantile([0.90], axis=1,).values)  # numeric_only=False)
+            LOGGER.info('quantile calculated for all input data')
+        except Exception as e:
+            LOGGER.exception('failed to calculate quantiles: {}'.format(e))
+
+        # plot for rcp26:
+        try:
             x = pd.to_datetime(df.index.values)
             x1 = x[x<=dt.strptime('2005-12-31',  "%Y-%m-%d")]
             x2 = x[len(x1)-1:]  # -1 to catch up with the last historical value
 
-            plt.fill_between(x, q05, q95, alpha=0.5, color='grey')
-            plt.fill_between(x, q33, q66, alpha=0.5, color='grey')
+            plt.fill_between(x, rcp26_q05, rcp26_q95, alpha=0.5, color='grey')
+            plt.fill_between(x, rcp26_q33, rcp26_q66, alpha=0.5, color='grey')
 
-            plt.plot(x1, rmean[:len(x1)], c='blue', lw=3)
-            plt.plot(x2, rmean[len(x1)-1:], c='r', lw=3)
+            plt.fill_between(x2, rcp85_q05[len(x1)-1:], rcp85_q95[len(x1)-1:],
+                             alpha=0.5, color='grey')
+            plt.fill_between(x2, rcp85_q33[len(x1)-1:], rcp85_q66[len(x1)-1:],
+                             alpha=0.5, color='grey')
+
+            plt.plot(x1, rcp26_rmean[:len(x1)], c='blue', lw=3)
+            plt.plot(x2, rcp26_rmean[len(x1)-1:], c='green', lw=3)
+
+            plt.plot(x1, rcp85_rmean[:len(x1)], c='blue', lw=3)
+            plt.plot(x2, rcp85_rmean[len(x1)-1:], c='red', lw=3)
+
             # plt.xlim(min(df.index.values), max(df.index.values))
+
             plt.ylim(ylim)
             plt.xticks(fontsize=16, rotation=45)
             plt.yticks(fontsize=16, ) # rotation=90
