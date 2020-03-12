@@ -24,6 +24,11 @@ from flyingpigeon.plt_utils import fig2plot
 from numpy import meshgrid
 from netCDF4 import Dataset
 import numpy as np
+import pandas as pd
+
+from datetime import datetime as dt
+from os.path import basename
+
 
 import logging
 LOGGER = logging.getLogger("PYWPS")
@@ -181,28 +186,68 @@ def plot_ts_spaghetti(resource, variable=None, ylim=None, title=None,
         LOGGER.exception(msg)
     return output_png
 
+def ts_data(datasets, delta=0):
+    """
+    Creates a pandas DataFrame out of the netcdt datasets
 
-def plot_ts_uncertainty(resource, variable=None, ylim=None, title=None,
-                file_extension='png', delta=0, window=None, dir_output='.',
+    :param datasets: a sort_by_filename dictionary of datasets
+    :param delta: set a delta for the values e.g. -273.15 to convert Kelvin to Celsius
+
+    :retruns DataFrame:  dates
+    """
+    # Create index out of existing timestemps
+    for i, key in enumerate(datasets.keys()):
+        for nc in datasets[key]:
+            ds = Dataset(nc)
+            ts = get_time(nc)
+            if i == 0:
+                dates = pd.DatetimeIndex(ts)
+            else:
+                dates = dates.union(ts)
+
+    # create empty DataFrame according existing timestemps
+    df = pd.DataFrame(columns=list(datasets.keys()), index=dates)
+    for key in datasets.keys():
+        try:
+            for nc in datasets[key]:
+                ds = Dataset(nc)
+                var = get_variable(nc)
+                ts = get_time(nc)
+                tg_val = np.squeeze(ds.variables[var][:])
+                d2 = np.nanmean(tg_val, axis=1)
+                data = np.nanmean(d2, axis=1) + delta
+                df[key].loc[ts] = data
+                # data = fieldmean(dic[key])  # get_values(f)
+                # ts = get_time(dic[key])
+                # ds = pd.Series(data=data, index=ts, name=key)
+                # # ds_yr = ds.resample('12M', ).mean()   # yearly mean loffset='6M'
+                # df[key] = ds
+            LOGGER.debug('read in pandas series timeseries for: {}'.format(key))
+        except Exception:
+            LOGGER.exception('failed to read data timeseries for %s ' % (key))
+
+    return df
+
+
+def plot_ts_uncertainty(resource, variable=None, ylim=None, title=None, rcp_seperate=True,
+                file_extension='png', delta=0, window=None, dir_output=None,
                 figsize=(10,10)):
     """
     creates a png file containing the appropriate uncertainty plot.
 
     :param resource: list of files containing the same variable
+    :param delta: set a delta for the values e.g. -273.15 to convert Kelvin to Celsius
     :param variable: variable to be visualised. If None (default), variable will be detected
     :param ylim: Y-axis limitations: tuple(min,max)
     :param title: string to be used as title
     :param figsize: figure size defult=(10,10)
+    :param rcp_seperate: if 'True' (default), median is visualised seperately for each RCP
     :param window: windowsize of the rolling mean
 
     :returns str: path/to/file.png
     """
     LOGGER.debug('Start visualisation uncertainty plot')
 
-    import pandas as pd
-    import numpy as np
-    from datetime import datetime as dt
-    from os.path import basename
     #
     # from flyingpigeon.utils import get_time, sort_by_filename
     # from flyingpigeon.calculation import fieldmean
@@ -223,39 +268,7 @@ def plot_ts_uncertainty(resource, variable=None, ylim=None, title=None,
 
         dic = sort_by_filename(resource, historical_concatination=True)
 
-        # Create index out of existing timestemps
-        for i, key in enumerate(dic.keys()):
-            for nc in dic[key]:
-                ds = Dataset(nc)
-                ts = get_time(nc)
-                if i == 0:
-                    dates = pd.DatetimeIndex(ts)
-                else:
-                    dates = dates.union(ts)
-
-        # create empty DataFrame according existing timestemps
-        df = pd.DataFrame(columns=list(dic.keys()), index=dates)
-
-        for key in dic.keys():
-            try:
-                for nc in dic[key]:
-                    ds = Dataset(nc)
-                    var = get_variable(nc)
-                    ts = get_time(nc)
-                    tg_val = np.squeeze(ds.variables[var][:])
-                    d2 = np.nanmean(tg_val, axis=1)
-                    data = np.nanmean(d2, axis=1) + delta
-                    df[key].loc[ts] = data
-                    # data = fieldmean(dic[key])  # get_values(f)
-                    # ts = get_time(dic[key])
-                    # ds = pd.Series(data=data, index=ts, name=key)
-                    # # ds_yr = ds.resample('12M', ).mean()   # yearly mean loffset='6M'
-                    # df[key] = ds
-                LOGGER.info('read in pandas series timeseries for: {}'.format(key))
-            except Exception:
-                LOGGER.exception('failed to calculate timeseries for %s ' % (key))
-
-        frq = get_frequency(resource[0])
+        df = ts_data(dic, delta=delta)
 
         if window is None:
             # if frq == 'day':
@@ -268,9 +281,7 @@ def plot_ts_uncertainty(resource, variable=None, ylim=None, title=None,
             #     window = 3  # 0
             # else:
             #     LOGGER.debug('frequency %s is not included' % frq)
-            window = 10
-
-        print('frequency: {}, window: {}'.format(frq, window))
+            window = 10  #TODO: include detection of frq = get_frequency(resource[0])
 
         if len(df.index.values) >= window * 2:
             # TODO: calculate windowsize according to timestapms (day,mon,yr ... with get_frequency)
