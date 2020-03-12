@@ -151,7 +151,7 @@ class PlotuncertaintyRcpProcess(Process):
         response.update_status('plotting variable {}'.format(var), 10)
 
         try:
-            plotout_file = plt_ncdata.plot_ts_uncertainty(ncfiles,
+            plotout_file = plt_ncdata.plot_ts_uncertaintyrcp(ncfiles,
                                                           variable=var,
                                                           title=title,
                                                           delta=delta,

@@ -197,7 +197,7 @@ def ts_data(datasets, delta=0):
     """
     # Create index out of existing timestemps
     for i, key in enumerate(datasets.keys()):
-        for nc in datasets[key]:
+        for nc in datasetsqqq[key]:
             ds = Dataset(nc)
             ts = get_time(nc)
             if i == 0:
@@ -228,8 +228,7 @@ def ts_data(datasets, delta=0):
 
     return df
 
-
-def plot_ts_uncertainty(resource, variable=None, ylim=None, title=None, rcp_seperate=True,
+def plot_ts_uncertainty(resource, variable=None, ylim=None, title=None,
                 file_extension='png', delta=0, window=None, dir_output=None,
                 figsize=(10,10)):
     """
@@ -241,7 +240,109 @@ def plot_ts_uncertainty(resource, variable=None, ylim=None, title=None, rcp_sepe
     :param ylim: Y-axis limitations: tuple(min,max)
     :param title: string to be used as title
     :param figsize: figure size defult=(10,10)
-    :param rcp_seperate: if 'True' (default), median is visualised seperately for each RCP
+    :param window: windowsize of the rolling mean
+
+    :returns str: path/to/file.png
+    """
+    LOGGER.debug('Start visualisation uncertainty plot')
+
+    #
+    # from flyingpigeon.utils import get_time, sort_by_filename
+    # from flyingpigeon.calculation import fieldmean
+    # from flyingpigeon.metadata import get_frequency
+
+    # === prepare invironment
+    if type(resource) == str:
+        resource = list([resource])
+    if variable is None:
+        variable = get_variable(resource[0])
+    if title is None:
+        title = "Field mean of %s " % variable
+
+    LOGGER.info('variable %s found in resource.' % variable)
+
+    try:
+        fig = plt.figure(figsize=figsize, facecolor='w', edgecolor='k')
+
+        dic = sort_by_filename(resource, historical_concatination=True)
+
+        df = ts_data(dic, delta=delta)
+
+        if window is None:
+            # if frq == 'day':
+            #     window = 1095  # 1
+            # elif frq == 'man':
+            #     window = 35  # 9
+            # elif frq == 'sem':
+            #     window = 11  # 9
+            # elif frq == 'yr':
+            #     window = 3  # 0
+            # else:
+            #     LOGGER.debug('frequency %s is not included' % frq)
+            window = 10  #TODO: include detection of frq = get_frequency(resource[0])
+
+        if len(df.index.values) >= window * 2:
+            # TODO: calculate windowsize according to timestapms (day,mon,yr ... with get_frequency)
+            df_smooth = df.rolling(window=window, center=True).mean()
+            LOGGER.info('rolling mean calculated for all input data')
+        else:
+            df_smooth = df.copy()
+            LOGGER.debug('timeseries too short for moving mean')
+            fig.text(0.95, 0.05, '!!! timeseries too short for moving mean over 30years !!!',
+                     fontsize=20, color='red',
+                     ha='right', va='bottom', alpha=0.5)
+
+        try:
+            rmean = np.squeeze(df_smooth.quantile([0.5], axis=1,).values)
+            # skipna=False  quantile([0.5], axis=1, numeric_only=False )
+            q05 = np.squeeze(df_smooth.quantile([0.10], axis=1,).values)  # numeric_only=False)
+            q33 = np.squeeze(df_smooth.quantile([0.33], axis=1,).values)  # numeric_only=False)
+            q66 = np.squeeze(df_smooth.quantile([0.66], axis=1,).values)  # numeric_only=False)
+            q95 = np.squeeze(df_smooth.quantile([0.90], axis=1,).values)  # numeric_only=False)
+            LOGGER.info('quantile calculated for all input data')
+        except Exception as e:
+            LOGGER.exception('failed to calculate quantiles: {}'.format(e))
+
+        try:
+            x = pd.to_datetime(df.index.values)
+            x1 = x[x<=dt.strptime('2005-12-31',  "%Y-%m-%d")]
+            x2 = x[len(x1)-1:]  # -1 to catch up with the last historical value
+
+            plt.fill_between(x, q05, q95, alpha=0.5, color='grey')
+            plt.fill_between(x, q33, q66, alpha=0.5, color='grey')
+
+            plt.plot(x1, rmean[:len(x1)], c='blue', lw=3)
+            plt.plot(x2, rmean[len(x1)-1:], c='r', lw=3)
+            # plt.xlim(min(df.index.values), max(df.index.values))
+            plt.ylim(ylim)
+            plt.xticks(fontsize=16, rotation=45)
+            plt.yticks(fontsize=16, ) # rotation=90
+            plt.title(title, fontsize=20)
+            plt.grid()  # .grid_line_alpha=0.3
+
+            output_png = fig2plot(fig=fig, file_extension=file_extension, dir_output=dir_output)
+            plt.close()
+            LOGGER.debug('timeseries uncertainty plot done for %s' % variable)
+        except Exception as e:
+            raise Exception('failed to calculate quantiles. {}'.format(e))
+    except Exception as e:
+        LOGGER.exception('uncertainty plot failed for {}: {}'.format(variable, e))
+        _, output_png = mkstemp(dir='.', suffix='.png')
+    return output_png
+
+
+def plot_ts_uncertaintyrcp(resource, variable=None, ylim=None, title=None,
+                file_extension='png', delta=0, window=None, dir_output=None,
+                figsize=(10,10)):
+    """
+    creates a png file containing the appropriate uncertainty plot.
+
+    :param resource: list of files containing the same variable
+    :param delta: set a delta for the values e.g. -273.15 to convert Kelvin to Celsius
+    :param variable: variable to be visualised. If None (default), variable will be detected
+    :param ylim: Y-axis limitations: tuple(min,max)
+    :param title: string to be used as title
+    :param figsize: figure size defult=(10,10)
     :param window: windowsize of the rolling mean
 
     :returns str: path/to/file.png
