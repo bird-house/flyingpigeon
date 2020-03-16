@@ -92,4 +92,4 @@ Python syntax:
 
 .. code:: ipython3
 
-    from eggshell.nc.nc_utils import get_coordinates
+    from flyingpigeon.nc_utils import get_coordinates

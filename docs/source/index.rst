@@ -10,6 +10,7 @@ Table of content
    user_guide
    dev_guide
    processes_des
+   tutorial
    processes_api
    changes
    authors

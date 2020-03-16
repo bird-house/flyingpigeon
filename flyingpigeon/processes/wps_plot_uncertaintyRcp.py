@@ -15,7 +15,7 @@ from flyingpigeon.nc_utils import get_variable
 LOGGER = logging.getLogger("PYWPS")
 
 
-class PlotspaghettiProcess(Process):
+class PlotuncertaintyRcpProcess(Process):
     def __init__(self):
         inputs = [
             ComplexInput('resource', 'Resource',
@@ -37,19 +37,19 @@ class PlotspaghettiProcess(Process):
                          max_occurs=1,
                          ),
 
-            LiteralInput('delta', 'Delta',
-                         abstract='To set an offset for the values.'
-                                  'e.g. -273.15 to transform Kelvin to Celsius',
-                         data_type='float',
-                         default=0,
-                         ),
-
             LiteralInput("title", "Title",
                          abstract="Title to be written over the graphic",
                          default=None,
                          data_type='string',
                          min_occurs=0,
                          max_occurs=1,
+                         ),
+
+            LiteralInput('delta', 'Delta',
+                         abstract='To set an offset for the values.'
+                                  'e.g. -273.15 to transform Kelvin to Celsius',
+                         data_type='float',
+                         default=0,
                          ),
 
             LiteralInput('ymin', 'ymin',
@@ -71,6 +71,7 @@ class PlotspaghettiProcess(Process):
                          abstract='Give two numbers (as a string:"7,10") to define the size of the graphic',
                          default='10,10',
                          ),
+
         ]
 
         outputs = [
@@ -79,31 +80,33 @@ class PlotspaghettiProcess(Process):
             #               as_reference=True,
             #               supported_formats=[Format('text/plain')]
             #               ),
-
-            ComplexOutput("plotout_spaghetti", "Visualisation, Spaghetti plot",
-                          abstract="Visualisation of single variables as a spaghetti plot",
-                          supported_formats=[Format("image/png")],
-                          as_reference=True,
-                          ),
             #
-            # ComplexOutput("plotout_uncertainty", "Visualisation Uncertainty plot",
-            #               abstract="Visualisation of single variables ensemble mean with uncertainty",
+            # ComplexOutput("plotout_spaghetti", "Visualisation, Spaghetti plot",
+            #               abstract="Visualisation of single variables as a spaghetti plot",
             #               supported_formats=[Format("image/png")],
             #               as_reference=True,
-            #               )
+            #               ),
+
+            ComplexOutput("plotout_uncertainty", "Visualisation Uncertainty plot",
+                          abstract="Visualisation of single variables ensemble running mean with uncertainty",
+                          supported_formats=[Format("image/png")],
+                          as_reference=True,
+                          )
+            # TODO: include window for running mean
         ]
 
-        super(PlotspaghettiProcess, self).__init__(
+        super(PlotuncertaintyRcpProcess, self).__init__(
             self._handler,
-            identifier="plot_spaghetti",
-            title="Timeseries as Spaghetti Plot",
+            identifier="plot_uncertaintyrcp",
+            title="Timeseries as uncertainty plot with Rcp differenciated",
             version="0.1",
             metadata=[
                 Metadata('Doc',
                          'https://flyingpigeon.readthedocs.io/en/latest/processes_des.html#data-visualization'),
             ],
-            abstract="Outputs timeseries of all inputfiles as a Spaghetti plot.\
-                      The single lines are colorcoded according to the IPCC graphic guidelines.",
+            abstract="Outputs timeseries of all inputfiles with the ensemble running mean and correponding bandwidth."
+                     "medians are caluclated seperately for each RCP, the uncertainty over all files."
+                     "The single lines are colorcoded according to the IPCC graphic guidelines.",
             inputs=inputs,
             outputs=outputs,
             status_supported=True,
@@ -148,18 +151,18 @@ class PlotspaghettiProcess(Process):
         response.update_status('plotting variable {}'.format(var), 10)
 
         try:
-            plotout_spaghetti_file = plt_ncdata.plot_ts_spaghetti(ncfiles,
-                                                                  variable=var,
-                                                                  title=title,
-                                                                  delta=delta,
-                                                                  figsize=figsize,
-                                                                  ylim=(ymin, ymax),
-                                                                  dir_output=self.workdir)
-            LOGGER.info("spaghetti plot done")
-            response.update_status('Spaghetti plot for %s %s files done' % (len(ncfiles), var), 50)
-            response.outputs['plotout_spaghetti'].file = plotout_spaghetti_file
+            plotout_file = plt_ncdata.plot_ts_uncertaintyrcp(ncfiles,
+                                                             variable=var,
+                                                             title=title,
+                                                             delta=delta,
+                                                             figsize=figsize,
+                                                             ylim=(ymin, ymax),
+                                                             dir_output=self.workdir)
+            LOGGER.info("uncertainty plot done")
+            response.update_status('Uncertainty plot for %s %s files done' % (len(ncfiles), var), 50)
+            response.outputs['plotout_uncertainty'].file = plotout_file
         except Exception as e:
-            raise Exception("spaghetti plot failed : {}".format(e))
+            raise Exception("Uncertainty plot failed : {}".format(e))
 
         response.update_status('visualisation done', 100)
         return response

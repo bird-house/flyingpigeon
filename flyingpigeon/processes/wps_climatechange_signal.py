@@ -8,13 +8,13 @@ from datetime import datetime as dt
 
 from pywps.app.Common import Metadata
 
-from eggshell.utils import extract_archive
-from eggshell.nc.nc_utils import get_variable
-from eggshell.nc.calculation import robustness_stats
-from eggshell.nc.calculation import robustness_cc_signal
-from eggshell.plot.plt_ncdata import plot_map_ccsignal
-# from eggshell.utils import rename_complexinputs
-# from eggshell.log import init_process_logger
+from flyingpigeon.utils import extract_archive
+from flyingpigeon.nc_utils import get_variable
+from flyingpigeon.nc_statistic import robustness_stats
+from flyingpigeon.nc_statistic import robustness_cc_signal
+from flyingpigeon.plt_ncdata import plot_map_ccsignal
+# from flyingpigeon.utils import rename_complexinputs
+# from flyingpigeon.log import init_process_logger
 
 LOGGER = logging.getLogger("PYWPS")
 

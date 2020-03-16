@@ -6,11 +6,11 @@ from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
 
-from eggshell.plot import plt_ncdata
-from eggshell.utils import extract_archive
-from eggshell.nc.nc_utils import get_variable, get_time
-# from eggshell.utils import rename_complexinputs
-# from eggshell.log import init_process_logger
+from flyingpigeon import plt_ncdata
+from flyingpigeon.utils import extract_archive
+from flyingpigeon.nc_utils import get_variable, get_time
+# from flyingpigeon.utils import rename_complexinputs
+# from flyingpigeon.log import init_process_logger
 
 LOGGER = logging.getLogger("PYWPS")
 
@@ -130,6 +130,7 @@ class PlotmaptimemeanProcess(Process):
         # response.outputs['output_log'].file = 'log.txt'
 
         LOGGER.info('Collecting Arguments for the process')
+        response.update_status('Start plotting file', 5)
 
         ncfiles = extract_archive(
             resources=[inpt.file for inpt in request.inputs['resource']],

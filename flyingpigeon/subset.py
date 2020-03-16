@@ -1,9 +1,9 @@
-from eggshell.nc.ocg_utils import call, get_variable
-from eggshell.nc.nc_utils import sort_by_filename
+from flyingpigeon.ocg_utils import call, get_variable
+from flyingpigeon.nc_utils import sort_by_filename
 from ocgis import env, ShpCabinetIterator, ShpCabinet
 
 
-from eggshell.config import Paths
+from flyingpigeon.config import Paths
 import flyingpigeon as fp
 
 import logging

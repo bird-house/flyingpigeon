@@ -9,11 +9,11 @@ from pywps import Process
 from pywps.app.Common import Metadata
 from shapely.geometry import Point
 
-from eggshell.nc.ocg_utils import call
-from eggshell.nc.nc_utils import sort_by_filename, get_values, get_time
+from flyingpigeon.ocg_utils import call
+from flyingpigeon.nc_utils import sort_by_filename, get_values, get_time
 
-from eggshell.utils import archive, extract_archive
-# from eggshell.utils import rename_complexinputs
+from flyingpigeon.utils import archive, extract_archive
+# from flyingpigeon.utils import rename_complexinputs
 
 
 LOGGER = logging.getLogger("PYWPS")
