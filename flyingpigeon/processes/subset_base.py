@@ -8,7 +8,7 @@ import netCDF4 as nc
 from shapely.geometry import shape
 import requests
 
-from eggshell.nc.nc_utils import get_variable
+from flyingpigeon.nc_utils import get_variable
 
 resource = ComplexInput('resource',
                         'NetCDF resource',

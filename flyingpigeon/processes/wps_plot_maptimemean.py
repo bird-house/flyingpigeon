@@ -9,8 +9,8 @@ from pywps.app.Common import Metadata
 from flyingpigeon import plt_ncdata
 from flyingpigeon.utils import extract_archive
 from flyingpigeon.nc_utils import get_variable, get_time
-# from eggshell.utils import rename_complexinputs
-# from eggshell.log import init_process_logger
+# from flyingpigeon.utils import rename_complexinputs
+# from flyingpigeon.log import init_process_logger
 
 LOGGER = logging.getLogger("PYWPS")
 

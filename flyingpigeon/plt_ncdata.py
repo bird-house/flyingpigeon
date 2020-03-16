@@ -112,7 +112,6 @@ def plot_ts_spaghetti(resource, variable=None, ylim=None, title=None,
 
     :retruns str: path to png file
     """
-    # from eggshell.nc.calculation import fieldmean
 
     try:
         fig = plt.figure(figsize=figsize, dpi=600, facecolor='w', edgecolor='k')

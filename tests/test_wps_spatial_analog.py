@@ -17,7 +17,7 @@ from ocgis.variable.temporal import TemporalVariable
 from ocgis.base import get_variable_names
 from ocgis.test.base import TestBase
 
-from eggshell.utils import local_path
+from flyingpigeon.utils import local_path
 from flyingpigeon.processes import SpatialAnalogProcess, PlotSpatialAnalogProcess
 from .common import TESTDATA, client_for, CFG_FILE
 
@@ -100,7 +100,7 @@ class TestDissimilarity(TestBase):
         from flyingpigeon import dissimilarity
         from matplotlib import pyplot as plt
         import flyingpigeon as fp
-        from eggshell.config import Paths
+        from flyingpigeon.config import Paths
         paths = Paths(fp)
 
         p1 = self.write_field_data('v1', ncol=1, nrow=1)

@@ -141,7 +141,7 @@ def pdfmerge(pdfs, dir_output='.'):
 #     from cartopy.feature import ShapelyFeature
 #     from numpy import mean, append
 #
-#     import eggshell.config
+#     import flyingpigeon.config
 #     # from flyingpigeon import config
 #     DIR_SHP = config.shapefiles
 #

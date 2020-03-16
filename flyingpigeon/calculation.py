@@ -1,6 +1,4 @@
-from eggshell.nc.nc_utils import get_values, get_coordinates, get_index_lat, get_variable
-# from eggshell.nc.ocg_utils import call
-
+from flyingpigeon.nc_utils import get_values, get_coordinates, get_index_lat, get_variable
 from os.path import basename, join
 from datetime import datetime as dt
 from shutil import copyfile

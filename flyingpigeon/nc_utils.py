@@ -1,7 +1,5 @@
 from netCDF4 import Dataset, MFDataset, num2date
 from datetime import datetime as dt
-# TODO: change to nc_utils guess_main_variables
-# from eggshell.nc.ocg_utils import get_variable
 import logging
 import os
 from os import path, rename

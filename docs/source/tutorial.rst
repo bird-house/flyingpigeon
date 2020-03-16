@@ -127,7 +127,7 @@ the list of all output files
 
 .. code:: ipython3
 
-    # plot the test file with the flyingpigon plot function
+    # plot the test file with the flyingpigeon plot function
     out = fp_i.plot_map_timemean(resource=out.get()[0])
 
 

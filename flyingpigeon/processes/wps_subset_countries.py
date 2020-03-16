@@ -7,8 +7,8 @@ from .subset_base import output, metalink
 
 from flyingpigeon.subset import clipping
 from flyingpigeon.subset import countries
-from eggshell.utils import extract_archive
-# from eggshell.utils import rename_complexinputs
+from flyingpigeon.utils import extract_archive
+# from flyingpigeon.utils import rename_complexinputs
 from os.path import basename
 
 LOGGER = logging.getLogger("PYWPS")

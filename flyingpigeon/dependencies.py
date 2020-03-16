@@ -5,7 +5,7 @@ This module is used to manage optional dependencies.
 
 Example usage::
 
-    from eggshell.dependencies import netCDF4 as nc
+    from .dependencies import netCDF4 as nc
 """
 
 import warnings

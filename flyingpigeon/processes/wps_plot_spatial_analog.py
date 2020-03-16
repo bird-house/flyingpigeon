@@ -1,6 +1,6 @@
 from datetime import datetime as dt
 
-# from eggshell.log import init_process_logger
+# from flyingpigeon.log import init_process_logger
 from matplotlib import pyplot as plt
 from pywps import ComplexInput, ComplexOutput
 from pywps import Format
@@ -8,10 +8,10 @@ from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
 
-from eggshell.utils import archive, extract_archive
-# from eggshell.utils import rename_complexinputs
-from eggshell.plot.plt_utils import fig2plot
-from eggshell.plot.plt_ncdata import plot_map_spatialanalog
+from flyingpigeon.utils import archive, extract_archive
+# from flyingpigeon.utils import rename_complexinputs
+from flyingpigeon.plt_utils import fig2plot
+from flyingpigeon.plt_ncdata import plot_map_spatialanalog
 
 import logging
 LOGGER = logging.getLogger("PYWPS")

@@ -6,11 +6,11 @@ from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
 
-from eggshell.plot import plt_ncdata
-from eggshell.utils import extract_archive
-from eggshell.nc.nc_utils import get_variable
-# from eggshell.utils import rename_complexinputs
-# from eggshell.log import init_process_logger
+from flyingpigeon import plt_ncdata
+from flyingpigeon.utils import extract_archive
+from flyingpigeon.nc_utils import get_variable
+# from flyingpigeon.utils import rename_complexinputs
+# from flyingpigeon.log import init_process_logger
 
 LOGGER = logging.getLogger("PYWPS")
 
