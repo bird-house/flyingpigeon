@@ -1,5 +1,5 @@
-from os.path import join, abspath, dirname, getsize, curdir, isfile
-import flyingpigeon.config
+from os.path import abspath, curdir
+# import flyingpigeon.config
 import logging
 from ocgis import RequestDataset
 
@@ -77,11 +77,11 @@ def call(resource=[], variable=None, dimension_map=None, agg_selection=True,
     :return: output file path
     """
     LOGGER.info('Start ocgis module call function')
-    from ocgis import OcgOperations, RequestDataset, env, DimensionMap, crs
+    from ocgis import OcgOperations, RequestDataset, env
     from ocgis.util.large_array import compute
     from datetime import datetime as dt
     from datetime import date as dd
-    from datetime import time as dt_time
+    # from datetime import time as dt_time
     import uuid
 
     # prepare the environment

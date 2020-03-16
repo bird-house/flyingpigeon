@@ -490,7 +490,6 @@ def plot_map_timemean(resource, variable=None, time_range=None,
             lon = ds.variables[dims[-1]]
             lons, lats = meshgrid(lon, lat)
 
-
             var = get_values(resource, time_range=time_range, variable=variable).data
             var_mean = np.nanmean(var, axis=0) + delta
             # mean over whole periode 30 Years 1981-2010 and transform to Celsius
