@@ -10,7 +10,7 @@ import cartopy.feature as cfeature
 import cartopy.crs as ccrs
 from cartopy.util import add_cyclic_point
 
-# from flyingpigeon.calculation import fieldmean
+# from flyingpigeon.nc_statistic import fieldmean
 from flyingpigeon.nc_utils import get_variable, get_coordinates
 from flyingpigeon.nc_utils import get_time, sort_by_filename, get_values
 from flyingpigeon.plt_utils import fig2plot
@@ -243,7 +243,7 @@ def plot_ts_uncertainty(resource, variable=None, ylim=None, title=None,
 
     #
     # from flyingpigeon.utils import get_time, sort_by_filename
-    # from flyingpigeon.calculation import fieldmean
+    # from flyingpigeon.nc_statistic import fieldmean
     # from flyingpigeon.metadata import get_frequency
 
     # === prepare invironment
@@ -336,7 +336,7 @@ def plot_ts_uncertaintyrcp(resource, variable=None, ylim=None, title=None,
 
     #
     # from flyingpigeon.utils import get_time, sort_by_filename
-    # from flyingpigeon.calculation import fieldmean
+    # from flyingpigeon.nc_statistic import fieldmean
     # from flyingpigeon.metadata import get_frequency
 
     # === prepare invironment

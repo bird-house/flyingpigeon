@@ -10,8 +10,8 @@ from pywps.app.Common import Metadata
 
 from flyingpigeon.utils import extract_archive
 from flyingpigeon.nc_utils import get_variable
-from flyingpigeon.calculation import robustness_stats
-from flyingpigeon.calculation import robustness_cc_signal
+from flyingpigeon.nc_statistic import robustness_stats
+from flyingpigeon.nc_statistic import robustness_cc_signal
 from flyingpigeon.plt_ncdata import plot_map_ccsignal
 # from flyingpigeon.utils import rename_complexinputs
 # from flyingpigeon.log import init_process_logger
