@@ -14,7 +14,7 @@ dependencies:
 ##############
 # analytic
 - numpy
-# - ocgis  # moved to pip (dependent eggshell ?)
+- ocgis  # moved to pip (dependent eggshell ?)
 - pandas
 - scikit-learn # for spatial_analog
 - gdal=2.4
@@ -30,6 +30,6 @@ dependencies:
 ##############
 # pip install
 - pip:
-  - -e git+https://github.com/bird-house/eggshell.git#egg=eggshell
-  - -e git+https://github.com/NCPP/ocgis#egg=owslib
+#  - -e git+https://github.com/bird-house/eggshell.git#egg=eggshell
+#  - -e git+https://github.com/NCPP/ocgis#egg=owslib
   - sphinx_rtd_theme
