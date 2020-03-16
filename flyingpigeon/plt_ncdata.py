@@ -484,22 +484,30 @@ def plot_map_timemean(resource, variable=None, time_range=None,
             if variable is None:
                 variable = get_variable(resource)
 
-            lat = ds.variables['rlat']
-            lon = ds.variables['rlon']
+            var = ds.variables[variable]
+            dims = var.dimensions
+
+            lat = ds.variables[dims[-2]]
+            lon = ds.variables[dims[-1]]
             lons, lats = meshgrid(lon, lat)
 
-            var = ds.variables[variable]
+
             var = get_values(resource, time_range=time_range, variable=variable).data
             var_mean = np.nanmean(var, axis=0) + delta
             # mean over whole periode 30 Years 1981-2010 and transform to Celsius
         else:
             for i, f in enumerate(resource):
                 if i == 0:
-                    ds = Dataset(f)
-                    lat = ds.variables['rlat']
-                    lon = ds.variables['rlon']
-                    lons, lats = meshgrid(lon, lat)
+                    if variable is None:
+                        variable = get_variable(f)
 
+                    ds = Dataset(f)
+                    var = ds.variables[variable]
+                    dims = var.dimensions
+
+                    lat = ds.variables[dims[-2]]
+                    lon = ds.variables[dims[-1]]
+                    lons, lats = meshgrid(lon, lat)
                     vals = get_values(f, time_range=time_range, variable=variable).data
                 else:
                     vals = np.append(vals, get_values(f, time_range=time_range, variable=variable).data, axis=0)
@@ -537,9 +545,8 @@ def plot_map_timemean(resource, variable=None, time_range=None,
 
         if cmap is None:
             if variable in ['pr', 'prAdjust',
-                            'prcptot', 'rx1day', 'wetdays',
-                            'cdd', 'cwd', 'sdii',
-                            'max_5_day_precipitation_amount']:
+                            'prcptot', 'rx1day', 'rx1day', 'wetdays',
+                            'cdd', 'cwd', 'sdii']:
                 cmap = 'Blues'
             if variable in ['tas', 'tasAdjust', 'tg', 'tg_mean']:
                 cmap = 'seismic'
@@ -561,8 +568,8 @@ def plot_map_timemean(resource, variable=None, time_range=None,
                               dir_output=dir_output)
         plt.close()
         LOGGER.debug('Plot done for %s' % variable)
-    except Exception as err:
-        raise Exception('failed to calculate quantiles. %s' % err)
+    except Exception as e:
+        raise Exception('failed to plot netCDF file: {}'.format(e))
 
     return output_png
 
@@ -697,7 +704,7 @@ def plot_map_spatialanalog(ncfile, variable='dissimilarity',
     Return a matplotlib Figure instance showing a map of the dissimilarity measure.
     """
     import netCDF4 as nc
-    from eggshell.nc import nc_utils
+    from flyingpigeon import nc_utils
     from mpl_toolkits.axes_grid import make_axes_locatable
     import matplotlib.axes as maxes
 
