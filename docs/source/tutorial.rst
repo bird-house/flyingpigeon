@@ -7,6 +7,9 @@ Tutorials
 Subset Processes of Flyingpigeon
 --------------------------------
 
+Subset process as ipython notebook:
+
+https://github.com/bird-house/notebooks/blob/master/flyingpigeon_birdy_subset.ipynb
 
 The WPS flyingpigeon provides several processes to perform spatial
 subsetts of netCDF files. This are:
