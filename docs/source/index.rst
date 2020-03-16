@@ -9,8 +9,8 @@ Table of content
    configuration
    user_guide
    dev_guide
-   tutorial
    processes_des
+   tutorial
    processes_api
    changes
    authors
