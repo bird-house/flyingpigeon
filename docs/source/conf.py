@@ -45,6 +45,13 @@ extensions = ['sphinx.ext.autodoc',
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
+# To avoid having to install these and burst memory limit on ReadTheDocs.
+autodoc_mock_imports = ["numpy", "ocgis", "gdal", "fiona", "rasterio", "shapely",
+                        "osgeo", "geopandas", "pandas", "statsmodels",
+                        "affine", "rasterstats", "spotpy", "matplotlib", "cartopy",
+                        "scipy", "scikit-learn", "unidecode"]
+
+
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
