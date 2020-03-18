@@ -5,7 +5,7 @@ from pathlib import Path
 from pywps import Process, LiteralInput, FORMATS
 from pywps.inout.outputs import MetaFile, MetaLink4
 
-from .flyingpigeon.subset_base import Subsetter, resource, variable, start, end, output, metalink
+from flyingpigeon.subset_base import Subsetter, resource, variable, start, end, output, metalink
 from pywps.app.Common import Metadata
 
 import ocgis.exc
@@ -65,6 +65,8 @@ class SubsetBboxProcess(Subsetter, Process):
 
         ml = MetaLink4('subset', workdir=self.workdir)
 
+        response.update_status('Start processing the bbox subset', 30)
+
         for res in self.parse_resources(request):
             variables = self.parse_variable(request, res)
             prefix = Path(res).stem + "_bbox_subset"
@@ -73,7 +75,7 @@ class SubsetBboxProcess(Subsetter, Process):
             try:
                 ops = ocgis.OcgOperations(
                     dataset=rd, geom=geom, time_range=dr,
-                    output_format='nc',
+                    output_format='nc', spatial_wrapping="wrap",
                     interpolate_spatial_bounds=True,
                     prefix=prefix, dir_output=tempfile.mkdtemp(dir=self.workdir))
                 out = ops.execute()
@@ -84,6 +86,7 @@ class SubsetBboxProcess(Subsetter, Process):
 
             except ocgis.exc.ExtentError:
                 continue
+        response.update_status('Finished processing the bbox subset', 90)
 
         response.outputs['output'].file = ml.files[0].file
         response.outputs['metalink'].data = ml.xml

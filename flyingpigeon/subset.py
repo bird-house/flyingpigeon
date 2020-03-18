@@ -94,6 +94,11 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None, output_f
     :param dir_output: specify an output location
     :param time_range: [start, end] of time subset
     :param time_region: year, months or days to be extracted in the timeseries
+    :param spatial_wrapping: Allows control of the wrapped state for all input fields. Only field objects with a
+           wrappable coordinate system are affected. Wrapping operations are applied before all other operations.
+           None (default)	Do not attempt a wrap or unwrap operation.
+           "wrap" Wrap spherical coordinates to the -180 to 180 longitudinal domain.
+           "unwrap"	Unwrap spherical coordinate to the 0 to 360 longitudinal domain.
 
     :returns list: path to clipped files
     """

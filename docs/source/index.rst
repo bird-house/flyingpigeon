@@ -10,7 +10,7 @@ Table of content
    user_guide
    dev_guide
    processes_des
-   tutorial
+   notebooks/index
    processes_api
    changes
    authors

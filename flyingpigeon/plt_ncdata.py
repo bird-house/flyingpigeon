@@ -525,6 +525,7 @@ def plot_map_timemean(resource, variable=None, time_range=None,
         # ax.set_extent(extent)
 
         ax.add_feature(cfeature.BORDERS, linewidth=2, linestyle='--')
+        ax.add_feature(cfeature.COASTLINE, linewidth=2,)
         # ax.add_feature(cfeature.RIVERS)
         # ax.stock_img()
         # ax.gridlines(draw_labels=False)
