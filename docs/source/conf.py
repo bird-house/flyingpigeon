@@ -20,6 +20,7 @@
 #
 import os
 import sys
+import mock
 sys.path.insert(0, os.path.abspath('../../'))
 
 # Set flag to not fail doc build.
@@ -61,6 +62,10 @@ autodoc_mock_imports = ["numpy", "ocgis",  "fiona", "rasterio", "shapely",
                         "gdal", 'geos', "geopandas", "pandas",
                         "affine", "rasterstats", "matplotlib", "cartopy",
                         "scipy", "scikit-learn",  "statsmodels", 'cairo']
+
+MOCK_MODULES = autodoc_mock_imports
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock()
 
 
 # The suffix(es) of source filenames.
