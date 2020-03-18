@@ -3,8 +3,8 @@ channels:
 - conda-forge
 - defaults
 dependencies:
-- pywps>=4.2
+# - pywps>=4.2
 - sphinx
-- mock
+# - mock
 - nbsphinx
 - ipython
