@@ -4,8 +4,8 @@
 Examples
 =========
 
-These examples demonstrates a few features of the Flyingpigeon server.
 
+These examples demonstrates a few features of the Flyingpigeon server.
 
 .. toctree::
 
