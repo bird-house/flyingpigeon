@@ -33,4 +33,3 @@ dependencies:
 #  - -e git+https://github.com/bird-house/eggshell.git#egg=eggshell
 #  - -e git+https://github.com/NCPP/ocgis#egg=owslib
   - sphinx_rtd_theme
-  - nbsphinx
