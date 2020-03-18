@@ -5,5 +5,5 @@ channels:
 dependencies:
 - pywps>=4.2
 - sphinx
-- nbsphinx
-- ipython
+# - nbsphinx
+# - ipython
