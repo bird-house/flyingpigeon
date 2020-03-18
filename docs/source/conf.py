@@ -22,6 +22,10 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../../'))
 
+# Set flag to not fail doc build.
+if 'DO_NOT_CHECK_EXECUTABLE_EXISTENCE' not in os.environ:
+    os.environ['DO_NOT_CHECK_EXECUTABLE_EXISTENCE'] = "1"
+
 
 # -- General configuration ---------------------------------------------
 
@@ -44,6 +48,11 @@ extensions = ['sphinx.ext.autodoc',
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
+
+autoapi_type = 'python'
+autoapi_dirs = ['../../flyingpigeon']
+autoapi_file_pattern = '*.py'
+autoapi_options = ['members', 'undoc-members', 'private-members']
 
 # To avoid having to install these and burst memory limit on ReadTheDocs.
 autodoc_mock_imports = ["numpy", "ocgis", "gdal", "fiona", "rasterio", "shapely",
