@@ -5,7 +5,7 @@ from pathlib import Path
 from pywps import Process, LiteralInput, FORMATS
 from pywps.inout.outputs import MetaFile, MetaLink4
 
-from .subset_base import Subsetter, resource, variable, start, end, output, metalink
+from .flyingpigeon.subset_base import Subsetter, resource, variable, start, end, output, metalink
 from pywps.app.Common import Metadata
 
 import ocgis.exc
