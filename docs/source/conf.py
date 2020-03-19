@@ -20,8 +20,10 @@
 #
 import os
 import sys
-# import mock
-sys.path.insert(0, os.path.abspath('../../'))
+
+# Add raven to sys.path to avoid having to full install flyingpigeon for autodoc.
+# Full install of flyingpigeon will burst memory limit on ReadTheDocs.
+sys.path.insert(0, os.path.abspath('../..'))
 
 # Set flag to not fail doc build.
 if 'DO_NOT_CHECK_EXECUTABLE_EXISTENCE' not in os.environ:
@@ -47,8 +49,6 @@ extensions = ['sphinx.ext.autodoc',
               # 'docaggregation',
               ]
 
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
 
 autoapi_type = 'python'
 autoapi_dirs = ['../../flyingpigeon']
@@ -57,16 +57,14 @@ autoapi_options = ['members', 'undoc-members', 'private-members']
 
 # To avoid having to install these and burst memory limit on ReadTheDocs.
 autodoc_mock_imports = ["numpy", "ocgis",  "fiona", "rasterio", "shapely",
-                        "osgeo", "geotiff", "hdf4", "hdf5", 'zlib',
+                        "osgeo", "geotiff", "gdal", 'geos', "geopandas", "pandas",
+                        "hdf4", "hdf5", 'zlib',
                         'pyproj', 'netcdf4', 'proj',  'shapely',
-                        "gdal", 'geos', "geopandas", "pandas",
                         "affine", "rasterstats", "matplotlib", "cartopy",
                         "scipy", "scikit-learn",  "statsmodels", 'cairo']
 
-# MOCK_MODULES = autodoc_mock_imports
-# for mod_name in MOCK_MODULES:
-#     sys.modules[mod_name] = mock.Mock()
-
+# Add any paths that contain templates here, relative to this directory.
+templates_path = ['_templates']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
