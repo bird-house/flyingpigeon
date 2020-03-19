@@ -49,7 +49,8 @@ def fieldmean(resource):
     return meanTimeserie
 
 
-def robustness_cc_signal(variable_mean, standard_deviation=None, variable=None):
+def robustness_cc_signal(variable_mean, standard_deviation=None,
+                         variable=None, dir_output=None):
     """
     Claculating the Climate Change signal based on the output of robustness_stats.
 
@@ -59,6 +60,7 @@ def robustness_cc_signal(variable_mean, standard_deviation=None, variable=None):
 
     :return  netCDF files: cc_signal.nc, mean_std.nc
     """
+    from os.path import join
 
     basename_ref = basename(variable_mean[0]).split('_')
     basename_proj = basename(variable_mean[1]).split('_')
@@ -85,7 +87,7 @@ def robustness_cc_signal(variable_mean, standard_deviation=None, variable=None):
         ds.close()
 
         bn_mean_std = 'mean-std_{}_{}_{}'.format(basename_ref[1], basename_ref[-2], basename_proj[-1])
-        out_mean_std = copyfile(standard_deviation[0], bn_mean_std)
+        out_mean_std = copyfile(standard_deviation[0], join(dir_output, bn_mean_std))
 
         ds_median_std = Dataset(out_mean_std, mode='a')
         ds_median_std[variable][:] = (std_ref + std_proj) / 2
@@ -95,8 +97,7 @@ def robustness_cc_signal(variable_mean, standard_deviation=None, variable=None):
         out_mean_std = None
 
     bn_cc_signal = 'cc-signal_{}_{}_{}'.format(basename_ref[1], basename_ref[-2], basename_proj[-1])
-
-    out_cc_signal = copyfile(variable_mean[0], bn_cc_signal)
+    out_cc_signal = copyfile(variable_mean[0], join(dir_output, bn_cc_signal))
 
     ds_cc = Dataset(out_cc_signal, mode='a')
     ds_cc[variable][:] = np.squeeze(vals_proj - vals_ref)

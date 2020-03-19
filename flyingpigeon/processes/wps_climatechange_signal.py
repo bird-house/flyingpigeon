@@ -233,7 +233,8 @@ class ClimatechangesignalProcess(Process):
         try:
             out_cc_signal, out_mean_std = robustness_cc_signal(variable_mean=[output_ensmean_ref, output_ensmean_proj],
                                                                standard_deviation=[output_ensstd_ref,
-                                                                                   output_ensstd_proj])
+                                                                                   output_ensstd_proj],
+                                                               dir_output=self.workdir)
             LOGGER.info("Climate Change signal calculated")
             response.update_status('Climate Change signal calculated', 90)
         except Exception as e:
