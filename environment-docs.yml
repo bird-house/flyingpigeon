@@ -1,9 +1,9 @@
 name: flyingpigeon
 channels:
 - conda-forge
-- defaults
+#- defaults
 dependencies:
-- pywps>=4.2
+#- pywps>=4.2
 - sphinx
 - nbsphinx
 - ipython
