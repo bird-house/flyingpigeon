@@ -56,7 +56,7 @@ autoapi_file_pattern = '*.py'
 autoapi_options = ['members', 'undoc-members', 'private-members']
 
 # To avoid having to install these and burst memory limit on ReadTheDocs.
-autodoc_mock_imports = ["numpy",  "fiona", "rasterio", "shapely", # "ocgis",
+autodoc_mock_imports = ["numpy",  "fiona", "rasterio", "shapely",  # "ocgis",
                         "osgeo", "geotiff", "gdal", 'geos', "geopandas", "pandas",
                         "hdf4", "hdf5", 'zlib',
                         'pyproj', 'netcdf4', 'proj',  'shapely',
