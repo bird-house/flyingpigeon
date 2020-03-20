@@ -25,4 +25,4 @@ conda:
   environment: environment-docs.yml
 
 build:
-  image: latest
+  image: stable
