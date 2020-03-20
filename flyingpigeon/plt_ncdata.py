@@ -575,7 +575,7 @@ def plot_map_timemean(resource, variable=None, time_range=None,
 
 def plot_map_ccsignal(signal, robustness=None,
                       variable=None, cmap=None, title=None,
-                      file_extension='png', vmin=None, vmax=None):  # 'seismic'
+                      file_extension='png', vmin=None, vmax=None, dir_output=None):  # 'seismic'
     """
     generates a graphic for the output of the ensembleRobustness process for a lat/long file.
 
@@ -687,7 +687,7 @@ def plot_map_ccsignal(signal, robustness=None,
         plt.xticks(fontsize=16, rotation=45)
         plt.yticks(fontsize=16)
 
-        graphic = fig2plot(fig=fig, file_extension=file_extension)
+        graphic = fig2plot(fig=fig, file_extension=file_extension, dir_output=dir_output)
         plt.close()
 
         LOGGER.info('Plot created and figure saved')

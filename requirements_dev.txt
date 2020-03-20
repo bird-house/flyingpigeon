@@ -4,3 +4,4 @@ pytest-flake8
 sphinx>=1.7
 bump2version
 twine
+sphinx_rtd_theme
