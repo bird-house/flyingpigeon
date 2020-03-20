@@ -8,4 +8,4 @@ dependencies:
 - sphinx
 - nbsphinx
 - ipython
-- sphinx_rtd_theme
+# - sphinx_rtd_theme
