@@ -59,7 +59,7 @@ autoapi_options = ['members', 'undoc-members', 'private-members']
 autodoc_mock_imports = ["numpy",  "fiona", "rasterio", "shapely", "ocgis",
                         "osgeo", "geotiff", "gdal", 'geos', "geopandas", "pandas",
                         "hdf4", "hdf5", 'zlib',
-                        'pyproj', 'netcdf4', 'proj',  'shapely',
+                        'pyproj', 'netCDF4', 'proj',  'shapely',
                         "affine", "rasterstats", "matplotlib", "cartopy",
                         "scipy", "scikit-learn",  "statsmodels", 'cairo']
 
