@@ -4,8 +4,13 @@ channels:
 - defaults
 dependencies:
 - python=3.7
-- pywps>=4.2
+- pywps>=4.2.4
 - sphinx
 - nbsphinx
 - ipython
+- ipywidgets
+- pip   
+- pip:
+  - birdhouse-birdy
+  - https://github.com/metalink-dev/pymetalink/archive/master.zip
 # - sphinx_rtd_theme
