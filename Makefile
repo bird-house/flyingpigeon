@@ -106,10 +106,18 @@ test-all:
 	@echo "Running all tests (including slow and online tests) ..."
 	@bash -c 'pytest -v tests/'
 
-.PHONY: test-nb
-test-nb:
+.PHONY: test-notebooks
+test-notebooks:
 	@echo "Running notebook-based tests"
-	@bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);env FLYINGPIGEON_WPS_URL=$(FLYINGPIGEON_WPS_URL) pytest --nbval $(CURDIR)/docs/source/notebooks/ --sanitize-with $(CURDIR)/docs/source/output_sanitize.cfg --ignore $(CURDIR)/docs/source/notebooks/.ipynb_checkpoints"
+	@bash -c "curl -L https://github.com/Ouranosinc/PAVICS-e2e-workflow-tests/raw/master/notebooks/output-sanitize.cfg --output $(CURDIR)/docs/source/output_sanitize.cfg --silent"
+	@bash -c "env FLYINGPIGEON_WPS_URL=$(FLYINGPIGEON_WPS_URL) pytest --nbval --verbose $(CURDIR)/docs/source/notebooks/ --sanitize-with $(CURDIR)/docs/source/output_sanitize.cfg --ignore $(CURDIR)/docs/source/notebooks/.ipynb_checkpoints"
+
+# .PHONY: refresh-notebooks
+# refresh-notebooks:
+# 	@echo "Refresh all notebook outputs under docs/source/notebooks"
+# 	cd docs/source/notebooks; for nb in *.ipynb; do FLYINGPIGEON_WPS_URL="$(FLYINGPIGEON_WPS_URL)" jupyter nbconvert --to notebook --execute --ExecutePreprocessor.timeout=60 --output "$$nb" "$$nb"; sed -i "s@$(FLYINGPIGEON_WPS_URL)/outputs/@$(PAVICS_OUTPUT_URL)/@g" "$$nb"; done; cd $(APP_ROOT)
+
+
 
 .PHONY: lint
 lint:
