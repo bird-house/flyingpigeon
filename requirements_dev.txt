@@ -5,3 +5,6 @@ sphinx>=1.7
 bump2version
 twine
 sphinx_rtd_theme
+nbval
+nbconvert
+birdhouse-birdy
