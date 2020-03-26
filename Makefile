@@ -106,6 +106,11 @@ test-all:
 	@echo "Running all tests (including slow and online tests) ..."
 	@bash -c 'pytest -v tests/'
 
+.PHONY: test-nb
+test-nb:
+	@echo "Running notebook-based tests"
+	@bash -c "source $(ANACONDA_HOME)/bin/activate $(CONDA_ENV);env FLYINGPIGEON_WPS_URL=$(FLYINGPIGEON_WPS_URL) pytest --nbval $(CURDIR)/docs/source/notebooks/ --sanitize-with $(CURDIR)/docs/source/output_sanitize.cfg --ignore $(CURDIR)/docs/source/notebooks/.ipynb_checkpoints"
+
 .PHONY: lint
 lint:
 	@echo "Running flake8 code style checks ..."
