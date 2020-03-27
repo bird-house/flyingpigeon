@@ -28,7 +28,6 @@ dependencies:
 - pytest
 - pytest-flake8
 - nose
-- nbval
 ##############
 # pip install
 - pip:

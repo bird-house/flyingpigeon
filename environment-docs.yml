@@ -9,8 +9,7 @@ dependencies:
 - nbsphinx
 - ipython
 - ipywidgets
-- pip   
+- pip
 - pip:
-  - birdhouse-birdy
   - https://github.com/metalink-dev/pymetalink/archive/master.zip
 # - sphinx_rtd_theme
