@@ -4,7 +4,7 @@ APP_NAME := flyingpigeon
 
 # TODO read in from server configuration
 WPS_URL = http://localhost:8093
-OUTPUT_URL = http://localhost:8093/outputs/
+OUTPUT_URL = https://pavics.ouranos.ca/wpsoutputs
 # end of configuration
 
 .DEFAULT_GOAL := help
