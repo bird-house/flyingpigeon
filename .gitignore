@@ -28,7 +28,7 @@ __pycache__
 .tox
 nosetests.xml
 unit_tests/testdata.json
-*output_sanitize*
+docs/source/output_sanitize.cfg
 
 # R
 *.Rhistory
