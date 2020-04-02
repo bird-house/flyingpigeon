@@ -53,7 +53,7 @@ class ClimatechangesignalProcess(Process):
                          max_occurs=1,
                          ),
 
-            LiteralInput('dateStart_ref', 'Start date for time period',
+            LiteralInput('datestart_ref', 'Start date for time period',
                          abstract="Beginning of period (YYYY-MM-DD). "
                                   "If not set, the first timestep will be considerd as start.",
                          data_type='dateTime',
@@ -62,7 +62,7 @@ class ClimatechangesignalProcess(Process):
                          default=None,
                          ),
 
-            LiteralInput('dateEnd_ref', 'End date for time period',
+            LiteralInput('dateend_ref', 'End date for time period',
                          abstract="End of period (YYYY-MM-DD)."
                                   "If not set, the last timestep will be considerd as end.",
                          data_type='dateTime',
@@ -72,7 +72,7 @@ class ClimatechangesignalProcess(Process):
                          ),
 
 
-            LiteralInput('dateStart_proj', 'Start date for time period',
+            LiteralInput('datestart_proj', 'Start date for time period',
                          abstract="Beginning of period (YYYY-MM-DD). "
                                   "If not set, the first timestep will be considerd as start.",
                          data_type='dateTime',
@@ -81,7 +81,7 @@ class ClimatechangesignalProcess(Process):
                          default=None,
                          ),
 
-            LiteralInput('dateEnd_proj', 'End date for time period',
+            LiteralInput('dateend_proj', 'End date for time period',
                          abstract="End of period (YYYY-MM-DD)."
                                   "If not set, the last timestep will be considerd as end.",
                          data_type='dateTime',
@@ -182,11 +182,25 @@ class ClimatechangesignalProcess(Process):
 
         response.update_status('ensemble variable {}'.format(var), 10)
 
-        dateStart_ref = request.inputs['dateStart_ref'][0].data
-        dateEnd_ref = request.inputs['dateEnd_ref'][0].data
+        if 'datestart_ref' in request.inputs:
+            datestart_ref = request.inputs['datestart_ref'][0].data
+        else:
+            datestart_ref = None
 
-        dateStart_proj = request.inputs['dateStart_proj'][0].data
-        dateEnd_proj = request.inputs['dateEnd_proj'][0].data
+        if 'dateend_ref' in request.inputs:
+            dateend_ref = request.inputs['dateend_ref'][0].data
+        else:
+            dateend_ref = None
+
+        if 'datestart_proj' in request.inputs:
+            datestart_proj = request.inputs['datestart_proj'][0].data
+        else:
+            datestart_proj = None
+
+        if 'dateend_proj' in request.inputs:
+            dateend_proj = request.inputs['dateend_proj'][0].data
+        else:
+            dateend_proj = None
 
         cmap = request.inputs['cmap'][0].data
 
@@ -206,15 +220,15 @@ class ClimatechangesignalProcess(Process):
             title = None
 
         LOGGER.debug('time region set to {}-{}'.format(
-                                                dt.strftime(dateStart_ref, '%Y-%m-%d'),
-                                                dt.strftime(dateEnd_ref, '%Y-%m-%d')))
+                                                dt.strftime(datestart_ref, '%Y-%m-%d'),
+                                                dt.strftime(dateend_ref, '%Y-%m-%d')))
         #
         # dateStart = dt.strptime(dateStart_str, '%Y-%m-%d'),
         # dateEnd = dt.strptime(dateStart_str, '%Y-%m-%d'),
 
         try:
             output_ensmean_ref, output_ensstd_ref = robustness_stats(ncfiles_ref,
-                                                                     time_range=[dateStart_ref, dateEnd_ref],
+                                                                     time_range=[datestart_ref, dateend_ref],
                                                                      dir_output=self.workdir)
             LOGGER.info("Ensemble Statistic calculated for reference periode ")
             response.update_status('Ensemble Statistic calculated for reference periode', 30)
@@ -223,8 +237,9 @@ class ClimatechangesignalProcess(Process):
 
         try:
             output_ensmean_proj, output_ensstd_proj = robustness_stats(ncfiles_proj,
-                                                                       time_range=[dateStart_proj, dateEnd_proj],
+                                                                       time_range=[datestart_proj, dateend_proj],
                                                                        dir_output=self.workdir)
+
             LOGGER.info("Ensemble Statistic calculated for projection periode ")
             response.update_status('Ensemble Statistic calculated for projection periode', 60)
         except Exception as e:

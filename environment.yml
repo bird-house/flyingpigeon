@@ -17,6 +17,7 @@ dependencies:
 - ocgis  # moved to pip (dependent eggshell ?)
 - pandas
 - scikit-learn # for spatial_analog
+- udunits2
 - gdal=2.4
 ##############
 # plotting

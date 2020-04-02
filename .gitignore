@@ -4,7 +4,7 @@
 # Docker
 #Dockerfile
 
-# PyWPS 
+# PyWPS
 custom.cfg
 .custom.cfg
 *.pid
@@ -28,6 +28,7 @@ __pycache__
 .tox
 nosetests.xml
 unit_tests/testdata.json
+docs/source/output_sanitize.cfg
 
 # R
 *.Rhistory
@@ -87,5 +88,5 @@ testdata.json
 *.mod
 *.out
 
-# custom 
+# custom
 etc/custom.cgf

@@ -2,6 +2,9 @@
 APP_ROOT := $(abspath $(lastword $(MAKEFILE_LIST))/..)
 APP_NAME := flyingpigeon
 
+# TODO read in from server configuration
+WPS_URL = http://localhost:8093
+OUTPUT_URL = https://pavics.ouranos.ca/wpsoutputs
 # end of configuration
 
 .DEFAULT_GOAL := help
@@ -105,6 +108,19 @@ test:
 test-all:
 	@echo "Running all tests (including slow and online tests) ..."
 	@bash -c 'pytest -v tests/'
+
+.PHONY: test-notebooks
+test-notebooks:
+	@echo "Running notebook-based tests"
+	@bash -c "curl -L https://github.com/Ouranosinc/PAVICS-e2e-workflow-tests/raw/master/notebooks/output-sanitize.cfg --output $(CURDIR)/docs/source/output_sanitize.cfg --silent"
+	@bash -c "env WPS_URL=$(WPS_URL) pytest --nbval --verbose $(CURDIR)/docs/source/notebooks/ --sanitize-with $(CURDIR)/docs/source/output_sanitize.cfg --ignore $(CURDIR)/docs/source/notebooks/.ipynb_checkpoints"
+
+.PHONY: refresh-notebooks
+refresh-notebooks:
+	@echo "Refresh all notebook outputs under docs/source/notebooks"
+	cd docs/source/notebooks; for nb in *.ipynb; do WPS_URL="$(WPS_URL)" jupyter nbconvert --to notebook --execute --ExecutePreprocessor.timeout=60 --output "$$nb" "$$nb"; sed -i "s@$(WPS_URL)/outputs/@$(OUTPUT_URL)/@g" "$$nb"; done; cd $(APP_ROOT)
+
+
 
 .PHONY: lint
 lint:
