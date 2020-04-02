@@ -10,3 +10,4 @@ nbconvert
 ipywidgets       # needed for the parsing of Jupyter Notebooks
 ipython
 birdhouse-birdy
+pymetalink
