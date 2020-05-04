@@ -83,14 +83,14 @@ def is_opendap_url(url):
         return dataset.disk_format in ('DAP2', 'DAP4')
 
 
-def make_geoms(feature, mosaic=False):
+def make_geoms(feature, union=False):
     """Return list of feature dictionaries.
 
     Parameters
     ----------
     feature : list
       List of features.
-    mosaic : bool
+    union : bool
       If True return the union of all geometries.
     """
 
@@ -102,12 +102,12 @@ def make_geoms(feature, mosaic=False):
          'properties': f['properties']}
         for f in feature['features']]
 
-    if mosaic:
+    if union:
         new_geom = geoms[0]
         for merge_geom in geoms[1:]:
             new_geom['geom'] = new_geom['geom'].union(merge_geom['geom'])
         new_geom['properties'] = {'bbox': feature['bbox']}
-        return new_geom
+        return [new_geom, ]
 
     return geoms
 
@@ -137,13 +137,15 @@ class Subsetter:
 
                 yield path
 
-    def parse_feature(self, request):
+    def parse_feature(self, request, union=False):
         """Parse individual features and aggregate them if mosaic is True.
 
         Parameters
         ----------
         request : PyWPS.WPSRequest
           Execution request.
+        union : bool
+          If True return the union of all geometries.
 
         Returns
         -------
@@ -151,33 +153,26 @@ class Subsetter:
           Geometries keyed by feature id. If mosaic is true, the key
           is 'mosaic'.
         """
-        if ('typename' in request.inputs) and ('featureids' in request.inputs):
-            typename = request.inputs['typename'][0].data
-            featureids = [f.data for f in request.inputs['featureids']]
-            if 'geoserver' in request.inputs:
-                geoserver = request.inputs['geoserver'][0].data
-            else:
-                geoserver = configuration.get_config_value('extra', 'geoserver')
 
-            mosaic = request.inputs['mosaic'][0].data
+        typename = request.inputs['typename'][0].data
+        featureids = [f.data for f in request.inputs['featureids']]
 
-            try:
-                feature = get_feature(geoserver, typename, featureids)
-                geoms = make_geoms(feature, mosaic)
-
-            except Exception as e:
-                msg = ('Failed to fetch features.\ngeoserver: {0} \n'
-                       'typename: {1}\nfeatures {2}\n{3}').format(
-                    geoserver, typename, featureids, e)
-                raise Exception(msg) from e
-
-            if mosaic:
-                return {'mosaic': geoms}
-            else:
-                return dict(zip(featureids, geoms))
-
+        if 'geoserver' in request.inputs:
+            geoserver = request.inputs['geoserver'][0].data
         else:
-            return {}
+            geoserver = configuration.get_config_value('extra', 'geoserver')
+
+        try:
+            feature = get_feature(geoserver, typename, featureids)
+            geoms = make_geoms(feature, union=union)
+
+        except Exception as e:
+            msg = ('Failed to fetch features.\ngeoserver: {0} \n'
+                   'typename: {1}\nfeatures {2}\n{3}').format(
+                geoserver, typename, featureids, e)
+            raise Exception(msg) from e
+
+        return geoms, featureids
 
     def parse_daterange(self, request):
         """Return [start, end] or None."""

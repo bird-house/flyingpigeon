@@ -33,14 +33,6 @@ class SubsetcountryProcess(Process):
                          default='DEU',
                          allowed_values=countries()),
 
-            LiteralInput('mosaic', 'Union of multiple regions',
-                         data_type='boolean',
-                         abstract="If True, selected regions will be merged"
-                                  " into a single geometry.",
-                         min_occurs=0,
-                         max_occurs=1,
-                         default=False),
-
             ComplexInput('resource', 'Resource',
                          abstract='NetCDF Files or archive (tar/zip) containing NetCDF files.',
                          min_occurs=1,
@@ -82,17 +74,11 @@ class SubsetcountryProcess(Process):
             dir_output=self.workdir)
         # mime_type=request.inputs['resource'][0].data_format.mime_type)
         # mosaic option
-        # TODO: fix defaults in pywps 4.x
-        if 'mosaic' in request.inputs:
-            mosaic = request.inputs['mosaic'][0].data
-        else:
-            mosaic = False
         # regions used for subsetting
         regions = [inp.data for inp in request.inputs['region']]
 
         LOGGER.info('ncs={}'.format(ncs))
         LOGGER.info('regions={}'.format(regions))
-        LOGGER.info('mosaic={}'.format(mosaic))
 
         response.update_status("Arguments set for subset process", 0)
         LOGGER.debug('starting: regions={}, num_files={}'.format(len(regions), len(ncs)))
@@ -103,7 +89,7 @@ class SubsetcountryProcess(Process):
                 out = clipping(
                     resource=nc,
                     polygons=regions,  # self.region.getValue(),
-                    mosaic=mosaic,
+                    mosaic=True,
                     spatial_wrapping='wrap',
                     # variable=variable,
                     dir_output=self.workdir,
