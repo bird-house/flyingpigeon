@@ -21,7 +21,7 @@ def test_wps_subset_bbox():
         "?service=WPS&request=Execute&version=1.0.0&identifier=subset_bbox&datainputs={}".format(
             datainputs))
 
-#    assert_response_success(resp)
+    assert_response_success(resp)
 
     out = get_output(resp.xml)
     ds = nc.Dataset(out['output'][7:])
