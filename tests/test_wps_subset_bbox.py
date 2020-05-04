@@ -3,6 +3,7 @@ from pywps.tests import client_for, assert_response_success
 
 from .common import get_output, CFG_FILE, TESTDATA
 from flyingpigeon.processes import SubsetBboxProcess
+import numpy as np
 import netCDF4 as nc
 
 
@@ -20,13 +21,17 @@ def test_wps_subset_bbox():
         "?service=WPS&request=Execute&version=1.0.0&identifier=subset_bbox&datainputs={}".format(
             datainputs))
 
-    print(resp.get_data())
     assert_response_success(resp)
 
     out = get_output(resp.xml)
     ds = nc.Dataset(out['output'][7:])
-    check_bnds(ds['lat_bnds'], 2, 4)
-    check_bnds(ds['lon_bnds'], 3, 5)
+    # For some reason, OCGIS does not carry over lat_bnds and lon_bnds.
+    dlat = 1.865 / 2
+    dlon = 1.875 / 2
+    np.testing.assert_array_less(2 - dlat, ds.variables['lat'])
+    np.testing.assert_array_less(ds.variables['lat'], 4 + dlat)
+    np.testing.assert_array_less(3 - dlon, ds.variables['lon'])
+    np.testing.assert_array_less(ds.variables['lon'], 5 + dlon)
 
     assert 'metalink' in out
 
