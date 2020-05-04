@@ -1,10 +1,8 @@
-import pytest
-
 from pywps import Service
 from pywps.tests import assert_response_success
 
 from flyingpigeon.processes import SubsetcountryProcess
-from tests.common import TESTDATA, client_for, get_output, CFG_FILE
+from .common import TESTDATA, client_for, get_output, CFG_FILE
 
 
 datainputs_fmt = (
