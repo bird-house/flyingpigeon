@@ -1,28 +1,23 @@
-import pytest
-
 from pywps import Service
 from pywps.tests import assert_response_success
 
 from flyingpigeon.processes import SubsetcountryProcess
-from tests.common import TESTDATA, client_for, get_output, CFG_FILE
+from .common import TESTDATA, client_for, get_output, CFG_FILE
 
 
 datainputs_fmt = (
     "resource=@xlink:href={0};"
     "region={1};"
-    "mosaic={2};"
 )
 
 
-@pytest.mark.skip(reason="fails when called with pytest tests")
 def test_wps_subset_countries():
     client = client_for(
         Service(processes=[SubsetcountryProcess()], cfgfiles=CFG_FILE))
 
     datainputs = datainputs_fmt.format(
         TESTDATA['cmip5_tasmax_2006_nc'],
-        'CAN',
-        "True")
+        'CAN',)
 
     resp = client.get(
         service='wps', request='execute', version='1.0.0',
