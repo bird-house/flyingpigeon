@@ -10,42 +10,6 @@ import requests
 
 from flyingpigeon.nc_utils import get_variable
 
-resource = ComplexInput('resource',
-                        'NetCDF resource',
-                        abstract='NetCDF file or OPEnDAP url pointing to netCDF file.',
-                        supported_formats=[FORMATS.NETCDF, FORMATS.DODS],
-                        max_occurs=1000)
-
-start = LiteralInput('start',
-                     'Initial datetime',
-                     abstract='Initial datetime for temporal subsetting.',
-                     data_type='dateTime',
-                     min_occurs=0,
-                     max_occurs=1)
-
-end = LiteralInput('end',
-                   abstract='Final datetime for temporal subsetting.',
-                   data_type='dateTime',
-                   min_occurs=0,
-                   max_occurs=1)
-
-variable = LiteralInput('variable',
-                        'Variable',
-                        abstract=('Name of the variable in the NetCDF file.'
-                                  'Will be guessed if not provided.'),
-                        data_type='string',
-                        min_occurs=0)
-
-output = ComplexOutput('output',
-                       'NetCDF output for first resource file.',
-                       as_reference=True,
-                       supported_formats=[FORMATS.NETCDF])
-
-metalink = ComplexOutput('metalink',
-                         'Metalink file with links to all NetCDF outputs.',
-                         as_reference=True,
-                         supported_formats=[FORMATS.META4])
-
 
 def get_feature(url, typename, features):
     """Return geometry from WFS server."""
