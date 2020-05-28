@@ -29,8 +29,8 @@ install:
   # Update now the env with our environment
   - conda env update -f environment.yml
   - source activate flyingpigeon
-  # Packages for testing
-  - conda install pytest flake8
+  # Packages for testing and generating docs
+  - make develop
   # Install WPS
   - python setup.py install
 before_script:
@@ -41,3 +41,4 @@ script:
   - pytest
   - make test-notebooks
   - flake8
+  - make docs
