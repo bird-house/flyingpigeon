@@ -1,0 +1,23 @@
+{
+    "template": "https://github.com/bird-house/cookiecutter-birdhouse.git",
+    "commit": "90aa958fbcd10f1e77d0636a05fe29d744831d27",
+    "context": {
+        "cookiecutter": {
+            "full_name": "Nils Hempelmann",
+            "email": "info@nilshempelmann.de",
+            "github_username": "bird-house",
+            "project_name": "Flyingpigeon",
+            "project_slug": "flyingpigeon",
+            "project_repo_name": "flyingpigeon",
+            "project_readthedocs_name": "flyingpigeon",
+            "project_short_description": "A Web Processing Service Testbed.",
+            "version": "1.5.1",
+            "open_source_license": "Apache Software License 2.0",
+            "http_port": "8093",
+            "_copy_without_render": [
+                "flyingpigeon/templates/*.cfg"
+            ],
+            "_template": "https://github.com/bird-house/cookiecutter-birdhouse.git"
+        }
+    }
+}

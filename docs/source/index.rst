@@ -4,6 +4,7 @@ Table of content
 ----------------
 .. toctree::
    :maxdepth: 1
+   :caption: Contents:
 
    installation
    configuration
