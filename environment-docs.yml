@@ -13,4 +13,4 @@ dependencies:
 - pip
 - pip:
   - https://github.com/metalink-dev/pymetalink/archive/master.zip
-# - sphinx_rtd_theme
+  - sphinx_rtd_theme
