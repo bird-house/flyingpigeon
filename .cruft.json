@@ -1,6 +1,20 @@
 {
     "template": "https://github.com/bird-house/cookiecutter-birdhouse.git",
     "commit": "90aa958fbcd10f1e77d0636a05fe29d744831d27",
+    "skip": [
+        "flyingpigeon/processes/wps_say_hello.py",
+        "tests/test_wps_hello.py",
+        "docs/source/notebooks/example.ipynb",
+        ".travis.yml",
+        "environment.yml",
+        "requirements.txt",
+        "AUTHORS.rst",
+        "CHANGES.rst",
+        "docs/source/notebooks/index.rst",
+        "docs/source/processes.rst",
+        "flyingpigeon/processes/__init__.py",
+        "tests/test_wps_caps.py"
+    ],
     "context": {
         "cookiecutter": {
             "full_name": "Nils Hempelmann",
