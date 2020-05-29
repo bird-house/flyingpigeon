@@ -22,6 +22,7 @@ from flyingpigeon.processes import SpatialAnalogProcess, PlotSpatialAnalogProces
 from .common import TESTDATA, client_for, CFG_FILE
 
 
+@pytest.mark.skip("race condition")
 class TestDissimilarity(TestBase):
     """Simple auto-generated test field."""
     def setUp(self):
