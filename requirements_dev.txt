@@ -14,4 +14,4 @@ cruft
 sphinx_rtd_theme
 ipywidgets       # needed for the parsing of Jupyter Notebooks
 birdhouse-birdy
-# pymetalink
+git+https://github.com/metalink-dev/pymetalink@v6.2#egg=pymetalink
