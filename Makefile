@@ -49,6 +49,7 @@ install:
 develop:
 	@echo "Installing development requirements for tests and docs ..."
 	@-bash -c 'pip install -e ".[dev]"'
+	@-bash -c 'pip install git+https://github.com/metalink-dev/pymetalink@v6.2#egg=pymetalink --upgrade'
 
 .PHONY: start
 start:

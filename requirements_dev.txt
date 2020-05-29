@@ -14,4 +14,7 @@ cruft
 sphinx_rtd_theme
 ipywidgets       # needed for the parsing of Jupyter Notebooks
 birdhouse-birdy
-git+https://github.com/metalink-dev/pymetalink@v6.2#egg=pymetalink
+# https://setuptools.readthedocs.io/en/latest/setuptools.html#dependencies-that-aren-t-in-pypi
+# Dependency links support has been dropped by pip starting with version 19.0 (released 2019-01-22).
+# This pymetalink is installed by `make develop` instead.
+#git+https://github.com/metalink-dev/pymetalink@v6.2#egg=pymetalink
