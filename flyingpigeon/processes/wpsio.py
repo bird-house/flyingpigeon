@@ -74,4 +74,3 @@ shape = ComplexInput('shape', 'Vector Shape',
                      min_occurs=1,
                      max_occurs=1,
                      supported_formats=[FORMATS.GEOJSON, FORMATS.GML, FORMATS.JSON, FORMATS.SHP])
-

@@ -1,6 +1,5 @@
 import json
-from pywps import LiteralInput, ComplexInput, ComplexOutput
-from pywps import configuration, FORMATS
+from pywps import configuration
 import owslib
 from owslib.wfs import WebFeatureService
 import ocgis

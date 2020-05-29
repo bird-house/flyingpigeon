@@ -38,7 +38,7 @@ class PointinspectionProcess(Process):
 
             LiteralInput("coords", "Coordinates",
                          abstract="Comma-seperated tuple of WGS85 lon, lat decimal coordinates "
-                          "(e.g. 2.356138, 48.846450).",
+                                  "(e.g. 2.356138, 48.846450).",
                          # noqa
                          default="2.356138, 48.846450",
                          data_type='string',
