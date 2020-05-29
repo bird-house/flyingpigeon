@@ -5,7 +5,7 @@ from pywps import Process, LiteralInput, FORMATS
 from pywps.inout.outputs import MetaFile, MetaLink4
 
 from flyingpigeon.subset_base import Subsetter
-from . wpsio import resource, variable, start, end, output, metalink
+from flyingpigeon.processes.wpsio import resource, variable, start, end, output, metalink
 import ocgis
 import ocgis.exc
 
