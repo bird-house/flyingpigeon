@@ -34,8 +34,8 @@ install:
   # Install WPS
   - python setup.py install
 before_script:
-  # Start WPS service on port 5000 on 0.0.0.0
-  - flyingpigeon start --daemon --bind-host 0.0.0.0 --port 5000
+  # Start WPS service on port 8093 on 0.0.0.0
+  - flyingpigeon start --daemon --bind-host 0.0.0.0 --port 8093
   - sleep 2
 script:
   - pytest
