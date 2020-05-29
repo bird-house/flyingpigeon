@@ -29,6 +29,9 @@ dependencies:
 - pytest-flake8
 - nose
 ##############
+# docs
+- pandoc  # was able to install it in requirements_dev.txt
+##############
 # pip install
 - pip:
 #  - -e git+https://github.com/bird-house/eggshell.git#egg=eggshell
