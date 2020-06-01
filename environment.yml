@@ -30,7 +30,7 @@ dependencies:
 - nose
 ##############
 # docs
-- pandoc  # was able to install it in requirements_dev.txt
+- pandoc  # was unable to install it in requirements_dev.txt
 ##############
 # pip install
 - pip:
