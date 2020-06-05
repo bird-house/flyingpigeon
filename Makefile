@@ -5,6 +5,9 @@ APP_NAME := flyingpigeon
 # TODO read in from server configuration
 WPS_URL = http://localhost:8093
 OUTPUT_URL = https://pavics.ouranos.ca/wpsoutputs
+
+SANITIZE_FILE := https://github.com/Ouranosinc/PAVICS-e2e-workflow-tests/raw/master/notebooks/output-sanitize.cfg
+
 # end of configuration
 
 .DEFAULT_GOAL := help
@@ -26,7 +29,9 @@ help:
 	@echo "\nTesting targets:"
 	@echo "  test              to run tests (but skip long running tests)."
 	@echo "  test-all          to run all tests (including long running tests)."
+	@echo "  test-notebooks    to verify Jupyter Notebook test outputs are valid."
 	@echo "  lint              to run code style checks with flake8."
+	@echo "  refresh-notebooks to verify Jupyter Notebook test outputs are valid."
 	@echo "\nSphinx targets:"
 	@echo "  docs              to generate HTML documentation with Sphinx."
 	@echo "\nDeployment targets:"
@@ -44,6 +49,7 @@ install:
 develop:
 	@echo "Installing development requirements for tests and docs ..."
 	@-bash -c 'pip install -e ".[dev]"'
+	@-bash -c 'pip install git+https://github.com/metalink-dev/pymetalink@v6.2#egg=pymetalink --upgrade'
 
 .PHONY: start
 start:
@@ -61,7 +67,7 @@ restart: stop start
 
 .PHONY: status
 status:
-	@echo "Show status ..."
+	@echo "Showing status ..."
 	@-bash -c "$(APP_NAME) status"
 
 .PHONY: clean
@@ -69,7 +75,7 @@ clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and 
 
 .PHONY: clean-build
 clean-build:
-	@echo "Remove build artifacts ..."
+	@echo "Removing build artifacts ..."
 	@-rm -fr build/
 	@-rm -fr dist/
 	@-rm -fr .eggs/
@@ -80,7 +86,7 @@ clean-build:
 
 .PHONY: clean-pyc
 clean-pyc:
-	@echo "Remove Python file artifacts ..."
+	@echo "Removing Python file artifacts ..."
 	@-find . -name '*.pyc' -exec rm -f {} +
 	@-find . -name '*.pyo' -exec rm -f {} +
 	@-find . -name '*~' -exec rm -f {} +
@@ -88,13 +94,14 @@ clean-pyc:
 
 .PHONY: clean-test
 clean-test:
-	@echo "Remove test artifacts ..."
+	@echo "Removing test artifacts ..."
 	@-rm -fr .pytest_cache
 
 .PHONY: clean-dist
 clean-dist: clean
-	@echo "Run 'git clean' ..."
-	@git diff --quiet HEAD || echo "There are uncommited changes! Not doing 'git clean' ..."
+	@echo "Running 'git clean' ..."
+	@git diff --quiet HEAD || echo "There are uncommitted changes! Aborting 'git clean' ..."
+	## do not use git clean -e/--exclude here, add them to .gitignore instead
 	@-git clean -dfx
 
 ## Test targets
@@ -109,23 +116,25 @@ test-all:
 	@echo "Running all tests (including slow and online tests) ..."
 	@bash -c 'pytest -v tests/'
 
+.PHONY: notebook-sanitizer
+notebook-sanitizer:
+	@echo "Copying notebook output sanitizer ..."
+	@-bash -c "curl -L $(SANITIZE_FILE) -o $(CURDIR)/docs/source/output-sanitize.cfg --silent"
+
 .PHONY: test-notebooks
-test-notebooks:
+test-notebooks: notebook-sanitizer
 	@echo "Running notebook-based tests"
-	@bash -c "curl -L https://github.com/Ouranosinc/PAVICS-e2e-workflow-tests/raw/master/notebooks/output-sanitize.cfg --output $(CURDIR)/docs/source/output_sanitize.cfg --silent"
-	@bash -c "env WPS_URL=$(WPS_URL) pytest --nbval --verbose $(CURDIR)/docs/source/notebooks/ --sanitize-with $(CURDIR)/docs/source/output_sanitize.cfg --ignore $(CURDIR)/docs/source/notebooks/.ipynb_checkpoints"
-
-.PHONY: refresh-notebooks
-refresh-notebooks:
-	@echo "Refresh all notebook outputs under docs/source/notebooks"
-	cd docs/source/notebooks; for nb in *.ipynb; do WPS_URL="$(WPS_URL)" jupyter nbconvert --to notebook --execute --ExecutePreprocessor.timeout=60 --output "$$nb" "$$nb"; sed -i "s@$(WPS_URL)/outputs/@$(OUTPUT_URL)/@g" "$$nb"; done; cd $(APP_ROOT)
-
-
+	@bash -c "env WPS_URL=$(WPS_URL) pytest --nbval --verbose $(CURDIR)/docs/source/notebooks/ --sanitize-with $(CURDIR)/docs/source/output-sanitize.cfg --ignore $(CURDIR)/docs/source/notebooks/.ipynb_checkpoints"
 
 .PHONY: lint
 lint:
 	@echo "Running flake8 code style checks ..."
 	@bash -c 'flake8'
+
+.PHONY: refresh-notebooks
+refresh-notebooks:
+	@echo "Refresh all notebook outputs under docs/source/notebooks"
+	@bash -c 'for nb in $(CURDIR)/docs/source/notebooks/*.ipynb; do WPS_URL="$(WPS_URL)" jupyter nbconvert --to notebook --execute --ExecutePreprocessor.timeout=60 --output "$$nb" "$$nb"; sed -i "s@$(WPS_URL)/outputs/@$(OUTPUT_URL)/@g" "$$nb"; done; cd $(APP_ROOT)'
 
 ## Sphinx targets
 
@@ -133,13 +142,15 @@ lint:
 docs:
 	@echo "Generating docs with Sphinx ..."
 	@-bash -c '$(MAKE) -C $@ clean html'
-	@echo "open your browser: open file://$(APP_ROOT)/docs/build/html/index.html"
+	@echo "Open your browser to: file:/$(APP_ROOT)/docs/build/html/index.html"
+	## do not execute xdg-open automatically since it hangs travis and job does not complete
+	@echo "xdg-open $(APP_ROOT)/docs/build/html/index.html"
 
 ## Deployment targets
 
 .PHONY: dist
 dist: clean
-	@echo "Builds source and wheel package ..."
+	@echo "Building source and wheel package ..."
 	@-python setup.py sdist
 	@-python setup.py bdist_wheel
-	ls -l dist
+	@-bash -c 'ls -l dist/'

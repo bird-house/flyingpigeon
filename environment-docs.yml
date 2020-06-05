@@ -1,4 +1,5 @@
-name: flyingpigeon
+# conda env create -f environment-docs.yml
+name: flyingpigeon-docs
 channels:
 - conda-forge
 - defaults
@@ -12,4 +13,4 @@ dependencies:
 - pip
 - pip:
   - https://github.com/metalink-dev/pymetalink/archive/master.zip
-# - sphinx_rtd_theme
+  - sphinx_rtd_theme

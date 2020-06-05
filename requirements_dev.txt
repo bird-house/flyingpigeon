@@ -1,13 +1,20 @@
 pytest
 flake8
 pytest-flake8
-sphinx>=1.7
-bump2version
-twine
-sphinx_rtd_theme
+ipython
+pytest-notebook
+nbsphinx
 nbval
 nbconvert
+sphinx>=1.7
+bumpversion
+twine
+cruft
+# Changing dependencies above this comment will create merge conflicts when updating the cookiecutter template with cruft. Add extra requirements below this line. 
+sphinx_rtd_theme
 ipywidgets       # needed for the parsing of Jupyter Notebooks
-ipython
 birdhouse-birdy
-pymetalink
+# https://setuptools.readthedocs.io/en/latest/setuptools.html#dependencies-that-aren-t-in-pypi
+# Dependency links support has been dropped by pip starting with version 19.0 (released 2019-01-22).
+# This pymetalink is installed by `make develop` instead.
+#git+https://github.com/metalink-dev/pymetalink@v6.2#egg=pymetalink

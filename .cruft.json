@@ -1,0 +1,36 @@
+{
+    "template": "https://github.com/bird-house/cookiecutter-birdhouse.git",
+    "commit": "fce99f3071d65bb494a44f7527b5dc5d92fbd390",
+    "skip": [
+        "flyingpigeon/processes/wps_say_hello.py",
+        "tests/test_wps_hello.py",
+        "docs/source/notebooks/example.ipynb",
+        "environment.yml",
+        "requirements.txt",
+        "AUTHORS.rst",
+        "CHANGES.rst",
+        "docs/source/notebooks/index.rst",
+        "docs/source/processes.rst",
+        "flyingpigeon/processes/__init__.py",
+        "tests/test_wps_caps.py"
+    ],
+    "context": {
+        "cookiecutter": {
+            "full_name": "Nils Hempelmann",
+            "email": "info@nilshempelmann.de",
+            "github_username": "bird-house",
+            "project_name": "Flyingpigeon",
+            "project_slug": "flyingpigeon",
+            "project_repo_name": "flyingpigeon",
+            "project_readthedocs_name": "flyingpigeon",
+            "project_short_description": "A Web Processing Service Testbed.",
+            "version": "1.5.1",
+            "open_source_license": "Apache Software License 2.0",
+            "http_port": "8093",
+            "_copy_without_render": [
+                "{{cookiecutter.project_slug}}/templates/*.cfg"
+            ],
+            "_template": "https://github.com/bird-house/cookiecutter-birdhouse.git"
+        }
+    }
+}
