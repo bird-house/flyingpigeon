@@ -3,13 +3,14 @@ Changes
 
 1.6 (2020-06-10)
 ================
-* remove dependency eggshell
-* notebook test integration
+* remove eggshell dependency
+* notebooks are part of the test suite
 * improved plot processes
 * remove mosaic option for subset processes
 * loop over multiple files of one dataset
-* multiple outputs given as Metalink standard
+* multiple outputs listed in Metalink output
 * update pywps to 4.2.3
+* use cruft to keep up-to-date with the cookie-cutter template
 
 1.5.1 (2019-11-11)
 ==================
