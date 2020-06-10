@@ -8,9 +8,10 @@ Changes
 * notebook test integration
 * improved plot processes
 * remove mosaic option for subset processes
-* loop over multiple files of one dataset
-* multiple outputs given as Metalink standard
+* polygon subset processes files separately instead of an entire data-set at once
+* multiple outputs listed in Metalink output
 * update pywps to 4.2.3
+
 
 1.5.1 (2019-11-11)
 ==================
