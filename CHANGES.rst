@@ -3,6 +3,7 @@ Changes
 
 1.6 (2020-06-10)
 ================
+* Setup cruft for cookiecutter refresh
 * remove dependency eggshell
 * notebook test integration
 * improved plot processes
