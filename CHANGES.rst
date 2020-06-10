@@ -1,6 +1,16 @@
 Changes
 *******
 
+1.6 (2020-06-10)
+================
+* remove dependency eggshell
+* notebook test integration
+* improved plot processes
+* remove mosaic option for subset processes
+* loop over multiple files of one dataset
+* multiple outputs given as Metalink standard
+* update pywps to 4.2.3
+
 1.5.1 (2019-11-11)
 ==================
 * Add Postgres library to docker image.
