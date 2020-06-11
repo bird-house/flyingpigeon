@@ -12,7 +12,6 @@ Changes
 * update pywps to 4.2.3
 * use cruft to keep up-to-date with the cookie-cutter template
 
-
 1.5.1 (2019-11-11)
 ==================
 * Add Postgres library to docker image.
