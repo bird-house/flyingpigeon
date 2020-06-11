@@ -3,14 +3,14 @@ Changes
 
 1.6 (2020-06-10)
 ================
-* Setup cruft for cookiecutter refresh
-* remove dependency eggshell
-* notebook test integration
+* remove eggshell dependency
+* notebooks are part of the test suite
 * improved plot processes
 * remove mosaic option for subset processes
 * polygon subset processes files separately instead of an entire data-set at once
 * multiple outputs listed in Metalink output
 * update pywps to 4.2.3
+* use cruft to keep up-to-date with the cookie-cutter template
 
 
 1.5.1 (2019-11-11)
