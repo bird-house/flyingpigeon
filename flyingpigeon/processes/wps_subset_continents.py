@@ -5,7 +5,8 @@ from pywps import ComplexInput, Format, LiteralInput, Process, FORMATS
 from pywps.app.Common import Metadata
 
 from pywps.inout.outputs import MetaFile, MetaLink4
-from flyingpigeon.processes.wpsio import output, metalink
+from flyingpigeon.processes.wpsio import resource, variable, output, metalink
+
 
 from flyingpigeon.subset import _CONTINENTS_
 from flyingpigeon.subset import clipping
@@ -30,16 +31,19 @@ class SubsetcontinentProcess(Process):
                          max_occurs=len(_CONTINENTS_),
                          default='Africa',
                          allowed_values=_CONTINENTS_),  # REGION_EUROPE #COUNTRIES
+            #
+            # ComplexInput('resource', 'Resource',
+            #              abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
+            #              min_occurs=1,
+            #              max_occurs=1000,
+            #              supported_formats=[
+            #                  Format('application/x-netcdf'),
+            #                  Format('application/x-tar'),
+            #                  Format('application/zip'),
+            #              ])
 
-            ComplexInput('resource', 'Resource',
-                         abstract='NetCDF Files or archive (tar/zip) containing netCDF files.',
-                         min_occurs=1,
-                         max_occurs=1000,
-                         supported_formats=[
-                             Format('application/x-netcdf'),
-                             Format('application/x-tar'),
-                             Format('application/zip'),
-                         ]),
+            resource, variable,
+
         ]
 
         outputs = [output, metalink]
@@ -72,6 +76,11 @@ class SubsetcontinentProcess(Process):
         # mosaic option
         # TODO: fix defaults in pywps 4.x
 
+        if 'variable' in request.inputs:
+            var = request.inputs['variable'][0].data
+        else:
+            var = None
+
         # regions used for subsetting
         regions = [inp.data for inp in request.inputs['region']]
 
@@ -90,7 +99,7 @@ class SubsetcontinentProcess(Process):
                     polygons=regions,
                     mosaic=True,
                     spatial_wrapping='wrap',
-                    # variable=variable,
+                    variable=var,
                     dir_output=self.workdir,
                     # dimension_map=dimension_map,
                 )

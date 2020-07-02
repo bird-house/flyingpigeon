@@ -3,7 +3,7 @@ import logging
 from pywps import ComplexInput, Format, LiteralInput, Process, FORMATS
 from pywps.app.Common import Metadata
 from pywps.inout.outputs import MetaFile, MetaLink4
-from flyingpigeon.processes.wpsio import output, metalink
+from flyingpigeon.processes.wpsio import resource, variable, output, metalink
 
 from flyingpigeon.subset import clipping
 from flyingpigeon.subset import countries
@@ -32,16 +32,17 @@ class SubsetcountryProcess(Process):
                          max_occurs=len(countries()),
                          default='DEU',
                          allowed_values=countries()),
-
-            ComplexInput('resource', 'Resource',
-                         abstract='NetCDF Files or archive (tar/zip) containing NetCDF files.',
-                         min_occurs=1,
-                         max_occurs=1000,
-                         supported_formats=[
-                             Format('application/x-netcdf'),
-                             Format('application/x-tar'),
-                             Format('application/zip'),
-                         ]),
+            #
+            # ComplexInput('resource', 'Resource',
+            #              abstract='NetCDF Files or archive (tar/zip) containing NetCDF files.',
+            #              min_occurs=1,
+            #              max_occurs=1000,
+            #              supported_formats=[
+            #                  Format('application/x-netcdf'),
+            #                  Format('application/x-tar'),
+            #                  Format('application/zip'),
+            #              ]),
+            resource, variable,
         ]
 
         outputs = [output, metalink]
@@ -74,12 +75,16 @@ class SubsetcountryProcess(Process):
             dir_output=self.workdir)
         # mime_type=request.inputs['resource'][0].data_format.mime_type)
         # mosaic option
+        if 'variable' in request.inputs:
+            var = request.inputs['variable'][0].data
+        else:
+            var = None
+
         # regions used for subsetting
         regions = [inp.data for inp in request.inputs['region']]
 
         LOGGER.info('ncs={}'.format(ncs))
         LOGGER.info('regions={}'.format(regions))
-
         response.update_status("Arguments set for subset process", 0)
         LOGGER.debug('starting: regions={}, num_files={}'.format(len(regions), len(ncs)))
 
@@ -91,7 +96,7 @@ class SubsetcountryProcess(Process):
                     polygons=regions,  # self.region.getValue(),
                     mosaic=True,
                     spatial_wrapping='wrap',
-                    # variable=variable,
+                    variable=var,
                     dir_output=self.workdir,
                     # dimension_map=dimension_map,
                 )

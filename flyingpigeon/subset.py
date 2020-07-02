@@ -80,7 +80,7 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None, output_f
              dir_output=None, memory_limit=None):
     """ returns list of clipped netCDF files
 
-    :param resource: list of input netCDF files
+    :param resource: single input netCDF file
     :param variable: variable (string) to be used in netCDF
     :param dimesion_map: specify a dimension map if input netCDF has unconventional dimension
     :param calc: ocgis calculation argument
@@ -112,68 +112,72 @@ def clipping(resource=[], variable=None, dimension_map=None, calc=None, output_f
             prefix = list([prefix])
 
     geoms = set()
-    ncs = sort_by_filename(resource, historical_concatination=historical_concatination)  # historical_concatenation=True
     geom_files = []
-    if mosaic is True:
-        try:
-            nameadd = '_'
-            for polygon in polygons:
-                geoms.add(get_geom(polygon))
-                nameadd = nameadd + polygon.replace(' ', '')
-            if len(geoms) > 1:
-                LOGGER.error('polygons belong to different shapefiles! mosaic option is not possible %s', geoms)
-            else:
-                geom = geoms.pop()
-            ugids = get_ugid(polygons=polygons, geom=geom)
-        except Exception as ex:
-            LOGGER.exception('geom identification failed {}'.format(str(ex)))
-        for i, key in enumerate(ncs.keys()):
-            try:
-                # if variable is None:
-                variable = get_variable(ncs[key])
-                LOGGER.info('variable %s detected in resource' % (variable))
-                if prefix is None:
-                    name = key + nameadd
-                else:
-                    name = prefix[i]
-                geom_file = call(resource=ncs[key], variable=variable, calc=calc, calc_grouping=calc_grouping,
-                                 output_format=output_format, prefix=name,
-                                 geom=geom, select_ugid=ugids, time_range=time_range,
-                                 time_region=time_region,
-                                 spatial_wrapping=spatial_wrapping, memory_limit=memory_limit,
-                                 dir_output=dir_output, dimension_map=dimension_map)
-                geom_files.append(geom_file)
-                LOGGER.info('ocgis mosaik clipping done for %s' % (key))
-            except Exception as ex:
-                msg = 'ocgis mosaik clipping failed for %s, %s ' % (key, ex)
-                LOGGER.exception(msg)
-    else:
-        for i, polygon in enumerate(polygons):
-            try:
-                geom = get_geom(polygon)
-                ugid = get_ugid(polygons=polygon, geom=geom)
-                for key in ncs.keys():
-                    try:
-                        # if variable is None:
-                        variable = get_variable(ncs[key])
-                        LOGGER.info('variable %s detected in resource' % (variable))
-                        if prefix is None:
-                            name = key + '_' + polygon.replace(' ', '')
-                        else:
-                            name = prefix[i]
-                        geom_file = call(resource=ncs[key], variable=variable, calc=calc, calc_grouping=calc_grouping,
-                                         output_format=output_format,
-                                         prefix=name, geom=geom, select_ugid=ugid, dir_output=dir_output,
-                                         dimension_map=dimension_map, spatial_wrapping=spatial_wrapping,
-                                         memory_limit=memory_limit, time_range=time_range, time_region=time_region,
-                                         )
-                        geom_files.append(geom_file)
-                        LOGGER.info('ocgis clipping done for %s' % (key))
-                    except Exception as ex:
-                        msg = 'ocgis clipping failed for %s: %s ' % (key, ex)
-                        LOGGER.exception(msg)
-            except Exception as ex:
-                LOGGER.exception('geom identification failed {}'.format(str(ex)))
+
+    # if len(resource) > 1:
+    #     ncs = sort_by_filename(resource, historical_concatination=historical_concatination)  # historical_concatenation=True
+    # else
+
+    # if mosaic is True:
+    try:
+        nameadd = '_'
+        for polygon in polygons:
+            geoms.add(get_geom(polygon))
+            nameadd = nameadd + polygon.replace(' ', '')
+        if len(geoms) > 1:
+            LOGGER.error('polygons belong to different shapefiles! mosaic option is not possible %s', geoms)
+        else:
+            geom = geoms.pop()
+        ugids = get_ugid(polygons=polygons, geom=geom)
+    except Exception as ex:
+        LOGGER.exception('geom identification failed {}'.format(str(ex)))
+    # for i, key in enumerate(ncs.keys()):
+    try:
+        # if variable is None:
+        #     variable = get_variable(recource)
+        # LOGGER.info('variable %s detected in resource' % (variable))
+        if prefix is None:
+            name = key + nameadd
+        else:
+            name = prefix[i]
+        geom_file = call(resource=resource, variable=variable, calc=calc, calc_grouping=calc_grouping, # resource=ncs[key]
+                         output_format=output_format, prefix=name,
+                         geom=geom, select_ugid=ugids, time_range=time_range,
+                         time_region=time_region,
+                         spatial_wrapping=spatial_wrapping, memory_limit=memory_limit,
+                         dir_output=dir_output, dimension_map=dimension_map)
+        geom_files.append(geom_file)
+        LOGGER.info('ocgis mosaik clipping done for %s' % (key))
+    except Exception as ex:
+        msg = 'ocgis mosaik clipping failed for %s, %s ' % (key, ex)
+        LOGGER.exception(msg)
+    # else:
+    #     for i, polygon in enumerate(polygons):
+    #         try:
+    #             geom = get_geom(polygon)
+    #             ugid = get_ugid(polygons=polygon, geom=geom)
+    #             for key in ncs.keys():
+    #                 try:
+    #                     if variable is None:
+    #                         variable = get_variable(ncs[key])
+    #                     LOGGER.info('variable %s detected in resource' % (variable))
+    #                     if prefix is None:
+    #                         name = key + '_' + polygon.replace(' ', '')
+    #                     else:
+    #                         name = prefix[i]
+    #                     geom_file = call(resource=ncs[key], variable=variable, calc=calc, calc_grouping=calc_grouping,
+    #                                      output_format=output_format,
+    #                                      prefix=name, geom=geom, select_ugid=ugid, dir_output=dir_output,
+    #                                      dimension_map=dimension_map, spatial_wrapping=spatial_wrapping,
+    #                                      memory_limit=memory_limit, time_range=time_range, time_region=time_region,
+    #                                      )
+    #                     geom_files.append(geom_file)
+    #                     LOGGER.info('ocgis clipping done for %s' % (key))
+    #                 except Exception as ex:
+    #                     msg = 'ocgis clipping failed for %s: %s ' % (key, ex)
+    #                     LOGGER.exception(msg)
+    #         except Exception as ex:
+    #             LOGGER.exception('geom identification failed {}'.format(str(ex)))
     return geom_files
 
 
