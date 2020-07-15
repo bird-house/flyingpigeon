@@ -181,6 +181,101 @@ def plot_ts_spaghetti(resource, variable=None, ylim=None, title=None,
     return output_png
 
 
+
+def plot_ssp_spaghetti(resource, variable, ylim=None, title=None,
+                      file_extension='png', delta=0, dir_output='.',
+                      figsize=(10, 10)):
+    """
+    creates a png file containing the appropriate spaghetti plot as a
+    field mean of the values.
+
+    :param resource: list of CMIP6 files containing the same variable
+    :param variable: variable to be visualised. If None (default), variable will be detected
+    :param title: string to be used as title
+    :param ylim: Y-axis limitations: tuple(min,max)
+    :param figsize: figure size defult=(10,10)
+
+    :retruns str: path to png file
+    """
+
+    try:
+        fig = plt.figure(figsize=figsize, dpi=600, facecolor='w', edgecolor='k')
+#         LOGGER.debug('Start visualisation spaghetti plot')
+        # === prepare invironment
+        if type(resource) != list:
+            resource = [resource]
+#             var = get_variable(nc)
+#         if variable is None:
+#             variable = get_variable(resource[0])
+#         LOGGER.info('plot values preparation done')
+    except Exception as ex:
+        print("plot values preparation failed {}".format(ex))
+#         LOGGER.exception(msg)
+#         raise Exception(msg)
+    try:
+        for c, nc in enumerate(resource):
+            try:
+                # dt = get_time(nc)
+                # ts = fieldmean(nc)
+#                 ex = ['ssp119', 'ssp126', 'ssp245', 'ssp370',  'ssp434','ssp460','ssp585', 'historical']
+#                 col = 'grey'
+                if 'historical' in nc:
+                    col = 'grey'
+                elif 'ssp119' in nc:
+                    col = '#1e9583'
+                elif 'ssp126' in nc:
+                    col = '#1d3354'
+                elif 'ssp245' in nc:
+                    col = '#e9dc3d'
+                elif 'ssp370' in nc:
+                    col = '#f11111'
+                elif 'ssp434' in nc:
+                    col = '#63bce4'
+                elif 'ssp460' in nc:
+                    col = '#e78731'
+                elif 'ssp585' in nc:
+                    col = '#830b22'
+                #TODO : to be used: https://pyam-iamc.readthedocs.io/en/stable/index.html#
+                else:
+                    col = 'pink'
+
+                # 9	AR6-SSP3-LowNTCF	#f11111
+                # 12	AR6-SSP5-3.4-OS	#996dc8
+
+                dt = get_time(nc)
+                # [datetime.strptime(elem, '%Y-%m-%d') for elem in strDate[0]]
+                # ts = fieldmean(nc)
+                ds = Dataset(nc)
+                tg_val = np.squeeze(ds.variables[variable][:])
+                ts= tg_val + delta
+#                 d2 = np.nanmean(tg_val, axis=1)
+#                 ts = np.nanmean(d2, axis=1)
+
+                plt.plot(dt, ts, col)
+                plt.grid()
+                plt.title(title)
+                #
+                # plt.plot(dt, ts)
+                # fig.line( dt,ts )
+            except Exception as e:
+                print("spaghetti plot failed for {} : {}".format(nc, e))
+#                 LOGGER.exception(msg)
+
+        plt.title(title, fontsize=20)
+        plt.ylim(ylim)
+        plt.xticks(fontsize=16, rotation=45)
+        plt.yticks(fontsize=16)
+        plt.grid()
+
+        output_png = fig2plot(fig=fig, file_extension=file_extension, dir_output=dir_output)
+
+        plt.close()
+        print('timeseries spaghetti plot done for %s with %s lines.' % (variable, c))
+    except Exception as ex:
+        print('matplotlib spaghetti plot failed: {}'.format(ex))
+#         LOGGER.exception(msg)
+    return output_png
+
 def ts_data(datasets, delta=0):
     """
     Creates a pandas DataFrame out of the netcdt datasets
@@ -209,8 +304,11 @@ def ts_data(datasets, delta=0):
                 var = get_variable(nc)
                 ts = get_time(nc)
                 tg_val = np.squeeze(ds.variables[var][:])
-                d2 = np.nanmean(tg_val, axis=1)
-                data = np.nanmean(d2, axis=1) + delta
+                if len(tg_val.shape) == 1:
+                    data = tg_val + delta
+                else:
+                    d2 = np.nanmean(tg_val, axis=1)
+                    data = np.nanmean(d2, axis=1) + delta
                 df[key].loc[ts] = data
                 # data = fieldmean(dic[key])  # get_values(f)
                 # ts = get_time(dic[key])

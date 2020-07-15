@@ -274,7 +274,6 @@ def sort_by_filename(resource, historical_concatination=False):
     from os import path
     if type(resource) == str:
         resource = [resource]
-
     nc_datasets = {}
     tmp_dic = {}
 
@@ -365,6 +364,67 @@ def sort_by_filename(resource, historical_concatination=False):
         raise Exception(msg)
     return tmp_dic
 
+
+def sortssp_by_drsname(resource):
+    nc_datasets = {}
+    tmp_dic = {}
+
+    try:
+        for nc in resource:
+            # LOGGER.info('file: %s' % nc)
+            p, f = path.split(path.abspath(nc.replace('.nc', '')))
+            n = f.split('_')
+            if len([int(i) for i in n[-1].split('-') if i.isdigit()]) == 2:
+                bn = '_'.join(n[0:-1])  # skipping the date information in the filename
+                nc_datasets[bn] = []  # dictionary containing all datasets names
+            elif len([int(i) for i in n[-2].split('-') if i.isdigit()]) == 2:
+                bn = '_'.join(n[0:-2])  # skipping the date information in the filename
+                nc_datasets[bn] = []  # dictionary containing all datasets names
+            else:
+                print('file is not DRS convention conform!')
+
+            #  select only necessary names
+            ssp_datasets = nc_datasets.copy()
+            if any("_ssp" in s for s in nc_datasets.keys()):
+                for key in nc_datasets.keys():
+                    if 'historical' in key:
+                        ssp_datasets.pop(key)
+                nc_datasets = ssp_datasets.copy()
+                print('historical data set names removed from dictionary')
+            else:
+                print('no SSP dataset names found in dictionary')
+        print('Got dataset names for dic keys')
+    except Exception as e:
+        print('failed to get dataset names for dic keys {}'.format(e))
+
+    # collect the file according to datasets
+    for key in nc_datasets:
+        try:
+#             if historical_concatination is False:
+#                 for n in resource:
+#                     if '%s_' % key in n:
+#                         nc_datasets[key].append(path.abspath(n))  # path.join(p, n))
+#    ex = ['ssp119', 'ssp126', 'ssp245', 'ssp370',  'ssp434','ssp460','ssp585',
+
+#             elif historical_concatination is True:
+            key_hist = key.replace('ssp119', 'historical').\
+                replace('ssp126', 'historical').\
+                replace('ssp245', 'historical').\
+                replace('ssp370', 'historical').\
+                replace('ssp434', 'historical').\
+                replace('ssp460', 'historical').\
+                replace('ssp585', 'historical')
+            for n in resource:
+                if '{}_'.format(key_hist) in n:
+                    nc_datasets[key].append(path.abspath(n))
+                if '{}_'.format(key) in n:
+                    nc_datasets[key].append(path.abspath(n))  # path.join(p, n))
+#             else:
+#                 LOGGER.error('append file paths to dictionary for key %s failed' % key)
+            nc_datasets[key].sort()
+        except Exception as e:
+            print('failed for{e}'.fromat(e))
+    return nc_datasets
 
 # def get_calendar(resource, variable=None):
 #     """
