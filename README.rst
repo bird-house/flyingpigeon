@@ -19,7 +19,7 @@ Flyingpigeon
 
 
 Flyingpigeon (the bird)
-  *The pigeon finds its way home over extremely long distances. [..].* ( `Wikipedia <https://en.wikipedia.org/wiki/Pigeon_flying>`_ ).
+  *The pigeon finds its way home over extremely long distances. [..].* ( `Wikipedia <https://en.wikipedia.org/wiki/Pigeon_flying>`__ ).
 
 A Web Processing Service Testbed.
 
