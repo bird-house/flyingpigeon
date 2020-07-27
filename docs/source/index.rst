@@ -13,6 +13,7 @@ Table of content
    processes_des
    notebooks/index
    processes_api
+   tutorial
    changes
    authors
 
