@@ -4,6 +4,10 @@ APP_NAME := flyingpigeon
 
 # TODO read in from server configuration
 WPS_URL = http://localhost:8093
+
+# Used in target refresh-notebooks to make it looks like the notebooks have
+# been refreshed from the production server below instead of from the local dev
+# instance so the notebooks can also be used as tutorial notebooks.
 OUTPUT_URL = https://pavics.ouranos.ca/wpsoutputs
 
 SANITIZE_FILE := https://github.com/Ouranosinc/PAVICS-e2e-workflow-tests/raw/master/notebooks/output-sanitize.cfg
