@@ -7,6 +7,7 @@ from pywps import Format
 from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
+from pywps.ext_autodoc import MetadataUrl
 
 from flyingpigeon.utils import archive, extract_archive
 # from flyingpigeon.utils import rename_complexinputs
@@ -73,8 +74,9 @@ class PlotSpatialAnalogProcess(Process):
                      "spatial_analog process as well as indicating by a marker the location of the target site.",
             version="0.1",
             metadata=[
-                Metadata('Doc',
-                         'http://flyingpigeon.readthedocs.io/en/latest/'),
+                MetadataUrl('Doc',
+                            'http://flyingpigeon.readthedocs.io/en/latest/',
+                            anonymous=True),
             ],
             inputs=inputs,
             outputs=outputs,

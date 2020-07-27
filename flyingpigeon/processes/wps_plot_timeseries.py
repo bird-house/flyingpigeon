@@ -5,6 +5,7 @@ from pywps import Format
 from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
+from pywps.ext_autodoc import MetadataUrl
 
 from flyingpigeon import plt_ncdata
 from flyingpigeon.utils import extract_archive
@@ -64,8 +65,9 @@ class PlottimeseriesProcess(Process):
             title="Graphics (timeseries)",
             version="0.11",
             metadata=[
-                Metadata('Doc',
-                         'https://flyingpigeon.readthedocs.io/en/latest/processes_des.html#data-visualization'),
+                MetadataUrl('Doc',
+                            'https://flyingpigeon.readthedocs.io/en/latest/processes_des.html#data-visualization',
+                            anonymous=True),
             ],
             abstract="Outputs some timeseries of the file field means. Spaghetti and uncertainty plot",
             inputs=inputs,

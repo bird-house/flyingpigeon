@@ -16,6 +16,7 @@ from pywps import Format
 from pywps import LiteralInput
 from pywps import Process
 from pywps.app.Common import Metadata
+from pywps.ext_autodoc import MetadataUrl
 from shapely.geometry import Point
 
 from flyingpigeon.ocg_utils import call
@@ -135,7 +136,9 @@ class SpatialAnalogProcess(Process):
                      "measuring the dissimilarity between both distributions over the candidate grid.",
             version="0.2",
             metadata=[
-                Metadata('Doc', 'http://flyingpigeon.readthedocs.io/en/latest/'),
+                MetadataUrl('Doc',
+                            'http://flyingpigeon.readthedocs.io/en/latest/',
+                            anonymous=True),
             ],
             inputs=inputs,
             outputs=outputs,

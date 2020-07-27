@@ -2,7 +2,7 @@ import logging
 
 from pywps import ComplexInput, Format, LiteralInput, Process, FORMATS
 # from pywps import Process, LiteralInput
-from pywps.app.Common import Metadata
+from pywps.ext_autodoc import MetadataUrl
 
 from pywps.inout.outputs import MetaFile, MetaLink4
 from flyingpigeon.processes.wpsio import output, metalink
@@ -51,8 +51,9 @@ class SubsetcontinentProcess(Process):
             version="0.11",
             abstract="Return the data whose grid cells intersect the selected continents for each input dataset.",
             metadata=[
-                Metadata('Doc',
-                         'https://flyingpigeon.readthedocs.io/en/latest/processes_des.html#subset-processes'),
+                MetadataUrl('Doc',
+                            'https://flyingpigeon.readthedocs.io/en/latest/processes_des.html#subset-processes',
+                            anonymous=True),
             ],
             inputs=inputs,
             outputs=outputs,
