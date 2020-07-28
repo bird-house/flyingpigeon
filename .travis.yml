@@ -36,6 +36,7 @@ script:
   - pytest
   - make test-notebooks || echo "allow fail"
   - flake8
-  - make docs  # default html
-  - make SPHINXOPTS='-b epub' docs  # to match RtD
-  - make SPHINXOPTS='-b latex' docs  # to match RtD
+  # disable doc build for python 3.6 only
+  - test "$TRAVIS_PYTHON_VERSION" == "3.6" || make docs  # default html
+  - test "$TRAVIS_PYTHON_VERSION" == "3.6" || make SPHINXOPTS='-b epub' docs  # to match RtD
+  - test "$TRAVIS_PYTHON_VERSION" == "3.6" || make SPHINXOPTS='-b latex' docs  # to match RtD
