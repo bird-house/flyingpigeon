@@ -5,9 +5,7 @@ os:
 python:
   - "3.6"
   - "3.7"
-branches:
-  only:
-    - master
+  - "3.8"
 #  - osx
 sudo: false
 before_install:
@@ -29,10 +27,8 @@ install:
   # Update now the env with our environment
   - conda env update -f environment.yml
   - source activate flyingpigeon
-  # Packages for testing and generating docs
+  # Packages for testing, generating docs and installing WPS
   - make develop
-  # Install WPS
-  - python setup.py install
 before_script:
   # Start WPS service on port 8093 on 0.0.0.0
   - flyingpigeon start --daemon --bind-host 0.0.0.0 --port 8093
@@ -41,4 +37,7 @@ script:
   - pytest
   - make test-notebooks || echo "allow fail"
   - flake8
-  - make docs
+  # disable doc build for python 3.6 only
+  - test "$TRAVIS_PYTHON_VERSION" == "3.6" || make docs  # default html
+  - test "$TRAVIS_PYTHON_VERSION" == "3.6" || make SPHINXOPTS='-b epub' docs  # to match RtD
+  - test "$TRAVIS_PYTHON_VERSION" == "3.6" || make SPHINXOPTS='-b latex' docs  # to match RtD

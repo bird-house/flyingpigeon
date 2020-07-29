@@ -16,11 +16,11 @@ COPY . /opt/wps
 
 WORKDIR /opt/wps
 
-# Create conda environment
-RUN conda env create -n wps -f environment.yml
+# Create conda environment with PyWPS
+RUN ["conda", "env", "create", "-n", "wps", "-f", "environment.yml"]
 
 # Install WPS
-RUN ["/bin/bash", "-c", "source activate wps && python setup.py develop"]
+RUN ["/bin/bash", "-c", "source activate wps && python setup.py install"]
 
 # Start WPS service on port 8093 on 0.0.0.0
 EXPOSE 8093

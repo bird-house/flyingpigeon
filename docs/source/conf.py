@@ -35,17 +35,20 @@ sys.path.insert(0, os.path.abspath("../../"))
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc',
-              'pywps.ext_autodoc',
-              'sphinx.ext.viewcode',
-              'sphinx.ext.napoleon',
-              'sphinx.ext.todo',
-              'nbsphinx',
-              'IPython.sphinxext.ipython_console_highlighting',
-              # 'sphinx.ext.intersphinx',
-              # 'docaggregation',
-              ]
-
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.todo",
+    "pywps.ext_autodoc",
+    "sphinx.ext.autosectionlabel",
+    "sphinx.ext.imgconverter",
+    "nbsphinx",
+    "IPython.sphinxext.ipython_console_highlighting",
+    # "sphinx.ext.intersphinx",
+    # "docaggregation",
+]
 
 autoapi_type = 'python'
 autoapi_dirs = ['../../flyingpigeon']
@@ -53,12 +56,21 @@ autoapi_file_pattern = '*.py'
 autoapi_options = ['members', 'undoc-members', 'private-members']
 
 # To avoid having to install these and burst memory limit on ReadTheDocs.
-autodoc_mock_imports = ["numpy",  "fiona", "rasterio", "shapely", "ocgis",
-                        "osgeo", "geotiff", "gdal", 'geos', "geopandas", "pandas",
-                        "hdf4", "hdf5", 'zlib',
-                        'pyproj', 'netCDF4', 'proj',  'shapely',
-                        "affine", "rasterstats", "matplotlib", "cartopy",
-                        "scipy", "scikit-learn",  "statsmodels", 'cairo']
+# List of all tested working mock imports from all birds so new birds can
+# inherit without having to test which work which do not.
+autodoc_mock_imports = ["numpy", "xarray", "fiona", "rasterio", "shapely",
+                        "osgeo", "geopandas", "pandas", "statsmodels",
+                        "affine", "rasterstats", "spotpy", "matplotlib",
+                        "scipy", "unidecode", "gdal", "sentry_sdk", "dask",
+                        "numba", "parse", "siphon", "sklearn", "cftime",
+                        "netCDF4", "bottleneck", "ocgis", "geotiff", "geos",
+                        "hdf4", "hdf5", "zlib", "pyproj", "proj", "cartopy",
+                        "scikit-learn", "cairo"]
+
+# Monkeypatch constant because the following are mock imports.
+# Only works if numpy is actually installed and at the same time being mocked.
+#import numpy
+#numpy.pi = 3.1416
 
 # We are using mock imports in readthedocs, so probably safer to not run the notebooks
 nbsphinx_execute = 'never'
@@ -85,7 +97,7 @@ author = "Nils Hempelmann"
 # the built documents.
 #
 # The short X.Y version.
-version = ""
+version = "1.5.1"
 # The full version, including alpha/beta/rc tags.
 release = "1.5.1"
 
@@ -106,6 +118,12 @@ pygments_style = "sphinx"
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
+
+# Suppress "WARNING: unknown mimetype for ..." when building EPUB.
+suppress_warnings = ['epub.unknown_project_files']
+
+# Avoid "configuration.rst:4:duplicate label configuration, other instance in configuration.rst"
+autosectionlabel_prefix_document = True
 
 
 # -- Options for HTML output -------------------------------------------

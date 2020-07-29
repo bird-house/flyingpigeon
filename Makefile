@@ -4,6 +4,10 @@ APP_NAME := flyingpigeon
 
 # TODO read in from server configuration
 WPS_URL = http://localhost:8093
+
+# Used in target refresh-notebooks to make it looks like the notebooks have
+# been refreshed from the production server below instead of from the local dev
+# instance so the notebooks can also be used as tutorial notebooks.
 OUTPUT_URL = https://pavics.ouranos.ca/wpsoutputs
 
 SANITIZE_FILE := https://github.com/Ouranosinc/PAVICS-e2e-workflow-tests/raw/master/notebooks/output-sanitize.cfg
@@ -50,6 +54,8 @@ develop:
 	@echo "Installing development requirements for tests and docs ..."
 	@-bash -c 'pip install -e ".[dev]"'
 	@-bash -c 'pip install git+https://github.com/metalink-dev/pymetalink@v6.2#egg=pymetalink --upgrade'
+	@-bash -c 'pip install git+https://github.com/Ouranosinc/pywps@2a55b6e95f51c648dc94bf3c89db7370b56c1c9c#egg=pywps --upgrade'
+
 
 .PHONY: start
 start:
@@ -141,7 +147,7 @@ refresh-notebooks:
 .PHONY: docs
 docs:
 	@echo "Generating docs with Sphinx ..."
-	@-bash -c '$(MAKE) -C $@ clean html'
+	@bash -c '$(MAKE) -C $@ clean html'
 	@echo "Open your browser to: file:/$(APP_ROOT)/docs/build/html/index.html"
 	## do not execute xdg-open automatically since it hangs travis and job does not complete
 	@echo "xdg-open $(APP_ROOT)/docs/build/html/index.html"

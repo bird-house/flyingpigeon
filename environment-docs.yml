@@ -5,7 +5,8 @@ channels:
 - defaults
 dependencies:
 - python=3.7
-- pywps>=4.2.4
+# restore once an official pywps release contain the fix
+#- pywps>=4.2.4
 - sphinx
 - nbsphinx
 - ipython
@@ -14,3 +15,5 @@ dependencies:
 - pip:
   - https://github.com/metalink-dev/pymetalink/archive/master.zip
   - sphinx_rtd_theme
+  # delete once an official pywps release contain this fix, also delete in Makefile
+  - https://github.com/Ouranosinc/pywps/archive/2a55b6e95f51c648dc94bf3c89db7370b56c1c9c.zip

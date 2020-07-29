@@ -61,7 +61,7 @@ Plots are generated based on matplotlib. Appropriate functions are located in eg
 
 
 
-.. include:: spatial_analogs.rst
+.. include:: spatial_analogs.rst.inc
 
 
 .. _flyingpigeon_version_v1.0: https://flyingpigeon.readthedocs.io/en/1.1.0/descriptions/index.html
