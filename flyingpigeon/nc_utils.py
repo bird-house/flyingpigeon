@@ -381,7 +381,7 @@ def sortssp_by_drsname(resource):
                 bn = '_'.join(n[0:-2])  # skipping the date information in the filename
                 nc_datasets[bn] = []  # dictionary containing all datasets names
             else:
-                print('file is not DRS convention conform!')
+                LOGGER.debug('file is not DRS convention conform!')
 
             #  select only necessary names
             ssp_datasets = nc_datasets.copy()
@@ -390,12 +390,12 @@ def sortssp_by_drsname(resource):
                     if 'historical' in key:
                         ssp_datasets.pop(key)
                 nc_datasets = ssp_datasets.copy()
-                print('historical data set names removed from dictionary')
+                LOGGER.debug('historical data set names removed from dictionary')
             else:
-                print('no SSP dataset names found in dictionary')
-        print('Got dataset names for dic keys')
+                LOGGER.debug('no SSP dataset names found in dictionary')
+        LOGGER.debug('Got dataset names for dic keys')
     except Exception as e:
-        print('failed to get dataset names for dic keys {}'.format(e))
+        LOGGER.debug('failed to get dataset names for dic keys {}'.format(e))
 
     # collect the file according to datasets
     for key in nc_datasets:
@@ -423,7 +423,7 @@ def sortssp_by_drsname(resource):
 #                 LOGGER.error('append file paths to dictionary for key %s failed' % key)
             nc_datasets[key].sort()
         except Exception as e:
-            print('failed for{e}'.fromat(e))
+            LOGGER.debug('failed for{e}'.fromat(e))
     return nc_datasets
 
 # def get_calendar(resource, variable=None):

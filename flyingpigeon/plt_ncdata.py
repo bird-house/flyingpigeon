@@ -209,7 +209,7 @@ def plot_ssp_spaghetti(resource, variable, ylim=None, title=None,
 #             variable = get_variable(resource[0])
 #         LOGGER.info('plot values preparation done')
     except Exception as ex:
-        print("plot values preparation failed {}".format(ex))
+        LOGGER.debug("plot values preparation failed {}".format(ex))
 #         LOGGER.exception(msg)
 #         raise Exception(msg)
     try:
@@ -258,7 +258,7 @@ def plot_ssp_spaghetti(resource, variable, ylim=None, title=None,
                 # plt.plot(dt, ts)
                 # fig.line( dt,ts )
             except Exception as e:
-                print("spaghetti plot failed for {} : {}".format(nc, e))
+                LOGGER.debug("spaghetti plot failed for {} : {}".format(nc, e))
 #                 LOGGER.exception(msg)
 
         plt.title(title, fontsize=20)
@@ -270,9 +270,9 @@ def plot_ssp_spaghetti(resource, variable, ylim=None, title=None,
         output_png = fig2plot(fig=fig, file_extension=file_extension, dir_output=dir_output)
 
         plt.close()
-        print('timeseries spaghetti plot done for %s with %s lines.' % (variable, c))
+        LOGGER.debug('timeseries spaghetti plot done for %s with %s lines.' % (variable, c))
     except Exception as ex:
-        print('matplotlib spaghetti plot failed: {}'.format(ex))
+        LOGGER.debug('matplotlib spaghetti plot failed: {}'.format(ex))
 #         LOGGER.exception(msg)
     return output_png
 
@@ -538,6 +538,7 @@ def plot_ts_uncertaintyrcp(resource, variable=None, ylim=None, title=None,
             plt.title(title, fontsize=20)
             plt.grid()  # .grid_line_alpha=0.3
 
+
             output_png = fig2plot(fig=fig, file_extension=file_extension, dir_output=dir_output)
             plt.close()
             LOGGER.debug('timeseries uncertainty plot done for %s' % variable)
@@ -687,7 +688,7 @@ def plot_map_ccsignal(signal, robustness=None,
     if variable is None:
         variable = get_variable(signal)
 
-    print('found variable in file {}'.format(variable))
+    LOGGER.debug('found variable in file {}'.format(variable))
 
     try:
         ds = Dataset(signal)
