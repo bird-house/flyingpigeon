@@ -61,7 +61,8 @@ class SubsetWFSPolygonProcess(Process, Subsetter):
         for res in self.parse_resources(request):
             variables = self.parse_variable(request, res)
             prefix = Path(res).stem
-            prefix += "_{}".format('+'.join(fids))
+            # The name must not grow too long.
+            prefix += "_" + fids[0].split(".")[0]
 
             rd = ocgis.RequestDataset(res, variables)
 
