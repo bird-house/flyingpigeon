@@ -55,6 +55,12 @@ develop:
 	@-bash -c 'pip install -e ".[dev]"'
 	@-bash -c 'pip install git+https://github.com/metalink-dev/pymetalink@v6.2#egg=pymetalink --upgrade'
 
+	# Remove once PR https://github.com/geopython/OWSLib/pull/706 is merged
+	# and a new release of OWSLib containing the feature is available.
+	# To keep this change before official OWSLib release, lock down the
+	# exact commit hash id instead of the branch name 'wfs-getfeature-post'.
+	@-bash -c 'pip install git+https://github.com/f-PLT/OWSLib@wfs-getfeature-post#egg=owslib --upgrade'
+
 
 .PHONY: start
 start:
