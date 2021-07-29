@@ -14,7 +14,8 @@ def get_feature(url, typename, features):
     """Return geometry from WFS server."""
     wfs = WebFeatureService(url, version='2.0.0')
     resp = wfs.getfeature([typename], featureid=features,
-                          outputFormat='application/json')
+                          outputFormat='application/json',
+                          method="Post")
     return json.loads(resp.read())
 
 

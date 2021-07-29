@@ -55,7 +55,6 @@ develop:
 	@-bash -c 'pip install -e ".[dev]"'
 	@-bash -c 'pip install git+https://github.com/metalink-dev/pymetalink@v6.2#egg=pymetalink --upgrade'
 
-
 .PHONY: start
 start:
 	@echo "Starting application ..."
