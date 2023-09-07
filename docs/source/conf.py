@@ -46,8 +46,6 @@ extensions = [
     "sphinx.ext.imgconverter",
     "nbsphinx",
     "IPython.sphinxext.ipython_console_highlighting",
-    # "sphinx.ext.intersphinx",
-    # "docaggregation",
 ]
 
 autoapi_type = 'python'
@@ -69,8 +67,8 @@ autodoc_mock_imports = ["numpy", "xarray", "fiona", "rasterio", "shapely",
 
 # Monkeypatch constant because the following are mock imports.
 # Only works if numpy is actually installed and at the same time being mocked.
-#import numpy
-#numpy.pi = 3.1416
+# import numpy
+# numpy.pi = 3.1416
 
 # We are using mock imports in readthedocs, so probably safer to not run the notebooks
 nbsphinx_execute = 'never'
@@ -89,7 +87,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "Flyingpigeon"
-copyright = "2018-2020, Nils Hempelmann"
+copyright = "2018-2023, Nils Hempelmann"
 author = "Nils Hempelmann"
 
 # The version info for the project you're documenting, acts as replacement
@@ -106,7 +104,7 @@ release = "1.5.1"
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
