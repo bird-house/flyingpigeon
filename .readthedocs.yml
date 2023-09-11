@@ -28,4 +28,6 @@ conda:
   environment: environment-docs.yml
 
 build:
-  image: stable
+  os: ubuntu-22.04
+  tools:
+    python: "mambaforge-22.9"

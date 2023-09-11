@@ -4,13 +4,13 @@ channels:
 - conda-forge
 - defaults
 dependencies:
-- python=3.7
-- pywps>=4.2.7
-- sphinx
-- nbsphinx
+- python >=3.8,<3.9
+- pywps >=4.2.7
 - ipython
 - ipywidgets
+- nbsphinx
+- sphinx
+- sphinx-rtd-theme
 - pip
 - pip:
   - https://github.com/metalink-dev/pymetalink/archive/master.zip
-  - sphinx_rtd_theme

@@ -3,7 +3,7 @@ channels:
 - conda-forge
 - defaults
 dependencies:
-- python=3
+- python >=3.8
 - pip
 - pywps>=4.2.7
 - jinja2
@@ -31,9 +31,9 @@ dependencies:
 ##############
 # docs
 - pandoc  # was unable to install it in requirements_dev.txt
+- sphinx-rtd-theme
 ##############
 # pip install
 - pip:
 #  - -e git+https://github.com/bird-house/eggshell.git#egg=eggshell
 #  - -e git+https://github.com/NCPP/ocgis#egg=owslib
-  - sphinx_rtd_theme
